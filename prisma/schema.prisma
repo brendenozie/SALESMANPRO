@@ -1,0 +1,420 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-1.1.x", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// Necessary for Next auth
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @db.ObjectId
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  message   String
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+}
+
+model ProductCategory {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  image    String
+  status   String
+  tags     String[]
+  products Product[]
+}
+
+model UsersCategory {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  name   String
+  status String
+  users  User[]
+}
+
+model Company {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  salesAgents     SalesAgent[]
+  products        Product[]
+  inventory       InventoryItem[]
+  clients         Client[]
+  productRequests Request[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  users           User[]
+  Target          Target[]
+}
+
+model Product {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  description       String?
+  category          String?
+  tags              String[]
+  price             Float
+  companyId         String           @db.ObjectId
+  company           Company          @relation(fields: [companyId], references: [id])
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  productCategoryId String?          @db.ObjectId
+  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
+  orders            Order[]
+  inventoryItems    InventoryItem[]
+  requests          Request[]        @relation("ProductRequests")
+  commissions       Commission[]
+  // Additional validation for required fields can be implemented at the application level
+  Target            Target[]
+}
+
+model Task {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  taskName    String
+  dueDate     DateTime  @db.Date
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @db.ObjectId
+  dueTime     String
+  description String?
+  icon        String?
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+}
+
+model Client {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  email             String              @unique
+  phoneNumber       String?
+  companyId         String              @db.ObjectId
+  company           Company             @relation(fields: [companyId], references: [id])
+  salesAgentId      String?             @db.ObjectId
+  salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
+  orders            Order[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  communications    Communication[]     @relation("CommunicationReceiver")
+  ClientInventory   ClientInventory[]
+  AgentInventoryLog AgentInventoryLog[]
+}
+
+model Order {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  clientId     String       @db.ObjectId
+  client       Client       @relation(fields: [clientId], references: [id])
+  salesAgentId String?      @db.ObjectId
+  salesAgent   SalesAgent?  @relation(fields: [salesAgentId], references: [id])
+  productId    String       @db.ObjectId
+  product      Product      @relation(fields: [productId], references: [id])
+  status       OrderStatus  @default(PENDING)
+  quantity     Int
+  totalPrice   Float
+  commission   Float        @default(0.0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  commissions  Commission[]
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  RECURRING
+}
+
+model Communication {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String     @db.ObjectId
+  sender     SalesAgent @relation("CommunicationSender", fields: [senderId], references: [id])
+  receiverId String     @db.ObjectId
+  receiver   Client     @relation("CommunicationReceiver", fields: [receiverId], references: [id])
+  subject    String?
+  message    String
+  createdAt  DateTime   @default(now())
+}
+
+model SalesAgent {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  email              String               @unique
+  phoneNumber        String?
+  companyId          String               @db.ObjectId
+  company            Company              @relation(fields: [companyId], references: [id])
+  clients            Client[]
+  orders             Order[]
+  productRequests    Request[]
+  role               String               @default("Agent")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  commissions        Commission[]
+  communications     Communication[]      @relation("CommunicationSender")
+  Return             Return[]
+  AgentInventory     AgentInventory[]
+  Assignment         Assignment[]
+  Target             Target[]
+  ClientInventory    ClientInventory[]
+  ClientInventoryLog ClientInventoryLog[]
+}
+
+model User {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  email           String         @unique
+  password        String
+  companyId       String?        @db.ObjectId
+  company         Company?       @relation(fields: [companyId], references: [id])
+  role            String         @default("User")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  accounts        Account[]
+  sessions        Session[]
+  usersCategory   UsersCategory? @relation(fields: [usersCategoryId], references: [id])
+  usersCategoryId String?        @db.ObjectId
+  tasks           Task[]
+  auditLogs       AuditLog[]
+  requests        Request[]
+  returns         Return[]
+  Assignment      Assignment[]
+}
+
+model Request {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  productId     String     @db.ObjectId
+  product       Product    @relation(fields: [productId], references: [id], name: "ProductRequests")
+  requestedById String     @db.ObjectId
+  requestedBy   SalesAgent @relation(fields: [requestedById], references: [id])
+  quantity      Int
+  status        Status     @default(PENDING)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  companyId     String?    @db.ObjectId
+  company       Company?   @relation(fields: [companyId], references: [id])
+  ApprovedBy    User?      @relation(fields: [ApprovedById], references: [id])
+  ApprovedById  String?    @db.ObjectId
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+model Return {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  inventoryId   String        @db.ObjectId
+  inventoryItem InventoryItem @relation(fields: [inventoryId], references: [id])
+  returnedById  String        @db.ObjectId
+  returnedBy    SalesAgent    @relation(fields: [returnedById], references: [id])
+  ApprovedBy    User?         @relation(fields: [ApprovedById], references: [id])
+  ApprovedById  String?       @db.ObjectId
+  quantity      Int
+  reason        String?
+  status        Status        @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Assignment {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  ApprovedBy       User?         @relation(fields: [ApprovedById], references: [id])
+  ApprovedById     String?       @db.ObjectId
+  salesAgentId     String        @db.ObjectId
+  salesAgent       SalesAgent    @relation(fields: [salesAgentId], references: [id])
+  inventoryItemId  String        @db.ObjectId
+  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  quantityAssigned Int
+  reason           String? // Optional reason for assignment
+  createdAt        DateTime      @default(now())
+}
+
+model InventoryItem {
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
+  productId        String            @db.ObjectId
+  product          Product           @relation(fields: [productId], references: [id])
+  companyId        String            @db.ObjectId
+  company          Company           @relation(fields: [companyId], references: [id])
+  quantity         Int
+  reorderThreshold Int?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  inventoryLogs    InventoryLog[]
+  returns          Return[]
+  AgentInventory   AgentInventory[]
+  Assignment       Assignment[]
+  ClientInventory  ClientInventory[]
+}
+
+model InventoryLog {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  inventoryId   String        @db.ObjectId
+  inventoryItem InventoryItem @relation(fields: [inventoryId], references: [id])
+  damaged       Int           @default(0)
+  action        String
+  quantity      Int
+  createdAt     DateTime      @default(now())
+}
+
+model AgentInventory {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId      String              @db.ObjectId
+  salesAgent        SalesAgent          @relation(fields: [salesAgentId], references: [id])
+  inventoryItemId   String              @db.ObjectId
+  inventoryItem     InventoryItem       @relation(fields: [inventoryItemId], references: [id])
+  quantity          Int
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  AgentInventoryLog AgentInventoryLog[]
+  ClientInventory   ClientInventory[]
+}
+
+model Commission {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId     String           @db.ObjectId
+  salesAgent       SalesAgent       @relation(fields: [salesAgentId], references: [id])
+  productId        String           @db.ObjectId
+  product          Product          @relation(fields: [productId], references: [id])
+  orderId          String?          @db.ObjectId
+  order            Order?           @relation(fields: [orderId], references: [id])
+  commissionRate   Float // Rate (percentage or fixed) based on criteria
+  commissionEarned Float // Calculated based on the chosen criteria
+  basedOn          CommissionType   @default(COST) // Define whether based on COST or QUANTITY
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  status           CommissionStatus @default(PENDING)
+
+  @@unique([salesAgentId, productId]) // Composite unique constraint
+}
+
+enum CommissionType {
+  COST // Commission based on total sales value
+  QUANTITY // Commission based on quantity sold
+}
+
+enum CommissionStatus {
+  PENDING
+  COMPLETED
+  DENIED
+}
+
+model Target {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId  String       @db.ObjectId
+  salesAgent    SalesAgent   @relation(fields: [salesAgentId], references: [id])
+  productId     String       @db.ObjectId
+  product       Product      @relation(fields: [productId], references: [id])
+  targetType    TargetType   @default(COST) // Define whether target is based on COST or QUANTITY
+  targetValue   Float // Value to achieve (e.g., $5000 sales or 100 units sold)
+  achievedValue Float        @default(0) // Progress towards target
+  startDate     DateTime
+  endDate       DateTime
+  status        TargetStatus @default(ONGOING)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  Company       Company?     @relation(fields: [companyId], references: [id])
+  companyId     String?      @db.ObjectId
+
+  @@unique([salesAgentId, productId]) // Composite unique constraint
+}
+
+enum TargetType {
+  COST // Target based on total sales value
+  QUANTITY // Target based on quantity sold
+  REVENUE
+  UNITS
+  ORDERS
+}
+
+enum TargetStatus {
+  ONGOING
+  ACHIEVED
+  EXPIRED
+}
+
+model AuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  action    String
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  timestamp DateTime @default(now())
+  details   String?
+}
+
+model ClientInventory {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  clientId         String               @db.ObjectId
+  client           Client               @relation(fields: [clientId], references: [id])
+  inventoryItemId  String               @db.ObjectId
+  inventoryItem    InventoryItem        @relation(fields: [inventoryItemId], references: [id])
+  agentInventoryId String               @db.ObjectId
+  agentInventory   AgentInventory       @relation(fields: [agentInventoryId], references: [id])
+  salesAgentId     String               @db.ObjectId
+  salesAgent       SalesAgent           @relation(fields: [salesAgentId], references: [id])
+  quantity         Int
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  logs             ClientInventoryLog[]
+
+  @@unique([clientId, inventoryItemId]) // Composite unique constraint
+}
+
+model ClientInventoryLog {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  clientInventoryId String          @db.ObjectId
+  clientInventory   ClientInventory @relation(fields: [clientInventoryId], references: [id])
+  action            String // e.g., "allocated", "returned-to-agent", "returned-to-company"
+  salesAgentId      String          @db.ObjectId
+  salesAgent        SalesAgent      @relation(fields: [salesAgentId], references: [id])
+  quantity          Int
+  damaged           Int             @default(0)
+  createdAt         DateTime        @default(now())
+}
+
+model AgentInventoryLog {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  agentInventoryId String         @db.ObjectId
+  agentInventory   AgentInventory @relation(fields: [agentInventoryId], references: [id])
+  action           String // e.g., "client-return", "company-return"
+  clientId         String?        @db.ObjectId
+  client           Client?        @relation(fields: [clientId], references: [id])
+  quantity         Int
+  damaged          Int            @default(0)
+  createdAt        DateTime       @default(now())
+}
