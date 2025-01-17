@@ -13,45 +13,63 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         name: true,
         email: true,
         phoneNumber: true,
-        orders: {
+        ClientInventory: {
           select: {
-            totalPrice: true, // Assuming 'totalPrice' exists in your 'Order' model
-            createdAt: true,
+            inventoryItem: {
+              select: {
+                product: {
+                  select: { name: true, price: true },
+                },
+              },
+            },
+            quantity: true,
+            updatedAt: true,
           },
           orderBy: {
-            createdAt: "desc", // Sort orders by most recent
+            updatedAt: "desc",
           },
-          take: 1, // Fetch only the most recent order
         },
         communications: {
           select: {
-            createdAt: true, // Date of last communication
+            createdAt: true,
           },
           orderBy: {
             createdAt: "desc",
           },
-          take: 1, // Get the most recent communication
+          take: 1,
         },
       },
     });
 
     // Process each client to include calculated or derived values
     const processedClients = clients.map((client) => {
-      const recentOrder = client.orders[0]; // Get the most recent order
-      const recentCommunication = client.communications[0]; // Get the most recent communication
+      // Total sales calculation based on ClientInventory
+      const totalSales = client.ClientInventory.reduce((sum, inventory) => {
+        const productPrice = inventory.inventoryItem.product.price;
+        return sum + inventory.quantity * productPrice;
+      }, 0);
+
+      // Most recent transaction
+      const recentInventory = client.ClientInventory[0];
+      const recentTransactionDate = recentInventory?.updatedAt || null;
+
+      const recentTransactionAmount = recentInventory
+        ? recentInventory.quantity * (recentInventory.inventoryItem.product.price || 0)
+        : 0;
+
+      // Client engagement status
+      const recentCommunication = client.communications[0];
+      const status = recentCommunication ? "engaged" : "inactive";
 
       return {
         id: client.id,
         name: client.name,
         email: client.email,
         phoneNumber: client.phoneNumber,
-        // Calculate total sales by summing all orders (if needed)
-        totalSales: recentOrder?.totalPrice || 0, // Replace with aggregation if needed
-        // Set recentTransactionAmount and recentTransactionDate
-        recentTransactionAmount: recentOrder?.totalPrice || 0,
-        recentTransactionDate: recentOrder?.createdAt || null,
-        // Derive status (default to 'active' if no communication is present)
-        status: recentCommunication ? "engaged" : "inactive",
+        totalSales,
+        recentTransactionAmount,
+        recentTransactionDate,
+        status,
       };
     });
 

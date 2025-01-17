@@ -17,6 +17,7 @@ import ReturnCustomerProductModal from "@/components/ReturnCustomerProductModal"
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 type Inventory = {
+  agentInventoryId: string;
   inventoryItemId: string;
   productId: string;
   productName: string;
@@ -75,7 +76,8 @@ const ProductsPage = ({ inventoryData }: Props) => {
   const [showRestockProductModal, setShowRestockProductModal] = useState(false);
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedProductInventoryItemId, setSelectedProductInventoryItemId] = useState<String>("");
+  const [agentInventoryId, setSelectedAgentInventoryId] = useState<String>("");
+  const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [stockAmount, setStockAmount] = useState(0);
 
@@ -142,7 +144,7 @@ const ProductsPage = ({ inventoryData }: Props) => {
                 className="border p-3 rounded-lg w-full max-w-lg shadow"
               />
               <button className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-700">
-                Add Product
+                Request Product
               </button>
             </div>
 
@@ -186,7 +188,8 @@ const ProductsPage = ({ inventoryData }: Props) => {
                         onClick={() => {
                           setSelectedProduct(item.product);
                           setShowCustomerReturnProductModal(true);
-                          setSelectedProductInventoryItemId(item.inventoryItemId);
+                          setSelectedAgentInventoryId(item.inventoryItemId);
+                          setSelectedInventoryItemId(item.inventoryItemId);
                         }}
                       >
                         Customer Return 
@@ -194,9 +197,10 @@ const ProductsPage = ({ inventoryData }: Props) => {
                       <button
                         className="px-2 py-1 bg-red-500 text-white rounded shadow hover:bg-red-700"
                         onClick={() => {
-                          setSelectedProduct(item.product);                          
-                          setSelectedProductInventoryItemId(item.inventoryItemId);
-                          setShowCustomerAssignProductModal(true);
+                          setSelectedProduct(item.product);                       
+                          setShowCustomerAssignProductModal(true);                          
+                          setSelectedAgentInventoryId(item.agentInventoryId);
+                          setSelectedInventoryItemId(item.inventoryItemId);
                         }}
                       >
                         Customer Assign
@@ -234,7 +238,8 @@ const ProductsPage = ({ inventoryData }: Props) => {
                     showAssignProductModal={showAssignCustomerProductModal}
                     setShowAssignProductModal={setShowCustomerAssignProductModal}
                     product={selectedProduct}
-                    inventoryItemId={selectedProductInventoryItemId}
+                    inventoryItemId={inventoryItemId}
+                    agentInventoryItemId={agentInventoryId}
                   />
                 )}
 
@@ -243,7 +248,9 @@ const ProductsPage = ({ inventoryData }: Props) => {
                   <ReturnCustomerProductModal
                     showReturnProductModal={showReturnCustomerProductModal}
                     setShowReturnProductModal={setShowCustomerReturnProductModal}
-                    product={selectedProduct}
+                    product={selectedProduct}                    
+                    inventoryItemId={inventoryItemId}
+                    agentInventoryItemId={agentInventoryId}
                   />
                 )}
       </div>

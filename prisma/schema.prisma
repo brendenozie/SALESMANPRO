@@ -403,6 +403,9 @@ model ClientInventoryLog {
   salesAgentId      String          @db.ObjectId
   salesAgent        SalesAgent      @relation(fields: [salesAgentId], references: [id])
   quantity          Int
+  price             Float
+  totalPrice        Float
+  status            String //completed, pending
   damaged           Int             @default(0)
   createdAt         DateTime        @default(now())
 }

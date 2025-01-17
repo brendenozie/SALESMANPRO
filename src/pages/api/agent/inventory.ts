@@ -14,66 +14,70 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   try {
-    // Fetch inventory assigned to the sales agent
-    const inventory = await prisma.agentInventory.findMany({
+    // Fetch agent inventory and related product data
+    const agentInventory = await prisma.agentInventory.findMany({
       where: { salesAgentId },
       include: {
         inventoryItem: {
           include: {
-            product: true, // Include product details for inventory items
+            product: true, // Include product details
           },
         },
-        salesAgent: true, // Include sales agent details
       },
     });
 
-    // Fetch client inventory related to this sales agent
+    // Fetch client inventory related to the sales agent
     const clientInventory = await prisma.clientInventory.findMany({
       where: { salesAgentId },
       include: {
-        product: true, // Include product details for client inventory
-        client: true,  // Include client details
+        inventoryItem: {
+          include: {
+            product: true, // Include product details
+          },
+        },
+        client: true, // Include client details
       },
     });
 
-    // Map sales data using clientInventory
-    const salesDetails = clientInventory
-      .filter((item) => item.product && item.client) // Exclude null relations
-      .map((item) => ({
-        clientId: item.client.id,
-        clientName: item.client.name,
-        productId: item.product.id,
-        productName: item.product.name,
-        quantitySold: item.quantity,
-      }));
+    // Map client inventory to calculate sales details
+    const salesDetails = clientInventory.map((item) => ({
+      clientId: item.client.id,
+      clientName: item.client.name,
+      productId: item.inventoryItem.productId,
+      productName: item.inventoryItem.product?.name || "Unknown Product",
+      quantitySold: item.quantity,
+    }));
 
-    // Map inventory details to include remaining stock and company inventory ID
-    const inventoryDetails = inventory.map((item) => {
-      const relatedSales = salesDetails.filter(
-        (sale) => sale.productId === item.inventoryItem.productId
-      );
-      const totalSold = relatedSales.reduce((sum, sale) => sum + sale.quantitySold, 0);
-      const remainingStock = Math.max(item.quantity - totalSold, 0); // Avoid negative stock
+    // Map agent inventory to include remaining stock and total sales
+    const inventoryDetails = agentInventory.map((item) => {
+      const productId = item.inventoryItem.productId;
+
+      // Calculate total sold for this product
+      const totalSold = salesDetails
+        .filter((sale) => sale.productId === productId)
+        .reduce((sum, sale) => sum + sale.quantitySold, 0);
+
+        console.log(item);
 
       return {
-        agentInventoryItemId: item.id,
-        companyInventoryId: item.inventoryItem.id, // Add company's inventory ID
-        productId: item.inventoryItem.productId,
+        agentInventoryId: item.id,
+        inventoryItemId: item.inventoryItem.id, // Company inventory ID
+        productId,
         product: item.inventoryItem.product,
         productName: item.inventoryItem.product?.name || "Unknown Product",
         totalAssignedStock: item.quantity,
         totalSold,
-        remainingStock,
+        remainingStock: Math.max(item.quantity - totalSold, 0),
       };
     });
 
-    // Send success response with structured data
+    // Respond with structured data
     return res.status(200).json({
       salesAgentId,
       inventory: inventoryDetails,
       sales: salesDetails,
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error fetching inventory:", error);
 
     return res.status(500).json({

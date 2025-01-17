@@ -208,6 +208,8 @@ export const getServerSideProps = async () => {
   const clientsData = await fetch(`${url}/agent/clients`)
     .then((res) => res.json())
     .catch(() => []);
+
+    console.log(clientsData);
   return { props: { clientsData } };
 };
 
