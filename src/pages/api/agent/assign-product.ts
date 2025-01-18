@@ -72,8 +72,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       await prisma.clientInventoryLog.create({
         data: {
-          clientInventoryId: clientInventory.id, action: "assigned", 
+          clientInventoryId: clientInventory.id, 
+          action: "assigned", 
           salesAgentId: agentInventory.salesAgentId, quantity,
+          price : agentInventory.inventoryItem.product.price, 
+          totalPrice : agentInventory.inventoryItem.product.price * quantity,
+          status : "assigned"
         },
       });
 
