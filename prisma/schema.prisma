@@ -92,7 +92,8 @@ model Product {
   description       String?
   category          String?
   tags              String[]
-  price             Float
+  costPrice         Float
+  salesPrice        Float
   companyId         String           @db.ObjectId
   company           Company          @relation(fields: [companyId], references: [id])
   createdAt         DateTime         @default(now())

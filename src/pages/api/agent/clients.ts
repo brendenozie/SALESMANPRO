@@ -18,12 +18,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             inventoryItem: {
               select: {
                 product: {
-                  select: { name: true, price: true },
+                  select: { name: true, salesPrice: true },
                 },
               },
             },
             quantity: true,
             updatedAt: true,
+            logs: {
+              select: {
+                price: true,
+                totalPrice: true,
+                createdAt: true,
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1, // Fetch the most recent log
+            },
           },
           orderBy: {
             updatedAt: "desc",
@@ -43,19 +54,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     // Process each client to include calculated or derived values
     const processedClients = clients.map((client) => {
-      // Total sales calculation based on ClientInventory
+      // Calculate total sales from ClientInventoryLogs
       const totalSales = client.ClientInventory.reduce((sum, inventory) => {
-        const productPrice = inventory.inventoryItem.product.price;
-        return sum + inventory.quantity * productPrice;
+        const mostRecentLog = inventory.logs[0]; // Fetch the most recent log
+        return sum + (mostRecentLog?.totalPrice || 0); // Use totalPrice if available
       }, 0);
 
-      // Most recent transaction
+      // Most recent transaction details
       const recentInventory = client.ClientInventory[0];
-      const recentTransactionDate = recentInventory?.updatedAt || null;
-
-      const recentTransactionAmount = recentInventory
-        ? recentInventory.quantity * (recentInventory.inventoryItem.product.price || 0)
-        : 0;
+      const recentLog = recentInventory?.logs[0]; // Most recent log
+      const recentTransactionDate = recentLog?.createdAt || null;
+      const recentTransactionAmount = recentLog?.totalPrice || 0;
 
       // Client engagement status
       const recentCommunication = client.communications[0];
@@ -72,6 +81,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         status,
       };
     });
+
+    console.log("Processed clients:", processedClients);
 
     res.status(200).json(processedClients);
   } catch (error) {

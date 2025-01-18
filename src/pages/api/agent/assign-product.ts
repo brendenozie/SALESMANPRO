@@ -48,8 +48,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       for (const pc of productCommissions) {
         const { commissionRate = 0, basedOn } = pc;
-        const finalPrice = salesPrice || product.price;
-        const commissionEarned = basedOn === "COST" ? commissionRate * product.price * quantity : commissionRate * finalPrice * quantity;
+        const finalPrice = salesPrice || product.salesPrice;
+        const commissionEarned = basedOn === "COST" ? commissionRate * product.salesPrice * quantity : commissionRate * finalPrice * quantity;
 
         if (commissionEarned > 0) {
           commissions.push(await prisma.commission.create({
@@ -75,8 +75,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           clientInventoryId: clientInventory.id, 
           action: "assigned", 
           salesAgentId: agentInventory.salesAgentId, quantity,
-          price : agentInventory.inventoryItem.product.price, 
-          totalPrice : agentInventory.inventoryItem.product.price * quantity,
+          price : agentInventory.inventoryItem.product.salesPrice, 
+          totalPrice : agentInventory.inventoryItem.product.salesPrice * quantity,
           status : "assigned"
         },
       });
