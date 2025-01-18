@@ -3,11 +3,10 @@ import AdminLayout from "@/components/AdminLayout";
 import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
-import UserLayout from "@/components/UserLayout";
 import UserNav from "@/components/UserNav";
 import { useEffect, useState } from "react";
 
- const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type Product = {
   id: string;
@@ -23,16 +22,16 @@ type Product = {
 type Category = {
   id: string;
   name: string;
-  image :   String;
-  tags: String[];
-  status  : String;
+  image: string;
+  tags: string[];
+  status: string;
 };
 
-type Tags = {
+type Tag = {
   id: string;
   name: string;
-  image :   String;
-  status  : String;
+  image: string;
+  status: string;
 };
 
 type Agent = {
@@ -46,14 +45,13 @@ type Props = {
   agentsData: Agent[];
 };
 
-
-const AdminInventoryPage = ({ productsData = [], agentsData = [] , categoriesData = [] }: Props) => {
-
+const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData = [] }: Props) => {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showAssignProductModal, setShowAssignProductModal] = useState(false);
   const [showReturnProductModal, setShowReturnProductModal] = useState(false);
   const [showRestockProductModal, setShowRestockProductModal] = useState(false);
 
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [stockAmount, setStockAmount] = useState(0);
@@ -95,16 +93,25 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [] , categoriesDat
                     <p className="mb-1">Agent Stock: <strong>{product.agentStock}</strong></p>
                     <p className="mb-1">Sales: <strong>{product.sales}</strong></p>
                   </div>
-                  
-                <div className="flex flex-row justify-between ">
+
+                  <div className="flex flex-row justify-evenly">
                     <button
                       onClick={() => {
                         setSelectedProduct(product);
-                        setShowReturnProductModal(true)}
-                      }
+                        setShowEditProductModal(true);
+                      }}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setShowReturnProductModal(true);
+                      }}
                       className="mt-4 bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600"
                     >
-                      Return 
+                      Return
                     </button>
                     <button
                       onClick={() => {
@@ -115,7 +122,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [] , categoriesDat
                     >
                       Add Stock
                     </button>
-                    
+
                     <button
                       onClick={() => {
                         setSelectedProduct(product);
@@ -126,39 +133,11 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [] , categoriesDat
                       Assign Stock
                     </button>
                   </div>
-
-                  {/* Add New Stock Modal Component */}
-                { showRestockProductModal && selectedProduct && (
-                  <RestockProductModal
-                    showRestockProductModal={showRestockProductModal}
-                    setShowRestockProductModal={setShowRestockProductModal}
-                    product={selectedProduct}
-                  />
-                )}
-                
-                {/* Assign Product TO Agent Modal Component */}
-                {showAssignProductModal && selectedProduct && (
-                  <AssignProductModal
-                    showAssignProductModal={showAssignProductModal}
-                    setShowAssignProductModal={setShowAssignProductModal}
-                    product={selectedProduct}
-                  />
-                )}
-
-                {/* Return Product Modal Component */}
-                {showReturnProductModal  && selectedProduct && (
-                  <ReturnProductModal
-                    showReturnProductModal={showReturnProductModal}
-                    setShowReturnProductModal={setShowReturnProductModal}
-                    product={selectedProduct}
-                  />
-                )}
-                </div>                    
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Add New Product Modal Component */}
           {showAddProductModal && (
             <AddProductModal
               showAddProductModal={showAddProductModal}
@@ -166,7 +145,39 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [] , categoriesDat
               categories={categoriesData}
             />
           )}
-        
+
+          {showEditProductModal && selectedProduct && (
+            <AddProductModal
+              showAddProductModal={showEditProductModal}
+              setShowAddProductModal={setShowEditProductModal}
+              categories={categoriesData}
+              product={selectedProduct} // Pass the selected product for editing
+            />
+          )}
+          {showRestockProductModal && selectedProduct && (
+            <RestockProductModal
+              showRestockProductModal={showRestockProductModal}
+              setShowRestockProductModal={setShowRestockProductModal}
+              product={selectedProduct}
+            />
+          )}
+
+          {showAssignProductModal && selectedProduct && (
+            <AssignProductModal
+              showAssignProductModal={showAssignProductModal}
+              setShowAssignProductModal={setShowAssignProductModal}
+              product={selectedProduct}
+              agents={agentsData}
+            />
+          )}
+
+          {showReturnProductModal && selectedProduct && (
+            <ReturnProductModal
+              showReturnProductModal={showReturnProductModal}
+              setShowReturnProductModal={setShowReturnProductModal}
+              product={selectedProduct}
+            />
+          )}
         </div>
       </div>
     </AdminLayout>
@@ -175,16 +186,11 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [] , categoriesDat
 
 export default AdminInventoryPage;
 
-
-
 export const getServerSideProps = async () => {
- 
-
   let productsData: Product[] = [];
   let categoriesData: Category[] = [];
 
   try {
-    
     const productsResponse = await fetch(`${apiUrl}/admin/getAllProducts`);
 
     if (productsResponse.ok) {
@@ -194,17 +200,16 @@ export const getServerSideProps = async () => {
     const categoriesResponse = await fetch(`${apiUrl}/admin/get-all-categories`);
 
     if (categoriesResponse.ok) {
-       const categories = await categoriesResponse.json();
-       categoriesData =categories.results;
+      const categories = await categoriesResponse.json();
+      categoriesData = categories.results;
     }
-    
+
     if (!Array.isArray(productsData)) {
       throw new Error("Products API response is not an array.");
     }
-
   } catch (error: any) {
     console.error("Error fetching data:", error.message);
   }
 
-  return { props: { productsData, categoriesData  } };
+  return { props: { productsData, categoriesData } };
 };
