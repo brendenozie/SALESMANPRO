@@ -104,7 +104,6 @@ model Product {
   inventoryItems    InventoryItem[]
   requests          Request[]        @relation("ProductRequests")
   commissions       Commission[]
-  // Additional validation for required fields can be implemented at the application level
   Target            Target[]
 }
 
@@ -193,6 +192,8 @@ model SalesAgent {
   Target             Target[]
   ClientInventory    ClientInventory[]
   ClientInventoryLog ClientInventoryLog[]
+  // manager    SalesAgent? @relation("Manager", fields: [managerId], references: [id])
+  // subAgents  SalesAgent[] @relation("Manager")
 }
 
 model User {
@@ -322,6 +323,8 @@ model Commission {
   status           CommissionStatus @default(PENDING)
 
   @@unique([salesAgentId, productId]) // Composite unique constraint
+  @@unique([salesAgentId, productId, orderId])
+  @@index([salesAgentId, status])
 }
 
 enum CommissionType {
@@ -333,6 +336,15 @@ enum CommissionStatus {
   PENDING
   COMPLETED
   DENIED
+}
+
+model CommissionLog {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  commissionId String
+  oldStatus    CommissionStatus
+  newStatus    CommissionStatus
+  changedBy    String
+  changedAt    DateTime         @default(now())
 }
 
 model Target {
@@ -353,6 +365,8 @@ model Target {
   companyId     String?      @db.ObjectId
 
   @@unique([salesAgentId, productId]) // Composite unique constraint
+  @@unique([salesAgentId, productId, startDate])
+  @@index([salesAgentId, status, startDate, endDate])
 }
 
 enum TargetType {
@@ -421,4 +435,20 @@ model AgentInventoryLog {
   quantity         Int
   damaged          Int            @default(0)
   createdAt        DateTime       @default(now())
+}
+
+model SalesSummary {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId    String
+  totalCommission Float
+  totalSales      Float
+  updatedAt       DateTime @updatedAt
+}
+
+model EventLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventType String
+  entityId  String
+  message   String
+  createdAt DateTime @default(now())
 }
