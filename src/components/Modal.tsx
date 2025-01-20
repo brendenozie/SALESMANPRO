@@ -8,7 +8,7 @@ const Modal = ({ isOpen, onClose, title, children }: any) => {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative transform transition-transform duration-300 scale-95 hover:scale-100"
+        className="bg-white rounded-lg shadow-lg max-w-2xl w-full relative transform transition-transform duration-300 scale-95 hover:scale-100"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4 text-gray-700">{title}</h2>

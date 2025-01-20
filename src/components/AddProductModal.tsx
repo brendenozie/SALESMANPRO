@@ -14,7 +14,7 @@ const AddProductModal = ({ showAddProductModal, setShowAddProductModal, categori
     costPrice: product?.costPrice || 0,
     salesPrice: product?.salesPrice || 0,
     commissionRate: product?.commissionRate || 0,
-    commissionType: product?.commissionType || 'Percentage', // Default to "Percentage"
+    commissionType: product?.commissionType || 'COST', // Default to "Percentage"
     companyId: product?.companyId || '63f7c9e2d91b1b2a5e80b007',
     productCategoryId: product?.productCategoryId || '',
   });
@@ -29,6 +29,7 @@ const AddProductModal = ({ showAddProductModal, setShowAddProductModal, categori
 
   const fetchTags = (categoryId: string) => {
     const category = categories.find((cat: any) => cat.id === categoryId);
+    setNewProduct({ ...newProduct, productCategoryId: categoryId, category: category?.name });
     setTags(category ? category.tags || [] : []);
   };
 
@@ -162,8 +163,8 @@ const AddProductModal = ({ showAddProductModal, setShowAddProductModal, categori
               onChange={(e) => setNewProduct({ ...newProduct, commissionType: e.target.value })}
               className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="Percentage">COST</option>
-              <option value="Fixed">QUANTITY</option>
+              <option value="COST">COST</option>
+              <option value="QUANTITY">QUANTITY</option>
             </select>
           </div>
         </div>
@@ -177,9 +178,7 @@ const AddProductModal = ({ showAddProductModal, setShowAddProductModal, categori
               value={newProduct.productCategoryId}
               onChange={(e) => {
                 const selectedCategoryId = e.target.value;
-                const category = categories.find((cat: any) => cat.id === selectedCategoryId);
-                setNewProduct({ ...newProduct, productCategoryId: selectedCategoryId });
-                setNewProduct({ ...newProduct, category: category?.name });
+                
                 setSelectedCategory(selectedCategoryId);
               }}
               className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
