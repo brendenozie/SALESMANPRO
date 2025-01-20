@@ -175,18 +175,18 @@ const AddProductModal = ({ showAddProductModal, setShowAddProductModal, categori
               <div
                 key={tag.id}
                 className={`flex items-center px-3 py-1 rounded-full border ${
-                  selectedTags.includes(tag.id)
+                  selectedTags.includes(tag)
                     ? 'bg-blue-100 border-blue-400'
                     : 'bg-gray-100 border-gray-300'
                 } hover:shadow-sm transition-all`}
               >
                 <input
                   type="checkbox"
-                  checked={selectedTags.includes(tag.id)}
-                  onChange={() => handleTagChange(tag.id)}
+                  checked={selectedTags.includes(tag)}
+                  onChange={() => handleTagChange(tag)}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="ml-2 text-sm text-gray-800">{tag.name}</span>
+                <span className="ml-2 text-sm text-gray-800">{tag}</span>
               </div>
             ))}
           </div>
