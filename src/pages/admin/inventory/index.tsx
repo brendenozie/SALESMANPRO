@@ -58,10 +58,10 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
 
   return (
     <AdminLayout>
-      <div className="flex flex-col min-h-screen bg-gray-900 text-white w-full">
+      <div className="flex flex-col min-h-screen w-full">
         <UserNav />
         <div className="container mx-auto p-8">
-          <h1 className="text-4xl font-bold text-center mb-8">Admin Inventory</h1>
+          <h1 className="text-4xl font-bold text-center text-gray-900 mb-8">Admin Inventory</h1>
 
           <div className="bg-white text-gray-800 rounded-lg shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
@@ -77,63 +77,67 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {productsData.map((product) => (
                 <div
-                  key={product.id}
-                  className="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-gray-700 mb-2">
-                      {product.name}
-                    </h3>
-                    <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                      {product.category}
-                    </span>
-                  </div>
-                  <div className="text-gray-600">
-                    <p className="mb-1">Company Stock: <strong>{product.companyStock}</strong></p>
-                    <p className="mb-1">Agent Stock: <strong>{product.agentStock}</strong></p>
-                    <p className="mb-1">Sales: <strong>{product.sales}</strong></p>
+                    key={product.id}
+                    className="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-semibold text-gray-800 hover:text-gray-600 transition duration-300">
+                        {product.name}
+                      </h3>
+                      <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full uppercase font-medium tracking-wide">
+                        {product.category}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-gray-600 mb-4">
+                      <p className="text-sm">Company Stock: <strong className="font-semibold">{product.companyStock}</strong></p>
+                      <p className="text-sm">Agent Stock: <strong className="font-semibold">{product.agentStock}</strong></p>
+                      <p className="text-sm">Sales: <strong className="font-semibold">{product.sales}</strong></p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setShowEditProductModal(true);
+                        }}
+                        className="bg-yellow-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-yellow-600 transition duration-300 transform hover:scale-105"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setShowReturnProductModal(true);
+                        }}
+                        className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-600 transition duration-300 transform hover:scale-105"
+                      >
+                        Return
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setShowRestockProductModal(true);
+                        }}
+                        className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition duration-300 transform hover:scale-105"
+                      >
+                        Add 
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setShowAssignProductModal(true);
+                        }}
+                        className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-300 transform hover:scale-105"
+                      >
+                        Assign 
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex flex-row justify-evenly">
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowEditProductModal(true);
-                      }}
-                      className="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowReturnProductModal(true);
-                      }}
-                      className="mt-4 bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600"
-                    >
-                      Return
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowRestockProductModal(true);
-                      }}
-                      className="mt-4 bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
-                    >
-                      Add Stock
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowAssignProductModal(true);
-                      }}
-                      className="mt-4 bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
-                    >
-                      Assign Stock
-                    </button>
-                  </div>
-                </div>
               ))}
             </div>
           </div>

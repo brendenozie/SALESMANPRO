@@ -309,12 +309,12 @@ model AgentInventory {
 
 model CommissionRate {
   id             String         @id @default(auto()) @map("_id") @db.ObjectId
-  productId      String
+  productId      String         @unique @db.ObjectId
   salesAgentId   String? // Optional for agent-specific rates
   teamId         String? // Optional for team-specific rates
   commissionType CommissionType // Enum: FIXED or PERCENTAGE
   commissionRate Float
-  startDate      DateTime
+  startDate      DateTime       @default(now())
   endDate        DateTime?
   createdAt      DateTime       @default(now())
 }
