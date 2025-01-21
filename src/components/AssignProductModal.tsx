@@ -77,12 +77,12 @@ const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal,
   );
 
   return (
-    <Modal
+    <Modal className="bg-gray-50 rounded-lg shadow-md"
         isOpen={showAssignProductModal}
         onClose={() => setShowAssignProductModal(false)}
         title={`Assign Agent for ${product.name}`}
       >
-        <div className="space-y-6 p-4 bg-gray-50 rounded-lg shadow-md text-black">
+        <div className="space-y-6 p-4  text-black">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-4">
             {filteredAgents.map((agent: any) => (
               <div
@@ -110,7 +110,7 @@ const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal,
 
           {/* Section: Assignment Details */}
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-2 gap-4"> */}
               <div>
                 <label className="text-sm font-medium text-gray-700">Quantity to Assign</label>
                 <input
@@ -121,18 +121,6 @@ const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal,
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Commission Rate (%)</label>
-                <input
-                  type="number"
-                  placeholder="Enter commission rate"
-                  value={commissionRate}
-                  onChange={(e) => setCommissionRate(parseFloat(e.target.value) || 0)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Target Type</label>

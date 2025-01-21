@@ -36,7 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           category: product.productCategory?.name || "Uncategorized",
           companyStock,
           agentStock,
-          price: product.price,
+          costPrice: product.costPrice,
+          salesPrice: product.salesPrice,
         };
       });
 
