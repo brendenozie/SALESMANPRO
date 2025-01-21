@@ -14,7 +14,6 @@ const AssignCustomerProductModal = ({
   const [agents, setAgents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [assignQuantity, setAssignQuantity] = useState(0);
-  const [salesPrice, setSalesPrice] = useState<number | null>(null);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -68,7 +67,7 @@ const AssignCustomerProductModal = ({
           clientId: selectedClient, // Client's ID
           quantity: assignQuantity, // Quantity to assign
           inventoryItemId, // Inventory Item ID
-          salesPrice, // Optional sales price (if provided)
+          // salesPrice, // Optional sales price (if provided)
         }),
       });
 
@@ -139,7 +138,7 @@ const AssignCustomerProductModal = ({
         </div>
 
         {/* Sales Price */}
-        <div className="space-y-1">
+        {/* <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Sales Price (Optional)</label>
           <input
             type="number"
@@ -148,7 +147,7 @@ const AssignCustomerProductModal = ({
             onChange={(e) => setSalesPrice(parseFloat(e.target.value) || null)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
-        </div>
+        </div> */}
 
         {/* Assign Button */}
         <button

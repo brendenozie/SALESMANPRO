@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
 
-const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal, product, salesAgents }: any) => {
+const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal, product }: any) => {
   const [selectedAgent, setSelectedAgent] = useState("");
   const [agents, setAgents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [assignQuantity, setAssignQuantity] = useState(0);
-  const [commissionRate, setCommissionRate] = useState(0); // New field for commission rate
   const [targetType, setTargetType] = useState("QUANTITY"); // New field for target type
   const [targetValue, setTargetValue] = useState(0); // New field for target value
 
@@ -40,8 +39,8 @@ const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal,
         return;
       }
 
-      if (commissionRate < 0 || targetValue <= 0) {
-        alert("Commission rate and target value must be valid.");
+      if (targetValue < 0) {
+        alert("target value must be valid.");
         return;
       }
 
@@ -54,7 +53,8 @@ const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal,
           quantity: assignQuantity,
           action: "ASSIGN",
           damaged: 0,
-          commissionRate,
+          commissionRate: product.commissionRate,          
+          commissionType: product.commissionType,
           target: {
             type: targetType,
             value: targetValue,
@@ -153,9 +153,9 @@ const AssignProductModal = ({ showAssignProductModal, setShowAssignProductModal,
           <div>
             <button
               onClick={handleAssign}
-              disabled={!selectedAgent || assignQuantity <= 0 || commissionRate < 0 || targetValue <= 0}
+              disabled={!selectedAgent || assignQuantity <= 0 || targetValue < 0}
               className={`w-full py-2 px-4 rounded-lg ${
-                selectedAgent && assignQuantity > 0 && commissionRate >= 0 && targetValue > 0
+                selectedAgent && assignQuantity > 0 
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-gray-300 text-gray-600 cursor-not-allowed'
               }`}

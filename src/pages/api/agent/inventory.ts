@@ -67,7 +67,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         productName: item.inventoryItem.product?.name || "Unknown Product",
         totalAssignedStock: item.quantity,
         totalSold,
-        remainingStock: Math.max(item.quantity - totalSold, 0),
+        remainingStock: Math.max(item.quantity, 0),
       };
     });
 

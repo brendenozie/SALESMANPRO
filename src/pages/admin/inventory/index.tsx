@@ -4,6 +4,7 @@ import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
 import UserNav from "@/components/UserNav";
+import { float } from "aws-sdk/clients/cloudfront";
 import { useEffect, useState } from "react";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -17,6 +18,10 @@ type Product = {
   agentStock: number;
   companyStock: number;
   sales: number;
+  costPrice: float;
+  salesPrice: float;
+  commissionRate: float;
+  commissionType: float;
 };
 
 type Category = {
@@ -93,6 +98,8 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
                       <p className="text-sm">Company Stock: <strong className="font-semibold">{product.companyStock}</strong></p>
                       <p className="text-sm">Agent Stock: <strong className="font-semibold">{product.agentStock}</strong></p>
                       <p className="text-sm">Sales: <strong className="font-semibold">{product.sales}</strong></p>
+                      <p className="text-sm">Commission Type: <strong className="font-semibold">{product.commissionType}</strong></p>
+                      <p className="text-sm">Commission Rate: <strong className="font-semibold">{product.commissionRate}</strong></p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

@@ -3,13 +3,12 @@ import prisma, { client } from "@/server/db/prismadb";
 import { CommissionType, PrismaClient } from "@prisma/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { agentInventoryId, clientId, quantity, salesPrice } = req.body;
+  const { agentInventoryId, clientId, quantity } = req.body;
 
   // Enhanced validation
   if (!agentInventoryId || typeof agentInventoryId !== 'string' || 
       !clientId || typeof clientId !== 'string' || 
-      !quantity || quantity <= 0 || !Number.isInteger(quantity) || 
-      (salesPrice && typeof salesPrice !== 'number')) {
+      !quantity || quantity <= 0 || !Number.isInteger(quantity)) {
     return res.status(400).json({ error: "Invalid input data. Please verify all fields." });
   }
 
@@ -48,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       for (const pc of productCommissions) {
         const { commissionRate = 0, basedOn } = pc;
-        const finalPrice = salesPrice || product.salesPrice;
+        const finalPrice = product.salesPrice;
         const commissionEarned = basedOn === "COST" ? commissionRate * product.salesPrice * quantity : commissionRate * finalPrice * quantity;
 
         if (commissionEarned > 0) {

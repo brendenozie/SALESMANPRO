@@ -13,6 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
           },
           orders: true,
+          CommissionRate: true, // Include commission rate data
         },
       });
 
@@ -28,6 +29,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return sum + agentStockSum;
         }, 0);
 
+        // Extract commission details
+        const commissionRate = product.CommissionRate?.commissionRate || 0;
+        const commissionType = product.CommissionRate?.commissionType || "COST";
+
         return {
           id: product.id,
           name: product.name,
@@ -38,6 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           agentStock,
           costPrice: product.costPrice,
           salesPrice: product.salesPrice,
+          commissionRate,
+          commissionType,
         };
       });
 
