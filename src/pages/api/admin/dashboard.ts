@@ -3,141 +3,126 @@ import prisma from "@/server/db/prismadb";
 import { OrderStatus } from "@prisma/client";
 import { getSession } from 'next-auth/react';
 
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getSession({ req });
-
-  if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
   try {
-    // const companyId = session.user.companyId;
+    // Fetch required data in parallel
 
-    // Fetch new clients count
-    const newClients = await prisma.client.count({
-      where: {
-        // companyId: companyId,
-        createdAt: {
-          gte: new Date(new Date().setDate(new Date().getDate() - 30)),
+      const today = new Date();
+      const startOfDay = new Date(today.toISOString().split('T')[0] + 'T00:00:00.000Z');
+
+    const [
+      newClients,
+      lowStockInventory,
+      topAgentData,
+      communicationsToday,
+      completedOrders,
+      // salesData,
+      tasks,
+    ] = await Promise.all([
+      // Number of new clients today
+      prisma.client.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
+          },
         },
-      },
-    });
+      }),
 
-    // Fetch low stock items
-    const lowStock = await prisma.inventoryItem.count({
-      where: {
-        // companyId: companyId,
-        quantity: { lte: 10 }, // Example threshold
-      },
-    });
-
-    // Fetch top agent data
-    const topAgent = await prisma.salesAgent.findFirst({
-      // where: { companyId: companyId },
-      orderBy: {
-        orders: {
-          _count: 'desc',
+      // Low-stock inventory items
+      prisma.inventoryItem.count({
+        where: {
+          quantity: {
+            lte: 5, // Customize threshold as needed
+          },
         },
-      },
-      select: { id: true, name: true, orders: true },
-    });
+      }),
 
-    const topAgentSales = await prisma.order.aggregate({
-      where: {
-        salesAgentId: topAgent?.id,
-        // companyId: companyId,
-        status: 'COMPLETED',
-      },
-      _sum: { totalPrice: true },
-    });
-
-    // Fetch today's communications
-    const todayCommunications = await prisma.communication.count({
-      where: {
-        createdAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+      // Top-performing agent and their sales
+      prisma.salesAgent.findFirst({
+        select: {
+          name: true,
+          orders: {
+            select: {
+              totalPrice: true,
+            },
+          },
         },
-      },
-    });
-
-    // Fetch completed orders today
-    const completedToday = await prisma.order.count({
-      where: {
-        // companyId: companyId,
-        status: 'COMPLETED',
-        createdAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        orderBy: {
+          orders: {
+            _count: 'desc',
+          },
         },
-      },
-    });
+      }),
 
-    // Optional Sales Data
-    const todaySales = await prisma.order.aggregate({
-      where: {
-        // companyId: companyId,
-        status: 'COMPLETED',
-        createdAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+      // Number of communications today
+      prisma.communication.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
+          },
         },
+      }),
+
+      // Number of orders completed today
+      prisma.order.count({
+        where: {
+          status: 'COMPLETED',
+          updatedAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of the day
+          },
+        },
+      }),
+
+      // Sales data for the day, month, etc.
+      // prisma.$queryRaw`SELECT 
+      //   SUM("totalPrice") as "todaySales",
+      //   COUNT(CASE WHEN "status" = 'COMPLETED' THEN 1 END) as "leadsConverted"
+      // FROM "Order" WHERE "createdAt" >= ${new Date(new Date().setHours(0, 0, 0, 0))}`,
+
+      // Fetch tasks for the day
+      // prisma.task.findMany({
+      //   where: {
+      //     dueDate: new Date().toISOString().split('T')[0], // Today
+      //   },
+      // }),
+
+        prisma.task.findMany({
+          where: {
+            dueDate: startOfDay,
+          },
+        }),
+    ]);
+
+    // Aggregate and send data
+    res.status(200).json({
+      clientData: {
+        newClients,
       },
-      _sum: { totalPrice: true },
-    });
-
-    const monthlyTargetProgress = await prisma.target.aggregate({
-      where: {
-        // companyId: companyId,
-        status: 'ONGOING',
+      inventoryData: {
+        lowStock: lowStockInventory,
       },
-      _avg: { achievedValue: true },
-    });
-
-    const leadsConverted = await prisma.client.count({
-      // where: { companyId: companyId },
-    });
-
-    const demosConducted = await prisma.task.count({
-      where: {
-        taskName: 'Demo',
-        // user: { companyId: companyId },
+      agentData: {
+        topAgent: topAgentData?.name || '',
+        topAgentSales:
+          topAgentData?.orders.reduce((sum: any, order: { totalPrice: any; }) => sum + order.totalPrice, 0) || 0,
       },
-    });
-
-    const commissionEarned = await prisma.commission.aggregate({
-      where: {
-        // companyId: companyId,
-        status: 'COMPLETED',
+      communicationData: {
+        today: communicationsToday,
       },
-      _sum: { commissionEarned: true },
-    });
-
-    // Task Data
-    const tasks = await prisma.task.findMany({
-      // where: { user: { companyId: companyId } },
-      select: { id: true, taskName: true, dueDate: true, dueTime: true },
-    });
-
-    const response = {
-      clientData: { newClients },
-      inventoryData: { lowStock },
-      agentData: { topAgent: topAgent?.name, topAgentSales: topAgentSales._sum.totalPrice || 0 },
-      communicationData: { today: todayCommunications },
-      orderData: { completedToday },
+      orderData: {
+        completedToday: completedOrders,
+      },
       salesData: {
-        todaySales: todaySales._sum.totalPrice || 0,
-        monthlyTargetProgress: monthlyTargetProgress._avg.achievedValue || 0,
-        leadsConverted,
-        demosConducted,
-        commissionEarned: commissionEarned._sum.commissionEarned || 0,
+        todaySales: 10,//salesData[0]?.todaySales || 0,
+        leadsConverted: 10,//salesData[0]?.leadsConverted || 0,
       },
-      taskData: { tasks },
-      session,
-    };
-
-    console.log(response);
-
-    res.status(200).json(response);
+      taskData: {
+        tasks,
+      },
+    });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching dashboard data:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }

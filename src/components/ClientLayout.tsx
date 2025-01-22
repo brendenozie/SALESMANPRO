@@ -15,21 +15,20 @@ const UserLayout = ({ children }: PropsWithChildren) => {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
   const menuItems = [
-    { label: "Dashboard", href: "/dashboard2", icon: HomeIcon },
+    { label: "Dashboard", href: "/dashboard2", icon: HomeIcon },    
+    {
+      label: "Products",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Browse Catalog", href: "/sales/orders" },        
+        { label: "My Products", href: "/sales/products" },
+      ],      
+    },
     {
       label: "My Orders",
       icon: UsersIcon,
       subItems: [
         { label: "Order History", href: "/sales/orders" },
-        { label: "My Products", href: "/sales/products" },
-      ],
-    },
-    {
-      label: "Products",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Browse Catalog", href: "/sales/orders" },
-        { label: "Contacts", href: "/sales/products" },
       ],
     },
     { label: "Reports",

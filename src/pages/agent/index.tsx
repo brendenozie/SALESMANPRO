@@ -188,7 +188,67 @@ const Dash2 = (props:Props) => {
               </div>
 
               <div className="mt-6 bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-lg shadow-xl">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Ongoing Campaigns</h3>
+                <a
+                  href="/salescampaigns"
+                  className="py-2 px-5 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full shadow-lg hover:from-orange-600 hover:to-yellow-600 transition-transform transform hover:scale-105"
+                >
+                  View All
+                </a>
+              </div>
+
+              {/* Campaigns List */}
+              <div className="space-y-6">
+                {[
+                  {
+                    id: "campaign1",
+                    campaignName: "Holiday Sales Drive",
+                    campaignDesc: "Boost holiday sales by focusing on discounted products.",
+                    status: "Ongoing",
+                  },
+                  {
+                    id: "campaign2",
+                    campaignName: "Customer Retention Campaign",
+                    campaignDesc: "Follow up with existing customers for repeat sales.",
+                    status: "Ongoing",
+                  },
+                  {
+                    id: "campaign3",
+                    campaignName: "New Product Launch",
+                    campaignDesc: "Promote the latest product to drive initial sales.",
+                    status: "Ongoing",
+                  },
+                ].map((campaign, index) => (
+                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="block">
+                    <div
+                      className={`p-6 rounded-lg shadow-lg transform transition-transform hover:scale-105 dark:shadow-md ${{
+                        0: "bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800",
+                        1: "bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-600 dark:to-orange-700",
+                      }[index % 2]}`}
+                    >
+                      <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{campaign.campaignName}</h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{campaign.campaignDesc}</p>
+                      <button
+                        className={`w-full py-2 px-4 font-medium text-white rounded-lg shadow-md transition-colors ${{
+                          0: "bg-orange-500 hover:bg-orange-600",
+                          1: "bg-gray-900 hover:bg-gray-800",
+                        }[index % 2]}`}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              </div>
+
+            </div>
+            
+            {/* Right Sidebar */}
+            <div className="w-full lg:w-1/3 p-6 space-y-8 text-gray-800 bg-gradient-to-b from-white via-gray-50 to-gray-100 rounded-2xl shadow-xl dark:from-gray-800 dark:via-gray-700 dark:to-gray-900">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-extrabold text-gray-800">Today's Plan</h3>
                   <a
                     href="/tasks"
@@ -254,66 +314,7 @@ const Dash2 = (props:Props) => {
                     </div>
                   )}
                 </div>
-              </div>
-
-            </div>
-            
-            {/* Right Sidebar */}
-            <div className="w-full lg:w-1/3 p-6 space-y-8 text-gray-800 bg-gradient-to-b from-white via-gray-50 to-gray-100 rounded-2xl shadow-xl dark:from-gray-800 dark:via-gray-700 dark:to-gray-900">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Ongoing Campaigns</h3>
-                <a
-                  href="/salescampaigns"
-                  className="py-2 px-5 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full shadow-lg hover:from-orange-600 hover:to-yellow-600 transition-transform transform hover:scale-105"
-                >
-                  View All
-                </a>
-              </div>
-
-              {/* Campaigns List */}
-              <div className="space-y-6">
-                {[
-                  {
-                    id: "campaign1",
-                    campaignName: "Holiday Sales Drive",
-                    campaignDesc: "Boost holiday sales by focusing on discounted products.",
-                    status: "Ongoing",
-                  },
-                  {
-                    id: "campaign2",
-                    campaignName: "Customer Retention Campaign",
-                    campaignDesc: "Follow up with existing customers for repeat sales.",
-                    status: "Ongoing",
-                  },
-                  {
-                    id: "campaign3",
-                    campaignName: "New Product Launch",
-                    campaignDesc: "Promote the latest product to drive initial sales.",
-                    status: "Ongoing",
-                  },
-                ].map((campaign, index) => (
-                  <Link key={campaign.id} href={`/campaigns/${campaign.id}`} className="block">
-                    <div
-                      className={`p-6 rounded-lg shadow-lg transform transition-transform hover:scale-105 dark:shadow-md ${{
-                        0: "bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800",
-                        1: "bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-600 dark:to-orange-700",
-                      }[index % 2]}`}
-                    >
-                      <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{campaign.campaignName}</h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{campaign.campaignDesc}</p>
-                      <button
-                        className={`w-full py-2 px-4 font-medium text-white rounded-lg shadow-md transition-colors ${{
-                          0: "bg-orange-500 hover:bg-orange-600",
-                          1: "bg-gray-900 hover:bg-gray-800",
-                        }[index % 2]}`}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              
             </div>
           </div>
         </div>
