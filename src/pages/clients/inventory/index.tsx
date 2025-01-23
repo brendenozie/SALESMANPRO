@@ -1,66 +1,25 @@
 import AddProductModal from "@/components/AddProductModal";
-import AdminLayout from "@/components/AdminLayout";
-import AssignProductModal from "@/components/AssignProductModal";
 import ClientLayout from "@/components/ClientLayout";
-import RestockProductModal from "@/components/RestockProductModal";
-import ReturnProductModal from "@/components/ReturnProductModal";
 import UserNav from "@/components/UserNav";
-import { float } from "aws-sdk/clients/cloudfront";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: string;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: float;
-  salesPrice: float;
-  commissionRate: float;
-  commissionType: float;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
+  clientInventoryId: string;
+  productId: string;
+  productName: string;
+  quantityPurchased: number;
+  salesAgentId: string;
+  salesAgentName: string;
 };
 
 type Props = {
   productsData: Product[];
-  categoriesData: Category[];
-  agentsData: Agent[];
 };
 
-const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData = [] }: Props) => {
+const ClientInventoryPage = ({ productsData = [] }: Props) => {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
-  const [showAssignProductModal, setShowAssignProductModal] = useState(false);
-  const [showReturnProductModal, setShowReturnProductModal] = useState(false);
-  const [showRestockProductModal, setShowRestockProductModal] = useState(false);
-
-  const [showEditProductModal, setShowEditProductModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [stockAmount, setStockAmount] = useState(0);
 
   return (
     <ClientLayout>
@@ -76,76 +35,49 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
                 onClick={() => setShowAddProductModal(true)}
                 className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
               >
-                Add Product
+                Request Product
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {productsData.map((product) => (
                 <div
-                    key={product.id}
-                    className="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-2xl font-semibold text-gray-800 hover:text-gray-600 transition duration-300">
-                        {product.name}
-                      </h3>
-                      <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full uppercase font-medium tracking-wide">
-                        {product.category}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 text-gray-600 mb-4">
-                      <p className="text-sm">Company Stock: <strong className="font-semibold">{product.companyStock}</strong></p>
-                      <p className="text-sm">Agent Stock: <strong className="font-semibold">{product.agentStock}</strong></p>
-                      <p className="text-sm">Sales: <strong className="font-semibold">{product.sales}</strong></p>
-                      <p className="text-sm">Commission Type: <strong className="font-semibold">{product.commissionType}</strong></p>
-                      <p className="text-sm">Commission Rate: <strong className="font-semibold">{product.commissionRate}</strong></p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowEditProductModal(true);
-                        }}
-                        className="bg-yellow-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-yellow-600 transition duration-300 transform hover:scale-105"
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowReturnProductModal(true);
-                        }}
-                        className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-600 transition duration-300 transform hover:scale-105"
-                      >
-                        Return
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowRestockProductModal(true);
-                        }}
-                        className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition duration-300 transform hover:scale-105"
-                      >
-                        Add 
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowAssignProductModal(true);
-                        }}
-                        className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-300 transform hover:scale-105"
-                      >
-                        Assign 
-                      </button>
-                    </div>
+                  key={product.clientInventoryId}
+                  className="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-semibold text-gray-800 hover:text-gray-600 transition duration-300">
+                      {product.productName}
+                    </h3>
                   </div>
 
+                  <div className="space-y-2 text-gray-600 mb-4">
+                    <p className="text-sm">
+                      Quantity Purchased:{" "}
+                      <strong className="font-semibold">{product.quantityPurchased}</strong>
+                    </p>
+                    <p className="text-sm">
+                      Sales Agent:{" "}
+                      <strong className="font-semibold">{product.salesAgentName}</strong>
+                    </p>
+                  </div>
+
+                    {/* Edit/Delete Buttons */}
+                    <div className=" flex justify-end mt-2 space-x-2">
+                      
+                      <button
+                        className="px-2 py-1 bg-red-500 text-white rounded shadow hover:bg-red-700"
+                        onClick={() => {
+                          // setSelectedProduct(item.product);                       
+                          // setShowCustomerAssignProductModal(true);                          
+                          // setSelectedAgentInventoryId(item.agentInventoryId);
+                          // setSelectedInventoryItemId(item.inventoryItemId);
+                        }}
+                      >
+                        Restock Request
+                      </button>
+                    </div>
+                </div>
               ))}
             </div>
           </div>
@@ -154,40 +86,6 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
             <AddProductModal
               showAddProductModal={showAddProductModal}
               setShowAddProductModal={setShowAddProductModal}
-              categories={categoriesData}
-            />
-          )}
-
-          {showEditProductModal && selectedProduct && (
-            <AddProductModal
-              showAddProductModal={showEditProductModal}
-              setShowAddProductModal={setShowEditProductModal}
-              categories={categoriesData}
-              product={selectedProduct} // Pass the selected product for editing
-            />
-          )}
-          {showRestockProductModal && selectedProduct && (
-            <RestockProductModal
-              showRestockProductModal={showRestockProductModal}
-              setShowRestockProductModal={setShowRestockProductModal}
-              product={selectedProduct}
-            />
-          )}
-
-          {showAssignProductModal && selectedProduct && (
-            <AssignProductModal
-              showAssignProductModal={showAssignProductModal}
-              setShowAssignProductModal={setShowAssignProductModal}
-              product={selectedProduct}
-              agents={agentsData}
-            />
-          )}
-
-          {showReturnProductModal && selectedProduct && (
-            <ReturnProductModal
-              showReturnProductModal={showReturnProductModal}
-              setShowReturnProductModal={setShowReturnProductModal}
-              product={selectedProduct}
             />
           )}
         </div>
@@ -196,32 +94,36 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
   );
 };
 
-export default AdminInventoryPage;
+export default ClientInventoryPage;
 
-export const getServerSideProps = async () => {
+export const getServerSideProps = async ({ query }: { query: { clientId?: string } }) => {
+  // const { clientId } = query;
+
+  const clientId = "63f7c9e2d91b1b2a5e80b013";
+
   let productsData: Product[] = [];
-  let categoriesData: Category[] = [];
 
   try {
-    const productsResponse = await fetch(`${apiUrl}/admin/getAllProducts`);
-
-    if (productsResponse.ok) {
-      productsData = await productsResponse.json();
+    if (!clientId) {
+      throw new Error("Missing clientId");
     }
 
-    const categoriesResponse = await fetch(`${apiUrl}/admin/get-all-categories`);
-
-    if (categoriesResponse.ok) {
-      const categories = await categoriesResponse.json();
-      categoriesData = categories.results;
+    const response = await fetch(`${apiUrl}/clients/inventory?clientId=${clientId}`);
+    let ordersData : any;
+    if (response.ok) {
+      ordersData = await response.json();
+    } else {
+      throw new Error("Failed to fetch client inventory data.");
     }
 
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
+    productsData = ordersData.inventory;
+
+    if (!Array.isArray(ordersData)) {
+      throw new Error("Client inventory API response is not an array.");
     }
   } catch (error: any) {
-    console.error("Error fetching data:", error.message);
+    console.error("Error fetching client inventory:", error.message);
   }
 
-  return { props: { productsData, categoriesData } };
+  return { props: { productsData } };
 };

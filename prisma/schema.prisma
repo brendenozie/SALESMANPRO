@@ -100,12 +100,12 @@ model Product {
   updatedAt         DateTime         @updatedAt
   productCategoryId String?          @db.ObjectId
   productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
-  orders            Order[]
   inventoryItems    InventoryItem[]
   requests          Request[]        @relation("ProductRequests")
   commissions       Commission[]
   Target            Target[]
   CommissionRate    CommissionRate?
+  Order             Order[]
 }
 
 model Task {
@@ -138,29 +138,6 @@ model Client {
   AgentInventoryLog AgentInventoryLog[]
 }
 
-model Order {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
-  clientId     String       @db.ObjectId
-  client       Client       @relation(fields: [clientId], references: [id])
-  salesAgentId String?      @db.ObjectId
-  salesAgent   SalesAgent?  @relation(fields: [salesAgentId], references: [id])
-  productId    String       @db.ObjectId
-  product      Product      @relation(fields: [productId], references: [id])
-  status       OrderStatus  @default(PENDING)
-  quantity     Int
-  totalPrice   Float
-  commission   Float        @default(0.0)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  commissions  Commission[]
-}
-
-enum OrderStatus {
-  PENDING
-  COMPLETED
-  RECURRING
-}
-
 model Communication {
   id         String     @id @default(auto()) @map("_id") @db.ObjectId
   senderId   String     @db.ObjectId
@@ -180,7 +157,6 @@ model SalesAgent {
   companyId          String               @db.ObjectId
   company            Company              @relation(fields: [companyId], references: [id])
   clients            Client[]
-  orders             Order[]
   productRequests    Request[]
   role               String               @default("Agent")
   createdAt          DateTime             @default(now())
@@ -216,22 +192,6 @@ model User {
   requests        Request[]
   returns         Return[]
   Assignment      Assignment[]
-}
-
-model Request {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  productId     String     @db.ObjectId
-  product       Product    @relation(fields: [productId], references: [id], name: "ProductRequests")
-  requestedById String     @db.ObjectId
-  requestedBy   SalesAgent @relation(fields: [requestedById], references: [id])
-  quantity      Int
-  status        Status     @default(PENDING)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  companyId     String?    @db.ObjectId
-  company       Company?   @relation(fields: [companyId], references: [id])
-  ApprovedBy    User?      @relation(fields: [ApprovedById], references: [id])
-  ApprovedById  String?    @db.ObjectId
 }
 
 enum Status {
@@ -327,8 +287,6 @@ model Commission {
   salesAgent       SalesAgent       @relation(fields: [salesAgentId], references: [id])
   productId        String           @db.ObjectId
   product          Product          @relation(fields: [productId], references: [id])
-  orderId          String?          @db.ObjectId
-  order            Order?           @relation(fields: [orderId], references: [id])
   commissionRate   Float // Rate (percentage or fixed) based on criteria
   commissionEarned Float // Calculated based on the chosen criteria
   basedOn          CommissionType   @default(COST) // Define whether based on COST or QUANTITY
@@ -337,7 +295,6 @@ model Commission {
   status           CommissionStatus @default(PENDING)
 
   @@unique([salesAgentId, productId]) // Composite unique constraint
-  @@unique([salesAgentId, productId, orderId])
   @@index([salesAgentId, status])
 }
 
@@ -465,4 +422,48 @@ model EventLog {
   entityId  String
   message   String
   createdAt DateTime @default(now())
+}
+
+model Request {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  productId       String        @db.ObjectId
+  product         Product       @relation(fields: [productId], references: [id], name: "ProductRequests")
+  requestedById   String        @db.ObjectId // References either a Client or a SalesAgent
+  requestedByType RequesterType // Enum to indicate the type of requester
+  quantity        Int
+  status          Status        @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  salesAgentId    String?       @db.ObjectId // Optional, if a sales agent is involved
+  salesAgent      SalesAgent?   @relation(fields: [salesAgentId], references: [id])
+  companyId       String?       @db.ObjectId
+  company         Company?      @relation(fields: [companyId], references: [id])
+  ApprovedBy      User?         @relation(fields: [ApprovedById], references: [id])
+  ApprovedById    String?       @db.ObjectId
+}
+
+// Enum for requestedByType
+enum RequesterType {
+  CLIENT
+  SALES_AGENT
+}
+
+model Order {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  clientId   String      @db.ObjectId
+  client     Client      @relation(fields: [clientId], references: [id])
+  productId  String      @db.ObjectId
+  product    Product     @relation(fields: [productId], references: [id])
+  status     OrderStatus @default(PENDING)
+  quantity   Int
+  totalPrice Float
+  commission Float       @default(0.0)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  RECURRING
 }

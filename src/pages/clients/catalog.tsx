@@ -90,7 +90,7 @@ export const getServerSideProps = async () => {
   let categoriesData: Category[] = [];
 
   try {
-    const productsResponse = await fetch(`${apiUrl}/admin/getAllProducts`);
+    const productsResponse = await fetch(`${apiUrl}/clients/getAllProducts`);
 
     if (productsResponse.ok) {
       productsData = await productsResponse.json();
