@@ -1,5 +1,6 @@
 import AddProductModal from "@/components/AddProductModal";
 import ClientLayout from "@/components/ClientLayout";
+import ProductRequestModal from "@/components/ProductRequestModal";
 import UserNav from "@/components/UserNav";
 import { useState } from "react";
 
@@ -19,7 +20,12 @@ type Props = {
 };
 
 const ClientInventoryPage = ({ productsData = [] }: Props) => {
-  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  
+   const [showRequestCustomerProductModal, setShowRequestCustomerAssignProductModal] = useState(false);    
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [salesAgentId, setSelectedSalesAgentId] = useState<String>("");
+    const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
+  
 
   return (
     <ClientLayout>
@@ -31,12 +37,7 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
           <div className="bg-white text-gray-800 rounded-lg shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold">Products</h2>
-              <button
-                onClick={() => setShowAddProductModal(true)}
-                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-              >
-                Request Product
-              </button>
+              
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -66,15 +67,15 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
                     <div className=" flex justify-end mt-2 space-x-2">
                       
                       <button
-                        className="px-2 py-1 bg-red-500 text-white rounded shadow hover:bg-red-700"
+                        className="px-2 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-700"
                         onClick={() => {
-                          // setSelectedProduct(item.product);                       
-                          // setShowCustomerAssignProductModal(true);                          
-                          // setSelectedAgentInventoryId(item.agentInventoryId);
-                          // setSelectedInventoryItemId(item.inventoryItemId);
+                          setSelectedProduct(product);
+                          setShowRequestCustomerAssignProductModal(true);
+                          setSelectedSalesAgentId(product.salesAgentId);
+                          setSelectedInventoryItemId(product.clientInventoryId);
                         }}
                       >
-                        Restock Request
+                        Request Restock 
                       </button>
                     </div>
                 </div>
@@ -82,12 +83,18 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
             </div>
           </div>
 
-          {showAddProductModal && (
-            <AddProductModal
-              showAddProductModal={showAddProductModal}
-              setShowAddProductModal={setShowAddProductModal}
-            />
-          )}
+           {/* Assign Product TO Agent Modal Component && selectedProduct */}
+                {showRequestCustomerProductModal  && (
+                  <ProductRequestModal
+                    showRequestProductModal={showRequestCustomerProductModal}
+                    setShowRequestProductModal={setShowRequestCustomerAssignProductModal}
+                    product={selectedProduct}
+                    inventoryItemId={inventoryItemId}
+                    agentInventoryItemId={salesAgentId}
+                    clientId={"63f7c9e2d91b1b2a5e80b013"}
+                    salesAgentId={salesAgentId}
+                  />
+                )}
         </div>
       </div>
     </ClientLayout>
@@ -124,6 +131,8 @@ export const getServerSideProps = async ({ query }: { query: { clientId?: string
   } catch (error: any) {
     console.error("Error fetching client inventory:", error.message);
   }
+
+  console.log(productsData);
 
   return { props: { productsData } };
 };

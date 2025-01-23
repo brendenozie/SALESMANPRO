@@ -13,6 +13,7 @@ import UserLayout from "@/components/UserLayout";
 import UserNav from "@/components/AdminNav";
 import AssignCustomerProductModal from "@/components/AssignCustomerProductModal";
 import ReturnCustomerProductModal from "@/components/ReturnCustomerProductModal";
+import AgentProductRequestModal from "@/components/AgentProductRequestModal";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -84,6 +85,13 @@ const ProductsPage = ({ inventoryData }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+
+  const [showRequestCustomerProductModal, setShowRequestCustomerAssignProductModal] = useState(false);    
+      // const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+      const [salesAgentId, setSelectedSalesAgentId] = useState<String>("63f7c9e2d91b1b2a5e80b016");
+      // const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
+    
+  
 
   // Filtered Inventory
   const filteredInventory = Array.isArray(inventoryData)
@@ -180,9 +188,18 @@ const ProductsPage = ({ inventoryData }: Props) => {
                     <p className="text-sm text-gray-700">Assigned Stock: {item.totalAssignedStock}</p>
                     <p className="text-sm text-gray-700">Sold: {item.totalSold}</p>
                     <p className="text-sm text-gray-700">Remaining: {item.remainingStock}</p>
-
-                    {/* Edit/Delete Buttons */}
-                    <div className=" flex justify-end mt-2 space-x-2">
+                  <div className=" flex justify-end mt-2 space-x-2">
+                    <button
+                        className="px-2 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-700"
+                        onClick={() => {
+                          setSelectedProduct(item.product);
+                          setShowRequestCustomerAssignProductModal(true);
+                          setSelectedInventoryItemId(item.inventoryItemId);
+                        }}
+                      >
+                        Request Restock 
+                      </button>
+                    {/* Edit/Delete Buttons */}                    
                       <button
                         className="px-2 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-700"
                         onClick={() => {
@@ -231,6 +248,19 @@ const ProductsPage = ({ inventoryData }: Props) => {
             </div>
           </div>
         </div>
+
+         {/* Assign Product TO Agent Modal Component && selectedProduct */}
+                {showRequestCustomerProductModal  && (
+                  <AgentProductRequestModal
+                    showRequestProductModal={showRequestCustomerProductModal}
+                    setShowRequestProductModal={setShowRequestCustomerAssignProductModal}
+                    product={selectedProduct}
+                    inventoryItemId={inventoryItemId}
+                    agentInventoryItemId={salesAgentId}
+                    clientId={""}
+                    salesAgentId={salesAgentId}
+                  />
+                )}
                 
                 {/* Assign Product TO Agent Modal Component && selectedProduct */}
                 {showAssignCustomerProductModal  && (

@@ -18,16 +18,16 @@ Router.events.on("routeChangeComplete", progress.finish);
 Router.events.on("routeChangeError", progress.finish);
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
-  const { setCurrentColor, setCurrentMode, currentMode, activeMenu, currentColor, themeSettings, setThemeSettings } = useStateContext();
+  // const { setCurrentColor, setCurrentMode, currentMode, activeMenu, currentColor, themeSettings, setThemeSettings } = useStateContext();
 
-  useEffect(() => {
-    const currentThemeColor = localStorage.getItem('colorMode');
-    const currentThemeMode = localStorage.getItem('themeMode');
-    if (currentThemeColor && currentThemeMode) {
-      setCurrentColor(currentThemeColor);
-      setCurrentMode(currentThemeMode);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const currentThemeColor = localStorage.getItem('colorMode');
+  //   const currentThemeMode = localStorage.getItem('themeMode');
+  //   if (currentThemeColor && currentThemeMode) {
+  //     setCurrentColor(currentThemeColor);
+  //     setCurrentMode(currentThemeMode);
+  //   }
+  // }, []);
   
   return (
 

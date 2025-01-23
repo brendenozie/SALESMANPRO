@@ -10,10 +10,10 @@ import Wrapper from "../../components/wrapper/Wrapper"
 
 import "./App.css"
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
-import Header from "../../common/header/Header"
+import Header from "../../components/shop/header/Header"
 import Data from "../../components/Data"
 import Cart from "../../common/Cart/Cart"
-import Footer from "../../common/footer/Footer"
+import Footer from "../../components/shop/footer/Footer"
 import Sdata from "../../components/shops/Sdata"
 
 

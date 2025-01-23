@@ -1,6 +1,6 @@
 import UserNav from '@/components/AdminNav';
-import ClientLayout from '@/components/ClientLayout';
-import ProductRequestModal from '@/components/ProductRequestModal';
+import UserLayout from '@/components/UserLayout';
+import AgentProductRequestModal from '@/components/AgentProductRequestModal';
 import React, { useState } from 'react';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -57,7 +57,7 @@ const ProductsPage = ({ productsData = [], agentsData = [], categoriesData = [] 
       const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
 
   return (
-    <ClientLayout>
+    <UserLayout>
       <div className="flex flex-col min-h-screen bg-gray-900 text-white w-full">
         <UserNav />
         <div className="container mx-auto">
@@ -100,7 +100,7 @@ const ProductsPage = ({ productsData = [], agentsData = [], categoriesData = [] 
         </div>
         {/* Assign Product TO Agent Modal Component && selectedProduct */}
                 {showRequestCustomerProductModal  && (
-                  <ProductRequestModal
+                  <AgentProductRequestModal
                     showRequestProductModal={showRequestCustomerProductModal}
                     setShowRequestProductModal={setShowRequestCustomerAssignProductModal}
                     product={selectedProduct}
@@ -110,7 +110,7 @@ const ProductsPage = ({ productsData = [], agentsData = [], categoriesData = [] 
                   />
                 )}
         </div>
-        </ClientLayout>
+        </UserLayout>
   );
 };
 

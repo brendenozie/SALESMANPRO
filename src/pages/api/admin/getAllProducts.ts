@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               AgentInventory: true,
             },
           },
-          orders: true,
+          // orders: true,
           CommissionRate: true, // Include commission rate data
         },
       });

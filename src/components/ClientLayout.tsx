@@ -28,8 +28,8 @@ const UserLayout = ({ children }: PropsWithChildren) => {
       label: "My Orders",
       icon: UsersIcon,
       subItems: [
-        { label: "Order History", href: "/clients/orders" },
-        { label: "My Requests", href: "/clients/requests" },
+        { label: "Customer Order History", href: "/clients/orders" },
+        { label: "My Product Requests", href: "/clients/productrequests" },
       ],
     },
     { label: "Reports",

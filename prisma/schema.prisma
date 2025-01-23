@@ -448,22 +448,39 @@ enum RequesterType {
   SALES_AGENT
 }
 
+model Consumer {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
 model Order {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  clientId   String      @db.ObjectId
-  client     Client      @relation(fields: [clientId], references: [id])
-  productId  String      @db.ObjectId
-  product    Product     @relation(fields: [productId], references: [id])
-  status     OrderStatus @default(PENDING)
-  quantity   Int
-  totalPrice Float
-  commission Float       @default(0.0)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  clientId    String      @db.ObjectId
+  client      Client      @relation(fields: [clientId], references: [id])
+  productId   String      @db.ObjectId
+  product     Product     @relation(fields: [productId], references: [id])
+  consumerId  String      @db.ObjectId
+  consumer    Consumer    @relation(fields: [consumerId], references: [id])
+  quantity    Int
+  totalPrice  Float
+  orderSource OrderSource @default(WEBSITE) // ENUM: WEBSITE, IN_PERSON, etc.
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 enum OrderStatus {
   PENDING
   COMPLETED
   RECURRING
+}
+
+enum OrderSource {
+  WEBSITE
+  IN_PERSON
 }

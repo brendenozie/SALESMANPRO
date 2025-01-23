@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               AgentInventory: true,
             },
           },
-          orders: true,
+          // orders: true,
         },
       });
 
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           category: product.productCategory?.name || "Uncategorized",
           companyStock,
           agentStock,
-          price: product.price,
+          salesPrice: product.salesPrice,
         };
       });
 
