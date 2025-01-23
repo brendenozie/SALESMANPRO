@@ -17,7 +17,15 @@ const UserLayout = ({ children }: PropsWithChildren) => {
   const menuItems = [
     { label: "Dashboard", href: "/agent", icon: HomeIcon },
     {
-      label: "My Sales",
+      label: "Products",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Browse Catalog", href: "/agent/catalog" },
+        { label: "My Products", href: "/agent/inventory" },
+      ],
+    },
+    {
+      label: "Sales",
       icon: UsersIcon,
       subItems: [
         { label: "Orders", href: "/agent/orders" },
