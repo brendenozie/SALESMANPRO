@@ -17,12 +17,25 @@ const AdminLayout = ({ children }: PropsWithChildren) => {
     const menuItems = [
     { label: "Dashboard", href: "/admin", icon: HomeIcon },
     {
+      label: "Products",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Browse Catalog", href: "/admin/inventory" },
+      ],      
+    },
+    {
       label: "Sales",
       icon: UsersIcon,
       subItems: [
-        { label: "Orders", href: "/admin/orders" },
-        { label: "Products", href: "/admin/inventory" },
-        { label: "Sales Agents", href: "/admin/agents" },
+        { label: "Agent Order History", href: "/admin/orders" },
+        { label: "Client Order History", href: "/admin/orders" },
+      ],
+    },
+    {
+      label: "Sales Agents",
+      icon: ChartBarIcon,
+      subItems: [
+        { label: "Agents", href: "/admin/agents" },
       ],
     },
     {
@@ -30,10 +43,15 @@ const AdminLayout = ({ children }: PropsWithChildren) => {
       icon: ChartBarIcon,
       subItems: [
         { label: "Clients", href: "/admin/customers" },
-        // { label: "Orders", href: "/admin/orders" },
       ],
     },
-    { label: "Reports", href: "/admin/reports", icon: CalendarIcon },
+    { label: "Reports",
+          icon: CalendarIcon ,
+          subItems: [
+            { label: "Revenue Reports", href: "/admin/revenuereport" },
+            { label: "Target Progress", href: "/admin/targetprogress" },
+          ],
+        },
     { label: "Messages", href: "/admin/messages", icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: "/admin/settings", icon: Cog6ToothIcon },
     { label: "Help & Support", href: "/admin/helpsupport", icon: QuestionMarkCircleIcon },

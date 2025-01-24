@@ -105,7 +105,7 @@ model Product {
   commissions       Commission[]
   Target            Target[]
   CommissionRate    CommissionRate?
-  Order             Order[]
+  Order             CustomerOrder[]
 }
 
 model Task {
@@ -117,6 +117,7 @@ model Task {
   dueTime     String
   description String?
   icon        String?
+  status      String?
   createdAt   DateTime? @default(now())
   updatedAt   DateTime? @updatedAt
 }
@@ -130,7 +131,7 @@ model Client {
   company           Company             @relation(fields: [companyId], references: [id])
   salesAgentId      String?             @db.ObjectId
   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
-  orders            Order[]
+  orders            CustomerOrder[]
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   communications    Communication[]     @relation("CommunicationReceiver")
@@ -400,6 +401,7 @@ model AgentInventoryLog {
   id               String         @id @default(auto()) @map("_id") @db.ObjectId
   agentInventoryId String         @db.ObjectId
   agentInventory   AgentInventory @relation(fields: [agentInventoryId], references: [id])
+  totalPrice       Float
   action           String // e.g., "client-return", "company-return"
   clientId         String?        @db.ObjectId
   client           Client?        @relation(fields: [clientId], references: [id])
@@ -450,16 +452,16 @@ enum RequesterType {
 }
 
 model Consumer {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  email     String   @unique
+  email     String          @unique
   phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  orders    CustomerOrder[]
 }
 
-model Order {
+model CustomerOrder {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId
   clientId    String      @db.ObjectId
   client      Client      @relation(fields: [clientId], references: [id])

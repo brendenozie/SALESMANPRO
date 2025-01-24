@@ -442,6 +442,8 @@ export const getServerSideProps = async (
 
     const data = await res.json(); // Parse the response
 
+    console.log(data);
+    
       return {
       props: {
         clientData: data.clientData,
