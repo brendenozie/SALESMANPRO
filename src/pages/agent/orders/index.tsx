@@ -202,7 +202,7 @@ export default OrderSummaryPage;
 
 export const getServerSideProps = async () => {
   const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-  const response = await fetch(`${url}/agent/orders`);
+  const response = await fetch(`${url}/agent/orders?agentId=63f7c9e2d91b1b2a5e80b016`);
   const data = await response.json();
 
   const ordersData = {

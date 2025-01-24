@@ -1,58 +1,93 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from "next"; 
 import prisma from "@/server/db/prismadb";
+import { OrderStatus } from "@prisma/client";
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed. Use GET." });
-  }
+const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { page = 1, limit = 5, status = 'all', search = '', clientId } = req.query;
 
-  const { clientId } = req.query;
+  const currentPage = parseInt(page as string, 10) || 1;
+  const itemsPerPage = parseInt(limit as string, 10) || 5;
 
-  // Validate clientId
-  if (!clientId || typeof clientId !== "string") {
-    return res.status(400).json({ message: "Invalid or missing clientId." });
-  }
+  const skip = (currentPage - 1) * itemsPerPage;
+  const take = itemsPerPage;
 
   try {
-    // Fetch client inventory and related product data
-    const clientInventory = await prisma.clientInventory.findMany({
-      where: { clientId },
-      include: {
-        inventoryItem: {
-          include: {
-            product: true, // Include product details
-          },
+    const where: any = {
+      AND: [
+        clientId ? { clientId: clientId as string } : {},
+        status !== 'all' ? { status: status as OrderStatus } : {},
+        search ? { client: { name: { contains: search as string, mode: 'insensitive' } } } : {},
+      ],
+    };
+
+    const [orders, totalOrders] = await prisma.$transaction([
+      prisma.order.findMany({
+        where,
+        include: {
+          client: true,
+          product: true,
         },
-        salesAgent: true, // Include sales agent details
-      },
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    const totalRevenue = await prisma.order.aggregate({
+      _sum: { totalPrice: true },
+      where: { clientId: clientId as string },
     });
 
-    // Check if inventory exists
-    if (clientInventory.length === 0) {
-      return res.status(404).json({ message: "No inventory found for the given clientId." });
-    }
-
-    // Map client inventory to structure the response
-    const inventoryDetails = clientInventory.map((item) => ({
-      clientInventoryId: item.id,
-      productId: item.inventoryItem.productId,
-      productName: item.inventoryItem.product?.name || "Unknown Product",
-      quantityPurchased: item.quantity,
-      salesAgentId: item.salesAgent?.id || null,
-      salesAgentName: item.salesAgent?.name || "Unknown Sales Agent",
-    }));
-
-    // Respond with structured data
-    return res.status(200).json({
-      clientId,
-      inventory: inventoryDetails,
+    const pendingRevenue = await prisma.order.aggregate({
+      _sum: { totalPrice: true },
+      where: { status: 'PENDING', clientId: clientId as string },
     });
-  } catch (error: any) {
-    console.error("Error fetching client inventory:", error);
 
-    return res.status(500).json({
-      message: "An error occurred while fetching client inventory.",
-      error: error.message || "Unknown error",
+    const completedRevenue = await prisma.order.aggregate({
+      _sum: { totalPrice: true },
+      where: { status: 'COMPLETED', clientId: clientId as string },
     });
+
+    // Monthly revenue calculation
+    const ordersForMonthlyRevenue = await prisma.order.findMany({
+      select: { createdAt: true, totalPrice: true },
+      where: { clientId: clientId as string },
+    });
+
+    const monthlyRevenue = Array(12).fill(0);
+    
+    ordersForMonthlyRevenue.forEach((order) => {
+      const month = new Date(order.createdAt).getMonth();
+      monthlyRevenue[month] += order.totalPrice;
+    });
+
+    const allOrders = {
+      orders,
+      totalOrders,
+      totalPages: Math.ceil(totalOrders / itemsPerPage),
+      totalRevenue: totalRevenue._sum.totalPrice || 0,
+      pendingRevenue: pendingRevenue._sum.totalPrice || 0,
+      completedRevenue: completedRevenue._sum.totalPrice || 0,
+      monthlyRevenue,
+    };
+
+    console.log('Fetched orders for salesAgentId:', clientId, allOrders);
+
+    res.status(200).json(allOrders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+};
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  switch (req.method) {
+    case 'GET':
+      await getOrders(req, res);
+      break;
+    default:
+      res.setHeader('Allow', ['GET']);
+      res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

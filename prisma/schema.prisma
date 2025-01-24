@@ -431,6 +431,7 @@ model Request {
   requestedById   String        @db.ObjectId // References either a Client or a SalesAgent
   requestedByType RequesterType // Enum to indicate the type of requester
   quantity        Int
+  totalPrice      Float         @default(0)
   status          Status        @default(PENDING)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
