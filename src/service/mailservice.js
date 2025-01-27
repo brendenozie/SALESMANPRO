@@ -1,4 +1,6 @@
 // an email template that can be used with Nodemailer to send emails
+//uninterrapted change detect
+
 import { createTransport } from 'nodemailer';
 
 const HTML_TEMPLATE = (fname, lname, email, phone, company, message) => {
