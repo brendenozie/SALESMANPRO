@@ -21,16 +21,19 @@ const SlideCard = () => {
         {Sdata.map((value, index) => {
           return (
             <>
-              <div className='box d_flex top' key={index}>
-                <div className='left'>
-                  <h1>{value.title}</h1>
-                  <p>{value.desc}</p>
-                  <button className='btn-primary'>Visit Collections</button>
-                </div>
-                <div className='right'>
-                  <img src={value.cover} alt='' />
-                </div>
+              <div className="flex flex-col md:flex-row items-center justify-between bg-gray-100 p-6 rounded-lg shadow-md" key={index}>
+              <div className="md:w-1/2 text-center md:text-left">
+                <h1 className="text-2xl font-bold text-gray-800">{value.title}</h1>
+                <p className="text-gray-600 mt-2">{value.desc}</p>
+                <button className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition">
+                  Visit Collections
+                </button>
               </div>
+              <div className="md:w-1/2 flex justify-center mt-4 md:mt-0">
+                <img src={value.cover} alt={value.title} className="w-full max-w-xs md:max-w-md rounded-lg" />
+              </div>
+            </div>
+
             </>
           )
         })}
