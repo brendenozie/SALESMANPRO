@@ -20,36 +20,35 @@ const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
     };
 
     const [orders, totalOrders] = await prisma.$transaction([
-      prisma.order.findMany({
+      prisma.customerOrder.findMany({
         where,
         include: {
           client: true,
-          salesAgent: true,
           product: true,
         },
         skip,
         take,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.order.count({ where }),
+      prisma.customerOrder.count({ where }),
     ]);
 
-    const totalRevenue = await prisma.order.aggregate({
+    const totalRevenue = await prisma.customerOrder.aggregate({
       _sum: { totalPrice: true },
     });
 
-    const pendingRevenue = await prisma.order.aggregate({
+    const pendingRevenue = await prisma.customerOrder.aggregate({
       _sum: { totalPrice: true },
       where: { status: 'PENDING' },
     });
 
-    const completedRevenue = await prisma.order.aggregate({
+    const completedRevenue = await prisma.customerOrder.aggregate({
       _sum: { totalPrice: true },
       where: { status: 'COMPLETED' },
     });
 
     // Monthly revenue calculation
-    const ordersForMonthlyRevenue = await prisma.order.findMany({
+    const ordersForMonthlyRevenue = await prisma.customerOrder.findMany({
       select: { createdAt: true, totalPrice: true },
     });
 

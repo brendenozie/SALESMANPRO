@@ -16,7 +16,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     // Fetch new clients for the agent
     const newClients = await prisma.client.count({
       where: {
-        salesAgentId: salesAgentId,
+        salesAgentId,
         createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
       },
     });
@@ -29,10 +29,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
-    // Fetch agent's total sales and commissions
+    // Fetch agent's total sales (from agentInventoryLog through agentInventory)
     const todaySales = await prisma.agentInventoryLog.aggregate({
       where: {
-        salesAgentId,
+        agentInventory: {
+          salesAgentId,
+        },
         createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
       },
       _sum: { totalPrice: true },
@@ -50,7 +52,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const monthlyTarget = 50000;
     const monthlySales = await prisma.agentInventoryLog.aggregate({
       where: {
-        salesAgentId,
+        agentInventory: {
+          salesAgentId,
+        },
         createdAt: {
           gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
         },
@@ -60,8 +64,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const monthlyTargetProgress = ((monthlySales._sum.totalPrice || 0) / monthlyTarget) * 100;
 
-    // Count pending orders for the agent
-    const pendingOrders = await prisma.order.count({
+    // Count pending orders for the agent (ensure proper model usage)
+    const pendingOrders = await prisma.request.count({
       where: {
         salesAgentId,
         status: "PENDING",
@@ -77,48 +81,52 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
 
     // Fetch leads converted and demos conducted by the agent
-    const leadsConverted = await prisma.lead.count({
-      where: {
-        salesAgentId,
-        status: "CONVERTED",
-      },
-    });
-
-    const demosConducted = await prisma.demo.count({
-      where: {
-        salesAgentId,
-        date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      },
-    });
+    const leadsConverted = 0; // Replace with actual query if needed
+    const demosConducted = 0; // Replace with actual query if needed
 
     // Fetch pending tasks for the agent
     const tasks = await prisma.task.findMany({
       where: {
-        salesAgentId,
+        userId: salesAgentId,
         status: "PENDING",
       },
       orderBy: { dueDate: "asc" },
     });
 
     // Build the response
+    // const response = {
+    //   clientData: { newClients },
+    //   inventoryData: { lowStock },
+    //   orderData: { pendingOrders },
+    //   requestData: { pendingRequests },
+    //   salesData: {
+    //     todaySales: todaySales._sum.totalPrice || 0,
+    //     monthlyTargetProgress: monthlyTargetProgress || 0,
+    //     leadsConverted,
+    //     demosConducted,
+    //     commissionEarned: commissionEarned._sum.commissionEarned || 0,
+    //   },
+    //   taskData: { tasks },
+    // };
     const response = {
-      clientData: { newClients },
-      inventoryData: { lowStock },
-      orderData: { pendingOrders },
-      requestData: { pendingRequests },
-      salesData: {
-        todaySales: todaySales._sum.totalPrice || 0,
-        monthlyTargetProgress: monthlyTargetProgress || 0,
-        leadsConverted,
-        demosConducted,
-        commissionEarned: commissionEarned._sum.commissionEarned || 0,
-      },
-      taskData: { tasks },
-    };
+        clientData: { newClients: newClients || 0 },
+        inventoryData: { lowStock: lowStock || 0 },
+        orderData: { pendingOrders: pendingOrders || 0 },
+        requestData: { pendingRequests: pendingRequests || 0 },
+        salesData: {
+          todaySales: todaySales._sum?.totalPrice || 0,
+          monthlyTargetProgress: monthlyTargetProgress || 0,
+          leadsConverted: leadsConverted || 0,
+          demosConducted: demosConducted || 0,
+          commissionEarned: commissionEarned._sum?.commissionEarned || 0,
+        },
+        taskData: { tasks: tasks || [] },
+      };
+
 
     return res.status(200).json(response);
   } catch (error) {
-    console.error("Error fetching agent data:", error);
+    console.error("Error fetching agent data:", { error, query: req.query });
     return res.status(500).json({ error: "Internal server error" });
   }
 }
