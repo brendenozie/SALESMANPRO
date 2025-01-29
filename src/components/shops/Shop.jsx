@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+import { HeartIcon,StarIcon,PlusIcon,ArrowRightIcon } from "@heroicons/react/24/outline";
+
 const Shop = ({ addToCart, shopItems }) => {
   const data = [
     { cateImg: "./images/category/cat-1.png", cateName: "Apple" },
@@ -14,54 +16,77 @@ const Shop = ({ addToCart, shopItems }) => {
   const increment = () => setCount(count + 1);
 
   return (
-    <section className="bg-gray-100 py-8">
-      <div className="container mx-auto flex flex-wrap">
+    <section className="py-16 px-6 bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="container mx-auto flex flex-wrap lg:flex-nowrap gap-12">
         {/* Category Section */}
-        <div className="w-full md:w-1/4 p-4 bg-white shadow-lg rounded-lg">
-          <div className="text-xl font-semibold border-b pb-2 mb-4">Brands & Shops</div>
+        <div className="w-full lg:w-1/4 bg-white/30 backdrop-blur-lg shadow-lg rounded-2xl p-6 border border-white/40">
+          <h2 className="text-2xl font-bold text-gray-800 border-b pb-4 mb-6">Brands & Shops</h2>
           {data.map((value, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-gray-200 hover:bg-white rounded-lg transition">
-              <img src={value.cateImg} alt={value.cateName} className="w-10 h-10" />
-              <span className="text-lg font-medium">{value.cateName}</span>
+            <div
+              key={index}
+              className="flex items-center gap-4 p-4 mb-4 bg-white/40 backdrop-blur-lg rounded-xl shadow-md hover:shadow-xl transition-transform transform hover:scale-105 cursor-pointer"
+            >
+              <img
+                src={value.cateImg}
+                alt={value.cateName}
+                className="w-12 h-12 object-cover rounded-full border border-gray-300"
+              />
+              <span className="text-lg font-medium text-gray-700">{value.cateName}</span>
             </div>
           ))}
           <div className="text-center mt-6">
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">View All Brands</button>
+            <button className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center gap-2">
+              View All Brands <ArrowRightIcon className="h-8 w-4"/>
+            </button>
           </div>
         </div>
 
         {/* Products Section */}
-        <div className="w-full md:w-3/4 p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Mobile Phones</h2>
-            <div className="text-blue-500 cursor-pointer hover:underline flex items-center">
-              View all <i className="ml-2 fa-solid fa-caret-right"></i>
+        <div className="w-full lg:w-3/4 flex flex-col">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-extrabold text-gray-800">Featured Phones</h2>
+            <div className="text-blue-600 hover:underline cursor-pointer flex items-center gap-1">
+              View all <ArrowRightIcon className="h-8 w-4"/>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {shopItems.map((item, index) => (
-              <div key={index} className="bg-white shadow-lg rounded-lg p-4">
+              <div
+                key={index}
+                className="bg-white/30 backdrop-blur-lg shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-transform transform hover:scale-105 p-6 border border-white/40"
+              >
                 <div className="relative">
-                  <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded-lg">
+                  <span className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 text-sm font-semibold rounded-lg">
                     {item.discount}% Off
                   </span>
-                  <img src={item.cover} alt={item.name} className="w-full h-48 object-cover rounded-lg" />
-                  <div className="absolute top-2 right-2 flex flex-col items-center">
-                    <label className="text-sm bg-white px-2 py-1 rounded-lg shadow">{count}</label>
-                    <i className="fa-regular fa-heart text-red-500 cursor-pointer" onClick={increment}></i>
+                  <img
+                    src={item.cover}
+                    alt={item.name}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <div className="absolute top-3 right-3 flex flex-col items-center space-y-2">
+                    <label className="bg-white px-3 py-1 rounded-lg shadow-md text-sm font-medium">{count}</label>
+                    <HeartIcon
+                      className="h-8 w-8 text-red-500 text-lg cursor-pointer hover:scale-110 transform transition"
+                      onClick={increment}
+                    />
                   </div>
                 </div>
                 <div className="mt-4">
-                  <h3 className="text-lg font-semibold">{item.name}</h3>
-                  <div className="text-yellow-500 text-sm space-x-1">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.name}</h3>
+                  <div className="text-yellow-500 flex space-x-1 text-sm">
                     {[...Array(5)].map((_, i) => (
-                      <i key={i} className="fa fa-star"></i>
+                      <StarIcon key={i}  className="h-14 w-14"/>
                     ))}
                   </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <h4 className="text-lg font-bold">${item.price}.00</h4>
-                    <button onClick={() => addToCart(item)} className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600">
-                      <i className="fa fa-plus"></i>
+                  <div className="flex justify-between items-center mt-4">
+                    <h4 className="text-xl font-bold text-gray-800">${item.price}.00</h4>
+                    <button
+                      onClick={() => addToCart(item)}
+                      className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition duration-200"
+                    >
+                      <PlusIcon  className=" h-8 w-8"/>
                     </button>
                   </div>
                 </div>

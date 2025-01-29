@@ -6,37 +6,63 @@ import Tdata from "./Tdata";
 
 const TopCate = () => {
   const settings = {
-    dots: false,
+    dots: true,
     infinite: true,
-    slidesToShow: 3,
+    slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
+    autoplaySpeed: 3000,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: { slidesToShow: 3 },
+      },
+      {
+        breakpoint: 768,
+        settings: { slidesToShow: 2 },
+      },
+      {
+        breakpoint: 480,
+        settings: { slidesToShow: 1 },
+      },
+    ],
   };
 
   return (
-    <section className="py-8 bg-gray-100">
-      <div className="container mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-2">
-            <i className="fa-solid fa-border-all text-xl"></i>
-            <h2 className="text-2xl font-bold">Top Categories</h2>
+    <section className="py-12 bg-gradient-to-b from-gray-100 to-gray-200">
+      <div className="container mx-auto px-6">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-blue-500 rounded-full">
+              <i className="fa-solid fa-border-all text-white text-lg"></i>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800">Top Categories</h2>
           </div>
-          <div className="flex items-center space-x-2 text-blue-500 cursor-pointer hover:underline">
-            <span>View all</span>
-            <i className="fa-solid fa-caret-right"></i>
+          <div className="flex items-center space-x-2 text-blue-600 cursor-pointer hover:text-blue-800 transition">
+            <span className="text-lg font-medium">View All</span>
+            <i className="fa-solid fa-caret-right text-lg"></i>
           </div>
         </div>
         <Slider {...settings}>
           {Tdata.map((value, index) => (
             <div className="p-4" key={index}>
-              <div className="relative bg-white shadow-lg rounded-lg overflow-hidden">
-                <div className="absolute top-2 left-2 bg-blue-800 text-white text-xs px-3 py-1 rounded-full">
+              <div className="relative bg-white shadow-md rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
                   {value.para}
                 </div>
-                <div className="absolute top-2 right-2 bg-gray-200 text-black text-xs px-3 py-1 rounded-full">
+                <div className="absolute top-2 right-2 bg-gray-300 text-gray-800 text-xs px-3 py-1 rounded-full">
                   {value.desc}
                 </div>
-                <img src={value.cover} alt="" className="w-full h-48 object-cover" />
+                <img
+                  src={value.cover}
+                  alt="Category"
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-700 truncate">
+                    {value.title}
+                  </h3>
+                </div>
               </div>
             </div>
           ))}

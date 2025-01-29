@@ -2,33 +2,42 @@ import React, { useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { Bolt, Heart, Star, Plus, ArrowLeft, ArrowRight } from "lucide-react";
+import {
+  BoltIcon,
+  HeartIcon,
+  StarIcon,
+  PlusIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+} from "@heroicons/react/24/outline";
 
-const SampleNextArrow = (props) => {
-  const { onClick } = props;
-  return (
-    <div className="absolute top-1/2 right-0 transform -translate-y-1/2" onClick={onClick}>
-      <button className="bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700">
-        <ArrowRight size={20} />
-      </button>
-    </div>
-  );
-};
+const SampleNextArrow = ({ onClick }) => (
+  <button
+    className="absolute z-10 top-1/2 right-4 transform -translate-y-1/2 bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700"
+    onClick={onClick}
+  >
+    <ArrowRightIcon className="h-5 w-5" />
+  </button>
+);
 
-const SamplePrevArrow = (props) => {
-  const { onClick } = props;
-  return (
-    <div className="absolute top-1/2 left-0 transform -translate-y-1/2" onClick={onClick}>
-      <button className="bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700">
-        <ArrowLeft size={20} />
-      </button>
-    </div>
-  );
-};
+const SamplePrevArrow = ({ onClick }) => (
+  <button
+    className="absolute z-10 top-1/2 left-4 transform -translate-y-1/2 bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700"
+    onClick={onClick}
+  >
+    <ArrowLeftIcon className="h-5 w-5" />
+  </button>
+);
 
 const FlashCard = ({ productItems, addToCart }) => {
-  const [count, setCount] = useState(0);
-  const increment = () => setCount(count + 1);
+  const [likedItems, setLikedItems] = useState({});
+
+  const toggleLike = (id) => {
+    setLikedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   const settings = {
     dots: false,
@@ -38,34 +47,63 @@ const FlashCard = ({ productItems, addToCart }) => {
     slidesToScroll: 1,
     nextArrow: <SampleNextArrow />,
     prevArrow: <SamplePrevArrow />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: { slidesToShow: 3 },
+      },
+      {
+        breakpoint: 768,
+        settings: { slidesToShow: 2 },
+      },
+      {
+        breakpoint: 480,
+        settings: { slidesToShow: 1 },
+      },
+    ],
   };
 
   return (
-    <Slider {...settings} className="py-6">
-      {productItems.map((product, index) => (
-        <div key={index} className="p-4">
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+    <Slider {...settings} className="py-8">
+      {productItems.map((product) => (
+        <div key={product.id} className="p-4">
+          <div className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
             <div className="relative">
-              <span className="absolute top-2 left-2 bg-red-500 text-white text-sm px-2 py-1 rounded">
+              <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
                 {product.discount}% Off
               </span>
-              <img src={product.cover} alt={product.name} className="w-full h-40 object-cover" />
-              <div className="absolute top-2 right-2 flex flex-col items-center">
-                <span className="text-gray-600 text-sm">{count}</span>
-                <Heart className="text-red-500 cursor-pointer" onClick={increment} />
-              </div>
+              <img
+                src={product.cover}
+                alt={product.name}
+                className="w-full h-48 object-cover"
+              />
+              <button
+                onClick={() => toggleLike(product.id)}
+                className={`absolute top-2 right-2 p-2 rounded-full shadow-md transition ${
+                  likedItems[product.id] ? "bg-red-500 text-white" : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                <HeartIcon className="h-5 w-5" />
+              </button>
             </div>
             <div className="p-4 text-center">
-              <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
-              <div className="flex justify-center mt-2 text-yellow-500">
+              <h3 className="text-lg font-semibold text-gray-800 truncate">
+                {product.name}
+              </h3>
+              <div className="flex justify-center mt-2 space-x-1 text-yellow-500">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} />
+                  <StarIcon key={i} className="h-4 w-4" />
                 ))}
               </div>
               <div className="flex justify-between items-center mt-4">
-                <h4 className="text-xl font-bold text-gray-900">${product.price}.00</h4>
-                <button onClick={() => addToCart(product)} className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition">
-                  <Plus size={20} />
+                <span className="text-xl font-bold text-gray-900">
+                  ${product.price}.00
+                </span>
+                <button
+                  onClick={() => addToCart(product)}
+                  className="bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition"
+                >
+                  <PlusIcon className="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -80,9 +118,9 @@ const FlashDeals = ({ productItems, addToCart }) => {
   return (
     <section className="bg-gray-100 py-12">
       <div className="container mx-auto px-6">
-        <div className="flex items-center space-x-3">
-          <Bolt className="text-yellow-500" size={30} />
-          <h1 className="text-2xl font-bold text-gray-800">Flash Deals</h1>
+        <div className="flex items-center space-x-3 mb-6">
+          <BoltIcon className="text-yellow-500 h-8 w-8" />
+          <h1 className="text-3xl font-bold text-gray-800">Flash Deals</h1>
         </div>
         <FlashCard productItems={productItems} addToCart={addToCart} />
       </div>

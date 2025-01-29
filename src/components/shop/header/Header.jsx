@@ -1,96 +1,140 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import logo from "../../../assets/fit1.png";
+import {
+  ShoppingBagIcon
+} from "@heroicons/react/24/outline";
 
 const Header = ({ CartItem }) => {
-  const [MobileMenu, setMobileMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
-  window.addEventListener("scroll", function () {
-    const search = document.querySelector(".search");
-    if (search) {
-      search.classList.toggle("active", window.scrollY > 100);
-    }
-  });
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsSearchActive(window.scrollY > 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
-    <>
-      <section className="bg-[#0f3460] py-2 text-white">
-        <div className="container mx-auto flex justify-between items-center">
+    <header className="w-full">
+      {/* Top Bar */}
+      <section className="bg-gradient-to-r from-blue-800 to-blue-900 py-2 text-white text-sm">
+        <div className="container mx-auto flex justify-between items-center px-6">
           <div className="flex items-center space-x-6">
-            <i className="fa fa-phone"></i>
-            <label>+88012 3456 7894</label>
-            <i className="fa fa-envelope"></i>
-            <label>support@ui-lib.com</label>
+            <div className="flex items-center space-x-2">
+              <i className="fa fa-phone"></i>
+              <span>+88012 3456 7894</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <i className="fa fa-envelope"></i>
+              <span>support@ui-lib.com</span>
+            </div>
           </div>
           <div className="flex items-center space-x-6">
-            <label>Theme FAQ's</label>
-            <label>Need Help?</label>
-            <span>🏳️‍⚧️</span>
-            <label>EN</label>
-            <span>🏳️‍⚧️</span>
-            <label>USD</label>
-          </div>
-        </div>
-      </section>
-
-      <section className="search py-5">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="logo w-1/5">
-            <img src={logo} alt="logo" className="w-full" />
-          </div>
-
-          <div className="search-box flex items-center w-3/5 border-2 border-gray-200 rounded-full px-4">
-            <i className="fa fa-search text-gray-400"></i>
-            <input 
-              type="text" 
-              placeholder="Search and hit enter..." 
-              className="w-full px-4 py-2 focus:outline-none"
-            />
-            <span className="border-l-2 border-gray-200 px-4 text-gray-400">All Category</span>
-          </div>
-
-          <div className="icon flex items-center w-1/5 justify-end space-x-4">
-            <i className="fa fa-user icon-circle"></i>
-            <div className="cart relative">
-              <Link to="/cart">
-                <i className="fa fa-shopping-bag icon-circle"></i>
-                {CartItem.length > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                    {CartItem.length}
-                  </span>
-                )}
-              </Link>
+            <span className="hover:text-gray-300 cursor-pointer">FAQs</span>
+            <span className="hover:text-gray-300 cursor-pointer">Need Help?</span>
+            <div className="flex items-center space-x-2">
+              <span role="img" aria-label="language">🏳️‍⚧️</span>
+              <span className="hover:text-gray-300 cursor-pointer">EN</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span role="img" aria-label="currency">💲</span>
+              <span className="hover:text-gray-300 cursor-pointer">USD</span>
             </div>
           </div>
         </div>
       </section>
 
-      <header className="header bg-white shadow-md py-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="categories flex items-center bg-gray-100 px-4 py-2 rounded-md">
-            <i className="fa-solid fa-border-all text-xl mr-2"></i>
-            <h4 className="font-medium text-gray-700">Categories <i className="fa fa-chevron-down"></i></h4>
+      {/* Search Bar */}
+      <section
+        className={`search bg-gray-50 py-4 shadow-md sticky top-0 z-50 transition-all duration-300 ${
+          isSearchActive ? "shadow-lg" : ""
+        }`}
+      >
+        <div className="container mx-auto flex justify-between items-center px-6">
+          <div className="logo w-1/5">
+            <a href="/">
+              <img src={logo.src} alt="logo" className="w-32" loading="lazy" />
+            </a>
           </div>
 
-          <nav className="navlink flex items-center">
-            <ul 
-              className={`${MobileMenu ? "nav-links-MobileMenu" : "flex items-center space-x-8 capitalize"}`} 
-              onClick={() => setMobileMenu(false)}
-            >
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/pages">Pages</Link></li>
-              <li><Link to="/user">User Account</Link></li>
-              <li><Link to="/vendor">Vendor Account</Link></li>
-              <li><Link to="/track">Track My Order</Link></li>
-              <li><Link to="/contact">Contact</Link></li>
-            </ul>
+          <div className="relative flex items-center w-3/5">
+            <i className="fa fa-search absolute left-4 text-gray-400"></i>
+            <input
+              type="text"
+              placeholder="Search for products..."
+              className="w-full pl-12 pr-4 py-2 bg-white border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-700"
+            />
+            <span className="text-gray-500 ml-4 cursor-pointer hover:text-blue-600">
+              All Categories
+            </span>
+          </div>
 
-            <button className="toggle ml-4 text-xl" onClick={() => setMobileMenu(!MobileMenu)}>
-              {MobileMenu ? <i className="fas fa-times"></i> : <i className="fas fa-bars"></i>}
-            </button>
-          </nav>
+          <div className="icon flex items-center w-1/5 justify-end space-x-6">
+            <i className="fa fa-user text-xl text-gray-600 hover:text-blue-600 cursor-pointer"></i>
+            <div className="relative">
+              <ShoppingBagIcon className=" h-10 w-10 fa fa-shopping-bag text-xl text-gray-600 hover:text-blue-600 cursor-pointer"></ShoppingBagIcon>
+              {CartItem.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+                  {CartItem.length}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-      </header>
-    </>
+      </section>
+
+      {/* Main Navigation */}
+      <nav className="bg-white shadow-md py-4">
+        <div className="container mx-auto flex justify-between items-center px-6">
+          <button
+            className="categories flex items-center bg-gray-100 px-6 py-2 rounded-md cursor-pointer hover:bg-gray-200 transition duration-300"
+          >
+            <i className="fa fa-bars text-lg mr-3"></i>
+            <span className="font-medium">Categories</span>
+          </button>
+
+          <ul
+            className={`${
+              isMobileMenuOpen
+                ? "fixed top-0 left-0 w-full h-screen bg-white flex flex-col items-center justify-center space-y-8 z-50"
+                : "hidden md:flex space-x-8"
+            } text-gray-700 font-medium`}
+          >
+            <li className="hover:text-blue-600 transition duration-300">
+              <a href="/">Home</a>
+            </li>
+            <li className="hover:text-blue-600 transition duration-300">
+              <a href="/pages">Pages</a>
+            </li>
+            <li className="hover:text-blue-600 transition duration-300">
+              <a href="/user">User Account</a>
+            </li>
+            <li className="hover:text-blue-600 transition duration-300">
+              <a href="/vendor">Vendor Account</a>
+            </li>
+            <li className="hover:text-blue-600 transition duration-300">
+              <a href="/track">Track My Order</a>
+            </li>
+            <li className="hover:text-blue-600 transition duration-300">
+              <a href="/contact">Contact</a>
+            </li>
+          </ul>
+
+          <button
+            className="toggle md:hidden text-2xl text-gray-700"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <i className="fas fa-times"></i> : <i className="fas fa-bars"></i>}
+          </button>
+        </div>
+      </nav>
+    </header>
   );
 };
 

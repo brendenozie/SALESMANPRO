@@ -7,12 +7,9 @@ import Discount from "../../components/discount/Discount"
 import Shop from "../../components/shops/Shop"
 import Annocument from "../../components/annocument/Annocument"
 import Wrapper from "../../components/wrapper/Wrapper"
-
-import "./App.css"
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 import Header from "../../components/shop/header/Header"
 import Data from "../../components/Data"
-import Cart from "../../common/Cart/Cart"
 import Footer from "../../components/shop/footer/Footer"
 import Sdata from "../../components/shops/Sdata"
 
@@ -79,14 +76,14 @@ const Pages = () => {
   return (
     <>
       <Header CartItem={CartItem} />
-        <Home CartItem={CartItem} />
-        <FlashDeals productItems={productItems} addToCart={addToCart} />
-        <TopCate />
-        <NewArrivals />
-        <Discount />
-        <Shop shopItems={shopItems} addToCart={addToCart} />
-        <Annocument />
-        <Wrapper />
+      <Home CartItem={CartItem} />
+      <FlashDeals productItems={productItems} addToCart={addToCart} />
+      <TopCate />
+      <NewArrivals />
+      <Discount />
+      <Shop shopItems={shopItems} addToCart={addToCart} />
+      <Annocument />
+      <Wrapper />
       <Footer />
     </>
   )
