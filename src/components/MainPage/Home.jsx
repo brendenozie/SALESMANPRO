@@ -93,7 +93,7 @@ const Home = () => {
   };
 
   return (
-    <section className="py-16 px-6 mt-20 bg-gradient-to-br from-blue-100 to-indigo-300 text-gray-900">
+    <section className="py-16 px-6 bg-gradient-to-br from-blue-100 to-indigo-300 text-gray-900">
       <div className="flex flex-col md:flex-row gap-6">
         <button
           className="md:hidden bg-indigo-600 text-white px-4 py-2 rounded-lg mb-4"
@@ -126,7 +126,7 @@ const SlideCard = ({ slide }) => {
       animate="visible"
       className="relative flex flex-col md:flex-row items-center justify-center w-full 
                  bg-gradient-to-br from-[${slide.bgFrom || '#1e1e2e'}] to-[${slide.bgTo || '#151526'}] 
-                 text-white p-8 md:p-12 rounded-3xl shadow-2xl border border-white/10 overflow-hidden h-[650px]"
+                 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
     >
       {/* Floating Glassmorphism Effect */}
       <div className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-3xl"></div>
