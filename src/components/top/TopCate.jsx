@@ -29,7 +29,7 @@ const TopCate = () => {
   };
 
   return (
-    <section className="py-12 bg-gradient-to-b from-gray-100 to-gray-200">
+    <section className="py-12 bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-3">
@@ -38,25 +38,25 @@ const TopCate = () => {
             </div>
             <h2 className="text-3xl font-bold text-gray-800">Top Categories</h2>
           </div>
-          <div className="flex items-center space-x-2 text-blue-600 cursor-pointer hover:text-blue-800 transition">
-            <span className="text-lg font-medium">View All</span>
+          <button className="flex items-center space-x-2 text-blue-600 font-medium hover:text-blue-800 transition">
+            <span>View All</span>
             <i className="fa-solid fa-caret-right text-lg"></i>
-          </div>
+          </button>
         </div>
         <Slider {...settings}>
           {Tdata.map((value, index) => (
             <div className="p-4" key={index}>
               <div className="relative bg-white shadow-md rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
+                <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
                   {value.para}
-                </div>
-                <div className="absolute top-2 right-2 bg-gray-300 text-gray-800 text-xs px-3 py-1 rounded-full">
+                </span>
+                <span className="absolute top-2 right-2 bg-gray-300 text-gray-800 text-xs px-3 py-1 rounded-full">
                   {value.desc}
-                </div>
+                </span>
                 <img
                   src={value.cover}
                   alt="Category"
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-cover transition-transform hover:scale-105"
                 />
                 <div className="p-4">
                   <h3 className="text-lg font-semibold text-gray-700 truncate">

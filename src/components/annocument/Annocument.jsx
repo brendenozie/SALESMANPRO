@@ -2,29 +2,37 @@ import React from "react";
 
 const Annocument = () => {
   return (
-    <section className="bg-gradient-to-r from-blue-50 to-blue-100 py-16">
-      <div className="container mx-auto flex flex-col md:flex-row gap-8 items-center">
-        <div className="w-full md:w-1/3 h-[340px] relative">
+    <section className="bg-gradient-to-r from-blue-400 to-blue-600 py-16 px-8">
+      <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        {/* First Image Section */}
+        <div className="relative group overflow-hidden rounded-2xl shadow-lg h-[340px]">
           <img
             src="./images/banner-1.png"
             alt="Exclusive Offer"
-            className="w-full h-full object-cover rounded-2xl shadow-lg hover:scale-105 transform transition duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transform transition-transform duration-500"
           />
-          <div className="absolute bottom-4 left-4 bg-white bg-opacity-80 px-4 py-2 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold text-gray-800">Special Deals</h3>
-            <p className="text-gray-600 text-sm">Don’t miss out on our exclusive offers!</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:opacity-90 transition-opacity duration-300"></div>
+          <div className="absolute bottom-4 left-4 z-10">
+            <h3 className="text-white text-2xl font-bold">Special Deals</h3>
+            <p className="text-gray-200 text-sm mt-1">
+              Don’t miss out on our exclusive offers!
+            </p>
           </div>
         </div>
 
-        <div className="w-full md:w-2/3 h-[340px] relative">
+        {/* Second Image Section */}
+        <div className="relative group overflow-hidden rounded-2xl shadow-lg h-[340px]">
           <img
             src="./images/banner-2.png"
             alt="Limited Time"
-            className="w-full h-full object-cover rounded-2xl shadow-lg hover:scale-105 transform transition duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transform transition-transform duration-500"
           />
-          <div className="absolute bottom-4 left-4 bg-white bg-opacity-80 px-4 py-2 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold text-gray-800">Limited Time Offer</h3>
-            <p className="text-gray-600 text-sm">Hurry up! Grab your favorite items now!</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:opacity-90 transition-opacity duration-300"></div>
+          <div className="absolute bottom-4 left-4 z-10">
+            <h3 className="text-white text-2xl font-bold">Limited Time Offer</h3>
+            <p className="text-gray-200 text-sm mt-1">
+              Hurry up! Grab your favorite items now!
+            </p>
           </div>
         </div>
       </div>
