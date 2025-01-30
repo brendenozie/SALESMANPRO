@@ -55,11 +55,11 @@ const TopBar = () => (
       <div className="flex space-x-6">
         <span className="flex items-center space-x-2">
           <i className="fa fa-phone"></i>
-          <span>+88012 3456 7894</span>
+          <span>+254 706 448 146</span>
         </span>
         <span className="flex items-center space-x-2">
           <i className="fa fa-envelope"></i>
-          <span>support@ui-lib.com</span>
+          <span>support@salesmanpro.com</span>
         </span>
       </div>
       <div className="flex space-x-6">

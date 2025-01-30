@@ -26,7 +26,7 @@ const SidebarCategories = ({ showCategories, categories }) => {
       <div className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-3xl"></div>
 
       {/* Title Section */}
-      <h2 className="relative z-10 text-2xl font-extrabold mb-6 flex items-center space-x-3">
+      <h2 className="relative z-10 text-2xl font-extrabold text-gray-900 mb-6 flex items-center space-x-3">
         <span className="text-indigo-400">🔳</span> 
         <span>Categories</span>
       </h2>
@@ -39,7 +39,7 @@ const SidebarCategories = ({ showCategories, categories }) => {
             role="listitem"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center space-x-4 text-white hover:text-white cursor-pointer 
+            className="flex items-center space-x-4 text-gray-900 hover:text-white cursor-pointer 
                        transition-transform duration-300"
           >
             <CheckCircleIcon className="h-5 w-5 text-indigo-400" />
@@ -60,10 +60,9 @@ const slideVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
 };
 
-const    SliderComponent = ({ promoSlides, sliderSettings }) => (
+const SliderComponent = ({ promoSlides, sliderSettings }) => (
   <Slider {...sliderSettings}>
     {promoSlides.map((slide) => (
-      // <SlideCard key={slide.id} slide={slide} />
       <SlideCard key={slide.id} slide={slide} />
     ))}
   </Slider>
@@ -93,7 +92,7 @@ const Home = () => {
   };
 
   return (
-    <section className="py-16 px-6 bg-gradient-to-br from-blue-100 to-indigo-300 text-gray-900">
+    <section className="py-16 px-6 text-gray-900">
       <div className="flex flex-col md:flex-row gap-6">
         <button
           className="md:hidden bg-indigo-600 text-white px-4 py-2 rounded-lg mb-4"
@@ -102,7 +101,7 @@ const Home = () => {
           {showCategories ? "Hide Categories" : "Show Categories"}
         </button>
         <SidebarCategories showCategories={showCategories} categories={categories} />
-        <div className="w-full md:w-3/4">
+        <div className="w-full md:w-3/4 shadow-2xl rounded-3xl overflow-hidden">
           <SliderComponent promoSlides={promoSlides} sliderSettings={sliderSettings} />
         </div>
       </div>
@@ -124,7 +123,7 @@ const SlideCard = ({ slide }) => {
       variants={motionVariants}
       initial="hidden"
       animate="visible"
-      className="relative flex flex-col md:flex-row items-center justify-center w-full 
+      className="relative flex flex-col md:flex-row items-center justify-center w-full  
                  bg-gradient-to-br from-[${slide.bgFrom || '#1e1e2e'}] to-[${slide.bgTo || '#151526'}] 
                  text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
     >
@@ -133,10 +132,10 @@ const SlideCard = ({ slide }) => {
 
       {/* Left Content Section */}
       <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">
-        <motion.h2 variants={motionVariants} className="text-4xl md:text-5xl font-extrabold leading-tight drop-shadow-lg">
+        <motion.h2 variants={motionVariants} className="text-4xl md:text-5xl text-gray-900 font-extrabold leading-tight drop-shadow-lg">
           {slide.title}
         </motion.h2>
-        <motion.p variants={motionVariants} className="text-lg md:text-xl text-gray-100">
+        <motion.p variants={motionVariants} className="text-lg md:text-xl text-gray-900">
           {slide.description}
         </motion.p>
         <motion.button

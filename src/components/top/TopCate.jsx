@@ -29,7 +29,7 @@ const TopCate = () => {
   };
 
   return (
-    <section className="py-12 bg-gradient-to-b from-gray-50 to-gray-100">
+    <section className="py-12 ">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-3">

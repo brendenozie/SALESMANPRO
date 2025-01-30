@@ -3,7 +3,7 @@ import Ndata from "./Ndata";
 
 const NewArrivals = () => {
   return (
-    <section className="bg-gradient-to-b from-white to-gray-50 py-12">
+    <section className=" py-12">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-10">
           <div className="flex items-center space-x-3">

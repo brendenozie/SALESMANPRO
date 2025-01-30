@@ -16,7 +16,7 @@ const Shop = ({ addToCart, shopItems }) => {
   const increment = () => setCount(count + 1);
 
   return (
-    <section className="py-16 px-6 bg-gradient-to-br from-blue-50 to-blue-100">
+    <section className="py-16 px-6 ">
       <div className="container mx-auto flex flex-wrap lg:flex-nowrap gap-12">
         {/* Category Section */}
         <div className="w-full lg:w-1/4 bg-white/30 backdrop-blur-lg shadow-lg rounded-2xl p-6 border border-white/40">

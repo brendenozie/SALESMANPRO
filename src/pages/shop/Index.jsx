@@ -75,7 +75,7 @@ const Pages = () => {
   
   return (
     <>
-    <div className="container  bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="container  bg-gradient-to-br from-gray-50 to-gray-100 ">
       <Header CartItem={CartItem} />
       <Home CartItem={CartItem} />
       <FlashDeals productItems={productItems} addToCart={addToCart} />

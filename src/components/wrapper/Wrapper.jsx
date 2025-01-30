@@ -25,7 +25,7 @@ const Wrapper = () => {
   ];
 
   return (
-    <section className="bg-gradient-to-r from-blue-50 to-blue-100 py-16">
+    <section className="py-16">
       <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         {data.map((val, index) => (
           <div

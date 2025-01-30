@@ -116,7 +116,7 @@ const FlashCard = ({ productItems, addToCart }) => {
 
 const FlashDeals = ({ productItems, addToCart }) => {
   return (
-    <section className="bg-gray-50 py-12">
+    <section className=" py-12">
       <div className="container mx-auto px-6">
         <div className="flex items-center space-x-3 mb-6">
           <BoltIcon className="text-yellow-500 h-8 w-8" />

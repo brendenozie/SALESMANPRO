@@ -50,7 +50,7 @@ const Dcard = () => {
 
 const Discount = () => {
   return (
-    <section className=" bg-gradient-to-br from-blue-50 to-blue-100 py-14">
+    <section className=" ">
       <div className="container mx-auto px-8">
         <div className="flex justify-between items-center mb-10">
           <div className="flex items-center space-x-4">

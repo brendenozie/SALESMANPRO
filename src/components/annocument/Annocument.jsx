@@ -2,7 +2,7 @@ import React from "react";
 
 const Annocument = () => {
   return (
-    <section className=" bg-gradient-to-br from-blue-50 to-blue-100 py-16 px-8">
+    <section className=" py-16 px-8">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         {/* First Image Section */}
         <div className="relative group overflow-hidden rounded-2xl shadow-lg h-[340px]">
