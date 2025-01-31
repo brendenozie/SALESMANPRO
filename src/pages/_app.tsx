@@ -4,7 +4,7 @@ import type { AppProps } from "next/app";
 import { Router } from "next/router";
 import "../styles/globals.css";
 import { useEffect } from "react";
-import { useStateContext } from '../contexts/ContextProvider';
+import { ContextProvider  } from '../contexts/ContextProvider';
 
 const progress = new ProgressBar({
   size: 4,
@@ -33,7 +33,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 
     // className={currentMode === 'Dark' ? 'dark' : ''}
     <SessionProvider session={pageProps.session}>
-      <Component {...pageProps} />
+      <ContextProvider>
+        <Component {...pageProps} />
+      </ContextProvider>
     </SessionProvider>
     // {isClicked.cart && (<Cart />)}
   );
