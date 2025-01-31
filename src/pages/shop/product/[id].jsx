@@ -1,9 +1,94 @@
 import React, { useState } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import { PrismaClient } from '@prisma/client';
+import { useRouter } from 'next/router';
+import Header from "../../../components/shop/header/Header";
+import Footer from "../../../components/shop/footer/Footer";
 
-const ProductPage = () => {
+const prisma = new PrismaClient();
+
+export async function getServerSideProps(context) {
+  const { id } = context.params;
+  const product = await prisma.clientInventory.findUnique({
+    where: { id },
+    include: {
+      inventoryItem: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const similarProducts = await prisma.clientInventory.findMany({
+    where: {
+      inventoryItem: {
+        product: {
+          categoryId: product.inventoryItem.product.categoryId,
+        },
+      },
+      id: {
+        not: id,
+      },
+    },
+    include: {
+      inventoryItem: {
+        include: {
+          product: true,
+        },
+      },
+    },
+    take: 4, // Limit the number of similar products
+  });
+
+  // Convert Date objects to strings
+  const serializedProduct = {
+    ...product,
+    createdAt: product.createdAt.toISOString(),
+    updatedAt: product.updatedAt.toISOString(),
+    inventoryItem: {
+      ...product.inventoryItem,
+      createdAt: product.inventoryItem.createdAt.toISOString(),
+      updatedAt: product.inventoryItem.updatedAt.toISOString(),
+      product: {
+        ...product.inventoryItem.product,
+        createdAt: product.inventoryItem.product.createdAt.toISOString(),
+        updatedAt: product.inventoryItem.product.updatedAt.toISOString(),
+      },
+    },
+  };
+
+  const serializedSimilarProducts = similarProducts.map((similarProduct) => ({
+    ...similarProduct,
+    createdAt: similarProduct.createdAt.toISOString(),
+    updatedAt: similarProduct.updatedAt.toISOString(),
+    inventoryItem: {
+      ...similarProduct.inventoryItem,
+      createdAt: similarProduct.inventoryItem.createdAt.toISOString(),
+      updatedAt: similarProduct.inventoryItem.updatedAt.toISOString(),
+      product: {
+        ...similarProduct.inventoryItem.product,
+        createdAt: similarProduct.inventoryItem.product.createdAt.toISOString(),
+        updatedAt: similarProduct.inventoryItem.product.updatedAt.toISOString(),
+      },
+    },
+  }));
+
+  return {
+    props: { product: serializedProduct, similarProducts: serializedSimilarProducts },
+  };
+}
+
+const ProductPage = ({ product }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [CartItem, setCartItem] = useState([]);
 
   const images = [
     "/images/SlideCard/slide-1.png",
@@ -12,29 +97,33 @@ const ProductPage = () => {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
-      {/* Breadcrumb */}
-      <nav className="text-sm text-gray-500 px-6 py-4">
-        Electronics / Audio / Headphones / Shop Headphones by Type /{" "}
-        <span className="text-gray-900 font-semibold">Airpods Max</span>
-      </nav>
+    <>
+      <Header CartItem={CartItem}/>
+        <div className="bg-gray-50 min-h-screen p-6">
+          {/* Breadcrumb */}
+          <nav className="text-sm text-gray-500 px-6 py-4">
+            Electronics / Audio / Headphones / Shop Headphones by Type /{" "}
+            <span className="text-gray-900 font-semibold">Airpods Max</span>
+          </nav>
 
-      {/* Product Section */}
-      <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-8 flex flex-col lg:flex-row gap-12">
-        <ProductImages
-          images={images}
-          currentImageIndex={currentImageIndex}
-          setCurrentImageIndex={setCurrentImageIndex}
-        />
-        <ProductInfo quantity={quantity} setQuantity={setQuantity} />
-      </div>
+          {/* Product Section */}
+          <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-8 flex flex-col lg:flex-row gap-12">
+            <ProductImages
+              images={images}
+              currentImageIndex={currentImageIndex}
+              setCurrentImageIndex={setCurrentImageIndex}
+            />
+            <ProductInfo quantity={quantity} setQuantity={setQuantity} />
+          </div>
 
-      {/* Specifications */}
-      <ProductSpecifications />
+          {/* Specifications */}
+          <ProductSpecifications />
 
-      {/* Similar Items */}
-      <SimilarItems />
-    </div>
+          {/* Similar Items */}
+          <SimilarItems />
+        </div>
+      <Footer/>
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
-import { HeartIcon,StarIcon,PlusIcon,ArrowRightIcon } from "@heroicons/react/24/outline";
+import { HeartIcon,StarIcon,PlusIcon,ArrowRightIcon,ArrowRightCircleIcon } from "@heroicons/react/24/outline";
+
 
 const Shop = ({ addToCart, shopItems }) => {
   const data = [
@@ -45,9 +46,11 @@ const Shop = ({ addToCart, shopItems }) => {
         <div className="w-full lg:w-3/4 flex flex-col">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-extrabold text-gray-800">Featured Phones</h2>
-            <div className="text-blue-600 hover:underline cursor-pointer flex items-center gap-1">
-              View all <ArrowRightIcon className="h-8 w-4"/>
-            </div>
+           
+            <button className="flex items-center space-x-2 text-blue-600 font-medium hover:text-blue-800 transition">
+              <span className="text-lg">View All</span>
+              <ArrowRightCircleIcon className="w-6 h-6" />
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

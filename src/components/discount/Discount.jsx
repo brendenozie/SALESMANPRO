@@ -39,7 +39,7 @@ const Dcard = () => {
               {value.name}
             </h4>
             <span className="text-red-500 text-xl font-extrabold mt-2 block">
-              ${value.price}
+              {value.price}
             </span>
           </div>
         </div>

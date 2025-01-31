@@ -1,5 +1,9 @@
 import React from "react";
 import Ndata from "./Ndata";
+import {
+  GifIcon,
+  ArrowRightCircleIcon,
+} from "@heroicons/react/24/outline";
 
 const NewArrivals = () => {
   return (
@@ -16,7 +20,7 @@ const NewArrivals = () => {
           </div>
           <button className="flex items-center space-x-2 text-blue-600 font-medium hover:text-blue-800 transition">
             <span className="text-lg">View All</span>
-            <i className="fa-solid fa-caret-right text-lg"></i>
+            <ArrowRightCircleIcon className="w-6 h-6" />
           </button>
         </div>
 
