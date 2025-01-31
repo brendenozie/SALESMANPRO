@@ -44,7 +44,7 @@ const Pages = () => {
       try {
         const products = {};
         for (const category of categories) {
-          const response = await fetch(`/api/productsByCategory?categoryId=${category.id}`);
+          const response = await fetch(`/api/shop/productsByCategory?categoryId=${category.id}`);
           if (!response.ok) throw new Error(`Failed to fetch products for category ${category.name}.`);
           const data = await response.json();
           products[category.name] = data;
@@ -67,7 +67,7 @@ const Pages = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/productsByFlag?flag=${flag}`);
+        const response = await fetch(`/api/shop/productsByFlag?flag=${flag}`);
         if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
         const data = await response.json();
         setState(data);

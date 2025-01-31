@@ -57,12 +57,14 @@ model Notification {
 }
 
 model ProductCategory {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  image    String
-  status   String
-  tags     String[]
-  products Product[]
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  image      String
+  status     String
+  isFeatured Boolean   @default(false)
+  tags       String[]
+  brand      String[]
+  products   Product[]
 }
 
 model UsersCategory {
@@ -91,7 +93,9 @@ model Product {
   name              String
   description       String?
   category          String?
+  image             String?
   tags              String[]
+  brand             String[]
   costPrice         Float
   salesPrice        Float
   companyId         String           @db.ObjectId
@@ -374,7 +378,7 @@ model ClientInventory {
   agentInventory   AgentInventory       @relation(fields: [agentInventoryId], references: [id])
   salesAgentId     String               @db.ObjectId
   salesAgent       SalesAgent           @relation(fields: [salesAgentId], references: [id])
-  image            String
+  image            String?
   newName          String               @default("New Name")
   salesPrice       Float                @default(0)
   discount         Int?                 @default(0)
