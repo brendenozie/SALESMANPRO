@@ -374,7 +374,18 @@ model ClientInventory {
   agentInventory   AgentInventory       @relation(fields: [agentInventoryId], references: [id])
   salesAgentId     String               @db.ObjectId
   salesAgent       SalesAgent           @relation(fields: [salesAgentId], references: [id])
+  image            String
+  newName          String               @default("New Name")
+  salesPrice       Float                @default(0)
+  discount         Int?                 @default(0)
+  isOnOffer        Boolean              @default(false)
+  isFlashDeal      Boolean              @default(false)
+  isNewArrival     Boolean              @default(false)
+  isDiscounted     Boolean              @default(false)
+  isFeatured       Boolean              @default(false)
   quantity         Int
+  buyingPrice      Float // Price at which the client buys the product from the agent
+  sellingPrice     Float // Price at which the client sells the product to the consumer
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   logs             ClientInventoryLog[]
@@ -391,6 +402,7 @@ model ClientInventoryLog {
   salesAgent        SalesAgent      @relation(fields: [salesAgentId], references: [id])
   quantity          Int
   price             Float
+  priceType         String // "buying" or "selling"
   totalPrice        Float
   status            String //completed, pending
   damaged           Int             @default(0)

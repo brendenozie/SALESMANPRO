@@ -1,54 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
-// import { useStateContext } from "@/context/";
 
-const productsl = [
-  {
-    id: 1,
-    name: "Apple AirPods Max",
-    price: 549.0, // Numeric price
-    brand: "Apple",
-    image: "https://via.placeholder.com/200",
-    description: "High-fidelity audio with Active Noise Cancellation.",
-    popularity: 1,
-  },
-  {
-    id: 2,
-    name: "Sony WH-1000XM5",
-    price: 399.0,
-    brand: "Sony",
-    image: "https://via.placeholder.com/200",
-    description: "Industry-leading noise cancellation with adaptive sound control.",
-    popularity: 2,
-  },
-  {
-    id: 3,
-    name: "Bose 700",
-    price: 379.0,
-    brand: "Bose",
-    image: "https://via.placeholder.com/200",
-    description: "Unrivaled voice pickup and crisp, balanced sound.",
-    popularity: 3,
-  },
-  {
-    id: 4,
-    name: "Sennheiser Momentum 4",
-    price: 349.0,
-    brand: "Sennheiser",
-    image: "https://via.placeholder.com/200",
-    description: "Premium sound with adaptive noise cancellation.",
-    popularity: 4,
-  },
-  {
-    id: 5,
-    name: "Sony WH-1000XM4",
-    price: 349.0,
-    brand: "Sony",
-    image: "https://via.placeholder.com/200",
-    description: "Exceptional noise cancellation with up to 30 hours of battery life.",
-    popularity: 5,
-  },
-];
 const ProductList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
@@ -57,20 +9,20 @@ const ProductList = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [products, setProducts] = useState(productsl);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`https://api.example.com/products?page=${page}&limit=6`);
+        const response = await fetch(`/api/shop/products?page=${page}&limit=6`);
         if (!response.ok) throw new Error("Failed to fetch products.");
         const data = await response.json();
         setProducts(data.products);
         setTotalPages(data.totalPages);
       } catch (err) {
-        // setError(err.message);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -83,17 +35,17 @@ const ProductList = () => {
     return products
       .filter(
         (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          (selectedBrand === "" || product.brand === selectedBrand)
+          product.inventoryItem.product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          (selectedBrand === "" || product.inventoryItem.product.brand === selectedBrand)
       )
       .sort((a, b) => {
-        if (sortOption === "price-asc") return a.price - b.price;
-        if (sortOption === "price-desc") return b.price - a.price;
-        return a.popularity - b.popularity;
+        if (sortOption === "price-asc") return a.inventoryItem.sellingPrice - b.inventoryItem.sellingPrice;
+        if (sortOption === "price-desc") return b.inventoryItem.sellingPrice - a.inventoryItem.sellingPrice;
+        return a.inventoryItem.popularity - b.inventoryItem.popularity;
       });
   }, [searchTerm, selectedBrand, sortOption, products]);
 
-  const uniqueBrands = [...new Set(products.map((p) => p.brand))];
+  const uniqueBrands = [...new Set(products.map((p) => p.inventoryItem.product.brand))];
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-12 bg-white rounded-xl shadow-2xl">
@@ -132,12 +84,12 @@ const ProductCard = ({ product }) => (
   <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}
     className="bg-white shadow-xl p-6 rounded-2xl border border-gray-300 transition hover:shadow-2xl">
     <div className="w-full h-56 bg-gray-100 rounded-xl flex justify-center items-center overflow-hidden">
-      <img src={product.image} alt={product.name} className="h-full w-auto object-cover" />
+      <img src={product.inventoryItem.product.image} alt={product.inventoryItem.product.name} className="h-full w-auto object-cover" />
     </div>
-    <h3 className="text-lg font-semibold text-gray-900 mt-5">{product.name}</h3>
-    <p className="text-gray-600 text-sm">{product.description}</p>
+    <h3 className="text-lg font-semibold text-gray-900 mt-5">{product.inventoryItem.product.name}</h3>
+    <p className="text-gray-600 text-sm">{product.inventoryItem.product.description}</p>
     <div className="flex justify-between items-center mt-5">
-      <span className="text-lg font-bold text-blue-600">${product.price.toFixed(2)}</span>
+      <span className="text-lg font-bold text-blue-600">${product.sellingPrice.toFixed(2)}</span>
       <motion.button whileHover={{ scale: 1.1 }} className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500 transition shadow-lg">
         Add to Cart
       </motion.button>

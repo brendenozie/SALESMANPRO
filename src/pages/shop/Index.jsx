@@ -1,94 +1,124 @@
-import React, { useState } from "react";
-import Home from "../../components/MainPage/Home"
-import FlashDeals from "../../components/flashDeals/FlashDeals"
-import TopCate from "../../components/top/TopCate"
-import NewArrivals from "../../components/newarrivals/NewArrivals"
-import Discount from "../../components/discount/Discount"
-import Shop from "../../components/shops/Shop"
-import Annocument from "../../components/annocument/Annocument"
-import Wrapper from "../../components/wrapper/Wrapper"
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
-import Header from "../../components/shop/header/Header"
-import Data from "../../components/Data"
-import Footer from "../../components/shop/footer/Footer"
-import Sdata from "../../components/shops/Sdata"
-
+import React, { useState, useEffect } from "react";
+import Home from "../../components/MainPage/Home";
+import FlashDeals from "../../components/flashDeals/FlashDeals";
+import TopCate from "../../components/top/TopCate";
+import NewArrivals from "../../components/newarrivals/NewArrivals";
+import Discount from "../../components/discount/Discount";
+import Shop from "../../components/shops/Shop";
+import Annocument from "../../components/annocument/Annocument";
+import Wrapper from "../../components/wrapper/Wrapper";
+import Header from "../../components/shop/header/Header";
+import Footer from "../../components/shop/footer/Footer";
 
 const Pages = () => {
-   /*
-    step1 :  const { productItems } = Data 
-    lai pass garne using props
-    
-    Step 2 : item lai cart ma halne using useState
-    ==> CartItem lai pass garre using props from  <Cart CartItem={CartItem} /> ani import garrxa in cartItem ma
-   
-    Step 3 :  chai flashCard ma xa button ma
-  
-    Step 4 :  addToCart lai chai pass garne using props in pages and cart components
-    */
-  
-    //Step 1 :
-    const { productItems } = Data
-    const { shopItems } = Sdata
-  
-    //Step 2 :
-    const [CartItem, setCartItem] = useState([])
-  
-    //Step 4 :
-    const addToCart = (product) => {
-      // if hamro product alredy cart xa bhane  find garna help garxa
-      const productExit = CartItem.find((item) => item.id === product.id)
-      // if productExit chai alredy exit in cart then will run fun() => setCartItem
-      // ani inside => setCartItem will run => map() ani yo map() chai each cart ma
-      // gayara check garxa if item.id ra product.id chai match bhayo bhane
-      // productExit product chai display garxa
-      // ani increase  exits product QTY by 1
-      // if item and product doesnt match then will add new items
-      if (productExit) {
-        setCartItem(CartItem.map((item) => (item.id === product.id ? { ...productExit, qty: productExit.qty + 1 } : item)))
-      } else {
-        // but if the product doesnt exit in the cart that mean if card is empty
-        // then new product is added in cart  and its qty is initalize to 1
-        setCartItem([...CartItem, { ...product, qty: 1 }])
+  const [categories, setCategories] = useState([]);
+  const [productsByCategory, setProductsByCategory] = useState({});
+  const [offers, setOffers] = useState([]);
+  const [flashDeals, setFlashDeals] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [discounts, setDiscounts] = useState([]);
+  const [featured, setFeatured] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [CartItem, setCartItem] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) throw new Error("Failed to fetch categories.");
+        const data = await response.json();
+        setCategories(data);
+      } catch (err) {
+        setError(err.message);
       }
-    }
-  
-    // Stpe: 6
-    const decreaseQty = (product) => {
-      // if hamro product alredy cart xa bhane  find garna help garxa
-      const productExit = CartItem.find((item) => item.id === product.id)
-  
-      // if product is exit and its qty is 1 then we will run a fun  setCartItem
-      // inside  setCartItem we will run filter to check if item.id is match to product.id
-      // if the item.id is doesnt match to product.id then that items are display in cart
-      // else
-      if (productExit.qty === 1) {
-        setCartItem(CartItem.filter((item) => item.id !== product.id))
-      } else {
-        // if product is exit and qty  of that produt is not equal to 1
-        // then will run function call setCartItem
-        // inside setCartItem we will run map method
-        // this map() will check if item.id match to produt.id  then we have to desc the qty of product by 1
-        setCartItem(CartItem.map((item) => (item.id === product.id ? { ...productExit, qty: productExit.qty - 1 } : item)))
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProductsByCategory = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const products = {};
+        for (const category of categories) {
+          const response = await fetch(`/api/productsByCategory?categoryId=${category.id}`);
+          if (!response.ok) throw new Error(`Failed to fetch products for category ${category.name}.`);
+          const data = await response.json();
+          products[category.name] = data;
+        }
+        setProductsByCategory(products);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    if (categories.length > 0) {
+      fetchProductsByCategory();
     }
-  
+  }, [categories]);
+
+  useEffect(() => {
+    const fetchProductsByFlag = async (flag, setState) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/productsByFlag?flag=${flag}`);
+        if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
+        const data = await response.json();
+        setState(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductsByFlag("isOnOffer", setOffers);
+    fetchProductsByFlag("isFlashDeal", setFlashDeals);
+    fetchProductsByFlag("isNewArrival", setNewArrivals);
+    fetchProductsByFlag("isDiscounted", setDiscounts);
+    fetchProductsByFlag("isFeatured", setFeatured);
+  }, []);
+
+  const addToCart = (product) => {
+    const productExit = CartItem.find((item) => item.id === product.id);
+    if (productExit) {
+      setCartItem(CartItem.map((item) => (item.id === product.id ? { ...productExit, qty: productExit.qty + 1 } : item)));
+    } else {
+      setCartItem([...CartItem, { ...product, qty: 1 }]);
+    }
+  };
+
+  const decreaseQty = (product) => {
+    const productExit = CartItem.find((item) => item.id === product.id);
+    if (productExit.qty === 1) {
+      setCartItem(CartItem.filter((item) => item.id !== product.id));
+    } else {
+      setCartItem(CartItem.map((item) => (item.id === product.id ? { ...productExit, qty: productExit.qty - 1 } : item)));
+    }
+  };
+
   return (
     <>
-    <div className="container  bg-gradient-to-br from-gray-50 to-gray-100 ">
-      <Header CartItem={CartItem} />
-      <Home CartItem={CartItem} />
-      <FlashDeals productItems={productItems} addToCart={addToCart} />
-      <TopCate />
-      <NewArrivals />
-      <Discount />
-      <Shop shopItems={shopItems} addToCart={addToCart} />
-      <Annocument />
-      <Wrapper />
-      <Footer />
+      <div className="container bg-gradient-to-br from-gray-50 to-gray-100">
+        <Header CartItem={CartItem} />
+        <Home CartItem={CartItem} />
+        <FlashDeals productItems={flashDeals} addToCart={addToCart} />
+        <TopCate categories={categories} />
+        <NewArrivals productItems={newArrivals} addToCart={addToCart} />
+        <Discount productItems={discounts} addToCart={addToCart} />
+        <Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} />
+        <Annocument />
+        <Wrapper />
+        <Footer />
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Pages
+export default Pages;

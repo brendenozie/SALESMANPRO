@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import UserNav from "@/components/UserNav";
-import AdminLayout from "@/components/AdminLayout";
+import AdminLayout from "@/components/UserLayout";
 
 interface ProductRequest {
   requestId: string;
