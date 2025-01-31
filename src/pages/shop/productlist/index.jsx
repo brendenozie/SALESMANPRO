@@ -84,10 +84,10 @@ const ProductCard = ({ product }) => (
   <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}
     className="bg-white shadow-xl p-6 rounded-2xl border border-gray-300 transition hover:shadow-2xl">
     <div className="w-full h-56 bg-gray-100 rounded-xl flex justify-center items-center overflow-hidden">
-      <img src={product.inventoryItem.product.image} alt={product.inventoryItem.product.name} className="h-full w-auto object-cover" />
+      <img src={product.image} alt={product.newName} className="h-full w-auto object-cover" />
     </div>
-    <h3 className="text-lg font-semibold text-gray-900 mt-5">{product.inventoryItem.product.name}</h3>
-    <p className="text-gray-600 text-sm">{product.inventoryItem.product.description}</p>
+    <h3 className="text-lg font-semibold text-gray-900 mt-5">{product.newName}</h3>
+    <p className="text-gray-600 text-sm">{product.newDescription}</p>
     <div className="flex justify-between items-center mt-5">
       <span className="text-lg font-bold text-blue-600">${product.sellingPrice.toFixed(2)}</span>
       <motion.button whileHover={{ scale: 1.1 }} className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500 transition shadow-lg">

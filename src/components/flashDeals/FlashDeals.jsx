@@ -32,6 +32,10 @@ const SamplePrevArrow = ({ onClick }) => (
 );
 
 const FlashCard = ({ productItems, addToCart }) => {
+
+  console.log("1234567890");
+  console.log(productItems);
+  
   const [likedItems, setLikedItems] = useState({});
 
   const toggleLike = (id) => {
@@ -58,7 +62,7 @@ const FlashCard = ({ productItems, addToCart }) => {
 
   return (
     <Slider {...settings} className="py-8">
-      {productItems.map((product) => (
+      {productItems && productItems.map((product) => (
         <div key={product.id} className="p-4">
           <div className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
             <div className="relative group">
@@ -67,7 +71,7 @@ const FlashCard = ({ productItems, addToCart }) => {
               </span>
               <img
                 src={product.cover}
-                alt={product.name}
+                alt={product.newName}
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <button
@@ -96,7 +100,7 @@ const FlashCard = ({ productItems, addToCart }) => {
               </div>
               <div className="flex justify-between items-center mt-4">
                 <span className="text-xl font-bold text-gray-900">
-                  ${product.price}.00
+                  ${product.sellingPrice}
                 </span>
                 <button
                   onClick={() => addToCart(product)}

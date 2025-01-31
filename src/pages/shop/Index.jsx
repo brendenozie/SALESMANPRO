@@ -25,7 +25,7 @@ const Pages = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
+        const response = await fetch('/api/shop/categories');
         if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
         setCategories(data);
@@ -108,10 +108,10 @@ const Pages = () => {
       <div className="container bg-gradient-to-br from-gray-50 to-gray-100">
         <Header CartItem={CartItem} />
         <Home CartItem={CartItem} />
-        <FlashDeals productItems={flashDeals} addToCart={addToCart} />
+        <FlashDeals productItems={flashDeals.products} addToCart={addToCart} />
         <TopCate categories={categories} />
-        <NewArrivals productItems={newArrivals} addToCart={addToCart} />
-        <Discount productItems={discounts} addToCart={addToCart} />
+        <NewArrivals productItems={newArrivals.products} addToCart={addToCart} />
+        <Discount productItems={discounts.products} addToCart={addToCart} />
         <Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} />
         <Annocument />
         <Wrapper />

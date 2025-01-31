@@ -380,6 +380,7 @@ model ClientInventory {
   salesAgent       SalesAgent           @relation(fields: [salesAgentId], references: [id])
   image            String?
   newName          String               @default("New Name")
+  newDescription   String?
   salesPrice       Float                @default(0)
   discount         Int?                 @default(0)
   isOnOffer        Boolean              @default(false)
