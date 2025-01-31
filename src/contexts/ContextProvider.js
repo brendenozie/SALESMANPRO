@@ -1,7 +1,9 @@
 "use client"; // Ensures this code runs only on the client side in Next.js
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-
+import ProgressBar from "@badrap/bar-of-progress";
+import { SessionProvider } from "next-auth/react";
+import { Router } from "next/router";
 const StateContext = createContext();
 
 const initialState = {
@@ -11,23 +13,45 @@ const initialState = {
   notification: false,
 };
 
+const progress = new ProgressBar({
+  size: 4,
+  color: "orange",
+  className: "z-50",
+  delay: 80,
+});
+
+Router.events.on("routeChangeStart", progress.start);
+Router.events.on("routeChangeComplete", progress.finish);
+Router.events.on("routeChangeError", progress.finish);
+
 export const ContextProvider = ({ children }) => {
   const [screenSize, setScreenSize] = useState(undefined);
   const [currentColor, setCurrentColor] = useState("#03C9D7");
-  const [currentMode, setCurrentMode] = useState("Light");
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [themeSettings, setThemeSettings] = useState(false);
   const [activeMenu, setActiveMenu] = useState(true);
   const [isClicked, setIsClicked] = useState(initialState);
   const [cart, setCart] = useState([]);
-
-  // Load theme from localStorage (only on client side)
+  
+  // Ensure localStorage is only accessed on the client side
   useEffect(() => {
-    const savedMode = localStorage.getItem("themeMode");
-    const savedColor = localStorage.getItem("colorMode");
+    if (typeof window !== "undefined") {
+      const savedColor = localStorage.getItem("colorMode");
+      const savedMode = localStorage.getItem("themeMode");
+      const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    if (savedMode) setCurrentMode(savedMode);
-    if (savedColor) setCurrentColor(savedColor);
+      if (savedColor) setCurrentColor(savedColor);
+      if (savedMode) setIsDarkMode(savedMode === "Dark");
+      setCart(savedCart);
+    }
   }, []);
+
+  // Persist cart in localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart]);
 
   // Add product to cart
   const addToCart = (product) => {
@@ -47,10 +71,13 @@ export const ContextProvider = ({ children }) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
-  const setMode = (e) => {
-    setCurrentMode(e.target.value);
+  // Clear entire cart
+  const clearCart = () => setCart([]);
+
+  const setMode = (mode) => {
+    setIsDarkMode(mode === "Dark");
     if (typeof window !== "undefined") {
-      localStorage.setItem("themeMode", e.target.value);
+      localStorage.setItem("themeMode", mode);
     }
   };
 
@@ -69,8 +96,9 @@ export const ContextProvider = ({ children }) => {
       cart,
       addToCart,
       removeFromCart,
+      clearCart,
       currentColor,
-      currentMode,
+      isDarkMode,
       activeMenu,
       screenSize,
       setScreenSize,
@@ -80,16 +108,21 @@ export const ContextProvider = ({ children }) => {
       setIsClicked,
       setActiveMenu,
       setCurrentColor,
-      setCurrentMode,
+      setIsDarkMode,
       setMode,
       setColor,
       themeSettings,
       setThemeSettings,
     }),
-    [cart, currentColor, currentMode, activeMenu, screenSize, isClicked, themeSettings]
+    [cart, currentColor, isDarkMode, activeMenu, screenSize, isClicked, themeSettings]
   );
 
-  return <StateContext.Provider value={contextValue}>{children}</StateContext.Provider>;
+  return (
+    <SessionProvider>
+      <StateContext.Provider value={contextValue}>{children}</StateContext.Provider>
+    </SessionProvider>
+  );
 };
 
 export const useStateContext = () => useContext(StateContext);
+
