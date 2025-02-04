@@ -17,13 +17,13 @@ import {
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
 const CategoriesGrid = ({ categories }) => (
-  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 px-6 py-8">
+  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sm:gap-6 lg:gap-6 px-2 py-2 sm:px-6 sm:py-8 lg:px-6 lg:py-2">
     {categories.map(({ name, icon }, index) => (
       <motion.div
         key={index}
         whileHover={{ scale: 1.1, rotate: 1 }}
         whileTap={{ scale: 0.95 }}
-        className="bg-gradient-to-br from-yellow-400 to-yellow-500 dark:from-gray-700 dark:to-gray-900 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform hover-glow relative overflow-hidden"
+        className="bg-gradient-to-br from-yellow-400 to-yellow-500 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform hover-glow relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-2xl opacity-20"></div>
         <motion.div className="text-5xl mb-3 z-10 drop-shadow-md" whileHover={{ rotate: 10 }}>{icon}</motion.div>
@@ -60,17 +60,6 @@ const Home = () => {
     }
   }, []);
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    if (isDarkMode) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    }
-  };
-
   const categories = [
     { name: "Fashion", icon: "👗" },
     { name: "Electronics", icon: "📱" },
@@ -93,10 +82,6 @@ const Home = () => {
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-black dark:text-white px-6 py-12 relative">
-      {/* <button onClick={toggleTheme} className="absolute top-4 right-4 p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow-md hover:scale-105 transition">
-        {isDarkMode ? <SunIcon className="text-yellow-400" /> : <MoonIcon className="text-gray-800" />}
-      </button> */}
-
       <motion.div
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -128,7 +113,7 @@ const SlideCard = ({ slide }) => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.8 }}
-    className="relative flex flex-col md:flex-row items-center justify-center w-full bg-gradient-to-br from-yellow-300 to-yellow-600 dark:from-gray-700 dark:to-gray-900 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
+    className="relative flex flex-col md:flex-row items-center justify-center w-full bg-gradient-to-br from-yellow-300 to-yellow-600 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
   >
     <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-lg rounded-3xl"></div>
     <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">

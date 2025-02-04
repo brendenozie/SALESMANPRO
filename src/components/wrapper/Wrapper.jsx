@@ -27,13 +27,13 @@ const Wrapper = () => {
 
   return (
     <section className="py-16 bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100 dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white">
-      <div className="mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 px-8">
         {data.map((item, index) => (
           <div
             key={index}
             className="p-8 bg-gradient-to-br from-gray-300 to-gray-200 dark:from-gray-800 dark:to-gray-700 shadow-2xl rounded-3xl flex flex-col items-center text-center transition-transform transform hover:scale-105 hover:shadow-yellow-500/50 relative overflow-hidden border border-gray-400 dark:border-gray-600"
           >
-            <div className="w-20 h-20 flex items-center justify-center bg-yellow-500 text-white rounded-full mb-6 shadow-lg">
+            <div className="w-20 h-20 flex items-center justify-center bg-yellow-200 text-white rounded-full mb-6 shadow-lg">
               {item.icon}
             </div>
             <h3 className="text-2xl font-extrabold text-yellow-500 mb-3 drop-shadow-lg">
