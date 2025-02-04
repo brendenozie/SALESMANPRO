@@ -71,7 +71,8 @@ const Home = () => {
     { name: "Pets", icon: "🐾" },
     { name: "Baby Toys", icon: "🧸" },
     { name: "Groceries", icon: "🛒" },
-    { name: "Books", icon: "📚" }
+    { name: "Books", icon: "📚" },
+    { name: "View All", icon: "📚" }
   ];
 
   const promoSlides = [

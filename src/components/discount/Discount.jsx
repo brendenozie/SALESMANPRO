@@ -24,7 +24,7 @@ const Dcard = ({productItems, addToCart}) => {
   };
 
   return (
-    <Slider {...settings} className="py-8">
+    <Slider {...settings} >
       {productItems.map((value, index) => (
         <div key={index} className="px-4">
           <div className="relative group overflow-hidden rounded-xl shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
