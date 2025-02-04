@@ -112,7 +112,8 @@ const Pages = () => {
         {categories && <TopCate categories={categories} />}
         {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} />}
         {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} />}
-        {productsByCategory["Shop"] && <Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} />}
+        {/* productsByCategory["Shop"] &&  */}
+        {<Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} />}
         <Annocument />
         <Wrapper />
         <Footer />

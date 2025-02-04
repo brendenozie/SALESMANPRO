@@ -30,69 +30,71 @@ const Shop = ({ addToCart, shopItems }) => {
   };
 
   return (
-    <section className="py-16 px-6 bg-white dark:bg-gradient-to-b dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500 text-gray-900 dark:text-white">
-      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-12">
+    <section className="py-14 px-4 bg-gray-50 dark:bg-gradient-to-b dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white transition-colors duration-500">
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Category Section */}
-        <div className="bg-gray-100 dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 shadow-xl rounded-3xl p-6 border border-gray-300 dark:border-gray-600 transition-colors duration-500">
-          <h2 className="text-3xl font-bold text-yellow-500 dark:text-yellow-400 mb-6">Brands & Shops</h2>
+        <aside className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 border border-gray-200 dark:border-gray-600 transition-colors">
+          <h2 className="text-2xl font-bold text-yellow-500 dark:text-yellow-400 mb-4">Brands & Shops</h2>
           {categories.map((category, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 p-4 mb-4 bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-yellow-500/50 transition-transform transform hover:scale-105 cursor-pointer"
+              className="flex items-center gap-3 p-3 mb-3 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-yellow-400/50 transition-transform transform hover:scale-105 cursor-pointer"
             >
               <img
                 src={category.img}
                 alt={category.name}
-                className="w-14 h-14 object-cover rounded-full border-2 border-yellow-400"
+                className="w-12 h-12 object-cover rounded-full border border-yellow-400"
               />
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">{category.name}</span>
+              <span className="text-md font-medium text-gray-800 dark:text-white">
+                {category.name}
+              </span>
             </div>
           ))}
-          <div className="text-center mt-6">
-            <button className="px-6 py-3 bg-yellow-500 text-gray-900 rounded-xl shadow-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2">
-              View All Brands <ArrowRightIcon className="h-6 w-6" />
+          <div className="text-center mt-4">
+            <button className="px-5 py-2 bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition flex items-center justify-center gap-2">
+              View All <ArrowRightIcon className="h-5 w-5" />
             </button>
           </div>
-        </div>
+        </aside>
 
         {/* Products Section */}
-        <div className="lg:col-span-3">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-4xl font-extrabold text-yellow-500 dark:text-yellow-400">Featured Phones</h2>
-            <button className="flex items-center space-x-2 text-yellow-500 dark:text-yellow-400 font-semibold hover:text-yellow-600 dark:hover:text-yellow-300 transition">
-              <span className="text-lg">View All</span>
-              <ArrowRightCircleIcon className="w-7 h-7" />
+        <main className="lg:col-span-3">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-yellow-500 dark:text-yellow-400">Featured Phones</h2>
+            <button className="flex items-center gap-1 text-yellow-500 dark:text-yellow-400 font-medium hover:text-yellow-600 dark:hover:text-yellow-300 transition">
+              <span>View All</span>
+              <ArrowRightCircleIcon className="w-6 h-6" />
             </button>
           </div>
 
-          <Slider {...sliderSettings} className="py-8">
+          <Slider {...sliderSettings} className="py-6">
             {shopItems.map((item, index) => (
-              <div key={index} className="px-4">
-                <div className="relative group overflow-hidden rounded-xl shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-yellow-500/50">
+              <div key={index} className="px-3">
+                <div className="relative group overflow-hidden rounded-xl shadow-md transition-transform transform hover:scale-105 hover:shadow-yellow-400/50">
                   <img
                     src={item.cover}
                     alt={item.name}
-                    className="w-full h-[380px] object-cover rounded-xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+                    className="w-full h-72 object-cover rounded-xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/30 dark:from-black/90 dark:to-black/40 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="absolute top-4 left-4 bg-yellow-500 text-gray-900 text-sm px-3 py-1 rounded-md shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 group-hover:opacity-95 transition-opacity"></div>
+                  <div className="absolute top-3 left-3 bg-yellow-500 text-gray-900 text-xs px-2 py-1 rounded-md shadow-sm">
                     🔥 Limited Offer
                   </div>
 
-                  <div className="absolute bottom-6 left-6 right-6 bg-white/30 dark:bg-black/50 backdrop-blur-md p-6 rounded-lg shadow-lg transition-colors duration-500">
-                    <h4 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
+                  <div className="absolute bottom-4 left-4 right-4 bg-white/40 dark:bg-black/60 backdrop-blur-sm p-4 rounded-md shadow-md transition-colors">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                       {item.name}
                     </h4>
-                    <span className="text-yellow-500 dark:text-yellow-400 font-bold text-lg mt-2 inline-block">
+                    <span className="text-yellow-500 dark:text-yellow-400 font-bold text-md mt-1 inline-block">
                       ${item.price}.00
                     </span>
-                    <div className="flex justify-between items-center mt-4">
+                    <div className="flex justify-end mt-3">
                       <button
                         onClick={() => addToCart(item)}
-                        className="bg-yellow-500 text-gray-900 p-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
+                        className="bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md hover:bg-yellow-600 transition"
                       >
-                        <PlusIcon className="h-8 w-8" />
+                        <PlusIcon className="h-6 w-6" />
                       </button>
                     </div>
                   </div>
@@ -100,7 +102,7 @@ const Shop = ({ addToCart, shopItems }) => {
               </div>
             ))}
           </Slider>
-        </div>
+        </main>
       </div>
     </section>
   );

@@ -65,35 +65,46 @@ const TopCate = ({ categories }) => {
 
         <Slider {...settings}>
           {categories.map((value, index) => (
-            <div key={index} className="px-6">
-              <div className="relative group overflow-hidden rounded-xl shadow-xl transform transition-all duration-500 hover:scale-[1.05] hover:shadow-2xl">
-                <img
-                  src={value.cover}
-                  alt="Category"
-                  className="w-full h-[420px] object-cover rounded-xl transform transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-black/30 dark:from-white/90 dark:to-white/30 opacity-85 group-hover:opacity-100 transition-opacity"></div>
-
-                <div className="absolute inset-0 group-hover:bg-white/10 dark:group-hover:bg-black/10 group-hover:blur-xl transition-all duration-500"></div>
-
-                <div className="absolute bottom-6 left-6 right-6 bg-neutral-200 dark:bg-neutral-700 backdrop-blur-md p-6 rounded-lg shadow-lg transition-all duration-500 group-hover:bg-neutral-300 dark:group-hover:bg-neutral-600">
-                  {value.tags.map((tag, idx) => (
-                    <span key={idx} className="text-sm font-semibold text-black dark:text-white bg-yellow-400 px-4 py-1 mx-2 rounded-md shadow-md">
-                      {tag}
-                    </span>
-                  ))}
-                  <h3 className="text-2xl font-bold mt-3 text-black dark:text-white drop-shadow-lg">
-                    {value.name}
-                  </h3>
-                </div>
-              </div>
-            </div>
+            <CategoryCard value={value} index={index}/>
           ))}
         </Slider>
       </div>
     </section>
   );
 };
+
+function CategoryCard({ value, index }) {
+  return (
+    <div key={index} className="px-4 sm:px-6 md:px-8 lg:px-10">
+      <div className="relative group overflow-hidden rounded-2xl shadow-lg transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
+        <img
+          src={value.cover}
+          alt="Category"
+          className="w-full h-96 object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent dark:from-white/80 dark:to-transparent transition-opacity duration-500 group-hover:opacity-90"></div>
+
+        <div className="absolute inset-0 group-hover:bg-white/10 dark:group-hover:bg-black/10 backdrop-blur-md transition duration-500"></div>
+
+        <div className="absolute bottom-4 left-4 right-4 bg-white/70 dark:bg-black/70 backdrop-blur-lg p-4 rounded-xl shadow-md transition-colors duration-500 group-hover:bg-white/80 dark:group-hover:bg-black/80">
+          <div className="flex flex-wrap gap-2">
+            {value.tags.map((tag, idx) => (
+              <span
+                key={idx}
+                className="text-xs font-semibold text-gray-800 dark:text-gray-200 bg-yellow-400 px-3 py-1 rounded-full shadow-sm"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <h3 className="mt-3 text-xl font-bold text-gray-900 dark:text-white leading-tight">
+            {value.name}
+          </h3>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default TopCate;

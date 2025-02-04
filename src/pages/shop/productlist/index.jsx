@@ -132,8 +132,29 @@ const ProductGrid = ({ loading, products }) => (
     )}
   </div>
 );
-
 const ProductCard = ({ product }) => {
+  const router = useRouter();
+  return (
+    <motion.div
+      onClick={() => router.push(`/shop/product/${product.id}`)}
+      whileHover={{ scale: 1.05 }}
+      className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md cursor-pointer hover:shadow-xl transition"
+    >
+      <img src={product.image} alt={product.newName} className="h-40 w-full object-cover rounded-lg" />
+      <h3 className="mt-2 text-lg font-semibold">{product.newName}</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{product.newDescription}</p>
+      <div className="flex justify-between items-center mt-3">
+        <span className="text-xl font-bold text-yellow-500">${product.sellingPrice.toFixed(2)}</span>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          className="px-4 py-2 bg-yellow-500 text-white rounded-lg shadow-md"
+        >Add to Cart</motion.button>
+      </div>
+    </motion.div>
+  );
+};
+
+const ProductCardV1 = ({ product }) => {
 const router = useRouter();
 
   const handleProductClick = () => {

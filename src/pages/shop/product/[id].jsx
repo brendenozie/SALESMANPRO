@@ -102,8 +102,7 @@ const ProductPage = ({ product }) => {
         <div className="bg-gray-50 min-h-screen p-6">
           {/* Breadcrumb */}
           <nav className="text-sm text-gray-500 px-6 py-4">
-            Home / Products / {product.categoryId} / {product.name}
-            <span className="text-gray-900 font-semibold">Airpods Max</span>
+            Home / Products / {product.inventoryItem.product.category} / <span className="text-gray-900 font-semibold">{product.newName}</span>
           </nav>
 
           {/* Product Section */}
@@ -113,7 +112,7 @@ const ProductPage = ({ product }) => {
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
             />
-            <ProductInfo quantity={quantity} setQuantity={setQuantity} />
+            <ProductInfo quantity={quantity} setQuantity={setQuantity} product={product}/>
           </div>
 
           {/* Specifications */}
@@ -181,13 +180,13 @@ const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
 };
 
 // Product Information Section
-const ProductInfo = ({ quantity, setQuantity }) => (
+const ProductInfo = ({ quantity, setQuantity, product }) => (
   <div className="flex-1">
-    <h1 className="text-4xl font-bold text-gray-900 mb-3">Airpods Max</h1>
+    <h1 className="text-4xl font-bold text-gray-900 mb-3">{product.newName}</h1>
     <p className="text-gray-500 mb-4 leading-relaxed">
-      A perfect balance of exhilarating high-fidelity audio and the effortless magic of AirPods.
+      {product.newDescription}
     </p>
-    <p className="text-3xl font-semibold text-gray-900 mb-2">$549.00</p>
+    <p className="text-3xl font-semibold text-gray-900 mb-2">${product.sellingPrice}</p>
     <p className="text-sm text-gray-400 mb-6">Suggested payments with 6 months special financing</p>
 
     {/* Color Options */}
@@ -266,8 +265,8 @@ const productDetails = [
 // Product Specifications Section
 const ProductSpecifications = () => (
   <div className="max-w-7xl mx-auto px-6">
-    <h2 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">
-      Apple AirPods Max Specifications
+    <h2 className="text-2xl mt-6 font-extrabold text-gray-800 mb-6 text-center">
+      Specifications
     </h2>
     <div className="grid md:grid-cols-2 gap-8">
       <SpecificationCard title="General" details={generalDetails} />
@@ -333,7 +332,7 @@ const SimilarItems = () => {
             <div className="h-36 w-36 rounded-lg flex items-center justify-center overflow-hidden">
               <img
                 src={product.image}
-                alt={product.name}
+                alt={product.newNameame}
                 className="h-full w-full object-contain transition-transform duration-300 hover:scale-110"
               />
             </div>
