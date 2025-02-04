@@ -388,6 +388,8 @@ model ClientInventory {
   isNewArrival     Boolean              @default(false)
   isDiscounted     Boolean              @default(false)
   isFeatured       Boolean              @default(false)
+  startDealDate    DateTime?
+  endDealDate      DateTime?
   quantity         Int
   buyingPrice      Float // Price at which the client buys the product from the agent
   sellingPrice     Float // Price at which the client sells the product to the consumer

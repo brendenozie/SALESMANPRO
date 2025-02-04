@@ -118,20 +118,31 @@ const ProductGrid = ({ loading, products }) => (
       <ProductCard key={product.id} product={product} />
     ))}
     {loading && (
-      <div className="col-span-full flex justify-center mt-6">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        >
-          <ArrowPathIcon className="w-8 h-8 text-yellow-500 animate-spin" />
-        </motion.div>
+      <div>
+        <SkeletonCard />
+        <div className="col-span-full flex justify-center mt-6">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          >
+            <ArrowPathIcon className="w-8 h-8 text-yellow-500 animate-spin" />
+          </motion.div>
+        </div>
       </div>
     )}
   </div>
 );
 
-const ProductCard = ({ product }) => (
+const ProductCard = ({ product }) => {
+const router = useRouter();
+
+  const handleProductClick = () => {
+    router.push(`/shop/product/${product.id}`);
+  };
+
+return (
   <motion.div
+    onClick={handleProductClick}
     whileHover={{ scale: 1.05, boxShadow: "0px 15px 25px rgba(0, 0, 0, 0.15)" }}
     transition={{ duration: 0.3 }}
     className="relative bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-md p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-transform hover:-translate-y-1"
@@ -192,7 +203,7 @@ const ProductCard = ({ product }) => (
         </motion.button>
       </div>
   </motion.div>
-);
+)};
 
 export default ProductList;
 

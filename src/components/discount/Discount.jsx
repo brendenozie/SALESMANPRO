@@ -6,7 +6,8 @@ import Ddata from "./Ddata";
 import { GifIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 
-const Dcard = () => {
+const Dcard = ({productItems, addToCart}) => {
+  
   const settings = {
     dots: true,
     infinite: true,
@@ -24,13 +25,13 @@ const Dcard = () => {
 
   return (
     <Slider {...settings} className="py-8">
-      {Ddata.map((value, index) => (
+      {productItems.map((value, index) => (
         <div key={index} className="px-4">
           <div className="relative group overflow-hidden rounded-xl shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
             {/* Product Image */}
             <img
-              src={value.cover}
-              alt={value.name}
+              src={value.image}
+              alt={value.newName}
               className="w-full h-[380px] object-cover rounded-xl transform transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
             />
 
@@ -48,11 +49,11 @@ const Dcard = () => {
             {/* Text Box */}
             <div className="absolute bottom-6 left-6 right-6 bg-white/20 dark:bg-gray-800/40 backdrop-blur-md p-6 rounded-lg shadow-lg transition-all duration-500 group-hover:bg-white/30 dark:group-hover:bg-gray-700/40">
               <h4 className="text-xl font-semibold text-white dark:text-gray-100 truncate">
-                {value.name}
+                {value.newName}
               </h4>
               
               <div className="flex justify-between items-center mt-2">
-                  <span className="text-lg font-bold text-red-700">{value.price}</span>
+                  <span className="text-lg font-bold text-red-700">{value.sellingPrice}</span>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -71,7 +72,7 @@ const Dcard = () => {
   );
 };
 
-const Discount = () => {
+const Discount = ({productItems, addToCart}) => {  
   return (
     <section className="relative py-20 bg-white dark:bg-gradient-to-b dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500">
       <div className="container mx-auto px-8">
@@ -91,7 +92,7 @@ const Discount = () => {
             <ArrowRightCircleIcon className="w-7 h-7" />
           </button>
         </div>
-        <Dcard />
+        <Dcard productItems={productItems} addToCart={addToCart} />
       </div>
     </section>
   );

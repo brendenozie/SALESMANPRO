@@ -4,6 +4,7 @@ import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 
 const NewArrivals = ({productItems, addToCart}) => {
+  
   return (
     <section className="relative py-20 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500">
       <div className="container mx-auto px-6">
@@ -30,7 +31,7 @@ const NewArrivals = ({productItems, addToCart}) => {
 
         {/* Grid Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-          {Ndata.map((val, index) => (
+          {productItems.map((val, index) => (
             <div
               key={index}
               className="relative group overflow-hidden rounded-xl shadow-xl transform transition-transform duration-500 hover:scale-105 hover:shadow-2xl"
@@ -38,7 +39,7 @@ const NewArrivals = ({productItems, addToCart}) => {
               {/* Product Image */}
               <img
                 src={val.cover}
-                alt={`Product image of ${val.name}`}
+                alt={`Product image of ${val.newName}`}
                 className="w-full h-64 sm:h-72 md:h-80 lg:h-[420px] object-cover rounded-xl transform transition-transform duration-700 group-hover:scale-110"
               />
 
@@ -51,11 +52,11 @@ const NewArrivals = ({productItems, addToCart}) => {
               {/* Text Box */}
               <div className="absolute bottom-6 left-6 right-6 bg-white/30 dark:bg-black/40 backdrop-blur-lg p-6 rounded-lg shadow-lg transition-all duration-500">
                 <h4 className="text-xl font-semibold text-gray-900 dark:text-white drop-shadow-lg truncate">
-                  {val.name}
+                  {val.newName}
                 </h4>
                 
                 <div className="flex justify-between items-center mt-2">
-                  <span className="text-lg font-bold text-yellow-400">${val.price}</span>
+                  <span className="text-lg font-bold text-yellow-400">${val.sellingPrice}</span>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}

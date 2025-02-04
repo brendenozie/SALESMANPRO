@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import logo from "../../../assets/fit1.png";
+import logo from "../../../assets/shop.png";
 import {
   ShoppingBagIcon,
   Bars3Icon,
@@ -75,7 +75,7 @@ const TopBar = () => (
         </span>
         <span className="flex items-center space-x-2">
           <i className="fa fa-envelope"></i>
-          <span>support@salesmanpro.com</span>
+          <span>support@kapu.com</span>
         </span>
       </div>
       <div className="flex space-x-6">

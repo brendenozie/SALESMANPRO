@@ -108,11 +108,11 @@ const Pages = () => {
       <div className="container bg-gradient-to-br from-gray-50 to-gray-100">
         <Header CartItem={CartItem} />
         <Home CartItem={CartItem} />
-        <FlashDeals productItems={flashDeals.products} addToCart={addToCart} />
-        <TopCate categories={categories} />
-        <NewArrivals productItems={newArrivals.products} addToCart={addToCart} />
-        <Discount productItems={discounts.products} addToCart={addToCart} />
-        <Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} />
+        {flashDeals.products && <FlashDeals productItems={flashDeals.products} addToCart={addToCart} />}
+        {categories && <TopCate categories={categories} />}
+        {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} />}
+        {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} />}
+        {productsByCategory["Shop"] && <Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} />}
         <Annocument />
         <Wrapper />
         <Footer />
