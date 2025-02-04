@@ -105,7 +105,7 @@ const FlashCard = ({ productItems, addToCart }) => {
                     className="bg-yellow-400 text-black p-3 rounded-full shadow-lg hover:shadow-xl transition"
                     aria-label="Add to Cart"
                   >
-                    <PlusIcon className="h-5 w-5" />
+                    Add to cart
                   </motion.button>
                 </div>
               </div>

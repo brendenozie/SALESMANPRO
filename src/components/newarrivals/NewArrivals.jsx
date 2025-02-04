@@ -1,8 +1,9 @@
 import React from "react";
 import Ndata from "./Ndata";
 import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
 
-const NewArrivals = () => {
+const NewArrivals = ({productItems, addToCart}) => {
   return (
     <section className="relative py-20 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500">
       <div className="container mx-auto px-6">
@@ -42,7 +43,7 @@ const NewArrivals = () => {
               />
 
               {/* Overlay - Adjusted Opacity */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30 dark:from-black/80 dark:to-black/40 group-hover:opacity-90 transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/0 dark:from-black/80 dark:to-black/0 group-hover:opacity-90 transition-opacity"></div>
 
               {/* Simplified Glow Effect on Hover */}
               <div className="absolute inset-0 group-hover:bg-white/5 dark:group-hover:bg-black/10 transition-all duration-500"></div>
@@ -52,15 +53,20 @@ const NewArrivals = () => {
                 <h4 className="text-xl font-semibold text-gray-900 dark:text-white drop-shadow-lg truncate">
                   {val.name}
                 </h4>
-                <span className="text-yellow-400 font-bold text-lg mt-2 inline-block">
-                  ${val.price}
-                </span>
+                
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-lg font-bold text-yellow-400">${val.price}</span>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => addToCart(product)}
+                    className="bg-yellow-400 text-black p-3 rounded-full shadow-lg hover:shadow-xl transition"
+                    aria-label="Add to Cart"
+                  >
+                    Add to Cart
+                  </motion.button>
+                </div>
               </div>
-
-              {/* Add to Cart Button */}
-              <button className="absolute bottom-6 right-6 bg-yellow-400 text-black px-4 py-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                Add to Cart
-              </button>
             </div>
           ))}
         </div>

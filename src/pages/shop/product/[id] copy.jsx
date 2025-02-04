@@ -102,7 +102,7 @@ const ProductPage = ({ product }) => {
         <div className="bg-gray-50 min-h-screen p-6">
           {/* Breadcrumb */}
           <nav className="text-sm text-gray-500 px-6 py-4">
-            Home / Products / {product.categoryId} / {product.name}
+            Electronics / Audio / Headphones / Shop Headphones by Type /{" "}
             <span className="text-gray-900 font-semibold">Airpods Max</span>
           </nav>
 

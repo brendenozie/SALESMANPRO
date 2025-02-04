@@ -9,18 +9,18 @@ import { ArrowRightCircleIcon, ArrowLeftCircleIcon } from "@heroicons/react/24/o
 const CustomPrevArrow = (props) => (
   <button
     {...props}
-    className="absolute top-1/2 left-[-50px] transform -translate-y-1/2 bg-neutral-200 dark:bg-neutral-700 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
+    className="absolute top-1/2 left-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
   >
-    <ArrowLeftCircleIcon className="text-black dark:text-white text-xl" />
+    <ArrowLeftCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
   </button>
 );
 
 const CustomNextArrow = (props) => (
   <button
     {...props}
-    className="absolute top-1/2 right-[-50px] transform -translate-y-1/2 bg-neutral-200 dark:bg-neutral-700 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
+    className="absolute top-1/2 right-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
   >
-    <ArrowRightCircleIcon className="text-black dark:text-white text-xl" />
+    <ArrowRightCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
   </button>
 );
 

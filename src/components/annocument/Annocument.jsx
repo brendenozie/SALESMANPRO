@@ -11,7 +11,7 @@ const Annocument = () => {
             alt="Exclusive Offer"
             className="w-full h-full object-cover group-hover:scale-105 transform transition-transform duration-700 ease-out"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-yellow-600/40 via-transparent to-transparent group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-300/80 via-transparent to-transparent group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="absolute bottom-6 left-6 z-10">
             <h3 className="text-3xl font-extrabold text-yellow-500 drop-shadow-lg">
               Special Deals
@@ -29,7 +29,7 @@ const Annocument = () => {
             alt="Limited Time"
             className="w-full h-full object-cover group-hover:scale-105 transform transition-transform duration-700 ease-out"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-yellow-600/40 via-transparent to-transparent group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-300/80 via-transparent to-transparent group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="absolute bottom-6 left-6 z-10">
             <h3 className="text-3xl font-extrabold text-yellow-500 drop-shadow-lg">
               Limited Time Offer

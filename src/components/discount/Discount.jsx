@@ -4,6 +4,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Ddata from "./Ddata";
 import { GifIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
 
 const Dcard = () => {
   const settings = {
@@ -49,9 +50,19 @@ const Dcard = () => {
               <h4 className="text-xl font-semibold text-white dark:text-gray-100 truncate">
                 {value.name}
               </h4>
-              <span className="text-red-400 dark:text-red-300 font-bold text-lg mt-2 inline-block">
-                {value.price}
-              </span>
+              
+              <div className="flex justify-between items-center mt-2">
+                  <span className="text-lg font-bold text-red-700">{value.price}</span>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => addToCart(product)}
+                    className="bg-red-700 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition"
+                    aria-label="Add to Cart"
+                  >
+                    Add to Cart
+                  </motion.button>
+                </div>
             </div>
           </div>
         </div>
@@ -67,15 +78,15 @@ const Discount = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-12">
           <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 bg-red-600 flex items-center justify-center rounded-full shadow-lg animate-pulse">
+            <div className="w-14 h-14 bg-red-700 flex items-center justify-center rounded-full shadow-lg animate-pulse">
               <GifIcon className="text-white w-8 h-8" />
             </div>
             <h2 className="text-5xl font-extrabold text-black dark:text-white tracking-wide">
-              <span className="text-red-500 dark:text-red-400">Big</span>{" "}
+              <span className="text-red-700 dark:text-red-400">Big</span>{" "}
               Discounts
             </h2>
           </div>
-          <button className="text-red-500 dark:text-red-300 text-lg font-medium hover:text-red-400 dark:hover:text-red-200 transition flex items-center space-x-2">
+          <button className="text-red-700 dark:text-red-300 text-lg font-medium hover:text-red-400 dark:hover:text-red-200 transition flex items-center space-x-2">
             <span>View All</span>
             <ArrowRightCircleIcon className="w-7 h-7" />
           </button>
