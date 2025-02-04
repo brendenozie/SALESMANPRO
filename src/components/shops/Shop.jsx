@@ -1,101 +1,105 @@
-import React, { useState } from "react";
-
-import { HeartIcon,StarIcon,PlusIcon,ArrowRightIcon,ArrowRightCircleIcon } from "@heroicons/react/24/outline";
-
+import React from "react";
+import { PlusIcon, ArrowRightIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const Shop = ({ addToCart, shopItems }) => {
-  const data = [
-    { cateImg: "./images/category/cat-1.png", cateName: "Apple" },
-    { cateImg: "./images/category/cat-2.png", cateName: "Samsung" },
-    { cateImg: "./images/category/cat-1.png", cateName: "Oppo" },
-    { cateImg: "./images/category/cat-2.png", cateName: "Vivo" },
-    { cateImg: "./images/category/cat-1.png", cateName: "Redmi" },
-    { cateImg: "./images/category/cat-2.png", cateName: "Sony" },
+  const categories = [
+    { img: "./images/category/cat-1.png", name: "Apple" },
+    { img: "./images/category/cat-2.png", name: "Samsung" },
+    { img: "./images/category/cat-1.png", name: "Oppo" },
+    { img: "./images/category/cat-2.png", name: "Vivo" },
+    { img: "./images/category/cat-1.png", name: "Redmi" },
+    { img: "./images/category/cat-2.png", name: "Sony" },
   ];
 
-  const [count, setCount] = useState(0);
-  const increment = () => setCount(count + 1);
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    speed: 800,
+    cssEase: "cubic-bezier(0.4, 0, 0.2, 1)",
+    responsive: [
+      { breakpoint: 1024, settings: { slidesToShow: 2 } },
+      { breakpoint: 768, settings: { slidesToShow: 1 } },
+    ],
+  };
 
   return (
-    <section className="py-16 px-6 ">
-      <div className="container mx-auto flex flex-wrap lg:flex-nowrap gap-12">
+    <section className="py-16 px-6 bg-white dark:bg-gradient-to-b dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500 text-gray-900 dark:text-white">
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-12">
         {/* Category Section */}
-        <div className="w-full lg:w-1/4 bg-white/30 backdrop-blur-lg shadow-lg rounded-2xl p-6 border border-white/40">
-          <h2 className="text-2xl font-bold text-gray-800 border-b pb-4 mb-6">Brands & Shops</h2>
-          {data.map((value, index) => (
+        <div className="bg-gray-100 dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 shadow-xl rounded-3xl p-6 border border-gray-300 dark:border-gray-600 transition-colors duration-500">
+          <h2 className="text-3xl font-bold text-yellow-500 dark:text-yellow-400 mb-6">Brands & Shops</h2>
+          {categories.map((category, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 p-4 mb-4 bg-white/40 backdrop-blur-lg rounded-xl shadow-md hover:shadow-xl transition-transform transform hover:scale-105 cursor-pointer"
+              className="flex items-center gap-4 p-4 mb-4 bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-yellow-500/50 transition-transform transform hover:scale-105 cursor-pointer"
             >
               <img
-                src={value.cateImg}
-                alt={value.cateName}
-                className="w-12 h-12 object-cover rounded-full border border-gray-300"
+                src={category.img}
+                alt={category.name}
+                className="w-14 h-14 object-cover rounded-full border-2 border-yellow-400"
               />
-              <span className="text-lg font-medium text-gray-700">{value.cateName}</span>
+              <span className="text-lg font-semibold text-gray-900 dark:text-white">{category.name}</span>
             </div>
           ))}
           <div className="text-center mt-6">
-            <button className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center gap-2">
-              View All Brands <ArrowRightIcon className="h-8 w-4"/>
+            <button className="px-6 py-3 bg-yellow-500 text-gray-900 rounded-xl shadow-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2">
+              View All Brands <ArrowRightIcon className="h-6 w-6" />
             </button>
           </div>
         </div>
 
         {/* Products Section */}
-        <div className="w-full lg:w-3/4 flex flex-col">
+        <div className="lg:col-span-3">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-extrabold text-gray-800">Featured Phones</h2>
-           
-            <button className="flex items-center space-x-2 text-blue-600 font-medium hover:text-blue-800 transition">
+            <h2 className="text-4xl font-extrabold text-yellow-500 dark:text-yellow-400">Featured Phones</h2>
+            <button className="flex items-center space-x-2 text-yellow-500 dark:text-yellow-400 font-semibold hover:text-yellow-600 dark:hover:text-yellow-300 transition">
               <span className="text-lg">View All</span>
-              <ArrowRightCircleIcon className="w-6 h-6" />
+              <ArrowRightCircleIcon className="w-7 h-7" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <Slider {...sliderSettings} className="py-8">
             {shopItems.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white/30 backdrop-blur-lg shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-transform transform hover:scale-105 p-6 border border-white/40"
-              >
-                <div className="relative">
-                  <span className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 text-sm font-semibold rounded-lg">
-                    {item.discount}% Off
-                  </span>
+              <div key={index} className="px-4">
+                <div className="relative group overflow-hidden rounded-xl shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-yellow-500/50">
                   <img
                     src={item.cover}
                     alt={item.name}
-                    className="w-full h-48 object-cover rounded-lg"
+                    className="w-full h-[380px] object-cover rounded-xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                   />
-                  <div className="absolute top-3 right-3 flex flex-col items-center space-y-2">
-                    <label className="bg-white px-3 py-1 rounded-lg shadow-md text-sm font-medium">{count}</label>
-                    <HeartIcon
-                      className="h-8 w-8 text-red-500 text-lg cursor-pointer hover:scale-110 transform transition"
-                      onClick={increment}
-                    />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/30 dark:from-black/90 dark:to-black/40 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="absolute top-4 left-4 bg-yellow-500 text-gray-900 text-sm px-3 py-1 rounded-md shadow-lg">
+                    🔥 Limited Offer
                   </div>
-                </div>
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.name}</h3>
-                  <div className="text-yellow-500 flex space-x-1 text-sm">
-                    {[...Array(5)].map((_, i) => (
-                      <StarIcon key={i}  className="h-14 w-14"/>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-center mt-4">
-                    <h4 className="text-xl font-bold text-gray-800">${item.price}.00</h4>
-                    <button
-                      onClick={() => addToCart(item)}
-                      className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition duration-200"
-                    >
-                      <PlusIcon  className=" h-8 w-8"/>
-                    </button>
+
+                  <div className="absolute bottom-6 left-6 right-6 bg-white/30 dark:bg-black/50 backdrop-blur-md p-6 rounded-lg shadow-lg transition-colors duration-500">
+                    <h4 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
+                      {item.name}
+                    </h4>
+                    <span className="text-yellow-500 dark:text-yellow-400 font-bold text-lg mt-2 inline-block">
+                      ${item.price}.00
+                    </span>
+                    <div className="flex justify-between items-center mt-4">
+                      <button
+                        onClick={() => addToCart(item)}
+                        className="bg-yellow-500 text-gray-900 p-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
+                      >
+                        <PlusIcon className="h-8 w-8" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
+          </Slider>
         </div>
       </div>
     </section>

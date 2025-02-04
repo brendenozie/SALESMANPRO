@@ -9,11 +9,14 @@ import {
   PlusIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
 
 const SampleNextArrow = ({ onClick }) => (
   <button
-    className="absolute z-10 top-1/2 right-4 transform -translate-y-1/2 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-500 transition"
+    className="absolute z-10 top-1/2 right-4 transform -translate-y-1/2 bg-yellow-400 text-black p-3 rounded-full shadow-xl hover:scale-110 transition-transform"
     onClick={onClick}
     aria-label="Next Slide"
   >
@@ -23,7 +26,7 @@ const SampleNextArrow = ({ onClick }) => (
 
 const SamplePrevArrow = ({ onClick }) => (
   <button
-    className="absolute z-10 top-1/2 left-4 transform -translate-y-1/2 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-500 transition"
+    className="absolute z-10 top-1/2 left-4 transform -translate-y-1/2 bg-yellow-400 text-black p-3 rounded-full shadow-xl hover:scale-110 transition-transform"
     onClick={onClick}
     aria-label="Previous Slide"
   >
@@ -32,10 +35,6 @@ const SamplePrevArrow = ({ onClick }) => (
 );
 
 const FlashCard = ({ productItems, addToCart }) => {
-
-  console.log("1234567890");
-  console.log(productItems);
-  
   const [likedItems, setLikedItems] = useState({});
 
   const toggleLike = (id) => {
@@ -62,69 +61,74 @@ const FlashCard = ({ productItems, addToCart }) => {
 
   return (
     <Slider {...settings} className="py-8">
-      {productItems && productItems.map((product) => (
-        <div key={product.id} className="p-4">
-          <div className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="relative group">
-              <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                {product.discount}% Off
-              </span>
-              <img
-                src={product.cover}
-                alt={product.newName}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <button
-                onClick={() => toggleLike(product.id)}
-                className={`absolute top-2 right-2 p-2 rounded-full shadow-md transition ${
-                  likedItems[product.id] ? "bg-red-500 text-white" : "bg-gray-100 text-gray-600"
-                }`}
-                aria-label="Like Product"
-              >
-                <HeartIcon className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-4 text-center">
-              <h3 className="text-lg font-semibold text-gray-800 truncate">
-                {product.name}
-              </h3>
-              <div className="flex justify-center mt-2 space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    className={`h-4 w-4 ${
-                      i < product.rating ? "text-yellow-500" : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-xl font-bold text-gray-900">
-                  ${product.sellingPrice}
+      {productItems &&
+        productItems.map((product) => (
+          <motion.div key={product.id} whileHover={{ scale: 1.05 }} className="p-4">
+            <div className="bg-white dark:bg-gray-800 text-black dark:text-white shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-shadow">
+              <div className="relative group">
+                <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs px-3 py-1 rounded-full shadow-md">
+                  {product.discount}% Off
                 </span>
+                <img
+                  src={product.cover}
+                  alt={`Product image of ${product.name}`}
+                  className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
                 <button
-                  onClick={() => addToCart(product)}
-                  className="bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition"
-                  aria-label="Add to Cart"
+                  onClick={() => toggleLike(product.id)}
+                  className={`absolute top-2 right-2 p-2 rounded-full shadow-md transition-transform transform hover:scale-110 ${
+                    likedItems[product.id] ? "bg-yellow-400 text-black" : "bg-gray-700 dark:bg-gray-600 text-white"
+                  }`}
+                  aria-label="Like Product"
                 >
-                  <PlusIcon className="h-5 w-5" />
+                  <HeartIcon className="h-5 w-5" />
                 </button>
               </div>
+              <div className="p-4 text-center">
+                <h3 className="text-lg font-semibold truncate">{product.name}</h3>
+                <div className="flex justify-center mt-2 space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <StarIcon
+                      key={i}
+                      className={`h-4 w-4 ${
+                        i < product.rating ? "text-yellow-400" : "text-gray-500 dark:text-gray-400"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between items-center mt-4">
+                  <span className="text-xl font-bold text-yellow-400">${product.sellingPrice}</span>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => addToCart(product)}
+                    className="bg-yellow-400 text-black p-3 rounded-full shadow-lg hover:shadow-xl transition"
+                    aria-label="Add to Cart"
+                  >
+                    <PlusIcon className="h-5 w-5" />
+                  </motion.button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      ))}
+          </motion.div>
+        ))}
     </Slider>
   );
 };
 
 const FlashDeals = ({ productItems, addToCart }) => {
+
   return (
-    <section className=" py-12">
+    <section className={` py-12 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-black dark:text-white  transition-colors duration-500`}> 
       <div className="container mx-auto px-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <BoltIcon className="text-yellow-500 h-8 w-8" />
-          <h1 className="text-3xl font-bold text-gray-800">Flash Deals</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <BoltIcon className="text-yellow-400 h-8 w-8 animate-pulse" />
+            <h1 className="text-4xl font-extrabold tracking-wide text-yellow-400">
+              Flash Deals
+            </h1>
+          </div>
+          
         </div>
         <FlashCard productItems={productItems} addToCart={addToCart} />
       </div>

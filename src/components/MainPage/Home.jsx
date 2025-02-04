@@ -1,109 +1,121 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ShoppingBagIcon,
+  Bars3Icon,
+  XMarkIcon,
+  UserIcon,
+  MagnifyingGlassIcon,
+  MoonIcon,
+  SunIcon,
+} from "@heroicons/react/24/outline";
 
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
-const SidebarCategories = ({ showCategories, categories }) => {
-  const categoryVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.5 } },
-  };
+const CategoriesGrid = ({ categories }) => (
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 px-6 py-8">
+    {categories.map(({ name, icon }, index) => (
+      <motion.div
+        key={index}
+        whileHover={{ scale: 1.1, rotate: 1 }}
+        whileTap={{ scale: 0.95 }}
+        className="bg-gradient-to-br from-yellow-400 to-yellow-500 dark:from-gray-700 dark:to-gray-900 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform hover-glow relative overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-2xl opacity-20"></div>
+        <motion.div className="text-5xl mb-3 z-10 drop-shadow-md" whileHover={{ rotate: 10 }}>{icon}</motion.div>
+        <p className="font-bold text-center text-lg z-10 drop-shadow-sm">{name}</p>
+      </motion.div>
+    ))}
+  </div>
+);
 
-  return (
-    <motion.div
-      initial="hidden"
-      animate={showCategories ? "visible" : "hidden"}
-      variants={categoryVariants}
-      className="relative flex flex-col w-full md:w-1/4 bg-gradient-to-br from-[${slide.bgFrom || '#1e1e2e'}] to-[${slide.bgTo || '#151526'}] 
-                 text-white p-6 rounded-3xl shadow-2xl border border-white/10 overflow-hidden"
-    >
-      {/* Floating Glassmorphism Effect */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-3xl"></div>
-
-      {/* Title Section */}
-      <h2 className="relative z-10 text-2xl font-extrabold text-gray-900 mb-6 flex items-center space-x-3">
-        <span className="text-indigo-400">🔳</span> 
-        <span>Categories</span>
-      </h2>
-
-      {/* Categories List */}
-      <ul className="relative z-10 space-y-4" role="list">
-        {categories.map(({ name }) => (
-          <motion.li
-            key={name}
-            role="listitem"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center space-x-4 text-gray-900 hover:text-white cursor-pointer 
-                       transition-transform duration-300"
-          >
-            <CheckCircleIcon className="h-5 w-5 text-indigo-400" />
-            <span className=" text-2xl font-medium">{name}</span>
-          </motion.li>
-        ))}
-      </ul>
-
-      {/* Floating Decorations */}
-      <div className="absolute w-24 h-24 bg-indigo-500 opacity-30 blur-3xl rounded-full top-6 left-6"></div>
-      <div className="absolute w-32 h-32 bg-purple-700 opacity-30 blur-3xl rounded-full bottom-6 right-6"></div>
-    </motion.div>
-  );
-};
-
-const slideVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
-};
-
-const SliderComponent = ({ promoSlides, sliderSettings }) => (
-  <Slider {...sliderSettings}>
+const SliderComponent = ({ promoSlides }) => (
+  <Slider
+    dots={true}
+    infinite={true}
+    slidesToShow={1}
+    slidesToScroll={1}
+    autoplay={true}
+    autoplaySpeed={4000}
+    arrows={true}
+  >
     {promoSlides.map((slide) => (
-      <SlideCard key={slide.id} slide={slide} />
+      <SlideCard slide={slide} key={slide.id} />
     ))}
   </Slider>
 );
 
 const Home = () => {
-  const [showCategories, setShowCategories] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const categories = [
-    "Fashion", "Electronics", "Cars", "Home & Garden", "Gifts", "Music", "Health & Beauty", "Pets", "Baby Toys", "Groceries", "Books"
-  ].map(name => ({ name }));
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme === "dark") {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
 
-  const promoSlides = [
-    { id: 1, title: "50% Off On Your First Purchase", description: "Exclusive discounts!", img: "/images/SlideCard/slide-1.png" },
-    { id: 2, title: "Limited Time Offer", description: "Shop now for amazing discounts!", img: "/images/SlideCard/slide-2.png" },
-    { id: 3, title: "New Arrivals", description: "Explore the latest trends!", img: "/images/SlideCard/slide-3.png" },
-  ];
-
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 4000,
-    arrows: false,
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    }
   };
 
+  const categories = [
+    { name: "Fashion", icon: "👗" },
+    { name: "Electronics", icon: "📱" },
+    { name: "Cars", icon: "🚗" },
+    { name: "Home & Garden", icon: "🏡" },
+    { name: "Gifts", icon: "🎁" },
+    { name: "Music", icon: "🎵" },
+    { name: "Health & Beauty", icon: "💄" },
+    { name: "Pets", icon: "🐾" },
+    { name: "Baby Toys", icon: "🧸" },
+    { name: "Groceries", icon: "🛒" },
+    { name: "Books", icon: "📚" }
+  ];
+
+  const promoSlides = [
+    { id: 1, title: "50% Off On Your First Purchase", description: "Exclusive discounts just for you.", img: "/images/SlideCard/slide-1.png" },
+    { id: 2, title: "Limited Time Offer", description: "Shop now to enjoy amazing deals.", img: "/images/SlideCard/slide-2.png" },
+    { id: 3, title: "New Arrivals", description: "Discover the latest trends and products.", img: "/images/SlideCard/slide-3.png" },
+  ];
+
   return (
-    <section className="py-16 px-6 text-gray-900">
-      <div className="flex flex-col md:flex-row gap-6">
-        <button
-          className="md:hidden bg-indigo-600 text-white px-4 py-2 rounded-lg mb-4"
-          onClick={() => setShowCategories(!showCategories)}
-        >
-          {showCategories ? "Hide Categories" : "Show Categories"}
-        </button>
-        <SidebarCategories showCategories={showCategories} categories={categories} />
-        <div className="w-full md:w-3/4 shadow-2xl rounded-3xl overflow-hidden">
-          <SliderComponent promoSlides={promoSlides} sliderSettings={sliderSettings} />
-        </div>
+    <section className="min-h-screen bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-black dark:text-white px-6 py-12 relative">
+      {/* <button onClick={toggleTheme} className="absolute top-4 right-4 p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow-md hover:scale-105 transition">
+        {isDarkMode ? <SunIcon className="text-yellow-400" /> : <MoonIcon className="text-gray-800" />}
+      </button> */}
+
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+        className="text-center mb-14 relative"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-yellow-600 via-transparent to-yellow-500 dark:from-gray-800 dark:to-gray-700 opacity-20 blur-3xl"></div>
+        <h1 className="text-6xl font-extrabold tracking-wide mb-4 drop-shadow-2xl">
+          Uncover <span className="text-yellow-400">Exclusive</span> Deals
+        </h1>
+        <p className="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+          Your gateway to the best offers and latest products.
+        </p>
+      </motion.div>
+
+      <CategoriesGrid categories={categories} />
+
+      <div className="mt-12">
+        <SliderComponent promoSlides={promoSlides} />
       </div>
     </section>
   );
@@ -111,66 +123,43 @@ const Home = () => {
 
 export default Home;
 
-
-const SlideCard = ({ slide }) => {
-  const motionVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-  };
-
-  return (
-    <motion.div
-      variants={motionVariants}
-      initial="hidden"
-      animate="visible"
-      className="relative flex flex-col md:flex-row items-center justify-center w-full  
-                 bg-gradient-to-br from-[${slide.bgFrom || '#1e1e2e'}] to-[${slide.bgTo || '#151526'}] 
-                 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
-    >
-      {/* Floating Glassmorphism Effect */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-3xl"></div>
-
-      {/* Left Content Section */}
-      <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">
-        <motion.h2 variants={motionVariants} className="text-4xl md:text-5xl text-gray-900 font-extrabold leading-tight drop-shadow-lg">
-          {slide.title}
-        </motion.h2>
-        <motion.p variants={motionVariants} className="text-lg md:text-xl text-gray-900">
-          {slide.description}
-        </motion.p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-4 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-400 
-                     text-white font-semibold rounded-xl shadow-lg transition"
-        >
-          Learn More
-        </motion.button>
-      </div>
-
-      {/* Right Image Section */}
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }} 
-        animate={{ scale: 1, opacity: 1 }} 
-        transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
-        className="relative z-10 w-full md:w-1/2 flex justify-center items-center"
+const SlideCard = ({ slide }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8 }}
+    className="relative flex flex-col md:flex-row items-center justify-center w-full bg-gradient-to-br from-yellow-300 to-yellow-600 dark:from-gray-700 dark:to-gray-900 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
+  >
+    <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-lg rounded-3xl"></div>
+    <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">
+      <motion.h2 className="text-4xl md:text-5xl font-extrabold leading-tight drop-shadow-lg" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>{slide.title}</motion.h2>
+      <motion.p className="text-lg md:text-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>{slide.description}</motion.p>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-2 focus:ring-yellow-400 text-white font-semibold rounded-xl shadow-lg transition"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
       >
-        <Image
-          src={slide.img}
-          alt={slide.alt || slide.title}
-          loader={loader}
-          width={350}
-          height={350}
-          loading="lazy"
-          className="w-[350px] h-[350px] object-contain filter brightness-110 contrast-125 
-                     transition-transform hover:scale-105 hover:rotate-1"
-        />
-      </motion.div>
-
-      {/* Floating Decorations */}
-      <div className="absolute w-40 h-40 bg-indigo-500 opacity-30 blur-3xl rounded-full top-8 left-8"></div>
-      <div className="absolute w-52 h-52 bg-purple-700 opacity-30 blur-3xl rounded-full bottom-8 right-8"></div>
+        Learn More
+      </motion.button>
+    </div>
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
+      className="relative z-10 w-full md:w-1/2 flex justify-center items-center"
+    >
+      <Image
+        src={slide.img}
+        alt={slide.title}
+        loader={loader}
+        width={350}
+        height={350}
+        loading="lazy"
+        className="w-[350px] h-[350px] object-contain filter brightness-110 contrast-125 transition-transform hover:scale-105 hover:rotate-1"
+      />
     </motion.div>
-  );
-};
-
+  </motion.div>
+);

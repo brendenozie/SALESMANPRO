@@ -2,58 +2,61 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-br from-[#0f3460] to-[#1a3b5d] py-20 text-white">
+    <footer className="bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100 dark:from-black dark:via-gray-900 dark:to-black py-20 text-gray-900 dark:text-white">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 px-8">
         <div className="space-y-8">
-          <h1 className="text-5xl font-extrabold italic text-[#e94560]">SalesManPro</h1>
-          <p className="text-sm font-light opacity-90 leading-relaxed">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Auctor libero id et, in gravida. Sit diam duis mauris nulla cursus. Erat et lectus vel ut sollicitudin elit at amet.
+          <h1 className="text-4xl font-extrabold italic text-yellow-500">SalesManPro</h1>
+          <p className="text-sm font-light opacity-90 leading-relaxed text-gray-800 dark:text-gray-300">
+            Discover the best deals and exclusive offers with SalesManPro, your trusted shopping companion.
           </p>
           <div className="flex space-x-4">
-            <button className="flex items-center bg-[#1b3a5b] hover:bg-[#e94560] py-3 px-5 rounded-md transition duration-300">
+            <button className="flex items-center bg-gray-300 dark:bg-[#152e4d] hover:bg-yellow-400 py-3 px-5 rounded-xl shadow-lg transition-transform transform hover:scale-105 duration-300">
               <i className="fa-brands fa-google-play text-lg mr-2"></i>
               <span className="text-sm">Google Play</span>
             </button>
-            <button className="flex items-center bg-[#1b3a5b] hover:bg-[#e94560] py-3 px-5 rounded-md transition duration-300">
+            <button className="flex items-center bg-gray-300 dark:bg-[#152e4d] hover:bg-yellow-400 py-3 px-5 rounded-xl shadow-lg transition-transform transform hover:scale-105 duration-300">
               <i className="fa-brands fa-app-store-ios text-lg mr-2"></i>
               <span className="text-sm">App Store</span>
             </button>
           </div>
         </div>
 
-        <div className="space-y-8">
-          <h2 className="text-2xl font-bold text-[#e94560] border-b border-[#e94560] pb-2">About Us</h2>
-          <ul className="space-y-4">
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Careers</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Our Stores</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Our Cares</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Terms & Conditions</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Privacy Policy</li>
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2">About Us</h2>
+          <ul className="space-y-3 text-gray-800 dark:text-gray-300">
+            {["Careers", "Our Stores", "Our Cares", "Terms & Conditions", "Privacy Policy"].map((item, index) => (
+              <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
 
-        <div className="space-y-8">
-          <h2 className="text-2xl font-bold text-[#e94560] border-b border-[#e94560] pb-2">Customer Care</h2>
-          <ul className="space-y-4">
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Help Center</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">How to Buy</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Track Your Order</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Corporate & Bulk Purchasing</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Returns & Refunds</li>
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2">Customer Care</h2>
+          <ul className="space-y-3 text-gray-800 dark:text-gray-300">
+            {["Help Center", "How to Buy", "Track Your Order", "Bulk Purchasing", "Returns & Refunds"].map((item, index) => (
+              <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
 
-        <div className="space-y-8">
-          <h2 className="text-2xl font-bold text-[#e94560] border-b border-[#e94560] pb-2">Contact Us</h2>
-          <ul className="space-y-4">
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300"> Nairobi Kenya</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Email: salesmanpro@gmail.com</li>
-            <li className="opacity-80 hover:opacity-100 hover:text-[#e94560] transition duration-300">Phone: +254 706 448 146</li>
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2">Contact Us</h2>
+          <ul className="space-y-3 text-gray-800 dark:text-gray-300">
+            {["Nairobi, Kenya", "Email: salesmanpro@gmail.com", "Phone: +254 706 448 146"].map((item, index) => (
+              <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
       </div>
-      <div className="border-t border-[#1b3a5b] mt-12 pt-6 text-center text-sm opacity-70">
-        © 2025 SalesMan Pro. All Rights Reserved.
+
+      <div className="border-t border-gray-400 dark:border-[#152e4d] mt-12 pt-6 text-center text-sm opacity-70 text-gray-800 dark:text-gray-300">
+        © 2025 <span className="text-yellow-500 font-semibold">SalesManPro</span>. All Rights Reserved.
       </div>
     </footer>
   );

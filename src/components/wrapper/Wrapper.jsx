@@ -1,42 +1,48 @@
 import React from "react";
+import { TruckIcon, CreditCardIcon, ShieldCheckIcon, UsersIcon } from "@heroicons/react/24/outline";
 
 const Wrapper = () => {
   const data = [
     {
-      cover: "fa-solid fa-truck-fast",
+      icon: <TruckIcon className="h-10 w-10 text-yellow-500" />,
       title: "Worldwide Delivery",
-      decs: "We offer competitive prices on our 100 million plus product range.",
+      desc: "We offer competitive prices on our 100 million plus product range.",
     },
     {
-      cover: "fa-solid fa-id-card",
+      icon: <CreditCardIcon className="h-10 w-10 text-yellow-500" />,
       title: "Safe Payment",
-      decs: "Your payment information is processed securely for a seamless experience.",
+      desc: "Your payment information is processed securely for a seamless experience.",
     },
     {
-      cover: "fa-solid fa-shield",
+      icon: <ShieldCheckIcon className="h-10 w-10 text-yellow-500" />,
       title: "Shop With Confidence",
-      decs: "Enjoy worry-free shopping with our secure and reliable services.",
+      desc: "Enjoy worry-free shopping with our secure and reliable services.",
     },
     {
-      cover: "fa-solid fa-headset",
+      icon: <UsersIcon className="h-10 w-10 text-yellow-500" />,
       title: "24/7 Support",
-      decs: "Our dedicated support team is available around the clock to assist you.",
+      desc: "Our dedicated support team is available around the clock to assist you.",
     },
   ];
 
   return (
-    <section className="py-16">
+    <section className="py-16 bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100 dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white">
       <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-        {data.map((val, index) => (
+        {data.map((item, index) => (
           <div
             key={index}
-            className="p-8 bg-white shadow-lg rounded-2xl flex flex-col items-center transition transform hover:scale-105 hover:shadow-xl"
+            className="p-8 bg-gradient-to-br from-gray-300 to-gray-200 dark:from-gray-800 dark:to-gray-700 shadow-2xl rounded-3xl flex flex-col items-center text-center transition-transform transform hover:scale-105 hover:shadow-yellow-500/50 relative overflow-hidden border border-gray-400 dark:border-gray-600"
           >
-            <div className="w-20 h-20 flex items-center justify-center bg-blue-600 text-white text-3xl rounded-full mb-6">
-              <i className={val.cover}></i>
+            <div className="w-20 h-20 flex items-center justify-center bg-yellow-500 text-white rounded-full mb-6 shadow-lg">
+              {item.icon}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{val.title}</h3>
-            <p className="text-gray-600 text-center text-sm">{val.decs}</p>
+            <h3 className="text-2xl font-extrabold text-yellow-500 mb-3 drop-shadow-lg">
+              {item.title}
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+              {item.desc}
+            </p>
+            <div className="absolute inset-0 bg-yellow-500 opacity-0 transition-opacity duration-500 hover:opacity-10 rounded-3xl"></div>
           </div>
         ))}
       </div>
