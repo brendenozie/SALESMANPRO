@@ -1,25 +1,23 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from 'next/router';
 import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
-import debounce from "lodash.debounce";
-
 
 const ProductList = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState({ brand: "", category: "", rating: "", availability: "", sort: "popularity" });
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [sortOption, setSortOption] = useState("popularity");
   const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedRating, setSelectedRating] = useState("");
+  const [availability, setAvailability] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [products, setProducts] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
   const [CartItem, setCartItem] = useState([]);
-
-  const uniqueBrands = [...new Set(products.map((p) => p.inventoryItem.product.brand))];
-  const uniqueCategories = [...new Set(products.map((p) => p.inventoryItem.product.category))];
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -59,21 +57,22 @@ const ProductList = () => {
   //       return a.inventoryItem.popularity - b.inventoryItem.popularity;
   //     });
   // }, [searchTerm, selectedBrand, selectedCategory, selectedRating, availability, priceRange, sortOption, products]);
-  
   const filteredProducts = useMemo(() => {
     return products
-      .filter(product =>
-        product.inventoryItem.product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (selectedFilters.brand === "" || product.inventoryItem.product.brand === selectedFilters.brand)
+      .filter(
+        (product) =>
+          product.inventoryItem.product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          (selectedBrand === "" || product.inventoryItem.product.brand === selectedBrand)
       )
       .sort((a, b) => {
-        if (selectedFilters.sort === "price-asc") return a.inventoryItem.sellingPrice - b.inventoryItem.sellingPrice;
-        if (selectedFilters.sort === "price-desc") return b.inventoryItem.sellingPrice - a.inventoryItem.sellingPrice;
+        if (sortOption === "price-asc") return a.inventoryItem.sellingPrice - b.inventoryItem.sellingPrice;
+        if (sortOption === "price-desc") return b.inventoryItem.sellingPrice - a.inventoryItem.sellingPrice;
         return a.inventoryItem.popularity - b.inventoryItem.popularity;
       });
-  }, [searchTerm, selectedFilters, products]);
-
-  const debouncedSearch = useCallback(debounce(setSearchTerm, 300), []);
+  }, [searchTerm, selectedBrand, sortOption, products]);
+  
+  const uniqueBrands = [...new Set(products.map((p) => p.inventoryItem.product.brand))];
+  const uniqueCategories = [...new Set(products.map((p) => p.inventoryItem.product.category))];
 
   return (
     <>
@@ -83,12 +82,12 @@ const ProductList = () => {
         <div className="lg:col-span-1">
           <h2 className="text-2xl font-extrabold text-gray-900 mb-4">Filters</h2>
           <div className="flex flex-col gap-4">
-            <BrandFilter selectedBrand={selectedFilters.brand} setSelectedBrand={(brand) => setSelectedFilters({ ...selectedFilters, brand })} brands={uniqueBrands} />
-            <CategoryFilter selectedCategory={selectedFilters.selectedCategory} setSelectedBrand={(category) => setSelectedFilters({ ...selectedFilters, category })} categories={uniqueCategories} />
+            <BrandFilter selectedBrand={selectedBrand} setSelectedBrand={setSelectedBrand} brands={uniqueBrands} />
+            <CategoryFilter selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} categories={uniqueCategories} />
             <PriceRangeFilter priceRange={priceRange} setPriceRange={setPriceRange} />
-            <RatingFilter selectedRating={selectedFilters.selectedRating} setSelectedRating={(rating) => setSelectedFilters({ ...selectedFilters, rating })} />
-            <AvailabilityFilter availability={selectedFilters.availability} setAvailability={(availability) => setSelectedFilters({ ...selectedFilters, availability })} />
-            <SortFilter sortOption={selectedFilters.sort} setSortOption={(sort) => setSelectedFilters({ ...selectedFilters, sort })} />
+            <RatingFilter selectedRating={selectedRating} setSelectedRating={setSelectedRating} />
+            <AvailabilityFilter availability={availability} setAvailability={setAvailability} />
+            <SortFilter sortOption={sortOption} setSortOption={setSortOption} />
           </div>
         </div>
 
@@ -98,7 +97,15 @@ const ProductList = () => {
         Discover
       </h2>
       
-      <SearchBar searchTerm={searchTerm} setSearchTerm={debouncedSearch} />
+      <div className="flex flex-col sm:flex-row gap-6 mb-8 justify-center">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
               [...Array(6)].map((_, index) => <SkeletonCard key={index} />)
@@ -142,19 +149,6 @@ const ProductCard = ({ product }) => {
     </motion.div>
   );
 };
-
-const SearchBar = ({ searchTerm, setSearchTerm }) => (
-  <div className="flex flex-col sm:flex-row gap-6 mb-8 justify-center">
-    <input
-      type="text"
-      placeholder="Search products..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="flex-1 p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-    <button onClick={() => setSearchTerm("")} className="p-4 bg-gray-300 rounded-lg shadow-md">Clear</button>
-  </div>
-);
 
 const SkeletonCard = () => (
   <div className="bg-gray-200 h-80 w-full animate-pulse rounded-lg"></div>
