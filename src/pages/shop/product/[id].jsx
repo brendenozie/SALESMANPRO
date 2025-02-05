@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { useRouter } from 'next/router';
 import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
+import { useStateContext  } from '../../../contexts/ContextProvider';
 
 const prisma = new PrismaClient();
 
@@ -88,7 +89,8 @@ export async function getServerSideProps(context) {
 const ProductPage = ({ product }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [CartItem, setCartItem] = useState([]);
+  const { addToCart, removeFromCart, decreaseQuantity, cart, cartSubtotal } = useStateContext();
+
 
   const images = [
     "/images/SlideCard/slide-1.png",
@@ -98,7 +100,7 @@ const ProductPage = ({ product }) => {
 
   return (
     <>
-      <Header CartItem={CartItem}/>
+      <Header />
         <div className="bg-gray-50 min-h-screen p-6">
           {/* Breadcrumb */}
           <nav className="text-sm text-gray-500 px-6 py-4">
@@ -180,7 +182,7 @@ const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
 };
 
 // Product Information Section
-const ProductInfo = ({ quantity, setQuantity, product }) => (
+const ProductInfo = ({ quantity, setQuantity, product, addToCart, removeFromCart, decreaseQuantity, }) => (
   <div className="flex-1">
     <h1 className="text-4xl font-bold text-gray-900 mb-3">{product.newName}</h1>
     <p className="text-gray-500 mb-4 leading-relaxed">

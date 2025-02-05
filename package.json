@@ -45,6 +45,7 @@
     "react-date-range": "^1.4.0",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.5.1",
     "react-map-gl": "^7.0.19",
     "react-paystack": "latest",
     "react-responsive-carousel": "^3.2.23",

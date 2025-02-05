@@ -9,25 +9,20 @@ import {
   MoonIcon,
   SunIcon,
 } from "@heroicons/react/24/outline";
+import { useStateContext } from "../../../contexts/ContextProvider.js";
 
-const Header = ({ CartItem }) => {
+const Header = () => {
+  const { isDarkMode, setMode, cart } = useStateContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  
 
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 100);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
+  
 
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">
@@ -49,11 +44,11 @@ const Header = ({ CartItem }) => {
           </a>
           <SearchBar />
           <NavIcons
-            CartItem={CartItem}
+            cart={cart}
             isMobileMenuOpen={isMobileMenuOpen}
             setIsMobileMenuOpen={setIsMobileMenuOpen}
-            darkMode={darkMode}
-            setDarkMode={setDarkMode}
+            isDarkMode={isDarkMode}
+            setDarkMode={setMode}
           />
         </div>
       </nav>
@@ -98,28 +93,28 @@ const SearchBar = () => (
 );
 
 const NavIcons = ({
-  CartItem,
+  cart,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
-  darkMode,
+  isDarkMode,
   setDarkMode,
 }) => (
   <div className="flex items-center space-x-6">
     <UserIcon className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-transform transform hover:scale-125" />
     <div className="relative cursor-pointer">
       <ShoppingBagIcon className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125" />
-      {CartItem.length > 0 && (
+      {cart.length > 0 && (
         <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
           {CartItem.length}
         </span>
       )}
     </div>
     <button
-      onClick={() => setDarkMode(!darkMode)}
+      onClick={() => setDarkMode(isDarkMode ? "Light" : "Dark")}
       className="text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125"
       aria-label="Toggle Dark Mode"
     >
-      {darkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+      {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
     </button>
     <button
       onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
