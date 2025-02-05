@@ -9,6 +9,7 @@ import Annocument from "../../components/annocument/Annocument";
 import Wrapper from "../../components/wrapper/Wrapper";
 import Header from "../../components/shop/header/Header";
 import Footer from "../../components/shop/footer/Footer";
+import Cart from "../../components/cart";
 
 const Pages = () => {
   const [categories, setCategories] = useState([]);
@@ -117,6 +118,7 @@ const Pages = () => {
         <Annocument />
         <Wrapper />
         <Footer />
+        <Cart /> 
       </div>
     </>
   );

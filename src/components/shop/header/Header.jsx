@@ -10,9 +10,12 @@ import {
   SunIcon,
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../contexts/ContextProvider.js";
+import { motion } from "framer-motion";
+import { useRouter } from "next/router.js";
+
 
 const Header = () => {
-  const { isDarkMode, setMode, cart } = useStateContext();
+  const { isDarkMode, setMode, cart, isCartOpen, setIsCartOpen } = useStateContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   
@@ -34,7 +37,7 @@ const Header = () => {
         }`}
       >
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <a href="/">
+          <a href="/shop">
             <img
               src={logo.src}
               alt="Logo"
@@ -49,6 +52,8 @@ const Header = () => {
             setIsMobileMenuOpen={setIsMobileMenuOpen}
             isDarkMode={isDarkMode}
             setDarkMode={setMode}
+            isCartOpen={isCartOpen} 
+            setIsCartOpen={setIsCartOpen}
           />
         </div>
       </nav>
@@ -98,37 +103,48 @@ const NavIcons = ({
   setIsMobileMenuOpen,
   isDarkMode,
   setDarkMode,
-}) => (
-  <div className="flex items-center space-x-6">
-    <UserIcon className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-transform transform hover:scale-125" />
-    <div className="relative cursor-pointer">
-      <ShoppingBagIcon className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125" />
-      {cart.length > 0 && (
-        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
-          {CartItem.length}
-        </span>
-      )}
+  isCartOpen,
+  setIsCartOpen
+}) => {
+  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true); // Ensures hydration-safe rendering
+  }, []);
+
+  return (
+    <div className="flex items-center space-x-6">
+      <UserIcon onClick={() => {router.push("/shop/profile")}} className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-transform transform hover:scale-125" />
+      <motion.div onClick={() => setIsCartOpen(!isCartOpen)} className="relative cursor-pointer">
+        <ShoppingBagIcon className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125" />
+        {isMounted && cart.length > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+            {cart.length}
+          </span>
+        )}
+      </motion.div>
+      <button
+        onClick={() => setDarkMode(isDarkMode ? "Light" : "Dark")}
+        className="text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125"
+        aria-label="Toggle Dark Mode"
+      >
+        {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+      </button>
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="md:hidden text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125"
+        aria-label="Toggle Menu"
+      >
+        {isMobileMenuOpen ? (
+          <XMarkIcon className="w-6 h-6" />
+        ) : (
+          <Bars3Icon className="w-6 h-6" />
+        )}
+      </button>
     </div>
-    <button
-      onClick={() => setDarkMode(isDarkMode ? "Light" : "Dark")}
-      className="text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125"
-      aria-label="Toggle Dark Mode"
-    >
-      {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
-    </button>
-    <button
-      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      className="md:hidden text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125"
-      aria-label="Toggle Menu"
-    >
-      {isMobileMenuOpen ? (
-        <XMarkIcon className="w-6 h-6" />
-      ) : (
-        <Bars3Icon className="w-6 h-6" />
-      )}
-    </button>
-  </div>
-);
+  );
+};
 
 const MobileMenu = ({ setIsMobileMenuOpen }) => (
   <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-black bg-opacity-90 backdrop-blur-lg flex flex-col items-center justify-center space-y-6 z-50 animate-fadeIn transition-colors duration-300">

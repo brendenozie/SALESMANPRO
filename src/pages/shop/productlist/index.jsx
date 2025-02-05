@@ -3,16 +3,9 @@ import { motion } from "framer-motion";
 import { useRouter } from 'next/router';
 import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
+import Cart from "../../../components/cart";
 import debounce from "lodash.debounce";
 import { ArrowPathIcon , StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
-
-// import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-// import { motion } from "framer-motion";
-// import { useRouter } from 'next/router';
-// import Header from "../../../components/shop/header/Header";
-// import Footer from "../../../components/shop/footer/Footer";
-// import debounce from "lodash.debounce";
-// import { ArrowPathIcon, StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon } from "@heroicons/react/24/outline";
 
 const ProductList = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,6 +86,7 @@ const ProductList = () => {
         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
       </div>
       <Footer />
+      <Cart /> 
     </>
   );
 };

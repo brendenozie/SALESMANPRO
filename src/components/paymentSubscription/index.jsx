@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '../../contexts/ContextProvider';
 import { useRouter } from 'next/router';
 
-const Cart = () => {
+const PaymentSubscription = () => {
   const { cart, isCartOpen, setIsCartOpen, updateQuantity, removeItem,cartSubtotal } = useStateContext();
   const router = useRouter();
 
@@ -96,4 +96,4 @@ const Cart = () => {
   );
 };
 
-export default Cart;
+export default PaymentSubscription;

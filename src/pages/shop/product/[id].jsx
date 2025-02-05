@@ -6,6 +6,7 @@ import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
 import { useStateContext } from '../../../contexts/ContextProvider';
 import { motion } from "framer-motion";
+import Cart from "../../../components/cart";
 
 const prisma = new PrismaClient();
 
@@ -107,13 +108,14 @@ const ProductPage = ({ product, similarProducts }) => {
 
         <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 flex flex-col lg:flex-row gap-12">
           <ProductImages images={images} currentImageIndex={currentImageIndex} setCurrentImageIndex={setCurrentImageIndex} />
-          <ProductInfo quantity={quantity} setQuantity={setQuantity} product={product} />
+          <ProductInfo quantity={quantity} setQuantity={setQuantity} product={product}  addToCart ={addToCart} removeFromCart={removeFromCart} decreaseQuantity={decreaseQuantity}/>
         </div>
 
         <ProductSpecifications />
         <SimilarItems similarProducts={similarProducts}/>
       </div>
       <Footer />
+      <Cart />
     </>
   );
 };
@@ -169,14 +171,14 @@ const ProductInfo = ({ quantity, setQuantity, product, addToCart, removeFromCart
     <ColorOptions />
 
     {/* Quantity Selector */}
-    <QuantitySelector quantity={quantity} setQuantity={setQuantity} />
+    <QuantitySelector quantity={quantity} setQuantity={setQuantity} product={product} addToCart ={addToCart} removeFromCart={removeFromCart} decreaseQuantity={decreaseQuantity}/>
 
     {/* CTA Buttons */}
     <div className="flex space-x-4">
       <button className="bg-yellow-700 text-white px-8 py-3 rounded-lg font-medium hover:bg-yellow-800 shadow-md transition">
         Buy Now
       </button>
-      <button className="border border-yellow-600 text-yellow-500 px-8 py-3 rounded-lg font-medium hover:bg-yellow-100 shadow-md transition">
+      <button onClick={()=>{addToCart(product)}} className="border border-yellow-600 text-yellow-500 px-8 py-3 rounded-lg font-medium hover:bg-yellow-100 shadow-md transition">
         Add to Cart
       </button>
     </div>
@@ -202,18 +204,18 @@ const ColorOptions = () => {
 };
 
 // Quantity Selector with More Styling
-const QuantitySelector = ({ quantity, setQuantity }) => (
+const QuantitySelector = ({ quantity, setQuantity,product, addToCart, decreaseQuantity, }) => (
   <div className="flex items-center mb-6">
     <div className="flex items-center border rounded-lg px-4 py-2 space-x-4 bg-gray-100 shadow-md">
       <button
-        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+        onClick={() =>{setQuantity(Math.max(1, quantity - 1)); decreaseQuantity(product)}}
         className="text-gray-700 text-xl font-bold"
       >
         −
       </button>
       <span className="font-medium text-lg">{quantity}</span>
       <button
-        onClick={() => setQuantity(quantity + 1)}
+        onClick={() => {setQuantity(quantity + 1); addToCart(product)}}
         className="text-gray-700 text-xl font-bold"
       >
         +

@@ -31,6 +31,7 @@ export const ContextProvider = ({ children }) => {
     }
     return false;
   });
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [themeSettings, setThemeSettings] = useState(false);
   const [activeMenu, setActiveMenu] = useState(() => {
     if (typeof window !== "undefined") {
@@ -159,8 +160,10 @@ export const ContextProvider = ({ children }) => {
       setThemeSettings,
       isLoading,
       cartSubtotal,
+      isCartOpen,
+      setIsCartOpen
     }),
-    [cart, currentColor, isDarkMode, activeMenu, screenSize, isClicked, themeSettings, isLoading, cartSubtotal]
+    [cart, currentColor, isCartOpen, isDarkMode, activeMenu, screenSize, isClicked, themeSettings, isLoading, cartSubtotal]
   );
 
   return (
