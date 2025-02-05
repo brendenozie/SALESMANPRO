@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBagIcon,
   BoltIcon,
@@ -9,44 +9,65 @@ import {
 } from "@heroicons/react/24/outline";
 
 const tabs = [
-  { id: "orders", label: "Order History", icon: <ShoppingBagIcon className='h-8 w-8' /> },
-  { id: "recent", label: "Recent Activity", icon: <BoltIcon className='h-8 w-8' /> },
-  { id: "wishlist", label: "Wishlist", icon: <HeartIcon className='h-8 w-8' /> },
-  { id: "saved", label: "Saved Items", icon: <BookmarkIcon className='h-8 w-8' /> },
-  { id: "downloads", label: "Download History", icon: <BookOpenIcon className='h-8 w-8' /> },
+  { id: "orders", label: "Order History", icon: <ShoppingBagIcon className='h-6 w-6' /> },
+  { id: "recent", label: "Recent Activity", icon: <BoltIcon className='h-6 w-6' /> },
+  { id: "wishlist", label: "Wishlist", icon: <HeartIcon className='h-6 w-6' /> },
+  { id: "saved", label: "Saved Items", icon: <BookmarkIcon className='h-6 w-6' /> },
+  { id: "downloads", label: "Download History", icon: <BookOpenIcon className='h-6 w-6' /> },
 ];
 
 const ActivityOverview = () => {
   const [activeTab, setActiveTab] = useState("orders");
 
   return (
-    <div className="p-6 w-full max-w-3xl mx-auto shadow-lg rounded-2xl bg-white">
-      <h2 className="text-xl font-bold mb-4">📦 Activity Overview</h2>
+    <div className="p-6 w-full max-w-3xl mx-auto shadow-xl rounded-3xl bg-white dark:bg-gray-800 dark:text-white">
+      <h2 className="text-2xl font-extrabold mb-6 text-center">📦 Activity Overview</h2>
 
       {/* Tabs List */}
-      <div className="grid grid-cols-5 gap-2 mb-4 border-b">
+      <div className="relative flex justify-between gap-2 mb-6 border-b dark:border-gray-700">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 p-2 text-sm font-medium border-b-2 ${
-              activeTab === tab.id ? "border-black text-black" : "border-transparent text-gray-500"
-            }`}
+            className={`relative flex flex-col items-center justify-center gap-1 px-4 py-2 text-sm font-medium transition-colors duration-300 rounded-md focus:outline-none 
+              ${
+                activeTab === tab.id
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-300"
+              }`}
           >
-            {tab.icon} {tab.label}
+            {tab.icon}
+            <span>{tab.label}</span>
+
+            {activeTab === tab.id && (
+              <motion.div
+                layoutId="underline"
+                className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 dark:bg-blue-400 rounded-full"
+              />
+            )}
           </button>
         ))}
       </div>
 
       {/* Tabs Content */}
-      <div className="mt-4">
-        {tabs.map((tab) => (
-          activeTab === tab.id && (
-            <motion.div key={tab.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <p className="text-gray-600">{`No ${tab.label.toLowerCase()} found.`}</p>
-            </motion.div>
-          )
-        ))}
+      <div className="mt-4 min-h-[100px]">
+        <AnimatePresence mode="wait">
+          {tabs.map(
+            (tab) =>
+              activeTab === tab.id && (
+                <motion.div
+                  key={tab.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-md"
+                >
+                  <p className="text-gray-700 dark:text-gray-300">{`No ${tab.label.toLowerCase()} found.`}</p>
+                </motion.div>
+              )
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

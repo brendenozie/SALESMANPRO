@@ -54,6 +54,7 @@
     "react-scroll": "^1.8.7",
     "react-slick": "^0.30.3",
     "react-time-picker": "^7.0.0",
+    "react-leaflet": "4.2.0",
     "redis": "^4.7.0",
     "slick-carousel": "^1.8.1",
     "stripe": "^11.1.0",
