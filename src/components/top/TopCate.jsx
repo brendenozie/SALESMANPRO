@@ -54,12 +54,12 @@ const TopCate = ({ categories }) => {
     <section className="relative py-20 bg-gradient-to-b from-white via-neutral-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-300">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-12">
-          <h2 className="text-5xl font-extrabold text-black dark:text-white tracking-wide">
+          <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
             Explore <span className="text-yellow-400">Top Categories</span>
           </h2>
-          <button className="text-yellow-400 text-lg font-medium hover:text-yellow-300 transition flex items-center space-x-2">
+          <button className="text-yellow-400 text-sm md:text-lg flex font-medium hover:text-yellow-300 transition  items-center space-x-2">
             <span>View All</span>
-            <ArrowRightCircleIcon className="text-lg" />
+            <ArrowRightCircleIcon className="text-sm md:text-lg" />
           </button>
         </div>
 

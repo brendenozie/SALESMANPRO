@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
 import debounce from "lodash.debounce";
-import { ArrowPathIcon , StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon , StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 
 // import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 // import { motion } from "framer-motion";
@@ -118,8 +118,10 @@ const ProductGrid = ({ loading, products }) => (
       <ProductCard key={product.id} product={product} />
     ))}
     {loading && (
-      <div>
-        <SkeletonCard />
+      <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        {[9, 8, 7, 6, 5, 4, 3, 2, 1].map(() => (
+          <SkeletonCard className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md cursor-pointer hover:shadow-xl transition"/>
+        ))}
         <div className="col-span-full flex justify-center mt-6">
           <motion.div
             animate={{ rotate: 360 }}
@@ -147,8 +149,8 @@ const ProductCard = ({ product }) => {
         <span className="text-xl font-bold text-yellow-500">${product.sellingPrice.toFixed(2)}</span>
         <motion.button
           whileHover={{ scale: 1.1 }}
-          className="px-4 py-2 bg-yellow-500 text-white rounded-lg shadow-md"
-        >Add to Cart</motion.button>
+          className="flex items-center bg-yellow-400 text-black px-4 py-2 rounded-full shadow-md hover:bg-yellow-500 transition"
+        ><ShoppingCartIcon className="w-5 h-5 mr-1" /> Add</motion.button>
       </div>
     </motion.div>
   );

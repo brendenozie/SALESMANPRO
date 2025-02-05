@@ -100,7 +100,7 @@ const Home = () => {
 
       <CategoriesGrid categories={categories} />
 
-      <div className="mt-12">
+      <div className="mt-12 sm:px-2 md:px-8 lg:px-8">
         <SliderComponent promoSlides={promoSlides} />
       </div>
     </section>

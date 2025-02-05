@@ -4,7 +4,8 @@ import { PrismaClient } from '@prisma/client';
 import { useRouter } from 'next/router';
 import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
-import { useStateContext  } from '../../../contexts/ContextProvider';
+import { useStateContext } from '../../../contexts/ContextProvider';
+import { motion } from "framer-motion";
 
 const prisma = new PrismaClient();
 
@@ -45,10 +46,9 @@ export async function getServerSideProps(context) {
         },
       },
     },
-    take: 4, // Limit the number of similar products
+    take: 4,
   });
 
-  // Convert Date objects to strings
   const serializedProduct = {
     ...product,
     createdAt: product.createdAt.toISOString(),
@@ -86,11 +86,10 @@ export async function getServerSideProps(context) {
   };
 }
 
-const ProductPage = ({ product }) => {
+const ProductPage = ({ product, similarProducts }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const { addToCart, removeFromCart, decreaseQuantity, cart, cartSubtotal } = useStateContext();
-
 
   const images = [
     "/images/SlideCard/slide-1.png",
@@ -101,94 +100,69 @@ const ProductPage = ({ product }) => {
   return (
     <>
       <Header />
-        <div className="bg-gray-50 min-h-screen p-6">
-          {/* Breadcrumb */}
-          <nav className="text-sm text-gray-500 px-6 py-4">
-            Home / Products / {product.inventoryItem.product.category} / <span className="text-gray-900 font-semibold">{product.newName}</span>
-          </nav>
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+        <nav className="text-sm text-gray-500 dark:text-gray-400 px-6 py-4">
+          Home / Products / {product.inventoryItem.product.category} / <span className="text-gray-900 dark:text-white font-semibold">{product.newName}</span>
+        </nav>
 
-          {/* Product Section */}
-          <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-8 flex flex-col lg:flex-row gap-12">
-            <ProductImages
-              images={images}
-              currentImageIndex={currentImageIndex}
-              setCurrentImageIndex={setCurrentImageIndex}
-            />
-            <ProductInfo quantity={quantity} setQuantity={setQuantity} product={product}/>
-          </div>
-
-          {/* Specifications */}
-          <ProductSpecifications />
-
-          {/* Similar Items */}
-          <SimilarItems />
+        <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 flex flex-col lg:flex-row gap-12">
+          <ProductImages images={images} currentImageIndex={currentImageIndex} setCurrentImageIndex={setCurrentImageIndex} />
+          <ProductInfo quantity={quantity} setQuantity={setQuantity} product={product} />
         </div>
-      <Footer/>
+
+        <ProductSpecifications />
+        <SimilarItems similarProducts={similarProducts}/>
+      </div>
+      <Footer />
     </>
   );
 };
 
 export default ProductPage;
 
-// Product Images with Carousel Arrows
 const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
+  const prevImage = () => setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  const nextImage = () => setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
 
   return (
     <div className="relative flex-1">
-      <div className="relative">
-        <img
-          src={images[currentImageIndex]}
-          alt="Product"
-          className="rounded-lg w-full object-contain h-96 shadow-lg"
-        />
-        {/* Navigation Arrows */}
-        <button
-          onClick={prevImage}
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-2 hover:bg-gray-100 transition"
-        >
-          <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
+      <div className="relative flex-1">
+        <img src={images[currentImageIndex]} alt="Product" className="rounded-lg w-full object-contain h-96 shadow-lg" />
+        <button onClick={prevImage} className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+          <ArrowLeftIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
         </button>
-        <button
-          onClick={nextImage}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-2 hover:bg-gray-100 transition"
-        >
-          <ArrowRightIcon className="h-6 w-6 text-gray-700" />
+        <button onClick={nextImage} className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+          <ArrowRightIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
         </button>
       </div>
 
       {/* Thumbnail Images */}
-      <div className="flex space-x-2 mt-4">
-        {images.map((img, index) => (
-          <img
-            key={index}
-            src={img}
-            alt={`Thumbnail ${index + 1}`}
-            onClick={() => setCurrentImageIndex(index)}
-            className={`h-16 w-16 object-cover rounded-lg border cursor-pointer transition ${
-              index === currentImageIndex ? "border-green-500 shadow-md" : "border-gray-300"
-            }`}
-          />
-        ))}
+        <div className="flex space-x-2 mt-4">
+          {images.map((img, index) => (
+            <img
+              key={index}
+              src={img}
+              alt={`Thumbnail ${index + 1}`}
+              onClick={() => setCurrentImageIndex(index)}
+              className={`h-16 w-16 object-cover rounded-lg border cursor-pointer transition ${
+                index === currentImageIndex ? "border-green-500 shadow-md" : "border-gray-300"
+              }`}
+            />
+          ))}
+        </div>
       </div>
-    </div>
   );
 };
+
 
 // Product Information Section
 const ProductInfo = ({ quantity, setQuantity, product, addToCart, removeFromCart, decreaseQuantity, }) => (
   <div className="flex-1">
-    <h1 className="text-4xl font-bold text-gray-900 mb-3">{product.newName}</h1>
-    <p className="text-gray-500 mb-4 leading-relaxed">
+    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">{product.newName}</h1>
+    <p className="text-gray-500  mb-4 leading-relaxed">
       {product.newDescription}
     </p>
-    <p className="text-3xl font-semibold text-gray-900 mb-2">${product.sellingPrice}</p>
+    <p className="text-3xl font-semibold text-gray-900 dark:text-white mb-2">${product.sellingPrice}</p>
     <p className="text-sm text-gray-400 mb-6">Suggested payments with 6 months special financing</p>
 
     {/* Color Options */}
@@ -199,10 +173,10 @@ const ProductInfo = ({ quantity, setQuantity, product, addToCart, removeFromCart
 
     {/* CTA Buttons */}
     <div className="flex space-x-4">
-      <button className="bg-green-700 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-800 shadow-md transition">
+      <button className="bg-yellow-700 text-white px-8 py-3 rounded-lg font-medium hover:bg-yellow-800 shadow-md transition">
         Buy Now
       </button>
-      <button className="border border-green-700 text-green-700 px-8 py-3 rounded-lg font-medium hover:bg-green-100 shadow-md transition">
+      <button className="border border-yellow-600 text-yellow-500 px-8 py-3 rounded-lg font-medium hover:bg-yellow-100 shadow-md transition">
         Add to Cart
       </button>
     </div>
@@ -214,7 +188,7 @@ const ColorOptions = () => {
   const colors = ["bg-red-300", "bg-gray-700", "bg-green-500", "bg-white", "bg-blue-500"];
   return (
     <div className="mb-4">
-      <h3 className="text-gray-900 font-medium mb-2">Choose a Color</h3>
+      <h3 className="text-gray-900 dark:text-white font-medium mb-2">Choose a Color</h3>
       <div className="flex space-x-3">
         {colors.map((color, index) => (
           <button
@@ -251,7 +225,6 @@ const QuantitySelector = ({ quantity, setQuantity }) => (
   </div>
 );
 
-
 const generalDetails = [
   { label: "Brand", value: "Apple" },
   { label: "Model", value: "AirPods Max Wireless Headphones" },
@@ -264,12 +237,9 @@ const productDetails = [
   { label: "Driver Type", value: "Dynamic" },
 ];
 
-// Product Specifications Section
 const ProductSpecifications = () => (
   <div className="max-w-7xl mx-auto px-6">
-    <h2 className="text-2xl mt-6 font-extrabold text-gray-800 mb-6 text-center">
-      Specifications
-    </h2>
+    <h2 className="text-2xl mt-6 font-extrabold text-gray-800 dark:text-white mb-6 text-center">Specifications</h2>
     <div className="grid md:grid-cols-2 gap-8">
       <SpecificationCard title="General" details={generalDetails} />
       <SpecificationCard title="Product Details" details={productDetails} />
@@ -278,78 +248,78 @@ const ProductSpecifications = () => (
 );
 
 const SpecificationCard = ({ title, details }) => (
-  <div className="bg-white shadow-lg p-6 rounded-2xl border border-gray-200 transition hover:shadow-xl">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+  <div className="bg-white dark:bg-gray-800 shadow-lg p-6 rounded-2xl border border-gray-200 dark:border-gray-700 transition hover:shadow-xl">
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{title}</h3>
     <div className="space-y-3">
       {details.map((item, index) => (
-        <div key={index} className="flex justify-between text-gray-700 text-sm">
+        <div key={index} className="flex justify-between text-gray-700 dark:text-gray-300 text-sm">
           <span className="font-medium">{item.label}</span>
-          <span className="text-gray-600">{item.value}</span>
+          <span>{item.value}</span>
         </div>
       ))}
     </div>
   </div>
 );
 
+const SimilarItems = ({ similarProducts }) => {
 
-// Similar Items Component
-const SimilarItems = () => {
-  const similarProducts = [
-    {
-      id: 1,
-      image: "/images/SlideCard/slide-1.png",
-      name: "Wireless Headphones",
-      price: "$199.99",
-    },
-    {
-      id: 2,
-      image: "/images/SlideCard/slide-2.png",
-      name: "Noise Cancelling Earbuds",
-      price: "$149.99",
-    },
-    {
-      id: 3,
-      image: "/images/SlideCard/slide-3.png",
-      name: "Bluetooth Over-Ear",
-      price: "$129.99",
-    },
-    {
-      id: 4,
-      image: "/images/SlideCard/slide-3.png",
-      name: "Studio Headphones",
-      price: "$249.99",
-    },
-  ];
+  const router = useRouter();
+  // const similarProducts = [
+  //   {
+  //     id: 1,
+  //     image: "/images/SlideCard/slide-1.png",
+  //     name: "Wireless Headphones",
+  //     price: "$199.99",
+  //   },
+  //   {
+  //     id: 2,
+  //     image: "/images/SlideCard/slide-2.png",
+  //     name: "Noise Cancelling Earbuds",
+  //     price: "$149.99",
+  //   },
+  //   {
+  //     id: 3,
+  //     image: "/images/SlideCard/slide-3.png",
+  //     name: "Bluetooth Over-Ear",
+  //     price: "$129.99",
+  //   },
+  //   {
+  //     id: 4,
+  //     image: "/images/SlideCard/slide-3.png",
+  //     name: "Studio Headphones",
+  //     price: "$249.99",
+  //   },
+  // ];
 
   return (
-    <div className="mt-10 max-w-7xl mx-auto">
-      <h3 className="text-2xl font-semibold mb-6">Similar Items You Might Like</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {similarProducts.map((product) => (
-          <div
+  
+  <div className="mt-10 max-w-7xl mx-auto">
+    <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Similar Items You Might Like</h3>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {similarProducts.map((product) => (
+          <motion.div onClick={ () => router.push(`/shop/product/${product.id}`)} 
             key={product.id}
-            className="bg-white shadow-md rounded-xl p-4 flex flex-col items-center justify-center hover:shadow-xl transition transform hover:-translate-y-1"
+            className="bg-white  dark:bg-gray-800 shadow-md rounded-xl p-4 flex flex-col items-center justify-center hover:shadow-xl transition transform hover:-translate-y-1"
           >
             {/* Product Image */}
             <div className="h-36 w-36 rounded-lg flex items-center justify-center overflow-hidden">
               <img
                 src={product.image}
-                alt={product.newNameame}
+                alt={product.newName}
                 className="h-full w-full object-contain transition-transform duration-300 hover:scale-110"
               />
             </div>
 
             {/* Product Details */}
-            <p className="text-lg font-medium text-gray-800 mt-4">{product.name}</p>
-            <p className="text-green-600 font-semibold text-md mt-1">{product.price}</p>
+            <p className="text-lg font-medium text-gray-800 dark:text-white mt-4">{product.newName}</p>
+            <p className="text-yellow-600 dark:text-yellow-400 font-semibold text-md mt-1">{product.sellingPrice}</p>
 
             {/* Add to Cart Button */}
-            <button className="mt-4 px-5 py-2 bg-green-700 text-white rounded-lg font-medium hover:bg-green-800 transition">
+            <button className="mt-4 px-5 py-2 bg-yellow-700 text-white rounded-lg font-medium hover:bg-yellow-800 transition">
               Add to Cart
             </button>
-          </div>
+          </motion.div>
         ))}
-      </div>
     </div>
-  );
-};
+  </div>
+)};
