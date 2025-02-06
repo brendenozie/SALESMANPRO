@@ -10,6 +10,7 @@ import Wrapper from "../../components/wrapper/Wrapper";
 import Header from "../../components/shop/header/Header";
 import Footer from "../../components/shop/footer/Footer";
 import Cart from "../../components/cart";
+import { useStateContext } from '../../contexts/ContextProvider';
 
 const Pages = () => {
   const [categories, setCategories] = useState([]);
@@ -22,6 +23,8 @@ const Pages = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [CartItem, setCartItem] = useState([]);
+  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
+  
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -86,35 +89,17 @@ const Pages = () => {
     fetchProductsByFlag("isFeatured", setFeatured);
   }, []);
 
-  const addToCart = (product) => {
-    const productExit = CartItem.find((item) => item.id === product.id);
-    if (productExit) {
-      setCartItem(CartItem.map((item) => (item.id === product.id ? { ...productExit, qty: productExit.qty + 1 } : item)));
-    } else {
-      setCartItem([...CartItem, { ...product, qty: 1 }]);
-    }
-  };
-
-  const decreaseQty = (product) => {
-    const productExit = CartItem.find((item) => item.id === product.id);
-    if (productExit.qty === 1) {
-      setCartItem(CartItem.filter((item) => item.id !== product.id));
-    } else {
-      setCartItem(CartItem.map((item) => (item.id === product.id ? { ...productExit, qty: productExit.qty - 1 } : item)));
-    }
-  };
-
   return (
     <>
       <div className="container bg-gradient-to-br from-gray-50 to-gray-100">
         <Header CartItem={CartItem} />
         <Home CartItem={CartItem} />
-        {flashDeals.products && <FlashDeals productItems={flashDeals.products} addToCart={addToCart} />}
+        {flashDeals.products && <FlashDeals productItems={flashDeals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
         {categories && <TopCate categories={categories} />}
-        {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} />}
-        {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} />}
+        {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
+        {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
         {/* productsByCategory["Shop"] &&  */}
-        {<Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} />}
+        {<Shop shopItems={productsByCategory["Shop"] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
         <Annocument />
         <Wrapper />
         <Footer />

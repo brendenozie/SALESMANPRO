@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -17,32 +17,23 @@ import {
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
 const CategoriesGrid = ({ categories }) => (
-  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sm:gap-6 lg:gap-6 px-2 py-2 sm:px-6 sm:py-8 lg:px-6 lg:py-2">
+  <div className="grid grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] gap-2 sm:gap-6 px-4 py-4 sm:px-6 sm:py-8">
     {categories.map(({ name, icon }, index) => (
       <motion.div
         key={index}
-        whileHover={{ scale: 1.1, rotate: 1 }}
-        whileTap={{ scale: 0.95 }}
-        className="bg-gradient-to-br from-yellow-400 to-yellow-500 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform hover-glow relative overflow-hidden"
+        whileHover={{ scale: 1.05 }}
+        className="bg-gradient-to-br from-yellow-400 to-yellow-500 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-2xl opacity-20"></div>
-        <motion.div className="text-5xl mb-3 z-10 drop-shadow-md" whileHover={{ rotate: 10 }}>{icon}</motion.div>
-        <p className="font-bold text-center text-lg z-10 drop-shadow-sm">{name}</p>
+        <span className="text-5xl mb-3 z-10 drop-shadow-md">{icon}</span>
+        <p className="font-bold text-center text-lg z-10 drop-shadow-sm truncate w-full">{name}</p>
       </motion.div>
     ))}
   </div>
 );
 
 const SliderComponent = ({ promoSlides }) => (
-  <Slider
-    dots={true}
-    infinite={true}
-    slidesToShow={1}
-    slidesToScroll={1}
-    autoplay={true}
-    autoplaySpeed={4000}
-    arrows={true}
-  >
+  <Slider dots infinite slidesToShow={1} slidesToScroll={1} autoplay autoplaySpeed={4000} arrows>
     {promoSlides.map((slide) => (
       <SlideCard slide={slide} key={slide.id} />
     ))}
@@ -54,10 +45,8 @@ const Home = () => {
 
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
-    if (storedTheme === "dark") {
-      setIsDarkMode(true);
-      document.documentElement.classList.add("dark");
-    }
+    document.documentElement.classList.toggle("dark", storedTheme === "dark");
+    setIsDarkMode(storedTheme === "dark");
   }, []);
 
   const categories = [
@@ -82,24 +71,16 @@ const Home = () => {
   ];
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-black dark:text-white px-6 py-12 relative">
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="text-center mb-14 relative"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-600 via-transparent to-yellow-500 dark:from-gray-800 dark:to-gray-700 opacity-20 blur-3xl"></div>
-        <h1 className="text-6xl font-extrabold tracking-wide mb-4 drop-shadow-2xl">
+    <section className="min-h-screen bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-gray-800 dark:text-gray-100 px-6 py-12 container mx-auto">
+      <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="text-center mb-14 relative">
+        <h1 className="text-6xl font-extrabold tracking-wide mb-4">
           Uncover <span className="text-yellow-400">Exclusive</span> Deals
         </h1>
         <p className="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
           Your gateway to the best offers and latest products.
         </p>
       </motion.div>
-
       <CategoriesGrid categories={categories} />
-
       <div className="mt-12 sm:px-2 md:px-8 lg:px-8">
         <SliderComponent promoSlides={promoSlides} />
       </div>
@@ -109,38 +90,42 @@ const Home = () => {
 
 export default Home;
 
+
 const SlideCard = ({ slide }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
+    initial="hidden"
+    animate="visible"
     transition={{ duration: 0.8 }}
+    variants={fadeInUp}
     className="relative flex flex-col md:flex-row items-center justify-center w-full bg-gradient-to-br from-yellow-300 to-yellow-600 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
   >
-    <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-lg rounded-3xl"></div>
+    {/* Text Section */}
     <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">
-      <motion.h2 className="text-4xl md:text-5xl font-extrabold leading-tight drop-shadow-lg" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>{slide.title}</motion.h2>
-      <motion.p className="text-lg md:text-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>{slide.description}</motion.p>
+      <motion.h2
+        variants={fadeInLeft}
+        transition={{ delay: 0.2 }}
+        className="text-4xl md:text-5xl font-extrabold leading-tight"
+      >
+        {slide.title}
+      </motion.h2>
+      <motion.p variants={fadeInUp} transition={{ delay: 0.4 }} className="text-lg md:text-xl">
+        {slide.description}
+      </motion.p>
       <motion.button
-        whileHover={{ scale: 1.05 }}
+        whileHover={{ scale: 1.05, rotate: 1 }}
         whileTap={{ scale: 0.95 }}
         className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-2 focus:ring-yellow-400 text-white font-semibold rounded-xl shadow-lg transition"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
       >
         Learn More
       </motion.button>
     </div>
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
-      className="relative z-10 w-full md:w-1/2 flex justify-center items-center"
-    >
+
+    {/* Image Section */}
+    <motion.div variants={scaleUp} transition={{ delay: 0.4, duration: 0.6, type: "spring" }} className="relative z-10 w-full md:w-1/2 flex justify-center items-center">
       <Image
         src={slide.img}
-        alt={slide.title}
         loader={loader}
+        alt={slide.title}
         width={350}
         height={350}
         loading="lazy"
@@ -149,3 +134,62 @@ const SlideCard = ({ slide }) => (
     </motion.div>
   </motion.div>
 );
+
+const fadeInLeft = {
+  hidden: { opacity: 0, x: -50 },
+  visible: { opacity: 1, x: 0, transition: { delay: 0.2, ease: [0.42, 0, 0.58, 1] } },
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { delay: 0.3, ease: [0.42, 0, 0.58, 1] } },
+};
+
+const scaleUp = {
+  hidden: { scale: 0.9, opacity: 0 },
+  visible: { scale: 1, opacity: 1 },
+};
+
+const SlideCardV2 = memo(({ slide }) => {
+  <motion.div
+    initial="hidden"
+    animate="visible"
+    transition={{ duration: 0.8 }}
+    variants={fadeInUp}
+    className="relative flex flex-col md:flex-row items-center justify-center w-full bg-gradient-to-br from-yellow-300 to-yellow-600 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
+  >
+    {/* Text Section */}
+    <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">
+      <motion.h2
+        variants={fadeInLeft}
+        transition={{ delay: 0.2 }}
+        className="text-4xl md:text-5xl font-extrabold leading-tight"
+      >
+        {slide.title}
+      </motion.h2>
+      <motion.p variants={fadeInUp} transition={{ delay: 0.4 }} className="text-lg md:text-xl">
+        {slide.description}
+      </motion.p>
+      <motion.button
+        whileHover={{ scale: 1.05, rotate: 1 }}
+        whileTap={{ scale: 0.95 }}
+        className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-2 focus:ring-yellow-400 text-white font-semibold rounded-xl shadow-lg transition"
+      >
+        Learn More
+      </motion.button>
+    </div>
+
+    {/* Image Section */}
+    <motion.div variants={scaleUp} transition={{ delay: 0.4, duration: 0.6, type: "spring" }} className="relative z-10 w-full md:w-1/2 flex justify-center items-center">
+      <Image
+        src={slide.img}
+        loader={loader}
+        alt={slide.title}
+        width={350}
+        height={350}
+        loading="lazy"
+        className="w-[350px] h-[350px] object-contain filter brightness-110 contrast-125 transition-transform hover:scale-105 hover:rotate-1"
+      />
+    </motion.div>
+  </motion.div>
+});

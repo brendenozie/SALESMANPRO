@@ -119,7 +119,7 @@ const FlashCard = ({ productItems, addToCart }) => {
   );
 };
 
-const FlashDeals = ({ productItems, addToCart }) => {
+const FlashDeals = ({ productItems, addToCart, decreaseQuantity, removeFromCart }) => {
   return (
     <section className="py-12 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-black dark:text-white transition-colors duration-500">
       <div className="container mx-auto px-6">

@@ -4,7 +4,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const Shop = ({ addToCart, shopItems }) => {
+const Shop = ({ addToCart, decreaseQuantity, removeFromCart, shopItems }) => {
   const categories = [
     { img: "./images/category/cat-1.png", name: "Apple" },
     { img: "./images/category/cat-2.png", name: "Samsung" },

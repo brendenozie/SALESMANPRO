@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 
-const NewArrivals = ({ productItems, addToCart }) => {
+const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart }) => {
   return (
     <section className="relative py-20 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500">
       <div className="container mx-auto px-6">

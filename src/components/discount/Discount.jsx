@@ -71,7 +71,7 @@ const Dcard = ({ productItems, addToCart }) => {
   );
 };
 
-const Discount = ({ productItems, addToCart }) => {
+const Discount = ({ productItems, addToCart, decreaseQuantity, removeFromCart }) => {
   return (
     <section className="relative py-20 bg-gradient-to-b from-red-50 via-white to-red-50 dark:from-gray-900 dark:via-black dark:to-gray-900 transition-colors duration-500">
       <div className="container mx-auto px-6">
