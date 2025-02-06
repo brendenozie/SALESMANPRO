@@ -14,7 +14,7 @@ const loaderProp = ({ src, width, quality }) => {
 };
 
 
-const CartItem = ({ item, updateQuantity, removeItem }) => {
+const CartItem = ({ item, addToCart, decreaseQuantity, removeItem }) => {
   return (
     <div className="flex items-center gap-4 border-b border-gray-300 dark:border-gray-700 py-4">
       {/* <Image className="h-20 w-20 object-cover rounded-lg" loader={loaderProp} src={item.image} alt={item.newName} width={80} height={80} /> */}
@@ -24,7 +24,7 @@ const CartItem = ({ item, updateQuantity, removeItem }) => {
         <div className="flex items-center gap-2 mt-2">
           <MinusIcon
             className="w-5 h-5 text-red-500 cursor-pointer hover:scale-110 transition"
-            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+            onClick={() => decreaseQuantity(item.id)}
             aria-label="Decrease quantity"
           />
           <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200">
@@ -32,7 +32,7 @@ const CartItem = ({ item, updateQuantity, removeItem }) => {
           </span>
           <PlusIcon
             className="w-5 h-5 text-green-500 cursor-pointer hover:scale-110 transition"
-            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            onClick={() => addToCart(item)}
             aria-label="Increase quantity"
           />
         </div>

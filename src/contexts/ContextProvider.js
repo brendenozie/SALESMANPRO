@@ -106,9 +106,8 @@ export const ContextProvider = ({ children }) => {
           : item
       )
     );
-    toast.info("Decreased quantity.");
-  };
-
+    toast("Decreased quantity.", { icon: "ℹ️" });
+};
   const clearCart = () => {
     setCart([]);
     toast.info("Cart cleared.");

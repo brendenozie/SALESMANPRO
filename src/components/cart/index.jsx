@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import CartItem from '../cartItem';
 
 const Cart = () => {
-  const { cart, isCartOpen, setIsCartOpen, updateQuantity, removeItem } = useStateContext();
+  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
   const router = useRouter();
 
   // Memoize subtotal calculation
@@ -52,7 +52,7 @@ const Cart = () => {
               <p className="text-center text-gray-500">Your cart is empty.</p>
             ) : (
               cart.map((item) => (
-                <CartItem key={item.id} item={item} updateQuantity={updateQuantity} removeItem={removeItem} />
+                <CartItem key={item.id} item={item} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeItem={removeFromCart} />
               ))
             )}
 
