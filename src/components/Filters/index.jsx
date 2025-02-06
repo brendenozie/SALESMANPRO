@@ -51,8 +51,9 @@ const Filters = ({ filters, setFilters, uniqueBrands, uniqueCategories }) => {
             className="flex flex-wrap gap-4 w-full max-w-full"
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={uniqueBrands} />
             <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={uniqueCategories} />
+            <SubCategoryFilter selectedSubCategory={selectedBrands} setSelectedSubCategory={setSelectedBrands} categories={uniqueBrands} />
+            <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={uniqueBrands} />
             <RatingFilter selectedRating={localFilters.rating} setSelectedRating={value => handleFilterChange("rating", value)} />
             <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={value => handleFilterChange("priceRange", value)} />
             <AvailabilityFilter availability={localFilters.availability} setAvailability={value => handleFilterChange("availability", value)} />
@@ -138,9 +139,46 @@ const FilterContainer = ({ title, children, isOpen, toggleOpen, onReset }) => (
   </div>
 );
 
+const SubCategoryFilter = ({ selectedSubCategory, setSelectedSubCategory, categories }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(categories > 0);
+
+  const toggleSubCategory = (category) => {
+    setSelectedSubCategory((prev) =>
+      prev.includes(category) ? prev.filter((b) => b !== category) : [...prev, category]
+    );
+  };
+
+  const resetSubCategorys = () => setSelectedSubCategorys([]);
+  const filteredcategories = categories.filter((category) =>{
+    category.length > 0 && category.toLowerCase().includes(searchQuery.toLowerCase())
+  }
+  );
+
+  return (
+    <FilterContainer title="Sub Category" isOpen={isOpen} toggleOpen={() => setIsOpen(!isOpen)} onReset={resetSubCategorys}>
+      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search categories..." />
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto mt-3">
+        {filteredcategories.length > 0 ? (
+          filteredBrands.map((category) => (
+            <filteredcategories 
+              key={category} 
+              label={category} 
+              isSelected={selectedSubCategory.includes(category)} 
+              onClick={() => toggleSubCategory(category)} 
+            />
+          ))
+        ) : (
+          <p className="text-gray-500 text-sm">No brands found</p>
+        )}
+      </div>
+    </FilterContainer>
+  );
+};
+
 const BrandFilter = ({ selectedBrands, setSelectedBrands, brands }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(brands > 0);
 
   const toggleBrand = (brand) => {
     setSelectedBrands((prev) =>
@@ -259,7 +297,6 @@ const RatingFilter = ({ selectedRating, setSelectedRating }) => {
     </div>
   );
 };
-
 
 const AvailabilityFilter = ({ availability, setAvailability }) => (
   <div>

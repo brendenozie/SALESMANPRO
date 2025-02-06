@@ -23,6 +23,7 @@ const Pages = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [CartItem, setCartItem] = useState([]);
+  const [featuredCategories, setFeaturedCategories] = useState({});
   const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
   
 
@@ -32,7 +33,8 @@ const Pages = () => {
         const response = await fetch('/api/shop/categories');
         if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
-        setCategories(data);
+        setCategories(data.categories);
+        setFeaturedCategories(data.categories[2]);
       } catch (err) {
         setError(err.message);
       }
@@ -47,12 +49,12 @@ const Pages = () => {
       setError(null);
       try {
         const products = {};
-        for (const category of categories) {
-          const response = await fetch(`/api/shop/productsByCategory?categoryId=${category.id}`);
-          if (!response.ok) throw new Error(`Failed to fetch products for category ${category.name}.`);
+        // for (const category of categories) {
+          const response = await fetch(`/api/shop/productsByCategory?categoryId=${featuredCategories.id}`);
+          if (!response.ok) throw new Error(`Failed to fetch products for category ${featuredCategories.name}.`);
           const data = await response.json();
-          products[category.name] = data;
-        }
+          products[featuredCategories.name] = data;
+        // }
         setProductsByCategory(products);
       } catch (err) {
         setError(err.message);
@@ -64,7 +66,7 @@ const Pages = () => {
     if (categories.length > 0) {
       fetchProductsByCategory();
     }
-  }, [categories]);
+  }, [featuredCategories]);
 
   useEffect(() => {
     const fetchProductsByFlag = async (flag, setState) => {
@@ -93,12 +95,12 @@ const Pages = () => {
     <>
       <div className="container bg-gradient-to-br from-gray-50 to-gray-100">
         <Header CartItem={CartItem} />
-        <Home CartItem={CartItem} />
+        <Home CartItem={CartItem} categories={categories}  />
         {flashDeals.products && <FlashDeals productItems={flashDeals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
         {categories && <TopCate categories={categories} />}
         {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
         {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
-        {<Shop shopItems={productsByCategory["Electronics"] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
+        {<Shop category={featuredCategories} shopItems={productsByCategory[featuredCategories.name] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
         <Annocument />
         <Wrapper />
         <Footer />

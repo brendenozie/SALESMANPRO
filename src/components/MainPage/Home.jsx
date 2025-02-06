@@ -4,15 +4,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import {
-  ShoppingBagIcon,
-  Bars3Icon,
-  XMarkIcon,
-  UserIcon,
-  MagnifyingGlassIcon,
-  MoonIcon,
-  SunIcon,
-} from "@heroicons/react/24/outline";
 
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -40,30 +31,8 @@ const SliderComponent = ({ promoSlides }) => (
   </Slider>
 );
 
-const Home = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    document.documentElement.classList.toggle("dark", storedTheme === "dark");
-    setIsDarkMode(storedTheme === "dark");
-  }, []);
-
-  const categories = [
-    { name: "Fashion", icon: "👗" },
-    { name: "Electronics", icon: "📱" },
-    { name: "Cars", icon: "🚗" },
-    { name: "Home & Garden", icon: "🏡" },
-    { name: "Gifts", icon: "🎁" },
-    { name: "Music", icon: "🎵" },
-    { name: "Health & Beauty", icon: "💄" },
-    { name: "Pets", icon: "🐾" },
-    { name: "Baby Toys", icon: "🧸" },
-    { name: "Groceries", icon: "🛒" },
-    { name: "Books", icon: "📚" },
-    { name: "View All", icon: "📚" }
-  ];
-
+const Home = ({categories}) => {
+  
   const promoSlides = [
     { id: 1, title: "50% Off On Your First Purchase", description: "Exclusive discounts just for you.", img: "/images/SlideCard/slide-1.png" },
     { id: 2, title: "Limited Time Offer", description: "Shop now to enjoy amazing deals.", img: "/images/SlideCard/slide-2.png" },

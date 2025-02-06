@@ -57,14 +57,25 @@ model Notification {
 }
 
 model ProductCategory {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  image      String
-  status     String
-  isFeatured Boolean   @default(false)
-  tags       String[]
-  brand      String[]
-  products   Product[]
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  icon          String?
+  image         String?
+  status        String
+  brand         String[]
+  allBrands     String[]
+  tags          String[]
+  subcategories Json // Store subcategories as a JSON array
+  Product       Product[]
+}
+
+model Subcategory {
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  name   String
+  image  String?
+  status String
+  brand  String[]
+  tags   String[]
 }
 
 model UsersCategory {
