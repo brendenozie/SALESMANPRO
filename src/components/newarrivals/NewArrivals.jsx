@@ -1,8 +1,10 @@
 import React from "react";
 import { ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
+import { useRouter } from "next/router";
 
 const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart }) => {
+  const router = useRouter();
   return (
     <section className="relative py-20 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500">
       <div className="container mx-auto px-6">
@@ -41,7 +43,7 @@ const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
           {productItems.map((val, index) => (
-            <motion.div
+            <motion.div onClick={()=>{ router.push(`/shop/product/${val.id}`)}}
               key={index}
               className="relative group overflow-hidden rounded-2xl shadow-2xl"
               whileHover={{ scale: 1.05 }}

@@ -4,6 +4,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { GifIcon, ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
+import { useRouter } from "next/router";
 
 const Dcard = ({ productItems, addToCart }) => {
   const settings = {
@@ -21,10 +22,12 @@ const Dcard = ({ productItems, addToCart }) => {
     ],
   };
 
+  const router = useRouter();
+
   return (
     <Slider {...settings}>
       {productItems.map((value, index) => (
-        <motion.div
+        <motion.div onClick={()=>{ router.push(`/shop/product/${value.id}`)}}
           key={index}
           className="px-4"
           whileHover={{ scale: 1.05 }}
