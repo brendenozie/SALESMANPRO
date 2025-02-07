@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdjustmentsVerticalIcon, StarIcon, ChevronDoubleDownIcon, CheckCircleIcon, MagnifyingGlassIcon, ChevronDownIcon, XCircleIcon } from "@heroicons/react/24/outline";
-import { use } from "react";
 
 
-const Filters = ({ filters, setFilters, uniqueBrands, uniqueCategories }) => {
+const Filters = ({ filters, setFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [isOpen, setIsOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -13,106 +12,146 @@ const Filters = ({ filters, setFilters, uniqueBrands, uniqueCategories }) => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
 
-  // jump
-
-  const [filteredSubCategories, setFilteredSubCategories] = useState([]);
-  const [filteredBrands, setFilteredBrands] = useState([]);
-
-  useEffect(() => {
-    if (selectedCategories.length === 0) {
-      setFilteredSubCategories([]);
-      setFilteredBrands([]);
-      return;
-    }
-
-    // Collect subcategories from all selected categories
-    const subCategories = selectedCategories.flatMap(category => category.subcategories || []);
-    const uniqueSubCategories = [...new Set(subCategories.map(sub => sub))];
-
-    // Collect brands from all selected categories
-    const allBrands = selectedCategories.flatMap(category => category.allBrands || []);
-    const uniqueBrands = [...new Set(allBrands)];
-
-    setFilteredSubCategories(uniqueSubCategories);
-    setFilteredBrands(uniqueBrands);
-  }, [selectedCategories]);
-
-
-
-  // jump
-
-  useEffect(() => {
-      const fetchCategories = async () => {
-        try {
-          const response = await fetch('/api/shop/categories');
-          if (!response.ok) throw new Error("Failed to fetch categories.");
-          const data = await response.json();
-          setCategories(data.categories);
-        } catch (err) {
-          setError(err.message);
-        }
-      };
-  
-      fetchCategories();
-    }, []);
-
-
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
 
-  const handleFilterChange = useCallback((key, value) => {
-    setLocalFilters(prev => {
-      const updatedFilters = { ...prev, [key]: value };
-      setFilters(updatedFilters);
-      return updatedFilters;
-    });
-  }, [setFilters]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/shop/categories?limit=30");
+        if (!response.ok) throw new Error("Failed to fetch categories.");
+        const data = await response.json();
+        setCategories(data.categories || []);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const filteredSubCategories = useMemo(() => {
+    if (!selectedCategories.length) return [];
+    return Array.from(
+      new Set(selectedCategories.flatMap((category) => category?.subcategories || []))
+    );
+  }, [selectedCategories]);
+
+  const filteredBrands = useMemo(() => {
+    if (!selectedCategories.length) return [];
+    return Array.from(
+      new Set(selectedCategories.flatMap((category) => category?.allBrands || []))
+    );
+  }, [selectedCategories]);
+
+  const handleFilterChange = useCallback(
+    (key, value) => {
+      setLocalFilters((prev) => {
+        const updatedFilters = { ...prev, [key]: value };
+        setFilters(updatedFilters);
+        return updatedFilters;
+      });
+    },
+    [setFilters]
+  );
 
   const clearFilters = useCallback(() => {
-    const clearedFilters = { brand: "", category: "", priceRange: [0, 1000], rating: "", availability: "", sort: "popularity" };
+    const clearedFilters = {
+      brand: [],
+      category: [],
+      subCategory: [],
+      priceRange: [0, 1000],
+      rating: "",
+      availability: "",
+      sort: "popularity",
+    };
     setLocalFilters(clearedFilters);
     setFilters(clearedFilters);
+    setSelectedCategories([]);
+    setSelectedSubCategories([]);
+    setSelectedBrands([]);
   }, [setFilters]);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4 transition-all duration-300 ease-in-out">
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4 transition-all duration-300 ease-in-out">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold flex items-center gap-2 text-gray-800">
+        <h3 className="text-xl font-bold flex items-center gap-2 text-gray-800 dark:text-white">
           <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
         </h3>
-        <button 
-          onClick={() => setIsOpen(!isOpen)} 
-          className="text-gray-600 hover:text-yellow-500 transition-transform duration-200"
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-gray-600 dark:text-gray-300 hover:text-yellow-500 transition-transform duration-200"
           aria-label="Toggle Filters"
+          aria-expanded={isOpen}
         >
-          <ChevronDoubleDownIcon className={`w-6 h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDoubleDownIcon
+            className={`w-6 h-6 transform transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
         </button>
       </div>
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }} 
-            animate={{ opacity: 1, height: "auto" }} 
-            exit={{ opacity: 0, height: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
             className="flex flex-wrap gap-4 w-full max-w-full"
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
-            <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
-            <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />
-            <RatingFilter selectedRating={localFilters.rating} setSelectedRating={value => handleFilterChange("rating", value)} />
-            <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={value => handleFilterChange("priceRange", value)} />
-            <AvailabilityFilter availability={localFilters.availability} setAvailability={value => handleFilterChange("availability", value)} />
-            <SortFilter sortOption={localFilters.sort} setSortOption={value => handleFilterChange("sort", value)} />
+            <CategoryFilter
+              selectedCategories={selectedCategories}
+              setSelectedCategories={(value) => {
+                setSelectedCategories(value);
+                console.log("Category",value);
+                handleFilterChange("category", value);
+              }}
+              categories={categories}
+            />
+            <SubCategoryFilter
+              selectedSubCategory={selectedSubCategories}
+              setSelectedSubCategory={(value) => {
+                console.log("Subcategory",value);
+                console.log("1111Subcategory",selectedSubCategories);
+                setSelectedSubCategories(value);
+                handleFilterChange("subCategory", value);
+              }}
+              categories={filteredSubCategories}
+            />
+            <BrandFilter
+              selectedBrands={selectedBrands}
+              setSelectedBrands={(value) => {
+                setSelectedBrands(value);
+                console.log("Subcategory",value);
+                handleFilterChange("brand", value);
+              }}
+              brands={filteredBrands}
+            />
+            <RatingFilter
+              selectedRating={localFilters.rating}
+              setSelectedRating={(value) => handleFilterChange("rating", value)}
+            />
+            <PriceRangeFilter
+              priceRange={localFilters.priceRange}
+              setPriceRange={(value) => handleFilterChange("priceRange", value)}
+            />
+            <AvailabilityFilter
+              availability={localFilters.availability}
+              setAvailability={(value) => handleFilterChange("availability", value)}
+            />
+            <SortFilter
+              sortOption={localFilters.sort}
+              setSortOption={(value) => handleFilterChange("sort", value)}
+            />
           </motion.div>
-
         )}
       </AnimatePresence>
 
-      <button 
-        onClick={clearFilters} 
+      <button
+        onClick={clearFilters}
         className="mt-4 w-full py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition-transform duration-200 hover:scale-105"
       >
         Clear All Filters
@@ -122,6 +161,125 @@ const Filters = ({ filters, setFilters, uniqueBrands, uniqueCategories }) => {
 };
 
 export default Filters;
+
+// const Filters = ({ filters, setFilters}) => {
+  
+//   const [localFilters, setLocalFilters] = useState(filters);
+//   const [isOpen, setIsOpen] = useState(true);
+//   const [selectedCategories, setSelectedCategories] = useState([]);
+//   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+//   const [selectedBrands, setSelectedBrands] = useState([]);
+//   const [categories, setCategories] = useState([]);
+//   const [error, setError] = useState(null);
+
+  
+//   // Memoized filtered subcategories & brands based on selected categories
+//   const filteredSubCategories = useMemo(() => {
+//     if (selectedCategories.length === 0) return [];
+
+//     return Array.from(
+//       new Set(selectedCategories.flatMap(category => category?.subcategories || []))
+//     );
+//   }, [selectedCategories]);
+
+//   const filteredBrands = useMemo(() => {
+//     if (selectedCategories.length === 0) return [];
+
+//     return Array.from(
+//       new Set(selectedCategories.flatMap(category => category?.allBrands || []))
+//     );
+//   }, [selectedCategories]);
+
+//   useEffect(() => {
+//     const fetchCategories = async () => {
+//       try {
+//         const response = await fetch('/api/shop/categories?limit=30');
+//         if (!response.ok) throw new Error("Failed to fetch categories.");
+//         const data = await response.json();
+//         setCategories(data.categories);
+//       } catch (err) {
+//         setError(err.message);
+//       }
+//     };
+
+//     fetchCategories();
+//   }, []);
+
+//   useEffect(() => {
+//     setLocalFilters(filters);
+//   }, [localFilters, setFilters]);
+
+//   const handleFilterChange = useCallback((key, value) => {
+//     setLocalFilters(prev => {
+//       const updatedFilters = { ...prev, [key]: value };
+//       setFilters(updatedFilters);
+//       return updatedFilters;
+//     });
+//   }, [setFilters]);
+
+//   const clearFilters = useCallback(() => {
+//     const clearedFilters = { 
+//       brand: [], 
+//       category: [],
+//       subCategory: [], 
+//       priceRange: [0, 1000], 
+//       rating: "", 
+//       availability: "", 
+//       sort: "popularity" 
+//     };
+//     setLocalFilters(clearedFilters);
+//     setFilters(clearedFilters);
+//   }, [setFilters]);
+
+
+
+//   return (
+//     <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4 transition-all duration-300 ease-in-out">
+//       <div className="flex items-center justify-between mb-4">
+//         <h3 className="text-xl font-bold flex items-center gap-2 text-gray-800">
+//           <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
+//         </h3>
+//         <button 
+//           onClick={() => setIsOpen(!isOpen)} 
+//           className="text-gray-600 hover:text-yellow-500 transition-transform duration-200"
+//           aria-label="Toggle Filters"
+//         >
+//           <ChevronDoubleDownIcon className={`w-6 h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+//         </button>
+//       </div>
+
+//       <AnimatePresence>
+//         {isOpen && (
+//           <motion.div 
+//             initial={{ opacity: 0, height: 0 }} 
+//             animate={{ opacity: 1, height: "auto" }} 
+//             exit={{ opacity: 0, height: 0 }} 
+//             className="flex flex-wrap gap-4 w-full max-w-full"
+//             transition={{ duration: 0.3, ease: "easeInOut" }}
+//           >
+//             <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={(value) => {  setSelectedCategories(value);  handleFilterChange("category", value);  }}  categories={categories} />
+//             <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={(value) => {setSelectedSubCategories(value); handleFilterChange("subCategory", value);  }} categories={filteredSubCategories} />
+//             <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={(value) => {  setSelectedBrands(value); handleFilterChange("brands", value); }} brands={filteredBrands} />
+//             <RatingFilter selectedRating={localFilters.rating} setSelectedRating={value => handleFilterChange("rating", value)} />
+//             <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={value => handleFilterChange("priceRange", value)} />
+//             <AvailabilityFilter availability={localFilters.availability} setAvailability={value => handleFilterChange("availability", value)} />
+//             <SortFilter sortOption={localFilters.sort} setSortOption={value => handleFilterChange("sort", value)} />
+//           </motion.div>
+
+//         )}
+//       </AnimatePresence>
+
+//       <button 
+//         onClick={clearFilters} 
+//         className="mt-4 w-full py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition-transform duration-200 hover:scale-105"
+//       >
+//         Clear All Filters
+//       </button>
+//     </div>
+//   );
+// };
+
+// export default Filters;
 
 
 const FilterButton = ({ label, isSelected, onClick }) => (
@@ -190,9 +348,6 @@ const FilterContainer = ({ title, children, isOpen, toggleOpen, onReset }) => (
 const SubCategoryFilter = ({ selectedSubCategory, setSelectedSubCategory, categories }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(categories > 0);
-  console.log("23409709jhkjh___");
-  console.log(categories);
-  console.log("EDEFE___23409709jhkjh");
 
   const toggleSubCategory = (category) => {
     setSelectedSubCategory((prev) =>
@@ -246,8 +401,8 @@ const BrandFilter = ({ selectedBrands, setSelectedBrands, brands }) => {
     <FilterContainer title="Brand" isOpen={isOpen} toggleOpen={() => setIsOpen(!isOpen)} onReset={resetBrands}>
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search brands..." />
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto mt-3">
-        {brands.length > 0 ? (
-          brands.map((brand) => (
+        {filteredBrands.length > 0 ? (
+          filteredBrands.map((brand) => (
             <FilterButton 
               key={brand} 
               label={brand} 

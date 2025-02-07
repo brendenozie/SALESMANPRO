@@ -1,44 +1,82 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../server/db/prismadb";
-import { ta } from "date-fns/locale";
+import { Prisma } from "@prisma/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { page = 1, limit = 6, search } = req.query;
-    
+    const {  
+        page = "1",
+        limit = "5",
+        search,
+        brand,
+        category,
+        subCategory,
+        minPrice,
+        maxPrice,
+        sort,
+        availability
+    } = req.query;
 
-  const currentPage = parseInt(page as string, 10) || 1;
-  const itemsPerPage = parseInt(limit as string, 10) || 5;
+    console.log('search', search);
+    console.log('brand', brand);
+    console.log('category', category);
+    console.log('subCategory', subCategory);
+    console.log('minPrice', minPrice);
+    console.log('maxPrice', maxPrice);
+    console.log('sort', sort);
+    console.log('availability', availability);
 
-  const skip = (currentPage - 1) * itemsPerPage;
-  const take = itemsPerPage;
+    const currentPage = parseInt(page as string, 10) || 1;
+    const itemsPerPage = parseInt(limit as string, 10) || 5;
+    const skip = (currentPage - 1) * itemsPerPage;
+    const take = itemsPerPage;
 
-    const products = await prisma.clientInventory.findMany({
-      where: {
-        newName: {
-          contains: Array.isArray(search) ? search[0] : search,
-          mode: 'insensitive',
+    const whereClause: Prisma.ClientInventoryWhereInput = {
+      newName: search ? { contains: search as string, mode: 'insensitive' } : undefined,
+      sellingPrice: {
+        gte: minPrice && !isNaN(Number(minPrice)) ? parseInt(minPrice as string, 10) : undefined,
+        lte: maxPrice && !isNaN(Number(maxPrice)) ? parseInt(maxPrice as string, 10) : undefined,
+      },
+      availability: availability === "true" ? true : undefined,
+      inventoryItem: {
+        product: {
+          AND: [
+            brand ? { brand: { in: Array.isArray(brand) ? brand : [brand] } } : undefined,
+            subCategory ? { subCategory: { in: Array.isArray(subCategory) ? subCategory : [subCategory] } } : undefined,
+            category ? { category: { in: Array.isArray(category) ? category : [category] } } : undefined,
+          ].filter(Boolean) as Prisma.ProductWhereInput[],
         },
       },
-      skip: skip,
-      take: take,
+    };
+
+    console.log('whereClause', whereClause);
+
+    // Fetch filtered products
+    const products = await prisma.clientInventory.findMany({
+      where: whereClause,
+      skip,
+      take,
       include: {
         inventoryItem: {
-            include: {
-                product: true, // Include related Product details
+          include: {
+            product: true,
           },
         },
         client: true,
       },
     });
 
-    const totalProducts = await prisma.clientInventory.count();
+    // Get total filtered count for pagination
+    const totalProducts = await prisma.clientInventory.count({
+      where: whereClause,
+    });
 
     res.status(200).json({
       products,
-      totalPages: Math.ceil(totalProducts / take),
+      totalPages: Math.ceil(totalProducts / itemsPerPage),
     });
   } catch (error) {
+    console.error("Error fetching products:", error);
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 }

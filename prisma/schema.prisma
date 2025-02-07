@@ -104,6 +104,7 @@ model Product {
   name              String
   description       String?
   category          String?
+  subCategory       String?
   image             String?
   tags              String[]
   brand             String[]
@@ -382,6 +383,8 @@ model AuditLog {
 model ClientInventory {
   id               String               @id @default(auto()) @map("_id") @db.ObjectId
   clientId         String               @db.ObjectId
+  rating           Float                @default(0)
+  availability     Boolean              @default(true)
   client           Client               @relation(fields: [clientId], references: [id])
   inventoryItemId  String               @db.ObjectId
   inventoryItem    InventoryItem        @relation(fields: [inventoryItemId], references: [id])

@@ -11,12 +11,13 @@ import Filters from "../../../components/Filters";
 const ProductList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    brand: "",
-    category: "",
+    brand: [],
+    category: [],
+    subCategory: [],
+    priceRange: [0, 1000],
     rating: "",
     availability: "",
     sort: "popularity",
-    priceRange: [0, 1000],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,12 +39,16 @@ const ProductList = () => {
     setLoading(true);
     setError(null);
     try {
+
+      console.log("filters", filters);
+      
       const queryParams = new URLSearchParams({
         page: pageNum,
         limit: 8,
         search: searchTerm,
         brand: filters.brand,
         category: filters.category,
+        subCategory: filters.subCategory,
         minPrice: filters.priceRange[0],
         maxPrice: filters.priceRange[1],
         sort: filters.sort,
