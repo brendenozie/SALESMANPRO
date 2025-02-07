@@ -14,7 +14,7 @@ const ProductList = () => {
     brand: [],
     category: [],
     subCategory: [],
-    priceRange: [0, 1000],
+    priceRange: [0, 10000000],
     rating: "",
     availability: "",
     sort: "popularity",
@@ -41,7 +41,7 @@ const ProductList = () => {
     try {
 
       console.log("filters", filters);
-      
+
       const queryParams = new URLSearchParams({
         page: pageNum,
         limit: 8,
@@ -182,7 +182,6 @@ const ProductCard = ({ product }) => {
     </motion.div>
   );
 };
-
 
 export default ProductList;
 
