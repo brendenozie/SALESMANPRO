@@ -237,6 +237,8 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const router = useRouter();
+
   // Simulating API call to fetch search suggestions
   const fetchSuggestions = async (query) => {
     setLoading(true);
@@ -246,9 +248,9 @@ const SearchBar = () => {
       // Replace this URL with your actual API endpoint
       const response = await fetch(`/api/shop/products?search=${query}`);
       const data = await response.json();
-
-      setSuggestions(data);
-      setIsDropdownVisible(data.length > 0);
+      
+      setSuggestions(data.products);
+      setIsDropdownVisible(data.products.length > 0);
     } catch (err) {
       setError("Failed to fetch suggestions.");
     } finally {
@@ -309,10 +311,13 @@ const SearchBar = () => {
           {suggestions.map((item, index) => (
             <li
               key={index}
-              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
-              onMouseDown={() => setSearchTerm(item)} // Set input value on click
+              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white cursor-pointer transition"
+              onMouseDown={() => {
+                // setSearchTerm(item);
+                router.push(`/shop/product/${item.id}`);
+              }} // Set input value on click
             >
-              {item}
+              {item.newName}
             </li>
           ))}
         </motion.ul>

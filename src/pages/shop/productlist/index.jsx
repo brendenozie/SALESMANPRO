@@ -71,6 +71,31 @@ const ProductList = () => {
   const uniqueBrands = [...new Set(products.map((p) => p.inventoryItem.product.brand))];
   const uniqueCategories = [...new Set(products.map((p) => p.inventoryItem.product.category))];
 
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: "20px",
+      threshold: 0,
+    };
+
+    const handleObserver = (entities) => {
+      const target = entities[0];
+      if (target.isIntersecting) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    observer.current = new IntersectionObserver(handleObserver, options);
+  }, []);
+
+  useEffect(() => {
+    if (page > 1) {
+      observer.current.observe(document.getElementById("observer"));
+    }
+    fetchProducts(page);
+  }, [page]);
+
+
 
   return (
     <>
@@ -80,7 +105,7 @@ const ProductList = () => {
           Explore Our Collection
         </h2>
         {/* <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           <Filters filters={filters} setFilters={setFilters} uniqueBrands={uniqueBrands} uniqueCategories={uniqueCategories} />
           <ProductGrid loading={loading} products={products} />
         </div>
@@ -109,26 +134,28 @@ const SearchBar = ({ searchTerm, setSearchTerm }) => (
 
 const ProductGrid = ({ loading, products }) => (
   <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-    {products.map((product) => (
-      <ProductCard key={product.id} product={product} />
-    ))}
+    {loading
+      ? [...Array(9)].map((_, index) => (
+          <SkeletonCard
+            key={index}
+            className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md cursor-pointer hover:shadow-xl transition"
+          />
+        ))
+      : products.map((product) => <ProductCard key={product.id} product={product} />)}
+
     {loading && (
-      <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-        {[9, 8, 7, 6, 5, 4, 3, 2, 1].map(() => (
-          <SkeletonCard className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md cursor-pointer hover:shadow-xl transition"/>
-        ))}
-        <div className="col-span-full flex justify-center mt-6">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          >
-            <ArrowPathIcon className="w-8 h-8 text-yellow-500 animate-spin" />
-          </motion.div>
-        </div>
+      <div className="col-span-full flex justify-center mt-6">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        >
+          <ArrowPathIcon className="w-8 h-8 text-yellow-500 animate-spin" />
+        </motion.div>
       </div>
     )}
   </div>
 );
+
 const ProductCard = ({ product }) => {
   const router = useRouter();
   return (
@@ -151,77 +178,6 @@ const ProductCard = ({ product }) => {
   );
 };
 
-const ProductCardV1 = ({ product }) => {
-const router = useRouter();
-
-  const handleProductClick = () => {
-    router.push(`/shop/product/${product.id}`);
-  };
-
-return (
-  <motion.div
-    onClick={handleProductClick}
-    whileHover={{ scale: 1.05, boxShadow: "0px 15px 25px rgba(0, 0, 0, 0.15)" }}
-    transition={{ duration: 0.3 }}
-    className="relative bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 shadow-md p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-transform hover:-translate-y-1"
-  >
-    {/* Sale & New Badges */}
-      <div className="absolute top-3 left-3 flex gap-2">
-        {product.isNew && (
-          <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-            New
-          </span>
-        )}
-        {product.isOnSale && (
-          <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-            Sale
-          </span>
-        )}
-      </div>
-
-      {/* Image Section */}
-      <div className="w-full h-36 bg-gray-100 rounded-xl flex justify-center items-center overflow-hidden relative">
-        <img
-          src={product.image}
-          alt={product.newName || "Product image"}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-          loading="lazy"
-        />
-      </div>
-
-    <h3 className="text-lg font-semibold line-clamp-1">{product.newName}</h3>
-    <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">
-      {product.newDescription}
-    </p>
-    {/* Star Rating */}
-      <div className="flex items-center gap-1 mt-1">
-        {[...Array(5)].map((_, index) => (
-          <StarIcon
-            key={index}
-            size={6}
-            className={`h-4 ${index < (product.rating || 0) ? "text-yellow-300" : "text-gray-300"}`}
-            fill={index < (product.rating || 0) ? "currentColor" : "none"}
-          />
-        ))}
-      </div>
-    {/* Price & Button */}
-      <div className="flex justify-between items-center mt-1">
-        <span className="text-xl font-bold text-yellow-300">
-          ${product.sellingPrice.toFixed(2)}
-        </span>
-
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-          // onClick={handleAddToCart}
-          className="px-5 py-3 bg-gradient-to-r from-yellow-500 to-yellow-700 text-white rounded-lg text-sm font-semibold hover:from-yellow-600 hover:to-yellow-800 transition shadow-md"
-          aria-label={`Add ${product.newName} to cart`}
-        >
-          Add to Cart
-        </motion.button>
-      </div>
-  </motion.div>
-)};
 
 export default ProductList;
 
@@ -263,8 +219,6 @@ const PaginationControls = ({ page, setPage, totalPages }) => {
     </div>
   );
 };
-
-
 
 const SkeletonCard = () => (
   <div className="bg-gray-200 h-80 w-full animate-pulse rounded-lg"></div>

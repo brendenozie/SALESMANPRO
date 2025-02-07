@@ -4,7 +4,7 @@ import { ta } from "date-fns/locale";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { page = 1, limit = 6 } = req.query;
+    const { page = 1, limit = 6, search } = req.query;
     
 
   const currentPage = parseInt(page as string, 10) || 1;
@@ -14,6 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const take = itemsPerPage;
 
     const products = await prisma.clientInventory.findMany({
+      where: {
+        newName: {
+          contains: Array.isArray(search) ? search[0] : search,
+          mode: 'insensitive',
+        },
+      },
       skip: skip,
       take: take,
       include: {
