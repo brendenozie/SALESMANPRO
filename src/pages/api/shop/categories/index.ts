@@ -3,7 +3,7 @@ import prisma from "../../../../server/db/prismadb";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { page = 1, limit = 6 } = req.query;
+    const { page = 1, limit = 12 } = req.query;
 
     const currentPage = parseInt(page as string, 10) || 1;
     const itemsPerPage = parseInt(limit as string, 10) || 6;

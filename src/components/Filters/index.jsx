@@ -1,13 +1,61 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdjustmentsVerticalIcon, StarIcon, ChevronDoubleDownIcon, CheckCircleIcon, MagnifyingGlassIcon, ChevronDownIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { use } from "react";
 
 
 const Filters = ({ filters, setFilters, uniqueBrands, uniqueCategories }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [isOpen, setIsOpen] = useState(true);
-  const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [error, setError] = useState(null);
+
+  // jump
+
+  const [filteredSubCategories, setFilteredSubCategories] = useState([]);
+  const [filteredBrands, setFilteredBrands] = useState([]);
+
+  useEffect(() => {
+    if (selectedCategories.length === 0) {
+      setFilteredSubCategories([]);
+      setFilteredBrands([]);
+      return;
+    }
+
+    // Collect subcategories from all selected categories
+    const subCategories = selectedCategories.flatMap(category => category.subcategories || []);
+    const uniqueSubCategories = [...new Set(subCategories.map(sub => sub))];
+
+    // Collect brands from all selected categories
+    const allBrands = selectedCategories.flatMap(category => category.allBrands || []);
+    const uniqueBrands = [...new Set(allBrands)];
+
+    setFilteredSubCategories(uniqueSubCategories);
+    setFilteredBrands(uniqueBrands);
+  }, [selectedCategories]);
+
+
+
+  // jump
+
+  useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const response = await fetch('/api/shop/categories');
+          if (!response.ok) throw new Error("Failed to fetch categories.");
+          const data = await response.json();
+          setCategories(data.categories);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+  
+      fetchCategories();
+    }, []);
+
 
   useEffect(() => {
     setLocalFilters(filters);
@@ -51,9 +99,9 @@ const Filters = ({ filters, setFilters, uniqueBrands, uniqueCategories }) => {
             className="flex flex-wrap gap-4 w-full max-w-full"
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={uniqueCategories} />
-            <SubCategoryFilter selectedSubCategory={selectedBrands} setSelectedSubCategory={setSelectedBrands} categories={uniqueBrands} />
-            <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={uniqueBrands} />
+            <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
+            <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
+            <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />
             <RatingFilter selectedRating={localFilters.rating} setSelectedRating={value => handleFilterChange("rating", value)} />
             <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={value => handleFilterChange("priceRange", value)} />
             <AvailabilityFilter availability={localFilters.availability} setAvailability={value => handleFilterChange("availability", value)} />
@@ -142,17 +190,20 @@ const FilterContainer = ({ title, children, isOpen, toggleOpen, onReset }) => (
 const SubCategoryFilter = ({ selectedSubCategory, setSelectedSubCategory, categories }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(categories > 0);
+  console.log("23409709jhkjh___");
+  console.log(categories);
+  console.log("EDEFE___23409709jhkjh");
 
   const toggleSubCategory = (category) => {
     setSelectedSubCategory((prev) =>
-      prev.includes(category) ? prev.filter((b) => b !== category) : [...prev, category]
+      prev.includes(category) ? prev.filter((b) => b.name !== category.name) : [...prev, category]
     );
   };
 
-  const resetSubCategorys = () => setSelectedSubCategorys([]);
-  const filteredcategories = categories.filter((category) =>{
-    category.length > 0 && category.toLowerCase().includes(searchQuery.toLowerCase())
-  }
+  const resetSubCategorys = () => setSelectedSubCategory([]);
+
+  const filteredcategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())  
   );
 
   return (
@@ -160,10 +211,10 @@ const SubCategoryFilter = ({ selectedSubCategory, setSelectedSubCategory, catego
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search categories..." />
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto mt-3">
         {filteredcategories.length > 0 ? (
-          filteredBrands.map((category) => (
-            <filteredcategories 
-              key={category} 
-              label={category} 
+          filteredcategories.map((category) => (
+            <FilterButton 
+              key={category.id} 
+              label={category.name} 
               isSelected={selectedSubCategory.includes(category)} 
               onClick={() => toggleSubCategory(category)} 
             />
@@ -179,6 +230,7 @@ const SubCategoryFilter = ({ selectedSubCategory, setSelectedSubCategory, catego
 const BrandFilter = ({ selectedBrands, setSelectedBrands, brands }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(brands > 0);
+  const resetBrands = () => setSelectedBrands([]);
 
   const toggleBrand = (brand) => {
     setSelectedBrands((prev) =>
@@ -186,18 +238,16 @@ const BrandFilter = ({ selectedBrands, setSelectedBrands, brands }) => {
     );
   };
 
-  const resetBrands = () => setSelectedBrands([]);
-  const filteredBrands = brands.filter((brand) =>{
+  const filteredBrands = brands.filter((brand) =>
     brand.length > 0 && brand.toLowerCase().includes(searchQuery.toLowerCase())
-  }
   );
 
   return (
     <FilterContainer title="Brand" isOpen={isOpen} toggleOpen={() => setIsOpen(!isOpen)} onReset={resetBrands}>
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search brands..." />
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto mt-3">
-        {filteredBrands.length > 0 ? (
-          filteredBrands.map((brand) => (
+        {brands.length > 0 ? (
+          brands.map((brand) => (
             <FilterButton 
               key={brand} 
               label={brand} 
@@ -219,13 +269,14 @@ const CategoryFilter = ({ selectedCategories, setSelectedCategories, categories 
 
   const toggleCategory = (category) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+      prev.includes(category) ? prev.filter((c) => c.name !== category.name) : [...prev, category]
     );
   };
 
   const resetCategories = () => setSelectedCategories([]);
+
   const filteredCategories = categories.filter((category) =>
-    category.toLowerCase().includes(searchQuery.toLowerCase())
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -235,8 +286,8 @@ const CategoryFilter = ({ selectedCategories, setSelectedCategories, categories 
         {filteredCategories.length > 0 ? (
           filteredCategories.map((category) => (
             <FilterButton 
-              key={category} 
-              label={category} 
+              key={category.id} 
+              label={category.name} 
               isSelected={selectedCategories.includes(category)} 
               onClick={() => toggleCategory(category)} 
             />
