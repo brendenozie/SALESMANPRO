@@ -138,12 +138,12 @@ const SearchBar = ({ searchTerm, setSearchTerm }) => (
 );
 
 const ProductGrid = ({ loading, products }) => (
-  <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+  <div className="lg:col-span-3 grid grid-cols-2 gap-1 md:grid-cols-3 xl:grid-cols-4 md:gap-6">
     {loading
       ? [...Array(9)].map((_, index) => (
           <SkeletonCard
             key={index}
-            className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md cursor-pointer hover:shadow-xl transition"
+            className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md cursor-pointer hover:shadow-xl transition"
           />
         ))
       : products.map((product) => <ProductCard key={product.id} product={product} />)}
@@ -162,6 +162,50 @@ const ProductGrid = ({ loading, products }) => (
 );
 
 const ProductCard = ({ product }) => {
+  const router = useRouter();
+
+  return (
+    <motion.div
+      onClick={() => router.push(`/shop/product/${product.id}`)}
+      whileHover={{ scale: 1.03 }}
+      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition flex flex-col"
+    >
+      {/* Product Image */}
+      <img
+        src={product.image}
+        alt={product.newName}
+        className="h-40 w-full object-cover rounded-md"
+      />
+
+      {/* Product Name & Description */}
+      <div className="mt-3">
+        <h3 className="text-lg font-semibold">{product.newName}</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+          {product.newDescription}
+        </p>
+      </div>
+
+      {/* Price */}
+      <div className="mt-4">
+        <span className="text-xl font-bold text-yellow-500">
+          ${product.sellingPrice.toFixed(2)}
+        </span>
+      </div>
+
+      {/* Add to Cart Button */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        className="mt-3 w-full flex items-center justify-center bg-yellow-400 text-black px-4 py-2 rounded-full shadow-md hover:bg-yellow-500 transition"
+      >
+        <ShoppingCartIcon className="w-5 h-5 mr-2" /> Add to Cart
+      </motion.button>
+    </motion.div>
+  );
+};
+
+
+
+const ProductCardV1 = ({ product }) => {
   const router = useRouter();
   return (
     <motion.div

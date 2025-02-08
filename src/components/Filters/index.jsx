@@ -110,47 +110,55 @@ const Filters = ({ filters, setFilters }) => {
   }, [setFilters]);
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4 transition-all duration-300 ease-in-out">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold flex items-center gap-2 text-gray-800 dark:text-white">
-          <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
-        </h3>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-gray-600 dark:text-gray-300 hover:text-yellow-500 transition-transform duration-200"
-          aria-label="Toggle Filters"
-          aria-expanded={isOpen}
-        >
-          <ChevronDoubleDownIcon
-            className={`w-6 h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-          />
+    <>
+    <div className="relative hidden md:block">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4 transition-all duration-300 ease-in-out">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold flex items-center gap-2 text-gray-800 dark:text-white">
+            <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
+          </h3>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-gray-600 dark:text-gray-300 hover:text-yellow-500 transition-transform duration-200"
+            aria-label="Toggle Filters"
+            aria-expanded={isOpen}
+          >
+            <ChevronDoubleDownIcon
+              className={`w-6 h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex flex-wrap gap-4 w-full max-w-full"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
+              <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
+              <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />
+              <RatingFilter selectedRating={localFilters.rating} setSelectedRating={(value) => handleFilterChange("rating", value)} />
+              <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={(value) => handleFilterChange("priceRange", value)} />
+              <AvailabilityFilter availability={localFilters.availability} setAvailability={(value) => handleFilterChange("availability", value)} />
+              <SortFilter sortOption={localFilters.sort} setSortOption={(value) => handleFilterChange("sort", value)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button onClick={clearFilters} className="mt-4 w-full py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition-transform duration-200 hover:scale-105">
+          Clear All Filters
         </button>
       </div>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="flex flex-wrap gap-4 w-full max-w-full"
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
-            <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
-            <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />
-            <RatingFilter selectedRating={localFilters.rating} setSelectedRating={(value) => handleFilterChange("rating", value)} />
-            <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={(value) => handleFilterChange("priceRange", value)} />
-            <AvailabilityFilter availability={localFilters.availability} setAvailability={(value) => handleFilterChange("availability", value)} />
-            <SortFilter sortOption={localFilters.sort} setSortOption={(value) => handleFilterChange("sort", value)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <button onClick={clearFilters} className="mt-4 w-full py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition-transform duration-200 hover:scale-105">
-        Clear All Filters
-      </button>
     </div>
+    {/* Mobile Component (hidden on desktop) */}
+      <div className="block md:hidden">
+        <MobileUIFilters categories={categories} subCategories={filteredSubCategories} brands={filteredBrands} filters={filters} setFilters={setFilters}/>
+      </div>
+    </>
   );
 };
 
@@ -528,5 +536,134 @@ const SortFilter = ({ sortOption, setSortOption }) => (
 );
 
 
+const MobileUIFilters = ({ categories, subCategories, brands, filters, setFilters }) => {
+  const [localFilters, setLocalFilters] = useState(filters);
+  const [isOpen, setIsOpen] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(null);
 
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
 
+  const handleFilterChange = useCallback(
+    debounce((key, value) => {
+      setLocalFilters((prev) => {
+        if (JSON.stringify(prev[key]) !== JSON.stringify(value)) {
+          const updatedFilters = { ...prev, [key]: value };
+          setFilters(updatedFilters);
+          return updatedFilters;
+        }
+        return prev;
+      });
+    }, 300),
+    [setFilters]
+  );
+
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  return (
+    <div className="relative">
+      {/* Floating Button for Mobile */}
+      <button
+        className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg flex items-center"
+        onClick={() => setIsOpen(true)}
+      >
+        <AdjustmentsHorizontalIcon className="h-6 w-6" />
+      </button>
+
+      {/* Bottom Sheet Modal */}
+      {isOpen && (
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed bottom-0 left-0 w-full h-3/4 bg-white shadow-2xl rounded-t-2xl p-4 z-50 overflow-y-auto"
+        >
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Filters</h2>
+            <button onClick={() => setIsOpen(false)}>
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Categories */}
+          <div className="mt-4">
+            <button
+              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
+              onClick={() => toggleSection("categories")}
+            >
+              Categories <ChevronDownIcon className="h-5 w-5" />
+            </button>
+            {expandedSection === "categories" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pl-4 mt-2 space-y-2"
+              >
+                {categories.map((category) => (
+                  <div key={category}>
+                    <input
+                      type="checkbox"
+                      checked={localFilters.categories?.includes(category)}
+                      onChange={() => {
+                        const newCategories = localFilters.categories?.includes(category)
+                          ? localFilters.categories.filter((c) => c !== category)
+                          : [...(localFilters.categories || []), category];
+                        handleFilterChange("categories", newCategories);
+                      }}
+                    />
+                    <label className="ml-2">{category}</label>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Brands */}
+          <div className="mt-4">
+            <button
+              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
+              onClick={() => toggleSection("brands")}
+            >
+              Brands <ChevronDownIcon className="h-5 w-5" />
+            </button>
+            {expandedSection === "brands" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pl-4 mt-2 space-y-2"
+              >
+                {brands.map((brand) => (
+                  <div key={brand}>
+                    <input
+                      type="checkbox"
+                      checked={localFilters.brands?.includes(brand)}
+                      onChange={() => {
+                        const newBrands = localFilters.brands?.includes(brand)
+                          ? localFilters.brands.filter((b) => b !== brand)
+                          : [...(localFilters.brands || []), brand];
+                        handleFilterChange("brands", newBrands);
+                      }}
+                    />
+                    <label className="ml-2">{brand}</label>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Apply Filters Button */}
+          <button
+            className="w-full bg-blue-600 text-white py-3 mt-6 rounded-lg"
+            onClick={() => setIsOpen(false)}
+          >
+            Apply Filters
+          </button>
+        </motion.div>
+      )}
+    </div>
+  );
+};
