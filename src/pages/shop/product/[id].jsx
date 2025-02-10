@@ -101,12 +101,12 @@ const ProductPage = ({ product, similarProducts }) => {
   return (
     <>
       <Header />
-      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-0 md:p-6">
         <nav className="text-sm text-gray-500 dark:text-gray-400 px-6 py-4">
           Home / Products / {product.inventoryItem.product.category} / <span className="text-gray-900 dark:text-white font-semibold">{product.newName}</span>
         </nav>
 
-        <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 flex flex-col lg:flex-row gap-12">
+        <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2 md:p-8 flex flex-col lg:flex-row gap-12">
           <ProductImages images={images} currentImageIndex={currentImageIndex} setCurrentImageIndex={setCurrentImageIndex} />
           <ProductInfo quantity={quantity} setQuantity={setQuantity} product={product}  addToCart ={addToCart} removeFromCart={removeFromCart} decreaseQuantity={decreaseQuantity}/>
         </div>
