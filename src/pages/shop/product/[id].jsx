@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { PrismaClient } from '@prisma/client';
 import { useRouter } from 'next/router';
 import Header from "../../../components/shop/header/Header";
@@ -112,7 +112,7 @@ const ProductPage = ({ product, similarProducts }) => {
         </div>
 
         <ProductSpecifications />
-        <SimilarItems similarProducts={similarProducts}/>
+        <SimilarItems similarProducts={similarProducts} addToCart={addToCart}/>
       </div>
       <Footer />
       <Cart />
@@ -347,65 +347,62 @@ const SpecificationCard = ({ title, details }) => (
   </div>
 );
 
-const SimilarItems = ({ similarProducts }) => {
-
+const SimilarItems = ({ similarProducts, addToCart }) => {
   const router = useRouter();
-  // const similarProducts = [
-  //   {
-  //     id: 1,
-  //     image: "/images/SlideCard/slide-1.png",
-  //     name: "Wireless Headphones",
-  //     price: "$199.99",
-  //   },
-  //   {
-  //     id: 2,
-  //     image: "/images/SlideCard/slide-2.png",
-  //     name: "Noise Cancelling Earbuds",
-  //     price: "$149.99",
-  //   },
-  //   {
-  //     id: 3,
-  //     image: "/images/SlideCard/slide-3.png",
-  //     name: "Bluetooth Over-Ear",
-  //     price: "$129.99",
-  //   },
-  //   {
-  //     id: 4,
-  //     image: "/images/SlideCard/slide-3.png",
-  //     name: "Studio Headphones",
-  //     price: "$249.99",
-  //   },
-  // ];
 
   return (
-  
-  <div className="mt-10 max-w-7xl mx-auto">
-    <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Similar Items You Might Like</h3>
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-      {similarProducts.map((product) => (
-          <motion.div onClick={ () => router.push(`/shop/product/${product.id}`)} 
-            key={product.id}
-            className="bg-white  dark:bg-gray-800 shadow-md rounded-xl p-4 flex flex-col items-center justify-center hover:shadow-xl transition transform hover:-translate-y-1"
-          >
-            {/* Product Image */}
-            <div className="h-36 w-36 rounded-lg flex items-center justify-center overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.newName}
-                className="h-full w-full object-contain transition-transform duration-300 hover:scale-110"
-              />
-            </div>
+    <div className="mt-10 max-w-7xl mx-auto px-4">
+      <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        Similar Items You Might Like
+      </h3>
 
-            {/* Product Details */}
-            <p className="text-lg font-medium text-gray-800 dark:text-white mt-4">{product.newName}</p>
-            <p className="text-yellow-600 dark:text-yellow-400 font-semibold text-md mt-1">{product.sellingPrice}</p>
+      {/* Grid Layout: 2 Columns on Mobile, Expands on Larger Screens */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {similarProducts.map((product) => (
+          <motion.div
+              key={product.id}
+              onClick={() => router.push(`/shop/product/${product.id}`)}
+              className="relative bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400"
+              whileHover={{ scale: 1.03 }}
+            >
+              {/* Product Image */}
+              <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
+                <motion.img
+                  src={product.image}
+                  alt={product.newName}
+                  className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
+                  whileHover={{ rotate: 2 }}
+                />
+              </div>
 
-            {/* Add to Cart Button */}
-            <button className="mt-4 px-5 py-2 bg-yellow-700 text-white rounded-lg font-medium hover:bg-yellow-800 transition">
-              Add to Cart
-            </button>
-          </motion.div>
+              {/* Product Details */}
+              <p className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mt-3 text-center truncate w-full">
+                {product.newName}
+              </p>
+              <p className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl mt-1">
+                ${product.sellingPrice}
+              </p>
+
+              {/* Add to Cart Button - Adjusted for Mobile */}
+              <motion.button
+                whileHover={{ scale: 1.07 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent accidental navigation
+                  addToCart(product);
+                }}
+                className="mt-3 w-[90%] md:w-full flex items-center justify-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition text-sm md:text-base"
+                aria-label="Add to Cart"
+              >
+                <ShoppingCartIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" /> Add
+              </motion.button>
+            </motion.div>
+
         ))}
+      </div>
     </div>
-  </div>
-)};
+  );
+};
+
+
+

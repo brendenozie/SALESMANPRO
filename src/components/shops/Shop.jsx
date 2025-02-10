@@ -1,6 +1,7 @@
 import React from "react";
 import { PlusIcon, ArrowRightIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
+import { motion } from "framer-motion";
 
 const Shop = ({ addToCart,category, shopItems }) => {
 
@@ -78,18 +79,6 @@ const Shop = ({ addToCart,category, shopItems }) => {
           {/* Responsive Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ProductGrid shopItems={shopItems} />
-            {/* {shopItems?.products?.map((item, index) => (
-              <div key={index} className="relative bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md">
-                <img src={item.cover} alt={item.newName} className="w-full h-48 object-cover rounded-lg" />
-                <div className="mt-2">
-                  <h4 className="text-base font-semibold truncate">{item.newName}</h4>
-                  <span className="text-yellow-500 font-bold">${item.sellingPrice}.00</span>
-                </div>
-                <button className="absolute top-3 right-3 bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md">
-                  <PlusIcon className="h-5 w-5" />
-                </button>
-              </div>
-            ))} */}
           </div>
         </main>
       </div>
@@ -102,27 +91,47 @@ export default Shop;
 
 const ProductGrid = ({ shopItems }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
       {shopItems?.products?.map((item, index) => (
-        <div
+        <motion.div
           key={index}
-          className="relative bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md transition-transform hover:scale-105"
+          className="relative bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400"
+          whileHover={{ scale: 1.03 }}
         >
-          <img
-            src={item.cover}
-            alt={item.newName}
-            className="w-full aspect-[3/4] object-cover rounded-lg"
-          />
-          <div className="mt-3">
-            <h4 className="text-base font-semibold truncate">{item.newName}</h4>
-            <span className="text-yellow-500 font-bold">${item.sellingPrice}.00</span>
+          {/* Product Image */}
+          <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
+            <motion.img
+              src={item.cover}
+              alt={item.newName}
+              className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
+              whileHover={{ rotate: 2 }}
+            />
           </div>
-          <button className="absolute top-3 right-3 bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md">
+
+          {/* Product Info */}
+          <div className="w-full mt-3 flex flex-col items-center">
+            <h4 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
+              {item.newName}
+            </h4>
+
+            <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl mt-1">
+              ${item.sellingPrice}.00
+            </span>
+          </div>
+
+          {/* Add to Cart Button */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-2 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition"
+            aria-label="Add to Cart"
+          >
             <PlusIcon className="h-5 w-5" />
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       ))}
     </div>
   );
 };
+
 

@@ -5,7 +5,7 @@ import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
 import Cart from "../../../components/cart";
 import debounce from "lodash.debounce";
-import { ArrowPathIcon ,XCircleIcon, MagnifyingGlassCircleIcon, ChevronDoubleDownIcon, StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, PlusIcon ,XCircleIcon, MagnifyingGlassCircleIcon, ChevronDoubleDownIcon, StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import Filters from "../../../components/Filters";
 
 const ProductList = () => {
@@ -270,13 +270,73 @@ const SearchBar = ({ searchTerm, setSearchTerm }) => (
   </div>
 );
 
+// const ProductGrid = ({ loading, products }) => (
+//   <div className="lg:col-span-3 columns-2 md:columns-3 xl:columns-4 p-1 gap-4 md:p-4">
+//     {loading
+//       ? [...Array(9)].map((_, index) => (
+//           <SkeletonCard
+//             key={index}
+//             className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md cursor-pointer hover:shadow-xl transition mb-4 break-inside-avoid"
+//           />
+//         ))
+//       : products.map((product) => <ProductCard key={product.id} product={product} />)}
+
+//     {loading && (
+//       <div className="col-span-full flex justify-center mt-6">
+//         <motion.div
+//           animate={{ rotate: 360 }}
+//           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+//         >
+//           <ArrowPathIcon className="w-8 h-8 text-yellow-500 animate-spin" />
+//         </motion.div>
+//       </div>
+//     )}
+//   </div>
+// );
+
+// const ProductCard = ({ product }) => {
+//   const router = useRouter();
+
+//   return (
+//     <motion.div
+//       onClick={() => router.push(`/shop/product/${product.id}`)}
+//       whileHover={{ scale: 1.03 }}
+//       className="bg-white dark:bg-gray-800 p-1 md:p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition flex flex-col mb-4 break-inside-avoid"
+//     >
+//       <img
+//         src={product.image}
+//         alt={product.newName}
+//         className="w-full object-cover rounded-md"
+//         style={{ height: `${Math.floor(Math.random() * 150) + 200}px` }} // Dynamic height for masonry effect
+//       />
+//       <div className="mt-3 text-center md:text-left">
+//         <h3 className="text-lg font-semibold text-black dark:text-white">{product.newName}</h3>
+//         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+//           {product.newDescription}
+//         </p>
+//       </div>
+//       <div className="mt-4 text-center md:text-left">
+//         <span className="text-xl font-bold text-yellow-500">
+//           ${product.sellingPrice.toFixed(2)}
+//         </span>
+//       </div>
+//       <motion.button
+//         whileHover={{ scale: 1.05 }}
+//         className="mt-3 w-full flex items-center justify-center bg-yellow-400 text-black px-1 text-sm md:px-4 py-2 rounded-md md:rounded-full shadow-md hover:bg-yellow-500 transition"
+//       >
+//         <ShoppingCartIcon className="w-5 h-5 mr-2" /> Add to Cart
+//       </motion.button>
+//     </motion.div>
+//   );
+// };
+
 const ProductGrid = ({ loading, products }) => (
-  <div className="lg:col-span-3 columns-2 md:columns-3 xl:columns-4 p-1 gap-4 md:p-4">
+  <div className="lg:col-span-3 columns-2 sm:columns-3 md:columns-4 p-2 md:p-4 gap-3">
     {loading
       ? [...Array(9)].map((_, index) => (
           <SkeletonCard
             key={index}
-            className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md cursor-pointer hover:shadow-xl transition mb-4 break-inside-avoid"
+            className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg hover:shadow-xl transition mb-4 break-inside-avoid"
           />
         ))
       : products.map((product) => <ProductCard key={product.id} product={product} />)}
@@ -301,34 +361,47 @@ const ProductCard = ({ product }) => {
     <motion.div
       onClick={() => router.push(`/shop/product/${product.id}`)}
       whileHover={{ scale: 1.03 }}
-      className="bg-white dark:bg-gray-800 p-1 md:p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition flex flex-col mb-4 break-inside-avoid"
+      className="relative bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl shadow-xl transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400 mb-4 break-inside-avoid"
     >
-      <img
-        src={product.image}
-        alt={product.newName}
-        className="w-full object-cover rounded-md"
-        style={{ height: `${Math.floor(Math.random() * 150) + 200}px` }} // Dynamic height for masonry effect
-      />
-      <div className="mt-3 text-center md:text-left">
-        <h3 className="text-lg font-semibold text-black dark:text-white">{product.newName}</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-          {product.newDescription}
+      {/* Product Image */}
+      <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
+        <motion.img
+          src={product.image}
+          alt={product.newName}
+          className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
+          whileHover={{ rotate: 2 }}
+        />
+      </div>
+
+      {/* Product Info */}
+      <div className="w-full mt-3 flex flex-col items-center">
+        <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
+          {product.newName}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
+          {product.newDescription || "No description available"}
         </p>
+
+        {/* Price & Add to Cart Button */}
+        <div className="flex justify-between items-center w-full mt-2">
+          <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
+            ${product.sellingPrice.toFixed(2)}
+          </span>
+
+          <motion.button
+            whileHover={{ scale: 1.07 }}
+            whileTap={{ scale: 0.95 }}
+            className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-2 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition"
+            aria-label="Add to Cart"
+          >
+            <PlusIcon className="h-5 w-5" />
+          </motion.button>
+        </div>
       </div>
-      <div className="mt-4 text-center md:text-left">
-        <span className="text-xl font-bold text-yellow-500">
-          ${product.sellingPrice.toFixed(2)}
-        </span>
-      </div>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        className="mt-3 w-full flex items-center justify-center bg-yellow-400 text-black px-1 text-sm md:px-4 py-2 rounded-md md:rounded-full shadow-md hover:bg-yellow-500 transition"
-      >
-        <ShoppingCartIcon className="w-5 h-5 mr-2" /> Add to Cart
-      </motion.button>
     </motion.div>
   );
 };
+
 
 
 export default ProductList;

@@ -91,51 +91,54 @@ const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart
 
 export default NewArrivals;
 
-
 const ProductGrid = ({ productItems, addToCart }) => {
   const router = useRouter();
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
       {productItems.map((val, index) => (
         <motion.div
           key={index}
-          className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all"
+          className="relative bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400"
           whileHover={{ scale: 1.03 }}
-          transition={{ type: "spring", stiffness: 150 }}
+          onClick={() => router.push(`/shop/product/${val.id}`)}
         >
           {/* Product Image */}
-          <div className="relative">
-            <img
+          <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
+            <motion.img
               src={val.cover}
               alt={`Product image of ${val.newName}`}
-              className="w-full h-52 object-cover"
+              className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
+              whileHover={{ rotate: 2 }}
             />
           </div>
 
           {/* Product Info */}
-          <div className="p-3">
-            <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+          <div className="w-full mt-3 flex flex-col items-center">
+            <h4 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
               {val.newName}
             </h4>
-            <p className="text-sm text-gray-500 dark:text-gray-300 truncate">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
               {val.description || "No description available"}
             </p>
 
-            <div className="flex justify-between items-center mt-3">
-              <span className="text-lg font-bold text-yellow-500">${val.sellingPrice}</span>
+            {/* Price & Add to Cart Button */}
+            <div className="flex justify-between items-center w-full mt-2">
+              <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
+                ${val.sellingPrice}
+              </span>
 
               <motion.button
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevents accidental navigation
+                  e.stopPropagation(); // Prevent accidental navigation
                   addToCart(val);
                 }}
-                className="flex items-center bg-yellow-400 text-black px-3 py-2 rounded-full shadow-md hover:bg-yellow-500 transition"
+                className="flex items-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition text-sm md:text-base"
                 aria-label="Add to Cart"
               >
-                <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
+                <ShoppingCartIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" /> Add
               </motion.button>
             </div>
           </div>
