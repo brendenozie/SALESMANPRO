@@ -3,6 +3,7 @@ import { ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outl
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 
+
 const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart }) => {
   const router = useRouter();
   return (
@@ -41,7 +42,9 @@ const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart
           </motion.button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
+        <ProductGrid productItems={productItems} addToCart={addToCart} />
+
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
           {productItems.map((val, index) => (
             <motion.div onClick={()=>{ router.push(`/shop/product/${val.id}`)}}
               key={index}
@@ -80,10 +83,70 @@ const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart
               </div>
             </motion.div>
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   );
 };
 
 export default NewArrivals;
+
+
+const ProductGrid = ({ productItems, addToCart }) => {
+  const router = useRouter();
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {productItems.map((val, index) => (
+        <motion.div
+          key={index}
+          className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all"
+          whileHover={{ scale: 1.03 }}
+          transition={{ type: "spring", stiffness: 150 }}
+        >
+          {/* Product Image */}
+          <div className="relative">
+            <img
+              src={val.cover}
+              alt={`Product image of ${val.newName}`}
+              className="w-full h-52 object-cover"
+            />
+          </div>
+
+          {/* Product Info */}
+          <div className="p-3">
+            <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+              {val.newName}
+            </h4>
+            <p className="text-sm text-gray-500 dark:text-gray-300 truncate">
+              {val.description || "No description available"}
+            </p>
+
+            <div className="flex justify-between items-center mt-3">
+              <span className="text-lg font-bold text-yellow-500">${val.sellingPrice}</span>
+
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevents accidental navigation
+                  addToCart(val);
+                }}
+                className="flex items-center bg-yellow-400 text-black px-3 py-2 rounded-full shadow-md hover:bg-yellow-500 transition"
+                aria-label="Add to Cart"
+              >
+                <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+
+
+
+
+

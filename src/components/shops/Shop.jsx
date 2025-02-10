@@ -8,7 +8,7 @@ const Shop = ({ addToCart,category, shopItems }) => {
   
   return (
     <section className="py-14 px-4 bg-gray-50 dark:bg-gradient-to-b dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white transition-colors duration-500">
-      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="container hidden md:grid mx-auto  grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Category Section  */}
         {category && <aside className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 border border-gray-200 dark:border-gray-600">
           <h2 className="text-2xl font-bold text-yellow-500 dark:text-yellow-400 mb-4">Brands</h2>
@@ -52,8 +52,77 @@ const Shop = ({ addToCart,category, shopItems }) => {
           </div>
         </main>
       </div>
+      <div className="container md:hidden mx-auto">
+        {/* Category Section as Scrollable Tabs */}
+        {category && (
+          <aside className="flex overflow-x-auto space-x-4 pb-4 mb-6">
+            {category.allBrands?.slice(0, 6).map((brand, index) => (
+              <div key={index} className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-900 rounded-lg">
+                <span className="text-2xl p-2 rounded-full border border-yellow-400">{category.icon}</span>
+                <span className="text-xs font-medium">{brand}</span>
+              </div>
+            ))}
+          </aside>
+        )}
+
+        {/* Products Section */}
+        <main>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-yellow-500 dark:text-yellow-400">Featured {category.name}</h2>
+            <button className="text-yellow-500 dark:text-yellow-400 flex items-center">
+              <span>View All</span>
+              <ArrowRightCircleIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Responsive Product Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <ProductGrid shopItems={shopItems} />
+            {/* {shopItems?.products?.map((item, index) => (
+              <div key={index} className="relative bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md">
+                <img src={item.cover} alt={item.newName} className="w-full h-48 object-cover rounded-lg" />
+                <div className="mt-2">
+                  <h4 className="text-base font-semibold truncate">{item.newName}</h4>
+                  <span className="text-yellow-500 font-bold">${item.sellingPrice}.00</span>
+                </div>
+                <button className="absolute top-3 right-3 bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md">
+                  <PlusIcon className="h-5 w-5" />
+                </button>
+              </div>
+            ))} */}
+          </div>
+        </main>
+      </div>
+
     </section>
   );
 };
 
 export default Shop;
+
+const ProductGrid = ({ shopItems }) => {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {shopItems?.products?.map((item, index) => (
+        <div
+          key={index}
+          className="relative bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md transition-transform hover:scale-105"
+        >
+          <img
+            src={item.cover}
+            alt={item.newName}
+            className="w-full aspect-[3/4] object-cover rounded-lg"
+          />
+          <div className="mt-3">
+            <h4 className="text-base font-semibold truncate">{item.newName}</h4>
+            <span className="text-yellow-500 font-bold">${item.sellingPrice}.00</span>
+          </div>
+          <button className="absolute top-3 right-3 bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md">
+            <PlusIcon className="h-5 w-5" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+

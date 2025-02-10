@@ -64,7 +64,7 @@ const FlashCard = ({ productItems, addToCart }) => {
     <Slider {...settings} className="py-8">
       {productItems.map((product) => (
         <motion.div onClick={()=>{ router.push(`/shop/product/${product.id}`)}} key={product.id} whileHover={{ scale: 1.05 }} className="p-4">
-          <div className="bg-white dark:bg-gray-900 text-black dark:text-white shadow-2xl rounded-2xl overflow-hidden hover:shadow-3xl transition-shadow">
+          <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-2xl overflow-hidden hover:shadow-3xl ">
             <div className="relative group">
               <span className="absolute top-2 left-2 bg-yellow-500 text-black text-xs px-3 py-1 rounded-full shadow-md">
                 {product.discount}% Off
@@ -141,3 +141,4 @@ const FlashDeals = ({ productItems, addToCart, decreaseQuantity, removeFromCart 
 };
 
 export default FlashDeals;
+
