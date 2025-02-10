@@ -266,13 +266,17 @@ const BottomNav = () => {
     { name: "Products", icon: DocumentTextIcon, link: "/shop/productlist" },
     { name: "Categories", icon: DocumentDuplicateIcon, link: "/shop/categories" },
     { name: "Orders", icon: TruckIcon, link: "/shop/trackmyorder" },
-    { name: "Contact", icon: PhoneIcon, link: "/shop/contact" },
+    { name: "Profile", icon: UserIcon, link: "/shop/profile" },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-black border-t border-gray-300 dark:border-gray-700 flex justify-around py-3 shadow-lg md:hidden">
+    <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-black border-t border-gray-300 dark:border-gray-700 flex justify-around py-3 shadow-lg md:hidden z-50">
       {menuItems.map(({ name, icon: Icon, link }) => (
-        <button key={name} onClick={() => router.push(link)} className="flex flex-col items-center text-gray-700 dark:text-gray-300 hover:text-yellow-500">
+        <button
+          key={name}
+          onClick={() => router.push(link)}
+          className="flex flex-col items-center text-gray-700 dark:text-gray-300 hover:text-yellow-500 transition-all"
+        >
           <Icon className="w-6 h-6" />
           <span className="text-xs mt-1">{name}</span>
         </button>
