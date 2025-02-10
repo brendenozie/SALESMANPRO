@@ -4,13 +4,17 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
-const CategoriesGrid = ({ categories }) => (
+const CategoriesGrid = ({ categories }) => {
+  const router = useRouter();
+  return (
   <div className="grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] sm:gap-6 px-4 py-4 sm:px-6 sm:py-8">
   {categories.map(({ name, icon }, index) => (
     <motion.div
+      onClick={() => {router.push(`/shop/productlist?category=${name}`)}}
       key={index}
       whileHover={{ scale: 1.05 }}
       className="relative bg-gradient-to-br from-yellow-400 to-yellow-500 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform overflow-hidden"
@@ -25,10 +29,7 @@ const CategoriesGrid = ({ categories }) => (
     </motion.div>
   ))}
 </div>
-
-
-
-);
+)};
 
 const SliderComponent = ({ promoSlides }) => (
   <Slider dots infinite slidesToShow={1} slidesToScroll={1} autoplay autoplaySpeed={4000} arrows>

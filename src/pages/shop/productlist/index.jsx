@@ -9,16 +9,24 @@ import { ArrowPathIcon ,XCircleIcon, MagnifyingGlassCircleIcon, ChevronDoubleDow
 import Filters from "../../../components/Filters";
 
 const ProductList = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+  const { query } = router;
+
+  const [searchTerm, setSearchTerm] = useState(query.search || "");
+  
   const [filters, setFilters] = useState({
-    brand: [],
-    category: [],
-    subCategory: [],
-    priceRange: [0, 10000000],
-    rating: "",
-    availability: "",
-    sort: "popularity",
+    brand: query.brand ? (Array.isArray(query.brand) ? query.brand : [query.brand]) : [],
+    category: query.category ? (Array.isArray(query.category) ? query.category : [query.category]) : [],
+    subCategory: query.subCategory ? (Array.isArray(query.subCategory) ? query.subCategory : [query.subCategory]) : [],
+    priceRange: [
+      Number(query.minPrice) || 0,
+      Number(query.maxPrice) || 10000000,
+    ],
+    rating: query.rating || "",
+    availability: query.availability || "",
+    sort: query.sort || "popularity",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
@@ -28,8 +36,25 @@ const ProductList = () => {
   const [cartItems, setCartItems] = useState([]);
   const observer = useRef();
 
+  // Sync filters with URL when filters change
   useEffect(() => {
-    setProducts([]); 
+    const queryParams = {
+      ...(searchTerm && { search: searchTerm }),
+      ...(filters.brand.length && { brand: filters.brand }),
+      ...(filters.category.length && { category: filters.category }),
+      ...(filters.subCategory.length && { subCategory: filters.subCategory }),
+      ...(filters.priceRange[0] !== 0 && { minPrice: filters.priceRange[0] }),
+      ...(filters.priceRange[1] !== 10000000 && { maxPrice: filters.priceRange[1] }),
+      ...(filters.rating && { rating: filters.rating }),
+      ...(filters.availability && { availability: filters.availability }),
+      ...(filters.sort !== "popularity" && { sort: filters.sort }),
+    };
+
+    router.push({ pathname: router.pathname, query: queryParams }, undefined, { shallow: true });
+  }, [filters, searchTerm]);
+
+  useEffect(() => {
+    setProducts([]);
     setPage(1);
     setHasMore(true);
   }, [searchTerm, filters]);
@@ -39,20 +64,18 @@ const ProductList = () => {
     setLoading(true);
     setError(null);
     try {
-
-      console.log("filters", filters);
-
       const queryParams = new URLSearchParams({
         page: pageNum,
         limit: 8,
         search: searchTerm,
-        brand: filters.brand,
-        category: filters.category,
-        subCategory: filters.subCategory,
         minPrice: filters.priceRange[0],
         maxPrice: filters.priceRange[1],
         sort: filters.sort,
-      }).toString();
+      });
+
+      filters.brand.forEach((b) => queryParams.append("brand", b));
+      filters.category.forEach((c) => queryParams.append("category", c));
+      filters.subCategory.forEach((s) => queryParams.append("subCategory", s));
 
       const response = await fetch(`/api/shop/products?${queryParams}`);
       if (!response.ok) throw new Error("Failed to fetch products.");
@@ -72,7 +95,6 @@ const ProductList = () => {
     fetchProducts(1);
   }, [searchTerm, filters]);
 
-  
   const uniqueBrands = [...new Set(products.map((p) => p.inventoryItem.product.brand))];
   const uniqueCategories = [...new Set(products.map((p) => p.inventoryItem.product.category))];
 
@@ -100,8 +122,6 @@ const ProductList = () => {
     fetchProducts(page);
   }, [page]);
 
-
-
   return (
     <>
       <Header CartItem={cartItems} />
@@ -109,7 +129,6 @@ const ProductList = () => {
         <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">
           Explore Our Collection
         </h2>
-        {/* <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8 items-start">
           <Filters filters={filters} setFilters={setFilters} uniqueBrands={uniqueBrands} uniqueCategories={uniqueCategories} />
           <ProductGrid loading={loading} products={products} />
@@ -117,10 +136,124 @@ const ProductList = () => {
         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
       </div>
       <Footer />
-      <Cart /> 
+      <Cart />
     </>
   );
 };
+
+// const ProductList = () => {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [filters, setFilters] = useState({
+//     brand: [],
+//     category: [],
+//     subCategory: [],
+//     priceRange: [0, 10000000],
+//     rating: "",
+//     availability: "",
+//     sort: "popularity",
+//   });
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState(null);
+//   const [page, setPage] = useState(1);
+//   const [totalPages, setTotalPages] = useState(1);
+//   const [products, setProducts] = useState([]);
+//   const [hasMore, setHasMore] = useState(true);
+//   const [cartItems, setCartItems] = useState([]);
+//   const observer = useRef();
+
+//   useEffect(() => {
+//     setProducts([]); 
+//     setPage(1);
+//     setHasMore(true);
+//   }, [searchTerm, filters]);
+
+//   const fetchProducts = async (pageNum) => {
+//     if (!hasMore || loading) return;
+//     setLoading(true);
+//     setError(null);
+//     try {
+
+//       console.log("filters", filters);
+
+//       const queryParams = new URLSearchParams({
+//         page: pageNum,
+//         limit: 8,
+//         search: searchTerm,
+//         brand: filters.brand,
+//         category: filters.category,
+//         subCategory: filters.subCategory,
+//         minPrice: filters.priceRange[0],
+//         maxPrice: filters.priceRange[1],
+//         sort: filters.sort,
+//       }).toString();
+
+//       const response = await fetch(`/api/shop/products?${queryParams}`);
+//       if (!response.ok) throw new Error("Failed to fetch products.");
+//       const data = await response.json();
+
+//       setProducts((prev) => [...prev, ...data.products]);
+//       setTotalPages(data.totalPages);
+//       if (data.products.length === 0 || pageNum >= data.totalPages) setHasMore(false);
+//     } catch (err) {
+//       setError(err.message);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchProducts(1);
+//   }, [searchTerm, filters]);
+
+  
+//   const uniqueBrands = [...new Set(products.map((p) => p.inventoryItem.product.brand))];
+//   const uniqueCategories = [...new Set(products.map((p) => p.inventoryItem.product.category))];
+
+//   useEffect(() => {
+//     const options = {
+//       root: null,
+//       rootMargin: "20px",
+//       threshold: 0,
+//     };
+
+//     const handleObserver = (entities) => {
+//       const target = entities[0];
+//       if (target.isIntersecting) {
+//         setPage((prev) => prev + 1);
+//       }
+//     };
+
+//     observer.current = new IntersectionObserver(handleObserver, options);
+//   }, []);
+
+//   useEffect(() => {
+//     if (page > 1) {
+//       observer.current.observe(document.getElementById("observer"));
+//     }
+//     fetchProducts(page);
+//   }, [page]);
+
+
+
+//   return (
+//     <>
+//       <Header CartItem={cartItems} />
+//       <div className="container mx-auto p-4 md:p-8 bg-white dark:bg-gray-900">
+//         <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">
+//           Explore Our Collection
+//         </h2>
+//         {/* <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> */}
+//         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8 items-start">
+//           <Filters filters={filters} setFilters={setFilters} uniqueBrands={uniqueBrands} uniqueCategories={uniqueCategories} />
+//           <ProductGrid loading={loading} products={products} />
+//         </div>
+//         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+//       </div>
+//       <Footer />
+//       <Cart /> 
+//     </>
+//   );
+// };
 
 const SearchBar = ({ searchTerm, setSearchTerm }) => (
   <div className="flex flex-col sm:flex-row gap-6 mb-8 justify-center">
@@ -138,7 +271,7 @@ const SearchBar = ({ searchTerm, setSearchTerm }) => (
 );
 
 const ProductGrid = ({ loading, products }) => (
-  <div className="lg:col-span-3 columns-2 md:columns-3 xl:columns-4 gap-4 p-4">
+  <div className="lg:col-span-3 columns-2 md:columns-3 xl:columns-4 p-1 gap-4 md:p-4">
     {loading
       ? [...Array(9)].map((_, index) => (
           <SkeletonCard

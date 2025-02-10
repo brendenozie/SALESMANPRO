@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { PrismaClient } from '@prisma/client';
 import { useRouter } from 'next/router';
 import Header from "../../../components/shop/header/Header";
@@ -122,39 +122,123 @@ const ProductPage = ({ product, similarProducts }) => {
 
 export default ProductPage;
 
+
 const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
-  const prevImage = () => setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  const nextImage = () => setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  const [isOpen, setIsOpen] = useState(false);
+
+  const prevImage = () =>
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+
+  const nextImage = () =>
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
 
   return (
     <div className="relative flex-1">
       <div className="relative flex-1">
-        <img src={images[currentImageIndex]} alt="Product" className="rounded-lg w-full object-contain h-96 shadow-lg" />
-        <button onClick={prevImage} className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+        <img
+          src={images[currentImageIndex]}
+          alt="Product"
+          className="rounded-lg w-full object-contain h-96 shadow-lg cursor-pointer"
+          onClick={() => setIsOpen(true)}
+        />
+        <button
+          onClick={prevImage}
+          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+        >
           <ArrowLeftIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
         </button>
-        <button onClick={nextImage} className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+        <button
+          onClick={nextImage}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+        >
           <ArrowRightIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
         </button>
       </div>
 
       {/* Thumbnail Images */}
-        <div className="flex space-x-2 mt-4">
-          {images.map((img, index) => (
-            <img
-              key={index}
-              src={img}
-              alt={`Thumbnail ${index + 1}`}
-              onClick={() => setCurrentImageIndex(index)}
-              className={`h-16 w-16 object-cover rounded-lg border cursor-pointer transition ${
-                index === currentImageIndex ? "border-green-500 shadow-md" : "border-gray-300"
-              }`}
-            />
-          ))}
-        </div>
+      <div className="flex space-x-2 mt-4">
+        {images.map((img, index) => (
+          <img
+            key={index}
+            src={img}
+            alt={`Thumbnail ${index + 1}`}
+            onClick={() => setCurrentImageIndex(index)}
+            className={`h-16 w-16 object-cover rounded-lg border cursor-pointer transition ${
+              index === currentImageIndex ? "border-green-500 shadow-md" : "border-gray-300"
+            }`}
+          />
+        ))}
       </div>
+
+      {/* Lightbox Modal */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+          <button
+            onClick={() => setIsOpen(false)}
+            className="absolute top-5 right-5 text-white bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+
+          <button
+            onClick={prevImage}
+            className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white bg-gray-700 p-3 rounded-full hover:bg-gray-600 transition"
+          >
+            <ArrowLeftIcon className="h-6 w-6" />
+          </button>
+
+          <img
+            src={images[currentImageIndex]}
+            alt="Enlarged Product"
+            className="max-h-[80vh] max-w-[90vw] object-contain"
+          />
+
+          <button
+            onClick={nextImage}
+            className="absolute right-5 top-1/2 transform -translate-y-1/2 text-white bg-gray-700 p-3 rounded-full hover:bg-gray-600 transition"
+          >
+            <ArrowRightIcon className="h-6 w-6" />
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
+
+
+// const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
+//   const prevImage = () => setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+//   const nextImage = () => setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+
+//   return (
+//     <div className="relative flex-1">
+//       <div className="relative flex-1">
+//         <img src={images[currentImageIndex]} alt="Product" className="rounded-lg w-full object-contain h-96 shadow-lg" />
+//         <button onClick={prevImage} className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+//           <ArrowLeftIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
+//         </button>
+//         <button onClick={nextImage} className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-700 shadow-lg rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+//           <ArrowRightIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
+//         </button>
+//       </div>
+
+//       {/* Thumbnail Images */}
+//         <div className="flex space-x-2 mt-4">
+//           {images.map((img, index) => (
+//             <img
+//               key={index}
+//               src={img}
+//               alt={`Thumbnail ${index + 1}`}
+//               onClick={() => setCurrentImageIndex(index)}
+//               className={`h-16 w-16 object-cover rounded-lg border cursor-pointer transition ${
+//                 index === currentImageIndex ? "border-green-500 shadow-md" : "border-gray-300"
+//               }`}
+//             />
+//           ))}
+//         </div>
+//       </div>
+//   );
+// };
 
 
 // Product Information Section
