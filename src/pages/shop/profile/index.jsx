@@ -69,7 +69,7 @@ const ProfilePage = () => {
   const handleSearch = (e) => setSearchQuery(e.target.value);
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 flex transition-colors duration-300`}>      
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 inline-flex md:flex transition-colors duration-300`}>      
       <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
 
       <div className="flex-1 p-6 space-y-6 relative">
@@ -110,7 +110,8 @@ const Sidebar = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen, a
     initial={{ x: -250 }}
     animate={{ x: sidebarOpen ? 0 : -250 }}
     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-    className={`fixed md:relative z-20 md:flex flex-col w-64 bg-gradient-to-b from-${accentColor}-400 to-${accentColor}-500 dark:from-gray-800 dark:to-gray-900 shadow-xl p-4 rounded-r-2xl`}
+        // className={`fixed md:relative z-20 md:flex flex-col w-64 ${sidebarOpen ? ' mt-24 min-h-full min-w-full justify-items-center text-center justify-center items-center block' : 'hidden'} bg-gradient-to-b from-${accentColor}-400 to-${accentColor}-500 dark:from-gray-800 dark:to-gray-900 shadow-xl p-4 rounded-r-2xl`}
+    className={`fixed md:relative z-20 md:flex flex-col w-64 ${sidebarOpen ? 'block' : 'hidden'} bg-gradient-to-b from-${accentColor}-400 to-${accentColor}-500 dark:from-gray-800 dark:to-gray-900 shadow-xl p-4 rounded-r-2xl`}
   >
     {tabs.map((tab) => (
       <button

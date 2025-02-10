@@ -535,8 +535,140 @@ const SortFilter = ({ sortOption, setSortOption }) => (
   </motion.div>
 );
 
-
 const MobileUIFilters = ({ categories, subCategories, brands, filters, setFilters }) => {
+  const [localFilters, setLocalFilters] = useState(filters);
+  const [isOpen, setIsOpen] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(null);
+
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
+  const handleFilterChange = useCallback(
+    debounce((key, value) => {
+      setLocalFilters((prev) => {
+        if (JSON.stringify(prev[key]) !== JSON.stringify(value)) {
+          const updatedFilters = { ...prev, [key]: value };
+          setFilters(updatedFilters);
+          return updatedFilters;
+        }
+        return prev;
+      });
+    }, 300),
+    [setFilters]
+  );
+
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  return (
+    <div className="relative">
+      {/* Floating Button for Mobile - Positioned Above BottomNav */}
+      <button
+        className="fixed bottom-20 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg flex items-center z-50"
+        onClick={() => setIsOpen(true)}
+      >
+        <AdjustmentsHorizontalIcon className="h-6 w-6" />
+      </button>
+
+      {/* Bottom Sheet Modal - Starts Above BottomNav */}
+      {isOpen && (
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed bottom-14 left-0 w-full h-3/4 bg-white shadow-2xl rounded-t-2xl p-4 z-50 overflow-y-auto"
+        >
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Filters</h2>
+            <button onClick={() => setIsOpen(false)}>
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Categories */}
+          <div className="mt-4">
+            <button
+              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
+              onClick={() => toggleSection("categories")}
+            >
+              Categories <ChevronDownIcon className="h-5 w-5" />
+            </button>
+            {expandedSection === "categories" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pl-4 mt-2 space-y-2"
+              >
+                {categories.map((category) => (
+                  <div key={category}>
+                    <input
+                      type="checkbox"
+                      checked={localFilters.categories?.includes(category)}
+                      onChange={() => {
+                        const newCategories = localFilters.categories?.includes(category)
+                          ? localFilters.categories.filter((c) => c !== category)
+                          : [...(localFilters.categories || []), category];
+                        handleFilterChange("categories", newCategories);
+                      }}
+                    />
+                    <label className="ml-2">{category}</label>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Brands */}
+          <div className="mt-4">
+            <button
+              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
+              onClick={() => toggleSection("brands")}
+            >
+              Brands <ChevronDownIcon className="h-5 w-5" />
+            </button>
+            {expandedSection === "brands" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pl-4 mt-2 space-y-2"
+              >
+                {brands.map((brand) => (
+                  <div key={brand}>
+                    <input
+                      type="checkbox"
+                      checked={localFilters.brands?.includes(brand)}
+                      onChange={() => {
+                        const newBrands = localFilters.brands?.includes(brand)
+                          ? localFilters.brands.filter((b) => b !== brand)
+                          : [...(localFilters.brands || []), brand];
+                        handleFilterChange("brands", newBrands);
+                      }}
+                    />
+                    <label className="ml-2">{brand}</label>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Apply Filters Button */}
+          <button
+            className="w-full bg-blue-600 text-white py-3 mt-6 rounded-lg"
+            onClick={() => setIsOpen(false)}
+          >
+            Apply Filters
+          </button>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+
+const MobileUIFiltersV1 = ({ categories, subCategories, brands, filters, setFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
