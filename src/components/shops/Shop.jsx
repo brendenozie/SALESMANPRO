@@ -5,9 +5,7 @@ import { useRouter } from "next/router";
 const Shop = ({ addToCart,category, shopItems }) => {
 
   const router = useRouter();
-  console.log(shopItems);
-  console.log("jhkjhjhlkjhlkjh")
-
+  
   return (
     <section className="py-14 px-4 bg-gray-50 dark:bg-gradient-to-b dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white transition-colors duration-500">
       <div className="container mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
