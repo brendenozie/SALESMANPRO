@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { FaLocationArrow, FaSpinner, FaTimes } from "react-icons/fa";
+import {
+  CircleStackIcon,
+  ClockIcon,
+  MapPinIcon
+} from "@heroicons/react/24/outline";
 
 const LocationModal = () => {
   const { isOpen, onClose, onUpdate } = useStateContext();
@@ -82,7 +86,7 @@ const LocationModal = () => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
           <button className="absolute top-3 right-3 text-gray-600" onClick={onClose}>
-            <FaTimes size={20} />
+            <ClockIcon size={20} />
           </button>
           <h2 className="text-xl font-semibold mb-4">Update Your Location</h2>
           <div className="flex flex-col gap-4">
@@ -91,7 +95,7 @@ const LocationModal = () => {
               onClick={detectLocation}
               disabled={isLoading}
             >
-              {isLoading ? <FaSpinner className="animate-spin" /> : <FaLocationArrow />} Detect Location
+              {isLoading ? <CircleStackIcon className="animate-spin" /> : <MapPinIcon />} Detect Location
             </button>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <input 
@@ -125,7 +129,7 @@ const LocationModal = () => {
                       }}
                     >
                       {loc}
-                      <FaLocationArrow className="text-blue-500" />
+                      <MapPinIcon className="text-blue-500" />
                     </li>
                   ))}
                 </ul>
