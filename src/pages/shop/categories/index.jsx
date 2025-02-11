@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Header from "../../../components/shop/header/Header";
 import Footer from "../../../components/shop/footer/Footer";
 import Cart from "../../../components/cart";
+import LocationModal from '../../../components/locationManager';
 
 const loaderProp = ({ src, width, quality }) => {
   const params = [`w=${width || 800}`]; // Default width to 800 if not provided
@@ -92,6 +93,7 @@ const Categories = () => {
         </div>        
         <Footer />
         <Cart /> 
+        <LocationModal/>
     </div>
   );
 };

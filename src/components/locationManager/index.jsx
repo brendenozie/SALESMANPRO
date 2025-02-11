@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   CircleStackIcon,
-  ClockIcon,
+  XMarkIcon,
   MapPinIcon
 } from "@heroicons/react/24/outline";
+import { useStateContext } from "../../contexts/ContextProvider";
 
 const LocationModal = () => {
-  const { isOpen, onClose, onUpdate } = useStateContext();
+  const { isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -85,8 +86,8 @@ const LocationModal = () => {
     isOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-          <button className="absolute top-3 right-3 text-gray-600" onClick={onClose}>
-            <ClockIcon size={20} />
+          <button className="absolute top-3 right-3 text-gray-600" onClick={() => setIsOpen(false)}>
+            <XMarkIcon  className=" w-6 h-6" />
           </button>
           <h2 className="text-xl font-semibold mb-4">Update Your Location</h2>
           <div className="flex flex-col gap-4">
@@ -95,7 +96,7 @@ const LocationModal = () => {
               onClick={detectLocation}
               disabled={isLoading}
             >
-              {isLoading ? <CircleStackIcon className="animate-spin" /> : <MapPinIcon />} Detect Location
+              {isLoading ? <CircleStackIcon className=" w-6 h-6 animate-spin" /> : <MapPinIcon  className=" w-6 h-6"/>} Detect Location
             </button>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <input 
@@ -129,7 +130,7 @@ const LocationModal = () => {
                       }}
                     >
                       {loc}
-                      <MapPinIcon className="text-blue-500" />
+                      <MapPinIcon  className=" w-6 h-6 text-blue-500" />
                     </li>
                   ))}
                 </ul>

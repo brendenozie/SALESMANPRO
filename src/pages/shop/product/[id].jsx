@@ -7,6 +7,7 @@ import Footer from "../../../components/shop/footer/Footer";
 import { useStateContext } from '../../../contexts/ContextProvider';
 import { motion } from "framer-motion";
 import Cart from "../../../components/cart";
+import LocationModal from "../../../components/locationManager";
 
 const prisma = new PrismaClient();
 
@@ -116,6 +117,7 @@ const ProductPage = ({ product, similarProducts }) => {
       </div>
       <Footer />
       <Cart />
+      <LocationModal/>
     </>
   );
 };

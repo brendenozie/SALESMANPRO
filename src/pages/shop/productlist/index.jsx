@@ -7,6 +7,7 @@ import Cart from "../../../components/cart";
 import debounce from "lodash.debounce";
 import { ArrowPathIcon, PlusIcon ,XCircleIcon, MagnifyingGlassCircleIcon, ChevronDoubleDownIcon, StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import Filters from "../../../components/Filters";
+import LocationModal from "../../../components/locationManager";
 
 const ProductList = () => {
   const router = useRouter();
@@ -137,6 +138,7 @@ const ProductList = () => {
       </div>
       <Footer />
       <Cart />
+      <LocationModal/>
     </>
   );
 };
