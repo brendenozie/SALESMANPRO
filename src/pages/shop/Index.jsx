@@ -11,6 +11,7 @@ import Header from "../../components/shop/header/Header";
 import Footer from "../../components/shop/footer/Footer";
 import Cart from "../../components/cart";
 import { useStateContext } from '../../contexts/ContextProvider';
+import LocationModal from "../../components/locationManager";
 
 const Pages = () => {
   const [categories, setCategories] = useState([]);
@@ -105,6 +106,7 @@ const Pages = () => {
         <Wrapper />
         <Footer />
         <Cart /> 
+        <LocationModal />
       </div>
     </>
   );

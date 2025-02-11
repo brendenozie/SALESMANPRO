@@ -15,6 +15,7 @@ import {
   BuildingLibraryIcon,
   TruckIcon,
   PhoneIcon,
+  MapPinIcon
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../contexts/ContextProvider.js";
 import { motion } from "framer-motion";
@@ -22,7 +23,7 @@ import { useRouter } from "next/router.js";
 import { debounce } from "lodash";
 
 const Header = () => {
-  const { isDarkMode, setMode, cart, isCartOpen, setIsCartOpen } = useStateContext();
+  const { isDarkMode, setMode, cart, isCartOpen, setIsCartOpen, location, setLocation, locationName, setLocationName,isOpen, onClose, onUpdate } = useStateContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   
@@ -36,7 +37,7 @@ const Header = () => {
 
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">
-      <TopBar />
+      <TopBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName} isOpen={isOpen} onClose={onClose} onUpdate={onUpdate}/>
       <nav
         className={`sticky top-0 z-50 bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black bg-opacity-90 backdrop-blur-md transition-all duration-300 ${
           isSticky ? "shadow-2xl" : "shadow-none"
@@ -51,7 +52,7 @@ const Header = () => {
               loading="lazy"
             />
           </a>
-          <SearchBar />
+          <SearchBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName}/>
           <NavIcons
             cart={cart}
             isMobileMenuOpen={isMobileMenuOpen}
@@ -77,7 +78,7 @@ const Header = () => {
 
 export default Header;
 
-const SearchBar = () => {
+const SearchBar = ({location, setLocation, locationName, setLocationName}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -132,7 +133,12 @@ const SearchBar = () => {
         onFocus={() => setIsDropdownVisible(suggestions.length > 0)}
         onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)} // Delay to allow clicking suggestions
       />
-      
+      <button 
+        onClick={() => router.push(`/shop/productlist?location=${location}`)} 
+        className="absolute right-3 text-yellow-400 text-xs hover:underline"
+      >
+        🔍 View Nearby Deals
+      </button>
       {/* Loading Spinner */}
       {loading && (
         <div className="absolute top-full right-4 mt-2 text-yellow-400 animate-spin">
@@ -173,7 +179,7 @@ const SearchBar = () => {
   );
 };
 
-const TopBar = () => (
+const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, onClose, onUpdate}) => (
   <div className="bg-yellow-400 text-black text-sm py-2 hidden md:block animate-fadeIn dark:bg-yellow-500">
     <div className="container mx-auto flex justify-between px-6">
       <div className="flex space-x-6">
@@ -187,6 +193,10 @@ const TopBar = () => (
         </span>
       </div>
       <div className="flex space-x-6">
+        <span className="flex items-center space-x-2 cursor-pointer" onClick={() => alert("Update Location Coming Soon!")}>
+          <MapPinIcon className="w-4 h-4 text-gray-800 dark:text-white" />
+          <span>{locationName}</span>
+        </span>
         <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">FAQs</span>
         <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Need Help?</span>
       </div>

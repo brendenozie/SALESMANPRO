@@ -39,6 +39,8 @@ export const ContextProvider = ({ children }) => {
     }
     return true;
   });
+  const [location, setLocation] = useState(null);
+  const [locationName, setLocationName] = useState("Detecting location...");
   const [isClicked, setIsClicked] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const [cart, setCart] = useState(() => {
@@ -51,6 +53,31 @@ export const ContextProvider = ({ children }) => {
     }
     return [];
   });
+
+  const [isOpen, setIsOpen] = useState(false); 
+  const [onClose, setOnClose] = useState(false);
+  const [onUpdate, setOnUpdate] = useState();
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+          fetchLocationName(latitude, longitude);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setLocationName("Location access denied.");
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+      setLocationName("Geolocation not supported.");
+    }
+  }, []);
+
 
   useEffect(() => {
     Router.events.on("routeChangeStart", () => setIsLoading(true));
@@ -78,6 +105,16 @@ export const ContextProvider = ({ children }) => {
       document.body.classList.remove("dark");
     }
   }, [isDarkMode]);
+  
+  const fetchLocationName = async (lat, lon) => {
+    try {
+      const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+      const data = await response.json();
+      setLocationName(data.city || data.locality || "Unknown location");
+    } catch (error) {
+      console.error("Error fetching location name:", error);
+    }
+  };
 
   const addToCart = (product) => {
     setCart((prevCart) => {
@@ -159,10 +196,20 @@ export const ContextProvider = ({ children }) => {
       setThemeSettings,
       isLoading,
       cartSubtotal,
+      location,
+      isOpen, 
+      setIsOpen,
+      onClose,
+      setOnClose,
+      onUpdate, 
+      setOnUpdate,
+      setLocation,
+      locationName,
+      setLocationName,
       isCartOpen,
       setIsCartOpen
     }),
-    [cart, currentColor, isCartOpen, isDarkMode, activeMenu, screenSize, isClicked, themeSettings, isLoading, cartSubtotal]
+    [cart, currentColor, isCartOpen, isDarkMode, activeMenu, isOpen, onClose , onUpdate, screenSize, isClicked, themeSettings, location,locationName, isLoading, cartSubtotal]
   );
 
   return (
