@@ -95,12 +95,12 @@ const Pages = () => {
     <>
       <div className="container bg-gradient-to-br from-gray-50 to-gray-100">
         <Header CartItem={CartItem} />
-        <Home CartItem={CartItem} categories={categories}  />
+        {categories && <Home CartItem={CartItem} categories={categories}  />}
         {flashDeals.products && <FlashDeals productItems={flashDeals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
         {categories && <TopCate categories={categories} />}
         {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
         {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
-        {<Shop category={featuredCategories} shopItems={productsByCategory[featuredCategories.name] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
+        {featuredCategories &&<Shop category={featuredCategories} shopItems={productsByCategory[featuredCategories.name] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
         <Annocument />
         <Wrapper />
         <Footer />
