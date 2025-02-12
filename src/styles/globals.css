@@ -66,3 +66,9 @@
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.map-container {
+  height: 250px;
+  /* Ensure a proper height */
+  width: 100%;
+}

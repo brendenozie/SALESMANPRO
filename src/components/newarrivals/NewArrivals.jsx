@@ -104,10 +104,10 @@ const ProductGrid = ({ productItems, addToCart }) => {
           onClick={() => router.push(`/shop/product/${val.id}`)}
         >
           {/* Product Image */}
-          <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
+          <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
             <motion.img
-              src={val.cover}
-              alt={`Product image of ${val.newName}`}
+              src={val.image}
+              alt={val.newName}
               className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
               whileHover={{ rotate: 2 }}
             />

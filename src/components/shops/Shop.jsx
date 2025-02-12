@@ -1,5 +1,5 @@
 import React from "react";
-import { PlusIcon, ArrowRightIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ArrowRightIcon, ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 
@@ -43,12 +43,32 @@ const Shop = ({ addToCart,category, shopItems }) => {
                 <img src={item.cover} alt={item.newName} className="w-full h-64 object-cover rounded-xl" />
                 <div className="mt-3">
                   <h4 className="text-lg font-semibold truncate">{item.newName}</h4>
-                  <span className="text-yellow-500 font-bold text-md">${item.sellingPrice}.00</span>
+                  {/* <span className="text-yellow-500 font-bold text-md">${item.sellingPrice}.00</span> */}
                 </div>
-                <button onClick={() => addToCart(item)} className="absolute top-3 right-3 bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md hover:bg-yellow-600 transition">
+                {/* <button onClick={() => addToCart(item)} className="absolute top-3 right-3 bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md hover:bg-yellow-600 transition">
                   <PlusIcon className="h-6 w-6" />
-                </button>
+                </button> */}
+                 {/* Price & Add to Cart Button */}
+                  <div className="flex justify-between items-center w-full mt-2">
+                    <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
+                      ${item.sellingPrice}
+                    </span>
+      
+                    <motion.button
+                      whileHover={{ scale: 1.07 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent accidental navigation
+                        addToCart(item);
+                      }}
+                      className="flex items-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition text-sm md:text-base"
+                      aria-label="Add to Cart"
+                    >
+                      <ShoppingCartIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" /> Add
+                    </motion.button>
+                  </div>
               </div>
+              
             ))}
           </div>
         </main>

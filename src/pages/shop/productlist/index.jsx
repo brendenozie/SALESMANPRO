@@ -272,66 +272,6 @@ const SearchBar = ({ searchTerm, setSearchTerm }) => (
   </div>
 );
 
-// const ProductGrid = ({ loading, products }) => (
-//   <div className="lg:col-span-3 columns-2 md:columns-3 xl:columns-4 p-1 gap-4 md:p-4">
-//     {loading
-//       ? [...Array(9)].map((_, index) => (
-//           <SkeletonCard
-//             key={index}
-//             className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md cursor-pointer hover:shadow-xl transition mb-4 break-inside-avoid"
-//           />
-//         ))
-//       : products.map((product) => <ProductCard key={product.id} product={product} />)}
-
-//     {loading && (
-//       <div className="col-span-full flex justify-center mt-6">
-//         <motion.div
-//           animate={{ rotate: 360 }}
-//           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-//         >
-//           <ArrowPathIcon className="w-8 h-8 text-yellow-500 animate-spin" />
-//         </motion.div>
-//       </div>
-//     )}
-//   </div>
-// );
-
-// const ProductCard = ({ product }) => {
-//   const router = useRouter();
-
-//   return (
-//     <motion.div
-//       onClick={() => router.push(`/shop/product/${product.id}`)}
-//       whileHover={{ scale: 1.03 }}
-//       className="bg-white dark:bg-gray-800 p-1 md:p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition flex flex-col mb-4 break-inside-avoid"
-//     >
-//       <img
-//         src={product.image}
-//         alt={product.newName}
-//         className="w-full object-cover rounded-md"
-//         style={{ height: `${Math.floor(Math.random() * 150) + 200}px` }} // Dynamic height for masonry effect
-//       />
-//       <div className="mt-3 text-center md:text-left">
-//         <h3 className="text-lg font-semibold text-black dark:text-white">{product.newName}</h3>
-//         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-//           {product.newDescription}
-//         </p>
-//       </div>
-//       <div className="mt-4 text-center md:text-left">
-//         <span className="text-xl font-bold text-yellow-500">
-//           ${product.sellingPrice.toFixed(2)}
-//         </span>
-//       </div>
-//       <motion.button
-//         whileHover={{ scale: 1.05 }}
-//         className="mt-3 w-full flex items-center justify-center bg-yellow-400 text-black px-1 text-sm md:px-4 py-2 rounded-md md:rounded-full shadow-md hover:bg-yellow-500 transition"
-//       >
-//         <ShoppingCartIcon className="w-5 h-5 mr-2" /> Add to Cart
-//       </motion.button>
-//     </motion.div>
-//   );
-// };
-
 const ProductGrid = ({ loading, products }) => (
   <div className="lg:col-span-3 columns-2 sm:columns-3 md:columns-4 p-2 md:p-4 gap-3">
     {loading
@@ -390,14 +330,15 @@ const ProductCard = ({ product }) => {
             ${product.sellingPrice.toFixed(2)}
           </span>
 
-          <motion.button
-            whileHover={{ scale: 1.07 }}
-            whileTap={{ scale: 0.95 }}
-            className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-2 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition"
-            aria-label="Add to Cart"
-          >
-            <PlusIcon className="h-5 w-5" />
-          </motion.button>
+           <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => addToCart(product)}
+              className="flex items-center bg-yellow-500 text-black p-3 rounded-full shadow-lg hover:shadow-xl transition"
+              aria-label="Add to Cart"
+            >
+              <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
+            </motion.button>
         </div>
       </div>
     </motion.div>

@@ -1,43 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useRef, lazy } from "react";
-import {
-  CircleStackIcon,
-  XMarkIcon,
-  MapPinIcon
-} from "@heroicons/react/24/outline";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { MapPinIcon, XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
 import { useStateContext } from "../../contexts/ContextProvider";
 
-
-const MapContainer = lazy(() => import('react-leaflet').then(module => ({ default: module.MapContainer })));
-const TileLayer = lazy(() => import('react-leaflet').then(module => ({ default: module.TileLayer })));
-const Marker = lazy(() => import('react-leaflet').then(module => ({ default: module.Marker })));
-const Popup = lazy(() => import('react-leaflet').then(module => ({ default: module.Popup })));
+// Lazy loading the entire map component instead of individual elements
+const LazyMap = lazy(() => import("../lazyMap")); 
 
 const LocationModal = () => {
-  const { isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
+  const { isOpen, onClose, onUpdate } = useStateContext();
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [manualLocation, setManualLocation] = useState("");
-  const [recentLocations, setRecentLocations] = useState([]);
-  const [weather, setWeather] = useState(null);
-  const inputRef = useRef(null);
-  
-  useEffect(() => {
-    if (window && typeof window !== "undefined") {
-      const savedLocations = JSON.parse(localStorage.getItem("recentLocations")) || [];
-      setRecentLocations(savedLocations);
-      const lastLocation = localStorage.getItem("lastLocation");
-      if (lastLocation) {
-        setLocationName(lastLocation);
-      }
-    }
-  }, []);
-
   const { ready, value, setValue, suggestions, clearSuggestions } = usePlacesAutocomplete({ debounce: 300 });
+  const [mapKey, setMapKey] = useState(0);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMapKey((prevKey) => prevKey + 1); // Forces re-render when modal opens
+    }
+  }, [isOpen]);
+
+
+  useEffect(() => {
+    const lastLocation = localStorage.getItem("lastLocation");
+    if (lastLocation) setLocationName(lastLocation);
+  }, []);
 
   const detectLocation = () => {
     setIsLoading(true);
@@ -48,7 +38,6 @@ const LocationModal = () => {
           const { latitude, longitude } = position.coords;
           setLocation({ latitude, longitude });
           await fetchLocationName(latitude, longitude);
-          fetchWeather(latitude, longitude);
           setIsLoading(false);
         },
         () => {
@@ -71,87 +60,83 @@ const LocationModal = () => {
       const data = await response.json();
       const name = data.city || data.locality || "Unknown location";
       setLocationName(name);
-      saveRecentLocation(name);
-    } catch (error) {
-      setError("Failed to fetch location name. Enter manually.");
+      localStorage.setItem("lastLocation", name);
+    } catch {
+      setError("Failed to fetch location name. Please try again.");
     }
   };
 
-  const fetchWeather = async (lat, lon) => {
+  const handleSelectSuggestion = async (description) => {
+    setValue(description, false);
+    clearSuggestions();
     try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=YOUR_API_KEY`
-      );
-      const data = await response.json();
-      setWeather(`${data.main.temp}°C, ${data.weather[0].description}`);
-    } catch (error) {
-      setWeather("Weather data unavailable");
+      const results = await getGeocode({ address: description });
+      const { lat, lng } = getLatLng(results[0]);
+      setLocation({ latitude: lat, longitude: lng });
+      setLocationName(description);
+    } catch {
+      setError("Failed to get location coordinates.");
     }
-  };
-
-  const saveRecentLocation = (name) => {
-    const updatedLocations = [...new Set([name, ...recentLocations])].slice(0, 5);
-    setRecentLocations(updatedLocations);
-    localStorage.setItem("recentLocations", JSON.stringify(updatedLocations));
-    localStorage.setItem("lastLocation", name);
   };
 
   return (
     isOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md relative">
-          <button className="absolute top-3 right-3 text-gray-600 dark:text-gray-200" onClick={() => setIsOpen(false)}>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-lg relative">
+          <button className="absolute top-3 right-3 text-gray-600 dark:text-gray-200" onClick={onClose}>
             <XMarkIcon className="w-6 h-6" />
           </button>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Update Your Location</h2>
-          <div className="flex flex-col gap-4">
-            <button 
-              className="w-full bg-blue-600 text-white py-2 rounded flex items-center justify-center gap-2 transition-all hover:bg-blue-700 disabled:opacity-50"
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Set Your Location</h2>
+          <div className="space-y-4">
+            <button
               onClick={detectLocation}
               disabled={isLoading}
+              className="w-full flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
             >
-              {isLoading ? <CircleStackIcon className="w-6 h-6 animate-spin" /> : <MapPinIcon className="w-6 h-6" />} Detect Location
+              {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : <MapPinIcon className="w-5 h-5" />}
+              Detect Location
             </button>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <input 
-              type="text" 
-              ref={inputRef}
-              className="border p-2 rounded w-full focus:ring focus:ring-blue-300"
-              placeholder="Enter location manually or search"
-              value={value} 
+
+            <input
+              type="text"
+              value={value}
               onChange={(e) => setValue(e.target.value)}
+              placeholder="Enter location manually"
+              className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-300"
             />
-            <button 
-              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-              onClick={() => handleSelect(value)}
-            >
-              Submit
-            </button>
-            {recentLocations.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Recent Locations</h3>
-                <ul className="border rounded p-2 space-y-1">
-                  {recentLocations.map((loc, index) => (
-                    <li 
-                      key={index} 
-                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded flex justify-between items-center transition-all"
-                      onClick={() => handleSelect(loc)}
-                    >
-                      {loc}
-                      <MapPinIcon className="w-6 h-6 text-blue-500" />
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {suggestions.status === "OK" && (
+              <ul className="bg-white border rounded-lg shadow-md mt-1">
+                {suggestions.data.map((suggestion) => (
+                  <li
+                    key={suggestion.place_id}
+                    onClick={() => handleSelectSuggestion(suggestion.description)}
+                    className="cursor-pointer px-3 py-2 hover:bg-gray-100"
+                  >
+                    {suggestion.description}
+                  </li>
+                ))}
+              </ul>
             )}
+
+            {/* {location && (
+              <Suspense fallback={<p>Loading map...</p>}>
+                <LazyMap location={location} locationName={locationName} />
+              </Suspense>
+            )} */}
             {location && (
-              <MapContainer center={[location.latitude, location.longitude]} zoom={13} className="h-40 w-full">
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[location.latitude, location.longitude]}>
-                  <Popup>{locationName} {weather && ` - ${weather}`}</Popup>
-                </Marker>
-              </MapContainer>
+              <Suspense fallback={<p>Loading map...</p>}>
+                <LazyMap key={mapKey} location={location} locationName={locationName} />
+              </Suspense>
             )}
+
+
+            <button
+              onClick={() => onUpdate(locationName)}
+              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+            >
+              Confirm Location
+            </button>
           </div>
         </div>
       </div>
