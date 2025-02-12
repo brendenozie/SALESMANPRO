@@ -68,16 +68,137 @@ const CheckoutPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      setIsSubmitting(true);
-      setTimeout(() => {
-        setIsOrderPlaced(true);
-        setIsSubmitting(false);
-      }, 2000);
-    }
-  };
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   if (validateForm()) {
+  //     setIsSubmitting(true);
+  //     setTimeout(() => {
+  //       setIsOrderPlaced(true);
+  //       setIsSubmitting(false);
+  //     }, 2000);
+  //   }
+  // };
+  //  const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (validateForm()) {
+  //     setIsSubmitting(true);
+      
+  //     const orderData = {
+  //       clientId: 'example-client-id', // Replace with actual client ID
+  //       productId: cart.map(item => item.id).join(','),
+  //       consumerId: 'example-consumer-id', // Replace with actual consumer ID
+  //       quantity: cart.reduce((acc, item) => acc + item.quantity, 0),
+  //       totalPrice: cart.reduce((acc, item) => acc + item.sellingPrice * item.quantity, 0),
+  //       shippingAddress: `${formData.address}, ${formData.city}, ${formData.zip}`,
+  //       shippingMethod: formData.shipping === 'express' ? 'Express' : 'Standard',
+  //     };
+
+  //     try {
+  //       const response = await fetch('/api/orders', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify(orderData)
+  //       });
+        
+  //       if (response.ok) {
+  //         setIsOrderPlaced(true);
+  //         setFormData({
+  //           name: '', email: '', address: '', city: '', zip: '',
+  //           cardNumber: '', expiry: '', cvv: '', promoCode: '',
+  //           paymentMethod: 'card', shipping: 'standard'
+  //         });
+  //       } else {
+  //         const errorData = await response.json();
+  //         console.error('Order Error:', errorData);
+  //       }
+  //     } catch (error) {
+  //       console.error('API Error:', error);
+  //     } finally {
+  //       setIsSubmitting(false);
+  //     }
+  //   }
+  // };
+  
+  // const handleSubmit = async (e) => {
+  //     e.preventDefault();
+  //     if (!validateForm()) return;
+
+  //     setIsSubmitting(true);
+  //     setError({});
+
+  //     try {
+  //       const orderData = {
+  //         clientId: "some-client-id", // Replace with actual client ID
+  //         consumerId: "some-consumer-id", // Replace with actual consumer ID
+  //         items: cart.map(item => ({
+  //           productId: item.id,
+  //           quantity: item.quantity,
+  //           price: item.sellingPrice
+  //         })),
+  //         totalPrice: total.toFixed(2),
+  //         shippingAddress: formData.address,
+  //         shippingMethod: formData.shipping
+  //       };
+
+  //       const response = await fetch('/api/orders', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify(orderData)
+  //       });
+
+  //       if (!response.ok) throw new Error('Order failed');
+
+  //       const data = await response.json();
+  //       setIsOrderPlaced(true);
+  //       console.log('Order placed successfully:', data);
+  //     } catch (error) {
+  //       console.error('Error submitting order:', error);
+  //       setError({ submit: 'Failed to place order. Try again later.' });
+  //     } finally {
+  //       setIsSubmitting(false);
+  //     }
+  // };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+
+  setIsSubmitting(true);
+  setError({});
+
+  try {
+    const orderData = {
+      clientId: "some-client-id",
+      consumerId: "some-consumer-id",
+      items: cart.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.sellingPrice,
+      })),
+      totalPrice: total.toFixed(2),
+      shippingAddress: formData.address,
+      shippingMethod: formData.shipping,
+    };
+
+    const response = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
+
+    if (!response.ok) throw new Error('Order failed');
+
+    const data = await response.json();
+    setIsOrderPlaced(true);
+    console.log('Order placed successfully:', data);
+  } catch (error) {
+    console.error('Error submitting order:', error);
+    setError({ submit: 'Failed to place order. Try again later.' });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const subtotal = cart.reduce((acc, item) => acc + item.sellingPrice * item.quantity, 0);
   const shippingCost = formData.shipping === 'express' ? 15 : 5;
