@@ -2,22 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useStateContext } from '../../../contexts/ContextProvider';
 import Confetti from 'react-confetti';
-import { CreditCardIcon, EnvelopeIcon,MapPinIcon, UserIcon, BeakerIcon, TagIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CreditCardIcon, TruckIcon, TrashIcon, CheckCircleIcon,CalendarIcon } from '@heroicons/react/24/outline';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "../../../data/cardFormatter";
-
 import Image from 'next/image';
 
-const loaderProp = ({ src, width, quality }) => {
-  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
-  if (quality) {
-    params.push(`q=${quality}`);
-  }
-  return `${src}?${params.join("&")}`;
-};
-
 const CheckoutPage = () => {
-  const { cart, updateQuantity, removeItem, cartSubtotal } = useStateContext();
-
+  const { cart, removeItem } = useStateContext();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,8 +18,7 @@ const CheckoutPage = () => {
     expiry: '',
     cvv: '',
     promoCode: '',
-    notes: '',
-    saveInfo: false,
+    paymentMethod: 'card',
     shipping: 'standard'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,38 +26,46 @@ const CheckoutPage = () => {
   const [error, setError] = useState({});
   const [discount, setDiscount] = useState(0);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [estimatedDelivery, setEstimatedDelivery] = useState('');
   
   useEffect(() => {
-    setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    const today = new Date();
+    let deliveryDate = new Date();
+    deliveryDate.setDate(today.getDate() + (formData.shipping === 'express' ? 2 : 5));
+    setEstimatedDelivery(deliveryDate.toDateString());
+  }, [formData.shipping]);
+
+  useEffect(() => {
+    const updateSize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     let formattedValue = value;
     if (name === "cardNumber") formattedValue = formatCreditCardNumber(value);
     if (name === "expiry") formattedValue = formatExpirationDate(value);
     if (name === "cvv") formattedValue = formatCVC(value);
-
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : formattedValue });
+    
+    setFormData({ ...formData, [name]: formattedValue });
     if (error[name]) setError({ ...error, [name]: '' });
   };
 
   const validateForm = () => {
     const newErrors = {};
-    ['name', 'email', 'address', 'city', 'zip', 'cardNumber', 'expiry', 'cvv'].forEach(field => {
+    ['name', 'email', 'address', 'city', 'zip'].forEach(field => {
       if (!formData[field]) newErrors[field] = `${field} is required.`;
     });
+    if (formData.paymentMethod === 'card') {
+      ['cardNumber', 'expiry', 'cvv'].forEach(field => {
+        if (!formData[field]) newErrors[field] = `${field} is required.`;
+      });
+    }
     setError(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const applyPromoCode = () => {
-    if (formData.promoCode === 'DISCOUNT10') {
-      setDiscount(0.1);
-    } else {
-      alert('Invalid promo code');
-      setDiscount(0);
-    }
   };
 
   const handleSubmit = (e) => {
@@ -82,55 +79,81 @@ const CheckoutPage = () => {
     }
   };
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shippingCost = formData.shipping === 'express' ? 15 : formData.shipping === 'nextDay' ? 25 : 5;
+  const subtotal = cart.reduce((acc, item) => acc + item.sellingPrice * item.quantity, 0);
+  const shippingCost = formData.shipping === 'express' ? 15 : 5;
   const total = (subtotal + shippingCost) * (1 - discount);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-6 md:p-12 flex justify-center items-center">
       {isOrderPlaced && <Confetti width={windowSize.width} height={windowSize.height} />}  
-      <motion.div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-6 grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 sticky top-4">
-          <h2 className="text-2xl font-bold text-gray-800">Order Summary</h2>
+      <motion.div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl p-8 grid md:grid-cols-2 gap-8 overflow-hidden">
+        <div className="space-y-6">
+          <h2 className="text-3xl font-extrabold text-gray-800">Order Summary</h2>
           {cart.map(item => (
-            <div key={item.id} className="flex items-center justify-between border-b pb-2">
-              {/* <Image src={item.image} loader={loaderProp} alt={item.name} width={64} height={64} className="rounded-md" /> */}
+            <div key={item.id} className="flex items-center justify-between border-b pb-3">
               <div>
-                <h3 className="font-semibold">{item.name}</h3>
-                <p className="text-sm">Qty: {item.quantity}</p>
+                <h3 className="font-semibold text-gray-700">{item.newName}</h3>
+                <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
               </div>
-              <p>${(item.price * item.quantity).toFixed(2)}</p>
-              <button onClick={() => removeItem(item.id)} className="text-red-500"><TrashIcon /></button>
+              <p className="font-bold text-gray-700">${(item.sellingPrice * item.quantity).toFixed(2)}</p>
+              <button onClick={() => removeItem(item.id)} className="text-red-500 hover:text-red-700 transition"><TrashIcon className="w-5 h-5" /></button>
             </div>
           ))}
-          <div className="mt-4">
-            <input type="text" name="promoCode" value={formData.promoCode} onChange={handleChange} placeholder="Promo Code" className="w-full p-2 border rounded-md" />
-            <button onClick={applyPromoCode} className="w-full mt-2 bg-blue-500 text-white py-2 rounded-md">Apply</button>
+          <div className="flex items-center gap-2 mt-4 text-lg font-bold text-gray-800">
+            <CalendarIcon className="w-5 h-5 text-indigo-600" />
+            <span>Estimated Delivery: {estimatedDelivery}</span>
           </div>
-          <div className="mt-4 text-lg font-bold flex justify-between">
+          <div className="mt-4 text-xl font-bold flex justify-between text-gray-800">
             <span>Total:</span>
             <span>${total.toFixed(2)}</span>
           </div>
         </div>
-        <form onSubmit={handleSubmit} className="md:col-span-2 space-y-4">
-          <h2 className="text-2xl font-bold">Billing Details</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <h2 className="text-3xl font-extrabold text-gray-800">Billing Details</h2>
           {['name', 'email', 'address', 'city', 'zip'].map(field => (
-            <input key={field} type="text" name={field} value={formData[field]} onChange={handleChange} placeholder={field} className="w-full p-3 border rounded-md" />
+            <input key={field} type="text" name={field} value={formData[field]} onChange={handleChange} placeholder={field} className="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-indigo-200" />
           ))}
+          
           <div>
-            <label>Card Details</label>
-            <div className="flex gap-2">
-              <input type="text" name="cardNumber" value={formData.cardNumber} onChange={handleChange} placeholder="Card Number" className="w-2/3 p-3 border rounded-md" />
-              <input type="text" name="expiry" value={formData.expiry} onChange={handleChange} placeholder="MM/YY" className="w-1/3 p-3 border rounded-md" />
-              <input type="text" name="cvv" value={formData.cvv} onChange={handleChange} placeholder="CVV" className="w-1/4 p-3 border rounded-md" />
+            <h3 className="font-semibold text-gray-700">Payment Method</h3>
+            <div className="flex gap-4 mt-2">
+              <label className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg shadow-sm cursor-pointer">
+                <input type="radio" name="paymentMethod" value="card" checked={formData.paymentMethod === 'card'} onChange={handleChange} />
+                <CreditCardIcon className="w-6 h-6 text-indigo-600" /> Credit/Debit Card
+              </label>
+              <label className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg shadow-sm cursor-pointer">
+                <input type="radio" name="paymentMethod" value="cod" checked={formData.paymentMethod === 'cod'} onChange={handleChange} />
+                <TruckIcon className="w-6 h-6 text-indigo-600" /> Cash on Delivery
+              </label>
             </div>
           </div>
-          <button type="submit" className="w-full bg-yellow-400 text-white py-3 rounded-md">Place Order</button>
-        </form>
+          
+          {formData.paymentMethod === 'card' && (
+            <div className="space-y-3">
+              <input type="text" name="cardNumber" value={formData.cardNumber} onChange={handleChange} placeholder="Card Number" className="w-full p-3 border rounded-lg shadow-sm" />
+              <div className="flex gap-3">
+                <input type="text" name="expiry" value={formData.expiry} onChange={handleChange} placeholder="MM/YY" className="w-1/2 p-3 border rounded-lg shadow-sm" />
+                <input type="text" name="cvv" value={formData.cvv} onChange={handleChange} placeholder="CVV" className="w-1/2 p-3 border rounded-lg shadow-sm" />
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="saveCard" onChange={(e) => setSaveCard(e.target.checked)} />
+                <span>Save card for future purchases</span>
+              </label>
+
+            </div>
+          )}
+          <button 
+            type="submit" 
+            disabled={isSubmitting} 
+            className={`w-full py-3 rounded-lg text-lg font-semibold shadow-lg transition ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}
+          >
+            {isSubmitting ? 'Processing...' : <>Place Order <CheckCircleIcon className="inline w-6 h-6 ml-2" /></>}
+          </button>
+       </form>
       </motion.div>
     </div>
   );
 };
 
 export default CheckoutPage;
-
