@@ -60,11 +60,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: {
         clientId,
         consumerId,
-        totalPrice,
+        totalPrice: parseFloat(totalPrice),
         shippingAddress,
         shippingMethod,
         status: "PENDING",
-        trackingNumber: `TRK${Date.now()}`,
+        trackingNumber: `TRK${generateTrackingNumber()}`,
         deliveryStatus: "Order Placed",
         items: {
           create: items.map((item: any) => ({
@@ -145,6 +145,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   });
 }
 
+// Utility function to generate a random tracking number
+function generateTrackingNumber() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 // export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 //   try {
@@ -216,7 +220,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 //   }
 // }
 
-// // Utility function to generate a random tracking number
-// function generateTrackingNumber() {
-//   return Math.floor(100000 + Math.random() * 900000).toString();
-// }
+
