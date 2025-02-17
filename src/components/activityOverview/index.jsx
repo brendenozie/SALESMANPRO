@@ -16,6 +16,29 @@ const tabs = [
   { id: "downloads", label: "Download History", icon: <BookOpenIcon className='h-6 w-6' /> },
 ];
 
+const sampleData = {
+  orders: [
+    { id: "#12345", product: "Wireless Headphones", date: "Feb 12, 2025", status: "Delivered" },
+    { id: "#67890", product: "Smartwatch", date: "Feb 10, 2025", status: "Shipped" },
+  ],
+  recent: [
+    { activity: "Reviewed a product", date: "Feb 15, 2025" },
+    { activity: "Updated profile info", date: "Feb 14, 2025" },
+  ],
+  wishlist: [
+    { product: "Gaming Laptop", price: "$1299" },
+    { product: "Mechanical Keyboard", price: "$99" },
+  ],
+  saved: [
+    { item: "Article: Best Coding Practices", source: "TechBlog" },
+    { item: "Video: UI/UX Design Tips", source: "YouTube" },
+  ],
+  downloads: [
+    { file: "Invoice #12345.pdf", date: "Feb 12, 2025" },
+    { file: "E-book: React Guide.pdf", date: "Feb 11, 2025" },
+  ],
+};
+
 const ActivityOverview = () => {
   const [activeTab, setActiveTab] = useState("orders");
 
@@ -38,7 +61,6 @@ const ActivityOverview = () => {
           >
             {tab.icon}
             <span>{tab.label}</span>
-
             {activeTab === tab.id && (
               <motion.div
                 layoutId="underline"
@@ -50,7 +72,7 @@ const ActivityOverview = () => {
       </div>
 
       {/* Tabs Content */}
-      <div className="mt-4 min-h-[100px]">
+      <div className="mt-4 min-h-[150px]">
         <AnimatePresence mode="wait">
           {tabs.map(
             (tab) =>
@@ -63,7 +85,21 @@ const ActivityOverview = () => {
                   transition={{ duration: 0.3 }}
                   className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-md"
                 >
-                  <p className="text-gray-700 dark:text-gray-300">{`No ${tab.label.toLowerCase()} found.`}</p>
+                  {sampleData[tab.id].length > 0 ? (
+                    <ul className="space-y-3">
+                      {sampleData[tab.id].map((item, index) => (
+                        <li key={index} className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                          {Object.entries(item).map(([key, value]) => (
+                            <p key={key} className="text-gray-700 dark:text-gray-300">
+                              <strong className="capitalize">{key.replace('_', ' ')}:</strong> {value}
+                            </p>
+                          ))}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-700 dark:text-gray-300">No {tab.label.toLowerCase()} found.</p>
+                  )}
                 </motion.div>
               )
           )}
