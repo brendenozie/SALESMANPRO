@@ -387,18 +387,30 @@ enum SellerType {
 }
 
 model MarketplaceListing {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  sellerId    String     @db.ObjectId // ID of either a Client or Consumer
-  sellerType  SellerType
-  productId   String     @db.ObjectId
-  product     Product    @relation(fields: [productId], references: [id])
-  title       String
-  description String?
-  price       Float
-  quantity    Int
-  image       String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  sellerId      String     @db.ObjectId // ID of either a Client or Consumer
+  sellerType    SellerType
+  productId     String     @db.ObjectId
+  product       Product    @relation(fields: [productId], references: [id])
+  title         String     @default("New Name")
+  description   String?    @default("New Description")
+  price         Float
+  quantity      Int
+  image         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  salesPrice    Float      @default(0)
+  discount      Int?       @default(0)
+  isOnOffer     Boolean    @default(false)
+  isFlashDeal   Boolean    @default(false)
+  isNewArrival  Boolean    @default(false)
+  isDiscounted  Boolean    @default(false)
+  isFeatured    Boolean    @default(false)
+  startDealDate DateTime?
+  endDealDate   DateTime?
+
+  buyingPrice  Float // Price at which the client buys the product from the agent
+  sellingPrice Float // Price at which the client sells the product to the consumer
 }
 
 model ClientInventory {
@@ -413,21 +425,7 @@ model ClientInventory {
   agentInventory   AgentInventory       @relation(fields: [agentInventoryId], references: [id])
   salesAgentId     String               @db.ObjectId
   salesAgent       SalesAgent           @relation(fields: [salesAgentId], references: [id])
-  image            String?
-  newName          String               @default("New Name")
-  newDescription   String?
-  salesPrice       Float                @default(0)
-  discount         Int?                 @default(0)
-  isOnOffer        Boolean              @default(false)
-  isFlashDeal      Boolean              @default(false)
-  isNewArrival     Boolean              @default(false)
-  isDiscounted     Boolean              @default(false)
-  isFeatured       Boolean              @default(false)
-  startDealDate    DateTime?
-  endDealDate      DateTime?
   quantity         Int
-  buyingPrice      Float // Price at which the client buys the product from the agent
-  sellingPrice     Float // Price at which the client sells the product to the consumer
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   logs             ClientInventoryLog[]
@@ -506,13 +504,43 @@ enum RequesterType {
 }
 
 model Consumer {
-  id        String          @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String          @unique
-  phone     String?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  orders    CustomerOrder[]
+  id                   String                 @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  email                String                 @unique
+  phone                String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  orders               CustomerOrder[]
+  ConsumerInventory    ConsumerInventory[]
+  ConsumerInventoryLog ConsumerInventoryLog[]
+}
+
+model ConsumerInventory {
+  id           String                 @id @default(auto()) @map("_id") @db.ObjectId
+  consumerId   String                 @db.ObjectId
+  rating       Float                  @default(0)
+  availability Boolean                @default(true)
+  consumer     Consumer               @relation(fields: [consumerId], references: [id])
+  quantity     Int
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  logs         ConsumerInventoryLog[]
+}
+
+model ConsumerInventoryLog {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  clientInventoryId String            @db.ObjectId
+  clientInventory   ConsumerInventory @relation(fields: [clientInventoryId], references: [id])
+  action            String // e.g., "allocated", "returned-to-agent", "returned-to-company"
+  consumerId        String            @db.ObjectId
+  consumer          Consumer          @relation(fields: [consumerId], references: [id])
+  quantity          Int
+  price             Float
+  priceType         String // "buying" or "selling"
+  totalPrice        Float
+  status            String //completed, pending
+  damaged           Int               @default(0)
+  createdAt         DateTime          @default(now())
 }
 
 model CustomerOrder {
