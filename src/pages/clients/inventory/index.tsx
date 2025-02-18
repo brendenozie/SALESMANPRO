@@ -1,6 +1,7 @@
 import AddProductModal from "@/components/AddProductModal";
 import ClientLayout from "@/components/ClientLayout";
 import ProductRequestModal from "@/components/ProductRequestModal";
+import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import UserNav from "@/components/UserNav";
 import { useState } from "react";
 
@@ -20,81 +21,97 @@ type Props = {
 };
 
 const ClientInventoryPage = ({ productsData = [] }: Props) => {
-  
-   const [showRequestCustomerProductModal, setShowRequestCustomerAssignProductModal] = useState(false);    
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [salesAgentId, setSelectedSalesAgentId] = useState<String>("");
-    const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
-  
+  const [showRequestCustomerProductModal, setShowRequestCustomerAssignProductModal] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [salesAgentId, setSelectedSalesAgentId] = useState<String>("");
+  const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
 
   return (
     <ClientLayout>
-      <div className="flex flex-col min-h-screen w-full">
+      <div className="min-h-screen w-full bg-gray-50">
         <UserNav />
-        <div className="container mx-auto p-8">
-          <h1 className="text-4xl font-bold text-center text-gray-900 mb-8">My Inventory</h1>
-
-          <div className="bg-white text-gray-800 rounded-lg shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold">Products</h2>
-              
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="container mx-auto p-10">
+          <h1 className="text-5xl font-extrabold text-center text-gray-900 mb-14 tracking-tight">
+            My Inventory
+          </h1>
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-10">
+            <h2 className="text-3xl font-semibold text-gray-800 mb-8">Products</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {productsData.map((product) => (
                 <div
                   key={product.clientInventoryId}
-                  className="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105"
+                  className="bg-gray-100 border border-gray-200 rounded-xl p-6 transition transform hover:scale-105 shadow-md hover:shadow-xl duration-300"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-2xl font-semibold text-gray-800 hover:text-gray-600 transition duration-300">
-                      {product.productName}
-                    </h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3 hover:text-blue-600 transition-colors">
+                    {product.productName}
+                  </h3>
+                  <p className="text-sm text-gray-600">Quantity: {product.quantityPurchased}</p>
+                  <p className="text-sm text-gray-600">Agent: {product.salesAgentName}</p>
+                  <div className="flex justify-end mt-2 space-x-3">
+                    <button
+                      className="px-3 py-2 rounded-lg bg-blue-500 text-white font-medium transition-all duration-300 ease-in-out hover:bg-blue-600 shadow-md hover:shadow-lg"
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setShowAddToMarketProductModal(true);
+                        setSelectedSalesAgentId(product.salesAgentId);
+                        setSelectedInventoryItemId(product.clientInventoryId);
+                      }}
+                    >
+                      Add to My Market List
+                    </button>
+                    <button
+                      className="px-3 py-2 rounded-lg bg-blue-400 text-white font-medium transition-all duration-300 ease-in-out hover:bg-blue-500 shadow-md hover:shadow-lg"
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setShowRequestCustomerAssignProductModal(true);
+                        setSelectedSalesAgentId(product.salesAgentId);
+                        setSelectedInventoryItemId(product.clientInventoryId);
+                      }}
+                    >
+                      Request Restock
+                    </button>
                   </div>
-
-                  <div className="space-y-2 text-gray-600 mb-4">
-                    <p className="text-sm">
-                      Quantity Purchased:{" "}
-                      <strong className="font-semibold">{product.quantityPurchased}</strong>
-                    </p>
-                    <p className="text-sm">
-                      Sales Agent:{" "}
-                      <strong className="font-semibold">{product.salesAgentName}</strong>
-                    </p>
-                  </div>
-
-                    {/* Edit/Delete Buttons */}
-                    <div className=" flex justify-end mt-2 space-x-2">
-                      
-                      <button
-                        className="px-2 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-700"
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setShowRequestCustomerAssignProductModal(true);
-                          setSelectedSalesAgentId(product.salesAgentId);
-                          setSelectedInventoryItemId(product.clientInventoryId);
-                        }}
-                      >
-                        Request Restock 
-                      </button>
-                    </div>
                 </div>
               ))}
             </div>
           </div>
 
-           {/* Assign Product TO Agent Modal Component && selectedProduct */}
-                {showRequestCustomerProductModal  && (
-                  <ProductRequestModal
-                    showRequestProductModal={showRequestCustomerProductModal}
-                    setShowRequestProductModal={setShowRequestCustomerAssignProductModal}
-                    product={selectedProduct}
-                    inventoryItemId={inventoryItemId}
-                    agentInventoryItemId={salesAgentId}
-                    clientId={"63f7c9e2d91b1b2a5e80b013"}
-                    salesAgentId={salesAgentId}
-                  />
-                )}
+          {showRequestCustomerProductModal && (
+              <ProductRequestModal
+                showRequestProductModal={showRequestCustomerProductModal}
+                setShowRequestProductModal={setShowRequestCustomerAssignProductModal}
+                product={selectedProduct}
+                inventoryItemId={inventoryItemId}
+                agentInventoryItemId={salesAgentId}
+                clientId={"63f7c9e2d91b1b2a5e80b013"}
+                salesAgentId={salesAgentId}
+              />
+            )}
+
+            {showAddToMarketProductModal && (
+              <AddToProductMarketModal
+                showRequestProductModal={showAddToMarketProductModal}
+                setShowRequestProductModal={setShowAddToMarketProductModal}
+                product={selectedProduct}
+                inventoryItemId={inventoryItemId}
+                agentInventoryItemId={salesAgentId}
+                quantity={selectedProduct && selectedProduct.quantityPurchased}
+                sellerId={"63f7c9e2d91b1b2a5e80b013"}
+                salesAgentId={salesAgentId}
+                sellerType={"CLIENT"}
+              />
+            )}
+
+          {showRequestModal && (
+            <ProductRequestModal
+              showRequestProductModal={showRequestModal}
+              setShowRequestProductModal={setShowRequestModal}
+              product={selectedProduct}
+              clientId={"63f7c9e2d91b1b2a5e80b013"}
+            />
+          )}
         </div>
       </div>
     </ClientLayout>
@@ -102,6 +119,8 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
 };
 
 export default ClientInventoryPage;
+
+
 
 export const getServerSideProps = async ({ query }: { query: { clientId?: string } }) => {
   // const { clientId } = query;

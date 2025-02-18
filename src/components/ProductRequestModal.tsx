@@ -44,7 +44,7 @@ const RequestProductModal = ({
     <Modal
       isOpen={showRequestProductModal}
       onClose={() => setShowRequestProductModal(false)}
-      title={`Request ${product.name}`}
+      title={`Request ${product.productName}`}
     >
       <div className="space-y-6 p-4 bg-gray-50 rounded-lg shadow-md text-black">
         {/* Quantity Input */}

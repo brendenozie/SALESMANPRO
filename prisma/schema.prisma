@@ -407,9 +407,8 @@ model MarketplaceListing {
   isFeatured    Boolean    @default(false)
   startDealDate DateTime?
   endDealDate   DateTime?
-
-  buyingPrice  Float // Price at which the client buys the product from the agent
-  sellingPrice Float // Price at which the client sells the product to the consumer
+  buyingPrice   Float // Price at which the client buys the product from the agent
+  sellingPrice  Float // Price at which the client sells the product to the consumer
 }
 
 model ClientInventory {
