@@ -100,29 +100,29 @@ model Company {
 }
 
 model Product {
-  id                String           @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
-  description       String?
-  category          String?
-  subCategory       String?
-  image             String?
-  tags              String[]
-  brand             String[]
-  costPrice         Float
-  salesPrice        Float
-  companyId         String           @db.ObjectId
-  company           Company          @relation(fields: [companyId], references: [id])
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  productCategoryId String?          @db.ObjectId
-  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
-  inventoryItems    InventoryItem[]
-  requests          Request[]        @relation("ProductRequests")
-  commissions       Commission[]
-  Target            Target[]
-  CommissionRate    CommissionRate?
-  Order             CustomerOrder[]
-  OrderItem         OrderItem[]
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  description        String?
+  category           String?
+  subCategory        String?
+  image              String?
+  tags               String[]
+  brand              String[]
+  costPrice          Float
+  salesPrice         Float
+  companyId          String               @db.ObjectId
+  company            Company              @relation(fields: [companyId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  productCategoryId  String?              @db.ObjectId
+  productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
+  inventoryItems     InventoryItem[]
+  requests           Request[]            @relation("ProductRequests")
+  commissions        Commission[]
+  Target             Target[]
+  CommissionRate     CommissionRate?
+  OrderItem          OrderItem[]
+  MarketplaceListing MarketplaceListing[]
 }
 
 model Task {
@@ -381,6 +381,26 @@ model AuditLog {
   details   String?
 }
 
+enum SellerType {
+  CLIENT
+  CONSUMER
+}
+
+model MarketplaceListing {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  sellerId    String     @db.ObjectId // ID of either a Client or Consumer
+  sellerType  SellerType
+  productId   String     @db.ObjectId
+  product     Product    @relation(fields: [productId], references: [id])
+  title       String
+  description String?
+  price       Float
+  quantity    Int
+  image       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
 model ClientInventory {
   id               String               @id @default(auto()) @map("_id") @db.ObjectId
   clientId         String               @db.ObjectId
@@ -495,29 +515,6 @@ model Consumer {
   orders    CustomerOrder[]
 }
 
-// model CustomerOrder {
-//   id                  String      @id @default(auto()) @map("_id") @db.ObjectId
-//   clientId            String      @db.ObjectId
-//   client              Client      @relation(fields: [clientId], references: [id])
-//   productId           String      @db.ObjectId
-//   product             Product     @relation(fields: [productId], references: [id])
-//   consumerId          String      @db.ObjectId
-//   consumer            Consumer    @relation(fields: [consumerId], references: [id])
-//   quantity            Int
-//   totalPrice         Float
-//   orderSource        OrderSource  @default(WEBSITE)
-//   status             OrderStatus  @default(PENDING)
-//   trackingNumber     String?      // Optional tracking number
-//   estimatedArrival   DateTime?    // Estimated delivery time
-//   deliveryStatus     String?      // "Order Placed", "Processing", "Shipped", etc.
-//   deliveryPersonName String?      // Delivery person's name
-//   deliveryPersonContact String?   // Delivery person's contact info
-//   shippingAddress    String?      // Shipping address
-//   shippingMethod     String?      // Shipping method (e.g., standard, express)
-//   createdAt          DateTime     @default(now())
-//   updatedAt          DateTime     @updatedAt
-// }
-
 model CustomerOrder {
   id                    String      @id @default(auto()) @map("_id") @db.ObjectId
   clientId              String      @db.ObjectId
@@ -537,8 +534,6 @@ model CustomerOrder {
   shippingMethod        String? // Shipping method (e.g., standard, express)
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
-  Product               Product?    @relation(fields: [productId], references: [id])
-  productId             String?     @db.ObjectId
 }
 
 model OrderItem {
