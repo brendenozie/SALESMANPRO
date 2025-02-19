@@ -3,7 +3,6 @@ import Modal from "../components/Modal";
 import { useDropzone, Accept } from "react-dropzone";
 import { debounce } from "lodash";
 import { motion } from "framer-motion";
-// import { Loader, Image, Tag, DollarSign } from "lucide-react";4
 import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { ArrowUpTrayIcon, ListBulletIcon } from "@heroicons/react/24/solid";
 
@@ -16,6 +15,24 @@ const AddToProductMarketModal = ({
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    id: "",
+    productId: "",
+    productName: "",
+    productCategoryId: "",
+    model: "",
+    color: "",
+    size: "",
+    weight: "",
+    condition: "",
+    dimension: "",
+    material: "",
+    image: "",
+    isAvailable: "",
+    isOnOffer: "",
+    isFlashDeal: "",
+    isNewArrival: "",
+    isDiscounted: "",
+    isFeatured: "",
     quantity: 1,
     buyingPrice: "",
     sellingPrice: "",
@@ -121,7 +138,7 @@ const AddToProductMarketModal = ({
         </div>
         <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
         <div className="flex items-center space-x-2">
-          {["Category", "Images", "Pricing"].map((label, index) => (
+          {["Category", "Images", "Pricing", "Product Details", "Product Variants", "ProductAvailability", "Final Review"].map((label, index) => (
             <div key={index} className="flex flex-col items-center">
               <div
                 className={`w-8 h-8 flex items-center justify-center rounded-full text-white font-bold ${
@@ -155,34 +172,39 @@ const AddToProductMarketModal = ({
         {step === 4 && (
           <div>
             <label className="block text-gray-600 font-medium">Product Name</label>
-            <input type="text" name="productName" value={formData.productName} onChange={setFormData} />
+            <input type="text" name="productName" value={formData.productName}  />
             
             <label className="block text-gray-600 font-medium mt-3">Model</label>
-            <input type="text" name="model" value={formData.model} onChange={setFormData} />
+            <input type="text" name="model" value={formData.model}  />
+            
+            <label className="block text-gray-600 font-medium mt-3">Condition</label>
+            <select name="condition" value={formData.condition}>
+              <option value="new">New</option>
+              <option value="used">Used</option>
+              <option value="refurbished">Refurbished</option>
+            </select>
+            
+            <label className="block text-gray-600 font-medium mt-3">Description</label>
+            <input type="text" name="description"  />
+            
+            <label className="block text-gray-600 font-medium mt-3">Tags</label>
+            <input type="text" name="tags"  placeholder="Comma-separated tags" />
           </div>
         )}
         
         {/* Step 5: Variants */}
         {step === 5  && (
-          <div>
-            <label className="block text-gray-600 font-medium">Color</label>
-            <input type="text" name="color" value={formData.color} onChange={setFormData} />
-          </div>
+            <ProductVariants formData setFormData/>
         )}
         
         {/* Step 6: Availability */}
         {step === 6 && (
-          <div>
-            <label className="block text-gray-600 font-medium">Availability</label>
-            <checkbox name="isAvailable" checked={formData.isAvailable} onChange={setFormData}>In Stock</checkbox>
-          </div>
+          <ProductAvailability formData setFormData/>
         )}
         
         {/* Step 7: Review & Submit */}
         {step === 7 && (
-          <div>
-            <p className="text-gray-600">Review your product details before submitting.</p>
-          </div>
+          <FinalReview formData setFormData/>
         )}
 
         <div className="flex justify-between">
@@ -335,7 +357,6 @@ const ImageUploader = ({ images, setImages }:any) => {
   );
 };
 
-
 const PricingDetails = ({ formData, handleInputChange }:any) => {
   const [finalPrice, setFinalPrice] = useState(formData.finalPrice || 0);
   const [profitMargin, setProfitMargin] = useState(formData.profitMargin || 0);
@@ -409,3 +430,215 @@ const PricingDetails = ({ formData, handleInputChange }:any) => {
   );
 };
 
+const ProductVariants =({ formData, setFormData }:any) => {
+
+  const [expanded, setExpanded] = useState(null);
+
+  const toggleExpand = (section :any ) => {
+    setExpanded(expanded === section ? null : section);
+  };
+
+  const options = {
+    colors: ["Red", "Blue", "Green", "Black", "White"],
+    sizes: ["S", "M", "L", "XL"],
+    materials: ["Cotton", "Leather", "Metal", "Plastic"],
+    weights: ["Light", "Medium", "Heavy"],
+  };
+
+  const handleMultiSelect = (key:any , value:any ) => {
+    setFormData({
+      ...formData,
+      [key]: formData[key]?.includes(value)
+        ? formData[key].filter((v:any) => v !== value)
+        : [...(formData[key] || []), value],
+    });
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-md space-y-6">
+      {/* Color */}
+      <div>
+        <label className="block text-gray-700 font-semibold">Color</label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {options.colors.map((color) => (
+            <button
+              key={color}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                formData.color?.includes(color)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => handleMultiSelect("color", color)}
+            >
+              {color}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Size */}
+      <div>
+        <label className="block text-gray-700 font-semibold">Size</label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {options.sizes.map((size) => (
+            <button
+              key={size}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                formData.size?.includes(size)
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => handleMultiSelect("size", size)}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Weight */}
+      <div>
+        <label className="block text-gray-700 font-semibold">Weight</label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {options.weights.map((weight) => (
+            <button
+              key={weight}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                formData.weight?.includes(weight)
+                  ? "bg-purple-500 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => handleMultiSelect("weight", weight)}
+            >
+              {weight}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          className="mt-2 w-full border border-gray-300 rounded-lg p-2 text-sm"
+          placeholder="Or enter custom weight"
+          value={formData.customWeight || ""}
+          onChange={(e) => setFormData({ ...formData, customWeight: e.target.value })}
+        />
+      </div>
+
+      {/* Material */}
+      <div>
+        <label className="block text-gray-700 font-semibold">Material</label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {options.materials.map((material) => (
+            <button
+              key={material}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                formData.material?.includes(material)
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => handleMultiSelect("material", material)}
+            >
+              {material}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Dimension */}
+      <div>
+        <label className="block text-gray-700 font-semibold">Dimensions (L × W × H)</label>
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text"
+            className="w-1/3 border border-gray-300 rounded-lg p-2 text-sm"
+            placeholder="L"
+            value={formData.length || ""}
+            onChange={(e) => setFormData({ ...formData, length: e.target.value })}
+          />
+          <input
+            type="text"
+            className="w-1/3 border border-gray-300 rounded-lg p-2 text-sm"
+            placeholder="W"
+            value={formData.width || ""}
+            onChange={(e) => setFormData({ ...formData, width: e.target.value })}
+          />
+          <input
+            type="text"
+            className="w-1/3 border border-gray-300 rounded-lg p-2 text-sm"
+            placeholder="H"
+            value={formData.height || ""}
+            onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ProductAvailability = ({ formData, setFormData }:any) => {
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-md space-y-6">
+      {/* Availability */}
+      <div>
+        <label className="block text-gray-700 font-semibold">Availability</label>
+        <div className="flex gap-4 mt-2">
+          {["In Stock", "Out of Stock"].map((status) => (
+            <button
+              key={status}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                formData.availability === status
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setFormData({ ...formData, availability: status })}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Feature Toggles */}
+      <div className="space-y-4">
+        {[
+          { label: "Is Featured?", key: "isFeatured" },
+          { label: "Is New Arrival?", key: "isNewArrival" },
+          { label: "Is On Offer / Discounted / Flash Deal?", key: "isOnOffer" },
+        ].map(({ label, key }) => (
+          <div key={key} className="flex justify-between items-center">
+            <span className="text-gray-700 font-semibold">{label}</span>
+            <switch
+              // checked={formData[key] || false}
+              onChange={() => setFormData({ ...formData, [key]: !formData[key] })}
+              className={`${
+                formData[key] ? "bg-green-500" : "bg-gray-300"
+              } relative inline-flex h-6 w-11 items-center rounded-full transition`}
+            >
+              <span
+                className={`${
+                  formData[key] ? "translate-x-6" : "translate-x-1"
+                } inline-block h-4 w-4 transform bg-white rounded-full transition`}
+              />
+            </switch>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const FinalReview =({ formData, onSubmit }:any) => {
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-md space-y-6">
+      <h2 className="text-lg font-bold text-gray-800">Final Review</h2>
+      <p className="text-sm text-gray-600">Double-check all details before submitting.</p>
+
+      <div className="p-4 bg-gray-100 rounded-lg space-y-2">
+        <p><strong>Availability:</strong> {formData.availability}</p>
+        <p><strong>Is Featured?</strong> {formData.isFeatured ? "Yes" : "No"}</p>
+        <p><strong>Is New Arrival?</strong> {formData.isNewArrival ? "Yes" : "No"}</p>
+        <p><strong>Is On Offer?</strong> {formData.isOnOffer ? "Yes" : "No"}</p>
+      </div>
+      
+    </div>
+  );
+}
