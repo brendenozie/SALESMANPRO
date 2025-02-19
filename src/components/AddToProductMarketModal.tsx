@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Modal from "../components/Modal";
+import Cropper from "react-easy-crop";
 
 interface Product {
   id?: string;
   productId?: string;
   productName?: string;
+  productCategoryId?: string;
   category?: string;
   subCategory?: string;
   tags?: string[];
@@ -42,6 +44,7 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
+  const [step, setStep] = useState(1);
   const [quantity, setQuantity] = useState(1);
   const [buyingPrice, setBuyingPrice] = useState(0);
   const [sellingPrice, setSellingPrice] = useState(0);
@@ -62,6 +65,11 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
 
   const [imagePreview, setImagePreview] = useState<string | null>(product.image || null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedImage, setCroppedImage] = useState(null);
+  const [images, setImages] = useState([]);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -118,6 +126,13 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
     setImagePreview(URL.createObjectURL(file));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const handleCreateListing = async () => {
     if (quantity <= 0 || buyingPrice <= 0 || sellingPrice <= 0) {
       alert("Please enter valid values for quantity and prices.");
@@ -152,13 +167,32 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
     }
   };
 
-  return (
+  const handleNextStep = () => setStep((prev) => prev + 1);
+  const handlePrevStep = () => setStep((prev) => prev - 1);
+
+  return (<>
     <Modal
       isOpen={showRequestProductModal}
       onClose={() => setShowRequestProductModal(false)}
       title={`Create Listing for ${product.productName || "Product"}`}
     >
       <div className="space-y-6 p-4 bg-gray-50 rounded-lg shadow-md text-black">
+
+        {/* Progress Indicator */}
+        <div className="flex items-center space-x-2">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <div
+              key={s}
+              className={`w-8 h-8 flex items-center justify-center rounded-full text-white font-bold transition-all ${
+                s <= step ? "bg-blue-600" : "bg-gray-300"
+              }`}
+            >
+              {s}
+            </div>
+          ))}
+        </div>
+        {step === 1 && (
+          <>
         {/* Category Selection */}
         <label>Category</label>
         <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
@@ -166,6 +200,17 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
           {categories.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
+            </option>
+          ))}
+        </select>
+
+        {/* Subcategory Selection */}
+        <label>Subcategory</label>
+        <select disabled={!selectedCategory}>
+          <option value="">Select Subcategory</option>
+          {subCategories.map((sub) => (
+            <option key={sub} value={sub}>
+              {sub}
             </option>
           ))}
         </select>
@@ -181,22 +226,69 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
           ))}
         </select>
 
-        {/* Image Upload */}
-        <label>Product Image</label>
-        <input type="file" onChange={handleImageChange} />
-        {imagePreview && <img src={imagePreview} alt="Preview" className="h-20 mt-2" />}
-
         {/* Prices & Discounts */}
+        <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
+        <input type="number" placeholder="Buying Price" value={buyingPrice} onChange={(e) => setBuyingPrice(Number(e.target.value))} />
         <input type="number" placeholder="Selling Price" value={sellingPrice} onChange={(e) => setSellingPrice(Number(e.target.value))} />
         <input type="number" placeholder="Discount (%)" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
         <p>Final Price: ${finalPrice.toFixed(2)}</p>
         <p>Profit Margin: {profitMargin.toFixed(2)}%</p>
 
-        <button onClick={handleCreateListing} className="bg-blue-600 text-white py-2 px-4 rounded-lg">
-          Submit Listing
-        </button>
+        </>
+        )}
+
+        {/* Step 2: Image Upload */}
+        {step === 2 && (
+          <>
+          {/* Image Upload */}
+          <label>Product Image</label>
+          <input type="file" onChange={handleImageChange} />
+          {imagePreview && <img src={imagePreview} alt="Preview" className="h-20 mt-2" />}
+          <button onClick={handleCreateListing} className="bg-blue-600 text-white py-2 px-4 rounded-lg">
+            Submit Listing
+          </button>
+        </>
+        )}
+
+        {/* Step 3: Image Upload & Cropping */}
+        {step === 3 && (
+          <>
+            <input type="file" multiple accept="image/*" onChange={handleImageUpload} />
+            <div className="flex space-x-2 mt-2">
+              {images.map((img, index) => (
+                <img key={index} src={img} alt="Preview" className="h-20 rounded-lg shadow" />
+              ))}
+            </div>
+            {images.length > 0 && (
+              <div className="relative w-full h-64">
+                <Cropper
+                  image={images[0]}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                />
+              </div>
+            )}
+          </>
+        )}
+        {/* Step Navigation */}
+        <div className="flex justify-between">
+            {step > 1 && (
+              <button onClick={handlePrevStep} className="bg-gray-400 text-white py-2 px-4 rounded-lg">
+                Back
+              </button>
+            )}
+            {step < 5 && (
+              <button onClick={handleNextStep} className="bg-blue-600 text-white py-2 px-4 rounded-lg">
+                Next
+              </button>
+            )}
+        </div>
       </div>
     </Modal>
+    </>
   );
 };
 

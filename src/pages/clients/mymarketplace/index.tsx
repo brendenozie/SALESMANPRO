@@ -103,8 +103,9 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
           {showAddToMarketProductModal && (
             <AddToProductMarketModal
               showRequestProductModal={showAddToMarketProductModal}
-              setShowRequestProductModal={setShowAddToMarketProductModal}
-              product={selectedProduct}
+              setShowRequestProductModal={setShowAddToMarketProductModal} 
+              product={undefined} sellerId={""} sellerType={""}              
+              // product={selectedProduct}
             />
           )}
 

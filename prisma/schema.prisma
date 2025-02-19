@@ -57,16 +57,17 @@ model Notification {
 }
 
 model ProductCategory {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  icon          String?
-  image         String?
-  status        String
-  brand         String[]
-  allBrands     String[]
-  tags          String[]
-  subcategories Json // Store subcategories as a JSON array
-  Product       Product[]
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  icon               String?
+  image              String?
+  status             String
+  brand              String[]
+  allBrands          String[]
+  tags               String[]
+  subcategories      Json // Store subcategories as a JSON array
+  Product            Product[]
+  MarketplaceListing MarketplaceListing[]
 }
 
 model Subcategory {
@@ -387,40 +388,42 @@ enum SellerType {
 }
 
 model MarketplaceListing {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  sellerId      String     @db.ObjectId // ID of either a Client or Consumer
-  sellerType    SellerType
-  productId     String?    @db.ObjectId
-  product       Product?   @relation(fields: [productId], references: [id])
-  title         String     @default("New Name")
-  description   String?    @default("New Description")
-  quantity      Int
-  image         String?
-  category      String?
-  subCategory   String?
-  tags          String[]
-  brand         String[]
-  model         String?
-  color         String[]
-  size          String[]
-  weight        String[]
-  condition     String?
-  dimension     String?
-  material      String[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  salesPrice    Float      @default(0)
-  discount      Int?       @default(0)
-  isAvailable   Boolean    @default(true)
-  isOnOffer     Boolean    @default(false)
-  isFlashDeal   Boolean    @default(false)
-  isNewArrival  Boolean    @default(false)
-  isDiscounted  Boolean    @default(false)
-  isFeatured    Boolean    @default(false)
-  startDealDate DateTime?
-  endDealDate   DateTime?
-  buyingPrice   Float // Price at which the client buys the product from the agent
-  sellingPrice  Float // Price at which the client sells the product to the consumer
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  sellerId          String           @db.ObjectId // ID of either a Client or Consumer
+  sellerType        SellerType
+  productId         String?          @db.ObjectId
+  product           Product?         @relation(fields: [productId], references: [id])
+  title             String           @default("New Name")
+  description       String?          @default("New Description")
+  quantity          Int
+  image             String?
+  productCategoryId String?          @db.ObjectId
+  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
+  category          String?
+  subCategory       String?
+  tags              String[]
+  brand             String[]
+  model             String?
+  color             String[]
+  size              String[]
+  weight            String[]
+  condition         String?
+  dimension         String?
+  material          String[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  salesPrice        Float            @default(0)
+  discount          Int?             @default(0)
+  isAvailable       Boolean          @default(true)
+  isOnOffer         Boolean          @default(false)
+  isFlashDeal       Boolean          @default(false)
+  isNewArrival      Boolean          @default(false)
+  isDiscounted      Boolean          @default(false)
+  isFeatured        Boolean          @default(false)
+  startDealDate     DateTime?
+  endDealDate       DateTime?
+  buyingPrice       Float // Price at which the client buys the product from the agent
+  sellingPrice      Float // Price at which the client sells the product to the consumer
 }
 
 model ClientInventory {
