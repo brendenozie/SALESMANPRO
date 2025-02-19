@@ -7,26 +7,6 @@ import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownI
 import { ArrowUpTrayIcon, ListBulletIcon } from "@heroicons/react/24/solid";
 
 const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product }:any) => {
-  // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-  // const [step, setStep] = useState(1);
-  // const [categories, setCategories] = useState([]);
-  // const [images, setImages] = useState([]);
-  // const [formData, setFormData] = useState({ category: "", buyingPrice: "", sellingPrice: "" });
-  
-  // useEffect(() => {
-  //   const cachedCategories = localStorage.getItem("categories");
-  //   if (cachedCategories) {
-  //     setCategories(JSON.parse(cachedCategories));
-  //   } else {
-  //     fetch(`${apiUrl}/shop/categories?limit=100`)
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         setCategories(data.categories);
-  //         localStorage.setItem("categories", JSON.stringify(data.categories));
-  //       });
-  //   }
-  // }, []);
-
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   const [step, setStep] = useState(1);
@@ -55,7 +35,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     discount: "",
     finalPrice: 0,
     profitMargin: 0,
-    category: {},
+    category: {subcategories:[],allBrands:[]},
     subCategories: [],
     brands: [],
   });
@@ -84,16 +64,12 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   // Memoized filtered subcategories and brands
   const filteredSubCategories = useMemo(() => {
     if (!formData.category) return [];
-    return Array.from(
-      new Set((Array.isArray(formData.category) ? formData.category : []).flatMap((category: any) => category?.subcategories || []))
-    );
+    return formData.category.subcategories;
   }, [formData.category]);
 
   const filteredBrands = useMemo(() => {
     if (!formData.category) return [];
-    return  Array.from(
-      new Set((Array.isArray(formData.category) ? formData.category : []).flatMap((category: any) => category?.allBrands || []))
-    );
+    return formData.category.allBrands;
   }, [formData.category]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -120,21 +96,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     (step === 1 && !formData.category) ||
     (step === 7 && (!formData.buyingPrice || !formData.sellingPrice));
 
-  // const { getRootProps, getInputProps } = useDropzone({
-  //   accept: { 'image/*': [] } as Accept,
-  //   multiple: true,
-  //   onDrop: (acceptedFiles) => {
-  //     setLoading(true);
-  //     setTimeout(() => {
-  //       setImages((prev) => {
-  //         const newImages = acceptedFiles.map((file) => URL.createObjectURL(file));
-  //         return Array.from(new Set([...prev, ...newImages]));
-  //       });
-  //       setLoading(false);
-  //     }, 1000);
-  //   },
-  // });
-
   const handleCreateListing = () => {
     if (window.confirm("Are you sure you want to create this listing?")) {
       alert("Marketplace listing created successfully.");
@@ -145,27 +106,12 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   return (
     <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
       <div className="space-y-6 p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-3xl mx-auto">
-        {/* Progress Bar */}
-        <div className="relative w-full h-2 bg-gray-200 rounded-full">
-          <motion.div className="absolute top-0 left-0 h-2 bg-blue-600 rounded-full" animate={{ width: `${(step / 7) * 100}%` }} transition={{ duration: 0.5 }} />
-        </div>
-
+        
         {/* Steps Content */}
         <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
           <div className="flex items-center space-x-2">
-          {["Category", "Product Details", "Pricing", "Images", "Product Variants", "ProductAvailability", "Final Review"].map((label, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <div
-                className={`w-8 h-8 flex items-center justify-center rounded-full text-white font-bold ${
-                  index + 1 <= step ? "bg-blue-600" : "bg-gray-300"
-                }`}
-              >
-                {index + 1}
-              </div>
-              <p className={`text-xs ${index + 1 <= step ? "text-blue-600" : "text-gray-400"}`}>{label}</p>
-            </div>
-          ))}
-        </div>
+            <Stepper step={step}/>
+          </div>
         
         {step ===1 && (
           <StepOneForm formData={formData} handleInputChange={handleInputChange} categories={categories} subCategories={subCategories} brands={brands} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands}/>
@@ -673,3 +619,72 @@ const FinalReview = ({ formData, onSubmit }: any) => {
     </div>
   );
 };
+
+
+const Stepper = ({ step }: { step: number }) => {
+  const steps = [
+    "Category",
+    "Product Details",
+    "Pricing",
+    "Images",
+    "Product Variants",
+    "Availability",
+    "Final Review",
+  ];
+
+  return (
+    <div className="w-full space-y-4">
+      {/* Progress Bar */}
+      <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
+        <motion.div
+          className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
+          animate={{ width: `${(step / steps.length) * 100}%` }}
+          transition={{ duration: 0.5 }}
+        />
+      </div>
+
+      {/* Steps Content */}
+      <motion.div
+        key={step}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        className="flex items-center justify-between"
+      >
+        {steps.map((label, index) => {
+          const isActive = index + 1 === step;
+          const isCompleted = index + 1 < step;
+
+          return (
+            <div key={index} className="flex flex-col items-center space-y-1">
+              <motion.div
+                className={`w-10 h-10 flex items-center justify-center rounded-full text-white font-bold shadow-md transition-all ${
+                  isActive
+                    ? "bg-blue-600 scale-110"
+                    : isCompleted
+                    ? "bg-blue-400"
+                    : "bg-gray-300"
+                }`}
+                animate={{ scale: isActive ? 1.2 : 1 }}
+              >
+                {index + 1}
+              </motion.div>
+              <p
+                className={`text-sm font-medium ${
+                  isActive
+                    ? "text-blue-600"
+                    : isCompleted
+                    ? "text-blue-400"
+                    : "text-gray-400"
+                }`}
+              >
+                {label}
+              </p>
+            </div>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+};
+
