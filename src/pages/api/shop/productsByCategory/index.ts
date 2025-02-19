@@ -13,26 +13,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const take = itemsPerPage;
     const categoryIdStr = Array.isArray(categoryId) ? categoryId[0] : categoryId;
 
-    const products = await prisma.clientInventory.findMany({
+    const products = await prisma.marketplaceListing.findMany({
       skip: skip,
       take: take,
       where: {
-        inventoryItem: {
           product: {
             productCategoryId: categoryIdStr,
           },
-        },
       },
       include: {
-        inventoryItem: {
-          include: {
             product: true,
-          },
-        },
       },
     });
 
-    const totalProducts = await prisma.clientInventory.count();
+    const totalProducts = await prisma.marketplaceListing.count();
 
     res.status(200).json({
       products,

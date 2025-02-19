@@ -96,8 +96,8 @@ const ProductList = () => {
     fetchProducts(1);
   }, [searchTerm, filters]);
 
-  const uniqueBrands = [...new Set(products.map((p) => p.inventoryItem.product.brand))];
-  const uniqueCategories = [...new Set(products.map((p) => p.inventoryItem.product.category))];
+  const uniqueBrands = [...new Set(products.map((p) => p.product.brand))];
+  const uniqueCategories = [...new Set(products.map((p) => p.product.category))];
 
   useEffect(() => {
     const options = {
@@ -318,10 +318,10 @@ const ProductCard = ({ product }) => {
       {/* Product Info */}
       <div className="w-full mt-3 flex flex-col items-center">
         <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
-          {product.newName}
+          {product.title}
         </h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
-          {product.newDescription || "No description available"}
+          {product.description || "No description available"}
         </p>
 
         {/* Price & Add to Cart Button */}

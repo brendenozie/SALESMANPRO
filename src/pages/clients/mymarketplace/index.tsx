@@ -132,7 +132,7 @@ export const getServerSideProps = async () => {
     const response = await fetch(`${apiUrl}/clients/my-market-place?sellerId=${clientId}`);
     if (response.ok) {
       const data = await response.json();
-      productsData = data.inventory;
+      productsData = data.marketplaceProducts;
     } else {
       throw new Error("Failed to fetch marketplace products.");
     }

@@ -12,22 +12,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const skip = (currentPage - 1) * itemsPerPage;
     const take = itemsPerPage;
 
-    const products = await prisma.clientInventory.findMany({
+    const products = await prisma.marketplaceListing.findMany({
       skip: skip,
       take: take,
       where: {
         [flag as string]: true,
       },
-      include: {
-        inventoryItem: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      // include: {
+      //   inventoryItem: {
+      //     include: {
+      //       product: true,
+      //     },
+      //   },
+      // },
     });
 
-    const totalProducts = await prisma.clientInventory.count();
+    const totalProducts = await prisma.marketplaceListing.count();
 
     res.status(200).json({
       products,

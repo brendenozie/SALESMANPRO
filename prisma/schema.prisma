@@ -396,10 +396,22 @@ model MarketplaceListing {
   description   String?    @default("New Description")
   quantity      Int
   image         String?
+  category      String?
+  subCategory   String?
+  tags          String[]
+  brand         String[]
+  model         String?
+  color         String[]
+  size          String[]
+  weight        String[]
+  condition     String?
+  dimension     String?
+  material      String[]
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   salesPrice    Float      @default(0)
   discount      Int?       @default(0)
+  isAvailable   Boolean    @default(true)
   isOnOffer     Boolean    @default(false)
   isFlashDeal   Boolean    @default(false)
   isNewArrival  Boolean    @default(false)

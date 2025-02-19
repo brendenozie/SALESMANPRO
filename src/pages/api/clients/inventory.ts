@@ -35,6 +35,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       quantityPurchased: item.quantity,
       salesAgentId: item.salesAgent.id,
       salesAgentName: item.salesAgent.name,
+      category :  item.inventoryItem.product.category,
+          subCategory:  item.inventoryItem.product.subCategory,
+          tags    :  item.inventoryItem.product.tags,
+          brand       :  item.inventoryItem.product.brand,
     }));
 
     // Respond with structured data

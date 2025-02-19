@@ -6,7 +6,25 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(405).json({ message: "Method not allowed. Use POST." });
   }
 
-  const { sellerId, sellerType, productId, quantity, buyingPrice, sellingPrice } = req.body;
+  const { sellerId, sellerType, productId, quantity, buyingPrice, sellingPrice,
+    category ,
+        subCategory,
+        tags    ,
+        brand       ,
+        model       ,
+        color       ,
+        size        ,
+        weight      ,
+        condition   ,
+        dimension   ,
+        material    ,
+        isAvailable ,
+        isOnOffer  ,
+        isFlashDeal,
+        isNewArrival,
+        isDiscounted,
+        isFeatured,
+   } = req.body;
 
   if (!sellerId || !sellerType || !productId || !quantity || typeof quantity !== "number") {
     return res.status(400).json({ message: "Invalid or missing request data." });
@@ -21,7 +39,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       data: {
         sellerId,
         sellerType,
-        product: { connect: { id: productId } },
+        product: { connect: { id: productId } }, 
         quantity,
         buyingPrice: buyingPrice ?? 0,
         sellingPrice: sellingPrice ?? 0,
@@ -29,11 +47,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         description: "New Description",
         createdAt: new Date(),
         updatedAt: new Date(),
-        isOnOffer: false,
-        isFlashDeal: false,
-        isNewArrival: false,
-        isDiscounted: false,
-        isFeatured: false,
+        category :category,
+        subCategory: subCategory,
+        tags    :tags,
+        brand       :brand,
+        model       :model,
+        color       :color,
+        size        :size,
+        weight      :weight,
+        condition   :condition,
+        dimension   :dimension,
+        material    :material,
+        isAvailable :isAvailable,
+        isOnOffer  :isOnOffer,
+        isFlashDeal:isFlashDeal,
+        isNewArrival:isNewArrival,
+        isDiscounted:isDiscounted,
+        isFeatured:isFeatured,
       },
     });
 

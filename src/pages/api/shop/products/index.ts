@@ -31,14 +31,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const skip = (currentPage - 1) * itemsPerPage;
     const take = itemsPerPage;
 
-    const whereClause: Prisma.ClientInventoryWhereInput = {
-      newName: search ? { contains: search as string, mode: 'insensitive' } : undefined,
+    const whereClause: Prisma.MarketplaceListingWhereInput = {
+      title: search ? { contains: search as string, mode: 'insensitive' } : undefined,
       sellingPrice: {
         gte: minPrice && !isNaN(Number(minPrice)) ? parseInt(minPrice as string, 10) : undefined,
         lte: maxPrice && !isNaN(Number(maxPrice)) ? parseInt(maxPrice as string, 10) : undefined,
       },
-      availability: availability === "true" ? true : undefined,
-      inventoryItem: {
+      // availability: availability === "true" ? true : undefined,
         product: {
           AND: [
             brand ? { brand: { in: Array.isArray(brand) ? brand : [brand] } } : undefined,
@@ -46,28 +45,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             category ? { category: { in: Array.isArray(category) ? category : [category] } } : undefined,
           ].filter(Boolean) as Prisma.ProductWhereInput[],
         },
-      },
     };
 
     console.log('whereClause', whereClause);
 
     // Fetch filtered products
-    const products = await prisma.clientInventory.findMany({
+    const products = await prisma.marketplaceListing.findMany({
       where: whereClause,
       skip,
       take,
       include: {
-        inventoryItem: {
-          include: {
             product: true,
-          },
-        },
-        client: true,
       },
     });
 
     // Get total filtered count for pagination
-    const totalProducts = await prisma.clientInventory.count({
+    const totalProducts = await prisma.marketplaceListing.count({
       where: whereClause,
     });
 
