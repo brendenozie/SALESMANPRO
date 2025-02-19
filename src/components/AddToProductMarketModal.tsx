@@ -244,9 +244,7 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
           <label>Product Image</label>
           <input type="file" onChange={handleImageChange} />
           {imagePreview && <img src={imagePreview} alt="Preview" className="h-20 mt-2" />}
-          <button onClick={handleCreateListing} className="bg-blue-600 text-white py-2 px-4 rounded-lg">
-            Submit Listing
-          </button>
+          
         </>
         )}
 
@@ -284,6 +282,12 @@ const AddToProductMarketModal: React.FC<AddToProductMarketModalProps> = ({
               <button onClick={handleNextStep} className="bg-blue-600 text-white py-2 px-4 rounded-lg">
                 Next
               </button>
+            )}
+            {step === 5 && (
+              <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg">
+                Create Listing
+              </button>
+              
             )}
         </div>
       </div>
