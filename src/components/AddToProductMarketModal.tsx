@@ -3,14 +3,30 @@ import Modal from "../components/Modal";
 import { useDropzone, Accept } from "react-dropzone";
 import { debounce } from "lodash";
 import { motion } from "framer-motion";
-import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { ArrowUpTrayIcon, ListBulletIcon } from "@heroicons/react/24/solid";
 
-const AddToProductMarketModal = ({
-  showRequestProductModal,
-  setShowRequestProductModal,
-  product,
-}: any) => {
+const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product }:any) => {
+  // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  // const [step, setStep] = useState(1);
+  // const [categories, setCategories] = useState([]);
+  // const [images, setImages] = useState([]);
+  // const [formData, setFormData] = useState({ category: "", buyingPrice: "", sellingPrice: "" });
+  
+  // useEffect(() => {
+  //   const cachedCategories = localStorage.getItem("categories");
+  //   if (cachedCategories) {
+  //     setCategories(JSON.parse(cachedCategories));
+  //   } else {
+  //     fetch(`${apiUrl}/shop/categories?limit=100`)
+  //       .then((res) => res.json())
+  //       .then((data) => {
+  //         setCategories(data.categories);
+  //         localStorage.setItem("categories", JSON.stringify(data.categories));
+  //       });
+  //   }
+  // }, []);
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   const [step, setStep] = useState(1);
@@ -104,20 +120,20 @@ const AddToProductMarketModal = ({
     (step === 1 && !formData.category) ||
     (step === 7 && (!formData.buyingPrice || !formData.sellingPrice));
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': [] } as Accept,
-    multiple: true,
-    onDrop: (acceptedFiles) => {
-      setLoading(true);
-      setTimeout(() => {
-        setImages((prev) => {
-          const newImages = acceptedFiles.map((file) => URL.createObjectURL(file));
-          return Array.from(new Set([...prev, ...newImages]));
-        });
-        setLoading(false);
-      }, 1000);
-    },
-  });
+  // const { getRootProps, getInputProps } = useDropzone({
+  //   accept: { 'image/*': [] } as Accept,
+  //   multiple: true,
+  //   onDrop: (acceptedFiles) => {
+  //     setLoading(true);
+  //     setTimeout(() => {
+  //       setImages((prev) => {
+  //         const newImages = acceptedFiles.map((file) => URL.createObjectURL(file));
+  //         return Array.from(new Set([...prev, ...newImages]));
+  //       });
+  //       setLoading(false);
+  //     }, 1000);
+  //   },
+  // });
 
   const handleCreateListing = () => {
     if (window.confirm("Are you sure you want to create this listing?")) {
@@ -128,17 +144,16 @@ const AddToProductMarketModal = ({
 
   return (
     <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-      <div className="space-y-6 p-4 bg-gray-50 rounded-lg shadow-md text-black">
-        <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-          <motion.div className="absolute top-0 left-0 h-2 bg-blue-600 rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${(step / 7) * 100}%` }}
-            transition={{ duration: 0.5 }}
-          />
+      <div className="space-y-6 p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-3xl mx-auto">
+        {/* Progress Bar */}
+        <div className="relative w-full h-2 bg-gray-200 rounded-full">
+          <motion.div className="absolute top-0 left-0 h-2 bg-blue-600 rounded-full" animate={{ width: `${(step / 7) * 100}%` }} transition={{ duration: 0.5 }} />
         </div>
+
+        {/* Steps Content */}
         <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-        <div className="flex items-center space-x-2">
-          {["Category", "Images", "Pricing", "Product Details", "Product Variants", "ProductAvailability", "Final Review"].map((label, index) => (
+          <div className="flex items-center space-x-2">
+          {["Category", "Product Details", "Pricing", "Images", "Product Variants", "ProductAvailability", "Final Review"].map((label, index) => (
             <div key={index} className="flex flex-col items-center">
               <div
                 className={`w-8 h-8 flex items-center justify-center rounded-full text-white font-bold ${
@@ -155,46 +170,22 @@ const AddToProductMarketModal = ({
         {step ===1 && (
           <StepOneForm formData={formData} handleInputChange={handleInputChange} categories={categories} subCategories={subCategories} brands={brands} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands}/>
         )}
-
         
         {step === 2 && (
-            <ImageUploader images={images} setImages={setImages}  />
-
-          )}
+          <ProductDetails formData handleInputChange/>
+        )}
 
         {step === 3 && (
-          <>
-            <PricingDetails formData handleInputChange/>
-          </>
+          <PricingDetails formData handleInputChange/>
         )}
 
-        {/* Step 4: Product Details */}
         {step === 4 && (
-          <div>
-            <label className="block text-gray-600 font-medium">Product Name</label>
-            <input type="text" name="productName" value={formData.productName}  />
-            
-            <label className="block text-gray-600 font-medium mt-3">Model</label>
-            <input type="text" name="model" value={formData.model}  />
-            
-            <label className="block text-gray-600 font-medium mt-3">Condition</label>
-            <select name="condition" value={formData.condition}>
-              <option value="new">New</option>
-              <option value="used">Used</option>
-              <option value="refurbished">Refurbished</option>
-            </select>
-            
-            <label className="block text-gray-600 font-medium mt-3">Description</label>
-            <input type="text" name="description"  />
-            
-            <label className="block text-gray-600 font-medium mt-3">Tags</label>
-            <input type="text" name="tags"  placeholder="Comma-separated tags" />
-          </div>
+          <ImageUploader images={images} setImages={setImages} />
         )}
-        
+
         {/* Step 5: Variants */}
         {step === 5  && (
-            <ProductVariants formData setFormData/>
+          <ProductVariants formData setFormData/>
         )}
         
         {/* Step 6: Availability */}
@@ -206,19 +197,32 @@ const AddToProductMarketModal = ({
         {step === 7 && (
           <FinalReview formData setFormData/>
         )}
+        </motion.div>
 
+        {/* Navigation Buttons */}
         <div className="flex justify-between">
-          {step > 1 && <button className="bg-gray-400 text-white py-2 px-4 rounded-lg" onClick={() => setStep(step - 1)}>Back</button>}
-          {step < 7 && <button className="bg-blue-600 text-white py-2 px-4 rounded-lg" onClick={() => setStep(step + 1)} disabled={!formData.category && step === 1}>Next</button>}
-          {step === 7 && <button className="bg-green-600 text-white py-2 px-4 rounded-lg" onClick={handleCreateListing}>Create Listing</button>}
+          {step > 1 && (
+            <button className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step - 1)}>
+              <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
+            </button>
+          )}
+          {step < 7 ? (
+            <button className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step + 1)} disabled={isNextDisabled}>
+              Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+            </button>
+          ) : (
+            <button className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
+              Submit <CheckIcon className="h-5 w-5 ml-1" />
+            </button>
+          )}
         </div>
-      </motion.div>      
       </div>
     </Modal>
   );
 };
 
 export default AddToProductMarketModal;
+
 
 
 const StepOneForm = ({ formData, handleInputChange, categories, subCategories, brands, filteredSubCategories, filteredBrands } : any) => {
@@ -357,7 +361,180 @@ const ImageUploader = ({ images, setImages }:any) => {
   );
 };
 
-const PricingDetails = ({ formData, handleInputChange }:any) => {
+const ProductDetails = ({ formData, setFormData }: any) => {
+  const [tags, setTags] = useState(formData.tags || []);
+  const [description, setDescription] = useState(formData.description || "");
+
+  const handleTagInput = (e: any) => {
+    if (e.key === "Enter" && e.target.value.trim()) {
+      setTags([...tags, e.target.value.trim()]);
+      e.target.value = "";
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag:any) => tag !== tagToRemove));
+  };
+
+  // useEffect(() => {
+  //   setFormData({ ...formData, tags, description });
+  // }, [tags, description]);
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      <h3 className="text-xl font-bold text-gray-800">Product Details</h3>
+      
+      {/* Product Name */}
+      <div className="relative">
+        <input
+          type="text"
+          name="productName"
+          className="peer w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          placeholder=" "
+          value={formData.productName}
+          onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+        />
+        <label
+          className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-500"
+        >
+          Product Name
+        </label>
+      </div>
+
+      {/* Description with Preview */}
+      <div>
+        <label className="block text-gray-700 font-medium mb-1">Description</label>
+        <textarea
+          name="description"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-24"
+          placeholder="Enter a brief description"
+          maxLength={500}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <p className="text-sm text-gray-500 mt-1">{description.length}/500 characters</p>
+        {description && (
+          <div className="mt-3 p-3 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
+            <h4 className="font-semibold text-gray-700">Preview:</h4>
+            <p className="text-gray-600">{description}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Tags Input */}
+      <div>
+        <label className="block text-gray-700 font-medium mb-1">Tags</label>
+        <div className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none flex flex-wrap gap-2">
+          {tags.map((tag:any, index:any) => (
+            <span
+              key={index}
+              className="bg-blue-600 text-white text-sm px-3 py-1 rounded-full flex items-center"
+            >
+              {tag}
+              <button
+                type="button"
+                className="ml-2 text-white hover:text-gray-300"
+                onClick={() => removeTag(tag)}
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+          <input
+            type="text"
+            className="flex-grow focus:outline-none p-2"
+            placeholder="Press Enter to add tags"
+            onKeyDown={handleTagInput}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ProductVariants = ({ formData, setFormData }: any) => {
+  const options = {
+    colors: ["Red", "Blue", "Green", "Black", "White"],
+    sizes: ["S", "M", "L", "XL"],
+    materials: ["Cotton", "Leather", "Metal", "Plastic"],
+    weights: ["Light", "Medium", "Heavy"],
+  };
+
+  const handleMultiSelect = (key: any, value: any) => {
+    setFormData({
+      ...formData,
+      [key]: formData[key]?.includes(value)
+        ? formData[key].filter((v: any) => v !== value)
+        : [...(formData[key] || []), value],
+    });
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      {/* Color */}
+      <div>
+        <label className="block text-gray-800 font-semibold">Color</label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {options.colors.map((color) => (
+            <button
+              key={color}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                formData.color?.includes(color)
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              onClick={() => handleMultiSelect("color", color)}
+            >
+              {color}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Size */}
+      <div>
+        <label className="block text-gray-800 font-semibold">Size</label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {options.sizes.map((size) => (
+            <button
+              key={size}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                formData.size?.includes(size)
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              onClick={() => handleMultiSelect("size", size)}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Material */}
+      <div>
+        <label className="block text-gray-800 font-semibold">Material</label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {options.materials.map((material) => (
+            <button
+              key={material}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                formData.material?.includes(material)
+                  ? "bg-orange-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              onClick={() => handleMultiSelect("material", material)}
+            >
+              {material}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PricingDetails = ({ formData, handleInputChange }: any) => {
   const [finalPrice, setFinalPrice] = useState(formData.finalPrice || 0);
   const [profitMargin, setProfitMargin] = useState(formData.profitMargin || 0);
 
@@ -374,220 +551,76 @@ const PricingDetails = ({ formData, handleInputChange }:any) => {
   }, [formData.sellingPrice, formData.buyingPrice, formData.discount]);
 
   return (
-    <div className="p-6 bg-white shadow-lg rounded-2xl border border-gray-200 space-y-4">
-      <h3 className="text-lg font-semibold text-gray-700">Pricing Details</h3>
+    <div className="p-6 bg-white shadow-xl rounded-2xl border border-gray-200 space-y-6">
+      <h3 className="text-xl font-bold text-gray-800">Pricing Details</h3>
 
       {/* Input Fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div>
-          <label className="block text-gray-600 font-medium mb-1">Buying Price</label>
+          <label className="block text-gray-700 font-medium mb-2">Buying Price</label>
           <input
             type="number"
             name="buyingPrice"
             value={formData.buyingPrice}
             onChange={handleInputChange}
             placeholder="$0.00"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-gray-600 font-medium mb-1">Selling Price</label>
+          <label className="block text-gray-700 font-medium mb-2">Selling Price</label>
           <input
             type="number"
             name="sellingPrice"
             value={formData.sellingPrice}
             onChange={handleInputChange}
             placeholder="$0.00"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-gray-600 font-medium mb-1">Discount (%)</label>
+          <label className="block text-gray-700 font-medium mb-2">Discount (%)</label>
           <input
             type="number"
             name="discount"
             value={formData.discount}
             onChange={handleInputChange}
             placeholder="0%"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
       </div>
 
       {/* Pricing Summary */}
-      <div className="p-4 bg-gray-100 rounded-lg flex justify-between">
-        <p className="text-gray-700 font-semibold">Final Price:</p>
-        <p className="text-orange-500 font-bold text-lg">${finalPrice.toFixed(2)}</p>
+      <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
+        <p className="text-gray-800 font-semibold">Final Price:</p>
+        <p className="text-blue-600 font-extrabold text-lg">${finalPrice.toFixed(2)}</p>
       </div>
 
-      <div className="p-4 bg-gray-100 rounded-lg flex justify-between">
-        <p className="text-gray-700 font-semibold">Profit Margin:</p>
-        <p className="text-green-600 font-bold text-lg">{profitMargin.toFixed(2)}%</p>
+      <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
+        <p className="text-gray-800 font-semibold">Profit Margin:</p>
+        <p className="text-green-600 font-extrabold text-lg">{profitMargin.toFixed(2)}%</p>
       </div>
     </div>
   );
 };
 
-const ProductVariants =({ formData, setFormData }:any) => {
-
-  const [expanded, setExpanded] = useState(null);
-
-  const toggleExpand = (section :any ) => {
-    setExpanded(expanded === section ? null : section);
-  };
-
-  const options = {
-    colors: ["Red", "Blue", "Green", "Black", "White"],
-    sizes: ["S", "M", "L", "XL"],
-    materials: ["Cotton", "Leather", "Metal", "Plastic"],
-    weights: ["Light", "Medium", "Heavy"],
-  };
-
-  const handleMultiSelect = (key:any , value:any ) => {
-    setFormData({
-      ...formData,
-      [key]: formData[key]?.includes(value)
-        ? formData[key].filter((v:any) => v !== value)
-        : [...(formData[key] || []), value],
-    });
-  };
-
+const ProductAvailability = ({ formData, setFormData }: any) => {
   return (
-    <div className="p-6 bg-white rounded-2xl shadow-md space-y-6">
-      {/* Color */}
-      <div>
-        <label className="block text-gray-700 font-semibold">Color</label>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {options.colors.map((color) => (
-            <button
-              key={color}
-              className={`px-4 py-2 rounded-lg text-sm ${
-                formData.color?.includes(color)
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-              onClick={() => handleMultiSelect("color", color)}
-            >
-              {color}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Size */}
-      <div>
-        <label className="block text-gray-700 font-semibold">Size</label>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {options.sizes.map((size) => (
-            <button
-              key={size}
-              className={`px-4 py-2 rounded-lg text-sm ${
-                formData.size?.includes(size)
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-              onClick={() => handleMultiSelect("size", size)}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Weight */}
-      <div>
-        <label className="block text-gray-700 font-semibold">Weight</label>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {options.weights.map((weight) => (
-            <button
-              key={weight}
-              className={`px-4 py-2 rounded-lg text-sm ${
-                formData.weight?.includes(weight)
-                  ? "bg-purple-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-              onClick={() => handleMultiSelect("weight", weight)}
-            >
-              {weight}
-            </button>
-          ))}
-        </div>
-        <input
-          type="text"
-          className="mt-2 w-full border border-gray-300 rounded-lg p-2 text-sm"
-          placeholder="Or enter custom weight"
-          value={formData.customWeight || ""}
-          onChange={(e) => setFormData({ ...formData, customWeight: e.target.value })}
-        />
-      </div>
-
-      {/* Material */}
-      <div>
-        <label className="block text-gray-700 font-semibold">Material</label>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {options.materials.map((material) => (
-            <button
-              key={material}
-              className={`px-4 py-2 rounded-lg text-sm ${
-                formData.material?.includes(material)
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-              onClick={() => handleMultiSelect("material", material)}
-            >
-              {material}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Dimension */}
-      <div>
-        <label className="block text-gray-700 font-semibold">Dimensions (L × W × H)</label>
-        <div className="flex gap-2 mt-2">
-          <input
-            type="text"
-            className="w-1/3 border border-gray-300 rounded-lg p-2 text-sm"
-            placeholder="L"
-            value={formData.length || ""}
-            onChange={(e) => setFormData({ ...formData, length: e.target.value })}
-          />
-          <input
-            type="text"
-            className="w-1/3 border border-gray-300 rounded-lg p-2 text-sm"
-            placeholder="W"
-            value={formData.width || ""}
-            onChange={(e) => setFormData({ ...formData, width: e.target.value })}
-          />
-          <input
-            type="text"
-            className="w-1/3 border border-gray-300 rounded-lg p-2 text-sm"
-            placeholder="H"
-            value={formData.height || ""}
-            onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const ProductAvailability = ({ formData, setFormData }:any) => {
-  return (
-    <div className="p-6 bg-white rounded-2xl shadow-md space-y-6">
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
       {/* Availability */}
       <div>
-        <label className="block text-gray-700 font-semibold">Availability</label>
+        <label className="block text-gray-800 font-semibold">Availability</label>
         <div className="flex gap-4 mt-2">
           {["In Stock", "Out of Stock"].map((status) => (
             <button
               key={status}
-              className={`px-4 py-2 rounded-lg text-sm ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 formData.availability === status
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
               onClick={() => setFormData({ ...formData, availability: status })}
             >
@@ -605,31 +638,30 @@ const ProductAvailability = ({ formData, setFormData }:any) => {
           { label: "Is On Offer / Discounted / Flash Deal?", key: "isOnOffer" },
         ].map(({ label, key }) => (
           <div key={key} className="flex justify-between items-center">
-            <span className="text-gray-700 font-semibold">{label}</span>
-            <switch
-              // checked={formData[key] || false}
-              onChange={() => setFormData({ ...formData, [key]: !formData[key] })}
-              className={`${
+            <span className="text-gray-800 font-semibold">{label}</span>
+            <button
+              onClick={() => setFormData({ ...formData, [key]: !formData[key] })}
+              className={`relative w-12 h-6 rounded-full transition-colors ${
                 formData[key] ? "bg-green-500" : "bg-gray-300"
-              } relative inline-flex h-6 w-11 items-center rounded-full transition`}
+              }`}
             >
               <span
-                className={`${
-                  formData[key] ? "translate-x-6" : "translate-x-1"
-                } inline-block h-4 w-4 transform bg-white rounded-full transition`}
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform transform ${
+                  formData[key] ? "translate-x-6" : "translate-x-0"
+                }`}
               />
-            </switch>
+            </button>
           </div>
         ))}
       </div>
     </div>
   );
-}
+};
 
-const FinalReview =({ formData, onSubmit }:any) => {
+const FinalReview = ({ formData, onSubmit }: any) => {
   return (
-    <div className="p-6 bg-white rounded-2xl shadow-md space-y-6">
-      <h2 className="text-lg font-bold text-gray-800">Final Review</h2>
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      <h2 className="text-xl font-bold text-gray-800">Final Review</h2>
       <p className="text-sm text-gray-600">Double-check all details before submitting.</p>
 
       <div className="p-4 bg-gray-100 rounded-lg space-y-2">
@@ -638,7 +670,6 @@ const FinalReview =({ formData, onSubmit }:any) => {
         <p><strong>Is New Arrival?</strong> {formData.isNewArrival ? "Yes" : "No"}</p>
         <p><strong>Is On Offer?</strong> {formData.isOnOffer ? "Yes" : "No"}</p>
       </div>
-      
     </div>
   );
-}
+};
