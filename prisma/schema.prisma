@@ -402,11 +402,11 @@ model MarketplaceListing {
   category          String?
   subCategory       String?
   tags              String[]
-  brand             String[]
+  brand             String?
   model             String?
-  color             String[]
-  size              String[]
-  weight            String[]
+  color             String?
+  size              String?
+  weight            String?
   condition         String?
   dimension         String?
   material          String[]

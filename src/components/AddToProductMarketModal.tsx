@@ -6,38 +6,38 @@ import { motion } from "framer-motion";
 import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { ArrowUpTrayIcon, ListBulletIcon } from "@heroicons/react/24/solid";
 
-const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product }:any) => {
+const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }:any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    id: "",
-    productId: "",
-    productName: "",
-    productCategoryId: "",
-    model: "",
-    color: "",
-    size: "",
-    weight: "",
-    condition: "",
-    dimension: "",
-    material: "",
-    image: "",
-    isAvailable: "",
-    isOnOffer: "",
-    isFlashDeal: "",
-    isNewArrival: "",
-    isDiscounted: "",
-    isFeatured: "",
+    id: marketListItem && marketListItem.id || "",
+    productId: marketListItem && marketListItem.productId || product && product.id || product && product.productId || "",
+    title: marketListItem && marketListItem.title || product && product.name || product && product.productName || "",
+    productCategoryId: marketListItem && marketListItem.productCategoryId || product && product.productCategoryId || "",
+    model: marketListItem && marketListItem.model || product && product.model || "",
+    color: marketListItem && marketListItem.color || product && product.color || "",
+    size: marketListItem && marketListItem.size || product && product.size || "",
+    weight: marketListItem && marketListItem.weight || product && product.weight || "",
+    condition: marketListItem && marketListItem.condition || product && product.condition || "",
+    dimension: marketListItem && marketListItem.dimension || product && product.dimension || "",
+    material: marketListItem && marketListItem.material || product && product.material || "",
+    image: marketListItem && marketListItem.image || product && product.image || "",
+    isAvailable: marketListItem && marketListItem.isAvailable || product && product.isAvailable || "",
+    isOnOffer: marketListItem && marketListItem.isOnOffer || product && product.isOnOffer || "",
+    isFlashDeal: marketListItem && marketListItem.isFlashDeal || product && product.isFlashDeal || "",
+    isNewArrival: marketListItem && marketListItem.isNewArrival || product && product.isNewArrival || "",
+    isDiscounted: marketListItem && marketListItem.isDiscounted || product && product.isDiscounted || "",
+    isFeatured: marketListItem && marketListItem.isFeatured || product && product.isFeatured || "",
     quantity: 1,
-    buyingPrice: "",
-    sellingPrice: "",
-    discount: "",
-    finalPrice: 0,
-    profitMargin: 0,
-    category: {subcategories:[],allBrands:[]},
-    subCategories: [],
-    brands: [],
+    buyingPrice: marketListItem && marketListItem.buyingPrice || product && product.buyingPrice || "",
+    sellingPrice: marketListItem && marketListItem.sellingPrice || product && product.sellingPrice || "",
+    discount: marketListItem && marketListItem.discount || product && product.discount || "",
+    finalPrice: marketListItem && marketListItem.finalPrice || product && product.finalPrice || 0,
+    profitMargin: marketListItem && marketListItem.profitMargin || product && product.profitMargin || 0,
+    category: marketListItem && marketListItem.productCategory || product && product.productCategory || {subcategories:[],allBrands:[]},
+    subCategories: marketListItem && marketListItem.subCategories || product && product.subCategories || [],
+    brands: marketListItem && marketListItem.brands || product && product.brands || [],
   });
 
   const [categories, setCategories] = useState([]);
@@ -125,8 +125,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
             formData={formData} 
             handleInputChange={handleInputChange} 
             categories={categories} 
-            subCategories={subCategories} 
-            brands={brands} 
             filteredSubCategories={filteredSubCategories} 
             filteredBrands={filteredBrands} 
           />
@@ -239,8 +237,6 @@ const CategoryPicker = ({
   formData,
   handleInputChange,
   categories,
-  subCategories,
-  brands,
   filteredSubCategories,
   filteredBrands,
 }: any) => {
@@ -382,66 +378,6 @@ const CategoryPicker = ({
   );
 };
 
-const ImageUploader = ({ images, setImages }:any) => {
-  const [loading, setLoading] = useState(false);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': [] } as Accept,
-    multiple: true,
-    onDrop: (acceptedFiles) => {
-      setLoading(true);
-      setTimeout(() => {
-        setImages((prev:any) => {
-          const newImages = acceptedFiles.map((file) => URL.createObjectURL(file));
-          return Array.from(new Set([...prev, ...newImages]));
-        });
-        setLoading(false);
-      }, 1000);
-    },
-  });
-
-  return (
-    <div className="p-6 bg-white shadow-lg rounded-2xl border border-gray-200">
-      {/* Upload Area */}
-      <div
-        {...getRootProps()}
-        className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex flex-col items-center justify-center"
-      >
-        <input {...getInputProps()} />
-        {loading ? (
-          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
-            <ArrowUpTrayIcon className="w-10 h-10 text-gray-500 animate-pulse" />
-          </motion.div>
-        ) : (
-          <>
-            <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
-            <p className="text-gray-500">Drag & drop images here, or <span className="text-orange-500 font-semibold">click to upload</span></p>
-          </>
-        )}
-      </div>
-
-      {/* Image Previews */}
-      {images.length > 0 && (
-        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
-          {images.map((img:any, index:any) => (
-            <motion.div key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
-              <div className="relative group overflow-hidden rounded-lg shadow-lg">
-                <img src={img} alt="Preview" className="h-24 w-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-105" />
-                <button
-                  className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
-                  onClick={() => setImages((prev:any) => prev.filter((_:any, i:any) => i !== index))}
-                >
-                  <XMarkIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const ProductDetails = ({ formData, setFormData }: any) => {
   const [tags, setTags] = useState(formData.tags || []);
   const [description, setDescription] = useState(formData.description || "");
@@ -472,8 +408,8 @@ const ProductDetails = ({ formData, setFormData }: any) => {
           name="productName"
           className="peer w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           placeholder=" "
-          value={formData.productName}
-          onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         />
         <label
           className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-500"
@@ -528,6 +464,79 @@ const ProductDetails = ({ formData, setFormData }: any) => {
             onKeyDown={handleTagInput}
           />
         </div>
+      </div>
+    </div>
+  );
+};
+
+const PricingDetails = ({ formData, handleInputChange }: any) => {
+  const [finalPrice, setFinalPrice] = useState(formData.finalPrice || 0);
+  const [profitMargin, setProfitMargin] = useState(formData.profitMargin || 0);
+
+  useEffect(() => {
+    const sellingPrice = parseFloat(formData.sellingPrice) || 0;
+    const buyingPrice = parseFloat(formData.buyingPrice) || 0;
+    const discount = parseFloat(formData.discount) || 0;
+
+    const discountedPrice = sellingPrice - (sellingPrice * discount) / 100;
+    const margin = buyingPrice ? ((discountedPrice - buyingPrice) / buyingPrice) * 100 : 0;
+
+    setFinalPrice(discountedPrice);
+    setProfitMargin(margin);
+  }, [formData.sellingPrice, formData.buyingPrice, formData.discount]);
+
+  return (
+    <div className="p-6 bg-white shadow-xl rounded-2xl border border-gray-200 space-y-6">
+      <h3 className="text-xl font-bold text-gray-800">Pricing Details</h3>
+
+      {/* Input Fields */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Buying Price</label>
+          <input
+            type="number"
+            name="buyingPrice"
+            value={formData.buyingPrice}
+            onChange={handleInputChange}
+            placeholder="$0.00"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Selling Price</label>
+          <input
+            type="number"
+            name="sellingPrice"
+            value={formData.sellingPrice}
+            onChange={handleInputChange}
+            placeholder="$0.00"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Discount (%)</label>
+          <input
+            type="number"
+            name="discount"
+            value={formData.discount}
+            onChange={handleInputChange}
+            placeholder="0%"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Pricing Summary */}
+      <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
+        <p className="text-gray-800 font-semibold">Final Price:</p>
+        <p className="text-blue-600 font-extrabold text-lg">${finalPrice.toFixed(2)}</p>
+      </div>
+
+      <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
+        <p className="text-gray-800 font-semibold">Profit Margin:</p>
+        <p className="text-green-600 font-extrabold text-lg">{profitMargin.toFixed(2)}%</p>
       </div>
     </div>
   );
@@ -615,75 +624,62 @@ const ProductVariants = ({ formData, setFormData }: any) => {
   );
 };
 
-const PricingDetails = ({ formData, handleInputChange }: any) => {
-  const [finalPrice, setFinalPrice] = useState(formData.finalPrice || 0);
-  const [profitMargin, setProfitMargin] = useState(formData.profitMargin || 0);
+const ImageUploader = ({ images, setImages }:any) => {
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const sellingPrice = parseFloat(formData.sellingPrice) || 0;
-    const buyingPrice = parseFloat(formData.buyingPrice) || 0;
-    const discount = parseFloat(formData.discount) || 0;
-
-    const discountedPrice = sellingPrice - (sellingPrice * discount) / 100;
-    const margin = buyingPrice ? ((discountedPrice - buyingPrice) / buyingPrice) * 100 : 0;
-
-    setFinalPrice(discountedPrice);
-    setProfitMargin(margin);
-  }, [formData.sellingPrice, formData.buyingPrice, formData.discount]);
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: { 'image/*': [] } as Accept,
+    multiple: true,
+    onDrop: (acceptedFiles) => {
+      setLoading(true);
+      setTimeout(() => {
+        setImages((prev:any) => {
+          const newImages = acceptedFiles.map((file) => URL.createObjectURL(file));
+          return Array.from(new Set([...prev, ...newImages]));
+        });
+        setLoading(false);
+      }, 1000);
+    },
+  });
 
   return (
-    <div className="p-6 bg-white shadow-xl rounded-2xl border border-gray-200 space-y-6">
-      <h3 className="text-xl font-bold text-gray-800">Pricing Details</h3>
-
-      {/* Input Fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">Buying Price</label>
-          <input
-            type="number"
-            name="buyingPrice"
-            value={formData.buyingPrice}
-            onChange={handleInputChange}
-            placeholder="$0.00"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">Selling Price</label>
-          <input
-            type="number"
-            name="sellingPrice"
-            value={formData.sellingPrice}
-            onChange={handleInputChange}
-            placeholder="$0.00"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">Discount (%)</label>
-          <input
-            type="number"
-            name="discount"
-            value={formData.discount}
-            onChange={handleInputChange}
-            placeholder="0%"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
+    <div className="p-6 bg-white shadow-lg rounded-2xl border border-gray-200">
+      {/* Upload Area */}
+      <div
+        {...getRootProps()}
+        className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex flex-col items-center justify-center"
+      >
+        <input {...getInputProps()} />
+        {loading ? (
+          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+            <ArrowUpTrayIcon className="w-10 h-10 text-gray-500 animate-pulse" />
+          </motion.div>
+        ) : (
+          <>
+            <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
+            <p className="text-gray-500">Drag & drop images here, or <span className="text-orange-500 font-semibold">click to upload</span></p>
+          </>
+        )}
       </div>
 
-      {/* Pricing Summary */}
-      <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
-        <p className="text-gray-800 font-semibold">Final Price:</p>
-        <p className="text-blue-600 font-extrabold text-lg">${finalPrice.toFixed(2)}</p>
-      </div>
-
-      <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
-        <p className="text-gray-800 font-semibold">Profit Margin:</p>
-        <p className="text-green-600 font-extrabold text-lg">{profitMargin.toFixed(2)}%</p>
-      </div>
+      {/* Image Previews */}
+      {images.length > 0 && (
+        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
+          {images.map((img:any, index:any) => (
+            <motion.div key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
+              <div className="relative group overflow-hidden rounded-lg shadow-lg">
+                <img src={img} alt="Preview" className="h-24 w-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-105" />
+                <button
+                  className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
+                  onClick={() => setImages((prev:any) => prev.filter((_:any, i:any) => i !== index))}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
