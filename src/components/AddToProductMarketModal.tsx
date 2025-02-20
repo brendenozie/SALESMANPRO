@@ -3,7 +3,7 @@ import Modal from "../components/Modal";
 import { useDropzone, Accept } from "react-dropzone";
 import { debounce } from "lodash";
 import { motion } from "framer-motion";
-import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { ArrowUpTrayIcon, ListBulletIcon } from "@heroicons/react/24/solid";
 
 const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product }:any) => {
@@ -169,14 +169,79 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
 export default AddToProductMarketModal;
 
+const Stepper = ({ step }: { step: number }) => {
+  const steps = [
+    "Category",
+    "Product Details",
+    "Pricing",
+    "Images",
+    "Product Variants",
+    "Availability",
+    "Final Review",
+  ];
 
+  return (
+    <div className="w-full space-y-4">
+      {/* Progress Bar */}
+      <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
+        <motion.div
+          className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
+          animate={{ width: `${(step / steps.length) * 100}%` }}
+          transition={{ duration: 0.5 }}
+        />
+      </div>
 
-const StepOneForm = ({ formData, handleInputChange, categories, subCategories, brands, filteredSubCategories, filteredBrands } : any) => {
+      {/* Steps Content */}
+      <div className="flex items-center justify-between overflow-x-auto pb-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
+        {steps.map((label, index) => {
+          const isActive = index + 1 === step;
+          const isCompleted = index + 1 < step;
+
+          return (
+            <div key={index} className="flex flex-col items-center space-y-1 min-w-[80px]">
+              {/* Step Indicator */}
+              <motion.div
+                className={`w-12 h-12 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2
+                  ${isActive ? "bg-blue-600 text-white border-blue-600 scale-110" :
+                  isCompleted ? "bg-blue-400 text-white border-blue-400" : "bg-gray-300 text-gray-500 border-gray-300"}
+                `}
+                animate={{ scale: isActive ? 1.2 : 1 }}
+                aria-current={isActive ? "step" : undefined}
+              >
+                {isCompleted ? <CheckCircleIcon className="w-6 h-6" /> : index + 1}
+              </motion.div>
+
+              {/* Step Label */}
+              <p
+                className={`text-xs sm:text-sm font-medium text-center truncate w-16
+                  ${isActive ? "text-blue-600 font-semibold" :
+                  isCompleted ? "text-blue-400" : "text-gray-400"}
+                `}
+              >
+                {label}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const StepOneForm = ({
+  formData,
+  handleInputChange,
+  categories,
+  subCategories,
+  brands,
+  filteredSubCategories,
+  filteredBrands,
+}: any) => {
   const [selectedCategory, setSelectedCategory] = useState(formData.category || "");
   const [selectedSubcategory, setSelectedSubcategory] = useState(formData.subcategory || "");
   const [selectedBrand, setSelectedBrand] = useState(formData.brand || "");
 
-  const handleSelection = (field:any, value:any) => {
+  const handleSelection = (field: any, value: any) => {
     handleInputChange({ target: { name: field, value } });
 
     if (field === "category") setSelectedCategory(value);
@@ -189,13 +254,17 @@ const StepOneForm = ({ formData, handleInputChange, categories, subCategories, b
       {/* Category Selection */}
       <div>
         <h3 className="text-lg font-semibold text-gray-700 mb-3">Category</h3>
-        <div className="flex flex-wrap gap-3">
-          {categories.map((cat:any) => (
+        <div className="flex space-x-3 overflow-x-auto pb-2">
+          {categories.map((cat: any) => (
             <button
               key={cat.id}
               onClick={() => handleSelection("category", cat)}
-              className={`px-4 py-2 rounded-lg border transition-all duration-200
-                ${selectedCategory.id === cat.id ? "bg-orange-500 text-white border-orange-500" : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"}
+              className={`px-4 py-2 h-12 min-w-[120px] flex items-center justify-center rounded-lg border transition-all duration-200 text-sm
+                ${
+                  selectedCategory.id === cat.id
+                    ? "bg-orange-500 text-white border-orange-500"
+                    : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
+                }
               `}
             >
               {cat.name}
@@ -208,13 +277,17 @@ const StepOneForm = ({ formData, handleInputChange, categories, subCategories, b
       {filteredSubCategories.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Subcategory</h3>
-          <div className="flex flex-wrap gap-3">
-            {filteredSubCategories.map((sub:any) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {filteredSubCategories.map((sub: any) => (
               <button
                 key={sub.id}
                 onClick={() => handleSelection("subcategory", sub.name)}
-                className={`px-4 py-2 rounded-lg border transition-all duration-200
-                  ${selectedSubcategory === sub.name ? "bg-orange-500 text-white border-orange-500" : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"}
+                className={`px-4 py-2 h-12 rounded-lg border transition-all duration-200 text-sm
+                  ${
+                    selectedSubcategory === sub.name
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
+                  }
                 `}
               >
                 {sub.name}
@@ -228,13 +301,17 @@ const StepOneForm = ({ formData, handleInputChange, categories, subCategories, b
       {filteredBrands.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-gray-700 mb-3">Brand</h3>
-          <div className="flex flex-wrap gap-3">
-            {filteredBrands.map((brand:any) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {filteredBrands.map((brand: any) => (
               <button
                 key={brand}
                 onClick={() => handleSelection("brand", brand)}
-                className={`px-4 py-2 rounded-lg border transition-all duration-200
-                  ${selectedBrand === brand ? "bg-orange-500 text-white border-orange-500" : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"}
+                className={`px-4 py-2 h-12 rounded-lg border transition-all duration-200 text-sm
+                  ${
+                    selectedBrand === brand
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
+                  }
                 `}
               >
                 {brand}
@@ -621,70 +698,5 @@ const FinalReview = ({ formData, onSubmit }: any) => {
 };
 
 
-const Stepper = ({ step }: { step: number }) => {
-  const steps = [
-    "Category",
-    "Product Details",
-    "Pricing",
-    "Images",
-    "Product Variants",
-    "Availability",
-    "Final Review",
-  ];
 
-  return (
-    <div className="w-full space-y-4">
-      {/* Progress Bar */}
-      <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
-          animate={{ width: `${(step / steps.length) * 100}%` }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-
-      {/* Steps Content */}
-      <motion.div
-        key={step}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        className="flex items-center justify-between"
-      >
-        {steps.map((label, index) => {
-          const isActive = index + 1 === step;
-          const isCompleted = index + 1 < step;
-
-          return (
-            <div key={index} className="flex flex-col items-center space-y-1">
-              <motion.div
-                className={`w-10 h-10 flex items-center justify-center rounded-full text-white font-bold shadow-md transition-all ${
-                  isActive
-                    ? "bg-blue-600 scale-110"
-                    : isCompleted
-                    ? "bg-blue-400"
-                    : "bg-gray-300"
-                }`}
-                animate={{ scale: isActive ? 1.2 : 1 }}
-              >
-                {index + 1}
-              </motion.div>
-              <p
-                className={`text-sm font-medium ${
-                  isActive
-                    ? "text-blue-600"
-                    : isCompleted
-                    ? "text-blue-400"
-                    : "text-gray-400"
-                }`}
-              >
-                {label}
-              </p>
-            </div>
-          );
-        })}
-      </motion.div>
-    </div>
-  );
-};
 
