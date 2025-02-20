@@ -43,8 +43,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
 
   const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [brands, setBrands] = useState([]);
   const [images, setImages] = useState<string[]>([]);
    const [loading, setLoading] = useState(false);
 
