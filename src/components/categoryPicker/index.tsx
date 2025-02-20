@@ -8,10 +8,10 @@ interface Category {
   icon: string;
   image: string;
   status: string;
-  brand: string;
-  allBrands: string;
-  tags: string;
-  subcategories: string;
+  brand: [];
+  allBrands: [];
+  tags: [];
+  subcategories: [];
 }
 
 interface CategoryPickerProps {
