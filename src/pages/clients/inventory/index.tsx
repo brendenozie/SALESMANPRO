@@ -37,7 +37,6 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
             My Inventory
           </h1>
           <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-10">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-8">Products</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {productsData.map((product) => (
                 <div
