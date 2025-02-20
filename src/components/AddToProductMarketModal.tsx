@@ -105,16 +105,15 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
   return (
     <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-      <div className="space-y-6 p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-3xl mx-auto">
+      <div className="space-y-6 p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-7xl mx-auto">
         
         {/* Steps Content */}
         <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-          <div className="flex items-center space-x-2">
-            <Stepper step={step}/>
-          </div>
+          
+         <Stepper step={step}/>
         
         {step ===1 && (
-          <StepOneForm formData={formData} handleInputChange={handleInputChange} categories={categories} subCategories={subCategories} brands={brands} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands}/>
+          <CategoryPicker formData={formData} handleInputChange={handleInputChange} categories={categories} subCategories={subCategories} brands={brands} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands}/>
         )}
         
         {step === 2 && (
@@ -157,7 +156,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
               Next <ArrowRightIcon className="h-5 w-5 ml-1" />
             </button>
           ) : (
-            <button className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
+            <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
               Submit <CheckIcon className="h-5 w-5 ml-1" />
             </button>
           )}
@@ -192,16 +191,16 @@ const Stepper = ({ step }: { step: number }) => {
       </div>
 
       {/* Steps Content */}
-      <div className="flex items-center justify-between overflow-x-auto pb-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
+      <div className="flex items-center justify-between overflow-x-auto py-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
         {steps.map((label, index) => {
           const isActive = index + 1 === step;
           const isCompleted = index + 1 < step;
 
           return (
-            <div key={index} className="flex flex-col items-center space-y-1 min-w-[80px]">
+            <div key={index} className="flex flex-col items-center space-y-0 min-w-[80px]">
               {/* Step Indicator */}
               <motion.div
-                className={`w-12 h-12 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2
+                className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2
                   ${isActive ? "bg-blue-600 text-white border-blue-600 scale-110" :
                   isCompleted ? "bg-blue-400 text-white border-blue-400" : "bg-gray-300 text-gray-500 border-gray-300"}
                 `}
@@ -228,7 +227,7 @@ const Stepper = ({ step }: { step: number }) => {
   );
 };
 
-const StepOneForm = ({
+const CategoryPicker = ({
   formData,
   handleInputChange,
   categories,
@@ -237,14 +236,26 @@ const StepOneForm = ({
   filteredSubCategories,
   filteredBrands,
 }: any) => {
-  const [selectedCategory, setSelectedCategory] = useState(formData.category || "");
-  const [selectedSubcategory, setSelectedSubcategory] = useState(formData.subcategory || "");
-  const [selectedBrand, setSelectedBrand] = useState(formData.brand || "");
+  const [selectedCategory, setSelectedCategory] = useState(formData.category || null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(formData.subcategory || null);
+  const [selectedBrand, setSelectedBrand] = useState(formData.brand || null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSelection = (field: any, value: any) => {
+  useEffect(() => {
+  if (!selectedCategory) {
+    setSelectedSubcategory(null);
+    setSelectedBrand(null);
+  }
+}, [selectedCategory]);
+
+  const handleSelection = (field: string, value: any) => {
     handleInputChange({ target: { name: field, value } });
 
-    if (field === "category") setSelectedCategory(value);
+    if (field === "category") {
+      setSelectedCategory(value);
+      setSelectedSubcategory(null);
+      setSelectedBrand(null);
+    }
     if (field === "subcategory") setSelectedSubcategory(value);
     if (field === "brand") setSelectedBrand(value);
   };
@@ -253,23 +264,64 @@ const StepOneForm = ({
     <div className="p-6 bg-white shadow-lg rounded-2xl border border-gray-200 space-y-6">
       {/* Category Selection */}
       <div>
+        {(selectedCategory || selectedSubcategory || selectedBrand) && (
+          <div className="flex flex-wrap items-center space-x-3 p-3 bg-gray-100 rounded-lg text-sm">
+            {selectedCategory && selectedCategory!.name && (
+              <span className="bg-orange-500 text-white px-3 py-1 rounded-md flex items-center space-x-2">
+                <span>{selectedCategory.name}</span>
+                <button onClick={() => setSelectedCategory(null)}>❌</button>
+              </span>
+            )}
+            {selectedSubcategory && (
+              <span className="bg-blue-500 text-white px-3 py-1 rounded-md flex items-center space-x-2">
+                <span>{selectedSubcategory}</span>
+                <button onClick={() => setSelectedSubcategory(null)}>❌</button>
+              </span>
+            )}
+            {selectedBrand && (
+              <span className="bg-green-500 text-white px-3 py-1 rounded-md flex items-center space-x-2">
+                <span>{selectedBrand}</span>
+                <button onClick={() => setSelectedBrand(null)}>❌</button>
+              </span>
+            )}
+          </div>
+        )}
+
         <h3 className="text-lg font-semibold text-gray-700 mb-3">Category</h3>
-        <div className="flex space-x-3 overflow-x-auto pb-2">
-          {categories.map((cat: any) => (
-            <button
-              key={cat.id}
-              onClick={() => handleSelection("category", cat)}
-              className={`px-4 py-2 h-12 min-w-[120px] flex items-center justify-center rounded-lg border transition-all duration-200 text-sm
-                ${
-                  selectedCategory.id === cat.id
-                    ? "bg-orange-500 text-white border-orange-500"
-                    : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
-                }
-              `}
-            >
-              {cat.name}
-            </button>
-          ))}
+        <input
+          type="text"
+          placeholder="Search categories..."
+          className="w-full px-4 py-2 mb-3 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <div className="relative">
+          <button className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md p-2 rounded-full hidden md:flex">
+            ◀️
+          </button>
+
+          <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+            {categories
+              .filter((cat: any) => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((cat: any) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleSelection("category", cat)}
+                  className={`snap-start px-4 py-2 h-12 min-w-[120px] flex items-center justify-center rounded-lg border text-sm transition-all duration-200
+                    ${
+                      selectedCategory?.id === cat.id
+                        ? "bg-orange-500 text-white border-orange-500"
+                        : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
+                    }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+          </div>
+
+          <button className="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md p-2 rounded-full hidden md:flex">
+            ▶️
+          </button>
         </div>
       </div>
 
@@ -282,13 +334,12 @@ const StepOneForm = ({
               <button
                 key={sub.id}
                 onClick={() => handleSelection("subcategory", sub.name)}
-                className={`px-4 py-2 h-12 rounded-lg border transition-all duration-200 text-sm
+                className={`px-4 py-2 h-12 rounded-lg border text-sm transition-all duration-200
                   ${
                     selectedSubcategory === sub.name
                       ? "bg-orange-500 text-white border-orange-500"
                       : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
-                  }
-                `}
+                  }`}
               >
                 {sub.name}
               </button>
@@ -306,13 +357,12 @@ const StepOneForm = ({
               <button
                 key={brand}
                 onClick={() => handleSelection("brand", brand)}
-                className={`px-4 py-2 h-12 rounded-lg border transition-all duration-200 text-sm
+                className={`px-4 py-2 h-12 rounded-lg border text-sm transition-all duration-200
                   ${
                     selectedBrand === brand
                       ? "bg-orange-500 text-white border-orange-500"
                       : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
-                  }
-                `}
+                  }`}
               >
                 {brand}
               </button>
