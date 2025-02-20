@@ -105,64 +105,72 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
   return (
     <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-      <div className="space-y-6 p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-7xl mx-auto">
-        
-        {/* Steps Content */}
-        <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-          
-         <Stepper step={step}/>
-        
-        {step ===1 && (
-          <CategoryPicker formData={formData} handleInputChange={handleInputChange} categories={categories} subCategories={subCategories} brands={brands} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands}/>
-        )}
-        
-        {step === 2 && (
-          <ProductDetails formData handleInputChange/>
-        )}
+  <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto 
+                  h-[90vh] max-h-[90vh] flex flex-col">
+    
+    {/* Steps Content */}
+    <motion.div 
+      key={step} 
+      initial={{ opacity: 0, x: -20 }} 
+      animate={{ opacity: 1, x: 0 }} 
+      exit={{ opacity: 0, x: 20 }} 
+      className="flex-grow overflow-y-auto"
+    >
+      <Stepper step={step} />
 
-        {step === 3 && (
-          <PricingDetails formData handleInputChange/>
+      {/* Ensure this wrapper scrolls correctly */}
+      <div className="overflow-y-auto flex-grow p-4">
+        {step === 1 && (
+          <CategoryPicker 
+            formData={formData} 
+            handleInputChange={handleInputChange} 
+            categories={categories} 
+            subCategories={subCategories} 
+            brands={brands} 
+            filteredSubCategories={filteredSubCategories} 
+            filteredBrands={filteredBrands} 
+          />
         )}
-
-        {step === 4 && (
-          <ImageUploader images={images} setImages={setImages} />
-        )}
-
-        {/* Step 5: Variants */}
-        {step === 5  && (
-          <ProductVariants formData setFormData/>
-        )}
-        
-        {/* Step 6: Availability */}
-        {step === 6 && (
-          <ProductAvailability formData setFormData/>
-        )}
-        
-        {/* Step 7: Review & Submit */}
-        {step === 7 && (
-          <FinalReview formData setFormData/>
-        )}
-        </motion.div>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-between">
-          {step > 1 && (
-            <button className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step - 1)}>
-              <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
-            </button>
-          )}
-          {step < 7 ? (
-            <button className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step + 1)} disabled={isNextDisabled}>
-              Next <ArrowRightIcon className="h-5 w-5 ml-1" />
-            </button>
-          ) : (
-            <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
-              Submit <CheckIcon className="h-5 w-5 ml-1" />
-            </button>
-          )}
-        </div>
+        {step === 2 && <ProductDetails formData handleInputChange />}
+        {step === 3 && <PricingDetails formData handleInputChange />}
+        {step === 4 && <ImageUploader images={images} setImages={setImages} />}
+        {step === 5 && <ProductVariants formData setFormData />}
+        {step === 6 && <ProductAvailability formData setFormData />}
+        {step === 7 && <FinalReview formData setFormData />}
       </div>
-    </Modal>
+    </motion.div>
+
+    {/* Navigation Buttons - Fixed at Bottom */}
+    <div className="flex justify-between pt-4 border-t">
+      {step > 1 && (
+        <button 
+          className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" 
+          onClick={() => setStep(step - 1)}
+        >
+          <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
+        </button>
+      )}
+      {step < 7 ? (
+        <button 
+          className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" 
+          onClick={() => setStep(step + 1)} 
+          disabled={isNextDisabled}
+        >
+          Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+        </button>
+      ) : (
+        <button 
+          onClick={handleCreateListing} 
+          className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
+        >
+          Submit <CheckIcon className="h-5 w-5 ml-1" />
+        </button>
+      )}
+    </div>
+  </div>
+</Modal>
+
+
   );
 };
 
