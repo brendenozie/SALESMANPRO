@@ -11,34 +11,35 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    id: marketListItem && marketListItem.id || "",
-    productId: marketListItem && marketListItem.productId || product && product.id || product && product.productId || "",
-    title: marketListItem && marketListItem.title || product && product.name || product && product.productName || "",
-    productCategoryId: marketListItem && marketListItem.productCategoryId || product && product.productCategoryId || "",
-    model: marketListItem && marketListItem.model || product && product.model || "",
-    color: marketListItem && marketListItem.color || product && product.color || "",
-    size: marketListItem && marketListItem.size || product && product.size || "",
-    weight: marketListItem && marketListItem.weight || product && product.weight || "",
-    condition: marketListItem && marketListItem.condition || product && product.condition || "",
-    dimension: marketListItem && marketListItem.dimension || product && product.dimension || "",
-    material: marketListItem && marketListItem.material || product && product.material || "",
-    image: marketListItem && marketListItem.image || product && product.image || "",
-    isAvailable: marketListItem && marketListItem.isAvailable || product && product.isAvailable || "",
-    isOnOffer: marketListItem && marketListItem.isOnOffer || product && product.isOnOffer || "",
-    isFlashDeal: marketListItem && marketListItem.isFlashDeal || product && product.isFlashDeal || "",
-    isNewArrival: marketListItem && marketListItem.isNewArrival || product && product.isNewArrival || "",
-    isDiscounted: marketListItem && marketListItem.isDiscounted || product && product.isDiscounted || "",
-    isFeatured: marketListItem && marketListItem.isFeatured || product && product.isFeatured || "",
-    quantity: 1,
-    buyingPrice: marketListItem && marketListItem.buyingPrice || product && product.buyingPrice || "",
-    sellingPrice: marketListItem && marketListItem.sellingPrice || product && product.sellingPrice || "",
-    discount: marketListItem && marketListItem.discount || product && product.discount || "",
-    finalPrice: marketListItem && marketListItem.finalPrice || product && product.finalPrice || 0,
-    profitMargin: marketListItem && marketListItem.profitMargin || product && product.profitMargin || 0,
-    category: marketListItem && marketListItem.productCategory || product && product.productCategory || {subcategories:[],allBrands:[]},
-    subCategories: marketListItem && marketListItem.subCategories || product && product.subCategories || [],
-    brands: marketListItem && marketListItem.brands || product && product.brands || [],
-  });
+  id: marketListItem?.id || "",
+  productId: marketListItem?.productId || product?.id || product?.productId || "",
+  title: marketListItem?.title || product?.name || product?.productName || "",
+  productCategoryId: marketListItem?.productCategoryId || product?.productCategoryId || "",
+  model: marketListItem?.model || product?.model || "",
+  color: marketListItem?.color || product?.color || "",
+  size: marketListItem?.size || product?.size || "",
+  weight: marketListItem?.weight || product?.weight || "",
+  condition: marketListItem?.condition || product?.condition || "",
+  dimension: marketListItem?.dimension || product?.dimension || "",
+  material: marketListItem?.material || product?.material || "",
+  image: marketListItem?.image || product?.image || "",
+  isAvailable: marketListItem?.isAvailable || product?.isAvailable || "",
+  isOnOffer: marketListItem?.isOnOffer || product?.isOnOffer || "",
+  isFlashDeal: marketListItem?.isFlashDeal || product?.isFlashDeal || "",
+  isNewArrival: marketListItem?.isNewArrival || product?.isNewArrival || "",
+  isDiscounted: marketListItem?.isDiscounted || product?.isDiscounted || "",
+  isFeatured: marketListItem?.isFeatured || product?.isFeatured || "",
+  quantity: 1,
+  buyingPrice: marketListItem?.buyingPrice || product?.buyingPrice || "",
+  sellingPrice: marketListItem?.sellingPrice || product?.sellingPrice || "",
+  discount: marketListItem?.discount || product?.discount || "",
+  finalPrice: marketListItem?.finalPrice || product?.finalPrice || 0,
+  profitMargin: marketListItem?.profitMargin || product?.profitMargin || 0,
+  category: marketListItem?.productCategory || product?.productCategory || { subcategories: [], allBrands: [] },
+  subCategories: marketListItem?.subCategories || product?.subCategories || [],
+  brands: marketListItem?.brands || product?.brands || [],
+});
+
 
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -47,19 +48,22 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
    const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const cachedCategories = localStorage.getItem("categories");
-    if (cachedCategories) {
-      setCategories(JSON.parse(cachedCategories));
-    } else {
-      fetch(`${apiUrl}/shop/categories?limit=100`)
-        .then((res) => res.json())
-        .then((data) => {
-          setCategories(data.categories);
-          localStorage.setItem("categories", JSON.stringify(data.categories));
-        })
-        .catch(console.error);
-    }
-  }, []);
+  if (categories.length > 0) return;
+
+  const cachedCategories = localStorage.getItem("categories");
+  if (cachedCategories) {
+    setCategories(JSON.parse(cachedCategories));
+  } else {
+    fetch(`${apiUrl}/shop/categories?limit=100`)
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data.categories);
+        localStorage.setItem("categories", JSON.stringify(data.categories));
+      })
+      .catch(console.error);
+  }
+}, [categories]);  // Depend only on `categories`
+
 
   // Memoized filtered subcategories and brands
   const filteredSubCategories = useMemo(() => {
@@ -73,28 +77,32 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   }, [formData.category]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      const newValue = name === "discount" ? Number(value) || 0 : value;
-      let updatedData = { ...prev, [name]: newValue };
+  const { name, value } = e.target;
+  
+  setFormData((prev) => {
+    let newValue = name === "discount" || name === "buyingPrice" || name === "sellingPrice" 
+      ? parseFloat(value) || 0 
+      : value;
 
-      if (name === "buyingPrice" || name === "sellingPrice" || name === "discount") {
-        const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
-        const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
-        const discount = parseFloat(updatedData.discount) || 0;
+    let updatedData = { ...prev, [name]: newValue };
 
-        updatedData.profitMargin = buyingPrice
-          ? ((sellingPrice - buyingPrice) / buyingPrice) * 100
-          : 0;
-        updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
-      }
-      return updatedData;
-    });
-  }; 
+    if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
+      const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
+      const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
+      const discount = parseFloat(updatedData.discount) || 0;
 
-  const isNextDisabled =
-    (step === 1 && !formData.category) ||
-    (step === 7 && (!formData.buyingPrice || !formData.sellingPrice));
+      updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
+      updatedData.profitMargin = buyingPrice > 0 
+        ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 
+        : 0;
+    }
+    
+    return updatedData;
+  });
+};
+
+
+  const isNextDisabled = (step === 1 && !formData.category) || (step === 7 && (!formData.buyingPrice || !formData.sellingPrice));
 
   const handleCreateListing = () => {
     if (window.confirm("Are you sure you want to create this listing?")) {
@@ -129,12 +137,12 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
             filteredBrands={filteredBrands} 
           />
         )}
-        {step === 2 && <ProductDetails formData handleInputChange />}
-        {step === 3 && <PricingDetails formData handleInputChange />}
+        {step === 2 && <ProductDetails formData={formData} handleInputChange={handleInputChange} />}
+        {step === 3 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
         {step === 4 && <ImageUploader images={images} setImages={setImages} />}
-        {step === 5 && <ProductVariants formData setFormData />}
-        {step === 6 && <ProductAvailability formData setFormData />}
-        {step === 7 && <FinalReview formData setFormData />}
+        {step === 5 && <ProductVariants formData={formData} setFormData={setFormData} />}
+        {step === 6 && <ProductAvailability formData={formData} setFormData={setFormData} />}
+        {step === 7 && <FinalReview formData={formData} setFormData={setFormData} />}
       </div>
     </motion.div>
 
