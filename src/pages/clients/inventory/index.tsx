@@ -9,6 +9,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type Product = {
   clientInventoryId: string;
+  product:any;
   productId: string;
   productName: string;
   quantityPurchased: number;

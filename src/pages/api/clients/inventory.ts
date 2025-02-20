@@ -20,7 +20,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       include: {
         inventoryItem: {
           include: {
-            product: true, // Include product details
+            product: {
+              include :{
+                productCategory:true
+              }
+            }, // Include product details
           },
         },
         salesAgent: true, // Include sales agent details
@@ -30,6 +34,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     // Map client inventory to structure the response
     const inventoryDetails = clientInventory.map((item) => ({
       clientInventoryId: item.id,
+      product:item.inventoryItem.product,
       productId: item.inventoryItem.productId,
       productName: item.inventoryItem.product?.name || "Unknown Product",
       quantityPurchased: item.quantity,

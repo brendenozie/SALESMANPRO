@@ -11,34 +11,35 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-  id: marketListItem?.id || "",
-  productId: marketListItem?.productId || product?.id || product?.productId || "",
-  title: marketListItem?.title || product?.name || product?.productName || "",
-  productCategoryId: marketListItem?.productCategoryId || product?.productCategoryId || "",
-  model: marketListItem?.model || product?.model || "",
-  color: marketListItem?.color || product?.color || "",
-  size: marketListItem?.size || product?.size || "",
-  weight: marketListItem?.weight || product?.weight || "",
-  condition: marketListItem?.condition || product?.condition || "",
-  dimension: marketListItem?.dimension || product?.dimension || "",
-  material: marketListItem?.material || product?.material || "",
-  image: marketListItem?.image || product?.image || "",
-  isAvailable: marketListItem?.isAvailable || product?.isAvailable || "",
-  isOnOffer: marketListItem?.isOnOffer || product?.isOnOffer || "",
-  isFlashDeal: marketListItem?.isFlashDeal || product?.isFlashDeal || "",
-  isNewArrival: marketListItem?.isNewArrival || product?.isNewArrival || "",
-  isDiscounted: marketListItem?.isDiscounted || product?.isDiscounted || "",
-  isFeatured: marketListItem?.isFeatured || product?.isFeatured || "",
-  quantity: 1,
-  buyingPrice: marketListItem?.buyingPrice || product?.buyingPrice || "",
-  sellingPrice: marketListItem?.sellingPrice || product?.sellingPrice || "",
-  discount: marketListItem?.discount || product?.discount || "",
-  finalPrice: marketListItem?.finalPrice || product?.finalPrice || 0,
-  profitMargin: marketListItem?.profitMargin || product?.profitMargin || 0,
-  category: marketListItem?.productCategory || product?.productCategory || { subcategories: [], allBrands: [] },
-  subCategories: marketListItem?.subCategories || product?.subCategories || [],
-  brands: marketListItem?.brands || product?.brands || [],
-});
+    id: marketListItem?.id || "",
+    productId: marketListItem?.productId || product?.product?.id || "",
+    title: marketListItem?.title || product?.product?.name || "",
+    description: marketListItem?.description || product?.product?.description || "",
+    productCategoryId: marketListItem?.productCategoryId || product?.product?.productCategoryId || "",
+    model: marketListItem?.model || product?.product?.model || "",
+    color: marketListItem?.color || product?.product?.color || "",
+    size: marketListItem?.size || product?.product?.size || "",
+    weight: marketListItem?.weight || product?.product?.weight || "",
+    condition: marketListItem?.condition || product?.product?.condition || "",
+    dimension: marketListItem?.dimension || product?.product?.dimension || "",
+    material: marketListItem?.material || product?.product?.material || "",
+    image: marketListItem?.image || product?.product?.image || "",
+    isAvailable: marketListItem?.isAvailable || product?.product?.isAvailable || "",
+    isOnOffer: marketListItem?.isOnOffer || product?.product?.isOnOffer || "",
+    isFlashDeal: marketListItem?.isFlashDeal || product?.product?.isFlashDeal || "",
+    isNewArrival: marketListItem?.isNewArrival || product?.product?.isNewArrival || "",
+    isDiscounted: marketListItem?.isDiscounted || product?.product?.isDiscounted || "",
+    isFeatured: marketListItem?.isFeatured || product?.product?.isFeatured || "",
+    quantity: product?.quantityPurchased || 1,
+    buyingPrice: marketListItem?.buyingPrice || product?.product?.salesPrice || "",
+    sellingPrice: marketListItem?.sellingPrice ||  0,
+    discount: marketListItem?.discount || 0,
+    finalPrice: marketListItem?.finalPrice ||  0,
+    profitMargin: marketListItem?.profitMargin || 0,
+    category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
+    subCategories: marketListItem?.subCategories || product?.product?.subCategories || [],
+    brands: marketListItem?.brands || product?.product?.brands || [],
+  });
 
 
   const [categories, setCategories] = useState([]);
@@ -137,7 +138,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
             filteredBrands={filteredBrands} 
           />
         )}
-        {step === 2 && <ProductDetails formData={formData} handleInputChange={handleInputChange} />}
+        {step === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
         {step === 3 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
         {step === 4 && <ImageUploader images={images} setImages={setImages} />}
         {step === 5 && <ProductVariants formData={formData} setFormData={setFormData} />}
@@ -434,14 +435,14 @@ const ProductDetails = ({ formData, setFormData }: any) => {
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-24"
           placeholder="Enter a brief description"
           maxLength={500}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         />
-        <p className="text-sm text-gray-500 mt-1">{description.length}/500 characters</p>
-        {description && (
+        <p className="text-sm text-gray-500 mt-1">{formData.description?.length}/500 characters</p>
+        {formData.description && (
           <div className="mt-3 p-3 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
             <h4 className="font-semibold text-gray-700">Preview:</h4>
-            <p className="text-gray-600">{description}</p>
+            <p className="text-gray-600">{formData.description}</p>
           </div>
         )}
       </div>
