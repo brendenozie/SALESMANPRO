@@ -208,6 +208,8 @@ export const getServerSideProps = async () => {
       productsData = await productsResponse.json();
     }
 
+    console.log(productsData);
+    
     const categoriesResponse = await fetch(`${apiUrl}/admin/get-all-categories`);
 
     if (categoriesResponse.ok) {

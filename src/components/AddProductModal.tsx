@@ -994,7 +994,7 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
   }, [formData.category]);
 
   const currentDynamicStep = stepsForCategory[step - 1];
-  const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : null;
+  const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
 
   const [categories, setCategories] = useState([]);
   const [images, setImages] = useState<string[]>([]);
