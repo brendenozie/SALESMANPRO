@@ -580,7 +580,7 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
   );
 };
 
-const FinalReview = ({ formData, onSubmit }: any) => {
+const FinalReview = ({ formData }: any) => {
   return (
     <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
       <h2 className="text-xl font-bold text-gray-800">Final Review</h2>
@@ -650,27 +650,6 @@ const OwnershipPricing = ({ formData, setFormData }: any) => {
           <label className="flex items-center space-x-2 text-gray-700">
             <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="w-5 h-5" />
             <span>Price Negotiable</span>
-          </label>
-        </div>
-    </div>
-  );
-};
-
-const MediaUploads = ({ formData, setFormData, images, setImages }: any) => {
-  return (
-    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
-      {/* Media Uploads */}
-        <h3 className="section-title">Media Uploads</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="upload-label">
-            <ArrowUpOnSquareIcon className="icon w-6 h-6" />
-            <span>Upload Images</span>
-            <input type="file" name="images" multiple onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="hidden" />
-          </label>
-          <label className="upload-label">
-            <CameraIcon className="icon w-6 h-6" />
-            <span>Upload Video</span>
-            <input type="file" name="video" onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="hidden" />
           </label>
         </div>
     </div>
@@ -907,12 +886,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
         .catch(console.error);
     }
   }, [categories]);  // Depend only on `categories`
-
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    console.log("Submitted Data:", formData);
-  };
-
   
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     
@@ -984,7 +957,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={handleCreateListing}
               className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
             >
               Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
