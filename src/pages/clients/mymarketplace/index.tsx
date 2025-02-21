@@ -105,7 +105,7 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
               showRequestProductModal={showAddToMarketProductModal}
               setShowRequestProductModal={setShowAddToMarketProductModal} 
               product={undefined} sellerId={""} sellerType={""}              
-              // product={selectedProduct}
+              marketListItem={selectedProduct}
             />
           )}
 
@@ -125,7 +125,7 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
 export default ClientInventoryPage;
 
 export const getServerSideProps = async () => {
-  const clientId = "63f7c9e2d91b1b2a5e80b013";
+  const clientId = "63f7c9e2d91b1b2a5e80b007";
 
   let productsData: MarketplaceProduct[] = [];
 
@@ -133,7 +133,8 @@ export const getServerSideProps = async () => {
     const response = await fetch(`${apiUrl}/clients/my-market-place?sellerId=${clientId}`);
     if (response.ok) {
       const data = await response.json();
-      productsData = data.marketplaceProducts;
+      productsData = data.products;
+      console.log(productsData);
     } else {
       throw new Error("Failed to fetch marketplace products.");
     }

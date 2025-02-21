@@ -17,6 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     sellingPrice,
     category,
     subCategory,
+    productCategoryId,
     tags,
     brand,
     model,
@@ -59,6 +60,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       data: {
         sellerId,
         sellerType,
+        productCategory: { connect: {id:productCategoryId}},
         product: { connect: { id: productId } },
         quantity,
         buyingPrice: buyingPrice ?? 0,

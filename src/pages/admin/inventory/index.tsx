@@ -151,16 +151,16 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
 
           {showAddProductModal && (
             <AddProductModal
-              showAddProductModal={showAddProductModal}
-              setShowAddProductModal={setShowAddProductModal}
+              showRequestProductModal={showAddProductModal}
+              setShowRequestProductModal={setShowAddProductModal}
               categories={categoriesData}
             />
           )}
 
           {showEditProductModal && selectedProduct && (
             <AddProductModal
-              showAddProductModal={showEditProductModal}
-              setShowAddProductModal={setShowEditProductModal}
+              showRequestProductModal={showEditProductModal}
+              setShowRequestProductModal={setShowEditProductModal}
               categories={categoriesData}
               product={selectedProduct} // Pass the selected product for editing
             />

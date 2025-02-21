@@ -1047,13 +1047,13 @@ const handleCreateListing = async () => {
     // Build a listing object conforming to the updated MarketplaceListing model
     const listing = {
       id: formData.id, // If updating; otherwise backend auto-generates
-      sellerId: "CURRENT_SELLER_ID", // Replace with actual seller ID
+      sellerId: "63f7c9e2d91b1b2a5e80b007", // Replace with actual seller ID
       sellerType: "CLIENT", // Or "CONSUMER", as appropriate
       productId: formData.productId,
       title: formData.title,
       description: formData.description,
       quantity: formData.quantity,
-      image: images[0] || "", // Use the first uploaded image
+      image: images || [], // Use the first uploaded image
       productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
       category: formData.category?.name || "",
       subCategory:formData.subCategory,

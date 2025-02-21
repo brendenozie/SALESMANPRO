@@ -407,18 +407,18 @@ enum SellerType {
 }
 
 model MarketplaceListing {
-  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
-  sellerId            String           @db.ObjectId
+  id                  String          @id @default(auto()) @map("_id") @db.ObjectId
+  sellerId            String          @db.ObjectId
   sellerType          SellerType
-  productId           String?          @db.ObjectId
-  product             Product?         @relation(fields: [productId], references: [id])
-  title               String           @default("New Name")
-  description         String?          @default("New Description")
+  productId           String?         @db.ObjectId
+  product             Product?        @relation(fields: [productId], references: [id])
+  title               String          @default("New Name")
+  description         String?         @default("New Description")
   quantity            Int
   images              String[]
   video               String?
-  productCategoryId   String?          @db.ObjectId
-  productCategory     ProductCategory? @relation(fields: [productCategoryId], references: [id])
+  productCategoryId   String          @db.ObjectId
+  productCategory     ProductCategory @relation(fields: [productCategoryId], references: [id])
   category            String?
   subCategory         String?
   tags                String[]
@@ -442,16 +442,16 @@ model MarketplaceListing {
   ingredients         String? // For Beauty Products
   usageInstructions   String? // For Beauty Products
   expirationDate      DateTime? // For Beauty Products
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  salesPrice          Float            @default(0)
-  discount            Int?             @default(0)
-  isAvailable         Boolean          @default(true)
-  isOnOffer           Boolean          @default(false)
-  isFlashDeal         Boolean          @default(false)
-  isNewArrival        Boolean          @default(false)
-  isDiscounted        Boolean          @default(false)
-  isFeatured          Boolean          @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  salesPrice          Float           @default(0)
+  discount            Int?            @default(0)
+  isAvailable         Boolean         @default(true)
+  isOnOffer           Boolean         @default(false)
+  isFlashDeal         Boolean         @default(false)
+  isNewArrival        Boolean         @default(false)
+  isDiscounted        Boolean         @default(false)
+  isFeatured          Boolean         @default(false)
   startDealDate       DateTime?
   endDealDate         DateTime?
   buyingPrice         Float

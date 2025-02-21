@@ -138,7 +138,7 @@ const CategoryPicker = ({
       setSelectedSubcategory(null);
       setSelectedBrand(null);
     }
-    if (field === "subcategory") setSelectedSubcategory(value);
+    if (field === "subcategory")setSelectedSubcategory(value);
     if (field === "brand") setSelectedBrand(value);
   };
 
@@ -751,6 +751,7 @@ const FinalReview = ({ formData }: any) => {
   );
 };
 
+
 const EnginePerformance = ({ formData, setFormData }: any) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -916,12 +917,12 @@ const CATEGORY_STEPS: any = {
 // MAIN MODAL COMPONENT
 // -------------------
 
-const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product }: any) => {
+const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product, sellerId, sellerType }: any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     id: product?.product?.id || "",
-    name:  product?.product?.name || "",
+    name: product?.product?.name || "",
     description: product?.product?.description || "",
     productCategoryId: product?.product?.productCategoryId || "",
     model: product?.product?.model || "",
@@ -929,15 +930,15 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     size: product?.product?.size || "",
     weight: product?.product?.weight || "",
     condition: product?.product?.condition || "",
-    dimension: product?.product?.dimension || "",
-    material: product?.product?.material || "",
+    dimension:  product?.product?.dimension || "",
+    material:  product?.product?.material || "",
     images: product?.product?.image || "",
-    isAvailable: product?.product?.isAvailable || "",
-    isOnOffer: product?.product?.isOnOffer || "",
-    isFlashDeal: product?.product?.isFlashDeal || "",
-    isNewArrival: product?.product?.isNewArrival || "",
-    isDiscounted: product?.product?.isDiscounted || "",
-    isFeatured: product?.product?.isFeatured || "",
+    isAvailable: product?.product?.isAvailable || false,
+    isOnOffer: product?.product?.isOnOffer || false,
+    isFlashDeal: product?.product?.isFlashDeal || false,
+    isNewArrival: product?.product?.isNewArrival || false,
+    isDiscounted: product?.product?.isDiscounted || false,
+    isFeatured: product?.product?.isFeatured || false,
     quantity: product?.quantityPurchased || 1,
     costPrice: product?.product?.costPrice || "",
     salesPrice: product?.product?.salesPrice || 0,
@@ -945,9 +946,12 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     finalPrice: product?.product?.finalPrice || 0,
     profitMargin: product?.product?.profitMargin || 0,
     category: product?.product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategories: product?.product?.subCategories || [],
-    brands: product?.product?.brands || [],
-    tags:product?.product?.tags || [],
+    subCategory: product?.product?.subCategory || "",
+    brand: product?.product?.brand || "",
+    tags: product?.product?.tags || [],
+    commissionRate: product?.commissionRate || 0,
+    commissionType: product?.commissionType || 'COST', // Default to "Percentage"
+    companyId: product?.companyId || '63f7c9e2d91b1b2a5e80b007',
     // Vehicle-specific keys
     make: "",
     trim: "",
@@ -1045,20 +1049,17 @@ const handleCreateListing = async () => {
     // Build a listing object conforming to the updated MarketplaceListing model
     const listing = {
       id: formData.id, // If updating; otherwise backend auto-generates
-      sellerId: "CURRENT_SELLER_ID", // Replace with actual seller ID
+      sellerId: "63f7c9e2d91b1b2a5e80b007", // Replace with actual seller ID
       sellerType: "CLIENT", // Or "CONSUMER", as appropriate
       name: formData.name,
       description: formData.description,
       quantity: formData.quantity,
-      image: images[0] || "", // Use the first uploaded image
+      image: images || [], // Use the first uploaded image
       productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
       category: formData.category?.name || "",
-      subCategory:
-        formData.subCategories && formData.subCategories.length > 0
-          ? formData.subCategories[0]
-          : "",
+      subCategory:formData.subCategory,
       tags: formData.tags || [],
-      brand: formData.brands,
+      brand: formData.brand,
       model: formData.model,
       color: formData.color,
       size: formData.size,
@@ -1102,7 +1103,7 @@ const handleCreateListing = async () => {
     };
 
     try {
-      const response = await fetch(`${apiUrl}/marketplace/listing`, {
+      const response = await fetch(`${apiUrl}/clients/addToMarketList`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
