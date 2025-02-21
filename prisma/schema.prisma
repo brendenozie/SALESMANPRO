@@ -62,7 +62,6 @@ model ProductCategory {
   icon               String?
   image              String?
   status             String
-  brand              String[]
   allBrands          String[]
   tags               String[]
   subcategories      Json // Store subcategories as a JSON array
@@ -108,7 +107,7 @@ model Product {
   subCategory        String?
   image              String?
   tags               String[]
-  brand              String[]
+  brand              String?
   costPrice          Float
   salesPrice         Float
   companyId          String               @db.ObjectId

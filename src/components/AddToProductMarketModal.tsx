@@ -1105,7 +1105,7 @@ const handleCreateListing = async () => {
     };
 
     try {
-      const response = await fetch(`${apiUrl}/marketplace/listing`, {
+      const response = await fetch(`${apiUrl}/clients/addToMarketList`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

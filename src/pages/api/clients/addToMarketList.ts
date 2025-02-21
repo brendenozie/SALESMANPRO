@@ -6,25 +6,45 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(405).json({ message: "Method not allowed. Use POST." });
   }
 
-  const { sellerId, sellerType, productId, quantity, buyingPrice, sellingPrice,
-    category ,
-        subCategory,
-        tags    ,
-        brand       ,
-        model       ,
-        color       ,
-        size        ,
-        weight      ,
-        condition   ,
-        dimension   ,
-        material    ,
-        isAvailable ,
-        isOnOffer  ,
-        isFlashDeal,
-        isNewArrival,
-        isDiscounted,
-        isFeatured,
-   } = req.body;
+  const {
+    sellerId,
+    sellerType,
+    productId,
+    title,
+    description,
+    quantity,
+    buyingPrice,
+    sellingPrice,
+    category,
+    subCategory,
+    tags,
+    brand,
+    model,
+    color,
+    size,
+    weight,
+    condition,
+    dimension,
+    material,
+    isAvailable,
+    isOnOffer,
+    isFlashDeal,
+    isNewArrival,
+    isDiscounted,
+    isFeatured,
+    // New category-specific fields:
+    author,
+    publisher,
+    isbn,
+    fabricComposition,
+    careInstructions,
+    energyRating,
+    warrantyPeriod,
+    applianceDimensions,
+    ingredients,
+    usageInstructions,
+    expirationDate
+  } = req.body;
 
   if (!sellerId || !sellerType || !productId || !quantity || typeof quantity !== "number") {
     return res.status(400).json({ message: "Invalid or missing request data." });
@@ -39,43 +59,55 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       data: {
         sellerId,
         sellerType,
-        product: { connect: { id: productId } }, 
+        product: { connect: { id: productId } },
         quantity,
         buyingPrice: buyingPrice ?? 0,
         sellingPrice: sellingPrice ?? 0,
-        title: "New Name",
-        description: "New Description",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        category :category,
+        title: title ?? "New Name",
+        description: description ?? "New Description",
+        category: category,
         subCategory: subCategory,
-        tags    :tags,
-        brand       :brand,
-        model       :model,
-        color       :color,
-        size        :size,
-        weight      :weight,
-        condition   :condition,
-        dimension   :dimension,
-        material    :material,
-        isAvailable :isAvailable,
-        isOnOffer  :isOnOffer,
-        isFlashDeal:isFlashDeal,
-        isNewArrival:isNewArrival,
-        isDiscounted:isDiscounted,
-        isFeatured:isFeatured,
-      },
+        tags: tags,
+        brand: brand,
+        model: model,
+        color: color,
+        size: size,
+        weight: weight,
+        condition: condition,
+        dimension: dimension,
+        material: material,
+        isAvailable: isAvailable,
+        isOnOffer: isOnOffer,
+        isFlashDeal: isFlashDeal,
+        isNewArrival: isNewArrival,
+        isDiscounted: isDiscounted,
+        isFeatured: isFeatured,
+        // Extended category-specific fields
+        author: author || null,
+        publisher: publisher || null,
+        isbn: isbn || null,
+        fabricComposition: fabricComposition || null,
+        careInstructions: careInstructions || null,
+        energyRating: energyRating || null,
+        warrantyPeriod: warrantyPeriod || null,
+        applianceDimensions: applianceDimensions || null,
+        ingredients: ingredients || null,
+        usageInstructions: usageInstructions || null,
+        expirationDate: expirationDate ? new Date(expirationDate) : null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
     });
 
     return res.status(201).json({
       message: "Marketplace listing created successfully.",
-      listing: marketplaceListing,
+      listing: marketplaceListing
     });
   } catch (error: any) {
     console.error("Error creating marketplace listing:", error);
     return res.status(500).json({
       message: "An error occurred while creating the marketplace listing.",
-      error: error.message ?? "Unknown error",
+      error: error.message ?? "Unknown error"
     });
   }
 }
