@@ -9,7 +9,6 @@ import { ArrowUpOnSquareIcon, ArrowUpTrayIcon, CameraIcon, ListBulletIcon, Phone
 const CATEGORY_STEPS : any= {
   "Electronics": [1, 2, 6, 8, 9, 12],
   "Clothing": [1, 3, 4, 5, 7, 10, 11],
-  "Fashion": [1, 3, 4, 5, 7, 10, 11],
   "Smartphones": [1, 2, 6, 8, 9, 12],
   "Laptops": [1, 2, 6, 8, 9, 12],
   "Tablets": [1, 2, 6, 8, 9, 12],
@@ -19,7 +18,6 @@ const CATEGORY_STEPS : any= {
   "Gaming Consoles": [1, 3, 5, 7, 10, 11],
   "Televisions": [1, 3, 5, 7, 10, 11],
   "Audio Systems": [1, 3, 5, 7, 10, 11],
-  "Music": [1, 3, 5, 7, 10, 11],
   "Books": [1, 2, 6, 9, 12],
   "Stationery": [1, 2, 6, 9, 12],
   "Shoes": [1, 3, 4, 5, 7, 10, 11],
@@ -29,7 +27,6 @@ const CATEGORY_STEPS : any= {
   "Skincare": [1, 3, 4, 5, 7, 10, 11],
   "Haircare": [1, 3, 4, 5, 7, 10, 11],
   "Toys": [1, 3, 4, 5, 7, 10, 11],
-  "Baby Toys": [1, 3, 4, 5, 7, 10, 11],
   "Sports Equipment": [1, 3, 4, 5, 7, 10, 11],
   "Fitness Gear": [1, 3, 4, 5, 7, 10, 11],
   "Outdoor Gear": [1, 3, 4, 5, 7, 10, 11],
@@ -41,19 +38,15 @@ const CATEGORY_STEPS : any= {
   "Dining": [1, 2, 6, 9, 12],
   "Bedding": [1, 2, 6, 9, 12],
   "Pet Supplies": [1, 2, 6, 9, 12],
-  "Pets": [1, 2, 6, 9, 12],
   "Automotive": [1, 3, 4, 5, 7, 10, 11],
-  "Cars": [1, 3, 4, 5, 7, 10, 11],
   "Car Accessories": [1, 3, 4, 5, 7, 10, 11],
   "Tools": [1, 3, 4, 5, 7, 10, 11],
   "Hardware": [1, 3, 4, 5, 7, 10, 11],
   "Lighting": [1, 2, 6, 9, 12],
   "Gardening": [1, 2, 6, 9, 12],
-  "Home & Garden": [1, 2, 6, 9, 12],
   "Office Supplies": [1, 2, 6, 9, 12],
   "Art Supplies": [1, 2, 6, 9, 12],
   "Health Products": [1, 3, 4, 5, 7, 10, 11],
-  "Health & Beauty": [1, 3, 4, 5, 7, 10, 11],
   "Supplements": [1, 3, 4, 5, 7, 10, 11],
   "Baby Products": [1, 3, 4, 5, 7, 10, 11],
   "Maternity": [1, 3, 4, 5, 7, 10, 11],
@@ -65,10 +58,8 @@ const CATEGORY_STEPS : any= {
   "Cleaning Supplies": [1, 3, 5, 7, 10, 11],
   "Safety Equipment": [1, 3, 5, 7, 10, 11],
   "Party Supplies": [1, 3, 5, 7, 10, 11],
-  "Gifts": [1, 3, 5, 7, 10, 11],
   "Travel Gear": [1, 3, 5, 7, 10, 11],
 };
-
 
 const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }:any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -131,17 +122,9 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // const categorySteps = useMemo(() => {
-  //   return CATEGORY_STEPS[formData.category?.name] || [];
-  // }, [formData.category]);
-
-  // Compute the steps based on the selected category
   const categorySteps = useMemo(() => {
     return CATEGORY_STEPS[formData.category?.name] || [];
   }, [formData.category]);
-
-  // Determine the current dynamic step based on the categorySteps array
-  const dynamicStep = categorySteps[step - 1];
 
    // Memoized filtered subcategories and brands
   const filteredSubCategories = useMemo(() => {
@@ -206,103 +189,33 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     }
   };
 
-  // Compute the steps based on the selected category
-// const categorySteps = useMemo(() => {
-//   return CATEGORY_STEPS[formData.category?.name] || [];
-// }, [formData.category]);
-
-// // Determine the current dynamic step based on the categorySteps array
-// const dynamicStep = categorySteps[step - 1];
-
-return (
-  <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-    <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] max-h-[90vh] flex flex-col">
-      <motion.div
-        key={step}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        className="flex-grow overflow-y-auto"
-      >
-        <Stepper step={step} category={formData.category?.name} />
-        <div className="overflow-y-auto flex-grow p-4">
-          {dynamicStep === 1 && (
-            <CategoryPicker
-              formData={formData}
-              handleInputChange={handleInputChange}
-              categories={categories}
-              filteredSubCategories={filteredSubCategories}
-              filteredBrands={filteredBrands}
-            />
-          )}
-          {dynamicStep === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 3 && <GeneralDetails formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 4 && <EnginePerformance formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 5 && <OwnershipPricing formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 6 && <MediaUploads formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 7 && <ContactLocation formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 8 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
-          {dynamicStep === 9 && <ImageUploader images={images} setImages={setImages} />}
-          {dynamicStep === 10 && <ProductVariants formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 11 && <ProductAvailability formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 12 && <FinalReview formData={formData} setFormData={setFormData} />}
+  return (
+    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+      <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] max-h-[90vh] flex flex-col">
+        <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-grow overflow-y-auto">
+          <Stepper step={step} category={formData.category?.name}/>
+          <div className="overflow-y-auto flex-grow p-4">
+            {step === 1 && <CategoryPicker formData={formData} handleInputChange={handleInputChange} categories={categories} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands} />}
+            {categorySteps.includes(2) && step === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(3) && step === 3 && <GeneralDetails formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(4) && step === 4 && <EnginePerformance formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(5) && step === 5 && <OwnershipPricing formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(6) && step === 6 && <MediaUploads formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(7) && step === 7 && <ContactLocation formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(8) && step === 8 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
+            {categorySteps.includes(9) && step === 9 && <ImageUploader images={images} setImages={setImages} />}
+            {categorySteps.includes(10) && step === 10 && <ProductVariants formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(11) && step === 11 && <ProductAvailability formData={formData} setFormData={setFormData} />}
+            {categorySteps.includes(12) && step === 12 && <FinalReview formData={formData} setFormData={setFormData} />}
+          </div>
+        </motion.div>
+        <div className="flex justify-between pt-4 border-t">
+          {step > 1 && <button className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step - 1)}><ArrowLeftIcon className="h-5 w-5 mr-1" /> Back</button>}
+          {step < categorySteps.length ? <button className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step + 1)} disabled={isNextDisabled}>Next <ArrowRightIcon className="h-5 w-5 ml-1" /></button> : <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">Submit <CheckIcon className="h-5 w-5 ml-1" /></button>}
         </div>
-      </motion.div>
-      <div className="flex justify-between pt-4 border-t">
-        {step > 1 && (
-          <button
-            className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center"
-            onClick={() => setStep(step - 1)}
-          >
-            <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
-          </button>
-        )}
-        {step < categorySteps.length ? (
-          <button
-            className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center"
-            onClick={() => setStep(step + 1)}
-            disabled={isNextDisabled}
-          >
-            Next <ArrowRightIcon className="h-5 w-5 ml-1" />
-          </button>
-        ) : (
-          <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
-            Submit <CheckIcon className="h-5 w-5 ml-1" />
-          </button>
-        )}
       </div>
-    </div>
-  </Modal>
-);
-
-
-  // return (
-  //   <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-  //     <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] max-h-[90vh] flex flex-col">
-  //       <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-grow overflow-y-auto">
-  //         <Stepper step={step} category={formData.category?.name}/>
-  //         <div className="overflow-y-auto flex-grow p-4">
-  //           {step === 1 && <CategoryPicker formData={formData} handleInputChange={handleInputChange} categories={categories} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands} />}
-  //           {categorySteps.includes(2) && step === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(3) && step === 3 && <GeneralDetails formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(4) && step === 4 && <EnginePerformance formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(5) && step === 5 && <OwnershipPricing formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(6) && step === 6 && <MediaUploads formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(7) && step === 7 && <ContactLocation formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(8) && step === 8 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
-  //           {categorySteps.includes(9) && step === 9 && <ImageUploader images={images} setImages={setImages} />}
-  //           {categorySteps.includes(10) && step === 10 && <ProductVariants formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(11) && step === 11 && <ProductAvailability formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(12) && step === 12 && <FinalReview formData={formData} setFormData={setFormData} />}
-  //         </div>
-  //       </motion.div>
-  //       <div className="flex justify-between pt-4 border-t">
-  //         {step > 1 && <button className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step - 1)}><ArrowLeftIcon className="h-5 w-5 mr-1" /> Back</button>}
-  //         {step < categorySteps.length ? <button className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step + 1)} disabled={isNextDisabled}>Next <ArrowRightIcon className="h-5 w-5 ml-1" /></button> : <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">Submit <CheckIcon className="h-5 w-5 ml-1" /></button>}
-  //       </div>
-  //     </div>
-  //   </Modal>
-  // );
+    </Modal>
+  );
 };
 
 
@@ -513,78 +426,6 @@ interface StepperProps {
 }
 
 const Stepper: React.FC<StepperProps> = ({ step, category }) => {
-  // Mapping from step number to label
-  const stepsMapping: Record<number, string> = {
-    1: "Category",
-    2: "Product Details",
-    3: "General Details",
-    4: "Engine Performance",
-    5: "Ownership Pricing",
-    6: "Media Uploads",
-    7: "Pricing",
-    8: "Images",
-    9: "Product Variants",
-    10: "Availability",
-    11: "Final Review",
-    12: "Contact Location"
-  };
-
-  // Get category-specific steps (an array of numbers)
-  const categorySteps: number[] = CATEGORY_STEPS[category] || [];
-  
-  // Map these steps to their corresponding labels
-  const stepsToShow = categorySteps.map((stepNum) => stepsMapping[stepNum]);
-
-  return (
-    <div className="w-full space-y-4">
-      {/* Progress Bar */}
-      <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
-          animate={{ width: `${(step / stepsToShow.length) * 100}%` }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-
-      {/* Steps Content */}
-      <div className="flex items-center justify-between overflow-x-auto py-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
-        {stepsToShow.map((label, index) => {
-          const isActive = index + 1 === step;
-          const isCompleted = index + 1 < step;
-          return (
-            <div key={index} className="flex flex-col items-center space-y-0 min-w-[80px]">
-              {/* Step Indicator */}
-              <motion.div
-                className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2 ${
-                  isActive
-                    ? "bg-blue-600 text-white border-blue-600 scale-110"
-                    : isCompleted
-                    ? "bg-blue-400 text-white border-blue-400"
-                    : "bg-gray-300 text-gray-500 border-gray-300"
-                }`}
-                animate={{ scale: isActive ? 1.2 : 1 }}
-                aria-current={isActive ? "step" : undefined}
-              >
-                {isCompleted ? <CheckCircleIcon className="w-6 h-6" /> : index + 1}
-              </motion.div>
-              {/* Step Label */}
-              <p
-                className={`text-xs sm:text-sm font-medium text-center truncate w-16 ${
-                  isActive ? "text-blue-600 font-semibold" : isCompleted ? "text-blue-400" : "text-gray-400"
-                }`}
-              >
-                {label}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-
-const StepperV2: React.FC<StepperProps> = ({ step, category }) => {
   const allSteps = [
     "Category",
     "Product Details",
