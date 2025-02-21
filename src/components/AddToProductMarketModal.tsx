@@ -120,7 +120,7 @@ const CategoryPicker = ({
   filteredBrands
 }: any) => {
   const [selectedCategory, setSelectedCategory] = useState(formData.category || null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState(formData.subcategory || null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(formData.subCategory || null);
   const [selectedBrand, setSelectedBrand] = useState(formData.brand || null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -210,7 +210,7 @@ const CategoryPicker = ({
                 key={sub.id}
                 onClick={() => handleSelection("subCategory", sub)}
                 className={`px-4 py-2 h-12 rounded-lg border text-sm transition-all duration-200 ${
-                  selectedSubcategory.name === sub.name
+                  selectedSubcategory?.name === sub.name
                     ? "bg-orange-500 text-white border-orange-500"
                     : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
                 }`}
@@ -943,7 +943,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     quantity: product?.quantityPurchased || 1,
     buyingPrice: marketListItem?.buyingPrice || product?.product?.salesPrice || "",
     sellingPrice: marketListItem?.sellingPrice || 0,
-    discount: marketListItem?.discount || 0,
+    discount: marketListItem?.discount  || 0,
     finalPrice: marketListItem?.finalPrice || 0,
     profitMargin: marketListItem?.profitMargin || 0,
     category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
