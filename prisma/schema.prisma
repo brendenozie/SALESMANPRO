@@ -424,8 +424,8 @@ model MarketplaceListing {
   tags                String[]
   brand               String?
   model               String?
-  color               String?
-  size                String?
+  color               String[]
+  size                String[]
   weight              String?
   condition           String?
   dimension           String?
