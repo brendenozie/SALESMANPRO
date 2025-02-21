@@ -272,10 +272,10 @@ const ProductDetails = ({ formData, setFormData }: any) => {
       <div className="relative">
         <input
           type="text"
-          name="title"
+          name="name"
           className="peer w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           placeholder=" "
-          value={formData.title}
+          value={formData.name}
           onChange={handleChange}
         />
         <label className="absolute left-3 top-3 text-gray-500 text-sm transition-all">
@@ -666,7 +666,7 @@ const FinalReview = ({ formData }: any) => {
         {/* Basic Information */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <h3 className="font-semibold mb-2">Basic Information</h3>
-          <p><strong>Title:</strong> {formData.title || "N/A"}</p>
+          <p><strong>Title:</strong> {formData.name || "N/A"}</p>
           <p><strong>Description:</strong> {formData.description || "N/A"}</p>
           <p><strong>Category:</strong> {formData.category?.name || "N/A"}</p>
         </div>
