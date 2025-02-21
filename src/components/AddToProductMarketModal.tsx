@@ -6,534 +6,15 @@ import { motion } from "framer-motion";
 import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, CheckCircleIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { ArrowUpOnSquareIcon, ArrowUpTrayIcon, CameraIcon, ListBulletIcon, PhoneIcon } from "@heroicons/react/24/solid";
 
-const CATEGORY_STEPS : any= {
-  "Electronics": [1, 2, 6, 8, 9, 12],
-  "Clothing": [1, 3, 4, 5, 7, 10, 11],
-  "Fashion": [1, 3, 4, 5, 7, 10, 11],
-  "Smartphones": [1, 2, 6, 8, 9, 12],
-  "Laptops": [1, 2, 6, 8, 9, 12],
-  "Tablets": [1, 2, 6, 8, 9, 12],
-  "Wearables": [1, 2, 6, 8, 9, 12],
-  "Home Appliances": [1, 3, 5, 7, 10, 11],
-  "Cameras": [1, 3, 4, 5, 7, 10, 11],
-  "Gaming Consoles": [1, 3, 5, 7, 10, 11],
-  "Televisions": [1, 3, 5, 7, 10, 11],
-  "Audio Systems": [1, 3, 5, 7, 10, 11],
-  "Music": [1, 3, 5, 7, 10, 11],
-  "Books": [1, 2, 6, 9, 12],
-  "Stationery": [1, 2, 6, 9, 12],
-  "Shoes": [1, 3, 4, 5, 7, 10, 11],
-  "Watches": [1, 3, 4, 5, 7, 10, 11],
-  "Jewelry": [1, 3, 4, 5, 7, 10, 11],
-  "Beauty Products": [1, 3, 4, 5, 7, 10, 11],
-  "Skincare": [1, 3, 4, 5, 7, 10, 11],
-  "Haircare": [1, 3, 4, 5, 7, 10, 11],
-  "Toys": [1, 3, 4, 5, 7, 10, 11],
-  "Baby Toys": [1, 3, 4, 5, 7, 10, 11],
-  "Sports Equipment": [1, 3, 4, 5, 7, 10, 11],
-  "Fitness Gear": [1, 3, 4, 5, 7, 10, 11],
-  "Outdoor Gear": [1, 3, 4, 5, 7, 10, 11],
-  "Bicycles": [1, 3, 4, 5, 7, 10, 11],
-  "Musical Instruments": [1, 3, 4, 5, 7, 10, 11],
-  "Furniture": [1, 2, 6, 9, 12],
-  "Decor": [1, 2, 6, 9, 12],
-  "Kitchenware": [1, 2, 6, 9, 12],
-  "Dining": [1, 2, 6, 9, 12],
-  "Bedding": [1, 2, 6, 9, 12],
-  "Pet Supplies": [1, 2, 6, 9, 12],
-  "Pets": [1, 2, 6, 9, 12],
-  "Automotive": [1, 3, 4, 5, 7, 10, 11],
-  "Cars": [1, 3, 4, 5, 7, 10, 11],
-  "Car Accessories": [1, 3, 4, 5, 7, 10, 11],
-  "Tools": [1, 3, 4, 5, 7, 10, 11],
-  "Hardware": [1, 3, 4, 5, 7, 10, 11],
-  "Lighting": [1, 2, 6, 9, 12],
-  "Gardening": [1, 2, 6, 9, 12],
-  "Home & Garden": [1, 2, 6, 9, 12],
-  "Office Supplies": [1, 2, 6, 9, 12],
-  "Art Supplies": [1, 2, 6, 9, 12],
-  "Health Products": [1, 3, 4, 5, 7, 10, 11],
-  "Health & Beauty": [1, 3, 4, 5, 7, 10, 11],
-  "Supplements": [1, 3, 4, 5, 7, 10, 11],
-  "Baby Products": [1, 3, 4, 5, 7, 10, 11],
-  "Maternity": [1, 3, 4, 5, 7, 10, 11],
-  "Groceries": [1, 3, 5, 7, 10, 11],
-  "Snacks": [1, 3, 5, 7, 10, 11],
-  "Beverages": [1, 3, 5, 7, 10, 11],
-  "Alcohol": [1, 3, 5, 7, 10, 11],
-  "Gourmet Foods": [1, 3, 5, 7, 10, 11],
-  "Cleaning Supplies": [1, 3, 5, 7, 10, 11],
-  "Safety Equipment": [1, 3, 5, 7, 10, 11],
-  "Party Supplies": [1, 3, 5, 7, 10, 11],
-  "Gifts": [1, 3, 5, 7, 10, 11],
-  "Travel Gear": [1, 3, 5, 7, 10, 11],
-};
-
-
-const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }:any) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    id: marketListItem?.id || "",
-    productId: marketListItem?.productId || product?.product?.id || "",
-    title: marketListItem?.title || product?.product?.name || "",
-    description: marketListItem?.description || product?.product?.description || "",
-    productCategoryId: marketListItem?.productCategoryId || product?.product?.productCategoryId || "",
-    model: marketListItem?.model || product?.product?.model || "",////Corolla, Civic, X5, etc.
-    color: marketListItem?.color || product?.product?.color || "",
-    size: marketListItem?.size || product?.product?.size || "",
-    weight: marketListItem?.weight || product?.product?.weight || "",
-    condition: marketListItem?.condition || product?.product?.condition || "", //New, Used, Certified Pre-Owned
-    dimension: marketListItem?.dimension || product?.product?.dimension || "",
-    material: marketListItem?.material || product?.product?.material || "",
-    images: marketListItem?.image || product?.product?.image || "",
-    isAvailable: marketListItem?.isAvailable || product?.product?.isAvailable || "",
-    isOnOffer: marketListItem?.isOnOffer || product?.product?.isOnOffer || "",
-    isFlashDeal: marketListItem?.isFlashDeal || product?.product?.isFlashDeal || "",
-    isNewArrival: marketListItem?.isNewArrival || product?.product?.isNewArrival || "",
-    isDiscounted: marketListItem?.isDiscounted || product?.product?.isDiscounted || "",
-    isFeatured: marketListItem?.isFeatured || product?.product?.isFeatured || "",
-    quantity: product?.quantityPurchased || 1,
-    buyingPrice: marketListItem?.buyingPrice || product?.product?.salesPrice || "",
-    sellingPrice: marketListItem?.sellingPrice ||  0,
-    discount: marketListItem?.discount || 0,
-    finalPrice: marketListItem?.finalPrice ||  0,
-    profitMargin: marketListItem?.profitMargin || 0,
-    category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategories: marketListItem?.subCategories || product?.product?.subCategories || [],
-    brands: marketListItem?.brands || product?.product?.brands || [],//Toyota, Honda, BMW, etc.
-  
-
-    
-    year: "",
-    trim: "",//Specific edition (e.g., XLE, Sport, Limited)
-    type: "",//Sedan, SUV, Truck, Motorcycle, etc.
-    mileage: "",
-    engineType: "",//Petrol, Diesel, Hybrid, Electric
-    engineSize: "",
-    transmission: "",// Manual, Automatic, CVT, Dual-Clutch
-    drivetrain: "",//FWD (Front-Wheel Drive), AWD (All-Wheel Drive), RWD (Rear-Wheel Drive), 4WD
-    vin: "",
-    logbookStatus: "Available",// Available, Missing, Pending
-    serviceHistory: "Full",//Full, Partial, None
-    price: "",
-    negotiable: false,
-    financingAvailable: false,
-    tradeIn:false,
-    features: [],// Leather seats, Sunroof, Heated seats, Touchscreen, etc
-    location: "",//ABS, Airbags, Blind Spot Monitoring, Lane Assist,  Apple CarPlay, Android Auto, Navigation System, Alloy Wheels, LED Headlights, Fog Lights, Spoiler
-    contact: "",
-    video: null,
-  });
-  
-  const [categories, setCategories] = useState([]);
-  const [images, setImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // const categorySteps = useMemo(() => {
-  //   return CATEGORY_STEPS[formData.category?.name] || [];
-  // }, [formData.category]);
-
-  // Compute the steps based on the selected category
-  const categorySteps = useMemo(() => {
-    return CATEGORY_STEPS[formData.category?.name] || [];
-  }, [formData.category]);
-
-  // Determine the current dynamic step based on the categorySteps array
-  const dynamicStep = categorySteps[step - 1];
-
-   // Memoized filtered subcategories and brands
-  const filteredSubCategories = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.subcategories;
-  }, [formData.category]);
-
-  useEffect(() => {
-    if (categories.length > 0) return;
-
-    const cachedCategories = localStorage.getItem("categories");
-    if (cachedCategories) {
-      setCategories(JSON.parse(cachedCategories));
-    } else {
-      fetch(`${apiUrl}/shop/categories?limit=100`)
-        .then((res) => res.json())
-        .then((data) => {
-          setCategories(data.categories);
-          localStorage.setItem("categories", JSON.stringify(data.categories));
-        })
-        .catch(console.error);
-    }
-  }, [categories]);  // Depend only on `categories`
-
-  const filteredBrands = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.allBrands;
-  }, [formData.category]);
-
-  const isNextDisabled = (step === 1 && !formData.category) || (categorySteps.includes(step) && !formData.buyingPrice);
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    
-      const { name, value } = e.target;
-    
-      setFormData((prev) => {
-        let newValue = name === "discount" || name === "buyingPrice" || name === "sellingPrice" 
-          ? parseFloat(value) || 0 
-          : value;
-
-        let updatedData = { ...prev, [name]: newValue };
-
-        if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
-          const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
-          const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
-          const discount = parseFloat(updatedData.discount) || 0;
-
-          updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
-          updatedData.profitMargin = buyingPrice > 0 
-            ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 
-            : 0;
-        }
-        
-        return updatedData;
-      });
-    };
-
-  const handleCreateListing = () => {
-    if (window.confirm("Are you sure you want to create this listing?")) {
-      alert("Marketplace listing created successfully.");
-      setShowRequestProductModal(false);
-    }
-  };
-
-  // Compute the steps based on the selected category
-// const categorySteps = useMemo(() => {
-//   return CATEGORY_STEPS[formData.category?.name] || [];
-// }, [formData.category]);
-
-// // Determine the current dynamic step based on the categorySteps array
-// const dynamicStep = categorySteps[step - 1];
-
-return (
-  <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-    <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] max-h-[90vh] flex flex-col">
-      <motion.div
-        key={step}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        className="flex-grow overflow-y-auto"
-      >
-        <Stepper step={step} category={formData.category?.name} />
-        <div className="overflow-y-auto flex-grow p-4">
-          {dynamicStep === 1 && (
-            <CategoryPicker
-              formData={formData}
-              handleInputChange={handleInputChange}
-              categories={categories}
-              filteredSubCategories={filteredSubCategories}
-              filteredBrands={filteredBrands}
-            />
-          )}
-          {dynamicStep === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 3 && <GeneralDetails formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 4 && <EnginePerformance formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 5 && <OwnershipPricing formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 6 && <MediaUploads formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 7 && <ContactLocation formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 8 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
-          {dynamicStep === 9 && <ImageUploader images={images} setImages={setImages} />}
-          {dynamicStep === 10 && <ProductVariants formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 11 && <ProductAvailability formData={formData} setFormData={setFormData} />}
-          {dynamicStep === 12 && <FinalReview formData={formData} setFormData={setFormData} />}
-        </div>
-      </motion.div>
-      <div className="flex justify-between pt-4 border-t">
-        {step > 1 && (
-          <button
-            className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center"
-            onClick={() => setStep(step - 1)}
-          >
-            <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
-          </button>
-        )}
-        {step < categorySteps.length ? (
-          <button
-            className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center"
-            onClick={() => setStep(step + 1)}
-            disabled={isNextDisabled}
-          >
-            Next <ArrowRightIcon className="h-5 w-5 ml-1" />
-          </button>
-        ) : (
-          <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
-            Submit <CheckIcon className="h-5 w-5 ml-1" />
-          </button>
-        )}
-      </div>
-    </div>
-  </Modal>
-);
-
-
-  // return (
-  //   <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-  //     <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] max-h-[90vh] flex flex-col">
-  //       <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-grow overflow-y-auto">
-  //         <Stepper step={step} category={formData.category?.name}/>
-  //         <div className="overflow-y-auto flex-grow p-4">
-  //           {step === 1 && <CategoryPicker formData={formData} handleInputChange={handleInputChange} categories={categories} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands} />}
-  //           {categorySteps.includes(2) && step === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(3) && step === 3 && <GeneralDetails formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(4) && step === 4 && <EnginePerformance formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(5) && step === 5 && <OwnershipPricing formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(6) && step === 6 && <MediaUploads formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(7) && step === 7 && <ContactLocation formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(8) && step === 8 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
-  //           {categorySteps.includes(9) && step === 9 && <ImageUploader images={images} setImages={setImages} />}
-  //           {categorySteps.includes(10) && step === 10 && <ProductVariants formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(11) && step === 11 && <ProductAvailability formData={formData} setFormData={setFormData} />}
-  //           {categorySteps.includes(12) && step === 12 && <FinalReview formData={formData} setFormData={setFormData} />}
-  //         </div>
-  //       </motion.div>
-  //       <div className="flex justify-between pt-4 border-t">
-  //         {step > 1 && <button className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step - 1)}><ArrowLeftIcon className="h-5 w-5 mr-1" /> Back</button>}
-  //         {step < categorySteps.length ? <button className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step + 1)} disabled={isNextDisabled}>Next <ArrowRightIcon className="h-5 w-5 ml-1" /></button> : <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">Submit <CheckIcon className="h-5 w-5 ml-1" /></button>}
-  //       </div>
-  //     </div>
-  //   </Modal>
-  // );
-};
-
-
-const AddToProductMarketModalV2 = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }:any) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    id: marketListItem?.id || "",
-    productId: marketListItem?.productId || product?.product?.id || "",
-    title: marketListItem?.title || product?.product?.name || "",
-    description: marketListItem?.description || product?.product?.description || "",
-    productCategoryId: marketListItem?.productCategoryId || product?.product?.productCategoryId || "",
-    model: marketListItem?.model || product?.product?.model || "",////Corolla, Civic, X5, etc.
-    color: marketListItem?.color || product?.product?.color || "",
-    size: marketListItem?.size || product?.product?.size || "",
-    weight: marketListItem?.weight || product?.product?.weight || "",
-    condition: marketListItem?.condition || product?.product?.condition || "", //New, Used, Certified Pre-Owned
-    dimension: marketListItem?.dimension || product?.product?.dimension || "",
-    material: marketListItem?.material || product?.product?.material || "",
-    images: marketListItem?.image || product?.product?.image || "",
-    isAvailable: marketListItem?.isAvailable || product?.product?.isAvailable || "",
-    isOnOffer: marketListItem?.isOnOffer || product?.product?.isOnOffer || "",
-    isFlashDeal: marketListItem?.isFlashDeal || product?.product?.isFlashDeal || "",
-    isNewArrival: marketListItem?.isNewArrival || product?.product?.isNewArrival || "",
-    isDiscounted: marketListItem?.isDiscounted || product?.product?.isDiscounted || "",
-    isFeatured: marketListItem?.isFeatured || product?.product?.isFeatured || "",
-    quantity: product?.quantityPurchased || 1,
-    buyingPrice: marketListItem?.buyingPrice || product?.product?.salesPrice || "",
-    sellingPrice: marketListItem?.sellingPrice ||  0,
-    discount: marketListItem?.discount || 0,
-    finalPrice: marketListItem?.finalPrice ||  0,
-    profitMargin: marketListItem?.profitMargin || 0,
-    category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategories: marketListItem?.subCategories || product?.product?.subCategories || [],
-    brands: marketListItem?.brands || product?.product?.brands || [],//Toyota, Honda, BMW, etc.
-  
-
-    
-    year: "",
-    trim: "",//Specific edition (e.g., XLE, Sport, Limited)
-    type: "",//Sedan, SUV, Truck, Motorcycle, etc.
-    mileage: "",
-    engineType: "",//Petrol, Diesel, Hybrid, Electric
-    engineSize: "",
-    transmission: "",// Manual, Automatic, CVT, Dual-Clutch
-    drivetrain: "",//FWD (Front-Wheel Drive), AWD (All-Wheel Drive), RWD (Rear-Wheel Drive), 4WD
-    vin: "",
-    logbookStatus: "Available",// Available, Missing, Pending
-    serviceHistory: "Full",//Full, Partial, None
-    price: "",
-    negotiable: false,
-    financingAvailable: false,
-    tradeIn:false,
-    features: [],// Leather seats, Sunroof, Heated seats, Touchscreen, etc
-    location: "",//ABS, Airbags, Blind Spot Monitoring, Lane Assist,  Apple CarPlay, Android Auto, Navigation System, Alloy Wheels, LED Headlights, Fog Lights, Spoiler
-    contact: "",
-    video: null,
-  });
-  
-  const [categories, setCategories] = useState([]);
-  const [images, setImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-  if (categories.length > 0) return;
-
-  const cachedCategories = localStorage.getItem("categories");
-  if (cachedCategories) {
-    setCategories(JSON.parse(cachedCategories));
-  } else {
-    fetch(`${apiUrl}/shop/categories?limit=100`)
-      .then((res) => res.json())
-      .then((data) => {
-        setCategories(data.categories);
-        localStorage.setItem("categories", JSON.stringify(data.categories));
-      })
-      .catch(console.error);
-  }
-}, [categories]);  // Depend only on `categories`
-
-  // Memoized filtered subcategories and brands
-  const filteredSubCategories = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.subcategories;
-  }, [formData.category]);
-
-  const filteredBrands = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.allBrands;
-  }, [formData.category]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  const { name, value } = e.target;
-  
-  setFormData((prev) => {
-    let newValue = name === "discount" || name === "buyingPrice" || name === "sellingPrice" 
-      ? parseFloat(value) || 0 
-      : value;
-
-    let updatedData = { ...prev, [name]: newValue };
-
-    if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
-      const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
-      const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
-      const discount = parseFloat(updatedData.discount) || 0;
-
-      updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
-      updatedData.profitMargin = buyingPrice > 0 
-        ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 
-        : 0;
-    }
-    
-    return updatedData;
-  });
-};
-
-
-  const isNextDisabled = (step === 1 && !formData.category) || (step === 12 && (!formData.buyingPrice || !formData.sellingPrice));
-
-  const handleCreateListing = () => {
-    if (window.confirm("Are you sure you want to create this listing?")) {
-      alert("Marketplace listing created successfully.");
-      setShowRequestProductModal(false);
-    }
-  };
-
-  return (
-    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
-  <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto 
-                  h-[90vh] max-h-[90vh] flex flex-col">
-    
-    {/* Steps Content */}
-    <motion.div 
-      key={step} 
-      initial={{ opacity: 0, x: -20 }} 
-      animate={{ opacity: 1, x: 0 }} 
-      exit={{ opacity: 0, x: 20 }} 
-      className="flex-grow overflow-y-auto"
-    >
-      <Stepper step={step} category={formData.category?.name} />
-
-      {/* Ensure this wrapper scrolls correctly */}
-      
-      <div className="overflow-y-auto flex-grow p-4">
-        {step === 1 && (
-          <CategoryPicker 
-            formData={formData} 
-            handleInputChange={handleInputChange} 
-            categories={categories} 
-            filteredSubCategories={filteredSubCategories} 
-            filteredBrands={filteredBrands} 
-          />
-        )}
-        {step === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
-        {step === 3 && <GeneralDetails formData={formData} setFormData={setFormData} />}
-        {step === 4 && <EnginePerformance formData={formData} setFormData={setFormData} />}
-        {step === 5 && <OwnershipPricing formData={formData} setFormData={setFormData} />}
-        {step === 6 && <MediaUploads formData={formData} setFormData={setFormData} />}
-        {step === 7 && <ContactLocation formData={formData} setFormData={setFormData} />}
-        {step === 8 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
-        {step === 9 && <ImageUploader images={images} setImages={setImages} />}
-        {step === 10 && <ProductVariants formData={formData} setFormData={setFormData} />}
-        {step === 11 && <ProductAvailability formData={formData} setFormData={setFormData} />}
-        {step === 12 && <FinalReview formData={formData} setFormData={setFormData} />}
-      </div>
-    </motion.div>
-
-    {/* Navigation Buttons - Fixed at Bottom */}
-    <div className="flex justify-between pt-4 border-t">
-      {step > 1 && (
-        <button 
-          className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" 
-          onClick={() => setStep(step - 1)}
-        >
-          <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
-        </button>
-      )}
-      {step < 12 ? (
-        <button 
-          className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" 
-          onClick={() => setStep(step + 1)} 
-          disabled={isNextDisabled}
-        >
-          Next <ArrowRightIcon className="h-5 w-5 ml-1" />
-        </button>
-      ) : (
-        <button 
-          onClick={handleCreateListing} 
-          className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
-        >
-          Submit <CheckIcon className="h-5 w-5 ml-1" />
-        </button>
-      )}
-    </div>
-  </div>
-</Modal>
-
-
-  );
-};
-
-export default AddToProductMarketModal;
 
 interface StepperProps {
   step: number;
-  category: string;
+  stepsForCategory: number[];
 }
 
-const Stepper: React.FC<StepperProps> = ({ step, category }) => {
-  // Mapping from step number to label
-  const stepsMapping: Record<number, string> = {
-    1: "Category",
-    2: "Product Details",
-    3: "General Details",
-    4: "Engine Performance",
-    5: "Ownership Pricing",
-    6: "Media Uploads",
-    7: "Pricing",
-    8: "Images",
-    9: "Product Variants",
-    10: "Availability",
-    11: "Final Review",
-    12: "Contact Location"
-  };
-
-  // Get category-specific steps (an array of numbers)
-  const categorySteps: number[] = CATEGORY_STEPS[category] || [];
-  
-  // Map these steps to their corresponding labels
-  const stepsToShow = categorySteps.map((stepNum) => stepsMapping[stepNum]);
+const Stepper: React.FC<StepperProps> = ({ step, stepsForCategory }) => {
+  // Create an array of labels based on the stepsForCategory mapping.
+  const labels = stepsForCategory.map((num) => STEP_LABELS[num]);
 
   return (
     <div className="w-full space-y-4">
@@ -541,19 +22,17 @@ const Stepper: React.FC<StepperProps> = ({ step, category }) => {
       <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
         <motion.div
           className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
-          animate={{ width: `${(step / stepsToShow.length) * 100}%` }}
+          animate={{ width: `${(step / labels.length) * 100}%` }}
           transition={{ duration: 0.5 }}
         />
       </div>
-
-      {/* Steps Content */}
+      {/* Steps Labels */}
       <div className="flex items-center justify-between overflow-x-auto py-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
-        {stepsToShow.map((label, index) => {
+        {labels.map((label, index) => {
           const isActive = index + 1 === step;
           const isCompleted = index + 1 < step;
           return (
             <div key={index} className="flex flex-col items-center space-y-0 min-w-[80px]">
-              {/* Step Indicator */}
               <motion.div
                 className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2 ${
                   isActive
@@ -567,212 +46,10 @@ const Stepper: React.FC<StepperProps> = ({ step, category }) => {
               >
                 {isCompleted ? <CheckCircleIcon className="w-6 h-6" /> : index + 1}
               </motion.div>
-              {/* Step Label */}
               <p
                 className={`text-xs sm:text-sm font-medium text-center truncate w-16 ${
                   isActive ? "text-blue-600 font-semibold" : isCompleted ? "text-blue-400" : "text-gray-400"
                 }`}
-              >
-                {label}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-
-const StepperV2: React.FC<StepperProps> = ({ step, category }) => {
-  const allSteps = [
-    "Category",
-    "Product Details",
-    "General Details",
-    "Engine Performance",
-    "Ownership Pricing",
-    "Media Uploads",
-    "Pricing",
-    "Images",
-    "Product Variants",
-    "Availability",
-    "Final Review",
-    "Contact Location"
-  ];
-
-  const categorySteps = CATEGORY_STEPS[category] || [];
-
-  return (
-    <div className="w-full space-y-4">
-      {/* Progress Bar */}
-      <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
-          animate={{ width: `${(step / categorySteps.length) * 100}%` }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-
-      {/* Steps Content */}
-      <div className="flex items-center justify-between overflow-x-auto py-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
-        {categorySteps.map((stepIndex : any, index : any) => {
-          const label = allSteps[stepIndex - 1]; // Adjust index to match allSteps array
-          const isActive = index + 1 === step;
-          const isCompleted = index + 1 < step;
-
-          return (
-            <div key={index} className="flex flex-col items-center space-y-0 min-w-[80px]">
-              {/* Step Indicator */}
-              <motion.div
-                className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2 ${
-                  isActive
-                    ? "bg-blue-600 text-white border-blue-600 scale-110"
-                    : isCompleted
-                    ? "bg-blue-400 text-white border-blue-400"
-                    : "bg-gray-300 text-gray-500 border-gray-300"
-                }`}
-                animate={{ scale: isActive ? 1.2 : 1 }}
-                aria-current={isActive ? "step" : undefined}
-              >
-                {isCompleted ? <CheckCircleIcon className="w-6 h-6" /> : index + 1}
-              </motion.div>
-
-              {/* Step Label */}
-              <p
-                className={`text-xs sm:text-sm font-medium text-center truncate w-16 ${
-                  isActive ? "text-blue-600 font-semibold" : isCompleted ? "text-blue-400" : "text-gray-400"
-                }`}
-              >
-                {label}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-
-// const Stepper = ({ step } : any) => {
-//   const steps = [
-//     "Category",
-//     "Product Details",
-//     "General Details",
-//     "Engine Performance",
-//     "Ownership Pricing",
-//     "Media Uploads",
-//     "Pricing",
-//     "Images",
-//     "Product Variants",
-//     "Availability",
-//     "Final Review",
-//     "Contact Location"
-//   ];
-
-//   return (
-//     <div className="w-full space-y-4">
-//       {/* Progress Bar */}
-//       <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-//         <motion.div
-//           className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
-//           animate={{ width: `${(step / steps.length) * 100}%` }}
-//           transition={{ duration: 0.5 }}
-//         />
-//       </div>
-
-//       {/* Steps Content */}
-//       <div className="flex items-center justify-between overflow-x-auto py-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
-//         {steps.map((label, index) => {
-//           const isActive = index + 1 === step;
-//           const isCompleted = index + 1 < step;
-
-//           return (
-//             <div key={index} className="flex flex-col items-center space-y-0 min-w-[80px]">
-//               {/* Step Indicator */}
-//               <motion.div
-//                 className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2 ${
-//                   isActive
-//                     ? "bg-blue-600 text-white border-blue-600 scale-110"
-//                     : isCompleted
-//                     ? "bg-blue-400 text-white border-blue-400"
-//                     : "bg-gray-300 text-gray-500 border-gray-300"
-//                 }`}
-//                 animate={{ scale: isActive ? 1.2 : 1 }}
-//                 aria-current={isActive ? "step" : undefined}
-//               >
-//                 {isCompleted ? <CheckCircleIcon className="w-6 h-6" /> : index + 1}
-//               </motion.div>
-
-//               {/* Step Label */}
-//               <p
-//                 className={`text-xs sm:text-sm font-medium text-center truncate w-16 ${
-//                   isActive ? "text-blue-600 font-semibold" : isCompleted ? "text-blue-400" : "text-gray-400"
-//                 }`}
-//               >
-//                 {label}
-//               </p>
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </div>
-//   );
-// };
-
-const StepperV1 = ({ step }: { step: number }) => {
-  const steps = [
-                  "Category",
-                  "Product Details",
-                  "General Details",
-                  "Engine Performance",
-                  "Ownership Pricing",
-                  "Contact Location",
-                  "Final Review",
-                  "Pricing",
-                  "Images",
-                  "Product Variants",
-                  "Availability",
-                  "Final Review",
-                ];
-
-  return (
-    <div className="w-full space-y-4">
-      {/* Progress Bar */}
-      <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
-          animate={{ width: `${(step / steps.length) * 100}%` }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-
-      {/* Steps Content */}
-      <div className="flex items-center justify-between overflow-x-auto py-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
-        {steps.map((label, index) => {
-          const isActive = index + 1 === step;
-          const isCompleted = index + 1 < step;
-
-          return (
-            <div key={index} className="flex flex-col items-center space-y-0 min-w-[80px]">
-              {/* Step Indicator */}
-              <motion.div
-                className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2
-                  ${isActive ? "bg-blue-600 text-white border-blue-600 scale-110" :
-                  isCompleted ? "bg-blue-400 text-white border-blue-400" : "bg-gray-300 text-gray-500 border-gray-300"}
-                `}
-                animate={{ scale: isActive ? 1.2 : 1 }}
-                aria-current={isActive ? "step" : undefined}
-              >
-                {isCompleted ? <CheckCircleIcon className="w-6 h-6" /> : index + 1}
-              </motion.div>
-
-              {/* Step Label */}
-              <p
-                className={`text-xs sm:text-sm font-medium text-center truncate w-16
-                  ${isActive ? "text-blue-600 font-semibold" :
-                  isCompleted ? "text-blue-400" : "text-gray-400"}
-                `}
               >
                 {label}
               </p>
@@ -1419,3 +696,307 @@ const ContactLocation = ({ formData, setFormData }: any) => {
   );
 };
 
+
+// Map each step number to the corresponding form component.
+const FORM_COMPONENTS: Record<number, React.FC<any>> = {
+  1: CategoryPicker,
+  2: ProductDetails,
+  3: GeneralDetails,
+  4: EnginePerformance,
+  5: OwnershipPricing,
+  6: MediaUploads,
+  7: PricingDetails,
+  8: ImageUploader,
+  9: ProductVariants,
+  10: ProductAvailability,
+  11: FinalReview,
+  12: ContactLocation,
+};
+
+// Map each step number to a label.
+const STEP_LABELS: Record<number, string> = {
+  1: "Category",
+  2: "Product Details",
+  3: "General Details",
+  4: "Engine Performance",
+  5: "Ownership Pricing",
+  6: "Media Uploads",
+  7: "Pricing",
+  8: "Images",
+  9: "Product Variants",
+  10: "Availability",
+  11: "Final Review",
+  12: "Contact Location",
+};
+
+// Updated CATEGORY_STEPS mapping based on your new list.
+const CATEGORY_STEPS: any = {
+  "Electronics": [1, 2, 6, 8, 9, 12],
+  "Clothing": [1, 3, 4, 5, 7, 10, 11],
+  "Fashion": [1, 3, 4, 5, 7, 10, 11],
+  "Smartphones": [1, 2, 6, 8, 9, 12],
+  "Laptops": [1, 2, 6, 8, 9, 12],
+  "Tablets": [1, 2, 6, 8, 9, 12],
+  "Wearables": [1, 2, 6, 8, 9, 12],
+  "Home Appliances": [1, 3, 5, 7, 10, 11],
+  "Cameras": [1, 3, 4, 5, 7, 10, 11],
+  "Gaming Consoles": [1, 3, 5, 7, 10, 11],
+  "Televisions": [1, 3, 5, 7, 10, 11],
+  "Audio Systems": [1, 3, 5, 7, 10, 11],
+  "Music": [1, 3, 5, 7, 10, 11],
+  "Books": [1, 2, 6, 9, 12],
+  "Stationery": [1, 2, 6, 9, 12],
+  "Shoes": [1, 3, 4, 5, 7, 10, 11],
+  "Watches": [1, 3, 4, 5, 7, 10, 11],
+  "Jewelry": [1, 3, 4, 5, 7, 10, 11],
+  "Beauty Products": [1, 3, 4, 5, 7, 10, 11],
+  "Skincare": [1, 3, 4, 5, 7, 10, 11],
+  "Haircare": [1, 3, 4, 5, 7, 10, 11],
+  "Toys": [1, 3, 4, 5, 7, 10, 11],
+  "Baby Toys": [1, 3, 4, 5, 7, 10, 11],
+  "Sports Equipment": [1, 3, 4, 5, 7, 10, 11],
+  "Fitness Gear": [1, 3, 4, 5, 7, 10, 11],
+  "Outdoor Gear": [1, 3, 4, 5, 7, 10, 11],
+  "Bicycles": [1, 3, 4, 5, 7, 10, 11],
+  "Musical Instruments": [1, 3, 4, 5, 7, 10, 11],
+  "Furniture": [1, 2, 6, 9, 12],
+  "Decor": [1, 2, 6, 9, 12],
+  "Kitchenware": [1, 2, 6, 9, 12],
+  "Dining": [1, 2, 6, 9, 12],
+  "Bedding": [1, 2, 6, 9, 12],
+  "Pet Supplies": [1, 2, 6, 9, 12],
+  "Pets": [1, 2, 6, 9, 12],
+  "Automotive": [1, 3, 4, 5, 7, 10, 11],
+  "Cars": [1, 3, 4, 5, 7, 10, 11],
+  "Car Accessories": [1, 3, 4, 5, 7, 10, 11],
+  "Tools": [1, 3, 4, 5, 7, 10, 11],
+  "Hardware": [1, 3, 4, 5, 7, 10, 11],
+  "Lighting": [1, 2, 6, 9, 12],
+  "Gardening": [1, 2, 6, 9, 12],
+  "Home & Garden": [1, 2, 6, 9, 12],
+  "Office Supplies": [1, 2, 6, 9, 12],
+  "Art Supplies": [1, 2, 6, 9, 12],
+  "Health Products": [1, 3, 4, 5, 7, 10, 11],
+  "Health & Beauty": [1, 3, 4, 5, 7, 10, 11],
+  "Supplements": [1, 3, 4, 5, 7, 10, 11],
+  "Baby Products": [1, 3, 4, 5, 7, 10, 11],
+  "Maternity": [1, 3, 4, 5, 7, 10, 11],
+  "Groceries": [1, 3, 5, 7, 10, 11],
+  "Snacks": [1, 3, 5, 7, 10, 11],
+  "Beverages": [1, 3, 5, 7, 10, 11],
+  "Alcohol": [1, 3, 5, 7, 10, 11],
+  "Gourmet Foods": [1, 3, 5, 7, 10, 11],
+  "Cleaning Supplies": [1, 3, 5, 7, 10, 11],
+  "Safety Equipment": [1, 3, 5, 7, 10, 11],
+  "Party Supplies": [1, 3, 5, 7, 10, 11],
+  "Gifts": [1, 3, 5, 7, 10, 11],
+  "Travel Gear": [1, 3, 5, 7, 10, 11],
+};
+
+const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }: any) => {
+   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  // ... your state and effect hooks
+  const [step, setStep] = useState(1);
+   const [formData, setFormData] = useState({
+    id: marketListItem?.id || "",
+    productId: marketListItem?.productId || product?.product?.id || "",
+    title: marketListItem?.title || product?.product?.name || "",
+    description: marketListItem?.description || product?.product?.description || "",
+    productCategoryId: marketListItem?.productCategoryId || product?.product?.productCategoryId || "",
+    model: marketListItem?.model || product?.product?.model || "",////Corolla, Civic, X5, etc.
+    color: marketListItem?.color || product?.product?.color || "",
+    size: marketListItem?.size || product?.product?.size || "",
+    weight: marketListItem?.weight || product?.product?.weight || "",
+    condition: marketListItem?.condition || product?.product?.condition || "", //New, Used, Certified Pre-Owned
+    dimension: marketListItem?.dimension || product?.product?.dimension || "",
+    material: marketListItem?.material || product?.product?.material || "",
+    images: marketListItem?.image || product?.product?.image || "",
+    isAvailable: marketListItem?.isAvailable || product?.product?.isAvailable || "",
+    isOnOffer: marketListItem?.isOnOffer || product?.product?.isOnOffer || "",
+    isFlashDeal: marketListItem?.isFlashDeal || product?.product?.isFlashDeal || "",
+    isNewArrival: marketListItem?.isNewArrival || product?.product?.isNewArrival || "",
+    isDiscounted: marketListItem?.isDiscounted || product?.product?.isDiscounted || "",
+    isFeatured: marketListItem?.isFeatured || product?.product?.isFeatured || "",
+    quantity: product?.quantityPurchased || 1,
+    buyingPrice: marketListItem?.buyingPrice || product?.product?.salesPrice || "",
+    sellingPrice: marketListItem?.sellingPrice ||  0,
+    discount: marketListItem?.discount || 0,
+    finalPrice: marketListItem?.finalPrice ||  0,
+    profitMargin: marketListItem?.profitMargin || 0,
+    category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
+    subCategories: marketListItem?.subCategories || product?.product?.subCategories || [],
+    brands: marketListItem?.brands || product?.product?.brands || [],//Toyota, Honda, BMW, etc.
+  
+
+    
+    year: "",
+    trim: "",//Specific edition (e.g., XLE, Sport, Limited)
+    type: "",//Sedan, SUV, Truck, Motorcycle, etc.
+    mileage: "",
+    engineType: "",//Petrol, Diesel, Hybrid, Electric
+    engineSize: "",
+    transmission: "",// Manual, Automatic, CVT, Dual-Clutch
+    drivetrain: "",//FWD (Front-Wheel Drive), AWD (All-Wheel Drive), RWD (Rear-Wheel Drive), 4WD
+    vin: "",
+    logbookStatus: "Available",// Available, Missing, Pending
+    serviceHistory: "Full",//Full, Partial, None
+    price: "",
+    negotiable: false,
+    financingAvailable: false,
+    tradeIn:false,
+    features: [],// Leather seats, Sunroof, Heated seats, Touchscreen, etc
+    location: "",//ABS, Airbags, Blind Spot Monitoring, Lane Assist,  Apple CarPlay, Android Auto, Navigation System, Alloy Wheels, LED Headlights, Fog Lights, Spoiler
+    contact: "",
+    video: null,
+  });
+
+  // Derive the steps for the selected category.
+  const stepsForCategory: number[] = useMemo(() => {
+    return CATEGORY_STEPS[formData.category?.name] || [];
+  }, [formData.category]);
+
+  // Map current step index (1-indexed) to the dynamic step number.
+  const currentDynamicStep = stepsForCategory[step - 1];
+
+  // Get the corresponding form component for the current dynamic step.
+  const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : null;
+
+  const [categories, setCategories] = useState([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Memoized filtered subcategories and brands
+  const filteredSubCategories = useMemo(() => {
+    if (!formData.category) return [];
+    return formData.category.subcategories;
+  }, [formData.category]);
+
+  useEffect(() => {
+    if (categories.length > 0) return;
+
+    const cachedCategories = localStorage.getItem("categories");
+    if (cachedCategories) {
+      setCategories(JSON.parse(cachedCategories));
+    } else {
+      fetch(`${apiUrl}/shop/categories?limit=100`)
+        .then((res) => res.json())
+        .then((data) => {
+          setCategories(data.categories);
+          localStorage.setItem("categories", JSON.stringify(data.categories));
+        })
+        .catch(console.error);
+    }
+  }, [categories]);  // Depend only on `categories`
+
+  const filteredBrands = useMemo(() => {
+    if (!formData.category) return [];
+    return formData.category.allBrands;
+  }, [formData.category]);
+
+  useEffect(() => {
+    if (categories.length > 0) return;
+
+    const cachedCategories = localStorage.getItem("categories");
+    if (cachedCategories) {
+      setCategories(JSON.parse(cachedCategories));
+    } else {
+      fetch(`${apiUrl}/shop/categories?limit=100`)
+        .then((res) => res.json())
+        .then((data) => {
+          setCategories(data.categories);
+          localStorage.setItem("categories", JSON.stringify(data.categories));
+        })
+        .catch(console.error);
+    }
+  }, [categories]);  // Depend only on `categories`
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    console.log("Submitted Data:", formData);
+  };
+
+  
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    
+      const { name, value } = e.target;
+    
+      setFormData((prev) => {
+        let newValue = name === "discount" || name === "buyingPrice" || name === "sellingPrice" 
+          ? parseFloat(value) || 0 
+          : value;
+
+        let updatedData = { ...prev, [name]: newValue };
+
+        if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
+          const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
+          const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
+          const discount = parseFloat(updatedData.discount) || 0;
+
+          updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
+          updatedData.profitMargin = buyingPrice > 0 
+            ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 
+            : 0;
+        }
+        
+        return updatedData;
+      });
+    };
+
+  const handleCreateListing = () => {
+    if (window.confirm("Are you sure you want to create this listing?")) {
+      alert("Marketplace listing created successfully.");
+      setShowRequestProductModal(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+      <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] flex flex-col">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          className="flex-grow overflow-y-auto"
+        >
+          <Stepper step={step} stepsForCategory={stepsForCategory} />
+          <div className="overflow-y-auto flex-grow p-4">
+            {FormComponent ? (
+              <FormComponent formData={formData} setFormData={setFormData} categories={categories} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands} handleInputChange={handleInputChange}/>
+            ) : (
+              <p>No form available for this step.</p>
+            )}
+          </div>
+        </motion.div>
+        <div className="flex justify-between pt-4 border-t">
+          {step > 1 && (
+            <button
+              className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center"
+              onClick={() => setStep(step - 1)}
+            >
+              <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
+            </button>
+          )}
+          {step < stepsForCategory.length ? (
+            <button
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center"
+              onClick={() => setStep(step + 1)}
+            >
+              Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
+            >
+              Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
+            </button>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+
+export default AddToProductMarketModal;
