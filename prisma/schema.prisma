@@ -105,7 +105,8 @@ model Product {
   description        String?
   category           String?
   subCategory        String?
-  image              String?
+  images             String[]
+  video              String?
   tags               String[]
   brand              String?
   costPrice          Float
@@ -414,7 +415,8 @@ model MarketplaceListing {
   title               String           @default("New Name")
   description         String?          @default("New Description")
   quantity            Int
-  image               String?
+  images              String[]
+  video               String?
   productCategoryId   String?          @db.ObjectId
   productCategory     ProductCategory? @relation(fields: [productCategoryId], references: [id])
   category            String?
