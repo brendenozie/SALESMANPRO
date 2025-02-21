@@ -124,7 +124,52 @@ model Product {
   CommissionRate     CommissionRate?
   OrderItem          OrderItem[]
   MarketplaceListing MarketplaceListing[]
+
+  // Additional details for Books
+  author    String?
+  publisher String?
+  isbn      String?
+
+  // Additional details for Clothing / Fashion
+  fabricComposition String?
+  careInstructions  String?
+
+  // Additional details for Home Appliances
+  energyRating        String?
+  warrantyPeriod      String?
+  applianceDimensions String?
+
+  // Additional details for Beauty Products
+  ingredients       String?
+  usageInstructions String?
+  expirationDate    DateTime?
 }
+
+// model Product {
+//   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+//   name               String
+//   description        String?
+//   category           String?
+//   subCategory        String?
+//   image              String?
+//   tags               String[]
+//   brand              String[]
+//   costPrice          Float
+//   salesPrice         Float
+//   companyId          String               @db.ObjectId
+//   company            Company              @relation(fields: [companyId], references: [id])
+//   createdAt          DateTime             @default(now())
+//   updatedAt          DateTime             @updatedAt
+//   productCategoryId  String?              @db.ObjectId
+//   productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
+//   inventoryItems     InventoryItem[]
+//   requests           Request[]            @relation("ProductRequests")
+//   commissions        Commission[]
+//   Target             Target[]
+//   CommissionRate     CommissionRate?
+//   OrderItem          OrderItem[]
+//   MarketplaceListing MarketplaceListing[]
+// }
 
 model Task {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
@@ -387,43 +432,93 @@ enum SellerType {
   CONSUMER
 }
 
+// model MarketplaceListing {
+//   id                String           @id @default(auto()) @map("_id") @db.ObjectId
+//   sellerId          String           @db.ObjectId // ID of either a Client or Consumer
+//   sellerType        SellerType
+//   productId         String?          @db.ObjectId
+//   product           Product?         @relation(fields: [productId], references: [id])
+//   title             String           @default("New Name")
+//   description       String?          @default("New Description")
+//   quantity          Int
+//   image             String?
+//   productCategoryId String?          @db.ObjectId
+//   productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
+//   category          String?
+//   subCategory       String?
+//   tags              String[]
+//   brand             String?
+//   model             String?
+//   color             String?
+//   size              String? //Small, Medium, Large, etc.
+//   weight            String? //Fabric, Plastic, Leather, etc.
+//   condition         String?
+//   dimension         String?
+//   material          String[]
+//   createdAt         DateTime         @default(now())
+//   updatedAt         DateTime         @updatedAt
+//   salesPrice        Float            @default(0)
+//   discount          Int?             @default(0)
+//   isAvailable       Boolean          @default(true)
+//   isOnOffer         Boolean          @default(false)
+//   isFlashDeal       Boolean          @default(false)
+//   isNewArrival      Boolean          @default(false)
+//   isDiscounted      Boolean          @default(false)
+//   isFeatured        Boolean          @default(false)
+//   startDealDate     DateTime?
+//   endDealDate       DateTime?
+//   buyingPrice       Float // Price at which the client buys the product from the agent
+//   sellingPrice      Float // Price at which the client sells the product to the consumer
+// }
 model MarketplaceListing {
-  id                String           @id @default(auto()) @map("_id") @db.ObjectId
-  sellerId          String           @db.ObjectId // ID of either a Client or Consumer
-  sellerType        SellerType
-  productId         String?          @db.ObjectId
-  product           Product?         @relation(fields: [productId], references: [id])
-  title             String           @default("New Name")
-  description       String?          @default("New Description")
-  quantity          Int
-  image             String?
-  productCategoryId String?          @db.ObjectId
-  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
-  category          String?
-  subCategory       String?
-  tags              String[]
-  brand             String?
-  model             String?
-  color             String?
-  size              String? //Small, Medium, Large, etc.
-  weight            String? //Fabric, Plastic, Leather, etc.
-  condition         String?
-  dimension         String?
-  material          String[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  salesPrice        Float            @default(0)
-  discount          Int?             @default(0)
-  isAvailable       Boolean          @default(true)
-  isOnOffer         Boolean          @default(false)
-  isFlashDeal       Boolean          @default(false)
-  isNewArrival      Boolean          @default(false)
-  isDiscounted      Boolean          @default(false)
-  isFeatured        Boolean          @default(false)
-  startDealDate     DateTime?
-  endDealDate       DateTime?
-  buyingPrice       Float // Price at which the client buys the product from the agent
-  sellingPrice      Float // Price at which the client sells the product to the consumer
+  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
+  sellerId            String           @db.ObjectId
+  sellerType          SellerType
+  productId           String?          @db.ObjectId
+  product             Product?         @relation(fields: [productId], references: [id])
+  title               String           @default("New Name")
+  description         String?          @default("New Description")
+  quantity            Int
+  image               String?
+  productCategoryId   String?          @db.ObjectId
+  productCategory     ProductCategory? @relation(fields: [productCategoryId], references: [id])
+  category            String?
+  subCategory         String?
+  tags                String[]
+  brand               String?
+  model               String?
+  color               String?
+  size                String?
+  weight              String?
+  condition           String?
+  dimension           String?
+  material            String[]
+  // New fields for category-specific details:
+  author              String? // For Books
+  publisher           String? // For Books
+  isbn                String? // For Books
+  fabricComposition   String? // For Clothing/Fashion
+  careInstructions    String? // For Clothing/Fashion
+  energyRating        String? // For Home Appliances
+  warrantyPeriod      String? // For Home Appliances
+  applianceDimensions String? // For Home Appliances – renamed to avoid conflict with 'dimension'
+  ingredients         String? // For Beauty Products
+  usageInstructions   String? // For Beauty Products
+  expirationDate      DateTime? // For Beauty Products
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  salesPrice          Float            @default(0)
+  discount            Int?             @default(0)
+  isAvailable         Boolean          @default(true)
+  isOnOffer           Boolean          @default(false)
+  isFlashDeal         Boolean          @default(false)
+  isNewArrival        Boolean          @default(false)
+  isDiscounted        Boolean          @default(false)
+  isFeatured          Boolean          @default(false)
+  startDealDate       DateTime?
+  endDealDate         DateTime?
+  buyingPrice         Float
+  sellingPrice        Float
 }
 
 model ClientInventory {
