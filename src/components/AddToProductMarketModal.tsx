@@ -16,14 +16,14 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     title: marketListItem?.title || product?.product?.name || "",
     description: marketListItem?.description || product?.product?.description || "",
     productCategoryId: marketListItem?.productCategoryId || product?.product?.productCategoryId || "",
-    model: marketListItem?.model || product?.product?.model || "",
+    model: marketListItem?.model || product?.product?.model || "",////Corolla, Civic, X5, etc.
     color: marketListItem?.color || product?.product?.color || "",
     size: marketListItem?.size || product?.product?.size || "",
     weight: marketListItem?.weight || product?.product?.weight || "",
-    condition: marketListItem?.condition || product?.product?.condition || "",
+    condition: marketListItem?.condition || product?.product?.condition || "", //New, Used, Certified Pre-Owned
     dimension: marketListItem?.dimension || product?.product?.dimension || "",
     material: marketListItem?.material || product?.product?.material || "",
-    image: marketListItem?.image || product?.product?.image || "",
+    images: marketListItem?.image || product?.product?.image || "",
     isAvailable: marketListItem?.isAvailable || product?.product?.isAvailable || "",
     isOnOffer: marketListItem?.isOnOffer || product?.product?.isOnOffer || "",
     isFlashDeal: marketListItem?.isFlashDeal || product?.product?.isFlashDeal || "",
@@ -38,13 +38,34 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     profitMargin: marketListItem?.profitMargin || 0,
     category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
     subCategories: marketListItem?.subCategories || product?.product?.subCategories || [],
-    brands: marketListItem?.brands || product?.product?.brands || [],
+    brands: marketListItem?.brands || product?.product?.brands || [],//Toyota, Honda, BMW, etc.
+  
+
+    //vehicle details
+    year: "",
+    trim: "",//Specific edition (e.g., XLE, Sport, Limited)
+    type: "",//Sedan, SUV, Truck, Motorcycle, etc.
+    mileage: "",
+    engineType: "",//Petrol, Diesel, Hybrid, Electric
+    engineSize: "",
+    transmission: "",// Manual, Automatic, CVT, Dual-Clutch
+    drivetrain: "",//FWD (Front-Wheel Drive), AWD (All-Wheel Drive), RWD (Rear-Wheel Drive), 4WD
+    vin: "",
+    logbookStatus: "Available",// Available, Missing, Pending
+    serviceHistory: "Full",//Full, Partial, None
+    price: "",
+    negotiable: false,
+    financingAvailable: false,
+    tradeIn:false,
+    features: [],// Leather seats, Sunroof, Heated seats, Touchscreen, etc
+    location: "",//ABS, Airbags, Blind Spot Monitoring, Lane Assist,  Apple CarPlay, Android Auto, Navigation System, Alloy Wheels, LED Headlights, Fog Lights, Spoiler
+    contact: "",
+    video: null,
   });
-
-
+  
   const [categories, setCategories] = useState([]);
   const [images, setImages] = useState<string[]>([]);
-   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
   if (categories.length > 0) return;
@@ -62,7 +83,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
       .catch(console.error);
   }
 }, [categories]);  // Depend only on `categories`
-
 
   // Memoized filtered subcategories and brands
   const filteredSubCategories = useMemo(() => {
@@ -445,8 +465,25 @@ const ProductDetails = ({ formData, setFormData }: any) => {
         )}
       </div>
 
+      {/* Product Name */}
+      <div className="relative">
+        <input
+          type="text"
+          name="model"
+          className="peer w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          placeholder=" "
+          value={formData.model}
+          onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+        />
+        <label
+          className="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1 peer-focus:text-xs peer-focus:text-blue-500"
+        >
+          Model
+        </label>
+      </div>
+
       {/* Tags Input */}
-      <div>
+      {/* <div>
         <label className="block text-gray-700 font-medium mb-1">Tags</label>
         <div className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none flex flex-wrap gap-2">
           {tags.map((tag:any, index:any) => (
@@ -471,7 +508,7 @@ const ProductDetails = ({ formData, setFormData }: any) => {
             onKeyDown={handleTagInput}
           />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
@@ -758,6 +795,79 @@ const FinalReview = ({ formData, onSubmit }: any) => {
   );
 };
 
+const VehicleProductForm = ({ formData, setFormData }: any) => {
+  
+  const handleChange = (e:any) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
 
+  const handleFileChange = (e :any) => {
+    const { name, files } = e.target;
+    setFormData({ ...formData, [name]: files });
+  };
 
+  const handleSubmit = (e :any) => {
+    e.preventDefault();
+    console.log("Form Data Submitted:", formData);
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-2xl font-semibold mb-4">Vehicle Product Details</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <input type="text" name="make" placeholder="Make" value={formData.make} onChange={handleChange} className="border p-2 w-full" required />
+          <input type="text" name="model" placeholder="Model" value={formData.model} onChange={handleChange} className="border p-2 w-full" required />
+          <input type="number" name="year" placeholder="Year" value={formData.year} onChange={handleChange} className="border p-2 w-full" required />
+          <input type="text" name="trim" placeholder="Trim" value={formData.trim} onChange={handleChange} className="border p-2 w-full" />
+          <input type="text" name="type" placeholder="Type (SUV, Sedan)" value={formData.type} onChange={handleChange} className="border p-2 w-full" required />
+          <input type="text" name="color" placeholder="Color" value={formData.color} onChange={handleChange} className="border p-2 w-full" />
+          <input type="number" name="mileage" placeholder="Mileage (km)" value={formData.mileage} onChange={handleChange} className="border p-2 w-full" />
+          <select name="condition" value={formData.condition} onChange={handleChange} className="border p-2 w-full">
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+            <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+          </select>
+        </div>
+
+        <h3 className="text-lg font-semibold mt-4">Engine & Performance</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <input type="text" name="engineType" placeholder="Engine Type" value={formData.engineType} onChange={handleChange} className="border p-2 w-full" />
+          <input type="text" name="engineSize" placeholder="Engine Size" value={formData.engineSize} onChange={handleChange} className="border p-2 w-full" />
+          <input type="text" name="transmission" placeholder="Transmission" value={formData.transmission} onChange={handleChange} className="border p-2 w-full" />
+          <input type="text" name="drivetrain" placeholder="Drivetrain (AWD, FWD)" value={formData.drivetrain} onChange={handleChange} className="border p-2 w-full" />
+        </div>
+
+        <h3 className="text-lg font-semibold mt-4">Ownership & Pricing</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <input type="text" name="vin" placeholder="VIN Number" value={formData.vin} onChange={handleChange} className="border p-2 w-full" />
+          <select name="logbookStatus" value={formData.logbookStatus} onChange={handleChange} className="border p-2 w-full">
+            <option value="Available">Available</option>
+            <option value="Missing">Missing</option>
+            <option value="Pending">Pending</option>
+          </select>
+          <input type="number" name="price" placeholder="Price" value={formData.price} onChange={handleChange} className="border p-2 w-full" required />
+          <label className="flex items-center space-x-2">
+            <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={handleChange} />
+            <span>Price Negotiable</span>
+          </label>
+        </div>
+
+        <h3 className="text-lg font-semibold mt-4">Media Uploads</h3>
+        <input type="file" name="images" multiple onChange={handleFileChange} className="border p-2 w-full" />
+        <input type="file" name="video" onChange={handleFileChange} className="border p-2 w-full" />
+
+        <h3 className="text-lg font-semibold mt-4">Contact & Location</h3>
+        <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="border p-2 w-full" required />
+        <input type="text" name="contact" placeholder="Contact Number" value={formData.contact} onChange={handleChange} className="border p-2 w-full" required />
+
+        <button type="submit" className="bg-blue-600 text-white p-2 rounded w-full mt-4">Submit</button>
+      </form>
+    </div>
+  );
+};
 

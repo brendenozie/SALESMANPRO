@@ -405,8 +405,8 @@ model MarketplaceListing {
   brand             String?
   model             String?
   color             String?
-  size              String?
-  weight            String?
+  size              String? //Small, Medium, Large, etc.
+  weight            String? //Fabric, Plastic, Leather, etc.
   condition         String?
   dimension         String?
   material          String[]
