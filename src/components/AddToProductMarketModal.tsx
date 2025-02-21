@@ -138,7 +138,7 @@ const CategoryPicker = ({
       setSelectedSubcategory(null);
       setSelectedBrand(null);
     }
-    if (field === "subcategory") setSelectedSubcategory(value);
+    if (field === "subcategory")setSelectedSubcategory(value);
     if (field === "brand") setSelectedBrand(value);
   };
 
@@ -947,8 +947,8 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     finalPrice: marketListItem?.finalPrice || 0,
     profitMargin: marketListItem?.profitMargin || 0,
     category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategories: marketListItem?.subCategories || product?.product?.subCategories || [],
-    brands: marketListItem?.brands || product?.product?.brands || [],
+    subCategory: marketListItem?.subCategory || product?.product?.subCategory || "",
+    brand: marketListItem?.brand || product?.product?.brand || "",
     tags:marketListItem?.tags || product?.product?.tags || [],
     // Vehicle-specific keys
     make: "",
@@ -1056,12 +1056,9 @@ const handleCreateListing = async () => {
       image: images[0] || "", // Use the first uploaded image
       productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
       category: formData.category?.name || "",
-      subCategory:
-        formData.subCategories && formData.subCategories.length > 0
-          ? formData.subCategories[0]
-          : "",
+      subCategory:formData.subCategory,
       tags: formData.tags || [],
-      brand: formData.brands,
+      brand: formData.brand,
       model: formData.model,
       color: formData.color,
       size: formData.size,
