@@ -103,8 +103,8 @@ model Product {
   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
   name               String
   description        String?
-  category           String?
-  subCategory        String?
+  category           String
+  subCategory        String
   images             String[]
   video              String?
   tags               String[]
@@ -115,8 +115,8 @@ model Product {
   company            Company              @relation(fields: [companyId], references: [id])
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
-  productCategoryId  String?              @db.ObjectId
-  productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
+  productCategoryId  String               @db.ObjectId
+  productCategory    ProductCategory      @relation(fields: [productCategoryId], references: [id])
   inventoryItems     InventoryItem[]
   requests           Request[]            @relation("ProductRequests")
   commissions        Commission[]
@@ -420,7 +420,7 @@ model MarketplaceListing {
   productCategoryId   String          @db.ObjectId
   productCategory     ProductCategory @relation(fields: [productCategoryId], references: [id])
   category            String?
-  subCategory         Json?
+  subCategory         Json
   tags                String[]
   brand               String?
   model               String?
