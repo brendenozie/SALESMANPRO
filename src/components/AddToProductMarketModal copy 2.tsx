@@ -751,6 +751,7 @@ const FinalReview = ({ formData }: any) => {
   );
 };
 
+
 const EnginePerformance = ({ formData, setFormData }: any) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -916,38 +917,39 @@ const CATEGORY_STEPS: any = {
 // MAIN MODAL COMPONENT
 // -------------------
 
-const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product }: any) => {
+const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }: any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    id: product?.product?.id || "",
-    name:  product?.product?.name || "",
-    description: product?.product?.description || "",
-    productCategoryId: product?.product?.productCategoryId || "",
-    model: product?.product?.model || "",
-    color: product?.product?.color || "",
-    size: product?.product?.size || "",
-    weight: product?.product?.weight || "",
-    condition: product?.product?.condition || "",
-    dimension: product?.product?.dimension || "",
-    material: product?.product?.material || "",
-    images: product?.product?.image || "",
-    isAvailable: product?.product?.isAvailable || "",
-    isOnOffer: product?.product?.isOnOffer || "",
-    isFlashDeal: product?.product?.isFlashDeal || "",
-    isNewArrival: product?.product?.isNewArrival || "",
-    isDiscounted: product?.product?.isDiscounted || "",
-    isFeatured: product?.product?.isFeatured || "",
+    id: marketListItem?.id || "",
+    productId: marketListItem?.productId || product?.product?.id || "",
+    title: marketListItem?.title || product?.product?.name || "",
+    description: marketListItem?.description || product?.product?.description || "",
+    productCategoryId: marketListItem?.productCategoryId || product?.product?.productCategoryId || "",
+    model: marketListItem?.model || product?.product?.model || "",
+    color: marketListItem?.color || product?.product?.color || "",
+    size: marketListItem?.size || product?.product?.size || "",
+    weight: marketListItem?.weight || product?.product?.weight || "",
+    condition: marketListItem?.condition || product?.product?.condition || "",
+    dimension: marketListItem?.dimension || product?.product?.dimension || "",
+    material: marketListItem?.material || product?.product?.material || "",
+    images: marketListItem?.image || product?.product?.image || "",
+    isAvailable: marketListItem?.isAvailable || product?.product?.isAvailable || "",
+    isOnOffer: marketListItem?.isOnOffer || product?.product?.isOnOffer || "",
+    isFlashDeal: marketListItem?.isFlashDeal || product?.product?.isFlashDeal || "",
+    isNewArrival: marketListItem?.isNewArrival || product?.product?.isNewArrival || "",
+    isDiscounted: marketListItem?.isDiscounted || product?.product?.isDiscounted || "",
+    isFeatured: marketListItem?.isFeatured || product?.product?.isFeatured || "",
     quantity: product?.quantityPurchased || 1,
-    costPrice: product?.product?.costPrice || "",
-    salesPrice: product?.product?.salesPrice || 0,
-    discount: product?.product?.discount || 0,
-    finalPrice: product?.product?.finalPrice || 0,
-    profitMargin: product?.product?.profitMargin || 0,
-    category: product?.product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategories: product?.product?.subCategories || [],
-    brands: product?.product?.brands || [],
-    tags:product?.product?.tags || [],
+    buyingPrice: marketListItem?.buyingPrice || product?.product?.salesPrice || "",
+    sellingPrice: marketListItem?.sellingPrice || 0,
+    discount: marketListItem?.discount || 0,
+    finalPrice: marketListItem?.finalPrice || 0,
+    profitMargin: marketListItem?.profitMargin || 0,
+    category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
+    subCategories: marketListItem?.subCategories || product?.product?.subCategories || [],
+    brands: marketListItem?.brands || product?.product?.brands || [],
+    tags:marketListItem?.tags || product?.product?.tags || [],
     // Vehicle-specific keys
     make: "",
     trim: "",
@@ -1030,8 +1032,8 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
         : value;
       let updatedData = { ...prev, [name]: newValue };
       if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
-        const buyingPrice = parseFloat(updatedData.costPrice) || 0;
-        const sellingPrice = parseFloat(updatedData.salesPrice) || 0;
+        const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
+        const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
         const discount = parseFloat(updatedData.discount) || 0;
         updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
         updatedData.profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
@@ -1047,7 +1049,8 @@ const handleCreateListing = async () => {
       id: formData.id, // If updating; otherwise backend auto-generates
       sellerId: "CURRENT_SELLER_ID", // Replace with actual seller ID
       sellerType: "CLIENT", // Or "CONSUMER", as appropriate
-      name: formData.name,
+      productId: formData.productId,
+      title: formData.title,
       description: formData.description,
       quantity: formData.quantity,
       image: images[0] || "", // Use the first uploaded image
@@ -1070,7 +1073,7 @@ const handleCreateListing = async () => {
         : formData.material
         ? [formData.material]
         : [],
-      salesPrice: parseFloat(formData.salesPrice) || 0,
+      salesPrice: parseFloat(formData.sellingPrice) || 0,
       discount: formData.discount,
       isAvailable: formData.isAvailable,
       isOnOffer: formData.isOnOffer,
@@ -1078,8 +1081,8 @@ const handleCreateListing = async () => {
       isNewArrival: formData.isNewArrival,
       isDiscounted: formData.isDiscounted,
       isFeatured: formData.isFeatured,
-      buyingPrice: parseFloat(formData.costPrice) || 0,
-      sellingPrice: parseFloat(formData.salesPrice) || 0,
+      buyingPrice: parseFloat(formData.buyingPrice) || 0,
+      sellingPrice: parseFloat(formData.sellingPrice) || 0,
       startDealDate: null,
       endDealDate: null,
       // Category-specific fields for Books
@@ -1169,4 +1172,4 @@ const handleCreateListing = async () => {
   );
 };
 
-export default AddProductModal;
+export default AddToProductMarketModal;
