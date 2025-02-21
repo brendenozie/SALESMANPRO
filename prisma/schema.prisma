@@ -144,32 +144,6 @@ model Product {
   expirationDate    DateTime?
 }
 
-// model Product {
-//   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-//   name               String
-//   description        String?
-//   category           String?
-//   subCategory        String?
-//   image              String?
-//   tags               String[]
-//   brand              String[]
-//   costPrice          Float
-//   salesPrice         Float
-//   companyId          String               @db.ObjectId
-//   company            Company              @relation(fields: [companyId], references: [id])
-//   createdAt          DateTime             @default(now())
-//   updatedAt          DateTime             @updatedAt
-//   productCategoryId  String?              @db.ObjectId
-//   productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
-//   inventoryItems     InventoryItem[]
-//   requests           Request[]            @relation("ProductRequests")
-//   commissions        Commission[]
-//   Target             Target[]
-//   CommissionRate     CommissionRate?
-//   OrderItem          OrderItem[]
-//   MarketplaceListing MarketplaceListing[]
-// }
-
 model Task {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   taskName    String
@@ -431,44 +405,6 @@ enum SellerType {
   CONSUMER
 }
 
-// model MarketplaceListing {
-//   id                String           @id @default(auto()) @map("_id") @db.ObjectId
-//   sellerId          String           @db.ObjectId // ID of either a Client or Consumer
-//   sellerType        SellerType
-//   productId         String?          @db.ObjectId
-//   product           Product?         @relation(fields: [productId], references: [id])
-//   title             String           @default("New Name")
-//   description       String?          @default("New Description")
-//   quantity          Int
-//   image             String?
-//   productCategoryId String?          @db.ObjectId
-//   productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
-//   category          String?
-//   subCategory       String?
-//   tags              String[]
-//   brand             String?
-//   model             String?
-//   color             String?
-//   size              String? //Small, Medium, Large, etc.
-//   weight            String? //Fabric, Plastic, Leather, etc.
-//   condition         String?
-//   dimension         String?
-//   material          String[]
-//   createdAt         DateTime         @default(now())
-//   updatedAt         DateTime         @updatedAt
-//   salesPrice        Float            @default(0)
-//   discount          Int?             @default(0)
-//   isAvailable       Boolean          @default(true)
-//   isOnOffer         Boolean          @default(false)
-//   isFlashDeal       Boolean          @default(false)
-//   isNewArrival      Boolean          @default(false)
-//   isDiscounted      Boolean          @default(false)
-//   isFeatured        Boolean          @default(false)
-//   startDealDate     DateTime?
-//   endDealDate       DateTime?
-//   buyingPrice       Float // Price at which the client buys the product from the agent
-//   sellingPrice      Float // Price at which the client sells the product to the consumer
-// }
 model MarketplaceListing {
   id                  String           @id @default(auto()) @map("_id") @db.ObjectId
   sellerId            String           @db.ObjectId
