@@ -77,3 +77,27 @@
   box-shadow: 0px 0px 8px rgba(255, 165, 0, 0.7);
   border: 2px solid orange;
 }
+
+.input-field {
+  @apply border p-3 w-full rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition;
+}
+
+.section-title {
+  @apply text-lg font-semibold text-gray-800 border-b pb-2 mt-6;
+}
+
+.upload-label {
+  @apply flex flex-col items-center justify-center border p-4 rounded-lg cursor-pointer text-gray-500 hover:bg-gray-100 transition;
+}
+
+.upload-label .icon {
+  @apply w-8 h-8 mb-2;
+}
+
+.input-icon {
+  @apply absolute left-3 top-3 text-gray-500;
+}
+
+.submit-button {
+  @apply bg-blue-600 text-white p-3 rounded-lg w-full text-lg font-semibold hover:bg-blue-700 transition;
+}

@@ -3,8 +3,8 @@ import Modal from "../components/Modal";
 import { useDropzone, Accept } from "react-dropzone";
 import { debounce } from "lodash";
 import { motion } from "framer-motion";
-import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import { ArrowUpTrayIcon, ListBulletIcon } from "@heroicons/react/24/solid";
+import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, CheckCircleIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { ArrowUpOnSquareIcon, ArrowUpTrayIcon, CameraIcon, ListBulletIcon, PhoneIcon } from "@heroicons/react/24/solid";
 
 const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }:any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -41,7 +41,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     brands: marketListItem?.brands || product?.product?.brands || [],//Toyota, Honda, BMW, etc.
   
 
-    //vehicle details
+    
     year: "",
     trim: "",//Specific edition (e.g., XLE, Sport, Limited)
     type: "",//Sedan, SUV, Truck, Motorcycle, etc.
@@ -156,7 +156,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
             filteredBrands={filteredBrands} 
           />
         )}
-        {step === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
+        {step === 2 && <VehicleProductForm formData={formData} setFormData={setFormData} />}
         {step === 3 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
         {step === 4 && <ImageUploader images={images} setImages={setImages} />}
         {step === 5 && <ProductVariants formData={formData} setFormData={setFormData} />}
@@ -796,78 +796,101 @@ const FinalReview = ({ formData, onSubmit }: any) => {
 };
 
 const VehicleProductForm = ({ formData, setFormData }: any) => {
-  
-  const handleChange = (e:any) => {
+  const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
-  const handleFileChange = (e :any) => {
+  const handleFileChange = (e: any) => {
     const { name, files } = e.target;
     setFormData({ ...formData, [name]: files });
   };
 
-  const handleSubmit = (e :any) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     console.log("Form Data Submitted:", formData);
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold mb-4">Vehicle Product Details</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <input type="text" name="make" placeholder="Make" value={formData.make} onChange={handleChange} className="border p-2 w-full" required />
-          <input type="text" name="model" placeholder="Model" value={formData.model} onChange={handleChange} className="border p-2 w-full" required />
-          <input type="number" name="year" placeholder="Year" value={formData.year} onChange={handleChange} className="border p-2 w-full" required />
-          <input type="text" name="trim" placeholder="Trim" value={formData.trim} onChange={handleChange} className="border p-2 w-full" />
-          <input type="text" name="type" placeholder="Type (SUV, Sedan)" value={formData.type} onChange={handleChange} className="border p-2 w-full" required />
-          <input type="text" name="color" placeholder="Color" value={formData.color} onChange={handleChange} className="border p-2 w-full" />
-          <input type="number" name="mileage" placeholder="Mileage (km)" value={formData.mileage} onChange={handleChange} className="border p-2 w-full" />
-          <select name="condition" value={formData.condition} onChange={handleChange} className="border p-2 w-full">
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-2xl border border-gray-200">
+      <h2 className="text-3xl font-bold mb-6 text-gray-800">Vehicle Product Details</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* General Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" name="make" placeholder="Make" value={formData.make} onChange={handleChange} className="input-field" required />
+          <input type="text" name="model" placeholder="Model" value={formData.model} onChange={handleChange} className="input-field" required />
+          <input type="number" name="year" placeholder="Year" value={formData.year} onChange={handleChange} className="input-field" required />
+          <input type="text" name="trim" placeholder="Trim" value={formData.trim} onChange={handleChange} className="input-field" />
+          <input type="text" name="type" placeholder="Type (SUV, Sedan)" value={formData.type} onChange={handleChange} className="input-field" required />
+          <input type="text" name="color" placeholder="Color" value={formData.color} onChange={handleChange} className="input-field" />
+          <input type="number" name="mileage" placeholder="Mileage (km)" value={formData.mileage} onChange={handleChange} className="input-field" />
+          <select name="condition" value={formData.condition} onChange={handleChange} className="input-field">
             <option value="New">New</option>
             <option value="Used">Used</option>
             <option value="Certified Pre-Owned">Certified Pre-Owned</option>
           </select>
         </div>
 
-        <h3 className="text-lg font-semibold mt-4">Engine & Performance</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <input type="text" name="engineType" placeholder="Engine Type" value={formData.engineType} onChange={handleChange} className="border p-2 w-full" />
-          <input type="text" name="engineSize" placeholder="Engine Size" value={formData.engineSize} onChange={handleChange} className="border p-2 w-full" />
-          <input type="text" name="transmission" placeholder="Transmission" value={formData.transmission} onChange={handleChange} className="border p-2 w-full" />
-          <input type="text" name="drivetrain" placeholder="Drivetrain (AWD, FWD)" value={formData.drivetrain} onChange={handleChange} className="border p-2 w-full" />
+        {/* Engine & Performance */}
+        <h3 className="section-title">Engine & Performance</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" name="engineType" placeholder="Engine Type" value={formData.engineType} onChange={handleChange} className="input-field" />
+          <input type="text" name="engineSize" placeholder="Engine Size" value={formData.engineSize} onChange={handleChange} className="input-field" />
+          <input type="text" name="transmission" placeholder="Transmission" value={formData.transmission} onChange={handleChange} className="input-field" />
+          <input type="text" name="drivetrain" placeholder="Drivetrain (AWD, FWD)" value={formData.drivetrain} onChange={handleChange} className="input-field" />
         </div>
 
-        <h3 className="text-lg font-semibold mt-4">Ownership & Pricing</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <input type="text" name="vin" placeholder="VIN Number" value={formData.vin} onChange={handleChange} className="border p-2 w-full" />
-          <select name="logbookStatus" value={formData.logbookStatus} onChange={handleChange} className="border p-2 w-full">
+        {/* Ownership & Pricing */}
+        <h3 className="section-title">Ownership & Pricing</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" name="vin" placeholder="VIN Number" value={formData.vin} onChange={handleChange} className="input-field" />
+          <select name="logbookStatus" value={formData.logbookStatus} onChange={handleChange} className="input-field">
             <option value="Available">Available</option>
             <option value="Missing">Missing</option>
             <option value="Pending">Pending</option>
           </select>
-          <input type="number" name="price" placeholder="Price" value={formData.price} onChange={handleChange} className="border p-2 w-full" required />
-          <label className="flex items-center space-x-2">
-            <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={handleChange} />
+          <input type="number" name="price" placeholder="Price" value={formData.price} onChange={handleChange} className="input-field" required />
+          <label className="flex items-center space-x-2 text-gray-700">
+            <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={handleChange} className="w-5 h-5" />
             <span>Price Negotiable</span>
           </label>
         </div>
 
-        <h3 className="text-lg font-semibold mt-4">Media Uploads</h3>
-        <input type="file" name="images" multiple onChange={handleFileChange} className="border p-2 w-full" />
-        <input type="file" name="video" onChange={handleFileChange} className="border p-2 w-full" />
+        {/* Media Uploads */}
+        <h3 className="section-title">Media Uploads</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="upload-label">
+            <ArrowUpOnSquareIcon className="icon w-6 h-6" />
+            <span>Upload Images</span>
+            <input type="file" name="images" multiple onChange={handleFileChange} className="hidden" />
+          </label>
+          <label className="upload-label">
+            <CameraIcon className="icon w-6 h-6" />
+            <span>Upload Video</span>
+            <input type="file" name="video" onChange={handleFileChange} className="hidden" />
+          </label>
+        </div>
 
-        <h3 className="text-lg font-semibold mt-4">Contact & Location</h3>
-        <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="border p-2 w-full" required />
-        <input type="text" name="contact" placeholder="Contact Number" value={formData.contact} onChange={handleChange} className="border p-2 w-full" required />
+        {/* Contact & Location */}
+        <h3 className="section-title">Contact & Location</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <MapPinIcon className="input-icon w-6 h-6" />
+            <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="input-field pl-10" required />
+          </div>
+          <div className="relative">
+            <PhoneIcon className="input-icon w-6 h-6" />
+            <input type="text" name="contact" placeholder="Contact Number" value={formData.contact} onChange={handleChange} className="input-field pl-10" required />
+          </div>
+        </div>
 
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded w-full mt-4">Submit</button>
+        {/* Submit Button */}
+        <button type="submit" className="submit-button">Submit</button>
       </form>
     </div>
   );
 };
+
+
 

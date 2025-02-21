@@ -39,7 +39,7 @@ async function sendOrderEmail(email: any, orderStatus: any) {
     auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
   });
   await transporter.sendMail({
-    from: `"Kapu Store" <${process.env.EMAIL}>`,
+    from: `"ghuba Store" <${process.env.EMAIL}>`,
     to: email,
     subject: "Order Update",
     text: `Your order status has been updated to: ${orderStatus}`,
