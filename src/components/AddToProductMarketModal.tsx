@@ -5,57 +5,87 @@ import { debounce } from "lodash";
 import { motion } from "framer-motion";
 import { ArrowUpCircleIcon, PhotoIcon, TagIcon, CurrencyDollarIcon, ChevronDownIcon, XMarkIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, CheckCircleIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { ArrowUpOnSquareIcon, ArrowUpTrayIcon, CameraIcon, ListBulletIcon, PhoneIcon } from "@heroicons/react/24/solid";
-
-
 interface StepperProps {
   step: number;
   stepsForCategory: number[];
+  onStepClick?: (step: number) => void; // Enable step navigation
 }
 
-const Stepper: React.FC<StepperProps> = ({ step, stepsForCategory }) => {
-  // Create an array of labels based on the stepsForCategory mapping.
+const Stepper: React.FC<StepperProps> = ({ step, stepsForCategory, onStepClick }) => {
   const labels = stepsForCategory.map((num) => STEP_LABELS[num]);
+  const stepCount = labels.length;
+  const progressWidth = `${((step - 1) / (stepCount - 1)) * 100}%`;
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Auto-scroll to the active step
+  useEffect(() => {
+    if (stepRefs.current[step - 1] && scrollRef.current) {
+      stepRefs.current[step - 1]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [step]);
 
   return (
-    <div className="w-full space-y-4">
-      {/* Progress Bar */}
-      <div className="relative w-full h-2 bg-gray-300 rounded-full overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-0 h-2 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md rounded-full"
-          animate={{ width: `${(step / labels.length) * 100}%` }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-      {/* Steps Labels */}
-      <div className="flex items-center justify-between overflow-x-auto py-2 space-x-4 sm:grid sm:grid-cols-7 sm:gap-3">
+    <div className="relative w-full px-4 pt-4">
+      {/* Scrollable Stepper Container */}
+      <div
+        ref={scrollRef}
+        className="flex items-center justify-between overflow-x-auto no-scrollbar space-x-6 pb-4 snap-x snap-mandatory"
+      >
         {labels.map((label, index) => {
           const isActive = index + 1 === step;
           const isCompleted = index + 1 < step;
+
           return (
-            <div key={index} className="flex flex-col items-center space-y-0 min-w-[80px]">
+            <div
+              key={index}
+              ref={(el) => (stepRefs.current[index] = el)}
+              className="flex flex-col items-center min-w-[70px] cursor-pointer snap-center"
+              onClick={() => isCompleted && onStepClick?.(index + 1)} // Allow step navigation
+            >
+              {/* Animated Step Circle */}
               <motion.div
-                className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-md transition-all border-2 ${
+                className={`flex items-center justify-center w-8 h-8 rounded-full font-semibold shadow-md border-2 transition-all ${
                   isActive
-                    ? "bg-blue-600 text-white border-blue-600 scale-110"
+                    ? "bg-blue-600 text-white border-blue-600 scale-110 shadow-lg"
                     : isCompleted
                     ? "bg-blue-400 text-white border-blue-400"
                     : "bg-gray-300 text-gray-500 border-gray-300"
                 }`}
-                animate={{ scale: isActive ? 1.2 : 1 }}
-                aria-current={isActive ? "step" : undefined}
+                animate={{ scale: isActive ? 1.15 : 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
               >
-                {isCompleted ? <CheckCircleIcon className="w-6 h-6" /> : index + 1}
+                {isCompleted ? <CheckCircleIcon className="w-5 h-5 animate-pulse" /> : index + 1}
               </motion.div>
+
+              {/* Step Label */}
               <p
-                className={`text-xs sm:text-sm font-medium text-center truncate w-16 ${
+                className={`mt-2 text-xs font-medium truncate w-16 text-center ${
                   isActive ? "text-blue-600 font-semibold" : isCompleted ? "text-blue-400" : "text-gray-400"
                 }`}
               >
                 {label}
               </p>
+
+              {/* Step Dot Indicator */}
+              <div className={`w-2 h-2 rounded-full mt-2 ${isActive ? "bg-blue-600" : "bg-gray-300"}`} />
             </div>
           );
         })}
+      </div>
+
+      {/* Progress Bar */}
+      <div className="relative w-full h-[2px] bg-gray-300 rounded-full">
+        <motion.div
+          className="h-full bg-gradient-to-r from-blue-500 to-blue-700 rounded-full"
+          animate={{ width: progressWidth }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        />
       </div>
     </div>
   );
