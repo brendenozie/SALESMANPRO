@@ -121,7 +121,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 };
 
 
-  const isNextDisabled = (step === 1 && !formData.category) || (step === 7 && (!formData.buyingPrice || !formData.sellingPrice));
+  const isNextDisabled = (step === 1 && !formData.category) || (step === 12 && (!formData.buyingPrice || !formData.sellingPrice));
 
   const handleCreateListing = () => {
     if (window.confirm("Are you sure you want to create this listing?")) {
@@ -146,6 +146,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
       <Stepper step={step} />
 
       {/* Ensure this wrapper scrolls correctly */}
+      
       <div className="overflow-y-auto flex-grow p-4">
         {step === 1 && (
           <CategoryPicker 
@@ -156,12 +157,17 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
             filteredBrands={filteredBrands} 
           />
         )}
-        {step === 2 && <VehicleProductForm formData={formData} setFormData={setFormData} />}
-        {step === 3 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
-        {step === 4 && <ImageUploader images={images} setImages={setImages} />}
-        {step === 5 && <ProductVariants formData={formData} setFormData={setFormData} />}
-        {step === 6 && <ProductAvailability formData={formData} setFormData={setFormData} />}
-        {step === 7 && <FinalReview formData={formData} setFormData={setFormData} />}
+        {step === 2 && <ProductDetails formData={formData} setFormData={setFormData} />}
+        {step === 3 && <GeneralDetails formData={formData} setFormData={setFormData} />}
+        {step === 4 && <EnginePerformance formData={formData} setFormData={setFormData} />}
+        {step === 5 && <OwnershipPricing formData={formData} setFormData={setFormData} />}
+        {step === 6 && <MediaUploads formData={formData} setFormData={setFormData} />}
+        {step === 7 && <ContactLocation formData={formData} setFormData={setFormData} />}
+        {step === 8 && <PricingDetails formData={formData} handleInputChange={handleInputChange} />}
+        {step === 9 && <ImageUploader images={images} setImages={setImages} />}
+        {step === 10 && <ProductVariants formData={formData} setFormData={setFormData} />}
+        {step === 11 && <ProductAvailability formData={formData} setFormData={setFormData} />}
+        {step === 12 && <FinalReview formData={formData} setFormData={setFormData} />}
       </div>
     </motion.div>
 
@@ -175,7 +181,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
           <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
         </button>
       )}
-      {step < 7 ? (
+      {step < 12 ? (
         <button 
           className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" 
           onClick={() => setStep(step + 1)} 
@@ -203,14 +209,19 @@ export default AddToProductMarketModal;
 
 const Stepper = ({ step }: { step: number }) => {
   const steps = [
-    "Category",
-    "Product Details",
-    "Pricing",
-    "Images",
-    "Product Variants",
-    "Availability",
-    "Final Review",
-  ];
+                  "Category",
+                  "Product Details",
+                  "General Details",
+                  "Engine Performance",
+                  "Ownership Pricing",
+                  "Contact Location",
+                  "Final Review",
+                  "Pricing",
+                  "Images",
+                  "Product Variants",
+                  "Availability",
+                  "Final Review",
+                ];
 
   return (
     <div className="w-full space-y-4">
@@ -795,102 +806,103 @@ const FinalReview = ({ formData, onSubmit }: any) => {
   );
 };
 
-const VehicleProductForm = ({ formData, setFormData }: any) => {
-  const handleChange = (e: any) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
-  };
-
-  const handleFileChange = (e: any) => {
-    const { name, files } = e.target;
-    setFormData({ ...formData, [name]: files });
-  };
-
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    console.log("Form Data Submitted:", formData);
-  };
-
+//Vehicles
+const GeneralDetails  = ({ formData, setFormData }: any) => {
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-2xl border border-gray-200">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">Vehicle Product Details</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* General Details */}
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      {/* General Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" name="make" placeholder="Make" value={formData.make} onChange={handleChange} className="input-field" required />
-          <input type="text" name="model" placeholder="Model" value={formData.model} onChange={handleChange} className="input-field" required />
-          <input type="number" name="year" placeholder="Year" value={formData.year} onChange={handleChange} className="input-field" required />
-          <input type="text" name="trim" placeholder="Trim" value={formData.trim} onChange={handleChange} className="input-field" />
-          <input type="text" name="type" placeholder="Type (SUV, Sedan)" value={formData.type} onChange={handleChange} className="input-field" required />
-          <input type="text" name="color" placeholder="Color" value={formData.color} onChange={handleChange} className="input-field" />
-          <input type="number" name="mileage" placeholder="Mileage (km)" value={formData.mileage} onChange={handleChange} className="input-field" />
-          <select name="condition" value={formData.condition} onChange={handleChange} className="input-field">
+          <input type="text" name="make" placeholder="Make" value={formData.brand} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" required />
+          <input type="text" name="model" placeholder="Model" value={formData.model} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" required />
+          <input type="number" name="year" placeholder="Year" value={formData.year} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" required />
+          <input type="text" name="trim" placeholder="Trim" value={formData.trim} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
+          <input type="text" name="type" placeholder="Type (SUV, Sedan)" value={formData.type} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" required />
+          <input type="text" name="color" placeholder="Color" value={formData.color} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
+          <input type="number" name="mileage" placeholder="Mileage (km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
+          <select name="condition" value={formData.condition} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field">
             <option value="New">New</option>
             <option value="Used">Used</option>
             <option value="Certified Pre-Owned">Certified Pre-Owned</option>
           </select>
         </div>
+    </div>
+  );
+};
 
-        {/* Engine & Performance */}
+const EnginePerformance = ({ formData, setFormData }: any) => {
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      {/* Engine & Performance */}
         <h3 className="section-title">Engine & Performance</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" name="engineType" placeholder="Engine Type" value={formData.engineType} onChange={handleChange} className="input-field" />
-          <input type="text" name="engineSize" placeholder="Engine Size" value={formData.engineSize} onChange={handleChange} className="input-field" />
-          <input type="text" name="transmission" placeholder="Transmission" value={formData.transmission} onChange={handleChange} className="input-field" />
-          <input type="text" name="drivetrain" placeholder="Drivetrain (AWD, FWD)" value={formData.drivetrain} onChange={handleChange} className="input-field" />
+          <input type="text" name="engineType" placeholder="Engine Type" value={formData.engineType} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
+          <input type="text" name="engineSize" placeholder="Engine Size" value={formData.engineSize} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
+          <input type="text" name="transmission" placeholder="Transmission" value={formData.transmission} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
+          <input type="text" name="drivetrain" placeholder="Drivetrain (AWD, FWD)" value={formData.drivetrain} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
         </div>
+    </div>
+  );
+};
 
-        {/* Ownership & Pricing */}
+const OwnershipPricing = ({ formData, setFormData }: any) => {
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      {/* Ownership & Pricing */}
         <h3 className="section-title">Ownership & Pricing</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" name="vin" placeholder="VIN Number" value={formData.vin} onChange={handleChange} className="input-field" />
-          <select name="logbookStatus" value={formData.logbookStatus} onChange={handleChange} className="input-field">
+          <input type="text" name="vin" placeholder="VIN Number" value={formData.vin} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" />
+          <select name="logbookStatus" value={formData.logbookStatus} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field">
             <option value="Available">Available</option>
             <option value="Missing">Missing</option>
             <option value="Pending">Pending</option>
           </select>
-          <input type="number" name="price" placeholder="Price" value={formData.price} onChange={handleChange} className="input-field" required />
+          <input type="number" name="price" placeholder="Price" value={formData.price} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field" required />
           <label className="flex items-center space-x-2 text-gray-700">
-            <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={handleChange} className="w-5 h-5" />
+            <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="w-5 h-5" />
             <span>Price Negotiable</span>
           </label>
         </div>
+    </div>
+  );
+};
 
-        {/* Media Uploads */}
+const MediaUploads = ({ formData, setFormData }: any) => {
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      {/* Media Uploads */}
         <h3 className="section-title">Media Uploads</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="upload-label">
             <ArrowUpOnSquareIcon className="icon w-6 h-6" />
             <span>Upload Images</span>
-            <input type="file" name="images" multiple onChange={handleFileChange} className="hidden" />
+            <input type="file" name="images" multiple onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="hidden" />
           </label>
           <label className="upload-label">
             <CameraIcon className="icon w-6 h-6" />
             <span>Upload Video</span>
-            <input type="file" name="video" onChange={handleFileChange} className="hidden" />
+            <input type="file" name="video" onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="hidden" />
           </label>
         </div>
-
-        {/* Contact & Location */}
-        <h3 className="section-title">Contact & Location</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <MapPinIcon className="input-icon w-6 h-6" />
-            <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} className="input-field pl-10" required />
-          </div>
-          <div className="relative">
-            <PhoneIcon className="input-icon w-6 h-6" />
-            <input type="text" name="contact" placeholder="Contact Number" value={formData.contact} onChange={handleChange} className="input-field pl-10" required />
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <button type="submit" className="submit-button">Submit</button>
-      </form>
     </div>
   );
 };
 
-
+const ContactLocation = ({ formData, setFormData }: any) => {
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      {/* Contact & Location */}
+        <h3 className="section-title">Contact & Location</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <MapPinIcon className="input-icon w-6 h-6" />
+            <input type="text" name="location" placeholder="Location" value={formData.location} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field pl-10" required />
+          </div>
+          <div className="relative">
+            <PhoneIcon className="input-icon w-6 h-6" />
+            <input type="text" name="contact" placeholder="Contact Number" value={formData.contact} onChange={(e) => setFormData({ ...formData, model: e.target.value })} className="input-field pl-10" required />
+          </div>
+        </div>
+    </div>
+  );
+};
 
