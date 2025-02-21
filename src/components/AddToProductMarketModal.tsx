@@ -656,7 +656,7 @@ const OwnershipPricing = ({ formData, setFormData }: any) => {
   );
 };
 
-const MediaUploads = ({ formData, setFormData }: any) => {
+const MediaUploads = ({ formData, setFormData, images, setImages }: any) => {
   return (
     <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
       {/* Media Uploads */}
@@ -962,7 +962,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
           <Stepper step={step} stepsForCategory={stepsForCategory} />
           <div className="overflow-y-auto flex-grow p-4">
             {FormComponent ? (
-              <FormComponent formData={formData} setFormData={setFormData} categories={categories} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands} handleInputChange={handleInputChange}/>
+              <FormComponent formData={formData} setFormData={setFormData} images={images} setImages={setImages} categories={categories} filteredSubCategories={filteredSubCategories} filteredBrands={filteredBrands} handleInputChange={handleInputChange}/>
             ) : (
               <p>No form available for this step.</p>
             )}
