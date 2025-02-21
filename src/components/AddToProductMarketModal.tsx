@@ -1049,7 +1049,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   //   }
   // };
 
-  const handleCreateListing = () => {
+  const handleCreateListingV1 = () => {
   if (window.confirm("Are you sure you want to create this listing?")) {
     // Create a listing object conforming to the MarketplaceListing model
     const listing = {
@@ -1103,7 +1103,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   }
 };
 
-const handleCreateListingV1 = async () => {
+const handleCreateListing = async () => {
   if (window.confirm("Are you sure you want to create this listing?")) {
     // Build a listing object conforming to the updated MarketplaceListing model
     const listing = {
