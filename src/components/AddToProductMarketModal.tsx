@@ -1042,67 +1042,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     });
   };
 
-  // const handleCreateListing = () => {
-  //   if (window.confirm("Are you sure you want to create this listing?")) {
-  //     alert("Marketplace listing created successfully.");
-  //     setShowRequestProductModal(false);
-  //   }
-  // };
-
-  const handleCreateListingV1 = () => {
-  if (window.confirm("Are you sure you want to create this listing?")) {
-    // Create a listing object conforming to the MarketplaceListing model
-    const listing = {
-      id: formData.id, // If updating, otherwise your backend may auto-generate this
-      sellerId: "CURRENT_SELLER_ID", // Replace with actual seller ID from context
-      sellerType: "CLIENT", // Or "CONSUMER", as appropriate
-      productId: formData.productId,
-      title: formData.title,
-      description: formData.description,
-      quantity: formData.quantity,
-      image: images[0] || "", // Use the first uploaded image
-      productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
-      // Use the category's name as a string for the listing's "category" field
-      category: formData.category?.name || "",
-      // If multiple subcategories were selected, you might choose the first
-      subCategory: formData.subCategories && formData.subCategories.length > 0 ? formData.subCategories[0] : "",
-      tags:  [],//formData.tags ||
-      brand: formData.brands,
-      model: formData.model,
-      color: formData.color,
-      size: formData.size,
-      weight: formData.weight,
-      condition: formData.condition,
-      dimension: formData.dimension,
-      // Ensure material is an array (if a single value was provided, wrap it in an array)
-      material: Array.isArray(formData.material)
-        ? formData.material
-        : formData.material
-        ? [formData.material]
-        : [],
-      // Map selling price to salesPrice as per the model
-      salesPrice: parseFloat(formData.sellingPrice) || 0,
-      discount: formData.discount,
-      isAvailable: formData.isAvailable,
-      isOnOffer: formData.isOnOffer,
-      isFlashDeal: formData.isFlashDeal,
-      isNewArrival: formData.isNewArrival,
-      isDiscounted: formData.isDiscounted,
-      isFeatured: formData.isFeatured,
-      buyingPrice: parseFloat(formData.buyingPrice) || 0,
-      sellingPrice: parseFloat(formData.sellingPrice) || 0,
-      // For deal dates, if not provided, you can leave these as null
-      startDealDate: null,
-      endDealDate: null
-    };
-
-    // You can now send 'listing' to your API or update your state
-    console.log("Listing to be created:", listing);
-    alert("Marketplace listing created successfully.");
-    setShowRequestProductModal(false);
-  }
-};
-
 const handleCreateListing = async () => {
   if (window.confirm("Are you sure you want to create this listing?")) {
     // Build a listing object conforming to the updated MarketplaceListing model
