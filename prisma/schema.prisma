@@ -420,7 +420,7 @@ model MarketplaceListing {
   productCategoryId   String          @db.ObjectId
   productCategory     ProductCategory @relation(fields: [productCategoryId], references: [id])
   category            String?
-  subCategory         String?
+  subCategory         Json?
   tags                String[]
   brand               String?
   model               String?

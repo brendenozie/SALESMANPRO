@@ -138,7 +138,7 @@ const CategoryPicker = ({
       setSelectedSubcategory(null);
       setSelectedBrand(null);
     }
-    if (field === "subcategory")setSelectedSubcategory(value);
+    if (field === "subCategory")setSelectedSubcategory(value);
     if (field === "brand") setSelectedBrand(value);
   };
 
@@ -154,7 +154,7 @@ const CategoryPicker = ({
           )}
           {selectedSubcategory && (
             <span className="bg-blue-500 text-white px-3 py-1 rounded-md flex items-center space-x-2">
-              <span>{selectedSubcategory}</span>
+              <span>{selectedSubcategory.name}</span>
               <button onClick={() => setSelectedSubcategory(null)}>❌</button>
             </span>
           )}
@@ -208,9 +208,9 @@ const CategoryPicker = ({
             {filteredSubCategories.map((sub: any) => (
               <button
                 key={sub.id}
-                onClick={() => handleSelection("subcategory", sub.name)}
+                onClick={() => handleSelection("subCategory", sub)}
                 className={`px-4 py-2 h-12 rounded-lg border text-sm transition-all duration-200 ${
-                  selectedSubcategory === sub.name
+                  selectedSubcategory.name === sub.name
                     ? "bg-orange-500 text-white border-orange-500"
                     : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
                 }`}
