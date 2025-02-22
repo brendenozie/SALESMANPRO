@@ -653,9 +653,9 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
             <button
               key={status}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.availability === status ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                formData.isAvailable === true ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
-              onClick={() => setFormData({ ...formData, availability: status })}
+              onClick={() => setFormData({ ...formData, isAvailable: status === "In Stock" })}
             >
               {status}
             </button>
@@ -963,7 +963,7 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     condition: product?.product?.condition || "",
     dimension:  product?.product?.dimension || "",
     material:  product?.product?.material || "",
-    images: product?.product?.image || "",
+    images: product?.product?.images || "",
     isAvailable: product?.product?.isAvailable || false,
     isOnOffer: product?.product?.isOnOffer || false,
     isFlashDeal: product?.product?.isFlashDeal || false,
@@ -1110,6 +1110,7 @@ const handleCreateListing = async () => {
         ? [formData.material]
         : [],
       finalPrice: parseFloat(formData.finalPrice) || 0,
+      profitMargin: parseFloat(formData.profitMargin) || 0,
       discount: formData.discount,
       isAvailable: formData.isAvailable,
       isOnOffer: formData.isOnOffer,
@@ -1119,6 +1120,7 @@ const handleCreateListing = async () => {
       isFeatured: formData.isFeatured,
       costPrice: parseFloat(formData.costPrice) || 0,
       salesPrice: parseFloat(formData.salesPrice) || 0,
+
       startDealDate: formData.startDealDate,
       endDealDate: formData.endDealDate,
       // Category-specific fields for Books
@@ -1137,7 +1139,10 @@ const handleCreateListing = async () => {
       usageInstructions: formData.usageInstructions || "",
       expirationDate: formData.expirationDate
         ? new Date(formData.expirationDate)
-        : null
+        : null,
+        
+    location: formData.location || "",
+    contact: formData.contact || "",
     };
 
     try {
