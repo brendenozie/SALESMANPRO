@@ -5,19 +5,68 @@ import prisma from "@/server/db/prismadb";
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   const {
     id,
+    companyId,
+    sellerType,
     name,
     description,
+    quantity,
+    image,
+    productCategoryId,
     category,
+    subCategory,
     tags,
+    brand,
+    model,
+    color,
+    size,
+    weight,
+    condition,
+    dimension,
+    material,
+    finalPrice,
+    discount,
+    isAvailable,
+    isOnOffer,
+    isFlashDeal,
+    isNewArrival,
+    isDiscounted,
+    isFeatured,
     costPrice,
     salesPrice,
-    companyId,
-    productCategoryId,
-    commissionType,
-    commissionRate,
+    startDealDate,
+    endDealDate,
+    author,
+    publisher,
+    isbn,
+    fabricComposition,
+    careInstructions,
+    energyRating,
+    warrantyPeriod,
+    applianceDimensions,
+    ingredients,
+    usageInstructions,
     startDate,
     endDate,
-  } = req.body;
+    expirationDate,    
+    commissionRate,
+    commissionType, // Default to "Percentage"
+  }  = req.body;
+
+  // const {
+  //   id,
+  //   name,
+  //   description,
+  //   category,
+  //   tags,
+  //   costPrice,
+  //   salesPrice,
+  //   companyId,
+  //   productCategoryId,
+  //   commissionType,
+  //   commissionRate,
+    // startDate,
+    // endDate,
+  // } = req.body;
 
   // Validate required fields
   if (!name || !costPrice || !salesPrice || !companyId || !commissionType || commissionRate === undefined) {
@@ -71,19 +120,64 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         },
       });
     } else {
-      // Create new product
       product = await prisma.product.create({
-        data: {
-          name,
-          description,
-          category,
-          tags: parsedTags,
-          costPrice: parsedCostPrice,
-          salesPrice: parsedSalesPrice,
-          companyId,
-          productCategoryId,
-        },
-      });
+            data: {
+              
+              productCategory: { connect: {id:productCategoryId}},
+              tags: parsedTags,
+              costPrice: parsedCostPrice,
+              salesPrice: parsedSalesPrice,
+              finalPrice: finalPrice ?? 0,
+              name: name ?? "New Name",
+              description: description ?? "New Description",
+              category: category,
+              subCategory: subCategory,
+              brand: brand,
+              model: model,
+              color: color,
+              size: size,
+              weight: weight,
+              condition: condition,
+              dimension: dimension,
+              material: material,
+              isAvailable: isAvailable,
+              isOnOffer: isOnOffer,
+              isFlashDeal: isFlashDeal,
+              isNewArrival: isNewArrival,
+              isDiscounted: isDiscounted,
+              isFeatured: isFeatured,
+              company: { connect: {id:companyId}},
+              // Extended category-specific fields
+              author: author || null,
+              publisher: publisher || null,
+              isbn: isbn || null,
+              fabricComposition: fabricComposition || null,
+              careInstructions: careInstructions || null,
+              energyRating: energyRating || null,
+              warrantyPeriod: warrantyPeriod || null,
+              applianceDimensions: applianceDimensions || null,
+              ingredients: ingredients || null,
+              usageInstructions: usageInstructions || null,
+              expirationDate: expirationDate ? new Date(expirationDate) : null,
+              startDealDate: startDealDate,
+              endDealDate   :endDealDate,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }
+          });
+      // Create new product
+      // product = await prisma.product.create({
+      //   data: {
+      //     name,
+      //     description,
+      //     category,
+      //     tags: parsedTags,
+      //     costPrice: parsedCostPrice,
+      //     salesPrice: parsedSalesPrice,
+      //     companyId,
+      //     productCategoryId,
+      //   },
+      // });
     }
 
     // Create or update commission rate

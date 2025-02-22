@@ -412,30 +412,31 @@ const GeneralDetails = ({ formData, setFormData }: any) => {
 // OTHER COMPONENTS (PricingDetails, ProductVariants, ImageUploader, etc.)
 // -------------------
 
-const PricingDetails = ({ formData, handleInputChange }: any) => {
+const PricingDetails = ({ formData, setFormData ,handleInputChange }: any) => {
   const [finalPrice, setFinalPrice] = useState(formData.finalPrice || 0);
   const [profitMargin, setProfitMargin] = useState(formData.profitMargin || 0);
 
   useEffect(() => {
-    const sellingPrice = parseFloat(formData.sellingPrice) || 0;
-    const buyingPrice = parseFloat(formData.buyingPrice) || 0;
+    const sellingPrice = parseFloat(formData.salesPrice) || 0;
+    const buyingPrice = parseFloat(formData.costPrice) || 0;
     const discount = parseFloat(formData.discount) || 0;
     const discountedPrice = sellingPrice - (sellingPrice * discount) / 100;
     const margin = buyingPrice ? ((discountedPrice - buyingPrice) / buyingPrice) * 100 : 0;
     setFinalPrice(discountedPrice);
     setProfitMargin(margin);
-  }, [formData.sellingPrice, formData.buyingPrice, formData.discount]);
+    setFormData({ ...formData, profitMargin:margin, finalPrice:discountedPrice });
+  }, [formData.salesPrice, formData.costPrice, formData.discount]);
 
   return (
     <div className="p-6 bg-white shadow-xl rounded-2xl border border-gray-200 space-y-6">
       <h3 className="text-xl font-bold text-gray-800">Pricing Details</h3>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Buying Price</label>
+          <label className="block text-gray-700 font-medium mb-2">Cost Price</label>
           <input
             type="number"
-            name="buyingPrice"
-            value={formData.buyingPrice}
+            name="costPrice"
+            value={formData.costPrice}
             onChange={handleInputChange}
             placeholder="$0.00"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -445,8 +446,8 @@ const PricingDetails = ({ formData, handleInputChange }: any) => {
           <label className="block text-gray-700 font-medium mb-2">Selling Price</label>
           <input
             type="number"
-            name="sellingPrice"
-            value={formData.sellingPrice}
+            name="salesPrice"
+            value={formData.salesPrice}
             onChange={handleInputChange}
             placeholder="$0.00"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -466,11 +467,11 @@ const PricingDetails = ({ formData, handleInputChange }: any) => {
       </div>
       <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
         <p className="text-gray-800 font-semibold">Final Price:</p>
-        <p className="text-blue-600 font-extrabold text-lg">${finalPrice.toFixed(2)}</p>
+        <p className="text-blue-600 font-extrabold text-lg">${formData.finalPrice.toFixed(2)}</p>
       </div>
       <div className="p-5 bg-gray-100 rounded-lg flex justify-between shadow-sm">
         <p className="text-gray-800 font-semibold">Profit Margin:</p>
-        <p className="text-green-600 font-extrabold text-lg">{profitMargin.toFixed(2)}%</p>
+        <p className="text-green-600 font-extrabold text-lg">{formData.profitMargin.toFixed(2)}%</p>
       </div>
     </div>
   );
@@ -1051,8 +1052,7 @@ const handleCreateListing = async () => {
     // Build a listing object conforming to the updated MarketplaceListing model
     const listing = {
       id: formData.id, // If updating; otherwise backend auto-generates
-      sellerId: "63f7c9e2d91b1b2a5e80b007", // Replace with actual seller ID
-      sellerType: "CLIENT", // Or "CONSUMER", as appropriate
+      sellerType: "COMPANY", // Or "CONSUMER", as appropriate
       name: formData.name,
       description: formData.description,
       quantity: formData.quantity,
@@ -1068,12 +1068,15 @@ const handleCreateListing = async () => {
       weight: formData.weight,
       condition: formData.condition,
       dimension: formData.dimension,
+      commissionRate: product?.commissionRate || 0,
+      commissionType: product?.commissionType || 'COST', // Default to "Percentage"
+      companyId: product?.companyId || '63f7c9e2d91b1b2a5e80b007',
       material: Array.isArray(formData.material)
         ? formData.material
         : formData.material
         ? [formData.material]
         : [],
-      salesPrice: parseFloat(formData.salesPrice) || 0,
+      finalPrice: parseFloat(formData.finalPrice) || 0,
       discount: formData.discount,
       isAvailable: formData.isAvailable,
       isOnOffer: formData.isOnOffer,
@@ -1081,8 +1084,8 @@ const handleCreateListing = async () => {
       isNewArrival: formData.isNewArrival,
       isDiscounted: formData.isDiscounted,
       isFeatured: formData.isFeatured,
-      buyingPrice: parseFloat(formData.costPrice) || 0,
-      sellingPrice: parseFloat(formData.salesPrice) || 0,
+      costPrice: parseFloat(formData.costPrice) || 0,
+      salesPrice: parseFloat(formData.salesPrice) || 0,
       startDealDate: null,
       endDealDate: null,
       // Category-specific fields for Books
@@ -1105,7 +1108,7 @@ const handleCreateListing = async () => {
     };
 
     try {
-      const response = await fetch(`${apiUrl}/clients/addToMarketList`, {
+      const response = await fetch(`${apiUrl}/admin/post-product`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

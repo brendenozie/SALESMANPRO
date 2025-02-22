@@ -100,18 +100,19 @@ model Company {
 }
 
 model Product {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  name               String
-  description        String?
-  category           String?
-  subCategory        String?
-  images             String[]
-  video              String?
-  tags               String[]
-  brand              String?
-  companyId          String               @db.ObjectId
-  company            Company              @relation(fields: [companyId], references: [id])
-  
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  category     String?
+  subCategory  String?
+  images       String[]
+  video        String?
+  tags         String[]
+  profitMargin Float?   @default(0)
+  brand        String?
+  companyId    String   @db.ObjectId
+  company      Company  @relation(fields: [companyId], references: [id])
+
   productCategoryId  String?              @db.ObjectId
   productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
   inventoryItems     InventoryItem[]
@@ -122,51 +123,51 @@ model Product {
   OrderItem          OrderItem[]
   MarketplaceListing MarketplaceListing[]
 
-  model               String?
-  color               String[]
-  size                String[]
-  weight              String?
-  condition           String?
-  dimension           String?
-  material            String[]
-  // New fields for category-specific details:
-  author              String? // For Books
-  publisher           String? // For Books
-  isbn                String? // For Books
+  model     String?
+  color     String[]
+  size      String[]
+  weight    String?
+  condition String?
+  dimension String?
+  material  String[]
 
-  fabricComposition   String? // For Clothing/Fashion
-  careInstructions    String? // For Clothing/Fashion
+  // New fields for category-specific details:
+  author    String? // For Books
+  publisher String? // For Books
+  isbn      String? // For Books
+
+  fabricComposition String? // For Clothing/Fashion
+  careInstructions  String? // For Clothing/Fashion
 
   energyRating        String? // For Home Appliances
   warrantyPeriod      String? // For Home Appliances
   applianceDimensions String? // For Home Appliances – renamed to avoid conflict with 'dimension'
-  
-  ingredients         String? // For Beauty Products
-  usageInstructions   String? // For Beauty Products
-  expirationDate      DateTime? // For Beauty Products
 
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  
-  discount            Int?            @default(0)
+  ingredients       String? // For Beauty Products
+  usageInstructions String? // For Beauty Products
+  expirationDate    DateTime? // For Beauty Products
 
-  isAvailable         Boolean         @default(true)
-  isOnOffer           Boolean         @default(false)
-  isFlashDeal         Boolean         @default(false)
-  isNewArrival        Boolean         @default(false)
-  isDiscounted        Boolean         @default(false)
-  isFeatured          Boolean         @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  startDealDate       DateTime?
-  endDealDate         DateTime?
+  discount Int? @default(0)
 
-  costPrice          Float
-  salesPrice         Float
-  finalPrice         Float? @default(0)//Price inclusive discount
+  isAvailable  Boolean @default(true)
+  isOnOffer    Boolean @default(false)
+  isFlashDeal  Boolean @default(false)
+  isNewArrival Boolean @default(false)
+  isDiscounted Boolean @default(false)
+  isFeatured   Boolean @default(false)
 
-  contact String?
-  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
-  
+  startDealDate DateTime?
+  endDealDate   DateTime?
+
+  costPrice  Float
+  salesPrice Float
+  finalPrice Float? @default(0) //Price inclusive discount
+
+  contact  String?
+  location Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
 }
 
 model Task {
@@ -431,63 +432,65 @@ enum SellerType {
 }
 
 model MarketplaceListing {
-  id                  String          @id @default(auto()) @map("_id") @db.ObjectId
-  sellerId            String          @db.ObjectId
-  sellerType          SellerType
-  productId           String?         @db.ObjectId
-  product             Product?        @relation(fields: [productId], references: [id])
-  title               String          @default("New Name")
-  description         String?         @default("New Description")
-  quantity            Int
-  images              String[]
-  video               String?
-  productCategoryId   String          @db.ObjectId
-  productCategory     ProductCategory @relation(fields: [productCategoryId], references: [id])
-  category            String?
-  subCategory         Json
-  tags                String[]
-  brand               String?
-  model               String?
-  color               String[]
-  size                String[]
-  weight              String?
-  condition           String?
-  dimension           String?
-  material            String[]
-  // New fields for category-specific details:
-  author              String? // For Books
-  publisher           String? // For Books
-  isbn                String? // For Books
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  sellerId          String          @db.ObjectId
+  sellerType        SellerType
+  productId         String?         @db.ObjectId
+  product           Product?        @relation(fields: [productId], references: [id])
+  title             String          @default("New Name")
+  description       String?         @default("New Description")
+  quantity          Int
+  images            String[]
+  video             String?
+  productCategoryId String          @db.ObjectId
+  productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
+  category          String?
+  subCategory       Json
+  tags              String[]
+  brand             String?
+  model             String?
+  color             String[]
+  size              String[]
+  weight            String?
+  condition         String?
+  dimension         String?
+  material          String[]
+  profitMargin      Float?          @default(0)
 
-  fabricComposition   String? // For Clothing/Fashion
-  careInstructions    String? // For Clothing/Fashion
+  // New fields for category-specific details:
+  author    String? // For Books
+  publisher String? // For Books
+  isbn      String? // For Books
+
+  fabricComposition String? // For Clothing/Fashion
+  careInstructions  String? // For Clothing/Fashion
 
   energyRating        String? // For Home Appliances
   warrantyPeriod      String? // For Home Appliances
   applianceDimensions String? // For Home Appliances – renamed to avoid conflict with 'dimension'
 
-  ingredients         String? // For Beauty Products
-  usageInstructions   String? // For Beauty Products
-  expirationDate      DateTime? // For Beauty Products
+  ingredients       String? // For Beauty Products
+  usageInstructions String? // For Beauty Products
+  expirationDate    DateTime? // For Beauty Products
 
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  
-  discount            Int?            @default(0)
-  isAvailable         Boolean         @default(true)
-  isOnOffer           Boolean         @default(false)
-  isFlashDeal         Boolean         @default(false)
-  isNewArrival        Boolean         @default(false)
-  isDiscounted        Boolean         @default(false)
-  isFeatured          Boolean         @default(false)
-  startDealDate       DateTime?
-  endDealDate         DateTime?
-  buyingPrice         Float
-  sellingPrice        Float  
-  finalPrice         Float? @default(0)//Price inclusive discount
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  contact String?
-  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  discount      Int?      @default(0)
+  isAvailable   Boolean   @default(true)
+  isOnOffer     Boolean   @default(false)
+  isFlashDeal   Boolean   @default(false)
+  isNewArrival  Boolean   @default(false)
+  isDiscounted  Boolean   @default(false)
+  isFeatured    Boolean   @default(false)
+  startDealDate DateTime?
+  endDealDate   DateTime?
+  buyingPrice   Float
+  sellingPrice  Float
+  finalPrice    Float?    @default(0) //Price inclusive discount
+
+  contact  String?
+  location Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
 }
 
 model ClientInventory {
