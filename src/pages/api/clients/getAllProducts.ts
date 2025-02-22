@@ -56,3 +56,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: "Method not allowed" });
   }
 }
+
+
+// 5. Fetch products sorted by proximity
+// import clientPromise from '../../lib/mongodb';
+
+// export default async function handler(req, res) {
+//   if (req.method === 'GET') {
+//     const { lat, lng } = req.query;
+//     const db = (await clientPromise).db();
+//     const products = await db.collection('Product')
+//       .aggregate([
+//         {
+//           $geoNear: {
+//             near: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
+//             distanceField: 'distance',
+//             spherical: true,
+//           },
+//         },
+//       ]).toArray();
+//     res.status(200).json(products);
+//   }
+// }
+
+
+// 5. Fetch products sorted by proximity
+// import clientPromise from '../../lib/mongodb';
+
+// export default async function handler(req, res) {
+//   if (req.method === 'GET') {
+//     const { lat, lng } = req.query;
+//     const db = (await clientPromise).db();
+//     const query = lat && lng
+//       ? [
+//           {
+//             $geoNear: {
+//               near: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
+//               distanceField: 'distance',
+//               spherical: true,
+//             },
+//           },
+//         ]
+//       : [{ $sample: { size: 10 } }]; // Return random products if location is unavailable
+    
+//     const products = await db.collection('Product').aggregate(query).toArray();
+//     res.status(200).json(products);
+//   }
+// }

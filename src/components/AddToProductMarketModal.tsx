@@ -622,9 +622,9 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
             <button
               key={status}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.availability === status ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                formData.isAvailable === true ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
-              onClick={() => setFormData({ ...formData, availability: status })}
+              onClick={() => setFormData({ ...formData, isAvailable: status === "In Stock" })}
             >
               {status}
             </button>
@@ -951,40 +951,40 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     brand: marketListItem?.brand || product?.product?.brand || "",
     tags:marketListItem?.tags || product?.product?.tags || [],
     // Vehicle-specific keys
-    make: "",
-    trim: "",
-    type: "",
-    mileage: "",
-    engineType: "",
-    engineSize: "",
-    transmission: "",
-    drivetrain: "",
-    vin: "",
-    logbookStatus: "Available",
-    serviceHistory: "Full",
-    price: "",
-    negotiable: false,
-    financingAvailable: false,
-    tradeIn: false,
-    features: [],
-    location: "",
-    contact: "",
-    video: null,
+    make:  marketListItem?.make || product?.product?.make || "",
+    trim:  marketListItem?.trim || product?.product?.trim || "",
+    type:  marketListItem?.type || product?.product?.type || "",
+    mileage:  marketListItem?.mileage || product?.product?.mileage || "",
+    engineType:  marketListItem?.engineType || product?.product?.engineType || "",
+    engineSize:  marketListItem?.engineSize || product?.product?.engineSize || "",
+    transmission:  marketListItem?.transmission || product?.product?.transmission || "",
+    drivetrain:  marketListItem?.drivetrain || product?.product?.drivetrain || "",
+    vin:  marketListItem?.vin || product?.product?.vin || "",
+    logbookStatus:  marketListItem?.logbookStatus || product?.product?.logbookStatus || "Available",
+    serviceHistory:  marketListItem?.serviceHistory || product?.product?.serviceHistory || "Full",
+    price:  marketListItem?.price || product?.product?.price || "",
+    negotiable:  marketListItem?.negotiable || product?.product?.negotiable || false,
+    financingAvailable:  marketListItem?.financingAvailable || product?.product?.financingAvailable || false,
+    tradeIn:  marketListItem?.tradeIn || product?.product?.tradeIn || false,
+    features:  marketListItem?.features || product?.product?.features || [],
+    location:  marketListItem?.location || product?.product?.location || "",
+    contact:  marketListItem?.contact || product?.product?.contact || "",
+    video:  marketListItem?.video || product?.product?.video || null,
     // Extra fields for Books:
-    author: "",
-    publisher: "",
-    isbn: "",
+    author:  marketListItem?.author || product?.product?.author || "",
+    publisher:  marketListItem?.publisher || product?.product?.publisher || "",
+    isbn:  marketListItem?.isbn || product?.product?.isbn || "",
     // Extra fields for Clothing/Fashion:
-    fabricComposition: "",
-    careInstructions: "",
+    fabricComposition:  marketListItem?.fabricComposition || product?.product?.fabricComposition || "",
+    careInstructions:  marketListItem?.careInstructions || product?.product?.careInstructions || "",
     // Extra fields for Home Appliances:
-    energyRating: "",
-    warrantyPeriod: "",
-    dimensions: "",
+    energyRating:  marketListItem?.energyRating || product?.product?.energyRating || "",
+    warrantyPeriod:  marketListItem?.warrantyPeriod || product?.product?.warrantyPeriod || "",
+    dimensions:  marketListItem?.dimensions || product?.product?.dimensions || "",
     // Extra fields for Beauty Products:
-    ingredients: "",
-    usageInstructions: "",
-    expirationDate: ""
+    ingredients:  marketListItem?.ingredients || product?.product?.ingredients || "",
+    usageInstructions:  marketListItem?.usageInstructions || product?.product?.usageInstructions || "",
+    expirationDate:  marketListItem?.expirationDate || product?.product?.expirationDate || ""
   });
 
   const stepsForCategory: number[] = useMemo(() => {

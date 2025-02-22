@@ -37,6 +37,46 @@ const ProductList = () => {
   const [cartItems, setCartItems] = useState([]);
   const observer = useRef();
 
+  // useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(async (position) => {
+  //       const { latitude, longitude } = position.coords;
+  //       const response = await fetch(`/api/products?lat=${latitude}&lng=${longitude}`);
+  //       const data = await response.json();
+  //       setProducts(data);
+  //       setLoading(false);
+  //     });
+  //   }
+  // }, []);
+
+
+  //  useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         const response = await fetch(`/api/products?lat=${latitude}&lng=${longitude}`);
+  //         const data = await response.json();
+  //         setProducts(data);
+  //         setLoading(false);
+  //       },
+  //       () => {
+  //         // If location access is denied, fetch random products
+  //         fetch(`/api/products`)
+  //           .then((res) => res.json())
+  //           .then((data) => {
+  //             setProducts(data);
+  //             setLoading(false);
+  //           })
+  //           .catch(() => setError('Failed to load products'));
+  //       }
+  //     );
+  //   } else {
+  //     setError('Geolocation is not supported');
+  //     setLoading(false);
+  //   }
+  // }, []);
+
   // Sync filters with URL when filters change
   useEffect(() => {
     const queryParams = {
