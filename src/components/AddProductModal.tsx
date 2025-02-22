@@ -138,7 +138,7 @@ const CategoryPicker = ({
       setSelectedSubcategory(null);
       setSelectedBrand(null);
     }
-    if (field === "subcategory")setSelectedSubcategory(value);
+    if (field === "subcategory") setSelectedSubcategory(value);
     if (field === "brand") setSelectedBrand(value);
   };
 
@@ -208,7 +208,7 @@ const CategoryPicker = ({
             {filteredSubCategories.map((sub: any) => (
               <button
                 key={sub.id}
-                onClick={() => handleSelection("subcategory", sub.name)}
+                onClick={() => handleSelection("subcategory", sub)}
                 className={`px-4 py-2 h-12 rounded-lg border text-sm transition-all duration-200 ${
                   selectedSubcategory === sub.name
                     ? "bg-orange-500 text-white border-orange-500"
@@ -403,6 +403,36 @@ const GeneralDetails = ({ formData, setFormData }: any) => {
           <option value="Used">Used</option>
           <option value="Certified Pre-Owned">Certified Pre-Owned</option>
         </select>
+        {/* Commission Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Commission Rate */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Commission Rate (%)</label>
+            <input
+              type="number"
+              name="commissionRate"
+              value={formData.commissionRate}
+              onChange={handleChange}
+              // onChange={(e) => setNewProduct({ ...newProduct, commissionRate: parseFloat(e.target.value) || 0 })}
+              placeholder="Enter commission rate"
+              className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Commission Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Commission Type</label>
+            <select name="commissionType"
+              value={formData.commissionType}
+              onChange={handleChange}
+              // onChange={(e) => setNewProduct({ ...newProduct, commissionType: e.target.value })}
+              className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="COST">COST</option>
+              <option value="QUANTITY">QUANTITY</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -922,74 +952,77 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    id: product?.id || "",
-    name: product?.name || "",
-    description: product?.description || "",
-    productCategoryId: product?.productCategoryId || "",
-    model: product?.model || "",
-    color: product?.color || "",
-    size: product?.size || "",
-    weight: product?.weight || "",
-    condition: product?.condition || "",
-    dimension:  product?.dimension || "",
-    material:  product?.material || "",
-    images: product?.image || "",
-    isAvailable: product?.isAvailable || false,
-    isOnOffer: product?.isOnOffer || false,
-    isFlashDeal: product?.isFlashDeal || false,
-    isNewArrival: product?.isNewArrival || false,
-    isDiscounted: product?.isDiscounted || false,
-    isFeatured: product?.isFeatured || false,
-    quantity: product?.companyStock || 1,
-    costPrice: product?.costPrice || "",
-    salesPrice: product?.salesPrice || 0,
-    discount: product?.discount || 0,
-    finalPrice: product?.finalPrice || 0,
-    profitMargin: product?.profitMargin || 0,
-    category: product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategory: product?.subCategory || "",
-    brand: product?.brand || "",
-    tags: product?.tags || [],
+    id: product?.product?.id || "",
+    name: product?.product?.name || "",
+    description: product?.product?.description || "",
+    productCategoryId: product?.product?.productCategoryId || "",
+    model: product?.product?.model || "",
+    color: product?.product?.color || "",
+    size: product?.product?.size || "",
+    weight: product?.product?.weight || "",
+    condition: product?.product?.condition || "",
+    dimension:  product?.product?.dimension || "",
+    material:  product?.product?.material || "",
+    images: product?.product?.image || "",
+    isAvailable: product?.product?.isAvailable || false,
+    isOnOffer: product?.product?.isOnOffer || false,
+    isFlashDeal: product?.product?.isFlashDeal || false,
+    isNewArrival: product?.product?.isNewArrival || false,
+    isDiscounted: product?.product?.isDiscounted || false,
+    isFeatured: product?.product?.isFeatured || false,
+    quantity: product?.product?.companyStock || 1,
+    costPrice: product?.product?.costPrice || "",
+    salesPrice: product?.product?.salesPrice || 0,
+    discount: product?.product?.discount || 0,
+    finalPrice: product?.product?.finalPrice || 0,
+    profitMargin: product?.product?.profitMargin || 0,
+    category: product?.product?.productCategory || { subcategories: [], allBrands: [] },
+    subCategory: product?.product?.subCategory || "",
+    brand: product?.product?.brand || "",
+    tags: product?.product?.tags || [],
 
-    commissionRate: product?.commissionRate || 0,
-    commissionType: product?.commissionType || 'COST', // Default to "Percentage"
-    companyId: product?.companyId || '63f7c9e2d91b1b2a5e80b007',
+    commissionRate: product?.product?.commissionRate || 0,
+    commissionType: product?.product?.commissionType || 'COST', // Default to "Percentage"
+    companyId: product?.product?.companyId || '63f7c9e2d91b1b2a5e80b007',
     // Vehicle-specific keys
-    make: product?.make || "",
-    trim: product?.trim || "",
-    type: product?.type || "",
-    mileage: product?.mileage || "",
-    engineType: product?.engineType || "",
-    engineSize: product?.engineSize || "",
-    transmission: product?.transmission || "",
-    drivetrain: product?.drivetrain || "",
+    make: product?.product?.make || "",
+    trim: product?.product?.trim || "",
+    type: product?.product?.type || "",
+    mileage: product?.product?.mileage || "",
+    engineType: product?.product?.engineType || "",
+    engineSize: product?.product?.engineSize || "",
+    transmission: product?.product?.transmission || "",
+    drivetrain: product?.product?.drivetrain || "",
     
-    vin: product?.vin || "",
-    logbookStatus: product?.logbookStatus || "Available",
-    serviceHistory: product?.serviceHistory || "Full",
+    vin: product?.product?.vin || "",
+    logbookStatus: product?.product?.logbookStatus || "Available",
+    serviceHistory: product?.product?.serviceHistory || "Full",
     
-    negotiable: product?.negotiable || false,
-    financingAvailable: product?.financingAvailable || false,
-    tradeIn: product?.tradeIn || false,
-    features: product?.features || [],
-    location: product?.location || "",
-    contact: product?.contact || "",
-    video: product?.video || null,
+    negotiable: product?.product?.negotiable || false,
+    financingAvailable: product?.product?.financingAvailable || false,
+    tradeIn: product?.product?.tradeIn || false,
+    features: product?.product?.features || [],
+    location: product?.product?.location || "",
+    contact: product?.product?.contact || "",
+    video: product?.product?.video || null,
     // Extra fields for Books:
-    author: product?.author || "",
-    publisher: product?.publisher || "",
-    isbn: product?.isbn || "",
+    author: product?.product?.author || "",
+    publisher: product?.product?.publisher || "",
+    isbn: product?.product?.isbn || "",
     // Extra fields for Clothing/Fashion:
-    fabricComposition: product?.fabricComposition || "",
-    careInstructions: product?.careInstructions || "",
+    fabricComposition: product?.product?.fabricComposition || "",
+    careInstructions: product?.product?.careInstructions || "",
     // Extra fields for Home Appliances:
-    energyRating: product?.energyRating || "",
-    warrantyPeriod: product?.warrantyPeriod || "",
-    dimensions: product?.dimensions || "",
+    energyRating: product?.product?.energyRating || "",
+    warrantyPeriod: product?.product?.warrantyPeriod || "",
+    dimensions: product?.product?.dimensions || "",
     // Extra fields for Beauty Products:
-    ingredients: product?.ingredients || "",
-    usageInstructions: product?.usageInstructions || "",
-    expirationDate: product?.expirationDate || ""
+    ingredients: product?.product?.ingredients || "",
+    usageInstructions: product?.product?.usageInstructions || "",
+    expirationDate: product?.product?.expirationDate || "",
+
+      startDealDate: product?.product?.startDealDate,
+      endDealDate: product?.product?.endDealDate,
   });
 
   const stepsForCategory: number[] = useMemo(() => {
@@ -1068,9 +1101,9 @@ const handleCreateListing = async () => {
       weight: formData.weight,
       condition: formData.condition,
       dimension: formData.dimension,
-      commissionRate: product?.commissionRate || 0,
-      commissionType: product?.commissionType || 'COST', // Default to "Percentage"
-      companyId: product?.companyId || '63f7c9e2d91b1b2a5e80b007',
+      commissionRate: formData.commissionRate || 0,
+      commissionType: formData.commissionType || 'COST', // Default to "Percentage"
+      companyId: formData.companyId || '63f7c9e2d91b1b2a5e80b007',
       material: Array.isArray(formData.material)
         ? formData.material
         : formData.material
@@ -1086,8 +1119,8 @@ const handleCreateListing = async () => {
       isFeatured: formData.isFeatured,
       costPrice: parseFloat(formData.costPrice) || 0,
       salesPrice: parseFloat(formData.salesPrice) || 0,
-      startDealDate: null,
-      endDealDate: null,
+      startDealDate: formData.startDealDate,
+      endDealDate: formData.endDealDate,
       // Category-specific fields for Books
       author: formData.author || "",
       publisher: formData.publisher || "",
