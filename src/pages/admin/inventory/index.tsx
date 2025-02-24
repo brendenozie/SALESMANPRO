@@ -1,4 +1,5 @@
 import AddProductModal from "@/components/AddProductModal";
+import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import AdminLayout from "@/components/AdminLayout";
 import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
@@ -55,7 +56,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
   const [showAssignProductModal, setShowAssignProductModal] = useState(false);
   const [showReturnProductModal, setShowReturnProductModal] = useState(false);
   const [showRestockProductModal, setShowRestockProductModal] = useState(false);
-
+  const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -142,6 +143,16 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
                       >
                         Assign 
                       </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setShowAddToMarketProductModal(true);
+                        }}
+                        className="bg-orange-500 col-span-2 text-white px-6 py-3 rounded-lg shadow-md hover:bg-orange-600 transition duration-300 transform hover:scale-105"
+                      >
+                        Add to Market List 
+                      </button>
                     </div>
                   </div>
 
@@ -189,6 +200,20 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
               product={selectedProduct}
             />
           )}
+
+          {showAddToMarketProductModal && (
+              <AddToProductMarketModal
+                showRequestProductModal={showAddToMarketProductModal}
+                setShowRequestProductModal={setShowAddToMarketProductModal}
+                product={selectedProduct}
+                inventoryItemId={selectedAgent?.id}
+                agentInventoryItemId={selectedAgent?.id}
+                quantity={stockAmount}
+                sellerId={"63f7c9e2d91b1b2a5e80b013"}
+                salesAgentId={selectedAgent}
+                sellerType={"ADMIN"}
+              />
+            )}
         </div>
       </div>
     </AdminLayout>

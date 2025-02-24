@@ -21,6 +21,7 @@ const AdminLayout = ({ children }: PropsWithChildren) => {
       icon: UsersIcon,
       subItems: [
         { label: "Browse Catalog", href: "/admin/inventory" },
+        { label: "Market List", href: "/admin/mymarketplace" },
       ],      
     },
     {

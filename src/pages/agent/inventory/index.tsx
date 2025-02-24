@@ -87,9 +87,9 @@ const ProductsPage = ({ inventoryData }: Props) => {
   const itemsPerPage = 6;
 
   const [showRequestCustomerProductModal, setShowRequestCustomerAssignProductModal] = useState(false);    
-      // const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-      const [salesAgentId, setSelectedSalesAgentId] = useState<String>("63f7c9e2d91b1b2a5e80b016");
-      // const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
+  // const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [salesAgentId, setSelectedSalesAgentId] = useState<String>("63f7c9e2d91b1b2a5e80b016");
+  // const [inventoryItemId, setSelectedInventoryItemId] = useState<String>("");
     
   
 

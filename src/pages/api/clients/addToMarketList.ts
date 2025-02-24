@@ -44,7 +44,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     applianceDimensions,
     ingredients,
     usageInstructions,
-    expirationDate
+    expirationDate,
+    contact,
+    location,
+    discount
   } = req.body;
 
   if (!sellerId || !sellerType || !productId || !quantity || typeof quantity !== "number") {
@@ -97,7 +100,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         usageInstructions: usageInstructions || null,
         expirationDate: expirationDate ? new Date(expirationDate) : null,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        contact:contact,
+        location:location,
+        discount:discount
       }
     });
 
