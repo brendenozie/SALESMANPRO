@@ -28,8 +28,9 @@ const AdminLayout = ({ children }: PropsWithChildren) => {
       label: "Orders",
       icon: UsersIcon,
       subItems: [
-        { label: "Agent Order Request History", href: "/admin/agentorders" },
-        { label: "Client Order Request History", href: "/admin/clientorders" },
+        { label: "Agent Requests", href: "/admin/agentorders" },
+        { label: "Client Requests", href: "/admin/clientorders" },
+        { label: "Market Place Requests", href: "/admin/customerorders" },
       ],
     },
     {

@@ -66,6 +66,110 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row transition-colors duration-300">
       
+      {/* Desktop Sidebar (Always Visible) */}
+      <div className="hidden md:flex">
+        <Sidebar 
+          tabs={tabs} 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          sidebarOpen={true} 
+          setSidebarOpen={setSidebarOpen} 
+        />
+      </div>
+
+      {/* Mobile Sidebar (Slide-in) */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 md:hidden">
+          <Sidebar 
+            tabs={tabs} 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+            sidebarOpen={sidebarOpen} 
+            setSidebarOpen={setSidebarOpen} 
+          />
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 p-6 space-y-6 relative">
+        {/* Top Navigation */}
+        <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+          {/* Sidebar Toggle for Mobile */}
+          <a href='/shop/'>
+            <button className="md:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+              <HomeIcon className="w-6 h-6 text-gray-800 dark:text-white" />
+            </button>
+          </a>
+
+          {/* Search Bar */}
+          <div className="relative w-full md:w-auto">
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="w-full p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
+            />
+            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
+          </div>
+
+          {/* Theme Toggle */}
+          <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+            {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
+          </button>
+
+          {/* Notifications */}
+          <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+            <BellIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Dynamic Tab Content */}
+        <TabContent activeTab={activeTab} accentColor={accentColor}/>
+      </div>
+
+      {/* Bottom Mobile Navigation */}
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
+    </div>
+  );
+};
+
+const Sidebar = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => (
+  <motion.div
+    initial={{ x: -250 }}
+    animate={{ x: sidebarOpen ? 0 : -250 }}
+    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+    className={`fixed md:relative md:translate-x-0 flex flex-col h-screen w-64 md:w-72 bg-gray-800 text-white p-4 shadow-xl 
+      transform transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:flex`}
+  >
+    {/* Close Button for Mobile */}
+    <button className="md:hidden p-2 bg-gray-700 rounded-full mb-4" onClick={() => setSidebarOpen(false)}>
+      <XMarkIcon className="w-6 h-6 text-white" />
+    </button>
+
+    {/* Sidebar Links */}
+    {tabs.map(tab => (
+      <button 
+        key={tab.key} 
+        onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }} 
+        className={`flex items-center gap-3 p-3 rounded-xl mt-2 transition hover:bg-gray-700 
+          ${activeTab === tab.key ? 'bg-yellow-500 text-black' : 'text-white'}`}
+      >
+        <tab.icon className="w-6 h-6" />
+        {tab.name}
+      </button>
+    ))}
+  </motion.div>
+);
+
+const ProfilePageV1 = () => {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [accentColor, setAccentColor] = useState('yellow');
+  const { isDarkMode, setMode } = useStateContext();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row transition-colors duration-300">
+      
       {/* Sidebar for Desktop & Slide-in for Mobile */}
       <Sidebar 
         tabs={tabs} 
@@ -79,10 +183,7 @@ const ProfilePage = () => {
       <div className="flex-1 p-6 space-y-6 relative ">
         {/* Top Navigation md:ml-72*/}
         <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
-          {/* Mobile Sidebar Toggle */}
-          {/* <button className="md:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700" onClick={() => setSidebarOpen(true)}>
-            <Bars3Icon className="w-6 h-6 text-gray-800 dark:text-white" />
-          </button> */}
+        
           {/* Home Button */}
           <button className="md:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700" onClick={() => setSidebarOpen(true)}>
             <HomeIcon className="w-6 h-6 text-gray-800 dark:text-white" />
@@ -119,8 +220,94 @@ const ProfilePage = () => {
   );
 };
 
+const SidebarV1 = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => (
+  <motion.div
+    initial={{ x: -250 }}
+    animate={{ x: sidebarOpen ? 0 : -250 }}
+    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+    className={`fixed md:relative md:translate-x-0 flex flex-col h-screen w-64 md:w-72 bg-gray-800 text-white p-4 shadow-xl 
+      transform transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:flex`}
+  >
+    {/* Close Button for Mobile */}
+    <button className="md:hidden p-2 bg-gray-700 rounded-full mb-4" onClick={() => setSidebarOpen(false)}>
+      <XMarkIcon className="w-6 h-6 text-white" />
+    </button>
+
+    {/* Sidebar Links */}
+    {tabs.map(tab => (
+      <button 
+        key={tab.key} 
+        onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }} 
+        className={`flex items-center gap-3 p-3 rounded-xl mt-2 transition hover:bg-gray-700 
+          ${activeTab === tab.key ? 'bg-yellow-500 text-black' : 'text-white'}`}
+      >
+        <tab.icon className="w-6 h-6" />
+        {tab.name}
+      </button>
+    ))}
+  </motion.div>
+);
+
+
+const SidebarV3 = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => (
+  <motion.div
+    initial={{ x: -250 }}
+    animate={{ x: sidebarOpen ? 0 : -250 }}
+    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+    className={`fixed md:flex flex-col h-screen w-64 md:w-72 bg-gray-800 text-white p-4 shadow-xl 
+      transform transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+      md:translate-x-0 md:relative`}
+  >
+    {/* Close Button for Mobile */}
+    <button className="md:hidden p-2 bg-gray-700 rounded-full mb-4" onClick={() => setSidebarOpen(false)}>
+      <XMarkIcon className="w-6 h-6 text-white" />
+    </button>
+
+    {/* Sidebar Links */}
+    {tabs.map(tab => (
+      <button 
+        key={tab.key} 
+        onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }} 
+        className={`flex items-center gap-3 p-3 rounded-xl mt-2 transition hover:bg-gray-700 
+          ${activeTab === tab.key ? 'bg-yellow-500 text-black' : 'text-white'}`}
+      >
+        <tab.icon className="w-6 h-6" />
+        {tab.name}
+      </button>
+    ))}
+  </motion.div>
+);
+
+const SidebarV2 = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => (
+  <motion.div
+    initial={{ x: -250 }}
+    animate={{ x: sidebarOpen ? 0 : -250 }}
+    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+    className={`fixed md:relative z-40 flex flex-col h-screen w-64 md:w-72 bg-gray-800 text-white p-4 shadow-xl 
+      ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-48 transition-transform md:flex`}
+  >
+    {/* Close Button for Mobile */}
+    <button className="md:hidden p-2 bg-gray-700 rounded-full mb-4" onClick={() => setSidebarOpen(false)}>
+      <XMarkIcon className="w-6 h-6 text-white" />
+    </button>
+
+    {/* Sidebar Links */}
+    {tabs.map(tab => (
+      <button 
+        key={tab.key} 
+        onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }} 
+        className={`flex items-center gap-3 p-3 rounded-xl mt-2 transition hover:bg-gray-700 
+          ${activeTab === tab.key ? 'bg-yellow-500 text-black' : 'text-white'}`}
+      >
+        <tab.icon className="w-6 h-6" />
+        {tab.name}
+      </button>
+    ))}
+  </motion.div>
+);
+
 /* Responsive Sidebar */
-const Sidebar = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => (
+const Sidebarv1 = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => (
   <motion.div
     initial={{ x: -250 }}
     animate={{ x: sidebarOpen ? 0 : -250 }}

@@ -160,8 +160,6 @@ const AdminDash = (props: Props) => {
     },
   ];
 
-
-
     return (
         <AdminLayout>
             <div className="flex flex-col min-h-screen bg-gray-900 text-white w-full">
