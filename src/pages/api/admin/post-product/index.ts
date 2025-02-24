@@ -50,6 +50,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     expirationDate,    
     commissionRate,
     commissionType, // Default to "Percentage"
+    contact,
+    location
   }  = req.body;
   
   // Validate required fields
@@ -132,7 +134,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               expirationDate: expirationDate ? new Date(expirationDate) : null,
               startDealDate: startDealDate,
               endDealDate   :endDealDate,
-              updatedAt: new Date()
+              updatedAt: new Date(),
+              contact:contact,
+              location:location
         },
       });
     } else {
@@ -178,7 +182,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               startDealDate: startDealDate,
               endDealDate   :endDealDate,
               createdAt: new Date(),
-              updatedAt: new Date()
+              updatedAt: new Date(),
+              contact:contact,
+              location:location
             }
           });
           
@@ -202,7 +208,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         endDate: parsedEndDate,
       },
     });
-    
+
     res.status(201).json({ product, commissionRate: commissionRateRecord });
   } catch (error) {
     console.error("Error creating or updating product and commission rate:", error);
