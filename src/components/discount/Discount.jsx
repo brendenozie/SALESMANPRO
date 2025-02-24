@@ -36,7 +36,7 @@ const Dcard = ({ productItems, addToCart }) => {
           <div className="relative group overflow-hidden rounded-3xl shadow-2xl">
             <img
               src={value.image}
-              alt={value.newName}
+              alt={value.title}
               className="w-full h-[380px] object-cover transform transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
             />
 
@@ -48,12 +48,12 @@ const Dcard = ({ productItems, addToCart }) => {
 
             <div className="absolute bottom-6 left-6 right-6 bg-white/30 backdrop-blur-lg p-4 rounded-xl shadow-xl">
               <h4 className="text-xl font-semibold text-white truncate">
-                {value.newName}
+                {value.title}
               </h4>
 
               <div className="flex justify-between items-center mt-3">
                 <span className="text-xl font-bold text-yellow-300">
-                  ${value.sellingPrice}
+                  ${value.finalPrice}
                 </span>
 
                 <motion.button

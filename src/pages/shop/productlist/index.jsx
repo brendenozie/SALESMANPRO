@@ -235,7 +235,7 @@ const ProductCard = ({ product }) => {
       <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
         <motion.img
           src={product.image}
-          alt={product.newName}
+          alt={product.title}
           className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
           whileHover={{ rotate: 2 }}
         />
@@ -253,7 +253,7 @@ const ProductCard = ({ product }) => {
         {/* Price & Add to Cart Button */}
         <div className="flex justify-between items-center w-full mt-2">
           <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
-            ${product.sellingPrice.toFixed(2)}
+            ${product.finalPrice ? product.finalPrice.toFixed(2) : 0}
           </span>
 
            <motion.button

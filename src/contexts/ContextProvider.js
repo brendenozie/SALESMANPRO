@@ -168,7 +168,7 @@ export const ContextProvider = ({ children }) => {
   const handleClick = (clicked) => setIsClicked({ ...initialState, [clicked]: true });
 
   const cartSubtotal = useMemo(() => {
-    return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    return cart.reduce((acc, item) => acc + item.finalPrice * item.quantity, 0);
   }, [cart]);
 
   const contextValue = useMemo(

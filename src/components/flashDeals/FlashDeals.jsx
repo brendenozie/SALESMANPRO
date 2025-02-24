@@ -71,7 +71,7 @@ const FlashCard = ({ productItems, addToCart }) => {
               </span>
               <img
                 src={product.cover}
-                alt={`Product image of ${product.name}`}
+                alt={`Product image of ${product.title}`}
                 className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
               />
               <button
@@ -87,7 +87,7 @@ const FlashCard = ({ productItems, addToCart }) => {
               </button>
             </div>
             <div className="p-4 text-center">
-              <h3 className="text-lg font-semibold truncate">{product.name}</h3>
+              <h3 className="text-lg font-semibold truncate">{product.title}</h3>
               <div className="flex justify-center mt-2 space-x-1">
                 {[...Array(5)].map((_, i) => (
                   <StarIcon
@@ -102,7 +102,7 @@ const FlashCard = ({ productItems, addToCart }) => {
               </div>
               <div className="flex justify-between items-center mt-4">
                 <span className="text-xl font-bold text-yellow-500">
-                  ${product.sellingPrice}
+                  ${product.finalPrice}
                 </span>
                 <motion.button
                   whileHover={{ scale: 1.1 }}

@@ -11,7 +11,7 @@ const Cart = () => {
 
   // Memoize subtotal calculation
   const calculateSubtotal = useMemo(() => {
-    return cart.reduce((total, item) => total + item.sellingPrice * item.quantity, 0).toFixed(2);
+    return cart.reduce((total, item) => total + item.finalPrice * item.quantity, 0).toFixed(2);
   }, [cart]);
 
   const handleCheckout = useCallback(() => {

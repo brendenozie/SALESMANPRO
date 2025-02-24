@@ -51,7 +51,7 @@ const Shop = ({ addToCart,category, shopItems }) => {
                  {/* Price & Add to Cart Button */}
                   <div className="flex justify-between items-center w-full mt-2">
                     <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
-                      ${item.finalPrice ? item.finalPrice : item.sellingPrice }
+                      ${item.finalPrice}
                     </span>
       
                     <motion.button
@@ -122,7 +122,7 @@ const ProductGrid = ({ shopItems }) => {
           <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
             <motion.img
               src={item.cover}
-              alt={item.newName}
+              alt={item.title}
               className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
               whileHover={{ rotate: 2 }}
             />
@@ -131,11 +131,11 @@ const ProductGrid = ({ shopItems }) => {
           {/* Product Info */}
           <div className="w-full mt-3 flex flex-col items-center">
             <h4 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
-              {item.newName}
+              {item.title}
             </h4>
 
             <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl mt-1">
-              ${item.sellingPrice}.00
+              ${item.finalPrice}.00
             </span>
           </div>
 
