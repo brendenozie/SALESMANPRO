@@ -69,50 +69,93 @@ const ProfilePage = () => {
   const handleSearch = (e) => setSearchQuery(e.target.value);
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 inline-flex md:flex transition-colors duration-300`}>      
-      <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex transition-colors duration-300">
+  {/* Sidebar */}
+  <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
 
-      <div className="flex-1 p-6 space-y-6 relative">
-        <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md">
-          <button onClick={toggleSidebar} className="md:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-            {sidebarOpen ? <XMarkIcon className="w-5 h-5" /> : <BookmarkIcon className="w-5 h-5" />}
-          </button>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={searchQuery} 
-              onChange={handleSearch} 
-              placeholder="Search..." 
-              className="p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
-            />
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
-          </div>
-          <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-            {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
-          </button>
-          <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-            <BellIcon className="w-5 h-5" />
-            {notifications > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{notifications}</span>}
-          </button>
-          <button onClick={() => router.push("/shop")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-            <ShoppingBagIcon className={`w-5 h-5 ${isDarkMode ? "text-yellow-400" : "text-gray-800"}`} />
-          </button>
-        </div>
-
-        <TabContent activeTab={activeTab} accentColor={accentColor} />
+  {/* Main Content - Shift When Sidebar Opens */}
+  <div className={`p-6 space-y-6 transition-all duration-300 flex-1 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+    {/* Top Navigation Bar */}
+    <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md">
+      {/* Search Bar */}
+      <div className="relative">
+        <input 
+          type="text" 
+          value={searchQuery} 
+          onChange={handleSearch} 
+          placeholder="Search..." 
+          className="p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
+        />
+        <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
       </div>
+      
+      {/* Other Icons */}
+      <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
+      </button>
+      <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        <BellIcon className="w-5 h-5" />
+        {notifications > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{notifications}</span>}
+      </button>
+      <button onClick={() => router.push("/shop")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        <ShoppingBagIcon className={`w-5 h-5 ${isDarkMode ? "text-yellow-400" : "text-gray-800"}`} />
+      </button>
     </div>
+
+    {/* Dynamic Content */}
+    <TabContent activeTab={activeTab} accentColor={accentColor} />
+  </div>
+</div>
+
+    // <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 inline-flex md:flex transition-colors duration-300`}>      
+    //   <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
+
+    //   <div className="flex-1 p-6 space-y-6 relative">
+    //     <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md">
+    //       <div className="relative">
+    //         <input 
+    //           type="text" 
+    //           value={searchQuery} 
+    //           onChange={handleSearch} 
+    //           placeholder="Search..." 
+    //           className="p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
+    //         />
+    //         <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
+    //       </div>
+    //       <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+    //         {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
+    //       </button>
+    //       <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+    //         <BellIcon className="w-5 h-5" />
+    //         {notifications > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{notifications}</span>}
+    //       </button>
+    //       <button onClick={() => router.push("/shop")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+    //         <ShoppingBagIcon className={`w-5 h-5 ${isDarkMode ? "text-yellow-400" : "text-gray-800"}`} />
+    //       </button>
+    //     </div>
+
+    //     <TabContent activeTab={activeTab} accentColor={accentColor} />
+    //   </div>
+    // </div>
   );
 };
 
 const Sidebar = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen, accentColor }) => (
   <motion.div
-    initial={{ x: -250 }}
-    animate={{ x: sidebarOpen ? 0 : -250 }}
+    initial={{ width: 250 }}
+    animate={{ width: sidebarOpen ? 250 : 70 }}
     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        // className={`fixed md:relative z-20 md:flex flex-col w-64 ${sidebarOpen ? ' mt-24 min-h-full min-w-full justify-items-center text-center justify-center items-center block' : 'hidden'} bg-gradient-to-b from-${accentColor}-400 to-${accentColor}-500 dark:from-gray-800 dark:to-gray-900 shadow-xl p-4 rounded-r-2xl`}
-    className={`fixed md:relative z-20 md:flex flex-col w-64 ${sidebarOpen ? 'block' : 'hidden'} bg-gradient-to-b from-${accentColor}-400 to-${accentColor}-500 dark:from-gray-800 dark:to-gray-900 shadow-xl p-4 rounded-r-2xl`}
+    className={`fixed md:relative z-20 flex flex-col h-screen bg-gradient-to-b from-${accentColor}-400 to-${accentColor}-500 dark:from-gray-800 dark:to-gray-900 shadow-xl p-4 rounded-r-2xl`}
   >
+    {/* Sidebar Toggle Button - Always Visible */}
+    <button
+      onClick={() => setSidebarOpen(!sidebarOpen)}
+      className="absolute -right-5 top-6 p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow-lg z-30 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+    >
+      {sidebarOpen ? <XMarkIcon className="w-6 h-6 text-gray-800 dark:text-white" /> : <ArrowTrendingUpIcon className="w-6 h-6 text-gray-800 dark:text-white" />}
+    </button>
+
+    {/* Sidebar Menu */}
     {tabs.map((tab) => (
       <button
         key={tab.key}
@@ -120,12 +163,14 @@ const Sidebar = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen, a
         className={`flex items-center gap-3 p-3 rounded-xl mt-2 transition-all hover:bg-white hover:text-${accentColor}-500 relative overflow-hidden
           ${activeTab === tab.key ? `bg-white text-${accentColor}-500 shadow-lg` : 'text-white'}`}
       >
-        <span className={`absolute left-0 h-full w-1 bg-${accentColor}-500 transition-transform ${activeTab === tab.key ? 'scale-y-100' : 'scale-y-0'}`}></span>
-        <tab.icon className="w-5 h-5" /> {sidebarOpen && tab.name}
+        <tab.icon className="w-5 h-5" />
+        {sidebarOpen && tab.name}
       </button>
     ))}
   </motion.div>
 );
+
+
 
 const TabContent = ({ activeTab, accentColor }) => {
   switch (activeTab) {
