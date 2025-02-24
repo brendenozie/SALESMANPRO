@@ -653,7 +653,7 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
             <button
               key={status}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.isAvailable === true ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                formData.isAvailable && status === "In Stock" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
               onClick={() => setFormData({ ...formData, isAvailable: status === "In Stock" })}
             >
