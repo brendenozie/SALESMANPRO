@@ -69,74 +69,37 @@ const ProfilePage = () => {
   const handleSearch = (e) => setSearchQuery(e.target.value);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex transition-colors duration-300">
-  {/* Sidebar */}
-  <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
+    
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 inline-flex md:flex transition-colors duration-300`}>      
+      <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
 
-  {/* Main Content - Shift When Sidebar Opens */}
-  <div className={`p-6 space-y-6 transition-all duration-300 flex-1 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
-    {/* Top Navigation Bar */}
-    <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md">
-      {/* Search Bar */}
-      <div className="relative">
-        <input 
-          type="text" 
-          value={searchQuery} 
-          onChange={handleSearch} 
-          placeholder="Search..." 
-          className="p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
-        />
-        <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
+      <div className="flex-1 p-6 space-y-6 relative">
+        <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md">
+          <div className="relative">
+            <input 
+              type="text" 
+              value={searchQuery} 
+              onChange={handleSearch} 
+              placeholder="Search..." 
+              className="p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
+            />
+            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
+          </div>
+          <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
+          </button>
+          <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            <BellIcon className="w-5 h-5" />
+            {notifications > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{notifications}</span>}
+          </button>
+          <button onClick={() => router.push("/shop")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            <ShoppingBagIcon className={`w-5 h-5 ${isDarkMode ? "text-yellow-400" : "text-gray-800"}`} />
+          </button>
+        </div>
+
+        <TabContent activeTab={activeTab} accentColor={accentColor} />
       </div>
-      
-      {/* Other Icons */}
-      <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-        {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
-      </button>
-      <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-        <BellIcon className="w-5 h-5" />
-        {notifications > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{notifications}</span>}
-      </button>
-      <button onClick={() => router.push("/shop")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-        <ShoppingBagIcon className={`w-5 h-5 ${isDarkMode ? "text-yellow-400" : "text-gray-800"}`} />
-      </button>
     </div>
-
-    {/* Dynamic Content */}
-    <TabContent activeTab={activeTab} accentColor={accentColor} />
-  </div>
-</div>
-
-    // <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 inline-flex md:flex transition-colors duration-300`}>      
-    //   <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
-
-    //   <div className="flex-1 p-6 space-y-6 relative">
-    //     <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md">
-    //       <div className="relative">
-    //         <input 
-    //           type="text" 
-    //           value={searchQuery} 
-    //           onChange={handleSearch} 
-    //           placeholder="Search..." 
-    //           className="p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
-    //         />
-    //         <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
-    //       </div>
-    //       <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-    //         {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
-    //       </button>
-    //       <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-    //         <BellIcon className="w-5 h-5" />
-    //         {notifications > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{notifications}</span>}
-    //       </button>
-    //       <button onClick={() => router.push("/shop")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-    //         <ShoppingBagIcon className={`w-5 h-5 ${isDarkMode ? "text-yellow-400" : "text-gray-800"}`} />
-    //       </button>
-    //     </div>
-
-    //     <TabContent activeTab={activeTab} accentColor={accentColor} />
-    //   </div>
-    // </div>
   );
 };
 
