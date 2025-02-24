@@ -454,7 +454,7 @@ const PricingDetails = ({ formData, setFormData ,handleInputChange }: any) => {
     const margin = buyingPrice ? ((discountedPrice - buyingPrice) / buyingPrice) * 100 : 0;
     setFinalPrice(discountedPrice);
     setProfitMargin(margin);
-    setFormData({ ...formData, profitMargin:margin, finalPrice:discountedPrice });
+    setFormData({ ...formData, profitMargin:margin, finalPrice:discountedPrice, discount: discount });
   }, [formData.salesPrice, formData.costPrice, formData.discount]);
 
   return (
@@ -705,8 +705,8 @@ const FinalReview = ({ formData }: any) => {
         {/* Pricing Information */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <h3 className="font-semibold mb-2">Pricing Information</h3>
-          <p><strong>Buying Price:</strong> {formData.buyingPrice || "N/A"}</p>
-          <p><strong>Selling Price:</strong> {formData.sellingPrice || "N/A"}</p>
+          <p><strong>Cost Price:</strong> {formData.costPrice || "N/A"}</p>
+          <p><strong>Selling Price:</strong> {formData.salesPrice || "N/A"}</p>
           <p><strong>Discount (%):</strong> {formData.discount || "0"}</p>
           <p><strong>Final Price:</strong> {formData.finalPrice || "N/A"}</p>
           <p><strong>Profit Margin (%):</strong> {formData.profitMargin || "N/A"}</p>
@@ -715,7 +715,7 @@ const FinalReview = ({ formData }: any) => {
         {/* Availability & Feature Toggles */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <h3 className="font-semibold mb-2">Availability & Features</h3>
-          <p><strong>Availability:</strong> {formData.availability || "N/A"}</p>
+          <p><strong>Availability:</strong> {formData.isAvailable ? "In Stock" : "Out of Stock"}</p>
           <p><strong>Featured:</strong> {formData.isFeatured ? "Yes" : "No"}</p>
           <p><strong>New Arrival:</strong> {formData.isNewArrival ? "Yes" : "No"}</p>
           <p><strong>On Offer:</strong> {formData.isOnOffer ? "Yes" : "No"}</p>

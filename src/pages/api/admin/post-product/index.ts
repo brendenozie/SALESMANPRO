@@ -51,23 +51,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     commissionRate,
     commissionType, // Default to "Percentage"
   }  = req.body;
-
-  // const {
-  //   id,
-  //   name,
-  //   description,
-  //   category,
-  //   tags,
-  //   costPrice,
-  //   salesPrice,
-  //   companyId,
-  //   productCategoryId,
-  //   commissionType,
-  //   commissionRate,
-    // startDate,
-    // endDate,
-  // } = req.body;
-
+  
   // Validate required fields
   if (!name || !costPrice || !salesPrice || !companyId || !commissionType || commissionRate === undefined) {
     return res.status(400).json({
@@ -109,20 +93,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       product = await prisma.product.update({
         where: { id },
         data: {
-          name,
-          description,
-          category,
-          tags: parsedTags,
-          costPrice: parsedCostPrice,
-          salesPrice: parsedSalesPrice,
-          companyId,
-          productCategoryId,
-        },
-      });
-    } else {
-      product = await prisma.product.create({
-            data: {
-              
               productCategory: { connect: {id:productCategoryId}},
               tags: parsedTags,
               costPrice: parsedCostPrice,
@@ -137,6 +107,52 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               color: color,
               size: size,
               weight: weight,
+              discount:discount,
+              condition: condition,
+              dimension: dimension,
+              material: material,
+              isAvailable: isAvailable,
+              isOnOffer: isOnOffer,
+              isFlashDeal: isFlashDeal,
+              isNewArrival: isNewArrival,
+              isDiscounted: isDiscounted,
+              isFeatured: isFeatured,
+              company: { connect: {id:companyId}},
+              // Extended category-specific fields
+              author: author || null,
+              publisher: publisher || null,
+              isbn: isbn || null,
+              fabricComposition: fabricComposition || null,
+              careInstructions: careInstructions || null,
+              energyRating: energyRating || null,
+              warrantyPeriod: warrantyPeriod || null,
+              applianceDimensions: applianceDimensions || null,
+              ingredients: ingredients || null,
+              usageInstructions: usageInstructions || null,
+              expirationDate: expirationDate ? new Date(expirationDate) : null,
+              startDealDate: startDealDate,
+              endDealDate   :endDealDate,
+              updatedAt: new Date()
+        },
+      });
+    } else {
+      product = await prisma.product.create({
+            data: { 
+              productCategory: { connect: {id:productCategoryId}},
+              tags: parsedTags,
+              costPrice: parsedCostPrice,
+              salesPrice: parsedSalesPrice,
+              finalPrice: finalPrice ?? 0,
+              name: name ?? "New Name",
+              description: description ?? "New Description",
+              category: category,
+              subCategory: subCategory,
+              brand: brand,
+              model: model,
+              color: color,
+              size: size,
+              weight: weight,
+              discount:discount,
               condition: condition,
               dimension: dimension,
               material: material,
@@ -165,19 +181,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               updatedAt: new Date()
             }
           });
-      // Create new product
-      // product = await prisma.product.create({
-      //   data: {
-      //     name,
-      //     description,
-      //     category,
-      //     tags: parsedTags,
-      //     costPrice: parsedCostPrice,
-      //     salesPrice: parsedSalesPrice,
-      //     companyId,
-      //     productCategoryId,
-      //   },
-      // });
+          
     }
 
     // Create or update commission rate
@@ -198,24 +202,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         endDate: parsedEndDate,
       },
     });
-
-    // const commissionRateRecord = await prisma.commissionRate.upsert({
-    //   where: { productId: product.id },
-    //   update: {
-    //     commissionType,
-    //     commissionRate: parsedCommissionRate,
-    //     startDate: new Date(startDate),
-    //     endDate: endDate ? new Date(endDate) : null,
-    //   },
-    //   create: {
-    //     productId: product.id,
-    //     commissionType,
-    //     commissionRate: parsedCommissionRate,
-    //     startDate: startDate ? new Date(startDate) : new Date(),
-    //     endDate: endDate ? new Date(endDate) : null,
-    //   },
-    // });
-
+    
     res.status(201).json({ product, commissionRate: commissionRateRecord });
   } catch (error) {
     console.error("Error creating or updating product and commission rate:", error);
