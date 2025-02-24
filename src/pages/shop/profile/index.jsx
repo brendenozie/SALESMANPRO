@@ -76,8 +76,8 @@ const ProfilePage = () => {
       />
 
       {/* Main Content */}
-      <div className="flex-1 p-6 space-y-6 relative md:ml-72">
-        {/* Top Navigation */}
+      <div className="flex-1 p-6 space-y-6 relative ">
+        {/* Top Navigation md:ml-72*/}
         <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
           {/* Mobile Sidebar Toggle */}
           {/* <button className="md:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700" onClick={() => setSidebarOpen(true)}>

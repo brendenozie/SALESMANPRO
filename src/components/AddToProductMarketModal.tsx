@@ -412,7 +412,7 @@ const GeneralDetails = ({ formData, setFormData }: any) => {
 // OTHER COMPONENTS (PricingDetails, ProductVariants, ImageUploader, etc.)
 // -------------------
 
-const PricingDetails = ({ formData, handleInputChange }: any) => {
+const PricingDetails = ({ formData,  setFormData, handleInputChange }: any) => {
   const [finalPrice, setFinalPrice] = useState(formData.finalPrice || 0);
   const [profitMargin, setProfitMargin] = useState(formData.profitMargin || 0);
 
@@ -424,6 +424,7 @@ const PricingDetails = ({ formData, handleInputChange }: any) => {
     const margin = buyingPrice ? ((discountedPrice - buyingPrice) / buyingPrice) * 100 : 0;
     setFinalPrice(discountedPrice);
     setProfitMargin(margin);
+    setFormData({ ...formData, profitMargin:margin, finalPrice:discountedPrice, discount: discount });
   }, [formData.sellingPrice, formData.buyingPrice, formData.discount]);
 
   return (
@@ -1092,6 +1093,9 @@ const handleCreateListing = async () => {
       buyingPrice: parseFloat(formData.buyingPrice) || 0,
       sellingPrice: parseFloat(formData.sellingPrice) || 0,
       startDealDate: null,
+      finalPrice:parseFloat(formData.finalPrice) || 0,
+      contact:formData.contact,
+      location:formData.location,
       endDealDate: null,
       // Category-specific fields for Books
       author: formData.author || "",
@@ -1109,7 +1113,7 @@ const handleCreateListing = async () => {
       usageInstructions: formData.usageInstructions || "",
       expirationDate: formData.expirationDate
         ? new Date(formData.expirationDate)
-        : null
+        : null,
     };
 
     try {

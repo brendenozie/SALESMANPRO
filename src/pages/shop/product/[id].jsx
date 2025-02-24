@@ -168,7 +168,7 @@ const ProductPage = ({ listing, similarListings }) => {
       <Header />
       <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-0 md:p-6">
         <nav className="text-sm text-gray-500 dark:text-gray-400 px-6 py-4">
-          Home / Marketplace / {listing.category} /{" "}
+          Home / Marketplace / {listing.category} / {listing.subCategory.name} / {listing.brand} / {" "}
           <span className="text-gray-900 dark:text-white font-semibold">
             {listing.title}
           </span>
@@ -300,7 +300,7 @@ const ProductInfo = ({
         {listing.description}
       </p>
       <p className="text-3xl font-semibold text-gray-900 dark:text-white mb-2">
-        ${listing.salesPrice}
+        ${listing.finalPrice}
       </p>
       <p className="text-sm text-gray-400 mb-6">
         Suggested payments with 6 months special financing
@@ -414,9 +414,9 @@ const SpecificationCard = ({ title, details }) => (
 const ProductSpecifications = ({ listing }) => {
   const prod = listing.product || {};
   const generalDetails = [
-    { label: "Brand", value: prod.brand ? prod.brand.join(", ") : "N/A" },
+    { label: "Brand", value: prod.brand ? prod.brand : "N/A" },
     { label: "Model", value: prod.model || "N/A" },
-    { label: "Price", value: `$${listing.salesPrice}` },
+    { label: "Price", value: `$${listing.finalPrice}` },
     { label: "Release Date", value: prod.releaseDate ? new Date(prod.releaseDate).toLocaleDateString() : "N/A" }
   ];
 
@@ -466,7 +466,7 @@ const SimilarItems = ({ similarListings, addToCart }) => {
               {item.title}
             </p>
             <p className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl mt-1">
-              ${item.salesPrice}
+              ${item.finalPrice}
             </p>
             <motion.button
               whileHover={{ scale: 1.07 }}
