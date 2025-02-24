@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   UserIcon,
   CreditCardIcon,
@@ -11,7 +11,7 @@ import {
   MoonIcon,
   SunIcon,
   XMarkIcon,
-  BookmarkIcon,
+  Bars3Icon,
   ShoppingBagIcon,
   BellIcon,
   MagnifyingGlassIcon,
@@ -59,98 +59,119 @@ const quickLinks = [
 const ProfilePage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
-  const { isDarkMode, setMode } = useStateContext();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [accentColor, setAccentColor] = useState('yellow');
-  const [notifications, setNotifications] = useState(3);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-  const handleSearch = (e) => setSearchQuery(e.target.value);
+  const { isDarkMode, setMode } = useStateContext();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 inline-flex md:flex transition-colors duration-300`}>      
-      <Sidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} accentColor={accentColor} />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row transition-colors duration-300">
+      
+      {/* Sidebar for Desktop & Slide-in for Mobile */}
+      <Sidebar 
+        tabs={tabs} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        sidebarOpen={sidebarOpen} 
+        setSidebarOpen={setSidebarOpen} 
+      />
 
-      <div className="flex-1 p-6 space-y-6 relative">
-        <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md">
-          <div className="relative">
+      {/* Main Content */}
+      <div className="flex-1 p-6 space-y-6 relative md:ml-72">
+        {/* Top Navigation */}
+        <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+          {/* Mobile Sidebar Toggle */}
+          {/* <button className="md:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700" onClick={() => setSidebarOpen(true)}>
+            <Bars3Icon className="w-6 h-6 text-gray-800 dark:text-white" />
+          </button> */}
+          {/* Home Button */}
+          <button className="md:hidden p-2 rounded-full bg-gray-200 dark:bg-gray-700" onClick={() => setSidebarOpen(true)}>
+            <HomeIcon className="w-6 h-6 text-gray-800 dark:text-white" />
+          </button>
+
+          {/* Search Bar */}
+          <div className="relative w-full md:w-auto">
             <input 
               type="text" 
-              value={searchQuery} 
-              onChange={handleSearch} 
               placeholder="Search..." 
-              className="p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
+              className="w-full p-2 pl-10 rounded-xl bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-yellow-400 outline-none"
             />
             <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
           </div>
-          <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+
+          {/* Theme Toggle */}
+          <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
             {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-400" /> : <MoonIcon className="w-5 h-5 text-gray-800" />}
           </button>
-          <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+
+          {/* Notifications */}
+          <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700">
             <BellIcon className="w-5 h-5" />
-            {notifications > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{notifications}</span>}
-          </button>
-          <button onClick={() => router.push("/shop")} className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-            <ShoppingBagIcon className={`w-5 h-5 ${isDarkMode ? "text-yellow-400" : "text-gray-800"}`} />
           </button>
         </div>
 
-        <TabContent activeTab={activeTab} accentColor={accentColor} />
+        {/* Dynamic Tab Content */}
+        <TabContent activeTab={activeTab} accentColor={accentColor}/>
       </div>
+
+      {/* Bottom Mobile Navigation */}
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
 };
 
-const Sidebar = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen, accentColor }) => (
+/* Responsive Sidebar */
+const Sidebar = ({ tabs, activeTab, setActiveTab, sidebarOpen, setSidebarOpen }) => (
   <motion.div
-    initial={{ width: 250 }}
-    animate={{ width: sidebarOpen ? 250 : 70 }}
+    initial={{ x: -250 }}
+    animate={{ x: sidebarOpen ? 0 : -250 }}
     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-    className={`fixed md:relative z-20 flex flex-col h-screen bg-gradient-to-b from-${accentColor}-400 to-${accentColor}-500 dark:from-gray-800 dark:to-gray-900 shadow-xl p-4 rounded-r-2xl`}
+    className={`fixed md:relative z-40 flex flex-col h-screen w-64 md:w-72 bg-gray-800 text-white p-4 shadow-xl transform transition-transform md:translate-x-0`}
   >
-    {/* Sidebar Toggle Button - Always Visible */}
-    <button
-      onClick={() => setSidebarOpen(!sidebarOpen)}
-      className="absolute -right-5 top-6 p-2 bg-gray-200 dark:bg-gray-700 rounded-full shadow-lg z-30 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-    >
-      {sidebarOpen ? <XMarkIcon className="w-6 h-6 text-gray-800 dark:text-white" /> : <ArrowTrendingUpIcon className="w-6 h-6 text-gray-800 dark:text-white" />}
+    {/* Close Button for Mobile */}
+    <button className="md:hidden p-2 bg-gray-700 rounded-full mb-4" onClick={() => setSidebarOpen(false)}>
+      <XMarkIcon className="w-6 h-6 text-white" />
     </button>
 
-    {/* Sidebar Menu */}
-    {tabs.map((tab) => (
-      <button
-        key={tab.key}
-        onClick={() => setActiveTab(tab.key)}
-        className={`flex items-center gap-3 p-3 rounded-xl mt-2 transition-all hover:bg-white hover:text-${accentColor}-500 relative overflow-hidden
-          ${activeTab === tab.key ? `bg-white text-${accentColor}-500 shadow-lg` : 'text-white'}`}
+    {/* Sidebar Links */}
+    {tabs.map(tab => (
+      <button 
+        key={tab.key} 
+        onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }} 
+        className={`flex items-center gap-3 p-3 rounded-xl mt-2 transition hover:bg-gray-700 ${activeTab === tab.key ? 'bg-yellow-500 text-black' : 'text-white'}`}
       >
-        <tab.icon className="w-5 h-5" />
-        {sidebarOpen && tab.name}
+        <tab.icon className="w-6 h-6" />
+        {tab.name}
       </button>
     ))}
   </motion.div>
 );
 
+/* Bottom Mobile Navigation */
+const MobileNav = ({ activeTab, setActiveTab }) => (
+  <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center bg-white dark:bg-gray-800 p-3 shadow-md md:hidden">
+    {tabs.slice(0, 5).map(tab => (
+      <button 
+        key={tab.key} 
+        onClick={() => setActiveTab(tab.key)} 
+        className={`flex flex-col items-center text-sm p-2 ${activeTab === tab.key ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'}`}
+      >
+        <tab.icon className="w-6 h-6 mb-1" />
+        {tab.name}
+      </button>
+    ))}
+  </div>
+);
 
-
+/* Dynamic Tab Content */
 const TabContent = ({ activeTab, accentColor }) => {
   switch (activeTab) {
-    case 'profile':
-      return <ProfileSettings />;
-    case 'orders':
-      return <ActivityOverview />;
-    case 'addresses':
-      return <ShippingAddress />;
-    case 'security':
-      return <SecurityOverview />;
-    case 'support':
-      return <CommunicationSupport />;
-    case 'achievements':
-      return <AchievementsBadges />;
-    default:
-      return <OverviewTab accentColor={accentColor} />;
+    case 'profile': return <ProfileSettings />;
+    case 'orders': return <ActivityOverview />;
+    case 'addresses': return <ShippingAddress />;
+    case 'security': return <SecurityOverview />;
+    case 'support': return <CommunicationSupport />;
+    case 'achievements': return <AchievementsBadges />;
+    default: return <OverviewTab accentColor={accentColor} />;
   }
 };
 
