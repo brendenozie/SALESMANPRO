@@ -649,18 +649,28 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
       <div>
         <label className="block text-gray-800 font-semibold">Availability</label>
         <div className="flex gap-4 mt-2">
-          {["In Stock", "Out of Stock"].map((status) => (
-            <button
-              key={status}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.isAvailable && status === "In Stock" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-              onClick={() => setFormData({ ...formData, isAvailable: status === "In Stock" })}
-            >
-              {status}
-            </button>
-          ))}
+          {["In Stock", "Out of Stock"].map((status) => {
+            const isAvailable = formData.isAvailable ?? true; // Default to true if undefined
+            const isSelected =
+              (isAvailable && status === "In Stock") ||
+              (!isAvailable && status === "Out of Stock");
+
+            return (
+              <button
+                key={status}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isSelected
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+                onClick={() => setFormData({ ...formData, isAvailable: status === "In Stock" })}
+              >
+                {status}
+              </button>
+            );
+          })}
         </div>
+
       </div>
       <div className="space-y-4">
         {[

@@ -618,24 +618,35 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
       <div>
         <label className="block text-gray-800 font-semibold">Availability</label>
         <div className="flex gap-4 mt-2">
-          {["In Stock", "Out of Stock"].map((status) => (
-            <button
-              key={status}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                formData.isAvailable === true ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-              onClick={() => setFormData({ ...formData, isAvailable: status === "In Stock" })}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
+            {["In Stock", "Out of Stock"].map((status) => {
+              const isAvailable = formData.isAvailable ?? true; // Default to true if undefined
+              const isSelected =
+                (isAvailable && status === "In Stock") ||
+                (!isAvailable && status === "Out of Stock");
+
+              return (
+                <button
+                  key={status}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isSelected
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                  onClick={() => setFormData({ ...formData, isAvailable: status === "In Stock" })}
+                >
+                  {status}
+                </button>
+              );
+            })}
+          </div>
       </div>
-      <div className="space-y-4">
+       <div className="space-y-4">
         {[
           { label: "Is Featured?", key: "isFeatured" },
           { label: "Is New Arrival?", key: "isNewArrival" },
-          { label: "Is On Offer / Discounted / Flash Deal?", key: "isOnOffer" }
+          { label: "Is On Offer?", key: "isOnOffer" },
+          { label: "Is Discounted?", key: "isDiscounted" },
+          { label: "Is Flash Deal?", key: "isFlashDeal" }
         ].map(({ label, key }) => (
           <div key={key} className="flex justify-between items-center">
             <span className="text-gray-800 font-semibold">{label}</span>
