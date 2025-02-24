@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         gte: minPrice && !isNaN(Number(minPrice)) ? parseInt(minPrice as string, 10) : undefined,
         lte: maxPrice && !isNaN(Number(maxPrice)) ? parseInt(maxPrice as string, 10) : undefined,
       },
-      // availability: availability === "true" ? true : undefined,
+      isAvailable: availability === "true" ? true : undefined,
         product: {
           AND: [
             brand ? { brand: { in: Array.isArray(brand) ? brand : [brand] } } : undefined,

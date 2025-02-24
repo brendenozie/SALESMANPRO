@@ -170,7 +170,7 @@ const SearchBar = ({location, setLocation, locationName, setLocationName}) => {
                 router.push(`/shop/product/${item.id}`);
               }} // Set input value on click
             >
-              {item.newName}
+              {item.title}
             </li>
           ))}
         </motion.ul>
