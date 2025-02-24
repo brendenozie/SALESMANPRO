@@ -101,7 +101,7 @@ const Pages = () => {
         {categories && <TopCate categories={categories} />}
         {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
         {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
-        {featuredCategories &&<Shop category={featuredCategories} shopItems={productsByCategory[featuredCategories.name] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
+        {featuredCategories && productsByCategory[featuredCategories.name] &&<Shop category={featuredCategories} shopItems={productsByCategory[featuredCategories.name] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
         <Annocument />
         <Wrapper />
         <Footer />

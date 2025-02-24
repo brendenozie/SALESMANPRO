@@ -40,9 +40,9 @@ const Shop = ({ addToCart,category, shopItems }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {shopItems?.products?.map((item, index) => (
               <div key={index} onClick={()=>{ router.push(`/shop/product/${item.id}`)}} className="relative group bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition">
-                <img src={item.cover} alt={item.newName} className="w-full h-64 object-cover rounded-xl" />
+                <img src={item.cover} alt={item.title} className="w-full h-64 object-cover rounded-xl" />
                 <div className="mt-3">
-                  <h4 className="text-lg font-semibold truncate">{item.newName}</h4>
+                  <h4 className="text-lg font-semibold truncate">{item.title}</h4>
                   {/* <span className="text-yellow-500 font-bold text-md">${item.sellingPrice}.00</span> */}
                 </div>
                 {/* <button onClick={() => addToCart(item)} className="absolute top-3 right-3 bg-yellow-500 text-gray-900 p-2 rounded-full shadow-md hover:bg-yellow-600 transition">
@@ -51,7 +51,7 @@ const Shop = ({ addToCart,category, shopItems }) => {
                  {/* Price & Add to Cart Button */}
                   <div className="flex justify-between items-center w-full mt-2">
                     <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
-                      ${item.sellingPrice}
+                      ${item.finalPrice ? item.finalPrice : item.sellingPrice }
                     </span>
       
                     <motion.button

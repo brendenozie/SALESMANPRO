@@ -666,7 +666,9 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
         {[
           { label: "Is Featured?", key: "isFeatured" },
           { label: "Is New Arrival?", key: "isNewArrival" },
-          { label: "Is On Offer / Discounted / Flash Deal?", key: "isOnOffer" }
+          { label: "Is On Offer?", key: "isOnOffer" },
+          { label: "Is Discounted?", key: "isDiscounted" },
+          { label: "Is Flash Deal?", key: "isFlashDeal" }
         ].map(({ label, key }) => (
           <div key={key} className="flex justify-between items-center">
             <span className="text-gray-800 font-semibold">{label}</span>
@@ -719,6 +721,8 @@ const FinalReview = ({ formData }: any) => {
           <p><strong>Featured:</strong> {formData.isFeatured ? "Yes" : "No"}</p>
           <p><strong>New Arrival:</strong> {formData.isNewArrival ? "Yes" : "No"}</p>
           <p><strong>On Offer:</strong> {formData.isOnOffer ? "Yes" : "No"}</p>
+          <p><strong>On Discount:</strong> {formData.isDiscounted ? "Yes" : "No"}</p>
+          <p><strong>On Flash Sale:</strong> {formData.isFlashDeal ? "Yes" : "No"}</p>
         </div>
 
         {/* Category-Specific Details */}
