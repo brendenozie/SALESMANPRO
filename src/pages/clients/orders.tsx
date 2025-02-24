@@ -12,7 +12,7 @@ const ProductsPage = () => {
       try {
         setLoading(true);
         setError('');
-        const response = await fetch('/api/orders?clientId=63f7c9e2d91b1b2a5e80b013'); // Replace with dynamic clientId if needed
+        const response = await fetch('/api/clients/orders?clientId=63f7c9e2d91b1b2a5e80b013'); // Replace with dynamic clientId if needed
         if (!response.ok) {
           throw new Error('Failed to fetch orders');
         }

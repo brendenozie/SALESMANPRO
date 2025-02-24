@@ -120,7 +120,6 @@ model Product {
   commissions        Commission[]
   Target             Target[]
   CommissionRate     CommissionRate?
-  OrderItem          OrderItem[]
   MarketplaceListing MarketplaceListing[]
 
   model     String?
@@ -193,7 +192,6 @@ model Client {
   company           Company             @relation(fields: [companyId], references: [id])
   salesAgentId      String?             @db.ObjectId
   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
-  orders            CustomerOrder[]
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   communications    Communication[]     @relation("CommunicationReceiver")
@@ -489,8 +487,9 @@ model MarketplaceListing {
   sellingPrice  Float
   finalPrice    Float?    @default(0) //Price inclusive discount
 
-  contact  String?
-  location Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  contact   String?
+  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  OrderItem OrderItem[]
 }
 
 model ClientInventory {
@@ -625,8 +624,6 @@ model ConsumerInventoryLog {
 
 model CustomerOrder {
   id                    String      @id @default(auto()) @map("_id") @db.ObjectId
-  clientId              String      @db.ObjectId
-  client                Client      @relation(fields: [clientId], references: [id])
   consumerId            String      @db.ObjectId
   consumer              Consumer    @relation(fields: [consumerId], references: [id])
   items                 OrderItem[] // Relationship to multiple order items
@@ -645,13 +642,13 @@ model CustomerOrder {
 }
 
 model OrderItem {
-  id        String        @id @default(auto()) @map("_id") @db.ObjectId
-  orderId   String        @db.ObjectId
-  order     CustomerOrder @relation(fields: [orderId], references: [id])
-  productId String        @db.ObjectId
-  product   Product       @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Float // Price at the time of purchase
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  orderId              String             @db.ObjectId
+  order                CustomerOrder      @relation(fields: [orderId], references: [id])
+  marketplaceListingId String             @db.ObjectId
+  marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
+  quantity             Int
+  price                Float // Price at the time of purchase
 }
 
 enum OrderStatus {
