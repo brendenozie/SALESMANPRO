@@ -7,6 +7,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   const {
+    id,
     sellerId,
     sellerType,
     productId,
@@ -60,54 +61,111 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   try {
-    const marketplaceListing = await prisma.marketplaceListing.create({
-      data: {
-        sellerId,
-        sellerType,
-        productCategory: { connect: {id:productCategoryId}},
-        product: { connect: { id: productId } },
-        quantity,
-        buyingPrice: buyingPrice ?? 0,
-        sellingPrice: sellingPrice ?? 0,
-        finalPrice:finalPrice ?? 0,
-        title: title ?? "New Name",
-        description: description ?? "New Description",
-        category: category,
-        subCategory: subCategory,
-        tags: tags,
-        brand: brand,
-        model: model,
-        color: color,
-        size: size,
-        weight: weight,
-        condition: condition,
-        dimension: dimension,
-        material: material,
-        isAvailable: isAvailable,
-        isOnOffer: isOnOffer,
-        isFlashDeal: isFlashDeal,
-        isNewArrival: isNewArrival,
-        isDiscounted: isDiscounted,
-        isFeatured: isFeatured,
-        // Extended category-specific fields
-        author: author || null,
-        publisher: publisher || null,
-        isbn: isbn || null,
-        fabricComposition: fabricComposition || null,
-        careInstructions: careInstructions || null,
-        energyRating: energyRating || null,
-        warrantyPeriod: warrantyPeriod || null,
-        applianceDimensions: applianceDimensions || null,
-        ingredients: ingredients || null,
-        usageInstructions: usageInstructions || null,
-        expirationDate: expirationDate ? new Date(expirationDate) : null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        contact:contact,
-        location:location,
-        discount:discount
-      }
-    });
+
+    let marketplaceListing;
+
+    if (id) {
+          // Update existing product
+          marketplaceListing = await prisma.marketplaceListing.update({
+            where: { id },
+            data: {
+              sellerId,
+              sellerType,
+              productCategory: { connect: {id:productCategoryId}},
+              product: { connect: { id: productId } },
+              quantity,
+              buyingPrice: buyingPrice ?? 0,
+              sellingPrice: sellingPrice ?? 0,
+              finalPrice:finalPrice ?? 0,
+              title: title ?? "New Name",
+              description: description ?? "New Description",
+              category: category,
+              subCategory: subCategory,
+              tags: tags,
+              brand: brand,
+              model: model,
+              color: color,
+              size: size,
+              weight: weight,
+              condition: condition,
+              dimension: dimension,
+              material: material,
+              isAvailable: isAvailable,
+              isOnOffer: isOnOffer,
+              isFlashDeal: isFlashDeal,
+              isNewArrival: isNewArrival,
+              isDiscounted: isDiscounted,
+              isFeatured: isFeatured,
+              // Extended category-specific fields
+              author: author || null,
+              publisher: publisher || null,
+              isbn: isbn || null,
+              fabricComposition: fabricComposition || null,
+              careInstructions: careInstructions || null,
+              energyRating: energyRating || null,
+              warrantyPeriod: warrantyPeriod || null,
+              applianceDimensions: applianceDimensions || null,
+              ingredients: ingredients || null,
+              usageInstructions: usageInstructions || null,
+              expirationDate: expirationDate ? new Date(expirationDate) : null,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              contact:contact,
+              location:location,
+              discount:discount
+            },
+          });
+        } else {
+        marketplaceListing = await prisma.marketplaceListing.create({
+          data: {
+            sellerId,
+            sellerType,
+            productCategory: { connect: {id:productCategoryId}},
+            product: { connect: { id: productId } },
+            quantity,
+            buyingPrice: buyingPrice ?? 0,
+            sellingPrice: sellingPrice ?? 0,
+            finalPrice:finalPrice ?? 0,
+            title: title ?? "New Name",
+            description: description ?? "New Description",
+            category: category,
+            subCategory: subCategory,
+            tags: tags,
+            brand: brand,
+            model: model,
+            color: color,
+            size: size,
+            weight: weight,
+            condition: condition,
+            dimension: dimension,
+            material: material,
+            isAvailable: isAvailable,
+            isOnOffer: isOnOffer,
+            isFlashDeal: isFlashDeal,
+            isNewArrival: isNewArrival,
+            isDiscounted: isDiscounted,
+            isFeatured: isFeatured,
+            // Extended category-specific fields
+            author: author || null,
+            publisher: publisher || null,
+            isbn: isbn || null,
+            fabricComposition: fabricComposition || null,
+            careInstructions: careInstructions || null,
+            energyRating: energyRating || null,
+            warrantyPeriod: warrantyPeriod || null,
+            applianceDimensions: applianceDimensions || null,
+            ingredients: ingredients || null,
+            usageInstructions: usageInstructions || null,
+            expirationDate: expirationDate ? new Date(expirationDate) : null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            contact:contact,
+            location:location,
+            discount:discount
+          }
+        });
+
+  }
 
     return res.status(201).json({
       message: "Marketplace listing created successfully.",
