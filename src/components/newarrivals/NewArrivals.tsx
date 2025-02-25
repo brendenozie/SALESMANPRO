@@ -6,13 +6,13 @@ import { useRouter } from "next/router";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const NewArrivals = ({ productItems, addToCart }) => {
+const NewArrivals = ({ productItems, addToCart }:any) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const [likedItems, setLikedItems] = useState({});
+  const [likedItems, setLikedItems] = useState<any>({});
   
-    const toggleLike = (id) => {
-      setLikedItems((prev) => ({
+    const toggleLike = (id : any) => {
+      setLikedItems((prev : any) => ({
         ...prev,
         [id]: !prev[id],
       }));
@@ -77,7 +77,7 @@ const NewArrivals = ({ productItems, addToCart }) => {
           </div>
         ) : (
           <Slider {...settings}>
-            {productItems.map((product, index) => (
+            {productItems.map((product : any, index : any) => (
               <motion.div onClick={()=>{ router.push(`/shop/product/${product.id}`)}} key={product.id} whileHover={{ scale: 1.05 }} className="p-4">
           <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-2xl overflow-hidden hover:shadow-3xl ">
             <div className="relative group">
@@ -193,7 +193,7 @@ const NewArrivals = ({ productItems, addToCart }) => {
 
 export default NewArrivals;
 
-const CustomNextArrow = (props) => {
+const CustomNextArrow = (props : any) => {
   const { onClick } = props;
   return (
     <button
@@ -205,7 +205,7 @@ const CustomNextArrow = (props) => {
   );
 };
 
-const CustomPrevArrow = (props) => {
+const CustomPrevArrow = (props : any) => {
   const { onClick } = props;
   return (
     <button

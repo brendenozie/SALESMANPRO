@@ -3,7 +3,7 @@ import { PlusIcon, ArrowRightIcon, ArrowRightCircleIcon, ShoppingCartIcon } from
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 
-const Shop = ({ addToCart,category, shopItems }) => {
+const Shop = ({ addToCart,category, shopItems }:any) => {
 
   const router = useRouter();
   
@@ -13,7 +13,7 @@ const Shop = ({ addToCart,category, shopItems }) => {
         {/* Category Section  */}
         {category && <aside className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 border border-gray-200 dark:border-gray-600">
           <h2 className="text-2xl font-bold text-yellow-500 dark:text-yellow-400 mb-4">Brands</h2>
-          {category.allBrands && category.allBrands.slice(0, 6).map((brand, index) => (
+          {category.allBrands && category.allBrands.slice(0, 6).map((brand : any, index : any) => (
             <div key={index} className="flex items-center gap-3 p-3 mb-3 bg-gray-100 dark:bg-gray-900 rounded-lg hover:shadow-lg transition">
               <span className="text-2xl p-2 rounded-full border border-yellow-400 z-10 drop-shadow-md">{category.icon}</span>
               {/* <img src={category.icon} alt={category.name} className="w-12 h-12 object-cover " /> */}
@@ -38,7 +38,7 @@ const Shop = ({ addToCart,category, shopItems }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {shopItems?.products?.map((item, index) => (
+            {shopItems?.products?.map((item : any, index : any) => (
               <div key={index} onClick={()=>{ router.push(`/shop/product/${item.id}`)}} className="relative group bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition">
                 <img src={item.cover} alt={item.title} className="w-full h-64 object-cover rounded-xl" />
                 <div className="mt-3">
@@ -77,7 +77,7 @@ const Shop = ({ addToCart,category, shopItems }) => {
         {/* Category Section as Scrollable Tabs */}
         {category && (
           <aside className="flex overflow-x-auto space-x-4 pb-4 mb-6">
-            {category.allBrands?.slice(0, 6).map((brand, index) => (
+            {category.allBrands?.slice(0, 6).map((brand : any, index : any) => (
               <div key={index} className="flex flex-col items-center p-2 bg-gray-100 dark:bg-gray-900 rounded-lg">
                 <span className="text-2xl p-2 rounded-full border border-yellow-400">{category.icon}</span>
                 <span className="text-xs font-medium">{brand}</span>
@@ -109,10 +109,10 @@ const Shop = ({ addToCart,category, shopItems }) => {
 
 export default Shop;
 
-const ProductGrid = ({ shopItems }) => {
+const ProductGrid = ({ shopItems } : any) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
-      {shopItems?.products?.map((item, index) => (
+      {shopItems?.products?.map((item : any, index : any) => (
         <motion.div
           key={index}
           className="relative bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400"
