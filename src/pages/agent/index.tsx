@@ -71,7 +71,7 @@ type Props = {
   session: Session;
 };
 
-const Dash2 = (props: Props) => {
+const AgentDash = (props: Props) => {
   const { data } = props;
 
   const dataCards = [
@@ -374,7 +374,7 @@ const Dash2 = (props: Props) => {
   );
 };
 
-export default Dash2;
+export default AgentDash;
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await getSession(context);

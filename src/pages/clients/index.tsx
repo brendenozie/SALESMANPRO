@@ -74,7 +74,7 @@ type Props = {
 };
 
 
-const Dash2 = (props:Props) => {
+const ClientDash = (props:Props) => {
   const dataCards = [
     {
       href: "/sales",
@@ -294,7 +294,7 @@ const Dash2 = (props:Props) => {
   );
 };
 
-export default Dash2;
+export default ClientDash;
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const session = await getSession(context);

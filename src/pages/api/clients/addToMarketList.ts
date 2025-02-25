@@ -35,7 +35,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     isNewArrival,
     isDiscounted,
     isFeatured,
-    // New category-specific fields:
     author,
     publisher,
     isbn,
@@ -56,125 +55,130 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(400).json({ message: "Invalid or missing request data." });
   }
 
-  if (!["CLIENT", "CONSUMER"].includes(sellerType)) {
+   if (!["CLIENT", "CONSUMER", "AGENT", "ADMIN"].includes(sellerType)) {
     return res.status(400).json({ message: "Invalid seller type." });
   }
 
   try {
+    // Check if product already exists in market list
+    const existingListing = await prisma.marketplaceListing.findFirst({
+      where: {
+        sellerId,
+        sellerType,
+        productId
+      }
+    });
 
     let marketplaceListing;
 
-    if (id) {
-          // Update existing product
-          marketplaceListing = await prisma.marketplaceListing.update({
-            where: { id },
-            data: {
-              sellerId,
-              sellerType,
-              productCategory: { connect: {id:productCategoryId}},
-              product: { connect: { id: productId } },
-              quantity,
-              buyingPrice: buyingPrice ?? 0,
-              sellingPrice: sellingPrice ?? 0,
-              finalPrice:finalPrice ?? 0,
-              title: title ?? "New Name",
-              description: description ?? "New Description",
-              category: category,
-              subCategory: subCategory,
-              tags: tags,
-              brand: brand,
-              model: model,
-              color: color,
-              size: size,
-              weight: weight,
-              condition: condition,
-              dimension: dimension,
-              material: material,
-              isAvailable: isAvailable,
-              isOnOffer: isOnOffer,
-              isFlashDeal: isFlashDeal,
-              isNewArrival: isNewArrival,
-              isDiscounted: isDiscounted,
-              isFeatured: isFeatured,
-              // Extended category-specific fields
-              author: author || null,
-              publisher: publisher || null,
-              isbn: isbn || null,
-              fabricComposition: fabricComposition || null,
-              careInstructions: careInstructions || null,
-              energyRating: energyRating || null,
-              warrantyPeriod: warrantyPeriod || null,
-              applianceDimensions: applianceDimensions || null,
-              ingredients: ingredients || null,
-              usageInstructions: usageInstructions || null,
-              expirationDate: expirationDate ? new Date(expirationDate) : null,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              contact:contact,
-              location:location,
-              discount:discount
-            },
-          });
-        } else {
-        marketplaceListing = await prisma.marketplaceListing.create({
-          data: {
-            sellerId,
-            sellerType,
-            productCategory: { connect: {id:productCategoryId}},
-            product: { connect: { id: productId } },
-            quantity,
-            buyingPrice: buyingPrice ?? 0,
-            sellingPrice: sellingPrice ?? 0,
-            finalPrice:finalPrice ?? 0,
-            title: title ?? "New Name",
-            description: description ?? "New Description",
-            category: category,
-            subCategory: subCategory,
-            tags: tags,
-            brand: brand,
-            model: model,
-            color: color,
-            size: size,
-            weight: weight,
-            condition: condition,
-            dimension: dimension,
-            material: material,
-            isAvailable: isAvailable,
-            isOnOffer: isOnOffer,
-            isFlashDeal: isFlashDeal,
-            isNewArrival: isNewArrival,
-            isDiscounted: isDiscounted,
-            isFeatured: isFeatured,
-            // Extended category-specific fields
-            author: author || null,
-            publisher: publisher || null,
-            isbn: isbn || null,
-            fabricComposition: fabricComposition || null,
-            careInstructions: careInstructions || null,
-            energyRating: energyRating || null,
-            warrantyPeriod: warrantyPeriod || null,
-            applianceDimensions: applianceDimensions || null,
-            ingredients: ingredients || null,
-            usageInstructions: usageInstructions || null,
-            expirationDate: expirationDate ? new Date(expirationDate) : null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            contact:contact,
-            location:location,
-            discount:discount
-          }
-        });
-
-  }
+    if (existingListing) {
+      // Update existing product
+      marketplaceListing = await prisma.marketplaceListing.update({
+        where: { id: existingListing.id },
+        data: {
+          sellerId,
+          sellerType,
+          productCategory: { connect: { id: productCategoryId } },
+          product: { connect: { id: productId } },
+          quantity,
+          buyingPrice: buyingPrice ?? 0,
+          sellingPrice: sellingPrice ?? 0,
+          finalPrice: finalPrice ?? 0,
+          title: title ?? "New Name",
+          description: description ?? "New Description",
+          category,
+          subCategory,
+          tags,
+          brand,
+          model,
+          color,
+          size,
+          weight,
+          condition,
+          dimension,
+          material,
+          isAvailable,
+          isOnOffer,
+          isFlashDeal,
+          isNewArrival,
+          isDiscounted,
+          isFeatured,
+          author: author || null,
+          publisher: publisher || null,
+          isbn: isbn || null,
+          fabricComposition: fabricComposition || null,
+          careInstructions: careInstructions || null,
+          energyRating: energyRating || null,
+          warrantyPeriod: warrantyPeriod || null,
+          applianceDimensions: applianceDimensions || null,
+          ingredients: ingredients || null,
+          usageInstructions: usageInstructions || null,
+          expirationDate: expirationDate ? new Date(expirationDate) : null,
+          updatedAt: new Date(),
+          contact,
+          location,
+          discount
+        }
+      });
+    } else {
+      // Create new listing
+      marketplaceListing = await prisma.marketplaceListing.create({
+        data: {
+          sellerId,
+          sellerType,
+          productCategory: { connect: { id: productCategoryId } },
+          product: { connect: { id: productId } },
+          quantity,
+          buyingPrice: buyingPrice ?? 0,
+          sellingPrice: sellingPrice ?? 0,
+          finalPrice: finalPrice ?? 0,
+          title: title ?? "New Name",
+          description: description ?? "New Description",
+          category,
+          subCategory,
+          tags,
+          brand,
+          model,
+          color,
+          size,
+          weight,
+          condition,
+          dimension,
+          material,
+          isAvailable,
+          isOnOffer,
+          isFlashDeal,
+          isNewArrival,
+          isDiscounted,
+          isFeatured,
+          author: author || null,
+          publisher: publisher || null,
+          isbn: isbn || null,
+          fabricComposition: fabricComposition || null,
+          careInstructions: careInstructions || null,
+          energyRating: energyRating || null,
+          warrantyPeriod: warrantyPeriod || null,
+          applianceDimensions: applianceDimensions || null,
+          ingredients: ingredients || null,
+          usageInstructions: usageInstructions || null,
+          expirationDate: expirationDate ? new Date(expirationDate) : null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          contact,
+          location,
+          discount
+        }
+      });
+    }
 
     return res.status(201).json({
-      message: "Marketplace listing created successfully.",
+      message: "Marketplace listing processed successfully.",
       listing: marketplaceListing
     });
   } catch (error: any) {
-    console.error("Error creating marketplace listing:", error);
+    console.error("Error processing marketplace listing:", error);
     return res.status(500).json({
-      message: "An error occurred while creating the marketplace listing.",
+      message: "An error occurred while processing the marketplace listing.",
       error: error.message ?? "Unknown error"
     });
   }

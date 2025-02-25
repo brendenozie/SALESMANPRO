@@ -10,11 +10,11 @@ import Wrapper from "../../components/wrapper/Wrapper";
 import Header from "../../components/shop/header/Header";
 import Footer from "../../components/shop/footer/Footer";
 import Cart from "../../components/cart";
-import SignInModal from "../../components/signInModal";
+import SignInModal from "../../components/SignInModal";
 import { useStateContext } from '../../contexts/ContextProvider';
 import LocationModal from "../../components/locationManager";
 
-const Pages = () => {
+const ShopPages = () => {
   const [categories, setCategories] = useState([]);
   const [productsByCategory, setProductsByCategory] = useState({});
   const [offers, setOffers] = useState([]);
@@ -27,7 +27,7 @@ const Pages = () => {
   const [CartItem, setCartItem] = useState([]);
   const [featuredCategories, setFeaturedCategories] = useState({});
   const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
-  const [isModalOpen, setModalOpen] = useState(true);
+  const [isModalOpen, setModalOpen] = useState(false);
   
 
   useEffect(() => {
@@ -116,4 +116,4 @@ const Pages = () => {
   );
 };
 
-export default Pages;
+export default ShopPages;
