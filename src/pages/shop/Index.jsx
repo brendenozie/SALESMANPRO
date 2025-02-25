@@ -27,6 +27,7 @@ const Pages = () => {
   const [CartItem, setCartItem] = useState([]);
   const [featuredCategories, setFeaturedCategories] = useState({});
   const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
+  const [isModalOpen, setModalOpen] = useState(true);
   
 
   useEffect(() => {
@@ -108,7 +109,8 @@ const Pages = () => {
         <Footer />
         <Cart /> 
         <LocationModal />
-        <SignInModal isOpen={true} />
+        {isModalOpen && <SignInModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />}
+
       </div>
     </>
   );

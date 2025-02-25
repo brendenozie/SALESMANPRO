@@ -1,28 +1,33 @@
-import { useState, useEffect  } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { XMarkIcon, ArrowsUpDownIcon } from "@heroicons/react/24/outline";
 import { signIn, useSession } from "next-auth/react";
 
-export default function SignInModal({ isOpen }:any) {
+export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { data: session, status } = useSession();
-  const [loadingProvider, setLoadingProvider] = useState(null);
-  const [error, setError] = useState<any>(null);
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(isOpen);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      setShowModal(true);
+    setShowModal(isOpen); // Sync with parent state
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      setShowModal(false);
+      onClose(); // Ensure the parent state also closes
     }
-  }, [status]);
+  }, [status, onClose]);
 
-  if (!showModal || session) return null;
+  if (!showModal) return null;
 
-  const handleSignIn = async (provider :any) => {
+  const handleSignIn = async (provider: string) => {
     setLoadingProvider(provider);
     setError(null);
     try {
       await signIn(provider);
-    } catch (err :any) {
+    } catch (err) {
       setError("Failed to sign in. Please try again.");
       setLoadingProvider(null);
     }
@@ -36,10 +41,16 @@ export default function SignInModal({ isOpen }:any) {
         exit={{ opacity: 0, scale: 0.9 }}
         className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg w-96 max-w-full relative"
       >
-        <button onClick={() => setShowModal(false)} className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+        <button
+          onClick={() => {
+            setShowModal(false);
+            onClose(); // Notify parent to close
+          }}
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+        >
           <XMarkIcon className="w-8 h-8" />
         </button>
-        
+
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center">
           Sign in to Ghuba
         </h2>
@@ -50,7 +61,7 @@ export default function SignInModal({ isOpen }:any) {
           {loadingProvider === "google" ? <ArrowsUpDownIcon className="animate-spin w-8 h-8" /> : "Continue with Google"}
         </button>
         <button onClick={() => handleSignIn("apple")} className="w-full flex items-center justify-center bg-gray-800 text-white py-2 rounded-lg mb-2 hover:bg-gray-900">
-          {loadingProvider === "apple" ? <ArrowsUpDownIcon className="animate-spin w-8 h-8"  /> : "Continue with Apple"}
+          {loadingProvider === "apple" ? <ArrowsUpDownIcon className="animate-spin w-8 h-8" /> : "Continue with Apple"}
         </button>
         <button onClick={() => handleSignIn("facebook")} className="w-full flex items-center justify-center bg-blue-500 text-white py-2 rounded-lg mb-4 hover:bg-blue-600">
           {loadingProvider === "facebook" ? <ArrowsUpDownIcon className="animate-spin w-8 h-8" /> : "Continue with Facebook"}
