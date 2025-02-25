@@ -10,6 +10,7 @@ import Wrapper from "../../components/wrapper/Wrapper";
 import Header from "../../components/shop/header/Header";
 import Footer from "../../components/shop/footer/Footer";
 import Cart from "../../components/cart";
+import SignInModal from "../../components/signInModal";
 import { useStateContext } from '../../contexts/ContextProvider';
 import LocationModal from "../../components/locationManager";
 
@@ -107,6 +108,7 @@ const Pages = () => {
         <Footer />
         <Cart /> 
         <LocationModal />
+        <SignInModal isOpen={true} />
       </div>
     </>
   );
