@@ -14,6 +14,7 @@ import UserNav from "@/components/AdminNav";
 import AssignCustomerProductModal from "@/components/AssignCustomerProductModal";
 import ReturnCustomerProductModal from "@/components/ReturnCustomerProductModal";
 import AgentProductRequestModal from "@/components/AgentProductRequestModal";
+import { motion } from "framer-motion";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -319,3 +320,18 @@ export const getServerSideProps = async (context: any) => {
 
   return { props: { inventoryData } };
 };
+
+const ProductCard = ({ product } : any) => (
+  <motion.div
+    whileHover={{ scale: 1.05 }}
+    className="bg-white p-4 rounded-lg shadow-md border flex flex-col justify-between"
+  >
+    <img src={product.image} alt={product.name} className="w-full h-40 object-cover rounded-md mb-4" />
+    <h2 className="text-lg font-semibold">{product.name}</h2>
+    <p className="text-gray-600">{product.description}</p>
+    <div className="mt-3 flex justify-between items-center">
+      <span className="text-blue-600 font-bold">${product.price}</span>
+      <button className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Add to Cart</button>
+    </div>
+  </motion.div>
+);
