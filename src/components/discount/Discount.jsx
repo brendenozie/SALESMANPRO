@@ -92,10 +92,18 @@ const Discount = ({ productItems, addToCart, decreaseQuantity, removeFromCart })
             </h2>
           </div>
 
-          <button className="flex items-center text-red-700 dark:text-red-300 text-lg font-medium hover:text-red-500 transition space-x-2">
+          {/* <button className="flex items-center text-red-700 dark:text-red-300 text-lg font-medium hover:text-red-500 transition space-x-2">
             <span>View All</span>
             <ArrowRightCircleIcon className="w-6 h-6" />
-          </button>
+          </button> */}
+           <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="px-5 py-2 bg-red-400 text-black rounded-full shadow-md hover:bg-red-300 transition flex items-center space-x-2"
+            >
+              <span>View All</span>
+              <ArrowRightCircleIcon className="w-6 h-6" />
+            </motion.button>
         </div>
 
         <Dcard productItems={productItems} addToCart={addToCart} />

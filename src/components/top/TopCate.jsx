@@ -5,6 +5,8 @@ import "slick-carousel/slick/slick-theme.css";
 import Tdata from "./Tdata";
 import { ArrowRightCircleIcon, ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 
+import { motion } from "framer-motion";
+
 // Custom Arrow Buttons
 const CustomPrevArrow = (props) => (
   <button
@@ -57,10 +59,18 @@ const TopCate = ({ categories }) => {
           <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
             Explore <span className="text-yellow-400">Top Categories</span>
           </h2>
-          <button className="text-yellow-400 text-sm md:text-lg flex font-medium hover:text-yellow-300 transition  items-center space-x-2">
+          {/* <button className="text-yellow-400 text-sm md:text-lg flex font-medium hover:text-yellow-300 transition  items-center space-x-2">
             <span>View All</span>
             <ArrowRightCircleIcon className="text-sm md:text-lg" />
-          </button>
+          </button> */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="px-5 py-2 bg-yellow-400 text-black rounded-full shadow-md hover:bg-yellow-300 transition flex items-center space-x-2"
+          >
+            <span>View All</span>
+            <ArrowRightCircleIcon className="w-6 h-6" />
+          </motion.button>
         </div>
 
         <Slider {...settings}>

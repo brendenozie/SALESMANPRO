@@ -43,20 +43,24 @@ const FlashCard = ({ productItems, addToCart }) => {
     }));
   };
 
+
   const settings = {
     dots: false,
-    infinite: true,
+    infinite: productItems.length > 3, // Only enable infinite scroll if more than 3 items
     speed: 600,
-    slidesToShow: 4,
+    slidesToShow: Math.min(4, productItems.length), // Ensures correct number of slides
     slidesToScroll: 1,
-    nextArrow: <SampleNextArrow />,
-    prevArrow: <SamplePrevArrow />,
+    nextArrow: productItems.length > 1 ? <SampleNextArrow /> : null,
+    prevArrow: productItems.length > 1 ? <SamplePrevArrow /> : null,
+    centerMode: productItems.length < 4, // Enables centering for small item counts
+    centerPadding: productItems.length === 1 ? "40%" : productItems.length === 2 ? "25%" : "10%", // Controls spacing
     responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: 3 } },
-      { breakpoint: 768, settings: { slidesToShow: 2 } },
-      { breakpoint: 480, settings: { slidesToShow: 1 } },
+      { breakpoint: 1024, settings: { slidesToShow: Math.min(3, productItems.length) } },
+      { breakpoint: 768, settings: { slidesToShow: Math.min(2, productItems.length) } },
+      { breakpoint: 480, settings: { slidesToShow: 1, centerPadding: "20%" } }, // Adjusts centering for mobile
     ],
   };
+
 
   const router = useRouter();
 
