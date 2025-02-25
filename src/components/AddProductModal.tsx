@@ -383,7 +383,7 @@ const ProductDetails = ({ formData, setFormData }: any) => {
 // GENERAL DETAILS (Vehicles)
 // -------------------
 
-const GeneralDetails = ({ formData, setFormData }: any) => {
+const GeneralDetailsV1 = ({ formData, setFormData }: any) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -437,6 +437,103 @@ const GeneralDetails = ({ formData, setFormData }: any) => {
     </div>
   );
 };
+
+const InputField = ({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  required = false,
+}: {
+  label: string;
+  name: string;
+  type?: string;
+  placeholder?: string;
+  value: string | number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  required?: boolean;
+}) => (
+  <div>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <input
+      id={name}
+      name={name}
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      required={required}
+      className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+    />
+  </div>
+);
+
+const GeneralDetails = ({ formData, setFormData }: any) => {
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <InputField label="Make" name="make" value={formData.make || ""} onChange={handleChange} required />
+        <InputField label="Model" name="model" value={formData.model || ""} onChange={handleChange} required />
+        <InputField label="Year" name="year" type="number" value={formData.year || ""} onChange={handleChange} required />
+        <InputField label="Trim" name="trim" value={formData.trim || ""} onChange={handleChange} />
+        <InputField label="Type (SUV, Sedan)" name="type" value={formData.type || ""} onChange={handleChange} required />
+        <InputField label="Color" name="color" value={formData.color || ""} onChange={handleChange} />
+        <InputField label="Mileage (km)" name="mileage" type="number" value={formData.mileage || ""} onChange={handleChange} />
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Condition</label>
+          <select name="condition" value={formData.condition || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+            <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Commission Section */}
+      <CommissionSection formData={formData} handleChange={handleChange} />
+    </div>
+  );
+};
+
+
+const CommissionSection = ({ formData, handleChange }: any) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Commission Rate (%)</label>
+      <input
+        type="number"
+        name="commissionRate"
+        value={formData.commissionRate || ""}
+        onChange={handleChange}
+        placeholder="Enter commission rate"
+        className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Commission Type</label>
+      <select
+        name="commissionType"
+        value={formData.commissionType}
+        onChange={handleChange}
+        className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+      >
+        <option value="COST">COST</option>
+        <option value="QUANTITY">QUANTITY</option>
+      </select>
+    </div>
+  </div>
+);
 
 // -------------------
 // OTHER COMPONENTS (PricingDetails, ProductVariants, ImageUploader, etc.)
