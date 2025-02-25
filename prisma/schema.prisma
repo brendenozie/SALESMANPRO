@@ -230,8 +230,6 @@ model SalesAgent {
   Target             Target[]
   ClientInventory    ClientInventory[]
   ClientInventoryLog ClientInventoryLog[]
-  // manager    SalesAgent? @relation("Manager", fields: [managerId], references: [id])
-  // subAgents  SalesAgent[] @relation("Manager")
 }
 
 model User {

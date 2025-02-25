@@ -1,155 +1,218 @@
-import React from "react";
-import { ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+import Slider from "react-slick";
+import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon, HeartIcon, ShoppingCartIcon, StarIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
-
-const NewArrivals = ({ productItems, addToCart, decreaseQuantity, removeFromCart }) => {
+const NewArrivals = ({ productItems, addToCart }) => {
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [likedItems, setLikedItems] = useState({});
+  
+    const toggleLike = (id) => {
+      setLikedItems((prev) => ({
+        ...prev,
+        [id]: !prev[id],
+      }));
+    };
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    pauseOnHover: true,
+    nextArrow: <CustomNextArrow />,
+    prevArrow: <CustomPrevArrow />,
+    responsive: [
+      { breakpoint: 1280, settings: { slidesToShow: 3 } },
+      { breakpoint: 1024, settings: { slidesToShow: 2 } },
+      { breakpoint: 768, settings: { slidesToShow: 1 } }
+    ]
+  };
+
   return (
-    <section className="relative py-20 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500">
+    <motion.section
+      className="relative py-10 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-500 overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1 }}
+    >
       <div className="container mx-auto px-6">
-        <div className="flex justify-between items-center mb-12">
+        <div className="flex justify-between items-center mb-6">
           <motion.div
-            className="flex items-center space-x-4"
+            className="flex items-center space-x-3"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
             <motion.div
-              className="w-14 h-14 bg-yellow-500 flex items-center justify-center rounded-full shadow-lg"
+              className="w-12 h-12 bg-yellow-500 flex items-center justify-center rounded-full shadow-lg backdrop-blur-lg"
               animate={{ y: [0, -10, 0] }}
               transition={{ repeat: Infinity, duration: 2 }}
             >
-              <img
-                src="https://img.icons8.com/glyph-neue/64/ffffff/new.png"
-                alt="New Arrivals Icon"
-                className="w-10 h-10"
-              />
+              <img src="https://img.icons8.com/glyph-neue/64/ffffff/new.png" alt="New Arrivals Icon" className="w-8 h-8" />
             </motion.div>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               Latest <span className="text-yellow-400">Arrivals</span>
             </h2>
           </motion.div>
-
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="px-5 py-2 bg-yellow-400 text-black rounded-full shadow-md hover:bg-yellow-300 transition flex items-center space-x-2"
-          >
-            <span>View All</span>
-            <ArrowRightCircleIcon className="w-6 h-6" />
-          </motion.button>
         </div>
 
-        <ProductGrid productItems={productItems} addToCart={addToCart} />
-
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-          {productItems.map((val, index) => (
-            <motion.div onClick={()=>{ router.push(`/shop/product/${val.id}`)}}
-              key={index}
-              className="relative group overflow-hidden rounded-2xl shadow-2xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 200 }}
-            >
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="w-full h-80 bg-gray-300 dark:bg-gray-700 animate-pulse rounded-xl"></div>
+            ))}
+          </div>
+        ) : (
+          <Slider {...settings}>
+            {productItems.map((product, index) => (
+              <motion.div onClick={()=>{ router.push(`/shop/product/${product.id}`)}} key={product.id} whileHover={{ scale: 1.05 }} className="p-4">
+          <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-2xl overflow-hidden hover:shadow-3xl ">
+            <div className="relative group">
+              {/* <span className="absolute top-2 left-2 bg-yellow-500 text-black text-xs px-3 py-1 rounded-full shadow-md">
+                {product.discount}% Off
+              </span> */}
               <img
-                src={val.cover}
-                alt={`Product image of ${val.newName}`}
-                className="w-full h-64 sm:h-72 md:h-80 lg:h-[420px] object-cover transform transition-transform duration-700 group-hover:scale-110"
+                src={product.cover}
+                alt={`Product image of ${product.title}`}
+                className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
               />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent group-hover:opacity-100 transition-opacity"></div>
-
-              <div className="absolute bottom-6 left-6 right-6 bg-white/30 dark:bg-black/40 backdrop-blur-md p-5 rounded-xl shadow-xl">
-                <h4 className="text-xl font-semibold text-white truncate">
-                  {val.newName}
-                </h4>
-
-                <div className="flex justify-between items-center mt-3">
-                  <span className="text-xl font-bold text-yellow-300">
-                    ${val.sellingPrice}
-                  </span>
-
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => addToCart(val)}
-                    className="flex items-center bg-yellow-400 text-black px-4 py-2 rounded-full shadow-md hover:bg-yellow-500 transition"
-                    aria-label="Add to Cart"
-                  >
-                    <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
-                  </motion.button>
-                </div>
+              <button
+                onClick={() => toggleLike(product.id)}
+                className={`absolute top-2 right-2 p-2 rounded-full shadow-md transition-transform hover:scale-110 ${
+                  likedItems[product.id]
+                    ? "bg-yellow-500 text-black"
+                    : "bg-gray-800 dark:bg-gray-700 text-white"
+                }`}
+                aria-label="Like Product"
+              >
+                <HeartIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4 text-center">
+              <h3 className="text-lg font-semibold truncate">{product.title}</h3>
+              <div className="flex justify-center mt-2 space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <StarIcon
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i < product.rating
+                        ? "text-yellow-500"
+                        : "text-gray-400 dark:text-gray-500"
+                    }`}
+                  />
+                ))}
               </div>
-            </motion.div>
-          ))}
-        </div> */}
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-xl font-bold text-yellow-500">
+                  ${product.finalPrice}
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => addToCart(product)}
+                  className="flex items-center bg-yellow-500 text-black p-3 rounded-full shadow-lg hover:shadow-xl transition"
+                  aria-label="Add to Cart"
+                >
+                  <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
+                </motion.button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+              // <motion.div
+              //   key={index}
+              //   className="p-2 relative"
+              //   initial={{ opacity: 0 }}
+              //   animate={{ opacity: 1 }}
+              //   transition={{ delay: index * 0.2 }}
+              // >
+              //   <motion.div
+              //     className="relative bg-white dark:bg-gray-800 shadow-xl rounded-xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-2 border border-transparent overflow-hidden backdrop-blur-lg bg-opacity-70"
+              //     whileHover={{ scale: 1.05 }}
+              //   >
+              //     {val.isNew && (
+              //       <motion.span
+              //         className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md animate-pulse"
+              //         animate={{ scale: [1, 1.2, 1] }}
+              //         transition={{ repeat: Infinity, duration: 1 }}
+              //       >
+              //         New
+              //       </motion.span>
+              //     )}
+
+              //     <div className="relative w-full h-40 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+              //       <motion.img
+              //         src={val.image}
+              //         alt={val.title}
+              //         className="w-full h-full object-contain transition-transform duration-300"
+              //         whileHover={{ scale: 1.1, rotate: 2 }}
+              //       />
+              //     </div>
+
+              //     <div className="w-full mt-3 text-center">
+              //       <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              //         {val.title}
+              //       </h4>
+              //       <motion.span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg" whileHover={{ scale: 1.1 }}>
+              //         ${val.finalPrice}
+              //       </motion.span>
+              //       <motion.button
+              //         whileHover={{ scale: 1.07 }}
+              //         whileTap={{ scale: 0.95 }}
+              //         onClick={(e) => {
+              //           e.stopPropagation();
+              //           addToCart(val);
+              //         }}
+              //         className="flex items-center bg-yellow-500 text-white px-3 py-1 rounded-full shadow-md hover:bg-yellow-600 transition text-sm mt-2"
+              //       >
+              //         <ShoppingCartIcon className="w-4 h-4 mr-1" /> Add
+              //       </motion.button>
+              //     </div>
+              //   </motion.div>
+              // </motion.div>
+            ))}
+          </Slider>
+        )}
       </div>
-    </section>
+    </motion.section>
   );
 };
 
 export default NewArrivals;
 
-const ProductGrid = ({ productItems, addToCart }) => {
-  const router = useRouter();
-
+const CustomNextArrow = (props) => {
+  const { onClick } = props;
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
-      {productItems.map((val, index) => (
-        <motion.div
-          key={index}
-          className="relative bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400"
-          whileHover={{ scale: 1.03 }}
-          onClick={() => router.push(`/shop/product/${val.id}`)}
-        >
-          {/* Product Image */}
-          <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
-            <motion.img
-              src={val.image}
-              alt={val.title}
-              className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
-              whileHover={{ rotate: 2 }}
-            />
-          </div>
-
-          {/* Product Info */}
-          <div className="w-full mt-3 flex flex-col items-center">
-            <h4 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
-              {val.title}
-            </h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
-              {val.description || "No description available"}
-            </p>
-
-            {/* Price & Add to Cart Button */}
-            <div className="flex justify-between items-center w-full mt-2">
-              <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
-                ${val.finalPrice}
-              </span>
-
-              <motion.button
-                whileHover={{ scale: 1.07 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent accidental navigation
-                  addToCart(val);
-                }}
-                className="flex items-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition text-sm md:text-base"
-                aria-label="Add to Cart"
-              >
-                <ShoppingCartIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" /> Add
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </div>
+    <button
+      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 p-2 rounded-full shadow-md hover:scale-110 transition-all"
+      onClick={onClick}
+    >
+      <ChevronRightIcon className="text-white w-6 h-6" />
+    </button>
   );
 };
 
-
-
-
-
-
+const CustomPrevArrow = (props) => {
+  const { onClick } = props;
+  return (
+    <button
+      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 p-2 rounded-full shadow-md hover:scale-110 transition-all"
+      onClick={onClick}
+    >
+      <ChevronLeftIcon className="text-white w-6 h-6" />
+    </button>
+  );
+};

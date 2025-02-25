@@ -7,14 +7,17 @@ import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "../../.
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Link } from 'react-router-dom';
+import { useSession } from 'next-auth/client';
 
 const CheckoutPage = () => {
+  const { session } = useSession();
   const router = useRouter();
   const { cart, removeItem, clearCart } = useStateContext();
   const [myOrder, setMyOrder] = useState({});
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    name: session?.user?.name || '',
+    email: session?.user?.email || '',
+    phone: session?.user?.phone || '',
     address: '',
     city: '',
     zip: '',
