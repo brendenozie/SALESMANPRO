@@ -6,30 +6,29 @@ import {
   BoltIcon,
   HeartIcon,
   StarIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
+  ArrowLeftCircleIcon,
+  ArrowRightCircleIcon,
   ShoppingCartIcon
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 
-const SampleNextArrow = ({ onClick }) => (
+// Custom Arrow Buttons
+const CustomPrevArrow = (props) => (
   <button
-    className="absolute z-10 top-1/2 right-4 transform -translate-y-1/2 bg-yellow-500 text-black p-3 rounded-full shadow-xl hover:scale-110 transition-transform"
-    onClick={onClick}
-    aria-label="Next Slide"
+    {...props}
+    className="absolute top-1/2 left-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
   >
-    <ArrowRightIcon className="h-6 w-6" />
+    <ArrowLeftCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
   </button>
 );
 
-const SamplePrevArrow = ({ onClick }) => (
+const CustomNextArrow = (props) => (
   <button
-    className="absolute z-10 top-1/2 left-4 transform -translate-y-1/2 bg-yellow-500 text-black p-3 rounded-full shadow-xl hover:scale-110 transition-transform"
-    onClick={onClick}
-    aria-label="Previous Slide"
+    {...props}
+    className="absolute top-1/2 right-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
   >
-    <ArrowLeftIcon className="h-6 w-6" />
+    <ArrowRightCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
   </button>
 );
 
@@ -50,8 +49,8 @@ const FlashCard = ({ productItems, addToCart }) => {
     speed: 600,
     slidesToShow: Math.min(4, productItems.length), // Ensures correct number of slides
     slidesToScroll: 1,
-    nextArrow: productItems.length > 1 ? <SampleNextArrow /> : null,
-    prevArrow: productItems.length > 1 ? <SamplePrevArrow /> : null,
+    nextArrow: productItems.length > 1 ? <CustomNextArrow /> : null,
+    prevArrow: productItems.length > 1 ? <CustomPrevArrow /> : null,
     centerMode: productItems.length < 4, // Enables centering for small item counts
     centerPadding: productItems.length === 1 ? "40%" : productItems.length === 2 ? "25%" : "10%", // Controls spacing
     responsive: [

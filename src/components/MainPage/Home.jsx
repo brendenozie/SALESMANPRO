@@ -8,6 +8,34 @@ import { useRouter } from "next/router";
 import asset1 from "../../assets/asset1.png";
 import asset2 from "../../assets/asset2.png";
 import asset3 from "../../assets/asset3.png";
+import {
+  BoltIcon,
+  HeartIcon,
+  StarIcon,
+  ArrowLeftCircleIcon,
+  ArrowRightCircleIcon,
+  ShoppingCartIcon
+} from "@heroicons/react/24/outline";
+
+// Custom Arrow Buttons
+const CustomPrevArrow = (props) => (
+  <button
+    {...props}
+    className="absolute top-1/2 left-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
+  >
+    <ArrowLeftCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
+  </button>
+);
+
+const CustomNextArrow = (props) => (
+  <button
+    {...props}
+    className="absolute top-1/2 right-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
+  >
+    <ArrowRightCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
+  </button>
+);
+
 
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -35,10 +63,9 @@ const CategoriesGrid = ({ categories }) => {
 )};
 
 const SliderComponent = ({ promoSlides }) => (
-  <Slider dots infinite slidesToShow={1} slidesToScroll={1} autoplay autoplaySpeed={4000} arrows>
-    {/* {promoSlides.map((slide) => (
-      <SlideCard slide={slide} key={slide.id} />
-    ))} */}
+  <Slider dots infinite slidesToShow={1} slidesToScroll={1} autoplay autoplaySpeed={4000} arrows 
+  nextArrow={promoSlides.length > 1 ? <CustomNextArrow /> : null}
+    prevArrow={promoSlides.length > 1 ? <CustomPrevArrow /> : null}>
     {promoSlides.map((slide, index) => (
       <SlideCard slide={slide} key={slide.id} index={index} />
     ))}

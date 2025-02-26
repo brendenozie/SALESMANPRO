@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
-import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon, HeartIcon, ShoppingCartIcon, StarIcon } from "@heroicons/react/24/outline";
+import { ArrowRightCircleIcon, ArrowLeftCircleIcon, ChevronRightIcon, HeartIcon, ShoppingCartIcon, StarIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import "slick-carousel/slick/slick.css";
@@ -132,57 +132,6 @@ const NewArrivals = ({ productItems, addToCart }:any) => {
             </div>
           </div>
         </motion.div>
-              // <motion.div
-              //   key={index}
-              //   className="p-2 relative"
-              //   initial={{ opacity: 0 }}
-              //   animate={{ opacity: 1 }}
-              //   transition={{ delay: index * 0.2 }}
-              // >
-              //   <motion.div
-              //     className="relative bg-white dark:bg-gray-800 shadow-xl rounded-xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-2 border border-transparent overflow-hidden backdrop-blur-lg bg-opacity-70"
-              //     whileHover={{ scale: 1.05 }}
-              //   >
-              //     {val.isNew && (
-              //       <motion.span
-              //         className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md animate-pulse"
-              //         animate={{ scale: [1, 1.2, 1] }}
-              //         transition={{ repeat: Infinity, duration: 1 }}
-              //       >
-              //         New
-              //       </motion.span>
-              //     )}
-
-              //     <div className="relative w-full h-40 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-              //       <motion.img
-              //         src={val.image}
-              //         alt={val.title}
-              //         className="w-full h-full object-contain transition-transform duration-300"
-              //         whileHover={{ scale: 1.1, rotate: 2 }}
-              //       />
-              //     </div>
-
-              //     <div className="w-full mt-3 text-center">
-              //       <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-              //         {val.title}
-              //       </h4>
-              //       <motion.span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg" whileHover={{ scale: 1.1 }}>
-              //         ${val.finalPrice}
-              //       </motion.span>
-              //       <motion.button
-              //         whileHover={{ scale: 1.07 }}
-              //         whileTap={{ scale: 0.95 }}
-              //         onClick={(e) => {
-              //           e.stopPropagation();
-              //           addToCart(val);
-              //         }}
-              //         className="flex items-center bg-yellow-500 text-white px-3 py-1 rounded-full shadow-md hover:bg-yellow-600 transition text-sm mt-2"
-              //       >
-              //         <ShoppingCartIcon className="w-4 h-4 mr-1" /> Add
-              //       </motion.button>
-              //     </div>
-              //   </motion.div>
-              // </motion.div>
             ))}
           </Slider>
         )}
@@ -193,26 +142,21 @@ const NewArrivals = ({ productItems, addToCart }:any) => {
 
 export default NewArrivals;
 
-const CustomNextArrow = (props : any) => {
-  const { onClick } = props;
-  return (
-    <button
-      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 p-2 rounded-full shadow-md hover:scale-110 transition-all"
-      onClick={onClick}
-    >
-      <ChevronRightIcon className="text-white w-6 h-6" />
-    </button>
-  );
-};
+// Custom Arrow Buttons
+const CustomPrevArrow = (props:any) => (
+  <button
+    {...props}
+    className="absolute top-1/2 left-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
+  >
+    <ArrowLeftCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
+  </button>
+);
 
-const CustomPrevArrow = (props : any) => {
-  const { onClick } = props;
-  return (
-    <button
-      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 p-2 rounded-full shadow-md hover:scale-110 transition-all"
-      onClick={onClick}
-    >
-      <ChevronLeftIcon className="text-white w-6 h-6" />
-    </button>
-  );
-};
+const CustomNextArrow = (props:any) => (
+  <button
+    {...props}
+    className="absolute top-1/2 right-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
+  >
+    <ArrowRightCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
+  </button>
+);
