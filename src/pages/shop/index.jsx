@@ -110,7 +110,6 @@ const ShopPages = () => {
         <Cart /> 
         <LocationModal />
         {isModalOpen && <SignInModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />}
-
       </div>
     </>
   );

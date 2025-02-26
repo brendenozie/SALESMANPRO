@@ -5,6 +5,9 @@ import "slick-carousel/slick/slick-theme.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import asset1 from "../../assets/asset1.png";
+import asset2 from "../../assets/asset2.png";
+import asset3 from "../../assets/asset3.png";
 
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -33,8 +36,11 @@ const CategoriesGrid = ({ categories }) => {
 
 const SliderComponent = ({ promoSlides }) => (
   <Slider dots infinite slidesToShow={1} slidesToScroll={1} autoplay autoplaySpeed={4000} arrows>
-    {promoSlides.map((slide) => (
+    {/* {promoSlides.map((slide) => (
       <SlideCard slide={slide} key={slide.id} />
+    ))} */}
+    {promoSlides.map((slide, index) => (
+      <SlideCard slide={slide} key={slide.id} index={index} />
     ))}
   </Slider>
 );
@@ -75,62 +81,75 @@ const Home = ({categories}) => {
 
 export default Home;
 
+const SlideCard = ({ slide, index }) => {
+  // Background images array
+  const backgroundImages = [asset1, asset2, asset3];
 
-const SlideCard = ({ slide }) => (
- <motion.div
-  initial="hidden"
-  animate="visible"
-  transition={{ duration: 0.8 }}
-  variants={fadeInUp}
-  className="relative flex flex-col md:flex-row items-center justify-center w-full bg-gradient-to-br from-yellow-300 to-yellow-600 text-white p-6 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-auto md:h-[650px] gap-8"
->
-  {/* Text Section */}
-  <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">
-    <motion.h2
-      variants={fadeInLeft}
-      transition={{ delay: 0.2 }}
-      className="text-3xl md:text-5xl font-extrabold leading-tight"
-    >
-      {slide.title}
-    </motion.h2>
-    <motion.p
+  // Ensure index is valid and fallback to the first image if undefined
+  const backgroundImage = backgroundImages[index % backgroundImages.length] || asset1;
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      transition={{ duration: 0.8 }}
       variants={fadeInUp}
-      transition={{ delay: 0.4 }}
-      className="text-base md:text-xl"
+      className="relative flex flex-col md:flex-row items-center justify-center w-full text-white p-6 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-auto md:h-[650px] gap-8"
+      style={{
+        backgroundImage: `url(${backgroundImage.src})`, // ✅ Fix applied
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
     >
-      {slide.description}
-    </motion.p>
-    <motion.button
-      whileHover={{ scale: 1.05, rotate: 1 }}
-      whileTap={{ scale: 0.95 }}
-      className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-2 focus:ring-yellow-400 text-white font-semibold rounded-xl shadow-lg transition"
-    >
-      Learn More
-    </motion.button>
-  </div>
+      {/* Overlay to improve text visibility */}
+      <div className="absolute inset-0 bg-black/10 rounded-3xl"></div>
 
-  {/* Image Section */}
-  <motion.div
-  variants={scaleUp}
-  transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
-  className="relative z-10 w-full md:w-1/2 flex justify-center items-center"
->
-  <div className="relative w-[350px] h-[350px]">
-    <Image
-      src={slide.img}
-      loader={loader}
-      alt={slide.title}
-      layout="fill"
-      objectFit="contain" // Ensures the entire image is visible, but may not fill the container entirely.
-      className="transition-transform hover:scale-105 hover:rotate-1 filter brightness-110 contrast-125"
-    />
-  </div>
-</motion.div>
+      {/* Text Section */}
+      <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center justify-center text-center md:text-left md:items-start space-y-6 min-h-[200px] md:min-h-[450px] overflow-y-auto">
+        <motion.h2
+          variants={fadeInLeft}
+          transition={{ delay: 0.2 }}
+          className="text-3xl md:text-5xl font-extrabold leading-tight"
+        >
+          {slide.title}
+        </motion.h2>
+        <motion.p
+          variants={fadeInUp}
+          transition={{ delay: 0.4 }}
+          className="text-base md:text-xl"
+        >
+          {slide.description}
+        </motion.p>
+        <motion.button
+          whileHover={{ scale: 1.05, rotate: 1 }}
+          whileTap={{ scale: 0.95 }}
+          className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-2 focus:ring-yellow-400 text-white font-semibold rounded-xl shadow-lg transition"
+        >
+          Learn More
+        </motion.button>
+      </div>
 
-
-</motion.div>
-
-);
+      {/* Image Section */}
+      <motion.div
+        variants={scaleUp}
+        transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
+        className="relative z-10 w-full md:w-1/2 flex justify-center items-center"
+      >
+        <div className="relative w-[350px] h-[350px] md:h-[550px] md:w-[550px] overflow-hidden">
+          <Image
+            src={slide.img}
+            loader={loader}
+            alt={slide.title}
+            layout="fill"
+            objectFit="contain"
+            className="transition-transform hover:scale-105 hover:rotate-1 filter brightness-110 contrast-125"
+          />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 const fadeInLeft = {
   hidden: { opacity: 0, x: -50 },
@@ -147,46 +166,3 @@ const scaleUp = {
   visible: { scale: 1, opacity: 1 },
 };
 
-const SlideCardV2 = memo(({ slide }) => {
-  <motion.div
-    initial="hidden"
-    animate="visible"
-    transition={{ duration: 0.8 }}
-    variants={fadeInUp}
-    className="relative flex flex-col md:flex-row items-center justify-center w-full bg-gradient-to-br from-yellow-300 to-yellow-600 text-white p-8 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-[650px]"
-  >
-    {/* Text Section */}
-    <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center text-center md:text-left md:items-start space-y-6">
-      <motion.h2
-        variants={fadeInLeft}
-        transition={{ delay: 0.2 }}
-        className="text-4xl md:text-5xl font-extrabold leading-tight"
-      >
-        {slide.title}
-      </motion.h2>
-      <motion.p variants={fadeInUp} transition={{ delay: 0.4 }} className="text-lg md:text-xl">
-        {slide.description}
-      </motion.p>
-      <motion.button
-        whileHover={{ scale: 1.05, rotate: 1 }}
-        whileTap={{ scale: 0.95 }}
-        className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-2 focus:ring-yellow-400 text-white font-semibold rounded-xl shadow-lg transition"
-      >
-        Learn More
-      </motion.button>
-    </div>
-
-    {/* Image Section */}
-    <motion.div variants={scaleUp} transition={{ delay: 0.4, duration: 0.6, type: "spring" }} className="relative z-10 w-full md:w-1/2 flex justify-center items-center">
-      <Image
-        src={slide.img}
-        loader={loader}
-        alt={slide.title}
-        width={350}
-        height={350}
-        loading="lazy"
-        className="w-[350px] h-[350px] object-contain filter brightness-110 contrast-125 transition-transform hover:scale-105 hover:rotate-1"
-      />
-    </motion.div>
-  </motion.div>
-});
