@@ -10,32 +10,32 @@ export async function returnStock(req: NextApiRequest, res: NextApiResponse) {
   const { productId, agentId, quantity, isDamaged } = req.body;
 
   try {
-    const agentInventory = await prisma.agentInventory.findFirst({
-      where: { productId, salesAgentId: agentId },
-    });
+    // const agentInventory = await prisma.agentInventory.findFirst({
+    //   where: { productId, salesAgentId: agentId },
+    // });
 
-    if (!agentInventory || agentInventory.quantity < quantity) {
-      return res.status(400).json({ message: "Insufficient agent stock" });
-    }
+    // if (!agentInventory || agentInventory.quantity < quantity) {
+    //   return res.status(400).json({ message: "Insufficient agent stock" });
+    // }
 
-    // Deduct from agent stock
-    await prisma.agentInventory.update({
-      where: { id: agentInventory.id },
-      data: { quantity: agentInventory.quantity - quantity },
-    });
+    // // Deduct from agent stock
+    // await prisma.agentInventory.update({
+    //   where: { id: agentInventory.id },
+    //   data: { quantity: agentInventory.quantity - quantity },
+    // });
 
-    if (!isDamaged) {
-      const inventoryItem = await prisma.inventoryItem.findFirst({
-        where: { productId },
-      });
+    // if (!isDamaged) {
+    //   const inventoryItem = await prisma.inventoryItem.findFirst({
+    //     where: { productId },
+    //   });
 
-      if (inventoryItem) {
-        await prisma.inventoryItem.update({
-          where: { id: inventoryItem.id },
-          data: { quantity: inventoryItem.quantity + quantity },
-        });
-      }
-    }
+    //   if (inventoryItem) {
+    //     await prisma.inventoryItem.update({
+    //       where: { id: inventoryItem.id },
+    //       data: { quantity: inventoryItem.quantity + quantity },
+    //     });
+    //   }
+    // }
 
     res.status(200).json({ message: "Stock returned successfully" });
   } catch (error) {

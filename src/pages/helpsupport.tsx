@@ -1,8 +1,8 @@
 import AddExerciseSchedule from "@/components/AddExerciseSchedule";
-import RightSide from "@/components/RightSide";
+// import RightSide from "@/components/RightSide";
 import UserLayout from "@/components/UserLayout";
 import UserNav from "@/components/UserNav";
-import UserSide from "@/components/UserSide";
+// import UserSide from "@/components/UserSide";
 import { ChartPieIcon, CalendarDaysIcon, UserCircleIcon, WrenchIcon, ChatBubbleLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Console } from "console";
 import {Suspense} from "react";

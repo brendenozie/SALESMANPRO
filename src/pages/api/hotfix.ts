@@ -22,36 +22,36 @@ export default async function handle(
 
     // Find all exercises where exerciseCategoryId is a string
     // Fetch exercises where exerciseCategoryId is still a string
-      const exercises = await prisma.waterIntakeChallenges.findMany({
+      // const exercises = await prisma.waterIntakeChallenges.findMany({
         // where: {
         //   exerciseCategoryId: {
         //     // Check if exerciseCategoryId is a string
         //     contains: ''
         //   },
         // },
-      });
+      // });
 
-      if (exercises.length === 0) {
-        return res.status(200).json({ message: 'No exercises found with string exerciseCategoryId' });
-      }
+    //   if (exercises.length === 0) {
+    //     return res.status(200).json({ message: 'No exercises found with string exerciseCategoryId' });
+    //   }
     
-    // Create an array of update promises
-      const updatePromises = exercises.map((exercise) => {
-        // const exerciseCategoryIdStr = exercise.exerciseCategoryId;
+    // // Create an array of update promises
+    //   const updatePromises = exercises.map((exercise) => {
+    //     // const exerciseCategoryIdStr = exercise.exerciseCategoryId;
 
-        return prisma.waterIntakeChallenges.updateMany({
-          where: {
-            id: exercise.id, // Use the correct field for where clause (change `_id` to `id` if needed)
-          },
-          data: {
-                    releaseDate: newReleaseDate,
-                    endDate: newEndDate,
-                },
-        });
-      });
+    //     return prisma.waterIntakeChallenges.updateMany({
+    //       where: {
+    //         id: exercise.id, // Use the correct field for where clause (change `_id` to `id` if needed)
+    //       },
+    //       data: {
+    //                 releaseDate: newReleaseDate,
+    //                 endDate: newEndDate,
+    //             },
+    //     });
+    //   });
 
       // Execute all updates in parallel
-      await Promise.all(updatePromises);
+      // await Promise.all(updatePromises);
 
       // Respond with success
       return res.status(200).json({ message: 'ExerciseCategoryId fields updated successfully' });
@@ -62,25 +62,25 @@ export default async function handle(
   }
 }
 
-const getAverageCaloriesSummary = async (start: Date, end: Date): Promise<AverageCaloriesSummary> => {
-  const caloriesFromDb = await prisma.exerciseActivity.findMany({
-    where: {
-      timestamp: {
-        gte: start,
-        lte: end,
-      },
-    },
-    select: {
-      acCalories: true,
-    },
-  });
+// const getAverageCaloriesSummary = async (start: Date, end: Date): Promise<AverageCaloriesSummary> => {
+  // const caloriesFromDb = await prisma.exerciseActivity.findMany({
+  //   where: {
+  //     timestamp: {
+  //       gte: start,
+  //       lte: end,
+  //     },
+  //   },
+  //   select: {
+  //     acCalories: true,
+  //   },
+  // });
 
-  const totalCalories = caloriesFromDb.reduce((acc, activity) => acc + activity.acCalories, 0);
-  const count = caloriesFromDb.length;
-  const averageCalories = count > 0 ? totalCalories / count : 0;
+  // const totalCalories = caloriesFromDb.reduce((acc, activity) => acc + activity.acCalories, 0);
+  // const count = caloriesFromDb.length;
+  // const averageCalories = count > 0 ? totalCalories / count : 0;
 
-  return {
-    totalCalories,
-    averageCalories,
-  };
-};
+  // return {
+  //   totalCalories,
+  //   averageCalories,
+  // };
+// };

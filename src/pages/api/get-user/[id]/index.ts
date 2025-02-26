@@ -1,7 +1,8 @@
 import { Prisma } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/react'
-import prisma from "../../../../server/db/prismadb";
+
+import prisma, { client } from "@/server/db/prismadb";
 
 export default async function handle(
   req: NextApiRequest,
@@ -24,12 +25,12 @@ export default async function handle(
 async function deleteUser(req: NextApiRequest, res: NextApiResponse) {
   const amaId = req.query.id as string
   try {
-    const ama = await prisma.exercise.delete({
-      where: {
-        id: amaId,
-      },
-    })
-    return res.status(204).json({ id: ama.id })
+    // const ama = await prisma.exercise.delete({
+    //   where: {
+    //     id: amaId,
+    //   },
+    // })
+    // return res.status(204).json({ id: ama.id })
   } catch (e) {
     console.log(e)
     res.status(500)

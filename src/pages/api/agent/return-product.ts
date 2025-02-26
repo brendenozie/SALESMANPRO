@@ -24,9 +24,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Retrieve agent's inventory
-    let agentInventory = await prisma.agentInventory.findUnique({
-      where: { inventoryItemId_salesAgentId: { inventoryItemId, salesAgentId: agentId } },
-    });
+    let agentInventory ;
+    // await prisma.agentInventory.findUnique({
+    //   // where: { inventoryItemId_salesAgentId: { inventoryItemId, salesAgentId: agentId } },
+    // });
 
     if (!agentInventory) {
       // Create a new inventory entry for the agent if it doesn't exist
@@ -52,44 +53,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Reverse commission
-    const product = await prisma.product.findUnique({
-      where: { id: agentInventory.inventoryItem.productId },
-    });
+    // const product = await prisma.product.findUnique({
+    //   where: { id: agentInventory.inventoryItem.productId },
+    // });
 
-    const commissionRate = 0.1; // 10% commission rate (adjust if necessary)
-    const reversedCommission = product.price * quantity * commissionRate;
+    // const commissionRate = 0.1; // 10% commission rate (adjust if necessary)
+    // const reversedCommission = product.price * quantity * commissionRate;
 
-    await prisma.commission.create({
-      data: {
-        salesAgentId: agentId,
-        productId: product.id,
-        commissionRate,
-        commissionEarned: -reversedCommission, // Negative value to reverse commission
-        basedOn: "RETURN",
-        status: "PENDING",
-      },
-    });
+    // await prisma.commission.create({
+    //   data: {
+    //     salesAgentId: agentId,
+    //     productId: product.id,
+    //     commissionRate,
+    //     commissionEarned: -reversedCommission, // Negative value to reverse commission
+    //     basedOn: "RETURN",
+    //     status: "PENDING",
+    //   },
+    // });
 
     // Log the return transaction
-    await prisma.clientInventoryLog.create({
-      data: {
-        clientInventoryId: clientInventory.id,
-        action: "returned",
-        salesAgentId: agentId,
-        quantity,
-        damaged: 0,
-      },
-    });
+    // await prisma.clientInventoryLog.create({
+    //   data: {
+    //     clientInventoryId: clientInventory.id,
+    //     action: "returned",
+    //     salesAgentId: agentId,
+    //     quantity,
+    //     damaged: 0,
+    //   },
+    // });
 
-    await prisma.agentInventoryLog.create({
-      data: {
-        agentInventoryId: agentInventory.id,
-        action: "client-return",
-        clientId,
-        quantity,
-        damaged: 0,
-      },
-    });
+    // await prisma.agentInventoryLog.create({
+    //   data: {
+    //     agentInventoryId: agentInventory.id,
+    //     action: "client-return",
+    //     clientId,
+    //     quantity,
+    //     damaged: 0,
+    //   },
+    // });
 
     return res
       .status(200)

@@ -15,13 +15,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: {
           salesAgentId: id,
         },
-        include: {
-          orders: {
-            include: {
-              product: true, // Optionally include product details for each order
-            },
-          },
-        },
+        // include: {
+        //   orders: {
+        //     include: {
+        //       product: true, // Optionally include product details for each order
+        //     },
+        //   },
+        // },
       });
 
       // Format client data with optional order details
@@ -30,13 +30,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: client.name,
         email: client.email,
         phoneNumber: client.phoneNumber,
-        totalOrders: client.orders.length,
-        orderDetails: client.orders.map((order) => ({
-          orderId: order.id,
-          productName: order.product.name,
-          quantity: order.quantity,
-          totalPrice: order.totalPrice,
-        })),
+        totalOrders: 100,//client.orders.length,
+        // orderDetails: client.orders.map((order) => ({
+        //   orderId: order.id,
+        //   productName: order.product.name,
+        //   quantity: order.quantity,
+        //   totalPrice: order.totalPrice,
+        // })),
       }));
 
       return res.status(200).json(formattedClients);

@@ -6,11 +6,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const agents = await prisma.salesAgent.findMany({
         include: {
-          orders: {
-            include: {
-              product: true,
-            },
-          },
+          // orders: {
+          //   include: {
+          //     product: true,
+          //   },
+          // },
           clients: true, // Optional: Include clients if needed
         },
       });
@@ -18,12 +18,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const formattedAgents = agents.map((agent) => ({
         id: agent.id,
         name: agent.name,
-        totalSales: agent.orders.reduce((sum, order) => sum + order.quantity, 0),
-        inventory: agent.orders.map((order) => ({
-          productId: order.product.id,
-          productName: order.product.name,
-          quantity: order.quantity,
-        })),
+        // totalSales: agent.orders.reduce((sum, order) => sum + order.quantity, 0),
+        // inventory: agent.orders.map((order) => ({
+        //   productId: order.product.id,
+        //   productName: order.product.name,
+        //   quantity: order.quantity,
+        // })),
       }));
 
       return res.status(200).json(formattedAgents);

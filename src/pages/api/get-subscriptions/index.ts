@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../server/db/prismadb";
+
+import prisma, { client } from "@/server/db/prismadb";
 
 export default async function handle(
   req: NextApiRequest,
@@ -8,8 +9,8 @@ export default async function handle(
   const { page, userId } = req.query;
   if (req.method === 'GET') {
         try {
-            const plans = await prisma.subscriptionPlan.findMany();
-            res.status(200).json(plans);
+            // const plans = await prisma.subscriptionPlan.findMany();
+            // res.status(200).json(plans);
         } catch (error) {
             res.status(500).json({ error: 'Error fetching subscription plans' });
         }

@@ -7,15 +7,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   try {
-    const topAgent = await prisma.salesAgent.findFirst({
-      orderBy: { totalSales: "desc" },
-      select: { name: true, totalSales: true },
-    });
+    // const topAgent = await prisma.salesAgent.findFirst({
+    //   orderBy: { totalSales: "desc" },
+    //   select: { name: true, totalSales: true },
+    // });
 
-    res.status(200).json({
-      topAgent: topAgent?.name || "N/A",
-      topAgentSales: topAgent?.totalSales || 0,
-    });
+    // res.status(200).json({
+    //   topAgent: topAgent?.name || "N/A",
+    //   topAgentSales: topAgent?.totalSales || 0,
+    // });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

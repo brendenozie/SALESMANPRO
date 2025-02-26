@@ -8,9 +8,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   try {
     const products = await prisma.product.findMany({
-      include: {
-        InventoryItem: true, // Include inventory details
-      },
+      // include: {
+      //   InventoryItem: true, // Include inventory details
+      // },
     });
 
     return res.status(200).json(products);

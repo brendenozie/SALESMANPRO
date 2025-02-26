@@ -9,8 +9,8 @@ export async function getTopAgents(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const topAgents = await prisma.salesAgent.findMany({
-      orderBy: { totalSales: "desc" },
-      select: { name: true, totalSales: true },
+      // orderBy: { totalSales: "desc" },
+      // select: { name: true, totalSales: true },
     });
 
     res.status(200).json(topAgents);

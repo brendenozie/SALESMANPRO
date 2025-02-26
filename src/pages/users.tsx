@@ -1,6 +1,4 @@
 import Layout from "@/components/AdminLayout";
-import Picard from "@/components/Picard";
-import Sidebar from "@/components/sidebar";
 import { IUser } from "@/types/typings";
 import { GetServerSidePropsContext } from "next";
 import Link from "next/link";

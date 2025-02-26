@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
-import prisma from "../../../server/db/prismadb";
+
+import prisma, { client } from "@/server/db/prismadb";
 
 
 // POST /api/post
@@ -50,56 +51,56 @@ async function RegisterUser(req: NextApiRequest, res: NextApiResponse) {
 
   // const hashedPassword = password;
 
-  const result = await prisma.user.create({
-    data: {
-      name,
-      email,
-      hashedPassword : password,
-      birthYear,
-      bmiResult,
-      currentHeightInCm,
-      currentWeightInKg,
-      exerciseGoal,
-      focusArea,
-      gender,
-      // img,
-      physicalActivityLevel,
-      weeklyGoalInKM,
-      weightInKgGoal, 
-      // provider
-    },
-  });
+  // const result = await prisma.user.create({
+  //   data: {
+  //     name,
+  //     email,
+  //     // hashedPassword : password,
+  //     // birthYear,
+  //     // bmiResult,
+  //     // currentHeightInCm,
+  //     // currentWeightInKg,
+  //     // exerciseGoal,
+  //     // focusArea,
+  //     // gender,
+  //     // // img,
+  //     // physicalActivityLevel,
+  //     // weeklyGoalInKM,
+  //     // weightInKgGoal, 
+  //     // provider
+  //   },
+  // });
 
-  const accountResult = await prisma.account.create({
-    data: {
-      userId : `${result.id}`,
-      type : 'oauth',
-      provider,
-      providerAccountId : '1111111111111111',
-      access_token : 'ya29.a0AfB_byAxwTjDvgwdumfbpCo9HT45pg_4lj5EB_pXuby6lN1CdprT-ojCHG1S7b0sFQDrxU57o0CA0F8NRIR1bJEGNqvpB-gurgIYSO92PYdLXL55eLT8vcezwtEi1DYHLIj1-TfSOEm3Utnzk87NbEnFH40MaCgYKAWsSARMSFQHsvYlsY7LJG1u-CgBgsIDGeK5fvg0163',
-      expires_at : 1692001786,
-      token_type : 'Bearer',
-      scope : 'https://www.hobbyhorse.com/auth/userinfo.profile https://www.hobbyhorse.com/auth/userinfo.email',
-      id_token : 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjdjOWM3OGUzYjAwZTFiYjA5MmQyNDZjODg3YjExMjIwYzg3YjdkMjAiLCJ0eXAiOiJKV1QifQ',
-    },
-  });
+  // const accountResult = await prisma.account.create({
+  //   data: {
+  //     userId : `${result.id}`,
+  //     type : 'oauth',
+  //     provider,
+  //     providerAccountId : '1111111111111111',
+  //     access_token : 'ya29.a0AfB_byAxwTjDvgwdumfbpCo9HT45pg_4lj5EB_pXuby6lN1CdprT-ojCHG1S7b0sFQDrxU57o0CA0F8NRIR1bJEGNqvpB-gurgIYSO92PYdLXL55eLT8vcezwtEi1DYHLIj1-TfSOEm3Utnzk87NbEnFH40MaCgYKAWsSARMSFQHsvYlsY7LJG1u-CgBgsIDGeK5fvg0163',
+  //     expires_at : 1692001786,
+  //     token_type : 'Bearer',
+  //     scope : 'https://www.hobbyhorse.com/auth/userinfo.profile https://www.hobbyhorse.com/auth/userinfo.email',
+  //     id_token : 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjdjOWM3OGUzYjAwZTFiYjA5MmQyNDZjODg3YjExMjIwYzg3YjdkMjAiLCJ0eXAiOiJKV1QifQ',
+  //   },
+  // });
 
-  if(result.hashedPassword){
+  // if(result.hashedPassword){
 
-    let {hashedPassword,...newObject} = result;
+  //   let {hashedPassword,...newObject} = result;
 
-    if(result.emailVerified == null){
+  //   if(result.emailVerified == null){
 
-      let {emailVerified,...newUser} = newObject;
+  //     let {emailVerified,...newUser} = newObject;
       
-      return res.send({status:200,message:"Success.", body:newUser});
-    }
+  //     return res.send({status:200,message:"Success.", body:newUser});
+  //   }
     
-     return res.send({status:200,message:"Success.", body:newObject});
+  //    return res.send({status:200,message:"Success.", body:newObject});
 
-  }
+  // }
 
-  if(result) return res.send({status:200,message:"Success.", body:result});
+  // if(result) return res.send({status:200,message:"Success.", body:result});
   
   return res.send({status:400,message:"This account does not exist. Create an account by registering"});
   

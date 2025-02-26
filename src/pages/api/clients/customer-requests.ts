@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../server/db/prismadb";
+
+import prisma, { client } from "@/server/db/prismadb";
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -13,23 +14,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   try {
-    const requests = await prisma.productRequest.findMany({
-      where: { salesAgent: { clients: { some: { id: customerId.toString() } } } },
-      include: {
-        product: {
-          select: { name: true },
-        },
-      },
-    });
+    // const requests = await prisma.productRequest.findMany({
+    //   where: { salesAgent: { clients: { some: { id: customerId.toString() } } } },
+    //   include: {
+    //     product: {
+    //       select: { name: true },
+    //     },
+    //   },
+    // });
 
-    const formattedRequests = requests.map((request) => ({
-      productId: request.productId,
-      name: request.product.name,
-      quantity: request.quantity,
-      status: request.status,
-    }));
+    // const formattedRequests = requests.map((request) => ({
+    //   productId: request.productId,
+    //   name: request.product.name,
+    //   quantity: request.quantity,
+    //   status: request.status,
+    // }));
 
-    res.status(200).json(formattedRequests);
+    // res.status(200).json(formattedRequests);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error." });

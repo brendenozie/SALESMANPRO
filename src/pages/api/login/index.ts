@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../server/db/prismadb";
+
+import prisma, { client } from "@/server/db/prismadb";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
@@ -30,19 +31,19 @@ async function LoginUser(req: NextApiRequest, res: NextApiResponse) {
 
   if(user){
     
-    if(user.hashedPassword){
+    // if(user.hashedPassword){
 
-      let {hashedPassword,...newObject} = user;
+    //   let {hashedPassword,...newObject} = user;
       
-      if(newObject.emailVerified == null){
+    //   if(newObject.emailVerified == null){
 
-        let {emailVerified,...newUser} = newObject;
+    //     let {emailVerified,...newUser} = newObject;
         
-        return res.send({status:200,message:"Success.", body:newUser});
-      }
+    //     return res.send({status:200,message:"Success.", body:newUser});
+    //   }
       
-      return res.send({status:200,message:"Success.", body:newObject});
-    }
+    //   return res.send({status:200,message:"Success.", body:newObject});
+    // }
 
     return res.send({status:200,message:"Success", body:user});
   }

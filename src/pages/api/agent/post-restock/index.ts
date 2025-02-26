@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../server/db/prismadb";
+import prisma from "../../../../server/db/prismadb";
 
 // POST /api/post
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -112,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         create: {
           salesAgentId,
           productId: inventoryItem.productId,
-          orderId: null, // Assign later if needed
+          // orderId: null, // Assign later if needed
           commissionRate,
           commissionEarned: quantity * commissionRate,
           basedOn: 'QUANTITY',
@@ -182,6 +182,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           agentInventoryId: agentinventoryItem.id,
           action: action,
           damaged: damaged,
+          totalPrice: 100,//inventoryItem. * quantity,
           quantity,
         },
       });
@@ -308,6 +309,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           agentInventoryId: inventoryItem.id,
           action: action,        
           damaged:damaged,
+          totalPrice: 100,//inventoryItem.price *
           quantity,
         },
       });
@@ -336,20 +338,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ message: 'Product returned successfully.', inventory: updatedInventory });
     }
 
-    if (action === 'REQUEST') {
-      // Create a request for admin approval
-      const request = await prisma.request.create({
-        data: {
-          requestedById : salesAgentId,
-          ApprovedById : adminId,
-          productId : productId,
-          quantity,
-          status: 'PENDING', // Default status
-        },
-      });
+    // if (action === 'REQUEST') {
+    //   // Create a request for admin approval
+    //   const request = await prisma.request.create({
+    //     data: {
+    //       requestedById : salesAgentId,
+    //       ApprovedById : adminId,
+    //       productId : productId,
 
-      return res.status(200).json({ message: 'Request submitted successfully.', request });
-    }
+    //       quantity,
+    //       status: 'PENDING', // Default status
+    //     },
+    //   });
+
+    //   return res.status(200).json({ message: 'Request submitted successfully.', request });
+    // }
     
     return res.status(400).json({ error: 'Invalid action or quantity.' });
 

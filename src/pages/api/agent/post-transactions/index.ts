@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
-import prisma from "../../../server/db/prismadb";
+
+import prisma, { client } from "@/server/db/prismadb";
 
 // POST /api/post
 
@@ -36,10 +37,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 }
 
                 try {
-                    const transaction = await prisma.transaction.create({
-                        data: transactionData,
-                    });
-                    return res.status(201).json(transaction);
+                    // const transaction = await prisma.transaction.create({
+                    //     data: transactionData,
+                    // });
+                    // return res.status(201).json(transaction);
                 } catch (error) {
                     return res.status(500).json({ message: 'Transaction creation failed', error });
                 }

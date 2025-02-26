@@ -19,30 +19,30 @@ const getSalesAgentRevenue = async (req: NextApiRequest, res: NextApiResponse) =
     }
 
     // Aggregate revenue over the specified period
-    const revenueData = await prisma.order.groupBy({
-      by: ["createdAt"],
-      where: {
-        salesAgentId: salesAgentId as string,
-        createdAt: { gte: start, lte: end },
-      },
-      _sum: {
-        totalPrice: true,
-      },
-      orderBy: { createdAt: "asc" },
-    });
+    // const revenueData = await prisma.order.groupBy({
+    //   by: ["createdAt"],
+    //   where: {
+    //     salesAgentId: salesAgentId as string,
+    //     createdAt: { gte: start, lte: end },
+    //   },
+    //   _sum: {
+    //     totalPrice: true,
+    //   },
+    //   orderBy: { createdAt: "asc" },
+    // });
 
-    // Format response: Group by day, month, or any desired time interval
-    const formattedRevenue = revenueData.map((entry) => ({
-      date: entry.createdAt.toISOString().split("T")[0], // Format date as YYYY-MM-DD
-      revenue: entry._sum.totalPrice || 0,
-    }));
+    // // Format response: Group by day, month, or any desired time interval
+    // const formattedRevenue = revenueData.map((entry) => ({
+    //   date: entry.createdAt.toISOString().split("T")[0], // Format date as YYYY-MM-DD
+    //   revenue: entry._sum.totalPrice || 0,
+    // }));
 
-    res.status(200).json({
-      salesAgentId,
-      startDate: start.toISOString().split("T")[0],
-      endDate: end.toISOString().split("T")[0],
-      revenue: formattedRevenue,
-    });
+    // res.status(200).json({
+    //   salesAgentId,
+    //   startDate: start.toISOString().split("T")[0],
+    //   endDate: end.toISOString().split("T")[0],
+    //   revenue: formattedRevenue,
+    // });
   } catch (error) {
     console.error("Error calculating revenue:", error);
     res.status(500).json({ error: "Failed to calculate revenue." });

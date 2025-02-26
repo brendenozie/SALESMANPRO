@@ -20,62 +20,62 @@ const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
       ],
     };
 
-    const [orders, totalOrders] = await prisma.$transaction([
-      prisma.order.findMany({
-        where,
-        include: {
-          client: true,
-          salesAgent: true,
-          product: true,
-        },
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.order.count({ where }),
-    ]);
+    // const [orders, totalOrders] = await prisma.$transaction([
+    //   prisma.order.findMany({
+    //     where,
+    //     include: {
+    //       client: true,
+    //       salesAgent: true,
+    //       product: true,
+    //     },
+    //     skip,
+    //     take,
+    //     orderBy: { createdAt: 'desc' },
+    //   }),
+    //   prisma.order.count({ where }),
+    // ]);
 
-    const totalRevenue = await prisma.order.aggregate({
-      _sum: { totalPrice: true },
-      where: { salesAgentId: salesAgentId as string },
-    });
+    // const totalRevenue = await prisma.order.aggregate({
+    //   _sum: { totalPrice: true },
+    //   where: { salesAgentId: salesAgentId as string },
+    // });
 
-    const pendingRevenue = await prisma.order.aggregate({
-      _sum: { totalPrice: true },
-      where: { status: 'PENDING', salesAgentId: salesAgentId as string },
-    });
+    // const pendingRevenue = await prisma.order.aggregate({
+    //   _sum: { totalPrice: true },
+    //   where: { status: 'PENDING', salesAgentId: salesAgentId as string },
+    // });
 
-    const completedRevenue = await prisma.order.aggregate({
-      _sum: { totalPrice: true },
-      where: { status: 'COMPLETED', salesAgentId: salesAgentId as string },
-    });
+    // const completedRevenue = await prisma.order.aggregate({
+    //   _sum: { totalPrice: true },
+    //   where: { status: 'COMPLETED', salesAgentId: salesAgentId as string },
+    // });
 
-    // Monthly revenue calculation
-    const ordersForMonthlyRevenue = await prisma.order.findMany({
-      select: { createdAt: true, totalPrice: true },
-      where: { salesAgentId: salesAgentId as string },
-    });
+    // // Monthly revenue calculation
+    // const ordersForMonthlyRevenue = await prisma.order.findMany({
+    //   select: { createdAt: true, totalPrice: true },
+    //   where: { salesAgentId: salesAgentId as string },
+    // });
 
-    const monthlyRevenue = Array(12).fill(0);
+    // const monthlyRevenue = Array(12).fill(0);
     
-    ordersForMonthlyRevenue.forEach((order) => {
-      const month = new Date(order.createdAt).getMonth();
-      monthlyRevenue[month] += order.totalPrice;
-    });
+    // ordersForMonthlyRevenue.forEach((order) => {
+    //   const month = new Date(order.createdAt).getMonth();
+    //   monthlyRevenue[month] += order.totalPrice;
+    // });
 
-    const allOrders = {
-      orders,
-      totalOrders,
-      totalPages: Math.ceil(totalOrders / itemsPerPage),
-      totalRevenue: totalRevenue._sum.totalPrice || 0,
-      pendingRevenue: pendingRevenue._sum.totalPrice || 0,
-      completedRevenue: completedRevenue._sum.totalPrice || 0,
-      monthlyRevenue,
-    };
+    // const allOrders = {
+    //   orders,
+    //   totalOrders,
+    //   totalPages: Math.ceil(totalOrders / itemsPerPage),
+    //   totalRevenue: totalRevenue._sum.totalPrice || 0,
+    //   pendingRevenue: pendingRevenue._sum.totalPrice || 0,
+    //   completedRevenue: completedRevenue._sum.totalPrice || 0,
+    //   monthlyRevenue,
+    // };
 
-    console.log('Fetched orders for salesAgentId:', salesAgentId, allOrders);
+    // console.log('Fetched orders for salesAgentId:', salesAgentId, allOrders);
 
-    res.status(200).json(allOrders);
+    res.status(200).json("allOrders");
   } catch (error) {
     console.error('Error fetching orders:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
