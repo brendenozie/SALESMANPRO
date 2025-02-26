@@ -4,14 +4,13 @@ import { useStateContext } from '../../../contexts/ContextProvider';
 import Confetti from 'react-confetti';
 import { CreditCardIcon, TruckIcon, TrashIcon, CheckCircleIcon, CalendarIcon, XCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "../../../data/cardFormatter";
-import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { Link } from 'react-router-dom';
-import { useSession } from 'next-auth/client';
+import { useSession } from "next-auth/react";
 
 const CheckoutPage = () => {
-  const { session } = useSession();
+
   const router = useRouter();
+  const { data: session } = useSession();
   const { cart, removeItem, clearCart } = useStateContext();
   const [myOrder, setMyOrder] = useState({});
   const [formData, setFormData] = useState({
