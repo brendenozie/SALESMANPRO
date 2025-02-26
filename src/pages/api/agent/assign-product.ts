@@ -63,22 +63,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
-      await prisma.agentInventoryLog.create({
-        data: {
-          agentInventoryId, action: "assigned-to-client", clientId, quantity,
-        },
-      });
+      // await prisma.agentInventoryLog.create({
+      //   data: {
+      //     agentInventoryId, action: "assigned-to-client", clientId, quantity,
+      //   },
+      // });
 
-      await prisma.clientInventoryLog.create({
-        data: {
-          clientInventoryId: clientInventory.id, 
-          action: "assigned", 
-          salesAgentId: agentInventory.salesAgentId, quantity,
-          price : agentInventory.inventoryItem.product.salesPrice, 
-          totalPrice : agentInventory.inventoryItem.product.salesPrice * quantity,
-          status : "assigned"
-        },
-      });
+      // await prisma.clientInventoryLog.create({
+      //   data: {
+      //     clientInventoryId: clientInventory.id, 
+      //     action: "assigned", 
+      //     salesAgentId: agentInventory.salesAgentId, quantity,
+      //     price : agentInventory.inventoryItem.product.salesPrice, 
+      //     totalPrice : agentInventory.inventoryItem.product.salesPrice * quantity,
+      //     status : "assigned"
+      //   },
+      // });
 
       return { clientInventory, commissions };
     });

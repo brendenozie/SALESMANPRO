@@ -9,25 +9,25 @@ const getSalesAgentRevenue = async (req: NextApiRequest, res: NextApiResponse) =
       select: {
         id: true,
         name: true,
-        orders: {
-          where: {
-            createdAt: {
-              gte: startDate ? new Date(startDate as string) : undefined,
-              lte: endDate ? new Date(endDate as string) : undefined,
-            },
-          },
-          select: {
-            totalPrice: true,
-          },
-        },
+        // orders: {
+        //   where: {
+        //     createdAt: {
+        //       gte: startDate ? new Date(startDate as string) : undefined,
+        //       lte: endDate ? new Date(endDate as string) : undefined,
+        //     },
+        //   },
+        //   select: {
+        //     totalPrice: true,
+        //   },
+        // },
       },
     });
 
     const revenueData = salesAgentRevenue.map((agent) => ({
       id: agent.id,
       name: agent.name,
-      totalRevenue: agent.orders.reduce((sum, order) => sum + order.totalPrice, 0),
-      totalOrders: agent.orders.length,
+      // totalRevenue: agent.orders.reduce((sum, order) => sum + order.totalPrice, 0),
+      // totalOrders: agent.orders.length,
     }));
 
     res.status(200).json(revenueData);

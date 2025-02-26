@@ -12,6 +12,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
+import load from "../../assets/load.png";
+import Image from "next/image";
 
 // Custom Arrow Buttons
 const CustomPrevArrow = (props) => (
@@ -32,8 +34,18 @@ const CustomNextArrow = (props) => (
   </button>
 );
 
+const loaderProp = ({ src, width, quality }) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
+
 const FlashCard = ({ productItems, addToCart }) => {
   const [likedItems, setLikedItems] = useState({});
+  const [imageError, setImageError] = useState(false);
+  const router = useRouter();
 
   const toggleLike = (id) => {
     setLikedItems((prev) => ({
@@ -41,7 +53,6 @@ const FlashCard = ({ productItems, addToCart }) => {
       [id]: !prev[id],
     }));
   };
-
 
   const settings = {
     dots: false,
@@ -60,9 +71,6 @@ const FlashCard = ({ productItems, addToCart }) => {
     ],
   };
 
-
-  const router = useRouter();
-
   return (
     <Slider {...settings} className="py-8">
       {productItems.map((product) => (
@@ -72,10 +80,14 @@ const FlashCard = ({ productItems, addToCart }) => {
               <span className="absolute top-2 left-2 bg-yellow-500 text-black text-xs px-3 py-1 rounded-full shadow-md">
                 {product.discount}% Off
               </span>
-              <img
-                src={product.cover}
+              <Image
+                width={300}
+                height={300}
+                loader = {loaderProp}
+                src={imageError ? load.src : product.cover}
                 alt={`Product image of ${product.title}`}
                 className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
+                onError={() => setImageError(true)}
               />
               <button
                 onClick={() => toggleLike(product.id)}

@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useState} from "react";
+import load from "../../assets/load.png";
+import Image from "next/image";
+
+const loaderProp = ({ src, width, quality }) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
 
 const Announcement = () => {
+  const [imageError, setImageError] = useState(false);
   const banners = [
     {
       src: "./images/banner-1.png",
@@ -22,10 +33,19 @@ const Announcement = () => {
             key={index}
             className="relative group overflow-hidden rounded-2xl shadow-xl h-80 border border-yellow-400/30 transition-transform duration-500 hover:scale-105"
           >
-            <img
+            {/* <img
               src={banner.src}
               alt={banner.title}
               className="w-full h-full object-cover group-hover:scale-110 transform transition-transform duration-700 ease-out"
+            /> */}
+            <Image
+              width={300}
+              height={300}
+              loader = {loaderProp}
+              src={imageError ? load.src : banner.src}
+              alt={`Product image of ${banner.title}`}
+              className="w-full h-full object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
+              onError={() => setImageError(true)}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500"></div>
             <div className="absolute bottom-4 left-4 z-10">

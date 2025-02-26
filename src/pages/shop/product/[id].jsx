@@ -13,6 +13,16 @@ import { useStateContext } from "../../../contexts/ContextProvider";
 import { motion } from "framer-motion";
 import Cart from "../../../components/cart";
 import LocationModal from "../../../components/locationManager";
+import load from "../../../assets/load.png";
+import Image from "next/image";
+
+const loaderProp = ({ src, width, quality }) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
 
 const prisma = new PrismaClient();
 
@@ -441,6 +451,7 @@ const ProductSpecifications = ({ listing }) => {
 
 const SimilarItems = ({ similarListings, addToCart }) => {
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
   return (
     <div className="mt-10 max-w-7xl mx-auto px-4">
       <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
@@ -455,11 +466,20 @@ const SimilarItems = ({ similarListings, addToCart }) => {
             whileHover={{ scale: 1.03 }}
           >
             <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
-              <motion.img
+              {/* <motion.img
                 src={item.image}
                 alt={item.title}
                 className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
                 whileHover={{ rotate: 2 }}
+              /> */}
+              <Image
+                width={300}
+                height={300}
+                loader = {loaderProp}
+                src={imageError ? load.src : item.image}
+                alt={`Product image of ${item.title}`}
+                className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
+                onError={() => setImageError(true)}
               />
             </div>
             <p className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mt-3 text-center truncate w-full">

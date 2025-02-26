@@ -8,6 +8,16 @@ import debounce from "lodash.debounce";
 import { ArrowPathIcon, PlusIcon ,XCircleIcon, MagnifyingGlassCircleIcon, ChevronDoubleDownIcon, StarIcon, CheckCircleIcon, AdjustmentsVerticalIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import Filters from "../../../components/Filters";
 import LocationModal from "../../../components/locationManager";
+import load from "../../../assets/load.png";
+import Image from "next/image";
+
+const loaderProp = ({ src, width, quality }) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
 
 const ProductList = () => {
   const router = useRouter();
@@ -183,21 +193,6 @@ const ProductList = () => {
   );
 };
 
-const SearchBar = ({ searchTerm, setSearchTerm }) => (
-  <div className="flex flex-col sm:flex-row gap-6 mb-8 justify-center">
-    <input
-      type="text"
-      placeholder="Search products..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="flex-1 p-4 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-    />
-    <button onClick={() => setSearchTerm("")} className="p-4 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg shadow-md">
-      Clear
-    </button>
-  </div>
-);
-
 const ProductGrid = ({ loading, products }) => (
   <div className="lg:col-span-3 columns-2 sm:columns-3 md:columns-4 p-2 md:p-4 gap-3">
     {loading
@@ -224,6 +219,7 @@ const ProductGrid = ({ loading, products }) => (
 
 const ProductCard = ({ product }) => {
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
 
   return (
     <motion.div
@@ -233,12 +229,15 @@ const ProductCard = ({ product }) => {
     >
       {/* Product Image */}
       <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
-        <motion.img
-          src={product.image}
-          alt={product.title}
-          className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
-          whileHover={{ rotate: 2 }}
-        />
+        <Image
+            width={300}
+            height={300}
+            loader = {loaderProp}
+            src={imageError ? load.src : product.image}
+            alt={`Product image of ${product.title}`}
+            className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImageError(true)}
+          />
       </div>
 
       {/* Product Info */}

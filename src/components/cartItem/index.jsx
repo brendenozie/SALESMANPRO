@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { PlusIcon, MinusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '../../contexts/ContextProvider';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
+import load from "../../assets/load.png";
+import Image from "next/image";
 
 const loaderProp = ({ src, width, quality }) => {
   const params = [`w=${width || 800}`]; // Default width to 800 if not provided
@@ -15,12 +16,22 @@ const loaderProp = ({ src, width, quality }) => {
 
 
 const CartItem = ({ item, addToCart, decreaseQuantity, removeItem }) => {
+  const [imageError, setImageError] = useState(false);
   return (
     <div className="flex items-center gap-4 border-b border-gray-300 dark:border-gray-700 py-4">
       {/* <Image className="h-20 w-20 object-cover rounded-lg" loader={loaderProp} src={item.image} alt={item.newName} width={80} height={80} /> */}
+      <Image
+            width={80}
+            height={80}
+            loader = {loaderProp}
+            src={imageError ? load.src : item.image}
+            alt={`Product image of ${item.title}`}
+            className="h-20 w-20 object-cover rounded-lg"
+            onError={() => setImageError(true)}
+          />
       <div className="flex-1">
         <p className="font-semibold text-gray-800 dark:text-gray-200">{item.title}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
+        <p className="text-sm text-gray-500 w-20 h-8 overflow-clip dark:text-gray-400">{item.description}</p>
         <div className="flex items-center gap-2 mt-2">
           <MinusIcon
             className="w-5 h-5 text-red-500 cursor-pointer hover:scale-110 transition"

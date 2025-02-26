@@ -4,6 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '../../contexts/ContextProvider';
 import { useRouter } from 'next/router';
 import CartItem from '../cartItem';
+import load from "../../assets/load.png";
+import Image from "next/image";
+
+const loaderProp = ({ src, width, quality }) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
 
 const Cart = () => {
   const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();

@@ -22,10 +22,10 @@ const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
     const [orders, totalOrders] = await prisma.$transaction([
       prisma.customerOrder.findMany({
         where,
-        include: {
-          client: true,
-          product: true,
-        },
+        // include: {
+        //   // client: true,
+        //   product: true,
+        // },
         skip,
         take,
         orderBy: { createdAt: 'desc' },

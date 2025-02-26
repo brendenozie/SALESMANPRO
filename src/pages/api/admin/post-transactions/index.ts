@@ -35,14 +35,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                     transactionData.subscriptionPlan = { connect: { id: subscriptionPlanId } };
                 }
 
-                try {
-                    const transaction = await prisma.transaction.create({
-                        data: transactionData,
-                    });
-                    return res.status(201).json(transaction);
-                } catch (error) {
-                    return res.status(500).json({ message: 'Transaction creation failed', error });
-                }
+                // try {
+                //     const transaction = await prisma.transaction.create({
+                //         data: transactionData,
+                //     });
+                //     return res.status(201).json(transaction);
+                // } catch (error) {
+                //     return res.status(500).json({ message: 'Transaction creation failed', error });
+                // }
 
         } catch (error) {
             res.status(500).json({ error: 'Error creating transaction' });

@@ -1,10 +1,20 @@
-import React from "react";
+import React, {useState} from "react";
 import { PlusIcon, ArrowRightIcon, ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
+import load from "../../assets/load.png";
+import Image from "next/image";
+
+const loaderProp = ({ src, width, quality }:any) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
 
 const Shop = ({ addToCart,category, shopItems }:any) => {
-
+  const [imageError, setImageError] = useState(false);
   const router = useRouter();
   
   return (
@@ -16,7 +26,6 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
           {category.allBrands && category.allBrands.slice(0, 6).map((brand : any, index : any) => (
             <div key={index} className="flex items-center gap-3 p-3 mb-3 bg-gray-100 dark:bg-gray-900 rounded-lg hover:shadow-lg transition">
               <span className="text-2xl p-2 rounded-full border border-yellow-400 z-10 drop-shadow-md">{category.icon}</span>
-              {/* <img src={category.icon} alt={category.name} className="w-12 h-12 object-cover " /> */}
               <span className="text-md font-medium">{brand}</span>
             </div>
           ))}
@@ -40,7 +49,16 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {shopItems?.products?.map((item : any, index : any) => (
               <div key={index} onClick={()=>{ router.push(`/shop/product/${item.id}`)}} className="relative group bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition">
-                <img src={item.cover} alt={item.title} className="w-full h-64 object-cover rounded-xl" />
+                {/* <img src={item.cover} alt={item.title} className="w-full h-64 object-cover rounded-xl" /> */}
+                <Image
+                  width={300}
+                  height={300}
+                  loader = {loaderProp}
+                  src={imageError ? load.src : item.cover}
+                  alt={`Product image of ${item.title}`}
+                  className="w-full h-64 object-cover rounded-xl"
+                  onError={() => setImageError(true)}
+                />
                 <div className="mt-3">
                   <h4 className="text-lg font-semibold truncate">{item.title}</h4>
                   {/* <span className="text-yellow-500 font-bold text-md">${item.sellingPrice}.00</span> */}
@@ -110,6 +128,8 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
 export default Shop;
 
 const ProductGrid = ({ shopItems } : any) => {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
       {shopItems?.products?.map((item : any, index : any) => (
@@ -120,11 +140,21 @@ const ProductGrid = ({ shopItems } : any) => {
         >
           {/* Product Image */}
           <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
-            <motion.img
-              src={item.cover}
+            {/* <motion.img
+              src={imageError ? load.src : item.cover}
               alt={item.title}
               className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
               whileHover={{ rotate: 2 }}
+              onError={() => setImageError(true)}
+            /> */}
+            <Image
+              width={300}
+              height={300}
+              loader = {loaderProp}
+              src={imageError ? load.src : item.cover}
+              alt={`Product image of ${item.title}`}
+              className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
+              onError={() => setImageError(true)}
             />
           </div>
 

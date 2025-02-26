@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/react'
-import prisma from "../../../../server/db/prismadb";
+import prisma, { client } from "@/server/db/prismadb";
 
 export default async function handle(
   req: NextApiRequest,
@@ -33,17 +33,17 @@ export default async function handle(
 async function GetCity(req: NextApiRequest, res: NextApiResponse) {
   const cityId = req.query.id as string
   try {
-    const city = await prisma.exercise.findFirst({
-      where: {
-        id: cityId,
-      },
-    })
-    return res.status(200).json({InfoResponse:{count: 1,
-                    next: "2",
-                    pages: 10,
-                    prev: "0"},
-              results: city
-              })
+    // const city = await prisma.exercise.findFirst({
+    //   where: {
+    //     id: cityId,
+    //   },
+    // })
+    // return res.status(200).json({InfoResponse:{count: 1,
+    //                 next: "2",
+    //                 pages: 10,
+    //                 prev: "0"},
+    //           results: city
+    //           })
   } catch (e) {
     console.log(e)
     res.status(500)
@@ -53,12 +53,12 @@ async function GetCity(req: NextApiRequest, res: NextApiResponse) {
 async function deleteCity(req: NextApiRequest, res: NextApiResponse) {
   const amaId = req.query.id as string
   try {
-    const ama = await prisma.exercise.delete({
-      where: {
-        id: amaId,
-      },
-    })
-    return res.status(204).json({ id: ama.id })
+    // const ama = await prisma.exercise.delete({
+    //   where: {
+    //     id: amaId,
+    //   },
+    // })
+    // return res.status(204).json({ id: ama.id })
   } catch (e) {
     console.log(e)
     res.status(500)

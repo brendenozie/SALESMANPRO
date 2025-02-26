@@ -1,11 +1,20 @@
-import React from "react";
+import React, {useState} from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Tdata from "./Tdata";
 import { ArrowRightCircleIcon, ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
-
 import { motion } from "framer-motion";
+import load from "../../assets/load.png";
+import Image from "next/image";
+
+const loaderProp = ({ src, width, quality }) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
 
 // Custom Arrow Buttons
 const CustomPrevArrow = (props) => (
@@ -59,10 +68,6 @@ const TopCate = ({ categories }) => {
           <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
             Explore <span className="text-yellow-400">Top Categories</span>
           </h2>
-          {/* <button className="text-yellow-400 text-sm md:text-lg flex font-medium hover:text-yellow-300 transition  items-center space-x-2">
-            <span>View All</span>
-            <ArrowRightCircleIcon className="text-sm md:text-lg" />
-          </button> */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -84,14 +89,21 @@ const TopCate = ({ categories }) => {
 };
 
 function CategoryCard({ value, index }) {
+
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div key={index} className="px-4 sm:px-6 md:px-8 lg:px-10">
       <div className="relative group overflow-hidden rounded-2xl shadow-lg transition-transform duration-500 hover:scale-105 hover:shadow-2xl">
-        <img
-          src={value.cover}
-          alt="Category"
-          className="w-full h-96 object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
-        />
+        <Image
+            width={300}
+            height={300}
+            loader = {loaderProp}
+            src={imageError ? load.src : value.cover}
+            alt={`Product image of ${value.name}`}
+            className="w-full h-96 object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
+            onError={() => setImageError(true)}
+          />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent dark:from-white/80 dark:to-transparent transition-opacity duration-500 group-hover:opacity-90"></div>
 

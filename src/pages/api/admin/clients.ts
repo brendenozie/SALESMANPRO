@@ -13,16 +13,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         name: true,
         email: true,
         phoneNumber: true,
-        orders: {
-          select: {
-            totalPrice: true, // Assuming 'totalPrice' exists in your 'Order' model
-            createdAt: true,
-          },
-          orderBy: {
-            createdAt: "desc", // Sort orders by most recent
-          },
-          take: 1, // Fetch only the most recent order
-        },
+        // orders: {
+        //   select: {
+        //     totalPrice: true, // Assuming 'totalPrice' exists in your 'Order' model
+        //     createdAt: true,
+        //   },
+        //   orderBy: {
+        //     createdAt: "desc", // Sort orders by most recent
+        //   },
+        //   take: 1, // Fetch only the most recent order
+        // },
         communications: {
           select: {
             createdAt: true, // Date of last communication
@@ -37,7 +37,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     // Process each client to include calculated or derived values
     const processedClients = clients.map((client) => {
-      const recentOrder = client.orders[0]; // Get the most recent order
+      const recentOrder = {totalPrice:0,createdAt:""};//client.orders[0]; // Get the most recent order
       const recentCommunication = client.communications[0]; // Get the most recent communication
 
       return {

@@ -1,10 +1,20 @@
-import React from "react";
+import React,{useState} from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { GifIcon, ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
+import load from "../../assets/load.png";
+import Image from "next/image";
+
+const loaderProp = ({ src, width, quality }) => {
+  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
+  if (quality) {
+    params.push(`q=${quality}`);
+  }
+  return `${src}?${params.join("&")}`;
+};
 
 const Dcard = ({ productItems, addToCart }) => {
   const settings = {
@@ -23,6 +33,7 @@ const Dcard = ({ productItems, addToCart }) => {
   };
 
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
 
   return (
     <Slider {...settings}>
@@ -34,10 +45,14 @@ const Dcard = ({ productItems, addToCart }) => {
           transition={{ type: "spring", stiffness: 300 }}
         >
           <div className="relative group overflow-hidden rounded-3xl shadow-2xl">
-            <img
-              src={value.image}
-              alt={value.title}
+            <Image
+              width={300}
+              height={300}
+              loader = {loaderProp}
+              src={imageError ? load.src : value.image}
+              alt={`Product image of ${value.title}`}
               className="w-full h-[380px] object-cover transform transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+              onError={() => setImageError(true)}
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>

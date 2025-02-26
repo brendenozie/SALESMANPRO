@@ -60,7 +60,7 @@ async function handleRestock(data: { productId: string; quantity: number; action
     data: {
       inventoryId: inventoryItem.id,
       action: "RESTOCK",
-      damaged,
+      // damaged,
       quantity,
     },
   });
@@ -89,7 +89,7 @@ async function handleAssign(data: { productId: string; quantity: number; action:
       productId,
       commissionRate,
       commissionEarned: quantity * commissionRate,
-      basedOn: commissionType,
+      // basedOn: commissionType,
     },
   });
 
@@ -99,7 +99,7 @@ async function handleAssign(data: { productId: string; quantity: number; action:
     create: {
       salesAgentId,
       productId,
-      targetType: target?.type || '',
+      // targetType: target?.type || '',
       targetValue: target?.value || 0,
       achievedValue: quantity,
       startDate: new Date(),
@@ -144,21 +144,21 @@ async function handleReturn(data: { productId: string; quantity: number; action:
   return { message: "Product returned successfully.", inventory: updatedInventory };
 }
 
-async function handleRequest(data: { productId: string; quantity: number; action: "NEWSTOCK" | "RESTOCK" | "ASSIGN" | "RETURN" | "REQUEST"; damaged?: boolean | undefined; companyId?: string | undefined; salesAgentId?: string | undefined; reason?: string | undefined; adminId?: string | undefined; commissionRate?: number | undefined; commissionType?: string | undefined; target?: { value: number; type: string; } | undefined; }) {
-  const { productId, quantity, salesAgentId, adminId } = data;
+// async function handleRequest(data: { productId: string; quantity: number; action: "NEWSTOCK" | "RESTOCK" | "ASSIGN" | "RETURN" | "REQUEST"; damaged?: boolean | undefined; companyId?: string | undefined; salesAgentId?: string | undefined; reason?: string | undefined; adminId?: string | undefined; commissionRate?: number | undefined; commissionType?: string | undefined; target?: { value: number; type: string; } | undefined; }) {
+//   const { productId, quantity, salesAgentId, adminId } = data;
 
-  const request = await prisma.request.create({
-    data: {
-      requestedById: salesAgentId,
-      ApprovedById: adminId,
-      productId,
-      quantity,
-      status: "PENDING",
-    },
-  });
+//   const request = await prisma.request.create({
+//     data: {
+//       // requestedById: salesAgentId,
+//       ApprovedById: adminId,
+//       productId,
+//       quantity,
+//       status: "PENDING",
+//     },
+//   });
 
-  return { message: "Request submitted successfully.", request };
-}
+//   return { message: "Request submitted successfully.", request };
+// }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -182,15 +182,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case "RETURN":
         result = await handleReturn(data);
         break;
-      case "REQUEST":
-        result = await handleRequest(data);
-        break;
+      // case "REQUEST":
+      //   result = await handleRequest(data);
+      //   break;
       default:
         throw new Error("Invalid action.");
     }
 
     return res.status(200).json(result);
-  } catch (error) {
+  } catch (error:any) {
     console.error("Error:", error);
     return res.status(400).json({ error: error.message || "Internal Server Error" });
   }

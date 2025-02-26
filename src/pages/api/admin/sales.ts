@@ -9,35 +9,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { startDate, endDate } = req.query;
 
       // Filter sales based on query parameters
-      const sales = await prisma.order.findMany({
-        where: {
-          createdAt: {
-            gte: startDate ? new Date(startDate as string) : undefined,
-            lte: endDate ? new Date(endDate as string) : undefined,
-          },
-        },
-        include: {
-          product: true,
-          client: true,
-          salesAgent: true,
-        },
-      });
+      // const sales = await prisma.order.findMany({
+      //   where: {
+      //     createdAt: {
+      //       gte: startDate ? new Date(startDate as string) : undefined,
+      //       lte: endDate ? new Date(endDate as string) : undefined,
+      //     },
+      //   },
+      //   include: {
+      //     product: true,
+      //     client: true,
+      //     salesAgent: true,
+      //   },
+      // });
 
       // Format data for the frontend
-      const formattedSales = sales.map((sale) => ({
-        id: sale.id,
-        productName: sale.product.name,
-        category: sale.product.category || "N/A",
-        quantity: sale.quantity,
-        price: sale.product.price,
-        totalAmount: sale.totalPrice,
-        region: sale.client.name,
-        date: sale.createdAt.toISOString(),
-      }));
+      // const formattedSales = sales.map((sale) => ({
+      //   id: sale.id,
+      //   productName: sale.product.name,
+      //   category: sale.product.category || "N/A",
+      //   quantity: sale.quantity,
+      //   price: sale.product.price,
+      //   totalAmount: sale.totalPrice,
+      //   region: sale.client.name,
+      //   date: sale.createdAt.toISOString(),
+      // }));
 
-      console.log(formattedSales);
+      // console.log(formattedSales);
 
-      return res.status(200).json(formattedSales);
+      return res.status(200).json("formattedSales");
     } else {
       return res.status(405).json({ error: "Method not allowed" });
     }
