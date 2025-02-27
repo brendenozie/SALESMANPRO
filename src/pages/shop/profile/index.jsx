@@ -96,7 +96,7 @@ const ProfilePage = () => {
         {/* Top Navigation */}
         <div className="flex justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
           {/* Sidebar Toggle for Mobile */}
-          <a href='/shop/'>
+          <a href='/'>
             <button className="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
               <ArrowLeftIcon className="w-6 h-6 text-gray-800 dark:text-white" />
             </button>

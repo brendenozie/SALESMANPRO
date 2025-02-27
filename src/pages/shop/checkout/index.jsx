@@ -293,7 +293,7 @@ const OrderStatus = ({ success, orderId, onContinueShopping, onTrackOrder }) => 
               </button>
             </a>
           )}
-          <a href="/shop">
+          <a href="/">
             <button className="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold shadow-md hover:bg-gray-300 transition flex items-center justify-center gap-2">
               <ArrowLeftIcon className="w-5 h-5" /> Continue Shopping
             </button>

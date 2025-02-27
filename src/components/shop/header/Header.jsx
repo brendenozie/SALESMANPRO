@@ -44,7 +44,7 @@ const Header = () => {
         }`}
       >
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <a href="/shop">
+          <a href="/">
             <img
               src={logo.src}
               alt="Logo"
@@ -243,7 +243,7 @@ const NavIcons = ({
 };
 
 const menuItems = [
-  { name: "Home", icon: <HomeIcon className="w-5 h-5 mr-2" />, link: "/shop" },
+  { name: "Home", icon: <HomeIcon className="w-5 h-5 mr-2" />, link: "/" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5 mr-2" />, link: "/shop/productlist" },
   { name: "All Categories", icon: <DocumentDuplicateIcon className="w-5 h-5 mr-2" />, link: "/shop/categories" },
   { name: "Vendor Account", icon: <BuildingLibraryIcon className="w-5 h-5 mr-2" />, link: "/" },
@@ -272,7 +272,7 @@ const DesktopMenu = () => (
 const BottomNav = () => {
   const router = useRouter();
   const menuItems = [
-    { name: "Home", icon: HomeIcon, link: "/shop" },
+    { name: "Home", icon: HomeIcon, link: "/" },
     { name: "Products", icon: DocumentTextIcon, link: "/shop/productlist" },
     { name: "Categories", icon: DocumentDuplicateIcon, link: "/shop/categories" },
     { name: "Orders", icon: TruckIcon, link: "/shop/trackmyorder" },
