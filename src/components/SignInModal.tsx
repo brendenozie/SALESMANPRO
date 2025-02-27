@@ -3,24 +3,23 @@ import { motion } from "framer-motion";
 import { XMarkIcon, ArrowsUpDownIcon } from "@heroicons/react/24/outline";
 import { signIn, useSession } from "next-auth/react";
 
-export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onClose: (modalState:boolean) => void }) {
   const { data: session, status } = useSession();
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(isOpen);
 
   useEffect(() => {
-    setShowModal(isOpen); // Sync with parent state
+    onClose(isOpen); // Sync with parent state
   }, [isOpen]);
 
   useEffect(() => {
     if (status === "authenticated") {
-      setShowModal(false);
-      onClose(); // Ensure the parent state also closes
+      // onClose(false);
+      onClose(false); // Ensure the parent state also closes
     }
   }, [status, onClose]);
 
-  if (!showModal) return null;
+  if (!isOpen) return null;
 
   const handleSignIn = async (provider: string) => {
     setLoadingProvider(provider);
@@ -43,8 +42,8 @@ export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onCl
       >
         <button
           onClick={() => {
-            setShowModal(false);
-            onClose(); // Notify parent to close
+            onClose(false);
+            // onClose(); // Notify parent to close
           }}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
         >
@@ -57,14 +56,8 @@ export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onCl
 
         {error && <p className="text-red-500 text-center mb-2">{error}</p>}
 
-        <button onClick={() => handleSignIn("google")} className="w-full flex items-center justify-center bg-blue-600 text-white py-2 rounded-lg mb-2 hover:bg-blue-700">
+        <button onClick={() => handleSignIn("google")} className="w-full flex items-center justify-center bg-yellow-600 text-white py-2 rounded-lg mb-2 hover:bg-yellow-700">
           {loadingProvider === "google" ? <ArrowsUpDownIcon className="animate-spin w-8 h-8" /> : "Continue with Google"}
-        </button>
-        <button onClick={() => handleSignIn("apple")} className="w-full flex items-center justify-center bg-gray-800 text-white py-2 rounded-lg mb-2 hover:bg-gray-900">
-          {loadingProvider === "apple" ? <ArrowsUpDownIcon className="animate-spin w-8 h-8" /> : "Continue with Apple"}
-        </button>
-        <button onClick={() => handleSignIn("facebook")} className="w-full flex items-center justify-center bg-blue-500 text-white py-2 rounded-lg mb-4 hover:bg-blue-600">
-          {loadingProvider === "facebook" ? <ArrowsUpDownIcon className="animate-spin w-8 h-8" /> : "Continue with Facebook"}
         </button>
 
         <div className="flex items-center gap-2 mb-4">
@@ -78,7 +71,7 @@ export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onCl
           placeholder="Enter your email"
           className="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-blue-300 dark:focus:ring-blue-600 outline-none"
         />
-        <button onClick={() => handleSignIn("email")} className="w-full bg-blue-600 text-white py-2 rounded-lg mt-3 hover:bg-blue-700">
+        <button onClick={() => handleSignIn("email")} className="w-full bg-gray-600 text-white py-2 rounded-lg mt-3 hover:bg-yellow-700">
           {loadingProvider === "email" ? <ArrowsUpDownIcon className="animate-spin  w-8 h-8" /> : "Continue with Email"}
         </button>
 
