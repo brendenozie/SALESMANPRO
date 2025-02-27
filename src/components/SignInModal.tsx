@@ -14,7 +14,6 @@ export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onCl
 
   useEffect(() => {
     if (status === "authenticated") {
-      // onClose(false);
       onClose(false); // Ensure the parent state also closes
     }
   }, [status, onClose]);
