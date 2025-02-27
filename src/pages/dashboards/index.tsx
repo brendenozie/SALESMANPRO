@@ -1,4 +1,4 @@
-import Banner from "../components/Banner";
+import Banner from "../../components/Banner";
 import { useSession } from "next-auth/react";
 import MainLayout from "@/components/MainLayout";
 import PlayStoreBanner  from "@/components/PlayStoreBanner";

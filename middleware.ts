@@ -4,7 +4,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const protectedPaths = ["/XDH4U3IJKE20","/hotels","/cities","/users","/destinations","/addcity","/adddestination","/addhotel","/addtravelstyle"];
+  const protectedPaths = ["/admin","/clients","/agents","/users","/destinations","/addcity","/adddestination","/addhotel","/addtravelstyle"];
   const matchesProtectedPath = protectedPaths.some((path) =>
     pathname.startsWith(path)
   );
