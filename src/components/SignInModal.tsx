@@ -42,7 +42,6 @@ export default function SignInModal({ isOpen, onClose }: { isOpen: boolean; onCl
         <button
           onClick={() => {
             onClose(false);
-            // onClose(); // Notify parent to close
           }}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
         >
