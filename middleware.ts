@@ -20,9 +20,20 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.rewrite(url);
     }
     if (token.role === "admin") {
-      const url = new URL(`/XDH4U3IJKE20`, request.url);
+      const url = new URL(`/admin`, request.url);
       return NextResponse.rewrite(url);
     }
+    
+    if (token.role === "agent") {
+      const url = new URL(`/agent`, request.url);
+      return NextResponse.rewrite(url);
+    }
+    
+    if (token.role === "clients") {
+      const url = new URL(`/clients`, request.url);
+      return NextResponse.rewrite(url);
+    }
+
   }
   return NextResponse.next();
 }
