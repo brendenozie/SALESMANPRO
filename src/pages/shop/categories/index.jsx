@@ -31,7 +31,7 @@ const Categories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/shop/categories?limit=100");
+        const response = await fetch("https://www.ghuba.shop/api/shop/categories?limit=100");
         if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
         setCategories(data.categories);

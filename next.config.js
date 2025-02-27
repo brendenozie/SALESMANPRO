@@ -18,7 +18,7 @@ module.exports = {
       "upload.wikimedia.org",
       "links.papareact.com",
       "images.trvl-media.com",
-      "hobbyhorsetours.com",
+      "ghuba.shop",
       "/"
     ],
   },
