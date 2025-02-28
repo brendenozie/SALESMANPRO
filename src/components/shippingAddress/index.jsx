@@ -78,24 +78,6 @@ const LocationPicker = () => {
   const debouncedFetchAddress = useMemo(() => debounce(fetchAddress, 500), []);
   useEffect(() => () => debouncedFetchAddress.cancel(), [debouncedFetchAddress]);
 
-  // Handle map drag movement
-  const MapDragHandler = () => {
-    useMapEvents({
-      move: (e) => {
-        setDragging(true);
-        const center = e.target.getCenter();
-        setMapCenter({ lat: center.lat, lng: center.lng });
-      },
-      moveend: (e) => {
-        setDragging(false);
-        const center = e.target.getCenter();
-        setSelectedLocation({ lat: center.lat, lng: center.lng });
-        debouncedFetchAddress(center.lat, center.lng);
-      },
-    });
-    return null;
-  };
-
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     debouncedFetchSuggestions(e.target.value);
@@ -117,15 +99,6 @@ const LocationPicker = () => {
     setSuggestions([]);
   };
 
-  // Handle marker drag event
-  const handleMarkerDragEnd = (event) => {
-    const position = event.target.getLatLng();
-    setSelectedLocation(position);
-    setMapCenter(position);
-    fetchAddress(position.lat, position.lng);
-  };
-
- 
 
   const handleSaveAddress = async () => {
     try {
@@ -202,6 +175,33 @@ const LocationPicker = () => {
         })),
         { ssr: false }
   );
+
+  
+  // Handle map drag movement
+  const MapDragHandler = () => {
+    useMapEvents({
+      move: (e) => {
+        setDragging(true);
+        const center = e.target.getCenter();
+        setMapCenter({ lat: center.lat, lng: center.lng });
+      },
+      moveend: (e) => {
+        setDragging(false);
+        const center = e.target.getCenter();
+        setSelectedLocation({ lat: center.lat, lng: center.lng });
+        debouncedFetchAddress(center.lat, center.lng);
+      },
+    });
+    return null;
+  };
+
+    // Handle marker drag event
+  const handleMarkerDragEnd = (event) => {
+    const position = event.target.getLatLng();
+    setSelectedLocation(position);
+    setMapCenter(position);
+    fetchAddress(position.lat, position.lng);
+  };
 
   return (
     <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-lg">
