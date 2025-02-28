@@ -92,6 +92,7 @@ const ShopPages = () => {
     fetchProductsByFlag("isNewArrival", setNewArrivals);
     fetchProductsByFlag("isDiscounted", setDiscounts);
     fetchProductsByFlag("isFeatured", setFeatured);
+    
   }, []);
 
   return (

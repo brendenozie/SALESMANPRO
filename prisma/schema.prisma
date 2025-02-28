@@ -645,8 +645,19 @@ model OrderItem {
   order                CustomerOrder      @relation(fields: [orderId], references: [id])
   marketplaceListingId String             @db.ObjectId
   marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
+  dropLocation         Location?          @relation(fields: [locationId], references: [id]) // Store user's drop location
   quantity             Int
   price                Float // Price at the time of purchase
+  locationId           String?            @db.ObjectId
+}
+
+model Location {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  latitude  Float
+  longitude Float
+  address   String
+  userId    String?     @unique // Link to the user (optional)
+  OrderItem OrderItem[]
 }
 
 enum OrderStatus {

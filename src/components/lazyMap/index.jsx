@@ -1,49 +1,57 @@
-import React, { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 
-const MapUpdater = ({ location }) => {
-  const map = useMap();
+// Dynamically import react-leaflet components (only on the client side)
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
+const useMap = dynamic(() => import('react-leaflet').then(m => m.useMap), { ssr: false });
 
-  useEffect(() => {
-    // Center the map on the new location
-    map.setView([location.latitude, location.longitude], 13);
-    // Delay to allow the container to fully render
-    setTimeout(() => map.invalidateSize(), 300); // Increased delay
-  }, [location, map]);
-
-  return null;
-};
+const DEFAULT_LOCATION = { lat: 0, lng: 0 }; // Provide a safe fallback
 
 const ResizeHandler = () => {
   const map = useMap();
-
   useEffect(() => {
-    const handleResize = () => {
-      map.invalidateSize();
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    map.invalidateSize();
   }, [map]);
-
   return null;
 };
 
-const LazyMap = ({ location, locationName }) => {
+const LazyMap = ({ location = DEFAULT_LOCATION, locationName = 'Selected Location' }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return <p>Loading map...</p>; // Prevent SSR issues
+
   return (
     <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] overflow-hidden">
-      <MapContainer
-        center={[location.latitude, location.longitude]}
+      <MapContainer center={[location.lat, location.lng]} zoom={13} className="w-full h-full rounded-lg">
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <ResizeHandler />
+        {location?.lat && location?.lng && (
+          <Marker position={[location.lat, location.lng]}>
+            <Popup>{locationName}</Popup>
+          </Marker>
+        )}
+      </MapContainer>
+
+      {/* <MapContainer
+        center={[location.lat, location.lng]}
         zoom={13}
         className="w-full h-full rounded-lg"
-        whenCreated={(map) => setTimeout(() => map.invalidateSize(), 300)} // Increased delay here too
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <Marker position={[location.latitude, location.longitude]}>
-          <Popup>{locationName}</Popup>
-        </Marker>
-        <MapUpdater location={location} />
-        <ResizeHandler />
-      </MapContainer>
+
+        {location?.lat && location?.lng && (
+          <Marker position={[location.lat, location.lng]}>
+            <Popup>{locationName}</Popup>
+          </Marker>
+        )} */}
+      {/* </MapContainer> */}
     </div>
   );
 };

@@ -17,11 +17,9 @@ const CheckoutPage = () => {
     name: session?.user?.name || '',
     email: session?.user?.email || '',
     phone: session?.user?.phone || '',
-    address: '',
-    city: '',
-    zip: '',
-    cardNumber: '',
-    expiry: '',
+    address: session?.user?.address || '',
+    cardNumber: session?.user?.cardNumber || '',
+    expiry: session?.user?.expiry || '',
     cvv: '',
     promoCode: '',
     paymentMethod: 'card',
@@ -160,7 +158,7 @@ const CheckoutPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <h2 className="text-3xl font-extrabold text-gray-800">Billing Details</h2>
-            {['name', 'email', 'address', 'city', 'zip'].map(field => (
+            {['name', 'email', 'phone', 'address'].map(field => (
               <input 
                 key={field} 
                 type="text" 
