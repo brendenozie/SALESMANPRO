@@ -94,16 +94,18 @@ const Discount = ({ productItems, addToCart, decreaseQuantity, removeFromCart })
     <section className="relative py-20 bg-gradient-to-b from-red-50 via-white to-red-50 dark:from-gray-900 dark:via-black dark:to-gray-900 transition-colors duration-500">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-12">
-          <motion.div
-              className="w-14 h-14 bg-red-700 flex items-center justify-center rounded-full shadow-lg"
-              animate={{ rotate: [0, 20, -20, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
-              <GifIcon className="text-white w-8 h-8" />
-            </motion.div>
-          <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
-            <span className="text-red-700 dark:text-red-400">Big</span> Discounts
-          </h2>
+          <div className="flex items-center space-x-4">
+            <motion.div
+                className="w-14 h-14 bg-red-700 flex items-center justify-center rounded-full shadow-lg"
+                animate={{ rotate: [0, 20, -20, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                <GifIcon className="text-white w-8 h-8" />
+              </motion.div>
+            <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
+              <span className="text-red-700 dark:text-red-400">Big</span> Discounts
+            </h2>
+          </div>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
