@@ -175,7 +175,6 @@ const LocationPicker = () => {
         })),
         { ssr: false }
   );
-
   
   // Handle map drag movement
   const MapDragHandler = () => {
