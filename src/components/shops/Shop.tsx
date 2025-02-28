@@ -30,9 +30,17 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
             </div>
           ))}
           <div className="text-center mt-4">
-            <button className="px-5 py-2 bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition flex items-center justify-center gap-2">
+            {/* <button className="px-5 py-2 bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition flex items-center justify-center gap-2">
               View All <ArrowRightIcon className="h-5 w-5" />
-            </button>
+            </button> */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="px-5 py-2 bg-yellow-400 text-black rounded-full shadow-md hover:bg-yellow-300 transition flex items-center space-x-2"
+            >
+              <span>View All</span>
+              <ArrowRightCircleIcon className="w-6 h-6" />
+            </motion.button>
           </div>
         </aside>}
 

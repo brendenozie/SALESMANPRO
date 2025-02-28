@@ -101,7 +101,7 @@ const ShopPages = () => {
         <Header CartItem={CartItem} />
         {categories && <Home CartItem={CartItem} categories={categories}  />}
         {flashDeals.products && <FlashDeals productItems={flashDeals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
-        {categories && <TopCate categories={categories} />}
+        {categories && categories.length > 0 && <TopCate categories={categories} />}
         {newArrivals.products && <NewArrivals productItems={newArrivals.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} />}
         {discounts.products && <Discount productItems={discounts.products} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
         {featuredCategories && productsByCategory[featuredCategories.name] &&<Shop category={featuredCategories} shopItems={productsByCategory[featuredCategories.name] || []} addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart}/>}
