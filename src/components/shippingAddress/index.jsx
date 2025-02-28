@@ -44,6 +44,18 @@ const LocationPicker = () => {
     }
   };
 
+  const fetchAddress = async (lat, lng) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
+      const data = await res.json();
+      setAddress(data.display_name || "Unknown Location");
+    } catch (error) {
+      console.error("Error fetching address", error);
+    }
+  };
+
   // Debounced API call
   const debouncedFetchSuggestions = useCallback(debounce(fetchSuggestions, 300), []);
 
@@ -62,6 +74,7 @@ const LocationPicker = () => {
     const { lat, lng } = e.latlng;
     setSelectedLocation({ lat, lng });
     setMapCenter({ lat, lng });
+    fetchAddress(lat, lng);
   };
 
   // Handle location selection
@@ -105,18 +118,6 @@ const LocationPicker = () => {
         setFetchingLocation(false);
       }
     );
-  };
-
-   const fetchAddress = async (lat, lng) => {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-      );
-      const data = await res.json();
-      setAddress(data.display_name || "Unknown Location");
-    } catch (error) {
-      console.error("Error fetching address", error);
-    }
   };
 
   const getCurrentLocation = () => {
@@ -206,7 +207,7 @@ const LocationPicker = () => {
         {loading && <div className="text-sm text-gray-500 mt-2 flex items-center"><ArrowsUpDownIcon size={16} className="animate-spin mr-2 w-8 h-8" /> Searching...</div>}
 
         {suggestions.length > 0 && (
-          <ul className="absolute left-0 right-0 mt-2 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-10">
+          <ul className="relative left-0 right-0 mt-2 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto z-10">
             {suggestions.map((s, index) => (
               <li
                 key={index}
@@ -220,7 +221,7 @@ const LocationPicker = () => {
           </ul>
         )}
       </div>
-
+        
       {/* Map Container */}
       <div className="mt-4 h-96 w-full rounded-lg overflow-hidden">
         <MapContainer
@@ -231,7 +232,6 @@ const LocationPicker = () => {
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <MapUpdater />
           <MapClickHandler onMapClick={handleMapClick} />
-          {/* <MapClickHandler /> */}
           {selectedLocation && (
             <>
               <Marker
@@ -268,15 +268,9 @@ const LocationPicker = () => {
         <div className="flex gap-2 mt-2">
           <button 
             onClick={() => console.log(selectedLocation)} 
-            className="flex-1 p-2 bg-green-500 text-white rounded-md"
+            className="flex-1 p-2 bg-yellow-500 text-white rounded-md"
           >
-            ✅ Use this location
-          </button>
-          <button 
-            onClick={() => console.log(selectedLocation)} 
-            className="p-2 bg-yellow-500 text-white rounded-md"
-          >
-            ⭐ Save to Favorites
+            ✅ Save Location as Address
           </button>
         </div>
       )}
