@@ -2,18 +2,27 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import debounce from "lodash.debounce";
-import { ArrowsUpDownIcon, MapPinIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { MapPinIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-// Import leaflet only on the client side
-const isClient = typeof window !== "undefined";
-const L = isClient ? require("leaflet") : null;
+// Leaflet client-side import
+// const isClient = typeof window !== "undefined";
+// const L = isClient ? require("leaflet") : null;
 
-// Dynamic imports for react-leaflet
-const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet").then(m => m.Popup), { ssr: false });
+const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
 const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
+// import { useMapEvents } from "react-leaflet";
+
+
+// Define Custom Leaflet Icon using the SVG MapPinIcon
+// const mapPinIcon = new L.Icon({
+//   iconUrl: <MapPinIcon/>, // Create an SVG file or use a data URL
+//   iconSize: [40, 40], // Adjust size
+//   iconAnchor: [20, 40], // Center bottom aligns with location
+//   popupAnchor: [0, -35], // Adjust popup position
+// });
 
 const API_BASE = "https://nominatim.openstreetmap.org";
 const API_ENDPOINT = "http://127.0.0.1:3000/api";
@@ -26,10 +35,11 @@ const LocationPicker = () => {
   const [loading, setLoading] = useState(false);
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [zoom, setZoom] = useState(6);
-  const [radius, setRadius] = useState(500);
   const [address, setAddress] = useState("");
+  const [radius, setRadius] = useState(500);
+  const [dragging, setDragging] = useState(false);
   const [savedAddress, setSavedAddress] = useState(null);
-  
+
   const fetchSuggestions = async (query) => {
     if (!query) return setSuggestions([]);
     try {
@@ -45,19 +55,46 @@ const LocationPicker = () => {
     }
   };
 
+  const debouncedFetchSuggestions = useMemo(() => debounce(fetchSuggestions, 300), []);
+  useEffect(() => () => debouncedFetchSuggestions.cancel(), [debouncedFetchSuggestions]);
+
+  // Fetch address based on coordinates
   const fetchAddress = async (lat, lng) => {
     try {
-      const { data } = await axios.get(`${API_ENDPOINT}/shop/getLocation?userId=123`, {
+      setLoading(true);
+      const { data } = await axios.get(`${API_BASE}/reverse`, {
         params: { format: "json", lat, lon: lng },
       });
       setAddress(data.display_name || "Unknown Location");
+      setSearchTerm(data.display_name || ""); // Update search input dynamically
     } catch (error) {
       console.error("Error fetching address:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const debouncedFetchSuggestions = useMemo(() => debounce(fetchSuggestions, 300), []);
-  useEffect(() => () => debouncedFetchSuggestions.cancel(), [debouncedFetchSuggestions]);
+  // Debounced address fetching
+  const debouncedFetchAddress = useMemo(() => debounce(fetchAddress, 500), []);
+  useEffect(() => () => debouncedFetchAddress.cancel(), [debouncedFetchAddress]);
+
+  // Handle map drag movement
+  const MapDragHandler = () => {
+    // useMapEvents({
+    //   move: (e) => {
+    //     setDragging(true);
+    //     const center = e.target.getCenter();
+    //     setMapCenter({ lat: center.lat, lng: center.lng });
+    //   },
+    //   moveend: (e) => {
+    //     setDragging(false);
+    //     const center = e.target.getCenter();
+    //     setSelectedLocation({ lat: center.lat, lng: center.lng });
+    //     debouncedFetchAddress(center.lat, center.lng);
+    //   },
+    // });
+    return null;
+  };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -80,6 +117,7 @@ const LocationPicker = () => {
     setSuggestions([]);
   };
 
+  // Handle marker drag event
   const handleMarkerDragEnd = (event) => {
     const position = event.target.getLatLng();
     setSelectedLocation(position);
@@ -87,10 +125,12 @@ const LocationPicker = () => {
     fetchAddress(position.lat, position.lng);
   };
 
-    const handleSaveAddress = async () => {
+ 
+
+  const handleSaveAddress = async () => {
     try {
       const payload = { userId: "123", latitude: selectedLocation.lat, longitude: selectedLocation.lng, address };
-      await axios.post(`${API_ENDPOINT}/api/shop/setLocation`, payload);
+      await axios.post(`${API_ENDPOINT}/shop/setLocation`, payload);
       setSavedAddress(payload);
     } catch (error) {
       console.error("Error saving address:", error);
@@ -148,7 +188,7 @@ const LocationPicker = () => {
     }
   };
 
-  const MapUpdater = dynamic(
+   const MapUpdater = dynamic(
         () => import("react-leaflet").then((m) => ({
           default: function ({ onMapClick }) {
             const { useMap } = m;
@@ -192,15 +232,29 @@ const LocationPicker = () => {
           </ul>
         )}
       </div>
+
       <div className="mt-4 h-96 w-full rounded-lg overflow-hidden">
         <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <MapUpdater onMapClick={handleMapClick}/>
+          <MapDragHandler />
           {selectedLocation && (
             <>
               <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
                 <Popup>{address}</Popup>
               </Marker>
+              {selectedLocation && (
+                  <div
+                    className="absolute z-[1000] pointer-events-none"
+                    style={{
+                      top: "50%",
+                      left: "50%",
+                      transform: `translate(-50%, -100%)`, // Adjust position
+                    }}
+                  >
+                    {<MapPinIcon className="w-8 h-8 text-red-500 animate-bounce" />}
+                  </div>
+                )} 
               <Circle center={[selectedLocation.lat, selectedLocation.lng]} radius={radius} fillOpacity={0.1} />
             </>
           )}
