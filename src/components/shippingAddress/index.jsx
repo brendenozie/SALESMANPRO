@@ -90,7 +90,7 @@ const LocationPicker = () => {
     const handleSaveAddress = async () => {
     try {
       const payload = { userId: "123", latitude: selectedLocation.lat, longitude: selectedLocation.lng, address };
-      await axios.post(`${API_ENDPOINT}/setLocation`, payload);
+      await axios.post(`${API_ENDPOINT}/api/shop/setLocation`, payload);
       setSavedAddress(payload);
     } catch (error) {
       console.error("Error saving address:", error);
