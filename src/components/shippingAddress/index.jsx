@@ -1,55 +1,35 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
 
-// Import Leaflet’s CSS so tiles appear correctly.
-// import 'leaflet/dist/leaflet.css';
+// Dynamically import react-leaflet components
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 
-function LocationPickerInner() {
-  // Import react-leaflet **inside** the component so it only happens on client.
-  // const { MapContainer, TileLayer, Marker, Popup, useMapEvents } =
-  //   import('react-leaflet');
-  
-  // const { useMapEvents } = import('react-leaflet');
-  // Dynamically import react-leaflet components (client-side only)
-  const MapContainer = dynamic(
-    () => import('react-leaflet').then((m) => m.MapContainer),
-    { ssr: false }
-  );
-  const TileLayer = dynamic(
-    () => import('react-leaflet').then((m) => m.TileLayer),
-    { ssr: false }
-  );
-  const Marker = dynamic(
-    () => import('react-leaflet').then((m) => m.Marker),
-    { ssr: false }
-  );
-  const Popup = dynamic(
-    () => import('react-leaflet').then((m) => m.Popup),
-    { ssr: false }
-  );
-//   const useMapEvents = dynamic(() => import('react-leaflet').then((m) => m.useMapEvents), { ssr: false });
+// Map Click Handler
+const MapClickHandler = dynamic(() =>
+  import('react-leaflet').then(m => ({
+    default: function ({ onMapClick }) {
+      const { useMapEvents } = m;
+      useMapEvents({
+        click: (e) => onMapClick(e),
+      });
+      return null;
+    },
+  })), { ssr: false }
+);
 
-// // A helper component to capture map click events
-// const MapClickHandler = ({ onMapClick }) => {
-//   useMapEvents({
-//     click: (e) => {
-//       onMapClick(e);
-//     },
-//   });
-//   return null;
-// };
-
-  // State for search input, suggestions, selected location, etc.
+const LocationPicker = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  // Default map center: London
   const [mapCenter, setMapCenter] = useState({ lat: 51.505, lng: -0.09 });
   const [loading, setLoading] = useState(false);
 
-  // Debounced fetch to OpenStreetMap’s Nominatim
+  // Fetch suggestions
   const fetchSuggestions = async (query) => {
     if (!query) {
       setSuggestions([]);
@@ -68,16 +48,22 @@ function LocationPickerInner() {
     }
   };
 
+  // Debounced API call
   const debouncedFetchSuggestions = useCallback(debounce(fetchSuggestions, 300), []);
 
-  // Handle typing in the search box
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => debouncedFetchSuggestions.cancel();
+  }, [debouncedFetchSuggestions]);
+
+  // Handle search input change
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
     debouncedFetchSuggestions(value);
   };
 
-  // When user clicks on a suggestion
+  // Handle location selection
   const handleSuggestionSelect = (suggestion) => {
     const lat = parseFloat(suggestion.lat);
     const lng = parseFloat(suggestion.lon);
@@ -87,32 +73,7 @@ function LocationPickerInner() {
     setSuggestions([]);
   };
 
-  // Listen for map clicks
-  // function MapClickHandler({ onMapClick }) {
-  //   useMapEvents({
-  //     click: (e) => onMapClick(e),
-  //   });
-  //   return null;
-  // }
-
-  // Dynamically import useMapEvents hook
-  const MapClickHandler = dynamic(
-    () =>
-      import("react-leaflet").then((m) => ({
-        default: function ({ onMapClick }) {
-          const { useMapEvents } = m;
-          if (!useMapEvents) return null;
-          useMapEvents({
-            click: (e) => {
-              onMapClick(e);
-            },
-          });
-          return null;
-        },
-      })),
-    { ssr: false }
-  );
-
+  // Handle map click
   const handleMapClick = (e) => {
     const { lat, lng } = e.latlng;
     setSelectedLocation({ lat, lng });
@@ -121,7 +82,7 @@ function LocationPickerInner() {
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      {/* Search input + suggestions */}
+      {/* Search Input */}
       <div style={{ marginBottom: '1rem' }}>
         <input
           type="text"
@@ -138,6 +99,7 @@ function LocationPickerInner() {
         {loading && <div>Loading suggestions...</div>}
         {suggestions.length > 0 && (
           <ul
+            role="listbox"
             style={{
               listStyle: 'none',
               padding: 0,
@@ -152,6 +114,7 @@ function LocationPickerInner() {
             {suggestions.map((s, index) => (
               <li
                 key={index}
+                role="option"
                 onClick={() => handleSuggestionSelect(s)}
                 style={{
                   padding: '0.5rem',
@@ -166,20 +129,15 @@ function LocationPickerInner() {
         )}
       </div>
 
-      {/* Map container */}
+      {/* Map Container */}
       <div style={{ height: '400px', width: '100%' }}>
-        <MapContainer
-          center={[mapCenter.lat, mapCenter.lng]}
-          zoom={13}
-          style={{ height: '100%', width: '100%' }}
-        >
+        <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={13} style={{ height: '100%', width: '100%' }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <MapClickHandler onMapClick={handleMapClick} />
           {selectedLocation && (
             <Marker position={[selectedLocation.lat, selectedLocation.lng]}>
               <Popup>
-                {searchTerm ||
-                  `Lat: ${selectedLocation.lat.toFixed(4)}, Lng: ${selectedLocation.lng.toFixed(4)}`}
+                {searchTerm || `Lat: ${selectedLocation.lat.toFixed(4)}, Lng: ${selectedLocation.lng.toFixed(4)}`}
               </Popup>
             </Marker>
           )}
@@ -187,9 +145,6 @@ function LocationPickerInner() {
       </div>
     </div>
   );
-}
+};
 
-// Export the entire component as a dynamic import with SSR turned off.
-export default dynamic(() => Promise.resolve(LocationPickerInner), {
-  ssr: false,
-});
+export default dynamic(() => Promise.resolve(LocationPicker), { ssr: false });
