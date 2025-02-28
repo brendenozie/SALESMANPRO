@@ -15,9 +15,8 @@ const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr:
 const Popup = dynamic(() => import("react-leaflet").then(m => m.Popup), { ssr: false });
 const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
 
-
-
 const API_BASE = "https://nominatim.openstreetmap.org";
+const API_ENDPOINT = "http://127.0.0.1:3000/api";
 
 const LocationPicker = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +28,7 @@ const LocationPicker = () => {
   const [zoom, setZoom] = useState(6);
   const [radius, setRadius] = useState(500);
   const [address, setAddress] = useState("");
+  const [savedAddress, setSavedAddress] = useState(null);
   
   const fetchSuggestions = async (query) => {
     if (!query) return setSuggestions([]);
@@ -47,7 +47,7 @@ const LocationPicker = () => {
 
   const fetchAddress = async (lat, lng) => {
     try {
-      const { data } = await axios.get(`${API_BASE}/reverse`, {
+      const { data } = await axios.get(`${API_ENDPOINT}/shop/getLocation?userId=123`, {
         params: { format: "json", lat, lon: lng },
       });
       setAddress(data.display_name || "Unknown Location");
@@ -87,6 +87,27 @@ const LocationPicker = () => {
     fetchAddress(position.lat, position.lng);
   };
 
+    const handleSaveAddress = async () => {
+    try {
+      const payload = { userId: "123", latitude: selectedLocation.lat, longitude: selectedLocation.lng, address };
+      await axios.post(`${API_ENDPOINT}/setLocation`, payload);
+      setSavedAddress(payload);
+    } catch (error) {
+      console.error("Error saving address:", error);
+    }
+  };
+
+  const handleDeleteAddress = async () => {
+    try {
+      await axios.delete(`${API_ENDPOINT}/deleteLocation?userId=123`);
+      setSavedAddress(null);
+      setSelectedLocation(null);
+      setAddress("");
+    } catch (error) {
+      console.error("Error deleting address:", error);
+    }
+  };
+
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) return alert("Geolocation is not supported by your browser.");
     setFetchingLocation(true);
@@ -107,8 +128,25 @@ const LocationPicker = () => {
   };
 
   useEffect(() => {
-    handleUseMyLocation();
+    fetchSavedAddress();
   }, []);
+
+  const fetchSavedAddress = async () => {
+    try {
+      const { data } = await axios.get(`${API_ENDPOINT}/shop/location/get`);
+      if (data && data.address) {
+        setSavedAddress(data);
+        setMapCenter({ lat: data.latitude, lng: data.longitude });
+        setSelectedLocation({ lat: data.latitude, lng: data.longitude });
+        setAddress(data.address);
+      }else{
+        handleUseMyLocation();
+      }
+    } catch (error) {
+      console.error("Error fetching saved address:", error);
+      handleUseMyLocation();
+    }
+  };
 
   const MapUpdater = dynamic(
         () => import("react-leaflet").then((m) => ({
@@ -157,7 +195,7 @@ const LocationPicker = () => {
       <div className="mt-4 h-96 w-full rounded-lg overflow-hidden">
         <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <MapUpdater />
+          <MapUpdater onMapClick={handleMapClick}/>
           {selectedLocation && (
             <>
               <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
@@ -170,6 +208,9 @@ const LocationPicker = () => {
       </div>
       <button onClick={handleUseMyLocation} className="w-full bg-blue-500 text-white py-2 rounded-md mt-4 hover:bg-blue-600">
         {fetchingLocation ? "Fetching location..." : "Use My Location"}
+      </button>
+      <button onClick={handleSaveAddress} className="w-full bg-yellow-500 text-white py-2 rounded-md mt-4 hover:bg-yellow-600">
+        Save Address
       </button>
     </div>
   );
