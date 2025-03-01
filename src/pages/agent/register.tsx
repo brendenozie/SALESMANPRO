@@ -3,8 +3,8 @@ import { getProviders, getSession, signIn, signOut } from "next-auth/react";
 import Head from "next/head";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import Drawer from "../components/Drawer";
-import Header from "../components/Header";
+import Drawer from "../../components/Drawer";
+import Header from "../../components/Header";
 
 type Props = {
   providers: Record<string, any>;
