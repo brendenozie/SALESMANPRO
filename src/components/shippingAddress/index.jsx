@@ -208,7 +208,8 @@ const LocationPicker = () => {
     const position = event.target.getLatLng();
     setSelectedLocation(position);
     setMapCenter(position);
-    fetchAddress(position.lat, position.lng);
+    // fetchAddress(position.lat, position.lng);
+    debouncedFetchAddress(position.lat, position.lng);
   };
 
   return (
