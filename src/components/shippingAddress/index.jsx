@@ -146,12 +146,14 @@ const LocationPicker = () => {
 
   const fetchSavedAddress = async () => {
     try {
-      const { data } = await axios.get(`${API_ENDPOINT}/shop/location/get`);
+      const { data } = await axios.get(`${API_ENDPOINT}/shop/getLocation?userId=123`);
       if (data && data.address) {
         setSavedAddress(data);
         setMapCenter({ lat: data.latitude, lng: data.longitude });
         setSelectedLocation({ lat: data.latitude, lng: data.longitude });
-        setAddress(data.address);
+        setZoom(15);
+        fetchAddress(data.latitude, data.longitude);
+        setFetchingLocation(false);
       }else{
         handleUseMyLocation();
       }
@@ -177,38 +179,39 @@ const LocationPicker = () => {
   );
   
   // Handle map drag movement
-  const MapDragHandler = () => {
-  // const [isClient, setIsClient] = useState(false);
+  // Dynamically import useMapEvents to ensure it only runs on the client
+const MapDragHandler = dynamic(() =>
+  import("react-leaflet").then((m) => ({
+    default: function ({ setMapCenter, setSelectedLocation, debouncedFetchAddress, setDragging }) {
+      const { useMapEvents } = m;
+      if (!useMapEvents) return null;
 
-  // useEffect(() => {
-  //   setIsClient(typeof window !== "undefined");
-  // }, []);
+      useMapEvents({
+        move: (e) => {
+          setDragging(true);
+          const center = e.target.getCenter();
+          setMapCenter({ lat: center.lat, lng: center.lng });
+        },
+        moveend: (e) => {
+          setDragging(false);
+          const center = e.target.getCenter();
+          setSelectedLocation({ lat: center.lat, lng: center.lng });
+          debouncedFetchAddress(center.lat, center.lng);
+        },
+      });
 
-  // if (!isClient) return null;
+      return null;
+    },
+  })),
+  { ssr: false }
+);
 
-  // useMapEvents({
-  //   move: (e) => {
-  //     setDragging(true);
-  //     const center = e.target.getCenter();
-  //     setMapCenter({ lat: center.lat, lng: center.lng });
-  //   },
-  //   moveend: (e) => {
-  //     setDragging(false);
-  //     const center = e.target.getCenter();
-  //     setSelectedLocation({ lat: center.lat, lng: center.lng });
-  //     debouncedFetchAddress(center.lat, center.lng);
-  //   },
-  // });
-
-  return null;
-};
 
     // Handle marker drag event
   const handleMarkerDragEnd = (event) => {
     const position = event.target.getLatLng();
     setSelectedLocation(position);
     setMapCenter(position);
-    // fetchAddress(position.lat, position.lng);
     debouncedFetchAddress(position.lat, position.lng);
   };
 
@@ -246,7 +249,12 @@ const LocationPicker = () => {
         <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <MapUpdater onMapClick={handleMapClick}/>
-          <MapDragHandler />
+          <MapDragHandler 
+            setMapCenter={setMapCenter} 
+            setSelectedLocation={setSelectedLocation} 
+            debouncedFetchAddress={debouncedFetchAddress} 
+            setDragging={setDragging} 
+          />
           {selectedLocation && (
             <>
               <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
