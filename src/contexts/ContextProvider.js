@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import ProgressBar from "@badrap/bar-of-progress";
-import { SessionProvider } from "next-auth/react";
+import {useSession } from "next-auth/react";
 import { Router } from "next/router";
 import { toast } from "react-hot-toast";
 
@@ -23,6 +23,7 @@ const progress = new ProgressBar({
 });
 
 export const ContextProvider = ({ children }) => {
+   const { data: session } = useSession(); // Get user session
   const [screenSize, setScreenSize] = useState(undefined);
   const [currentColor, setCurrentColor] = useState("#03C9D7");
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -57,6 +58,11 @@ export const ContextProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false); 
   const [onClose, setOnClose] = useState(false);
   const [onUpdate, setOnUpdate] = useState();
+  const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    setUser(session?.user || null);
+  }, [session]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -173,6 +179,7 @@ export const ContextProvider = ({ children }) => {
 
   const contextValue = useMemo(
     () => ({
+      user, 
       cart,
       addToCart,
       removeFromCart,
@@ -209,13 +216,11 @@ export const ContextProvider = ({ children }) => {
       isCartOpen,
       setIsCartOpen
     }),
-    [cart, currentColor, isCartOpen, isDarkMode, activeMenu, isOpen, onClose , onUpdate, screenSize, isClicked, themeSettings, location,locationName, isLoading, cartSubtotal]
+    [user, cart, currentColor, isCartOpen, isDarkMode, activeMenu, isOpen, onClose , onUpdate, screenSize, isClicked, themeSettings, location,locationName, isLoading, cartSubtotal]
   );
 
   return (
-    <SessionProvider>
       <StateContext.Provider value={contextValue}>{children}</StateContext.Provider>
-    </SessionProvider>
   );
 };
 

@@ -23,10 +23,9 @@ import { useRouter } from "next/router.js";
 import { debounce } from "lodash";
 
 const Header = () => {
-  const { isDarkMode, setMode, cart, isCartOpen, setIsCartOpen, location, setLocation, locationName, setLocationName,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
+  const {user, isDarkMode, setMode, cart, isCartOpen, setIsCartOpen, location, setLocation, locationName, setLocationName,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  
 
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 100);
@@ -54,6 +53,7 @@ const Header = () => {
           </a>
           <SearchBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName}/>
           <NavIcons
+            user={user}
             cart={cart}
             isMobileMenuOpen={isMobileMenuOpen}
             setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -205,6 +205,7 @@ const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, s
 );
 
 const NavIcons = ({
+  user,
   cart,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
@@ -220,9 +221,16 @@ const NavIcons = ({
     setIsMounted(true); // Ensures hydration-safe rendering
   }, []);
 
+  
+  const handleProfileClick = () => {
+    if (user) {
+      router.push("/shop/profile");
+    }
+  };
+
   return (
     <div className="flex items-center space-x-6">
-      <UserIcon onClick={() => {router.push("/shop/profile")}} className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-transform transform hover:scale-125" />
+      {user && <UserIcon onClick={handleProfileClick} className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-transform transform hover:scale-125" />}
       <motion.div onClick={() => setIsCartOpen(!isCartOpen)} className="relative cursor-pointer">
         <ShoppingBagIcon className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125" />
         {isMounted && cart.length > 0 && (
