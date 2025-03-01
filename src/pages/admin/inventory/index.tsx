@@ -5,7 +5,6 @@ import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
 import UserNav from "@/components/UserNav";
-import { float } from "aws-sdk/clients/cloudfront";
 import { useEffect, useState } from "react";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -19,10 +18,10 @@ type Product = {
   agentStock: number;
   companyStock: number;
   sales: number;
-  costPrice: float;
-  salesPrice: float;
-  commissionRate: float;
-  commissionType: float;
+  costPrice: number;
+  salesPrice: number;
+  commissionRate: number;
+  commissionType: number;
 };
 
 type Category = {

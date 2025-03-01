@@ -7,7 +7,7 @@ import { IDailyPlan, IExercise } from "@/types/typings";
 import { Session } from "next-auth";
 import { getSession } from "next-auth/react";
 import Link from "next/link";
-import dayjs from "dayjs";
+// import dayjs from "dayjs"; {dayjs(task.dueDate).format("MMMM DD")}
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 
@@ -38,9 +38,9 @@ const groupTasksByStatus = (tasks: Task[]): GroupedTasks => {
     return acc;
   }, {} as GroupedTasks);
 
-  Object.keys(groupedTasks).forEach((status) => {
-    groupedTasks[status].sort((a, b) => dayjs(a.dueDate).diff(dayjs(b.dueDate)));
-  });
+  // Object.keys(groupedTasks).forEach((status) => {
+  //   groupedTasks[status].sort((a, b) => dayjs(a.dueDate).diff(dayjs(b.dueDate)));
+  // });
 
   return groupedTasks;
 };
@@ -111,7 +111,7 @@ const DashNativeDND = (props: Props) => {
                             {task.taskName}
                           </h2>
                           <p className="text-sm text-gray-500">
-                            Due: {dayjs(task.dueDate).format("MMMM DD")} at {task.dueTime}
+                            Due: 00:00:00 at {task.dueTime}
                           </p>
                         </div>
                       </div>

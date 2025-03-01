@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
-import dayjs from "dayjs";
+// import dayjs from "dayjs";
 import Link from "next/link";
 
 type Task = {
@@ -32,7 +32,7 @@ const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
   const handleDelete = () => {
     if (confirm("Are you sure you want to delete this task?")) {
       onDeleteTask(task.id);
-      router.push("/dashboard"); // Redirect after deletion
+      router.push("/dashboard"); // Redirect after deletion {dayjs(task.dueDate).format("MMMM DD, YYYY")}
     }
   };
 
@@ -46,7 +46,7 @@ const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
           <div className="ml-6">
             <h1 className="text-3xl font-bold text-gray-800">{task.taskName}</h1>
             <p className="text-sm text-gray-500">
-              Due: {dayjs(task.dueDate).format("MMMM DD, YYYY")} at {task.dueTime}
+              Due: 0:00:00 at {task.dueTime}
             </p>
           </div>
         </div>

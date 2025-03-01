@@ -13,7 +13,7 @@ const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer)
 const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
 const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
-import { useMapEvents } from "react-leaflet";
+// import { useMapEvents } from "react-leaflet";
 
 
 // Define Custom Leaflet Icon using the SVG MapPinIcon
@@ -178,21 +178,30 @@ const LocationPicker = () => {
   
   // Handle map drag movement
   const MapDragHandler = () => {
-    useMapEvents({
-      move: (e) => {
-        setDragging(true);
-        const center = e.target.getCenter();
-        setMapCenter({ lat: center.lat, lng: center.lng });
-      },
-      moveend: (e) => {
-        setDragging(false);
-        const center = e.target.getCenter();
-        setSelectedLocation({ lat: center.lat, lng: center.lng });
-        debouncedFetchAddress(center.lat, center.lng);
-      },
-    });
-    return null;
-  };
+  // const [isClient, setIsClient] = useState(false);
+
+  // useEffect(() => {
+  //   setIsClient(typeof window !== "undefined");
+  // }, []);
+
+  // if (!isClient) return null;
+
+  // useMapEvents({
+  //   move: (e) => {
+  //     setDragging(true);
+  //     const center = e.target.getCenter();
+  //     setMapCenter({ lat: center.lat, lng: center.lng });
+  //   },
+  //   moveend: (e) => {
+  //     setDragging(false);
+  //     const center = e.target.getCenter();
+  //     setSelectedLocation({ lat: center.lat, lng: center.lng });
+  //     debouncedFetchAddress(center.lat, center.lng);
+  //   },
+  // });
+
+  return null;
+};
 
     // Handle marker drag event
   const handleMarkerDragEnd = (event) => {
