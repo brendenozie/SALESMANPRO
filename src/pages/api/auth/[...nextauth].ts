@@ -6,7 +6,7 @@ import FacebookProvider from "next-auth/providers/facebook";
 import AppleProvider from "next-auth/providers/apple";
 import EmailProvider from "next-auth/providers/email";
 
-import prisma, { client } from "@/server/db/prismadb";
+import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 
 export const authOptions: NextAuthOptions = {
@@ -14,57 +14,43 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
-      credentials : {
-        username:{label: "Username", type: "text"},
-        password:{label:"Password",type:"password"},
-        email:{label:"Email",type:"email"}
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
-      async authorize(credentials,req) : Promise<any> {
-
-        //check to see if email and password is valid
-
-        if(!credentials?.email || !credentials.password){
-           return null;
-        }
-
-        //check to see if user exists
-        // const user = await prisma.user.findUnique({
-        //   where : {
-        //     email: credentials?.email
-        //   }
-        // });
-
-        let checkLoginDetails=`${process.env.NEXT_PUBLIC_API_URL}/login`;
-
-        let response =await fetch(checkLoginDetails, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({data:{email:credentials?.email,password:credentials?.password}}),
-            });
-
-        let user = await response.json();
-
-
-        let {hashedPassword,emailVerified,...newUser} = user.body;
-
-        //here to look up the user from the credentials supplied
-        //const user = null;//{ id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-
-        if(!newUser){
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        //check to see if passwords match
-        //const passwordsMatch = await bcrypt.compare(credentials.password,user.hashedPassword);
+        // Fetch user from external API
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/shop/login`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              data: { email: credentials.email, password: credentials.password },
+            }),
+          }
+        );
 
-        // if(!passwordsMatch){
-        //   return null;
-        // }
+        const result = await response.json();
+        const { hashedPassword, emailVerified, ...consumer } = result.body;
 
+        if (!consumer) return null;
 
-        return newUser ;
-
-      }  
+        return {
+          id: consumer.id,
+          name: consumer.name,
+          email: consumer.email,
+          phone: consumer.phone,
+          username: consumer.username,
+          bio: consumer.bio,
+          address: consumer.address,
+          profilePicture: consumer.profilePicture,
+        };
+      },
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -84,53 +70,46 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  pages: { 
+  pages: {
     signIn: "/signin",
-    newUser: "/register"
+    newUser: "/register",
   },
   session: {
-    // Choose how you want to save the user session.
-    // The default is `"jwt"`, an encrypted JWT (JWE) stored in the session cookie.
-    // If you use an `adapter` however, we default it to `"database"` instead.
-    // You can still force a JWT session by explicitly defining `"jwt"`.
-    // When using `"database"`, the session cookie will only contain a `sessionToken` value,
-    // which is used to look up the session in the database.
     strategy: "jwt",
-  
-    // Seconds - How long until an idle session expires and is no longer valid.
     maxAge: 30 * 24 * 60 * 60, // 30 days
-  
-    // Seconds - Throttle how frequently to write to database to extend a session.
-    // Use it to limit write operations. Set to 0 to always update the database.
-    // Note: This option is ignored if using JSON Web Tokens
     updateAge: 24 * 60 * 60, // 24 hours
-    
-    // The session token is usually either a random UUID or string, however if you
-    // need a more customized session token string, you can define your own generate function.
     generateSessionToken: () => {
-      return randomUUID?.() ?? randomBytes(32).toString("hex")
-    }
+      return randomUUID?.() ?? randomBytes(32).toString("hex");
+    },
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role; // Add role to token if available
-        token.id = user.id; // Add the user id to the token
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.phone = user.phone;
+        token.username = user.username;
+        token.bio = user.bio;
+        token.address = user.address;
+        token.profilePicture = user.profilePicture;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.role = token.role; // Pass the role to the session
-        session.user.id = token.id; // Add the user id to the session
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.phone = token.phone;
+        session.user.username = token.username;
+        session.user.bio = token.bio;
+        session.user.address = token.address;
+        session.user.profilePicture = token.profilePicture;
       }
       return session;
     },
   },
 };
 
-// const handler = NextAuth(authOptions);
-
-export default NextAuth(authOptions);//{handler as GET, handler as POST};
-
-
+export default NextAuth(authOptions);

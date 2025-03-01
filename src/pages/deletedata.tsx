@@ -40,9 +40,7 @@ const DeleteMyData = ({ session }: Props) => {
 
   return (
     <>
-      <UserLayout>
-        <div className="flex flex-col bg-gray-900 text-white w-full min-h-screen">
-          <UserNav />
+        <div className="flex flex-col bg-gray-900 text-white w-full justify-center min-h-screen">
           <div className="container mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-20 mb-6">
               <h2 className="text-2xl font-bold text-red-500 dark:text-red-300 mb-2 text-center">
@@ -91,7 +89,6 @@ const DeleteMyData = ({ session }: Props) => {
             </div>
           </div>
         </div>
-      </UserLayout>
     </>
   );
 };

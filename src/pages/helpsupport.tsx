@@ -34,17 +34,11 @@ const Dash2 = (props: Props) => {
   };
 
   return (
-    <UserLayout>
       <div className="flex flex-col min-h-screen bg-gray-900 text-white lg:w-full">
-      <UserNav/>
-        <div className="container mx-auto">
-            
+        <div className="container mx-auto">           
 
           <div className="flex flex-wrap items-center">
-
-          
-
-          <div className="px-4 md:px-10 py-4 md:py-7 w-full">
+                      <div className="px-4 md:px-10 py-4 md:py-7 w-full">
                 <div className="flex items-center justify-between">
                     <p tabIndex={0} className="focus:outline-none text-base sm:text-lg md:text-xl lg:text-2xl font-bold leading-normal text-gray-500">My Exercise Schedule</p>
                                          
@@ -305,8 +299,6 @@ const Dash2 = (props: Props) => {
           </div>
         </div>
     </div>
-
-    </UserLayout>
     );
 };
 

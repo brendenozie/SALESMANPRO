@@ -12,9 +12,7 @@ type Props = {
 const PrivacyPolicy = ({ session }: Props) => {
   return (
     <>
-      <UserLayout>
         <div className="flex flex-col bg-gray-900 text-white w-full min-h-screen">
-          <UserNav />
           <div className="container mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-20 mb-6">
               <h2 className="text-2xl font-bold text-purple-500 dark:text-purple-300 mb-2 text-center">
@@ -60,7 +58,6 @@ const PrivacyPolicy = ({ session }: Props) => {
             </div>
           </div>
         </div>
-      </UserLayout>
     </>
   );
 };

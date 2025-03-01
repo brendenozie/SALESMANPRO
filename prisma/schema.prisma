@@ -589,6 +589,7 @@ model Consumer {
   bio                  String?
   address              String?
   profilePicture       String?
+  role                 String                 @default("User")
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   orders               CustomerOrder[]
