@@ -9,22 +9,40 @@ import {
   MoonIcon,
   SunIcon,
 } from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
+
+
+
 
 const ProfileSettings = () => {
   const [isEditing, setIsEditing] = useState(false);
+  
+  const { data: session } = useSession();
+
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    username: 'johndoe123',
-    email: 'johndoe@example.com',
-    phone: '+1234567890',
-    bio: 'Passionate about tech and design.',
-    address: '123 Main Street, City, Country',
-    profilePicture: 'https://via.placeholder.com/150'
+    name: session?.user?.name || '',
+    username: session?.user?.username || '',
+    email: session?.user?.email || '',
+    phone: session?.user?.phone || '',
+    bio: session?.user?.bio || '',
+    address: session?.user?.address || '',
+    profilePicture: session?.user?.image || 'https://via.placeholder.com/150'
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile({ ...profile, [name]: value });
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      const response = await axios.put("/api/shop/consumer/updateProfile", profile);
+      alert(response.data.message);
+      setIsEditing(false)
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile.");
+    }
   };
 
   return (
@@ -81,7 +99,7 @@ const ProfileSettings = () => {
             ></textarea>
             <button
               type="button"
-              onClick={() => setIsEditing(false)}
+              onClick={handleUpdateProfile}
               className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white py-3 rounded-lg hover:from-yellow-300 hover:to-yellow-400 transition-transform transform hover:scale-105"
             >
               Save Changes
