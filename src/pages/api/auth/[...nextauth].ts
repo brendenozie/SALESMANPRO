@@ -10,7 +10,7 @@ import { randomBytes, randomUUID } from "crypto";
 
 const getRoleFromAPI = async () => {
   // Fetch role dynamically from API
-  const roleResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/role`, {
+  const roleResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/role`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -81,10 +81,10 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/signin",
-    newUser: "/register",
-  },
+  // pages: {
+  //   signIn: "/signin",
+  //   newUser: "/register",
+  // },
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days

@@ -9,8 +9,6 @@ import Plans from "@/components/Plans";
 import Testimonials from "@/components/Testimonials";
 import { ISubscritption } from "@/types/typings";
 import { GetServerSidePropsContext } from "next";
-import { getSession } from "next-auth/react";
-import { empty } from "@prisma/client/runtime/library";
 
 type Props = {
     subscriptions:  ISubscritption[] ;
@@ -40,7 +38,7 @@ const Home = (props:Props) => {
         <div className="mt-32 lg:mt-40"></div>
         <PlayStoreBanner />
         <div className="mt-32 lg:mt-40"></div>
-        <Plans subscriptions={props.subscriptions}/>
+        {/* <Plans subscriptions={props.subscriptions}/> */}
         <div className="mt-32 lg:mt-40"></div>
         <Testimonials />
         <div className="mt-32 lg:mt-40"></div>
@@ -61,21 +59,21 @@ export const getServerSideProps = async (
     let url = process.env.NEXT_PUBLIC_API_URL;
 
     // Prepare all fetch requests with date range and userId as query parameters
-    const fetchPromises = [
-        fetch(`${url}/get-subscriptions`).then((res) => res.json()),
-       ];
+    // const fetchPromises = [
+    //     fetch(`${url}/get-subscriptions`).then((res) => res.json()),
+    //    ];
 
 
 
   try {
     // Wait for all fetch requests to complete
-    const [
-      subscriptions,
-    ] = await Promise.all(fetchPromises);
+    // const [
+    //   subscriptions,
+    // ] = await Promise.all(fetchPromises);
 
     return {
       props: {
-        subscriptions,
+        subscriptions:null,
       },
     };
   } catch (error) {

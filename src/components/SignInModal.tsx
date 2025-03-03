@@ -21,7 +21,10 @@ export default function SignInPrompt() {
     setLoading(true);
     setError(null);
     try {
-      const result = await signIn("google", { callbackUrl: "/" });
+      const result = await signIn("google", { 
+        redirect: true, // Enable redirection
+        callbackUrl: "/",
+      });
       if (result?.error) throw new Error(result.error);
     } catch (err) {
       setError("Failed to sign in. Please try again.");
