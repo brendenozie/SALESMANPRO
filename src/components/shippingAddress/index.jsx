@@ -27,7 +27,7 @@ const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr:
 const API_BASE = "https://nominatim.openstreetmap.org";
 const API_ENDPOINT = "http://127.0.0.1:3000/api";
 
-const LocationPicker = () => {
+const LocationPicker = ({ onAddressSelect }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -67,6 +67,7 @@ const LocationPicker = () => {
       });
       setAddress(data.display_name || "Unknown Location");
       setSearchTerm(data.display_name || ""); // Update search input dynamically
+      onAddressSelect(data.display_name); // Pass address to parent
     } catch (error) {
       console.error("Error fetching address:", error);
     } finally {
@@ -97,6 +98,7 @@ const LocationPicker = () => {
     setMapCenter({ lat, lng });
     setSearchTerm(suggestion.display_name);
     setSuggestions([]);
+    onAddressSelect(suggestion.display_name);
   };
 
 
@@ -287,4 +289,4 @@ const MapDragHandler = dynamic(() =>
   );
 };
 
-export default dynamic(() => Promise.resolve(LocationPicker), { ssr: false });
+export default LocationPicker;//dynamic(() => Promise.resolve(LocationPicker), { ssr: false });

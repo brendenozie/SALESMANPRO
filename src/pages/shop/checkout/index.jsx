@@ -6,6 +6,7 @@ import { CreditCardIcon, TruckIcon, TrashIcon, CheckCircleIcon, CalendarIcon, XC
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "../../../data/cardFormatter";
 import { useRouter } from 'next/router';
 import { useSession } from "next-auth/react";
+import ShippingAddress from '@/components/shippingAddress';
 
 const CheckoutPage = () => {
 
@@ -32,6 +33,7 @@ const CheckoutPage = () => {
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [estimatedDelivery, setEstimatedDelivery] = useState('');
   const [saveCard, setSaveCard] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(session?.user?.address || "");
 
   // Update estimated delivery date based on shipping method
   useEffect(() => {
@@ -61,7 +63,7 @@ const CheckoutPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    ['name', 'email', 'address', 'city', 'zip'].forEach(field => {
+    ['name', 'email', 'phone'].forEach(field => {
       if (!formData[field]) newErrors[field] = `${field} is required.`;
     });
     if (formData.paymentMethod === 'card') {
@@ -93,7 +95,7 @@ const CheckoutPage = () => {
           price: item.sellingPrice,
         })),
         totalPrice: parseFloat(total.toFixed(2)),
-        shippingAddress: formData.address,
+        shippingAddress: selectedAddress || formData.address,
         shippingMethod: formData.shipping,
       };
 
@@ -158,7 +160,7 @@ const CheckoutPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <h2 className="text-3xl font-extrabold text-gray-800">Billing Details</h2>
-            {['name', 'email', 'phone', 'address'].map(field => (
+            {['name', 'email', 'phone'].map(field => (
               <input 
                 key={field} 
                 type="text" 
@@ -169,6 +171,19 @@ const CheckoutPage = () => {
                 className="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-indigo-200" 
               />
             ))}
+
+          {/* Display Selected Address */}
+          <div className="address-section">
+            <h3>Shipping Address</h3>
+            {selectedAddress ? (
+              <p>{selectedAddress}</p>
+            ) : (
+              <p>No address selected.</p>
+            )}
+          </div>
+
+            {/* Address Picker */}
+            <ShippingAddress onAddressSelect={setSelectedAddress} />
 
             <div>
               <h3 className="font-semibold text-gray-700">Payment Method</h3>
