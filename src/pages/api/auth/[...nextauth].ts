@@ -11,8 +11,8 @@ import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 
 export const authOptions: NextAuthOptions = {
-  // adapter: PrismaAdapter(prisma),
-    adapter: CustomPrismaAdapter(),  // Use custom adapter
+  adapter: PrismaAdapter(prisma),
+    // adapter: CustomPrismaAdapter(),  // Use custom adapter
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -20,9 +20,19 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials,req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
+        }
+        const signupPath = req?.headers?.referer || "";
+
+        let role = "USER"; // Default role
+        if (signupPath.includes("/admin") || signupPath.includes("/dashboard")) {
+          role = "ADMIN";
+        } else if (signupPath.includes("/client")) {
+          role = "CLIENT";
+        } else if (signupPath.includes("/agent")) {
+          role = "AGENT";
         }
 
         // Fetch user from external API
@@ -32,7 +42,7 @@ export const authOptions: NextAuthOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              data: { email: credentials.email, password: credentials.password },
+              data: { email: credentials.email, password: credentials.password, role  },
             }),
           }
         );
@@ -50,6 +60,7 @@ export const authOptions: NextAuthOptions = {
           username: consumer.username,
           bio: consumer.bio,
           address: consumer.address,
+          role: consumer.role,
           profilePicture: consumer.profilePicture,
         };
       },
@@ -85,6 +96,87 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
+    async signIn({ user, account, profile, credentials  }) {
+      if (account?.provider === "google") {
+        // Extract signup path from query (or another method like cookies)
+        const signupPath = String(credentials?.signupPath || "");
+
+
+        // Determine role based on signup path
+        let role = "USER";
+        if (signupPath.includes("/admin") || signupPath.includes("/dashboard")) {
+          role = "ADMIN";
+        } else if (signupPath.includes("/client")) {
+          role = "CLIENT";
+        } else if (signupPath.includes("/agent")) {
+          role = "AGENT";
+        }
+
+        // Check if user already exists in any of the role tables
+        const existingConsumer = user.email ? await prisma.consumer.findUnique({ where: { email: user.email } }) : null;
+        const existingAgent = user.email ?  await prisma.salesAgent.findUnique({ where: { email: user.email } }) : null;
+        const existingClient = user.email ?  await prisma.client.findUnique({ where: { email: user.email } }) : null;
+        const existingAdmin = user.email ?  await prisma.user.findUnique({ where: { email: user.email } }) : null;
+
+        if (existingConsumer || existingAgent || existingClient || existingAdmin) {
+          return true; // User exists, proceed with sign-in
+        }
+
+        // Assign role based on email domain if no signup path was used
+        // if (!signupPath) {
+        //   if (user.email?.endsWith("@merchant.com")) {
+        //     role = "AGENT";
+        //   } else if (user.email?.endsWith("@client.com")) {
+        //     role = "CLIENT";
+        //   } else if (user.email?.endsWith("@admin.com")) {
+        //     role = "ADMIN";
+        //   } else {
+        //     role = "USER";
+        //   }
+        // }
+
+        // Insert user into the correct table based on role
+        if (role === "AGENT") {
+          await prisma.salesAgent.create({
+            data: {
+              email: user.email ?? "",
+              name: user.name,
+              role:"AGENT",
+              image: user.image,
+            },
+          });
+        } else if (role === "ADMIN") {
+          await prisma.user.create({
+            data: {
+              email: user.email ?? "",
+              name: user.name,
+              role:"ADMIN",
+              image: user.image,
+            },
+          });
+        } else if (role === "CLIENT") {
+          await prisma.client.create({
+            data: {
+              email: user.email ?? "",
+              name: user.name,
+              role:"CLIENT",
+              image: user.image,
+            },
+          });
+        } else {
+          await prisma.consumer.create({
+            data: {
+              email: user.email ?? "",
+              name: user.name,
+              role:"USER",
+              image: user.image,
+            },
+          });
+        }
+      }
+
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -94,7 +186,7 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username;
         token.bio = user.bio;
         token.address = user.address;
-        token.profilePicture = user.profilePicture;
+        token.profilePicture = user.image || user.profilePicture;
       }
       return token;
     },

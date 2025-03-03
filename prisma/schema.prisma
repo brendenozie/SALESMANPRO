@@ -26,15 +26,19 @@ model Account {
   id_token          String?
   session_state     String?
 
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
-  consumerId   String?     @db.ObjectId
-  SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
-  salesAgentId String?     @db.ObjectId
-  Client       Client?     @relation(fields: [clientId], references: [id])
-  clientId     String?     @db.ObjectId
+  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Consumer   Consumer?   @relation(fields: [userId], references: [id])
+  SalesAgent SalesAgent? @relation(fields: [userId], references: [id])
+  Client     Client?     @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
+}
+
+enum ROLE {
+  USER
+  AGENT
+  CLIENT
+  ADMIN
 }
 
 model Session {
@@ -43,6 +47,7 @@ model Session {
   expires      DateTime
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String      @db.ObjectId
+  role         ROLE?       @default(USER)
   Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
   consumerId   String?     @db.ObjectId
   SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
@@ -197,7 +202,8 @@ model Task {
 
 model Client {
   id                String              @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
+  name              String?
+  password          String?
   email             String              @unique
   phoneNumber       String?
   companyId         String              @db.ObjectId
@@ -216,7 +222,7 @@ model Client {
   bio               String?
   address           String?
   profilePicture    String?
-  role              String?             @default("Client")
+  role              ROLE?               @default(CLIENT)
   accounts          Account[]
   sessions          Session[]
 }
@@ -244,7 +250,8 @@ model SalesAgent {
   company            Company?             @relation(fields: [companyId], references: [id])
   clients            Client[]
   productRequests    Request[]
-  role               String               @default("Agent")
+  password           String?
+  role               ROLE?                @default(AGENT)
   emailVerified      DateTime?
   phone              String?
   username           String?
@@ -265,12 +272,12 @@ model SalesAgent {
 
 model User {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
+  name            String?
   email           String         @unique
-  password        String
+  password        String?
   companyId       String?        @db.ObjectId
   company         Company?       @relation(fields: [companyId], references: [id])
-  role            String         @default("User")
+  role            ROLE?          @default(ADMIN)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   accounts        Account[]
@@ -282,14 +289,13 @@ model User {
   requests        Request[]
   returns         Return[]
   Assignment      Assignment[]
-
-  emailVerified  DateTime?
-  image          String?
-  phone          String?
-  username       String?
-  bio            String?
-  address        String?
-  profilePicture String?
+  emailVerified   DateTime?
+  image           String?
+  phone           String?
+  username        String?
+  bio             String?
+  address         String?
+  profilePicture  String?
 }
 
 enum Status {
@@ -628,11 +634,12 @@ model Consumer {
   accounts             Account[]
   sessions             Session[]
   phone                String?
+  password             String?
   username             String?
   bio                  String?
   address              String?
   profilePicture       String?
-  role                 String?                @default("User")
+  role                 ROLE?                  @default(USER)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   orders               CustomerOrder[]
