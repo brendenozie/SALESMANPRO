@@ -5,14 +5,23 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import AppleProvider from "next-auth/providers/apple";
 import EmailProvider from "next-auth/providers/email";
-import { CustomPrismaAdapter } from "@/lib/prisma-adapter";
-
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 
+const getRoleFromAPI = async () => {
+  // Fetch role dynamically from API
+  const roleResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/role`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const roleData = await roleResponse.json();
+  const role = roleData.role || "USER";
+  
+  return role;
+};
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-    // adapter: CustomPrismaAdapter(),  // Use custom adapter
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -20,35 +29,24 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials,req) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-        const signupPath = req?.headers?.referer || "";
 
-        let role = "USER"; // Default role
-        if (signupPath.includes("/admin") || signupPath.includes("/dashboard")) {
-          role = "ADMIN";
-        } else if (signupPath.includes("/client")) {
-          role = "CLIENT";
-        } else if (signupPath.includes("/agent")) {
-          role = "AGENT";
-        }
+        // Extract signup path from the referrer header
+        // const signupPath = req?.headers?.referer || "";
+        const role = await getRoleFromAPI();
 
-        // Fetch user from external API
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/shop/login`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              data: { email: credentials.email, password: credentials.password, role  },
-            }),
-          }
-        );
+        // Authenticate user via API
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: { email: credentials.email, password: credentials.password, role } }),
+        });
 
         const result = await response.json();
-        const { hashedPassword, emailVerified, ...consumer } = result.body;
+        const { emailVerified, ...consumer } = result.body;
 
         if (!consumer) return null;
 
@@ -96,81 +94,38 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account, profile, credentials  }) {
+    async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
-        // Extract signup path from query (or another method like cookies)
-        const signupPath = String(credentials?.signupPath || "");
+        // Extract signup path from cookies or default to empty string
+        // const signupPath = ""; // Cookies can be used here instead
+        const role = await getRoleFromAPI();
 
+        if (!user.email) return false; // Prevent processing if no email
 
-        // Determine role based on signup path
-        let role = "USER";
-        if (signupPath.includes("/admin") || signupPath.includes("/dashboard")) {
-          role = "ADMIN";
-        } else if (signupPath.includes("/client")) {
-          role = "CLIENT";
-        } else if (signupPath.includes("/agent")) {
-          role = "AGENT";
-        }
+        // Check if user already exists
+        const existingUser = await prisma.consumer.findUnique({ where: { email: user.email } }) ||
+          await prisma.salesAgent.findUnique({ where: { email: user.email } }) ||
+          await prisma.client.findUnique({ where: { email: user.email } }) ||
+          await prisma.user.findUnique({ where: { email: user.email } });
 
-        // Check if user already exists in any of the role tables
-        const existingConsumer = user.email ? await prisma.consumer.findUnique({ where: { email: user.email } }) : null;
-        const existingAgent = user.email ?  await prisma.salesAgent.findUnique({ where: { email: user.email } }) : null;
-        const existingClient = user.email ?  await prisma.client.findUnique({ where: { email: user.email } }) : null;
-        const existingAdmin = user.email ?  await prisma.user.findUnique({ where: { email: user.email } }) : null;
+        if (existingUser) return true;
 
-        if (existingConsumer || existingAgent || existingClient || existingAdmin) {
-          return true; // User exists, proceed with sign-in
-        }
-
-        // Assign role based on email domain if no signup path was used
-        // if (!signupPath) {
-        //   if (user.email?.endsWith("@merchant.com")) {
-        //     role = "AGENT";
-        //   } else if (user.email?.endsWith("@client.com")) {
-        //     role = "CLIENT";
-        //   } else if (user.email?.endsWith("@admin.com")) {
-        //     role = "ADMIN";
-        //   } else {
-        //     role = "USER";
-        //   }
-        // }
-
-        // Insert user into the correct table based on role
+        // Insert new user into correct role table
         if (role === "AGENT") {
           await prisma.salesAgent.create({
-            data: {
-              email: user.email ?? "",
-              name: user.name,
-              role:"AGENT",
-              image: user.image,
-            },
+            data: { email: user.email, name: user.name, role, image: user.image },
           });
         } else if (role === "ADMIN") {
           await prisma.user.create({
-            data: {
-              email: user.email ?? "",
-              name: user.name,
-              role:"ADMIN",
-              image: user.image,
-            },
+            data: { email: user.email, name: user.name, role, image: user.image },
           });
         } else if (role === "CLIENT") {
           await prisma.client.create({
-            data: {
-              email: user.email ?? "",
-              name: user.name,
-              role:"CLIENT",
-              image: user.image,
-            },
+            data: { email: user.email, name: user.name, role, image: user.image },
           });
         } else {
           await prisma.consumer.create({
-            data: {
-              email: user.email ?? "",
-              name: user.name,
-              role:"USER",
-              image: user.image,
-            },
+            data: { email: user.email, name: user.name, role:"USER", image: user.image },
           });
         }
       }
@@ -186,6 +141,7 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username;
         token.bio = user.bio;
         token.address = user.address;
+        token.role = user.role;
         token.profilePicture = user.image || user.profilePicture;
       }
       return token;
@@ -199,6 +155,7 @@ export const authOptions: NextAuthOptions = {
         session.user.username = token.username;
         session.user.bio = token.bio;
         session.user.address = token.address;
+        session.user.role = token.role;
         session.user.profilePicture = token.profilePicture;
       }
       return session;

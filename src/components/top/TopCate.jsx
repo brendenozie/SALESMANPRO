@@ -62,10 +62,10 @@ const TopCate = ({ categories }) => {
   };
 
   return (
-    <section className="relative py-20 bg-gradient-to-b from-white via-neutral-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-300">
+    <section className="relative py-10 bg-gradient-to-b from-white via-neutral-100 to-white dark:from-black dark:via-gray-900 dark:to-black transition-colors duration-300">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-12">
-          <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
+          <h2 className="text-lg md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
             Explore <span className="text-yellow-400">Top Categories</span>
           </h2>
           <motion.button
@@ -84,6 +84,7 @@ const TopCate = ({ categories }) => {
           ))}
         </Slider>
       </div>
+      
     </section>
   );
 };

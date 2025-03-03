@@ -141,14 +141,29 @@ const FlashDeals = ({ productItems, addToCart, decreaseQuantity, removeFromCart 
   return (
     <section className="py-12 bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-black dark:text-white transition-colors duration-500">
       <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <BoltIcon className="text-yellow-500 h-8 w-8 animate-pulse" />
-            <h1 className="text-4xl font-extrabold tracking-wide text-yellow-500">
-              Flash Deals
-            </h1>
+        
+         <div className="flex justify-between items-center ">
+            <div className="flex items-center space-x-4">
+              <motion.div
+                  className="w-14 h-14 bg-purple-900 flex items-center justify-center rounded-full shadow-lg"
+                  animate={{ rotate: [0, 20, -20, 0] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                >
+                  <BoltIcon className="text-yellow-500 h-8 w-8 animate-pulse" />
+                </motion.div>
+              <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
+                Flash <span className="text-yellow-400">Deals</span>
+              </h2>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="px-5 py-2 bg-yellow-400 text-black rounded-full shadow-md hover:bg-yellow-300 transition flex items-center space-x-2"
+            >
+              <span>View All</span>
+              <ArrowRightCircleIcon className="w-6 h-6" />
+            </motion.button>
           </div>
-        </div>
         <FlashCard productItems={productItems} addToCart={addToCart} />
       </div>
     </section>

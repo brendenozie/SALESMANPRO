@@ -115,29 +115,6 @@ const Discount = ({ productItems, addToCart, decreaseQuantity, removeFromCart })
             <ArrowRightCircleIcon className="w-6 h-6" />
           </motion.button>
         </div>
-        {/* <div className="flex justify-between items-center mb-12">
-          <div className="flex items-center space-x-4">
-            <motion.div
-              className="w-14 h-14 bg-red-700 flex items-center justify-center rounded-full shadow-lg"
-              animate={{ rotate: [0, 20, -20, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
-              <GifIcon className="text-white w-8 h-8" />
-            </motion.div>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-black dark:text-white">
-              <span className="text-red-700 dark:text-red-400">Big</span> Discounts
-            </h2>
-          </div>
-           <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="px-5 py-2 bg-red-400 text-black rounded-full shadow-md hover:bg-red-300 transition flex items-center space-x-2"
-            >
-              <span>View All</span>
-              <ArrowRightCircleIcon className="w-6 h-6" />
-            </motion.button>
-        </div> */}
-
         <Dcard productItems={productItems} addToCart={addToCart} />
       </div>
     </section>

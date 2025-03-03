@@ -176,7 +176,7 @@ const ProductList = () => {
   return (
     <>
       <Header CartItem={cartItems} />
-      <div className="container mx-auto p-4 md:p-8 bg-white dark:bg-gray-900">
+      <div className="container mx-auto p-0 md:p-8 bg-white dark:bg-gray-900">
         <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">
           Explore Our Collection
         </h2>
@@ -251,7 +251,7 @@ const ProductCard = ({ product }) => {
 
         {/* Price & Add to Cart Button */}
         <div className="flex justify-between items-center w-full mt-2">
-          <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl">
+          <span className="text-yellow-600 dark:text-yellow-400 font-bold text-xs md:text-xl">
             ${product.finalPrice ? product.finalPrice.toFixed(2) : 0}
           </span>
 

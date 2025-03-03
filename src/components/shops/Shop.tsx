@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { PlusIcon, ArrowRightIcon, ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ArrowPathIcon, ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import load from "../../assets/load.png";
@@ -19,42 +19,42 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
   
   return (
     <section className="py-14 px-4 bg-gray-50 dark:bg-gradient-to-b dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white transition-colors duration-500">
+      
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-yellow-500 dark:text-yellow-400">Featured {category.name}</h2>
+        <button className="flex items-center gap-1 text-yellow-500 dark:text-yellow-400 font-medium hover:text-yellow-600 transition">
+          <span>View All</span>
+          <ArrowRightCircleIcon className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
+      </div>
+
       <div className="container hidden md:grid mx-auto  grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Category Section  */}
-        {category && <aside className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 border border-gray-200 dark:border-gray-600">
-          <h2 className="text-2xl font-bold text-yellow-500 dark:text-yellow-400 mb-4">Brands</h2>
-          {category.allBrands && category.allBrands.slice(0, 6).map((brand : any, index : any) => (
-            <div key={index} className="flex items-center gap-3 p-3 mb-3 bg-gray-100 dark:bg-gray-900 rounded-lg hover:shadow-lg transition">
-              <span className="text-2xl p-2 rounded-full border border-yellow-400 z-10 drop-shadow-md">{category.icon}</span>
-              <span className="text-md font-medium">{brand}</span>
+          {/* Category Section  */}
+          {category && 
+          <aside className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-6 border border-gray-200 dark:border-gray-600">
+            <h2 className="text-2xl font-bold text-yellow-500 dark:text-yellow-400 mb-4">Brands</h2>
+            {category.allBrands && category.allBrands.slice(0, 6).map((brand : any, index : any) => (
+              <div key={index} className="flex items-center gap-3 p-3 mb-3 bg-gray-100 dark:bg-gray-900 rounded-lg hover:shadow-lg transition">
+                <span className="text-2xl p-2 rounded-full border border-yellow-400 z-10 drop-shadow-md">{category.icon}</span>
+                <span className="text-md font-medium">{brand}</span>
+              </div>
+            ))}
+            <div className="text-center mt-4">
+              {/* <button className="px-5 py-2 bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition flex items-center justify-center gap-2">
+                View All <ArrowRightIcon className="h-5 w-5" />
+              </button> */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="px-5 py-2 bg-yellow-400 text-black rounded-full shadow-md hover:bg-yellow-300 transition flex items-center space-x-2"
+              >
+                <span>View All</span>
+                <ArrowRightCircleIcon className="w-6 h-6" />
+              </motion.button>
             </div>
-          ))}
-          <div className="text-center mt-4">
-            {/* <button className="px-5 py-2 bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition flex items-center justify-center gap-2">
-              View All <ArrowRightIcon className="h-5 w-5" />
-            </button> */}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="px-5 py-2 bg-yellow-400 text-black rounded-full shadow-md hover:bg-yellow-300 transition flex items-center space-x-2"
-            >
-              <span>View All</span>
-              <ArrowRightCircleIcon className="w-6 h-6" />
-            </motion.button>
-          </div>
-        </aside>}
+          </aside>}
 
-        {/* Products Section */}
-        <main className="lg:col-span-3">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold text-yellow-500 dark:text-yellow-400">Featured {category.name}</h2>
-            <button className="flex items-center gap-1 text-yellow-500 dark:text-yellow-400 font-medium hover:text-yellow-600 transition">
-              <span>View All</span>
-              <ArrowRightCircleIcon className="w-6 h-6" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {shopItems?.products?.map((item : any, index : any) => (
               <div key={index} onClick={()=>{ router.push(`/shop/product/${item.id}`)}} className="relative group bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition">
                 {/* <img src={item.cover} alt={item.title} className="w-full h-64 object-cover rounded-xl" /> */}
@@ -93,11 +93,9 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
                       <ShoppingCartIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" /> Add
                     </motion.button>
                   </div>
-              </div>
-              
+              </div>              
             ))}
-          </div>
-        </main>
+          </div>          
       </div>
       <div className="container md:hidden mx-auto">
         {/* Category Section as Scrollable Tabs */}
@@ -114,14 +112,6 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
 
         {/* Products Section */}
         <main>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-yellow-500 dark:text-yellow-400">Featured {category.name}</h2>
-            <button className="text-yellow-500 dark:text-yellow-400 flex items-center">
-              <span>View All</span>
-              <ArrowRightCircleIcon className="w-5 h-5" />
-            </button>
-          </div>
-
           {/* Responsive Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ProductGrid shopItems={shopItems} />
@@ -135,7 +125,84 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
 
 export default Shop;
 
-const ProductGrid = ({ shopItems } : any) => {
+const ProductGrid = ({ loading, shopItems }:any) => (
+  <div className="lg:col-span-3 columns-2 sm:columns-3 md:columns-4 p-2 md:p-4 gap-3">
+    {loading
+      ? [...Array(9)].map((_, index) => (
+          <SkeletonCard
+            key={index}
+            className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg hover:shadow-xl transition mb-4 break-inside-avoid"
+          />
+        ))
+      : shopItems?.products.map((product:any) => <ProductCard key={product.id} product={product} />)}
+
+    {loading && (
+      <div className="col-span-full flex justify-center mt-6">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        >
+          <ArrowPathIcon className="w-8 h-8 text-yellow-500 animate-spin" />
+        </motion.div>
+      </div>
+    )}
+  </div>
+);
+
+const ProductCard = ({ product, addToCart }:any) => {
+  const router = useRouter();
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <motion.div
+      onClick={() => router.push(`/shop/product/${product.id}`)}
+      whileHover={{ scale: 1.03 }}
+      className="relative bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl shadow-xl transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400 mb-4 break-inside-avoid"
+    >
+      {/* Product Image */}
+      <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
+        <Image
+            width={300}
+            height={300}
+            loader = {loaderProp}
+            src={imageError ? load.src : product.image}
+            alt={`Product image of ${product.title}`}
+            className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImageError(true)}
+          />
+      </div>
+
+      {/* Product Info */}
+      <div className="w-full mt-3 flex flex-col items-center">
+        <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
+          {product.title}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
+          {product.description || "No description available"}
+        </p>
+
+        {/* Price & Add to Cart Button */}
+        <div className="flex justify-between items-center w-full mt-2">
+          <span className="text-yellow-600 dark:text-yellow-400 font-bold text-xs md:text-xl">
+            ${product.finalPrice ? product.finalPrice.toFixed(2) : 0}
+          </span>
+
+           <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => addToCart(product)}
+              className="flex items-center bg-yellow-500 text-black p-3 rounded-full shadow-lg hover:shadow-xl transition"
+              aria-label="Add to Cart"
+            >
+              <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
+            </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const ProductGridV1 = ({ shopItems } : any) => {
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -192,4 +259,6 @@ const ProductGrid = ({ shopItems } : any) => {
   );
 };
 
-
+const SkeletonCard = (className:any) => (
+  <div className="bg-gray-200 h-80 w-full animate-pulse rounded-lg"></div>
+);

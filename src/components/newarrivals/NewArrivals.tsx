@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
-import { ArrowRightCircleIcon, ArrowLeftCircleIcon, ChevronRightIcon, HeartIcon, ShoppingCartIcon, StarIcon } from "@heroicons/react/24/outline";
+import { ArrowRightCircleIcon, ArrowLeftCircleIcon, ChevronRightIcon, HeartIcon, ShoppingCartIcon, StarIcon, GifIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import "slick-carousel/slick/slick.css";
@@ -60,24 +60,27 @@ const NewArrivals = ({ productItems, addToCart }:any) => {
       transition={{ duration: 1 }}
     >
       <div className="container mx-auto px-6">
-        <div className="flex justify-between items-center mb-6">
-          <motion.div
-            className="flex items-center space-x-3"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+        <div className="flex justify-between items-center mb-12">
+          <div className="flex items-center space-x-4">
             <motion.div
-              className="w-12 h-12 bg-yellow-500 flex items-center justify-center rounded-full shadow-lg backdrop-blur-lg"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
-              <img src="https://img.icons8.com/glyph-neue/64/ffffff/new.png" alt="New Arrivals Icon" className="w-8 h-8" />
-            </motion.div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                className="w-14 h-14 bg-yellow-500 flex items-center justify-center rounded-full shadow-lg"
+                animate={{ rotate: [0, 20, -20, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                <img src="https://img.icons8.com/glyph-neue/64/ffffff/new.png" alt="New Arrivals Icon" className="w-8 h-8" />
+              </motion.div>
+            <h2 className="text-xl md:text-5xl lg:text-5xl font-extrabold text-black dark:text-white tracking-wide">
               Latest <span className="text-yellow-400">Arrivals</span>
             </h2>
-          </motion.div>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="px-5 py-2 bg-yellow-400 text-black rounded-full shadow-md hover:bg-yellow-300 transition flex items-center space-x-2"
+          >
+            <span>View All</span>
+            <ArrowRightCircleIcon className="w-6 h-6" />
+          </motion.button>
         </div>
 
         {loading ? (
