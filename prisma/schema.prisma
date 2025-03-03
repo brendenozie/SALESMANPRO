@@ -26,17 +26,29 @@ model Account {
   id_token          String?
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
+  consumerId   String?     @db.ObjectId
+  SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
+  salesAgentId String?     @db.ObjectId
+  Client       Client?     @relation(fields: [clientId], references: [id])
+  clientId     String?     @db.ObjectId
 
   @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  sessionToken String   @unique
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String      @unique
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String   @db.ObjectId
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String      @db.ObjectId
+  Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
+  consumerId   String?     @db.ObjectId
+  SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
+  salesAgentId String?     @db.ObjectId
+  Client       Client?     @relation(fields: [clientId], references: [id])
+  clientId     String?     @db.ObjectId
 }
 
 model VerificationToken {
@@ -189,7 +201,7 @@ model Client {
   email             String              @unique
   phoneNumber       String?
   companyId         String              @db.ObjectId
-  company           Company             @relation(fields: [companyId], references: [id])
+  company           Company?            @relation(fields: [companyId], references: [id])
   salesAgentId      String?             @db.ObjectId
   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
   createdAt         DateTime            @default(now())
@@ -197,6 +209,16 @@ model Client {
   communications    Communication[]     @relation("CommunicationReceiver")
   ClientInventory   ClientInventory[]
   AgentInventoryLog AgentInventoryLog[]
+  emailVerified     DateTime?
+  image             String?
+  phone             String?
+  username          String?
+  bio               String?
+  address           String?
+  profilePicture    String?
+  role              String?             @default("Client")
+  accounts          Account[]
+  sessions          Session[]
 }
 
 model Communication {
@@ -212,14 +234,23 @@ model Communication {
 
 model SalesAgent {
   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  name               String
+  name               String?
   email              String               @unique
+  image              String?
+  accounts           Account[]
+  sessions           Session[]
   phoneNumber        String?
-  companyId          String               @db.ObjectId
-  company            Company              @relation(fields: [companyId], references: [id])
+  companyId          String?              @db.ObjectId
+  company            Company?             @relation(fields: [companyId], references: [id])
   clients            Client[]
   productRequests    Request[]
   role               String               @default("Agent")
+  emailVerified      DateTime?
+  phone              String?
+  username           String?
+  bio                String?
+  address            String?
+  profilePicture     String?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   commissions        Commission[]
@@ -251,6 +282,14 @@ model User {
   requests        Request[]
   returns         Return[]
   Assignment      Assignment[]
+
+  emailVerified  DateTime?
+  image          String?
+  phone          String?
+  username       String?
+  bio            String?
+  address        String?
+  profilePicture String?
 }
 
 enum Status {
@@ -582,14 +621,18 @@ enum RequesterType {
 
 model Consumer {
   id                   String                 @id @default(auto()) @map("_id") @db.ObjectId
-  name                 String
+  name                 String?
   email                String                 @unique
+  emailVerified        DateTime?
+  image                String?
+  accounts             Account[]
+  sessions             Session[]
   phone                String?
   username             String?
   bio                  String?
   address              String?
   profilePicture       String?
-  role                 String                 @default("User")
+  role                 String?                @default("User")
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   orders               CustomerOrder[]

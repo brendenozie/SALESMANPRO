@@ -5,12 +5,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import AppleProvider from "next-auth/providers/apple";
 import EmailProvider from "next-auth/providers/email";
+import { CustomPrismaAdapter } from "@/lib/prisma-adapter";
 
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // adapter: PrismaAdapter(prisma),
+    adapter: CustomPrismaAdapter(),  // Use custom adapter
   providers: [
     CredentialsProvider({
       name: "credentials",

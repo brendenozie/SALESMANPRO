@@ -3,7 +3,6 @@ import { ContextProvider,  } from '../contexts/ContextProvider';
 import { SessionProvider, } from "next-auth/react";
 import "@/styles/globals.css";
 import { Toaster } from "react-hot-toast";
-// _app.js or a global stylesheet
 import 'leaflet/dist/leaflet.css';
 
 
