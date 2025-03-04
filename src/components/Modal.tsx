@@ -35,7 +35,7 @@ const Modal = ({ isOpen, onClose, title, children }: any) => {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-white rounded-xl shadow-lg max-w-lg w-full relative p-6"
+            className=" max-w-5xl w-full relative p-6"
             onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
