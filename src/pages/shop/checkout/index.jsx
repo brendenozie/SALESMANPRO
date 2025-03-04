@@ -33,7 +33,7 @@ const CheckoutPage = () => {
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [estimatedDelivery, setEstimatedDelivery] = useState('');
   const [saveCard, setSaveCard] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState(session?.user?.address || "");
+  const [selectedAddress, setSelectedAddress] = useState(session?.user?.address || {});
 
   // Update estimated delivery date based on shipping method
   useEffect(() => {
@@ -175,8 +175,8 @@ const CheckoutPage = () => {
           {/* Display Selected Address */}
           <div className="address-section">
             <h3>Shipping Address</h3>
-            {selectedAddress ? (
-              <p>{selectedAddress}</p>
+            {selectedAddress.display_name ? (
+              <p>{selectedAddress.display_name}</p>
             ) : (
               <p>No address selected.</p>
             )}

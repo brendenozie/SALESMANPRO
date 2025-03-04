@@ -67,7 +67,9 @@ const LocationPicker = ({ onAddressSelect }) => {
       });
       setAddress(data.display_name || "Unknown Location");
       setSearchTerm(data.display_name || ""); // Update search input dynamically
-      onAddressSelect(data.display_name); // Pass address to parent
+      onAddressSelect({display_name : data.display_name,
+                        lat:lat,
+                        lng:lng}); // Pass address to parent
     } catch (error) {
       console.error("Error fetching address:", error);
     } finally {
@@ -98,7 +100,9 @@ const LocationPicker = ({ onAddressSelect }) => {
     setMapCenter({ lat, lng });
     setSearchTerm(suggestion.display_name);
     setSuggestions([]);
-    onAddressSelect(suggestion.display_name);
+    onAddressSelect({display_name : suggestion.display_name,
+                        lat: suggestion.lat,
+                        lng: suggestion.lng});
   };
 
 

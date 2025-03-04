@@ -688,7 +688,7 @@ model CustomerOrder {
   deliveryStatus        String? // "Order Placed", "Processing", "Shipped", etc.
   deliveryPersonName    String? // Delivery person's name
   deliveryPersonContact String? // Delivery person's contact info
-  shippingAddress       String? // Shipping address
+  shippingAddress       Json? // Shipping address
   shippingMethod        String? // Shipping method (e.g., standard, express)
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt

@@ -16,7 +16,11 @@ const orderSchema = z.object({
     })
   ),
   totalPrice: z.number().positive(),
-  shippingAddress: z.string().min(5),
+  shippingAddress: z.object({
+      display_name: z.string().min(10),
+      lat: z.number(),
+      lng: z.number(),
+    }),
   shippingMethod: z.enum(["Standard", "Express"]),
 });
 
