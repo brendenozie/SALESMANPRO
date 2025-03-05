@@ -20,6 +20,6 @@ const Custom403: NextPage = () => {
     </div>
   );
 };
-///Bitmap
+
 export default Custom403;
 
