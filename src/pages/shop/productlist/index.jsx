@@ -196,7 +196,7 @@ const ProductList = () => {
 const ProductGrid = ({ loading, products }) => (
   <div className="lg:col-span-3 columns-2 sm:columns-3 md:columns-4 p-2 md:p-4 gap-3">
     {loading
-      ? [...Array(9)].map((_, index) => (
+      ? [...Array(12)].map((_, index) => (
           <SkeletonCard
             key={index}
             className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg hover:shadow-xl transition mb-4 break-inside-avoid"
