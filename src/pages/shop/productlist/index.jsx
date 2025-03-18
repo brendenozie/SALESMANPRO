@@ -313,7 +313,14 @@ const PaginationControls = ({ page, setPage, totalPages }) => {
   );
 };
 
+// components/SkeletonCard.js
 const SkeletonCard = () => (
-  <div className="bg-gray-200 h-80 w-full animate-pulse rounded-lg"></div>
+  <div className="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md overflow-hidden animate-pulse">
+    <div className="w-full h-48 bg-gray-300 dark:bg-gray-600"></div>
+    <div className="p-4">
+      <div className="h-6 bg-gray-300 dark:bg-gray-600 mb-2"></div>
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 mb-2"></div>
+      <div className="h-4 bg-gray-300 dark:bg-gray-600 mb-2"></div>
+    </div>
+  </div>
 );
-
