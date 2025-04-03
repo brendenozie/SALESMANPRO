@@ -271,31 +271,36 @@ model SalesAgent {
 }
 
 model User {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  name            String?
-  email           String         @unique
-  password        String?
-  companyId       String?        @db.ObjectId
-  company         Company?       @relation(fields: [companyId], references: [id])
-  role            ROLE?          @default(ADMIN)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  accounts        Account[]
-  sessions        Session[]
-  usersCategory   UsersCategory? @relation(fields: [usersCategoryId], references: [id])
-  usersCategoryId String?        @db.ObjectId
-  tasks           Task[]
-  auditLogs       AuditLog[]
-  requests        Request[]
-  returns         Return[]
-  Assignment      Assignment[]
-  emailVerified   DateTime?
-  image           String?
-  phone           String?
-  username        String?
-  bio             String?
-  address         String?
-  profilePicture  String?
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String?
+  email                 String                  @unique
+  password              String?
+  companyId             String?                 @db.ObjectId
+  company               Company?                @relation(fields: [companyId], references: [id])
+  role                  ROLE?                   @default(ADMIN)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  accounts              Account[]
+  sessions              Session[]
+  usersCategory         UsersCategory?          @relation(fields: [usersCategoryId], references: [id])
+  usersCategoryId       String?                 @db.ObjectId
+  tasks                 Task[]
+  auditLogs             AuditLog[]
+  requests              Request[]
+  returns               Return[]
+  Assignment            Assignment[]
+  emailVerified         DateTime?
+  image                 String?
+  phone                 String?
+  username              String?
+  bio                   String?
+  address               String?
+  profilePicture        String?
+  ProductReview         ProductReview[]
+  ProductReviewLog      ProductReviewLog[]
+  ProductReviewResponse ProductReviewResponse[]
+  ProductReviewLike     ProductReviewLike[]
+  ProductReviewDislike  ProductReviewDislike[]
 }
 
 enum Status {
@@ -472,6 +477,18 @@ enum SellerType {
   CONSUMER
 }
 
+model UserActivity {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  productId String   @db.ObjectId
+  action    String // "view", "purchase", "favorite"
+  createdAt DateTime @default(now())
+
+  product MarketplaceListing @relation(fields: [productId], references: [id])
+
+  @@index([userId, productId, createdAt])
+}
+
 model MarketplaceListing {
   id                String          @id @default(auto()) @map("_id") @db.ObjectId
   sellerId          String          @db.ObjectId
@@ -530,9 +547,79 @@ model MarketplaceListing {
   sellingPrice  Float
   finalPrice    Float?    @default(0) //Price inclusive discount
 
-  contact   String?
-  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
-  OrderItem OrderItem[]
+  contact        String?
+  location       Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  OrderItem      OrderItem[]
+  UserActivity   UserActivity[]
+  ProductMetrics ProductMetrics[]
+  ProductReview  ProductReview[]
+}
+
+model ProductMetrics {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @unique @db.ObjectId
+  views     Int      @default(0)
+  purchases Int      @default(0)
+  favorites Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product MarketplaceListing @relation(fields: [productId], references: [id])
+
+  @@index([productId, updatedAt])
+}
+
+model ProductReview {
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  productId             String                  @db.ObjectId
+  product               MarketplaceListing      @relation(fields: [productId], references: [id])
+  userId                String                  @db.ObjectId
+  user                  User                    @relation(fields: [userId], references: [id])
+  rating                Int
+  comment               String?
+  createdAt             DateTime                @default(now())
+  ProductReviewLog      ProductReviewLog[]
+  ProductReviewResponse ProductReviewResponse[]
+  ProductReviewLike     ProductReviewLike[]
+  ProductReviewDislike  ProductReviewDislike[]
+}
+
+model ProductReviewLog {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  action    String // e.g., "added", "edited", "deleted"
+  createdAt DateTime      @default(now())
+}
+
+model ProductReviewResponse {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  response  String
+  createdAt DateTime      @default(now())
+}
+
+model ProductReviewLike {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+}
+
+model ProductReviewDislike {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
 }
 
 model ClientInventory {

@@ -11,9 +11,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 
-
-
-
 const ProfileSettings = () => {
   const [isEditing, setIsEditing] = useState(false);
   
