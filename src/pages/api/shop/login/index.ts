@@ -49,6 +49,6 @@ async function loginUser(req: NextApiRequest, res: NextApiResponse) {
     });
   } catch (error) {
     console.error("Login Error:", error);
-    return res.status(500).json({ status: 500, message: "Internal Server Error" });
+    return res.status(500).json({ status: 500, message: `Internal Server Error ${error}` });
   }
 }
