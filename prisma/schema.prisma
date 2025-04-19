@@ -73,23 +73,24 @@ model Notification {
   read      Boolean  @default(false)
 }
 
-model  Category  {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  name               String
-  icon               String?
-  image              String?
-  status             String
-  allBrands          String[]
-  tags               String[]
-  subcategories      Json // Store subcategories as a JSON array
+model Category {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  icon          String?
+  image         String?
+  status        String
+  allBrands     String[]
+  tags          String[]
+  subcategories Json // Store subcategories as a JSON array
 }
+
 // Category model with self-relations for hierarchy (categories & subcategories)
 model ProductCategory {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   name            String
-  icon               String?
-  image              String?
-  slug            String     @unique
+  icon            String?
+  image           String?
+  slug            String   @unique
   description     String
   longDescription String
   seoTitle        String
@@ -97,33 +98,33 @@ model ProductCategory {
   metaKeywords    String[]
   sortOrder       Int
   visible         Boolean
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   createdBy       String
   updatedBy       String
-  status             String 
-  allBrands          String[]
-  tags               String[]
+  status          String
+  allBrands       String[]
+  tags            String[]
 
   // Hierarchy pointers
-  subcategories   Json // Store subcategories as a JSON array
+  subcategories Json // Store subcategories as a JSON array
 
   // Media & SEO assets
-  imageAlt        String
-  thumbnail       String?
-  bannerImage     String?
+  imageAlt    String
+  thumbnail   String?
+  bannerImage String?
 
   // Localization
-  localization    Json
+  localization Json
 
   // Dynamic fields
-  productCount    Int
-  isFeatured      Boolean
-  showInHomepage  Boolean
+  productCount   Int
+  isFeatured     Boolean
+  showInHomepage Boolean
 
   // Custom attributes
-  attributes      Json
-  
+  attributes Json
+
   Product            Product[]
   MarketplaceListing MarketplaceListing[]
 }
@@ -164,7 +165,7 @@ model Product {
   description  String?
   category     String?
   subCategory  Json?
-  images       String[]
+  images       Json[]
   video        String?
   tags         String[]
   profitMargin Float?   @default(0)
@@ -224,8 +225,79 @@ model Product {
   salesPrice Float
   finalPrice Float? @default(0) //Price inclusive discount
 
-  contact  String?
-  location Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  contact   String?
+  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  amenities String[]
+
+  bedrooms Json? // Updated to support multiple bedroom types
+  studios  Json? // Updated to support multiple bedroom types
+
+  status ListingStatus
+
+  @@index([name])
+  @@index([finalPrice])
+  @@index([isFeatured])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model Blog {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String     @unique
+  slug        String     @unique
+  content     String
+  excerpt     String? //@db.VarChar(300) // Short summary
+  coverImage  String? // URL to the blog's cover image
+  categories  String[] // Array of category names
+  tags        String[] // Array of relevant tags
+  author      Author     @relation(fields: [authorId], references: [id])
+  authorId    String     @db.ObjectId
+  seo         Seo?
+  status      BlogStatus @default(DRAFT)
+  publishedAt DateTime?
+  views       Int        @default(0)
+  likes       Int        @default(0)
+  comments    Comment[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Author {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  profileImage String?
+  blogs        Blog[]
+}
+
+model Seo {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String?
+  description String?
+  keywords    String[]
+  blogId      String   @unique @db.ObjectId
+  blog        Blog     @relation(fields: [blogId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      String
+  comment   String
+  createdAt DateTime @default(now())
+  blogId    String   @db.ObjectId
+  blog      Blog     @relation(fields: [blogId], references: [id])
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ListingStatus {
+  BUY
+  RENT
+  SOLD
+  RENTED
 }
 
 model Task {
@@ -540,7 +612,7 @@ model MarketplaceListing {
   title             String          @default("New Name")
   description       String?         @default("New Description")
   quantity          Int
-  images            String[]
+  images            Json[]
   video             String?
   productCategoryId String          @db.ObjectId
   productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
@@ -589,8 +661,14 @@ model MarketplaceListing {
   sellingPrice  Float
   finalPrice    Float?    @default(0) //Price inclusive discount
 
-  contact        String?
-  location       Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  contact   String?
+  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  amenities String[]
+
+  bedrooms Json? // Updated to support multiple bedroom types
+  studios  Json? // Updated to support multiple bedroom types
+
+  status         ListingStatus
   OrderItem      OrderItem[]
   UserActivity   UserActivity[]
   ProductMetrics ProductMetrics[]
