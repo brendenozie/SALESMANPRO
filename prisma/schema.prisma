@@ -232,7 +232,7 @@ model Product {
   bedrooms Json? // Updated to support multiple bedroom types
   studios  Json? // Updated to support multiple bedroom types
 
-  status ListingStatus
+  status ListingStatus @default(ACTIVE)
 
   @@index([name])
   @@index([finalPrice])
@@ -670,7 +670,7 @@ model MarketplaceListing {
   bedrooms Json? // Updated to support multiple bedroom types
   studios  Json? // Updated to support multiple bedroom types
 
-  status         ListingStatus
+  status         ListingStatus    @default(ACTIVE)
   OrderItem      OrderItem[]
   UserActivity   UserActivity[]
   ProductMetrics ProductMetrics[]

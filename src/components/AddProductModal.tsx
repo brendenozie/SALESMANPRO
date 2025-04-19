@@ -42,10 +42,12 @@ import VehicleAmenitiesStep from "../components/VehicleAmenitiesStep";
 // -------------------
 // MAPPINGS
 // -------------------
-
+// ------------------- 
+// FORM → component mapping 
+// -------------------
 const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   1: CategoryPicker,
-  2: ProductDetails,      // Extended for Books, Clothing, Home Appliances, Beauty Products
+  2: ProductDetails,
   3: GeneralDetails,
   4: EnginePerformance,
   5: OwnershipPricing,
@@ -70,72 +72,86 @@ const STEP_LABELS: Record<number, string> = {
   9: "Product Variants",
   10: "Availability",
   11: "Final Review",
-  12: "Contact Location"
+  12: "Contact Location",
+  13: "Property Amenities",
+  14: "Vehicle Amenities"
 };
 
-// Example CATEGORY_STEPS mapping (update as needed)
-const CATEGORY_STEPS: any = {
-  "Electronics": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Clothing": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Fashion": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Smartphones": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Laptops": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Tablets": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Wearables": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Home Appliances": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Cameras": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Gaming Consoles": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Televisions": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Audio Systems": [1, 2,  7, 8, 9, 10, 12, 11],
-  "Music": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Books": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Stationery": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Shoes": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Watches": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Jewelry": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Beauty Products": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Skincare": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Haircare": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Toys": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Baby Toys": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Sports Equipment": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Fitness Gear": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Outdoor Gear": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Bicycles": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Musical Instruments": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Furniture": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Decor": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Kitchenware": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Dining": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Bedding": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Pet Supplies": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Pets": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Automotive": [1, 3, 4, 5, 7, 8, 10, 12, 11],
-  "Cars": [1, 3, 4, 5, 7, 8, 10, 12, 11],
-  "Car Accessories": [1, 3, 4, 5, 7, 8, 10, 12, 11],
-  "Tools": [1, 3, 4, 5, 7, 8, 10, 12, 11],
-  "Hardware": [1, 3, 4, 5, 7, 8, 10, 12, 11],
-  "Lighting": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Gardening": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Home & Garden": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Office Supplies": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Art Supplies": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Health Products": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Health & Beauty": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Supplements": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Baby Products": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Maternity": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Groceries": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Snacks": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Beverages": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Alcohol": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Gourmet Foods": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Cleaning Supplies": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Safety Equipment": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Party Supplies": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Gifts": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Travel Gear": [1, 2, 7, 8, 9, 10, 12, 11]
+// ------------------- 
+// CATEGORY_STEPS  
+// -------------------
+const CATEGORY_STEPS: Record<string, number[]> = {
+  // — Standard “store” items —
+  "Electronics":         [1,2,7,8,9,10,12,11],
+  "Clothing":            [1,2,7,8,9,10,12,11],
+  "Fashion":             [1,2,7,8,9,10,12,11],
+  "Smartphones":         [1,2,7,8,9,10,12,11],
+  "Laptops":             [1,2,7,8,9,10,12,11],
+  "Tablets":             [1,2,7,8,9,10,12,11],
+  "Wearables":           [1,2,7,8,9,10,12,11],
+  "Home Appliances":     [1,2,7,8,9,10,12,11],
+  "Cameras":             [1,2,7,8,9,10,12,11],
+  "Gaming Consoles":     [1,2,7,8,9,10,12,11],
+  "Televisions":         [1,2,7,8,9,10,12,11],
+  "Audio Systems":       [1,2,7,8,9,10,12,11],
+  "Music":               [1,2,7,8,9,10,12,11],
+  "Books":               [1,2,7,8,9,10,12,11],
+  "Stationery":          [1,2,7,8,9,10,12,11],
+  "Shoes":               [1,2,7,8,9,10,12,11],
+  "Watches":             [1,2,7,8,9,10,12,11],
+  "Jewelry":             [1,2,7,8,9,10,12,11],
+  "Beauty Products":     [1,2,7,8,9,10,12,11],
+  "Skincare":            [1,2,7,8,9,10,12,11],
+  "Haircare":            [1,2,7,8,9,10,12,11],
+  "Toys":                [1,2,7,8,9,10,12,11],
+  "Baby Toys":           [1,2,7,8,9,10,12,11],
+  "Sports Equipment":    [1,2,7,8,9,10,12,11],
+  "Fitness Gear":        [1,2,7,8,9,10,12,11],
+  "Outdoor Gear":        [1,2,7,8,9,10,12,11],
+  "Bicycles":            [1,2,7,8,9,10,12,11],
+  "Musical Instruments": [1,2,7,8,9,10,12,11],
+  "Furniture":           [1,2,7,8,9,10,12,11],
+  "Decor":               [1,2,7,8,9,10,12,11],
+  "Kitchenware":         [1,2,7,8,9,10,12,11],
+  "Dining":              [1,2,7,8,9,10,12,11],
+  "Bedding":             [1,2,7,8,9,10,12,11],
+  "Pet Supplies":        [1,2,7,8,9,10,12,11],
+  "Pets":                [1,2,7,8,9,10,12,11],
+  "Lighting":            [1,2,7,8,9,10,12,11],
+  "Gardening":           [1,2,7,8,9,10,12,11],
+  "Home & Garden":       [1,2,7,8,9,10,12,11],
+  "Office Supplies":     [1,2,7,8,9,10,12,11],
+  "Art Supplies":        [1,2,7,8,9,10,12,11],
+  "Health Products":     [1,2,7,8,9,10,12,11],
+  "Health & Beauty":     [1,2,7,8,9,10,12,11],
+  "Supplements":         [1,2,7,8,9,10,12,11],
+  "Baby Products":       [1,2,7,8,9,10,12,11],
+  "Maternity":           [1,2,7,8,9,10,12,11],
+  "Groceries":           [1,2,7,8,9,10,12,11],
+  "Snacks":              [1,2,7,8,9,10,12,11],
+  "Beverages":           [1,2,7,8,9,10,12,11],
+  "Alcohol":             [1,2,7,8,9,10,12,11],
+  "Gourmet Foods":       [1,2,7,8,9,10,12,11],
+  "Cleaning Supplies":   [1,2,7,8,9,10,12,11],
+  "Safety Equipment":    [1,2,7,8,9,10,12,11],
+  "Party Supplies":      [1,2,7,8,9,10,12,11],
+  "Gifts":               [1,2,7,8,9,10,12,11],
+  "Travel Gear":         [1,2,7,8,9,10,12,11],
+
+  // — Property listings flow —
+  "Real Estate":         [1,3,7,8,10,12,13,11],
+  "Houses":              [1,3,7,8,10,12,13,11],
+  "Apartments":          [1,3,7,8,10,12,13,11],
+  "Land":                [1,3,7,8,10,12,13,11],
+
+  // — Automotive & tools flow —
+  "Automotive":          [1,3,4,5,7,8,10,12,14,11],
+  "Cars":                [1,3,4,5,7,8,10,12,14,11],
+  "Car Accessories":     [1,3,4,5,7,8,10,12,14,11],
+  "Tools":               [1,3,4,5,7,8,10,12,14,11],
+  "Hardware":            [1,3,4,5,7,8,10,12,14,11]
 };
+
 
 // -------------------
 // MAIN MODAL COMPONENT
