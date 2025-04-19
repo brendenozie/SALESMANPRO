@@ -166,7 +166,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           updatedAt: new Date(),
           contact,
           location,
-          discount
+          discount,
+          status: "ACTIVE",
         }
       });
     }

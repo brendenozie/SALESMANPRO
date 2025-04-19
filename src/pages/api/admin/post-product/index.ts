@@ -184,7 +184,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               createdAt: new Date(),
               updatedAt: new Date(),
               contact:contact,
-              location:location
+              location:location,
+              status: "ACTIVE",
             }
           });
           

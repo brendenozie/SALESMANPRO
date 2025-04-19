@@ -142,7 +142,9 @@ const CATEGORY_STEPS: any = {
 // -------------------
 
 const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product, sellerId, sellerType }: any) => {
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     id: product?.product?.id || "",
@@ -156,7 +158,7 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     condition: product?.product?.condition || "",
     dimension:  product?.product?.dimension || "",
     material:  product?.product?.material || "",
-    images: product?.product?.images || "",
+    images: product?.product?.images || [],
     isAvailable: product?.product?.isAvailable || false,
     isOnOffer: product?.product?.isOnOffer || false,
     isFlashDeal: product?.product?.isFlashDeal || false,
@@ -214,8 +216,17 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     usageInstructions: product?.product?.usageInstructions || "",
     expirationDate: product?.product?.expirationDate || "",
 
-      startDealDate: product?.product?.startDealDate,
-      endDealDate: product?.product?.endDealDate,
+    startDealDate: product?.product?.startDealDate,
+    endDealDate: product?.product?.endDealDate,
+
+    option: product?.product?.option || [],
+    amenities: product?.product?.amenities || [],
+    featured: product?.product?.featured || false,
+
+    bedrooms: product?.product?.bedrooms || [],
+    studios: product?.product?.studios || [],
+    bathrooms: product?.product?.bathrooms || "",
+    area: product?.product?.area || "",
   });
 
   const stepsForCategory: number[] = useMemo(() => {
@@ -226,7 +237,16 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
   const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
 
   const [categories, setCategories] = useState([]);
-  const [images, setImages] = useState<string[]>([]);
+
+  const [newImages, setNewImages] = useState<File[]>([]);
+
+  // const [images, setImages] = useState<{name: string;  url: string; index: number }[]>(
+  //   property?.images?.map((url: string, index: number) => ({ url, index: index })) || []
+  // );
+
+  const [images, setImages] = useState(
+    product?.product?.images?.map((img: any, index: number) => ({ ...img, index })) || []
+  );
   const [loading, setLoading] = useState(false);
 
   const filteredSubCategories = useMemo(() => {
@@ -255,13 +275,16 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     return formData.category.allBrands;
   }, [formData.category]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, type, value, checked } = e.target as HTMLInputElement;
+
     setFormData((prev) => {
       let newValue = ["discount", "buyingPrice", "sellingPrice"].includes(name)
         ? parseFloat(value) || 0
         : value;
-      let updatedData = { ...prev, [name]: newValue };
+
+      let updatedData = { ...prev, [name]: type === "checkbox" ? checked : value, };
+
       if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
         const buyingPrice = parseFloat(updatedData.costPrice) || 0;
         const sellingPrice = parseFloat(updatedData.salesPrice) || 0;
@@ -269,12 +292,106 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
         updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
         updatedData.profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
       }
+
       return updatedData;
     });
   };
 
+ // Function to attempt an upload with retries
+  async function uploadWithRetry(file : any, retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        return await uploadFile(file, "image");
+      } catch (error) {
+        console.error(`Upload failed for ${file.name}, attempt ${attempt}`);
+        if (attempt === retries) {
+          return null;
+        }
+      }
+    }
+  }
+
+  // Function to upload files to the backend or external storage
+  const uploadFile = async (file: File, type: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await res.json();
+    return data.url; // URL to the uploaded file
+  };
+
 const handleCreateListing = async () => {
+
   if (window.confirm("Are you sure you want to create this listing?")) {
+    // Filter out already uploaded image URLs
+
+    // Ensure orderedImages remains a list of objects
+    // Log initial state of images and newImages
+    console.log("Initial Images:", images);
+    console.log("New Images:", newImages.map((file) => file.name));
+    
+    // Declare updatedImages outside the block so it's accessible later
+    let updatedImages = images;
+
+    if (newImages.length > 0) {
+      // Create an array of new images with unique IDs and their original index
+      const newImagesWithIds = newImages.map((file, index) => ({
+        id: crypto.randomUUID(), // unique identifier for reliable matching
+        file,
+        index, // track the original index order
+      }));
+
+      console.log("New Images with IDs:", newImagesWithIds);
+
+
+      // Upload images with a retry mechanism
+      const uploadedUrls = await Promise.all(
+        newImagesWithIds.map(async ({ id, file, index }) => {
+          const uploadedUrl = await uploadWithRetry(file);
+          return uploadedUrl ? { id, url: uploadedUrl, index } : null;
+        })
+      );
+
+      // Filter out successful uploads
+      const successfulUploads = uploadedUrls.filter(Boolean);
+
+      // Determine which images failed to upload
+      const failedImages = newImagesWithIds.filter(
+        ({ id }) => !successfulUploads.some((img) => img && img.id === id)
+      );
+
+      if (failedImages.length > 0) {
+        setLoading(false);
+        alert(
+          `The following images failed to upload: ${failedImages
+            .map((f) => f.file.name)
+            .join(", ")}`
+        );
+        return;
+      }
+
+      // Update images while preserving the original index order
+      updatedImages = images.map((img:any, index:any) => {
+        // Find the upload result matching this index
+        const matchedUpload = successfulUploads.find(
+          (upload:any) => upload.index === index
+        );
+        return matchedUpload ? { ...img, url: matchedUpload.url } : img;
+      });
+
+      console.log("Updated Images after upload:", updatedImages);
+      
+      // Use the locally updated images array to construct the final payload later
+      setImages(updatedImages);
+      setNewImages([]);
+    }
+
     // Build a listing object conforming to the updated MarketplaceListing model
     const listing = {
       id: formData.id, // If updating; otherwise backend auto-generates
@@ -282,7 +399,8 @@ const handleCreateListing = async () => {
       name: formData.name,
       description: formData.description,
       quantity: formData.quantity,
-      image: images || [], // Use the first uploaded image
+      // image: images || [], // Use the first uploaded image
+      image: updatedImages.filter((img:any) => img.url.startsWith("https://")),
       productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
       category: formData.category?.name || "",
       subCategory:formData.subCategory,
@@ -334,8 +452,15 @@ const handleCreateListing = async () => {
         ? new Date(formData.expirationDate)
         : null,
         
-    location: formData.location || "",
-    contact: formData.contact || "",
+      location: formData.location || "",
+      contact: formData.contact || "",
+      option: formData.option || [],
+      amenities: formData.amenities || [],
+      
+      bedrooms: formData.bedrooms || [],
+      studios: formData.studios || [],
+      bathrooms: formData.bathrooms || "",
+      area: formData.area || "",
     };
 
     try {
@@ -351,6 +476,8 @@ const handleCreateListing = async () => {
         console.log("Listing created:", data);
         alert("Marketplace listing created successfully.");
         setShowRequestProductModal(false);
+        setImages([]);
+        setNewImages([]);
       } else {
         console.error("Error creating listing:", response.statusText);
         alert("Error creating listing. Please try again.");

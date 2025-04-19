@@ -37,7 +37,42 @@ const FinalReview = ({ formData }: any) => {
           <p><strong>Title:</strong> {formData.name || "N/A"}</p>
           <p><strong>Description:</strong> {formData.description || "N/A"}</p>
           <p><strong>Category:</strong> {formData.category?.name || "N/A"}</p>
+          <p><strong>Status:</strong> {formData.status || "N/A"}</p>
+        <p><strong>Option:</strong> {formData.option || "N/A"}</p>
+      </div>
+          
+      {formData.studios.length > 0 && (
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <h3 className="font-semibold mb-2">Studios</h3>
+          <ul className="list-disc pl-5">
+            {formData.studios.map((unit: any, index: number) => (
+              <li key={index} className="text-gray-700">{unit.type} - {unit.size} sq m - Ksh {unit.price}</li>
+            ))}
+          </ul>
         </div>
+      )} 
+      
+      {formData.bedrooms.length > 0 && (
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <h3 className="font-semibold mb-2">Bedrooms</h3>
+          <ul className="list-disc pl-5">
+            {formData.bedrooms.map((unit: any, index: number) => (
+              <li key={index} className="text-gray-700">{unit.type} - {unit.size} sq m - Ksh {unit.price}</li>
+            ))}
+          </ul>
+        </div>
+      )}      
+      
+      {formData.amenities.length > 0 && (
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <h3 className="font-semibold mb-2">Amenities</h3>
+          <ul className="list-disc pl-5">
+            {formData.amenities.map((amenity: string, index: number) => (
+              <li key={index} className="text-gray-700">{amenity}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
         {/* Pricing Information */}
         <div className="p-4 bg-gray-100 rounded-lg">
