@@ -2,11 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
-export default function CategoryManager({ categories, onSave }:any) {
+export default function CategoryManager() {
   const [selected, setSelected] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [subSelected, setSubSelected] = useState<any>(null);
   const [subForm, setSubForm] = useState<any>({});
+  const [categories, setCategories] = useState<any>([]);
+
+  const onSave = (cat:any) => setCategories(cat);
 
   useEffect(() => {
     if (selected) {
