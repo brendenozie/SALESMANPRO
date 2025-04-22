@@ -1,13 +1,25 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/server/db/prismadb";
 
+// Utility to safely parse JSON
+const parseJsonSafely = (data: any) => {
+  try {
+    return typeof data === "string" ? JSON.parse(data) : data;
+  } catch {
+    return null;
+  }
+};
+
+// Normalize inputs to array
+const normalizeArray = (val: any) => Array.isArray(val) ? val : (val ? [val] : []);
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed. Use POST." });
   }
 
+  const body = req.body;
   const {
-    id,
     sellerId,
     sellerType,
     productId,
@@ -54,10 +66,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     amenities,
     bedrooms,
     studios
-  } = req.body;
+  } = body;
 
   if (!sellerId || !sellerType || !productCategoryId) {
-    return res.status(400).json({ message: "Invalid or missing request data." });
+    return res.status(400).json({ message: "Missing sellerId, sellerType, or productCategoryId." });
   }
 
   if (!["CLIENT", "CONSUMER", "AGENT", "ADMIN"].includes(sellerType)) {
@@ -66,138 +78,155 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   try {
     let createdProductId = productId;
+    let newProduct = null;
+    let marketplaceListing = null;
 
-    // 1. If no productId is passed, create the product
-    if (!productId) {
-      const newProduct = await prisma.product.create({
-        data: {
-          name: title ?? "Unnamed Product",
-          description,
-          category,
-          subCategory,
-          images,
-          video,
-          tags,
-          brand,
-          model,
-          color,
-          size,
-          weight,
-          condition,
-          dimension,
-          material,
-          author,
-          publisher,
-          isbn,
-          fabricComposition,
-          careInstructions,
-          energyRating,
-          warrantyPeriod,
-          applianceDimensions,
-          ingredients,
-          usageInstructions,
-          expirationDate: expirationDate ? new Date(expirationDate) : null,
-          companyId: sellerId, // Assuming seller is a company
-          productCategory: { connect: { id: productCategoryId } },
-          contact,
-          location,
-          amenities,
-          bedrooms,
-          studios,
-          costPrice: buyingPrice ?? 0,
-          salesPrice: sellingPrice ?? 0,
-          finalPrice: finalPrice ?? 0,
-          discount,        
+    const safeSubCategory = parseJsonSafely(subCategory);
+    const safeLocation = parseJsonSafely(location);
+    const safeBedrooms = parseJsonSafely(bedrooms);
+    const safeStudios = parseJsonSafely(studios);
+
+    const safeTags = normalizeArray(tags);
+    const safeColor = normalizeArray(color);
+    const safeSize = normalizeArray(size);
+    const safeMaterial = normalizeArray(material);
+    const safeAmenities = normalizeArray(amenities);
+    const safeImages = normalizeArray(images);
+
+    const now = new Date();
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Create product if not provided
+      // if (!productId) {
+      //   newProduct = await tx.product.create({
+      //     data: {
+      //       name: title ?? "Unnamed Product",
+      //       description,
+      //       category,
+      //       subCategory: safeSubCategory,
+      //       images: safeImages,
+      //       video,
+      //       tags: safeTags,
+      //       brand,
+      //       model,
+      //       color: safeColor,
+      //       size: safeSize,
+      //       weight,
+      //       condition,
+      //       dimension,
+      //       material: safeMaterial,
+      //       author,
+      //       publisher,
+      //       isbn,
+      //       fabricComposition,
+      //       careInstructions,
+      //       energyRating,
+      //       warrantyPeriod,
+      //       applianceDimensions,
+      //       ingredients,
+      //       usageInstructions,
+      //       expirationDate: expirationDate ? new Date(expirationDate) : null,
+      //       companyId: sellerId,
+      //       productCategory: { connect: { id: productCategoryId } },
+      //       contact,
+      //       location: safeLocation,
+      //       amenities: safeAmenities,
+      //       bedrooms: safeBedrooms,
+      //       studios: safeStudios,
+      //       costPrice: buyingPrice ?? 0,
+      //       salesPrice: sellingPrice ?? 0,
+      //       finalPrice: finalPrice ?? 0,
+      //       discount: discount ?? 0,
+      //     },
+      //   });
+
+      //   createdProductId = newProduct.id;
+      // }
+
+      const existingListing = await tx.marketplaceListing.findFirst({
+        where: {
+          sellerId,
+          sellerType,
+          productId: createdProductId,
         },
       });
 
-      createdProductId = newProduct.id;
-    }
-
-    // 2. Check if marketplace listing already exists
-    const existingListing = await prisma.marketplaceListing.findFirst({
-      where: {
+      const commonData = {
         sellerId,
         sellerType,
-        productId: createdProductId,
-      },
+        // product: { connect: { id: createdProductId } },
+        ...(createdProductId && {
+          product: { connect: { id: createdProductId } },
+        }),
+        productCategory: { connect: { id: productCategoryId } },
+        title: title ?? "New Name",
+        description: description ?? "New Description",
+        quantity,
+        buyingPrice: buyingPrice ?? 0,
+        sellingPrice: sellingPrice ?? 0,
+        finalPrice: finalPrice ?? 0,
+        category,
+        subCategory: safeSubCategory,
+        tags: safeTags,
+        brand,
+        model,
+        color: safeColor,
+        size: safeSize,
+        weight,
+        condition,
+        dimension,
+        material: safeMaterial,
+        isAvailable,
+        isOnOffer,
+        isFlashDeal,
+        isNewArrival,
+        isDiscounted,
+        isFeatured,
+        author,
+        publisher,
+        isbn,
+        fabricComposition,
+        careInstructions,
+        energyRating,
+        warrantyPeriod,
+        applianceDimensions,
+        ingredients,
+        usageInstructions,
+        expirationDate: expirationDate ? new Date(expirationDate) : null,
+        contact,
+        location: safeLocation,
+        discount,
+        images: safeImages,
+        video,
+        amenities: safeAmenities,
+        bedrooms: safeBedrooms,
+        studios: safeStudios,
+        updatedAt: now,
+      };
+
+      if (existingListing) {
+        marketplaceListing = await tx.marketplaceListing.update({
+          where: { id: existingListing.id },
+          data: commonData,
+        });
+      } else {
+        marketplaceListing = await tx.marketplaceListing.create({
+          data: {
+            ...commonData,
+            createdAt: now,
+            status: "ACTIVE",
+          },
+        });
+      }
     });
-
-    let marketplaceListing;
-
-    const commonData = {
-      sellerId,
-      sellerType,
-      productCategory: { connect: { id: productCategoryId } },
-      product: { connect: { id: createdProductId } },
-      quantity,
-      buyingPrice: buyingPrice ?? 0,
-      sellingPrice: sellingPrice ?? 0,
-      finalPrice: finalPrice ?? 0,
-      title: title ?? "New Name",
-      description: description ?? "New Description",
-      category,
-      subCategory,
-      tags,
-      brand,
-      model,
-      color,
-      size,
-      weight,
-      condition,
-      dimension,
-      material,
-      isAvailable,
-      isOnOffer,
-      isFlashDeal,
-      isNewArrival,
-      isDiscounted,
-      isFeatured,
-      author,
-      publisher,
-      isbn,
-      fabricComposition,
-      careInstructions,
-      energyRating,
-      warrantyPeriod,
-      applianceDimensions,
-      ingredients,
-      usageInstructions,
-      expirationDate: expirationDate ? new Date(expirationDate) : null,
-      contact,
-      location,
-      discount,
-      images,
-      video,
-      amenities,
-      bedrooms,
-      studios,
-      updatedAt: new Date(),
-    };
-
-    if (existingListing) {
-      // 3. Update the existing listing
-      marketplaceListing = await prisma.marketplaceListing.update({
-        where: { id: existingListing.id },
-        data: commonData,
-      });
-    } else {
-      // 4. Create a new listing
-      marketplaceListing = await prisma.marketplaceListing.create({
-        data: {
-          ...commonData,
-          createdAt: new Date(),
-          status: "ACTIVE",
-        },
-      });
-    }
 
     return res.status(201).json({
       message: "Marketplace listing processed successfully.",
       listing: marketplaceListing,
+      product: newProduct ?? undefined,
     });
   } catch (error: any) {
-    console.error("Error processing marketplace listing:", error);
+    console.error("❌ Error processing marketplace listing:", error);
     return res.status(500).json({
       message: "An error occurred while processing the marketplace listing.",
       error: error.message ?? "Unknown error",
