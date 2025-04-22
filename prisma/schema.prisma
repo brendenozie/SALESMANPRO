@@ -170,8 +170,8 @@ model Product {
   tags         String[]
   profitMargin Float?   @default(0)
   brand        String?
-  companyId    String   @db.ObjectId
-  company      Company  @relation(fields: [companyId], references: [id])
+  companyId    String?  @db.ObjectId
+  company      Company? @relation(fields: [companyId], references: [id])
 
   productCategoryId  String?              @db.ObjectId
   productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
