@@ -51,7 +51,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     discount
   } = req.body;
 
-  if (!sellerId || !sellerType || !productId || !quantity || typeof quantity !== "number") {
+  if (!sellerId || !sellerType || !quantity || typeof quantity !== "number") {
     return res.status(400).json({ message: "Invalid or missing request data." });
   }
 
