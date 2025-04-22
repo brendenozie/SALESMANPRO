@@ -55,9 +55,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: whereClause,
       skip,
       take,
-      include: {
-            product: true,
-      },
+      // include: {
+      //       product: true,
+      // },
     });
 
     // Get total filtered count for pagination
