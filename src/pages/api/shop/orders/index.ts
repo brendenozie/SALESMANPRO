@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import prisma, { client } from "@/server/db/prismadb";
 import { z } from "zod";
-// import Stripe from "stripe";
 import nodemailer from "nodemailer";
 import { authenticate } from "../../../../middleware/auth";
 
