@@ -21,7 +21,7 @@ const orderSchema = z.object({
       lat: z.number(),
       lng: z.number(),
     }),
-  shippingMethod: z.enum(["Standard", "Express"]),
+  shippingMethod: z.enum(["Standard", "Express", "AT SHOP",]),
 });
 
 async function sendOrderEmail(email: any, orderStatus: any) {
