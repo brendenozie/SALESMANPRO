@@ -611,6 +611,7 @@ model MarketplaceListing {
   sellerType        SellerType
   productId         String?         @db.ObjectId
   product           Product?        @relation(fields: [productId], references: [id])
+  subCategoryName   String?
   title             String          @default("New Name")
   description       String?         @default("New Description")
   quantity          Int
@@ -650,16 +651,16 @@ model MarketplaceListing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  discount      Int?      @default(0)
-  isAvailable   Boolean   @default(true)
-  isOnOffer     Boolean   @default(false)
-  isFlashDeal   Boolean   @default(false)
-  isNewArrival  Boolean   @default(false)
-  isDiscounted  Boolean   @default(false)
-  isFeatured    Boolean   @default(false)
+  discount     Int?    @default(0)
+  isAvailable  Boolean @default(true)
+  isOnOffer    Boolean @default(false)
+  isFlashDeal  Boolean @default(false)
+  isNewArrival Boolean @default(false)
+  isDiscounted Boolean @default(false)
+  isFeatured   Boolean @default(false)
 
-  delivery Boolean @default(false)
-  paymentOption String @default("AT SHOP") //"Standard", "Express", "AT SHOP"
+  delivery      Boolean @default(false)
+  paymentOption String  @default("AT SHOP") //"Standard", "Express", "AT SHOP"
 
   startDealDate DateTime?
   endDealDate   DateTime?
@@ -914,16 +915,16 @@ model OrderItem {
   marketplaceListingId String             @db.ObjectId
   marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
-  price                Float 
+  price                Float
 }
 
 model Location {
-  id        String      @id @default(auto()) @map("_id") @db.ObjectId
-  latitude  Float
-  longitude Float
-  address   String
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  latitude    Float
+  longitude   Float
+  address     String
   description String
-  userId    String?     @unique // Link to the user (optional)
+  userId      String? @unique // Link to the user (optional)
 }
 
 enum OrderStatus {

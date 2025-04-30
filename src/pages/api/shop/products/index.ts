@@ -1,76 +1,103 @@
 import { NextApiRequest, NextApiResponse } from "next";
-
-import prisma, { client } from "@/server/db/prismadb";
+import prisma from "@/server/db/prismadb";
 import { Prisma } from "@prisma/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const {  
-        page = "1",
-        limit = "25",
-        search,
-        brand,
-        category,
-        subCategory,
-        minPrice,
-        maxPrice,
-        sort,
-        availability
+    const {
+      page = "1",
+      limit = "25",
+      search,
+      brand,
+      category,
+      subCategory,
+      minPrice,
+      maxPrice,
+      sort,
+      availability,
     } = req.query;
 
-    console.log('search', search);
-    console.log('brand', brand);
-    console.log('category', category);
-    console.log('subCategory', subCategory);
-    console.log('minPrice', minPrice);
-    console.log('maxPrice', maxPrice);
-    console.log('sort', sort);
-    console.log('availability', availability);
-
     const currentPage = parseInt(page as string, 10) || 1;
-    const itemsPerPage = parseInt(limit as string, 10) || 5;
+    const itemsPerPage = parseInt(limit as string, 10) || 25;
     const skip = (currentPage - 1) * itemsPerPage;
-    const take = itemsPerPage;
 
+    // Build the root-level where clause
     const whereClause: Prisma.MarketplaceListingWhereInput = {
-      title: search ? { contains: search as string, mode: 'insensitive' } : undefined,
+      // Full-text search on title
+      title: search
+        ? { contains: search as string, mode: "insensitive" }
+        : undefined,
+
+      // Price range filter
       sellingPrice: {
-        gte: minPrice && !isNaN(Number(minPrice)) ? parseInt(minPrice as string, 10) : undefined,
-        lte: maxPrice && !isNaN(Number(maxPrice)) ? parseInt(maxPrice as string, 10) : undefined,
+        gte:
+          minPrice && !isNaN(Number(minPrice))
+            ? parseFloat(minPrice as string)
+            : undefined,
+        lte:
+          maxPrice && !isNaN(Number(maxPrice))
+            ? parseFloat(maxPrice as string)
+            : undefined,
       },
-      isAvailable: availability === "true" ? true : undefined,
-        product: {
-          AND: [
-            brand ? { brand: { in: Array.isArray(brand) ? brand : [brand] } } : undefined,
-            subCategory ? { subCategory: { in: Array.isArray(subCategory) ? subCategory : [subCategory] } } : undefined,
-            category ? { category: { in: Array.isArray(category) ? category : [category] } } : undefined,
-          ].filter(Boolean) as Prisma.ProductWhereInput[],
-        },
+
+      // Availability toggle
+      isAvailable:
+        availability === "true"
+          ? true
+          : availability === "false"
+          ? false
+          : undefined,
+
+      // Simple scalar filters
+      brand: brand
+        ? { in: Array.isArray(brand) ? brand : [brand] }
+        : undefined,
+      category: category
+        ? { in: Array.isArray(category) ? category : [category] }
+        : undefined,
+
+      // JSON filter on subCategory.name
+      subCategoryName: subCategory
+        ? { in: Array.isArray(subCategory) ? subCategory : [subCategory] }
+        : undefined,
+      // ...(subCategory
+      //   ? {
+      //       subCategory: {
+      //         path: ["name"],
+      //         equals: Array.isArray(subCategory)
+      //           ? undefined
+      //           : (subCategory as string),
+      //         array_contains: Array.isArray(subCategory)
+      //           ? subCategory
+      //           : undefined,
+      //       },
+      //     }
+      //   : {}),
     };
 
-    console.log('whereClause', whereClause);
+    // (Optional) Sorting
+    const orderBy = sort
+      ? { [sort as string]: sort === "asc" || sort === "desc" ? sort : "asc" }
+      : undefined;
 
-    // Fetch filtered products
-    const products = await prisma.marketplaceListing.findMany({
-      where: whereClause,
-      skip,
-      take,
-      // include: {
-      //       product: true,
-      // },
-    });
+    // Fetch
+    const [products, total] = await Promise.all([
+      prisma.marketplaceListing.findMany({
+        where: whereClause,
+        skip,
+        take: itemsPerPage,
+        orderBy: orderBy ? [orderBy] : undefined,
+      }),
+      prisma.marketplaceListing.count({ where: whereClause }),
+    ]);
 
-    // Get total filtered count for pagination
-    const totalProducts = await prisma.marketplaceListing.count({
-      where: whereClause,
-    });
-
-    res.status(200).json({
+    return res.status(200).json({
       products,
-      totalPages: Math.ceil(totalProducts / itemsPerPage),
+      totalPages: Math.ceil(total / itemsPerPage),
+      currentPage,
     });
   } catch (error) {
-    console.error("Error fetching products:", error);
-    res.status(500).json({ error: 'Failed to fetch products' });
+    console.error("Error fetching listings:", error);
+    return res.status(500).json({ error: "Failed to fetch listings" });
   }
 }
