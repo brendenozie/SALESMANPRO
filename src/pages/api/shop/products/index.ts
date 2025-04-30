@@ -56,10 +56,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ? { in: Array.isArray(category) ? category : [category] }
         : undefined,
 
+        
       // JSON filter on subCategory.name
-      subCategoryName: subCategory
-        ? { in: Array.isArray(subCategory) ? subCategory : [subCategory] }
-        : undefined,
+      // subCategoryName: subCategory
+      //   ? { in: Array.isArray(subCategory) ? subCategory : [subCategory] }
+      //   : undefined,
       // ...(subCategory
       //   ? {
       //       subCategory: {
