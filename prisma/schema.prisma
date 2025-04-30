@@ -657,6 +657,10 @@ model MarketplaceListing {
   isNewArrival  Boolean   @default(false)
   isDiscounted  Boolean   @default(false)
   isFeatured    Boolean   @default(false)
+
+  delivery Boolean @default(false)
+  paymentOption String @default("AT SHOP") //"Standard", "Express", "AT SHOP"
+
   startDealDate DateTime?
   endDealDate   DateTime?
   buyingPrice   Float
@@ -909,10 +913,8 @@ model OrderItem {
   order                CustomerOrder      @relation(fields: [orderId], references: [id])
   marketplaceListingId String             @db.ObjectId
   marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
-  dropLocation         Location?          @relation(fields: [locationId], references: [id]) // Store user's drop location
   quantity             Int
-  price                Float // Price at the time of purchase
-  locationId           String?            @db.ObjectId
+  price                Float 
 }
 
 model Location {
@@ -920,8 +922,8 @@ model Location {
   latitude  Float
   longitude Float
   address   String
+  description String
   userId    String?     @unique // Link to the user (optional)
-  OrderItem OrderItem[]
 }
 
 enum OrderStatus {

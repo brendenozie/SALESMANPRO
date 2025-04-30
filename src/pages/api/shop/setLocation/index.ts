@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { userId, latitude, longitude, address } = req.body;
+    const { userId, latitude, longitude, address, description } = req.body;
 
     if (!userId || !latitude || !longitude || !address) {
       return res.status(400).json({ message: "All fields are required" });
@@ -17,8 +17,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Upsert location for the user
     const location = await prisma.location.upsert({
       where: { userId },
-      update: { latitude, longitude, address },
-      create: { userId, latitude, longitude, address },
+      update: { latitude, longitude, address, description },
+      create: { userId, latitude, longitude, address, description },
     });
 
     res.status(200).json({ message: "Location updated", location });

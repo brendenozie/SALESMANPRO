@@ -7,6 +7,8 @@ import { authenticate } from "../../../../middleware/auth";
 
 const orderSchema = z.object({
   consumerId: z.string().min(10),
+  delivery: z.boolean(),
+  paymentOption: z.string().min(10),
   items: z.array(
     z.object({
       marketplaceListingId: z.string().min(10),
@@ -44,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!validation.success)
           return res.status(400).json({ error: validation.error.errors });
 
-        const { consumerId, items, totalPrice, shippingAddress, shippingMethod } = req.body;
+        const { consumerId, items, totalPrice, shippingAddress, shippingMethod, delivery, paymentOption } = req.body;
 
         try {
           const order = await prisma.customerOrder.create({
@@ -54,6 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               shippingAddress,
               shippingMethod,
               status: "PENDING",
+              delivery: delivery,
+              paymentOption: paymentOption,
               trackingNumber: `TRK${generateTrackingNumber()}`,
               deliveryStatus: "Order Placed",
               items: {
