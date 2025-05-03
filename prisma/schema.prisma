@@ -148,6 +148,8 @@ model UsersCategory {
 model Company {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   name            String
+  userId          String?         @db.ObjectId
+  user            User?           @relation(fields: [userId], references: [id])
   salesAgents     SalesAgent[]
   products        Product[]
   inventory       InventoryItem[]
@@ -155,7 +157,6 @@ model Company {
   productRequests Request[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  users           User[]
   Target          Target[]
 }
 
@@ -391,8 +392,6 @@ model User {
   name                  String?
   email                 String                  @unique
   password              String?
-  companyId             String?                 @db.ObjectId
-  company               Company?                @relation(fields: [companyId], references: [id])
   role                  ROLE?                   @default(ADMIN)
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
@@ -417,6 +416,7 @@ model User {
   ProductReviewResponse ProductReviewResponse[]
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
+  Company               Company[]
 }
 
 enum Status {
