@@ -146,18 +146,31 @@ model UsersCategory {
 }
 
 model Company {
-  id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  userId          String?         @db.ObjectId
-  user            User?           @relation(fields: [userId], references: [id])
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  slug          String  @unique
+  description   String?
+  category      String
+  logoUrl       String?
+  bannerUrl     String?
+  userId        String? @db.ObjectId
+  user          User?   @relation(fields: [userId], references: [id])
+  contactEmail  String
+  contactPhone  String?
+  address       String?
+  socialLinks   Json? // e.g. { twitter: "", instagram: "", facebook: "" }
+  policies      Json? // e.g. { shipping: "", returns: "", terms: "" }
+  shippingZones Json? // e.g. ["KE","UG","TZ"]
+
   salesAgents     SalesAgent[]
   products        Product[]
   inventory       InventoryItem[]
   clients         Client[]
   productRequests Request[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
   Target          Target[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
