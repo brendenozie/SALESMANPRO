@@ -27,9 +27,6 @@ export default function StoresPage() {
   const totalPages = Math.ceil(storeList.length / pageSize);
   const paginated = storeList.slice((page - 1) * pageSize, page * pageSize);
 
-  // const totalPages = Math.ceil(stores.length / pageSize);
-  // const paginated = stores.slice((page - 1) * pageSize, page * pageSize);
-
   const handleEdit = (id: string) => router.push(`/stores/${id}`);
   
   const handleDelete = async (id: string) => {
@@ -115,16 +112,16 @@ export default function StoresPage() {
               {/* Footer Actions */}
               <div className="flex justify-between items-center">
                 <button
-                  onClick={() => router.push(`/admin`)}//stores/${store.id}/products
+                  onClick={() => router.push(`/site/${store.slug}`)}//stores/${store.id}/products
                   className="text-blue-600 hover:underline flex items-center text-sm"
                 >
-                  View Products
+                  View Website
                 </button>
                 <button
-                  onClick={() => handleEdit(store.id)}
+                  onClick={() => router.push(`/admin`)}
                   className="text-green-600 hover:underline flex items-center text-sm"
                 >
-                  Edit
+                  View Store
                   <ArrowRightCircleIcon className="h-5 w-5 ml-1" />
                 </button>
               </div>
