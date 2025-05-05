@@ -28,6 +28,7 @@ import CommunicationSupport from '../../../components/communicationSupport';
 import AchievementsBadges from '../../../components/AchievementsBadges';
 import { useStateContext } from "../../../contexts/ContextProvider.js";
 import { useRouter } from 'next/router.js';
+import { signOut } from 'next-auth/react';
 import { HomeModernIcon } from '@heroicons/react/24/solid';
 
 const tabs = [
@@ -67,7 +68,6 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row transition-colors duration-300">
-      
       {/* Desktop Sidebar (Always Visible) */}
       <div className="hidden md:flex">
         <Sidebar 
@@ -121,6 +121,14 @@ const ProfilePage = () => {
           {/* Notifications */}
           <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700">
             <BellIcon className="w-5 h-5" />
+          </button>
+
+          {/* Logout Button */}
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Logout
           </button>
         </div>
 

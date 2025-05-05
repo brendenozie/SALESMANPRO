@@ -71,6 +71,7 @@ export default function CreateStorePage() {
       const res = await fetch("/api/stores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",    
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to create store");

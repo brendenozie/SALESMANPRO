@@ -8,7 +8,9 @@ import 'leaflet/dist/leaflet.css';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (    
-    <SessionProvider>
+    <SessionProvider 
+      session={pageProps.session}
+      >
       <ContextProvider>
         <Toaster position="top-right" reverseOrder={false} />
         <Component {...pageProps} />
