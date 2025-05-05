@@ -11,17 +11,17 @@ const CATEGORY_THEMES: Record<string, { primary: string; accent: string; bannerO
     accent: 'text-blue-200',
     bannerOverlay: 'bg-gradient-to-tr',
   },
-  Vehicles: {
+  "Vehicles": {
     primary: 'from-gray-800 to-gray-600',
     accent: 'text-yellow-300',
     bannerOverlay: 'bg-gradient-to-br',
   },
-  Fashion: {
+  "Fashion": {
     primary: 'from-pink-500 to-purple-500',
     accent: 'text-white',
     bannerOverlay: 'bg-gradient-to-r',
   },
-  Household: {
+  "Household": {
     primary: 'from-green-600 to-green-400',
     accent: 'text-green-100',
     bannerOverlay: 'bg-gradient-to-bl',
@@ -41,7 +41,7 @@ const CATEGORY_THEMES: Record<string, { primary: string; accent: string; bannerO
     accent: 'text-white',
     bannerOverlay: 'bg-gradient-to-tr',
   },
-  Other: {
+  "Other": {
     primary: 'from-gray-500 to-gray-300',
     accent: 'text-white',
     bannerOverlay: 'bg-gradient-to-br',
