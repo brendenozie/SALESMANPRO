@@ -28,6 +28,7 @@ import CommunicationSupport from '../../../components/communicationSupport';
 import AchievementsBadges from '../../../components/AchievementsBadges';
 import { useStateContext } from "../../../contexts/ContextProvider.js";
 import { useRouter } from 'next/router.js';
+import { HomeModernIcon } from '@heroicons/react/24/solid';
 
 const tabs = [
   { name: 'Overview', icon: HomeIcon, key: 'overview' },
@@ -51,10 +52,10 @@ const activityStats = [
   { label: 'Visits', value: 230, icon: ArrowTrendingUpIcon },
 ];
 
-const quickLinks = [
+const quickLinks = [  
+  { name: 'My Shop', url: '/admin', icon: HomeModernIcon },
   { name: 'Shop Now', url: '/shop', icon: ShoppingBagIcon },
   { name: 'Support', url: '/support', icon: ChatBubbleLeftRightIcon },
-  { name: 'Account Settings', url: '/profile', icon: UserIcon },
 ];
 
 const ProfilePage = () => {

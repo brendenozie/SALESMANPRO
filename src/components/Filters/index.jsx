@@ -97,10 +97,10 @@ const Filters = ({ filters, setFilters }) => {
       brand: [],
       category: [],
       subCategory: [],
-      priceRange: [0, 10000000],
+      priceRange: [0, 1000000000],
       rating: "",
       availability: "",
-      sort: "popularity",
+      sort: "desc",
     };
     setLocalFilters(clearedFilters);
     setFilters(clearedFilters);
@@ -204,7 +204,7 @@ const SearchInput = ({ value, onChange, placeholder }) => (
 
 const FilterContainer = ({ title, children, isOpen, toggleOpen, onReset }) => {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-md dark:shadow-lg transition">
+    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-md dark:shadow-lg transition w-full">
       {/* Header with title, reset button, and expand/collapse toggle */}
       <div className="flex justify-between items-center mb-2">
         <h4 className="text-gray-800 dark:text-gray-200 font-semibold text-lg">{title}</h4>
@@ -444,27 +444,27 @@ const PriceRangeFilter = ({ priceRange, setPriceRange }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 shadow-md rounded-lg p-4">
+    <div className="bg-white dark:bg-gray-900 shadow-md rounded-lg p-4 w-full">
       <label className="text-gray-900 dark:text-gray-200 font-semibold mb-2 block">
         Price Range: ${localRange[0]} - ${localRange[1]}
       </label>
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-4 items-center w-full">
         <input
           type="number"
           value={localRange[0]}
           min="0"
-          max="100000000"
+          max="1000000000"
           onChange={(e) => handleChange(0, e.target.value)}
-          className="w-20 p-2 border rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200"
+          className=" p-2 border rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 w-1/2"
         />
         <span className="text-gray-500">-</span>
         <input
           type="number"
           value={localRange[1]}
           min="0"
-          max="100000000"
+          max="1000000000"
           onChange={(e) => handleChange(1, e.target.value)}
-          className="w-20 p-2 border rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200"
+          className=" p-2 border rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 w-1/2"
         />
       </div>
     </div>
@@ -494,7 +494,7 @@ const AvailabilityFilter = ({ availability, setAvailability }) => (
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.3 }}
-    className="bg-white dark:bg-gray-900 shadow-md rounded-lg p-4"
+    className="bg-white dark:bg-gray-900 shadow-md rounded-lg p-4 w-full"
   >
     <label className="text-gray-900 dark:text-gray-200 font-semibold mb-2 block">Availability</label>
     <div className="flex gap-4">
@@ -520,7 +520,7 @@ const SortFilter = ({ sortOption, setSortOption }) => (
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.3 }}
-    className="bg-white dark:bg-gray-900 shadow-md rounded-lg p-4"
+    className="bg-white dark:bg-gray-900 shadow-md rounded-lg p-4 w-full"
   >
     <label className="text-gray-900 dark:text-gray-200 font-semibold mb-2 block">Sort By</label>
     <select
@@ -529,8 +529,8 @@ const SortFilter = ({ sortOption, setSortOption }) => (
       className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-yellow-400"
     >
       <option value="popularity">Popularity</option>
-      <option value="price-asc">Price (Low to High)</option>
-      <option value="price-desc">Price (High to Low)</option>
+      <option value="asc">Price (Low to High)</option>
+      <option value="desc">Price (High to Low)</option>
     </select>
   </motion.div>
 );
