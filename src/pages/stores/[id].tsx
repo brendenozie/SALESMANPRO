@@ -2,6 +2,7 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { GetServerSidePropsContext } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import prisma from "@/server/db/prismadb";
 
 const CATEGORIES = [
   "Tech Gadgets",
@@ -269,16 +270,134 @@ export default function StoreDetails({ initialData }: Props) {
   );
 }
 
+// pages/stores/[slug].tsx
+
+
+// pages/stores/[id].tsx
+
+// pages/stores/[id].tsx
+
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  // 1) Session guard
   const session = await getSession(context);
   if (!session) {
     return { redirect: { destination: "/auth", permanent: false } };
   }
-  const { slug } = context.params!;
-  const res = await fetch(`http://localhost:3000/api/stores/${slug}`, {
-    headers: { Cookie: context.req.headers.cookie || "" },
-  });
-  const initialData = await res.json();
 
-  return { props: { session, initialData } };
+  // 2) Extract & validate idParam
+  const idParam = context.params?.id;
+  if (
+    typeof idParam !== "string" 
+    // !ObjectId.isValid(idParam)      // ← makes sure it's a 24-hex ObjectId
+  ) {
+    return { notFound: true };
+  }
+
+  // 3) Fetch by ObjectId
+  const store = await prisma.company.findUnique({
+    where: { id: idParam },
+  });
+
+  // 4) Ownership & existence check
+  if (!store || !session.user || store.userId !== session.user.id) {
+    return { notFound: true };
+  }
+
+  // 5) Serialize for JSON
+  const initialData = {
+    ...store,
+    createdAt: store.createdAt.toISOString(),
+    updatedAt: store.updatedAt.toISOString(),
+    socialLinks:   store.socialLinks   ?? {},
+    policies:      store.policies      ?? {},
+    shippingZones: store.shippingZones ?? [],
+  };
+
+  return { props: { initialData } };
 };
+
+
+// export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+//   // 1) Protect the page
+//   const session = await getSession(context);
+//   if (!session) {
+//     return { redirect: { destination: "/auth", permanent: false } };
+//   }
+
+//   // 2) Extract & validate `id`
+//   const idParam = context.params?.id;
+ 
+//   if (!idParam || typeof idParam !== "string") {
+//     return { notFound: true };
+//   }
+
+//   // 3) Fetch by `id`
+//   const store = await prisma.company.findUnique({
+//     where: { id: idParam },
+//   });
+
+//   // 4) 404 if not found or not owned by this user
+//   if (!store || !session.user || store.userId !== session.user.id) {
+//     return { notFound: true };
+//   }
+
+//   // 5) Serialize JSON-able fields
+//   const initialData = {
+//     ...store,
+//     createdAt: store.createdAt.toISOString(),
+//     updatedAt: store.updatedAt.toISOString(),
+//     socialLinks:   store.socialLinks   ?? {},
+//     policies:      store.policies      ?? {},
+//     shippingZones: store.shippingZones ?? [],
+//   };
+
+//   return {
+//     props: { initialData },
+//   };
+// };
+
+
+// export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+//   // 1) Protect the page
+//   const session = await getSession(context);
+//   if (!session) {
+//     return { redirect: { destination: "/auth", permanent: false } };
+//   }
+
+//   // 2) Read the id and fetch the store from Prisma
+//   const { id } = context.query;
+//   if (!id || typeof id !== "string") {
+//     return { notFound: true };
+//   }
+
+//   const store = await prisma.company.findFirst({
+//     where: { id },
+//     include: {
+//       user: true,
+//     },
+//   });
+//   if (!store) {
+//     return { notFound: true };
+//   }
+
+//   // 3) If there's no store (or it's not owned by this user), 404
+  // if (!store || !session.user || store.userId !== session.user.id) {
+  //   return { notFound: true };
+  // }
+
+//   // 4) Serialize dates & JSON columns
+//   const initialData = {
+//     ...store,
+//     createdAt: store.createdAt.toISOString(),
+//     updatedAt: store.updatedAt.toISOString(),
+//     socialLinks: store.socialLinks ?? {},
+//     policies: store.policies ?? {},
+//     shippingZones: store.shippingZones ?? [],
+//   };
+
+//   return {
+//     props: {
+//       initialData,
+//     },
+//   };
+// };

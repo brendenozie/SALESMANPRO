@@ -3,94 +3,148 @@ import { useRouter } from 'next/router';
 import {
   PencilIcon,
   TrashIcon,
-  StarIcon,
+  PhoneIcon,
+  BuildingStorefrontIcon,
   ArrowLeftCircleIcon,
-  ArrowRightCircleIcon,
-  ShoppingCartIcon
+  ArrowRightCircleIcon
 } from "@heroicons/react/24/outline";
-
+import { WalletIcon } from '@heroicons/react/24/solid';
 
 export default function StoresPage() {
-  const [stores, setStores] = useState([]);
+  const [stores, setStores] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
   const router = useRouter();
 
   useEffect(() => {
-    async function fetchStores() {
-      const res = await fetch('/api/stores');
-      const data = await res.json();
-      setStores(data);
-    }
-    fetchStores();
+    fetch('/api/stores')
+      .then(res => res.json())
+      .then(data => setStores(data))
+      .catch(console.error);
   }, []);
 
-  const handleEdit = (slug : any) => {
-    router.push(`/stores/${slug}/edit`);
-  };
+  const totalPages = Math.ceil(stores.length / pageSize);
+  const paginated = stores.slice((page - 1) * pageSize, page * pageSize);
 
-  const handleDelete = async (id: any) => {
-    if (confirm('Are you sure you want to delete this store?')) {
+  const handleEdit = (id: string) => router.push(`/stores/${id}`);
+  const handleDelete = async (id: string) => {
+    if (confirm('Delete this store?')) {
       await fetch(`/api/stores/${id}`, { method: 'DELETE' });
-      setStores((prev: any) => prev.filter((s: any) => s.id !== id));
+      setStores(prev => prev.filter(s => s.id !== id));
     }
   };
 
   return (
-    <div className="p-6 space-y-8">
-      <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Your Stores</h1>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <header className="flex items-center justify-between mb-8">
+        <h1 className="text-4xl font-extrabold text-gray-800">Your Stores</h1>
         <button
           onClick={() => router.push('/stores/create')}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="inline-flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-3 rounded-lg shadow-lg hover:from-blue-600 hover:to-indigo-700 transition"
         >
-          + Create New Store
+          <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
+          Create New Store
         </button>
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stores.map((store: any) => (
+        {paginated.map(store => (
           <div
             key={store.id}
-            className="relative bg-white rounded-lg border p-6 shadow-sm hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition"
           >
-            <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => handleEdit(store.slug)}
-                className="p-1 rounded hover:bg-gray-100"
-                aria-label="Edit Store"
-              >
-                <PencilIcon className="h-4 w-4 text-gray-600" />
-              </button>
-              <button
-                onClick={() => handleDelete(store.id)}
-                className="p-1 rounded hover:bg-gray-100"
-                aria-label="Delete Store"
-              >
-                <TrashIcon className="h-4 w-4 text-red-500" />
-              </button>
-            </div>
+            {/* Banner */}
+            {store.bannerUrl && (
+              <div className="h-32 bg-gray-200">
+                <img
+                  src={store.bannerUrl}
+                  alt={`${store.name} banner`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
 
-            <div className="flex items-center mb-4">
-              <img
-                src={store.logoUrl}
-                alt={store.name}
-                className="h-12 w-12 rounded-full object-cover mr-4"
-              />
-              <div>
-                <h2 className="text-xl font-semibold">{store.name}</h2>
-                <p className="text-sm text-gray-500">{store.category}</p>
+            <div className="p-6 relative group">
+              {/* Action Icons */}
+              <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => handleEdit(store.id)} className="p-2 rounded-full hover:bg-gray-100">
+                  <PencilIcon className="h-5 w-5 text-gray-600" />
+                </button>
+                <button onClick={() => handleDelete(store.id)} className="p-2 rounded-full hover:bg-gray-100">
+                  <TrashIcon className="h-5 w-5 text-red-500" />
+                </button>
+              </div>
+
+              {/* Title & Category */}
+              <div className="flex items-center mb-4">
+                <BuildingStorefrontIcon className="h-8 w-8 text-blue-500 mr-3" />
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-800">{store.name}</h2>
+                  <p className="text-sm text-indigo-600 font-medium">{store.category}</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-gray-600 mb-4 line-clamp-3">{store.description || 'No description provided.'}</p>
+
+              {/* Contact Info */}
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center text-gray-700">
+                  <WalletIcon className="h-5 w-5 mr-2" />
+                  <a href={`mailto:${store.contactEmail}`} className="hover:underline">{store.contactEmail}</a>
+                </div>
+                {store.contactPhone && (
+                  <div className="flex items-center text-gray-700">
+                    <PhoneIcon className="h-5 w-5 mr-2" />
+                    <a href={`tel:${store.contactPhone}`} className="hover:underline">{store.contactPhone}</a>
+                  </div>
+                )}
+                {store.address && (
+                  <div className="flex items-center text-gray-700">
+                    <PencilIcon className="h-5 w-5 mr-2" />
+                    <span>{store.address}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => router.push(`/stores/${store.id}/products`)}
+                  className="text-blue-600 hover:underline flex items-center text-sm"
+                >
+                  View Products
+                </button>
+                <button
+                  onClick={() => handleEdit(store.id)}
+                  className="text-green-600 hover:underline flex items-center text-sm"
+                >
+                  Edit
+                  <ArrowRightCircleIcon className="h-5 w-5 ml-1" />
+                </button>
               </div>
             </div>
-
-            <p className="truncate text-gray-700 mb-4">{store.description}</p>
-
-            <button
-              onClick={() => router.push(`/stores/${store.slug}/edit`)}
-              className="text-blue-600 hover:underline text-sm"
-            >
-              View & Edit →
-            </button>
           </div>
         ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="mt-8 flex justify-center items-center space-x-4">
+        <button
+          onClick={() => setPage(p => Math.max(p - 1, 1))}
+          disabled={page === 1}
+          className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+        >
+          <ArrowLeftCircleIcon className="h-6 w-6 text-gray-600" />
+        </button>
+        <span className="text-gray-700">Page {page} of {totalPages}</span>
+        <button
+          onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+          disabled={page === totalPages}
+          className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+        >
+          <ArrowRightCircleIcon className="h-6 w-6 text-gray-600" />
+        </button>
       </div>
     </div>
   );

@@ -254,7 +254,7 @@ const menuItems = [
   { name: "Home", icon: <HomeIcon className="w-5 h-5 mr-2" />, link: "/" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5 mr-2" />, link: "/shop/productlist" },
   { name: "All Categories", icon: <DocumentDuplicateIcon className="w-5 h-5 mr-2" />, link: "/shop/categories" },
-  { name: "My Shop", icon: <BuildingLibraryIcon className="w-5 h-5 mr-2" />, link: "/admin" },
+  { name: "My Shop", icon: <BuildingLibraryIcon className="w-5 h-5 mr-2" />, link: "/stores" },
   { name: "Track My Order", icon: <TruckIcon className="w-5 h-5 mr-2" />, link: "/shop/orderTracking" },
   { name: "Contact", icon: <PhoneIcon className="w-5 h-5 mr-2" />, link: "/shop/contact" },
 ];
