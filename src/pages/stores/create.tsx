@@ -13,7 +13,7 @@ const CATEGORIES = [
   "Toys & Hobbies",
   "Other",
 ];
-interface CategoryOption { value: string; label: string; }
+interface CategoryOption { id: string; name: string; }
 interface StoreForm {
   name: string;
   slug: string;
@@ -197,29 +197,27 @@ export default function CreateStorePage({ availableCategories }: { availableCate
                 <p className="block text-sm font-medium">Select Categories</p>
                 <div className="mt-2 max-h-60 overflow-y-auto border rounded">
                   {availableCategories.map(cat => (
-                    <label key={cat.value} className="flex items-center p-2 hover:bg-gray-100">
+                    <label key={cat.id} className="flex items-center p-2 hover:bg-gray-100">
                       <input
                         type="checkbox"
                         className="mr-2"
-                        checked={form.categories.some((c:any) => c.value === cat.value)}
+                        checked={form.categories.some((c:any) => c.id === cat.id)}
                         onChange={() => {
                           setForm((f:any) => {
-                            const exists = f.categories.find((c:any) => c.value === cat.value);
-                            const newCats = exists
-                              ? f.categories.filter((c:any) => c.value !== cat.value)
-                              : [...f.categories, { value: cat.value, label: cat.label }];
+                            const exists = f.categories.find((c:any) => c.id === cat.id);
+                            const newCats = exists ? f.categories.filter((c:any) => c.id !== cat.id) : [...f.categories, { id: cat.id, name: cat.name }];
                             return { ...f, categories: newCats };
                           });
                         }}
                       />
-                      {cat.label}
+                      {cat.name}
                     </label>
                   ))}
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-1">Drag to reorder categories:</p>
               <ul className="mt-2 space-y-2">
-                {form.categories.map(({cat, idx} :any) => (
+                {form.categories.map((cat: any, idx: number) => (
                   <li
                     key={cat.value}
                     draggable
@@ -228,7 +226,7 @@ export default function CreateStorePage({ availableCategories }: { availableCate
                     onDrop={e => {
                       const fromIndex = Number(e.dataTransfer.getData('text/plain'));
                       const toIndex = idx;
-                      setForm(f => {
+                      setForm((f: any) => {
                         const items = Array.from(f.categories);
                         const [moved] = items.splice(fromIndex, 1);
                         items.splice(toIndex, 0, moved);
@@ -237,10 +235,11 @@ export default function CreateStorePage({ availableCategories }: { availableCate
                     }}
                     className="p-2 border rounded bg-gray-50 cursor-move"
                   >
-                    {cat.label}
+                    {cat.name}
                   </li>
                 ))}
               </ul>
+              <p className="text-xs text-gray-500 mt-1">Drag to reorder categories</p>
             </>
           )}
 
@@ -439,7 +438,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop/categories`);
   const cats = await res.json(); // assume [{ id, name }]
   console.log(cats);
-  const options = cats.categories.map((c: any) => ({ value: c.id, label: c.name }));
+  const options = cats.categories.map((c: any) => ({ id: c.id, name: c.name }));
 
   return { props: { availableCategories: options } };
 };
