@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 // Type definitions
 interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }
-interface Store { name: string; logoUrl: string; bannerUrl: string; category: string; description: string; contactEmail: string; contactPhone: string; address: string; products: Product[]; }
+interface Store { name: string; logoUrl: string; bannerUrl: string; category: string; description: string; contactEmail: string; contactPhone: string; address: string; products: Product[]; StoreCategory: StoreCategoryUI[]; }
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
 interface Category { id: string; name: string; imageUrl: string; }
 
@@ -50,6 +50,18 @@ const SAMPLE_PRODUCTS: Product[] = Array.from({ length: 8 }).map((_, i) => ({
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function StorePage({ store }: { store: Store }) {
+
+  const storeCategories = store.StoreCategory
+  .filter((sc:any) => sc.visible)
+  // .sort(({a, b}:any) => a.sortOrder - b.sortOrder)
+  .map((sc:any) => ({
+    id: sc.category.id,
+    name: sc.displayName || sc.category.name,
+    imageUrl: sc.category.image,
+    slug: sc.category.slug,
+    icon: sc.icon || sc.category.icon
+  }));
+
   if (!store) return <EmptyState />;
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -58,7 +70,8 @@ export default function StorePage({ store }: { store: Store }) {
       <StoreInfo store={store} />
       <PromoCarousel promos={SAMPLE_PROMOS} />
       <Section title="Shop by Category">
-        <CategoryGrid categories={SAMPLE_CATEGORIES} />
+        {/* <CategoryGrid categories={SAMPLE_CATEGORIES} /> */}
+        <CategoryGrid categories={storeCategories} />
       </Section>
       <Section title="Featured Products">
          <section className="max-w-7xl mx-auto p-6">
@@ -88,21 +101,153 @@ export default function StorePage({ store }: { store: Store }) {
 }
 
 // Server-side fetch
+
+
+// pages/site/[slug].tsx (or stores/[slug].tsx)
+// Server-side fetch
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const slug = params?.slug as string;
-  const store = await prisma.company.findUnique({
-    where: { slug },
-    select: {
-      name: true,
-      logoUrl: true,
-      bannerUrl: true,
-      category: true,
-      products: { take: 8, select: { id: true, name: true, finalPrice: true, images: true } },
-    },
+  const raw = await prisma.company.findUnique({
+    where: { slug: String(params?.slug) },
+    include: {
+      products: {
+        take: 8,
+        select: {
+          id: true,
+          name: true,
+          // slug: true,
+          finalPrice: true,
+          images: true
+        }
+      },
+      StoreCategory: {
+        orderBy: { sortOrder: 'asc' },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              image: true,
+              icon: true,
+              // omit createdAt/updatedAt if you don't need them
+            }
+          }
+        }
+      }
+    }
   });
-  if (!store) return { notFound: true };
-  return { props: { store } };
+
+  if (!raw) {
+    return { notFound: true };
+  }
+
+  // Build a clean, serializable DTO
+  const store = {
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    description: raw.description,
+    category: raw.category,
+    logoUrl: raw.logoUrl,
+    bannerUrl: raw.bannerUrl,
+    contactEmail: raw.contactEmail,
+    contactPhone: raw.contactPhone,
+    address: raw.address,
+    socialLinks: raw.socialLinks,
+    policies: raw.policies,
+    shippingZones: raw.shippingZones,
+    domain: raw.domain,
+    currency: raw.currency,
+    locale: raw.locale,
+    // convert dates to strings if you need them
+    createdAt: raw.createdAt.toISOString(),
+    updatedAt: raw.updatedAt.toISOString(),
+
+    // map categories into the shape your UI expects
+    StoreCategory: raw.StoreCategory.map(sc => ({
+      id: sc.id,
+      sortOrder: sc.sortOrder,
+      visible: sc.visible,
+      displayName: sc.displayName,
+      icon: sc.icon,
+      category: {
+        id: sc.category.id,
+        name: sc.category.name,
+        slug: sc.category.slug,
+        imageUrl: sc.category.image,
+        icon: sc.category.icon,
+      }
+    })),
+
+    // map products into your ProductGrid shape
+    products: raw.products.map(p => ({
+      id: p.id,
+      name: p.name,
+      // slug: p.slug,
+      price: p.finalPrice,
+      imageUrl: p.images[0] ?? '/placeholder.png'
+    }))
+  };
+
+  return {
+    props: { store }
+  };
 };
+
+
+
+
+
+// export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+//   const store = await prisma.company.findUnique({
+//     where: { slug: String(params?.slug) },
+//     include: {
+//       products: {
+//         take: 8,
+//         select: {
+//           id: true,
+//           name: true,
+//           finalPrice: true,
+//           images: true
+//         }
+//       },
+//       StoreCategory: {
+//         orderBy: { sortOrder: 'asc' },
+//         include: { category: true }
+//       }
+//     }
+//   });
+//   // ...
+//   return {
+//     props: {
+//       store: {
+//         ...store,
+//         products: store?.products?.map(p => ({
+//           id: p.id,
+//           name: p.name,
+//           price: p.finalPrice,
+//           imageUrl: p.images[0] ?? '/placeholder.png'
+//         }))
+//       }
+//     }
+//   };
+// };
+
+// export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+//   const slug = params?.slug as string;
+//   const store = await prisma.company.findUnique({
+//     where: { slug },
+//     select: {
+//       name: true,
+//       logoUrl: true,
+//       bannerUrl: true,
+//       category: true,
+//       products: { take: 8, select: { id: true, name: true, finalPrice: true, images: true } },
+//     },
+//   });
+//   if (!store) return { notFound: true };
+//   return { props: { store } };
+// };
 
 // Components
 function Header({ store }: { store: Store }) {
@@ -195,18 +340,22 @@ function PromoCarousel({ promos }: { promos: Promo[] }) {
   );
 }
 
-function CategoryGrid({ categories }: { categories: Category[] }) {
+interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
+
+function CategoryGrid({ categories }: { categories: StoreCategoryUI[] }) {
   return (
-    <div id="products" className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div  id="products" className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {categories.map(cat => (
-        <Link key={cat.id} href={`/stores/${cat.id}`}>
+        <Link key={cat.id} href={`/stores`}>
+          {/* /${store.slug}/category/${cat.slug} */}
           <motion.div whileHover={{ y: -5 }} className="group bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow transition transform">
+            <div className="flex items-center justify-center text-3xl">
+              {cat.icon}
+            </div>
             <div className="relative h-40 w-full">
-              <Image loader={loader} src={cat.imageUrl} alt={cat.name} layout="fill" objectFit="cover" />
+              <Image src={cat.imageUrl} loader={loader} alt={cat.name} layout="fill" objectFit="cover" />
             </div>
-            <div className="p-4 text-center">
-              <h3 className="text-xl font-medium group-hover:text-blue-600 transition">{cat.name}</h3>
-            </div>
+            <h3>{cat.name}</h3>
           </motion.div>
         </Link>
       ))}
