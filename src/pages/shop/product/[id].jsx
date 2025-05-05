@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback,  memo, useMemo } from "react";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -15,53 +15,50 @@ import Cart from "../../../components/cart";
 import LocationModal from "../../../components/locationManager";
 import load from "../../../assets/load.png";
 import Image from "next/image";
+import PropTypes from "prop-types";
 
+// next/image loader
 const loaderProp = ({ src, width, quality }) => {
-  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
-  if (quality) {
-    params.push(`q=${quality}`);
-  }
+  const params = [`w=${width || 800}`];
+  if (quality) params.push(`q=${quality}`);
   return `${src}?${params.join("&")}`;
 };
 
 const prisma = new PrismaClient();
 
-export async function getServerSideProps(context) {
-  const { id } = context.params;
-
-  // Fetch the marketplace listing using the updated model.
+export async function getServerSideProps({ params }) {
+  const { id } = params;
   const listing = await prisma.marketplaceListing.findUnique({
     where: { id },
-    include: {
-      product: true,
-      productCategory: true
-    }
+    include: { product: true, productCategory: true }
   });
+  if (!listing) return { notFound: true };
 
-  if (!listing) {
-    return { notFound: true };
-  }
-
-  // Serialize listing data (including dates and extended fields)
-  const serializeListing = (item) => ({
+  const serialize = item => ({
     ...item,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
-    expirationDate: item.expirationDate ? item.expirationDate.toISOString() : null,
+    expirationDate: item.expirationDate?.toISOString() || null,
     product: item.product
       ? {
           ...item.product,
           createdAt: item.product.createdAt.toISOString(),
-          updatedAt: item.product.updatedAt.toISOString()
+          updatedAt: item.product.updatedAt.toISOString(),
         }
       : null,
-    productCategory: item.productCategory ? item.productCategory : null
+    productCategory: item.productCategory
+      ? {
+          ...item.productCategory,
+          createdAt: item.productCategory.createdAt.toISOString(),
+          updatedAt: item.productCategory.updatedAt.toISOString(),
+        }
+      : null
   });
 
-  const serializedListing = serializeListing(listing);
+  const serializedListing = serialize(listing);
 
-  // Fetch similar listings based on the same productCategoryId (excluding current one)
-  const similarListings = await prisma.marketplaceListing.findMany({
+  // Fetch similar listings
+  const similar = await prisma.marketplaceListing.findMany({
     where: {
       productCategoryId: listing.productCategoryId,
       id: { not: id }
@@ -69,102 +66,31 @@ export async function getServerSideProps(context) {
     include: { product: true },
     take: 4
   });
-
-  const serializedSimilarListings = similarListings.map(serializeListing);
-
+  
+  const serializedSimilar = similar.map(serialize);
+  // Fallback if no similar listings found
+  if (similar.length === 0) {
+    const fallbackSimilar = await prisma.marketplaceListing.findMany({
+      where: { id: { not: id } },
+      include: { product: true },
+      take: 4
+    });
+    serializedSimilar.push(...fallbackSimilar.map(serialize));
+  }
   return {
     props: {
       listing: serializedListing,
-      similarListings: serializedSimilarListings
+      similarListings: serializedSimilar
     }
   };
 }
 
-const ExtendedDetails = ({ listing }) => {
-  // Extended fields are stored on the listing.
-  const category = listing.category;
-  if (category === "Books") {
-    return (
-      <div className="p-4 bg-gray-100 rounded-lg mt-6">
-        <h3 className="font-semibold mb-2">Book Details</h3>
-        <p>
-          <strong>Author:</strong> {listing.author || "N/A"}
-        </p>
-        <p>
-          <strong>Publisher:</strong> {listing.publisher || "N/A"}
-        </p>
-        <p>
-          <strong>ISBN:</strong> {listing.isbn || "N/A"}
-        </p>
-      </div>
-    );
-  }
-  if (category === "Clothing" || category === "Fashion") {
-    return (
-      <div className="p-4 bg-gray-100 rounded-lg mt-6">
-        <h3 className="font-semibold mb-2">Clothing Details</h3>
-        <p>
-          <strong>Fabric Composition:</strong>{" "}
-          {listing.fabricComposition || "N/A"}
-        </p>
-        <p>
-          <strong>Care Instructions:</strong>{" "}
-          {listing.careInstructions || "N/A"}
-        </p>
-      </div>
-    );
-  }
-  if (category === "Home Appliances") {
-    return (
-      <div className="p-4 bg-gray-100 rounded-lg mt-6">
-        <h3 className="font-semibold mb-2">Home Appliance Details</h3>
-        <p>
-          <strong>Energy Rating:</strong> {listing.energyRating || "N/A"}
-        </p>
-        <p>
-          <strong>Warranty Period:</strong> {listing.warrantyPeriod || "N/A"}
-        </p>
-        <p>
-          <strong>Dimensions:</strong> {listing.applianceDimensions || "N/A"}
-        </p>
-      </div>
-    );
-  }
-  if (
-    category === "Beauty Products" ||
-    category === "Skincare" ||
-    category === "Haircare"
-  ) {
-    return (
-      <div className="p-4 bg-gray-100 rounded-lg mt-6">
-        <h3 className="font-semibold mb-2">Beauty Product Details</h3>
-        <p>
-          <strong>Ingredients:</strong> {listing.ingredients || "N/A"}
-        </p>
-        <p>
-          <strong>Usage Instructions:</strong>{" "}
-          {listing.usageInstructions || "N/A"}
-        </p>
-        <p>
-          <strong>Expiration Date:</strong>{" "}
-          {listing.expirationDate
-            ? new Date(listing.expirationDate).toLocaleDateString()
-            : "N/A"}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
 const ProductPage = ({ listing, similarListings }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const { addToCart, removeFromCart, decreaseQuantity } = useStateContext();
   const router = useRouter();
 
-  // Use listing.product for underlying product details; fallback to listing for some fields.
-  const prod = listing.product || {};
   const images = listing.image
     ? [listing.image]
     : [
@@ -172,6 +98,25 @@ const ProductPage = ({ listing, similarListings }) => {
         "/images/SlideCard/slide-2.png",
         "/images/SlideCard/slide-3.png"
       ];
+
+  const onPrev = useCallback(
+    () => setCurrentImage(idx => (idx === 0 ? images.length - 1 : idx - 1)),
+    [images.length]
+  );
+  const onNext = useCallback(
+    () => setCurrentImage(idx => (idx === images.length - 1 ? 0 : idx + 1)),
+    [images.length]
+  );
+
+  const increase = useCallback(() => {
+    setQuantity(q => q + 1);
+    addToCart(listing);
+  }, [addToCart, listing]);
+
+  const decrease = useCallback(() => {
+    setQuantity(q => Math.max(1, q - 1));
+    decreaseQuantity(listing);
+  }, [decreaseQuantity, listing]);
 
   return (
     <>
@@ -187,8 +132,8 @@ const ProductPage = ({ listing, similarListings }) => {
         <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2 md:p-8 flex flex-col lg:flex-row gap-12">
           <ProductImages
             images={images}
-            currentImageIndex={currentImageIndex}
-            setCurrentImageIndex={setCurrentImageIndex}
+            currentImageIndex={currentImage}
+            setCurrentImageIndex={setCurrentImage}
           />
           <ProductInfo
             quantity={quantity}
@@ -216,7 +161,7 @@ const ProductPage = ({ listing, similarListings }) => {
 
 export default ProductPage;
 
-const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
+const ProductImages = memo(({ images, currentImageIndex, setCurrentImageIndex }) => {
   const [isOpen, setIsOpen] = useState(false);
   const prevImage = () =>
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -291,9 +236,9 @@ const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
       )}
     </div>
   );
-};
+});
 
-const ProductInfo = ({
+const ProductInfo = memo(({
   quantity,
   setQuantity,
   listing,
@@ -340,9 +285,9 @@ const ProductInfo = ({
       </div>
     </div>
   );
-};
+});
 
-const ColorOptions = () => {
+const ColorOptions = memo(() => {
   const colors = [
     "bg-red-300",
     "bg-gray-700",
@@ -365,9 +310,9 @@ const ColorOptions = () => {
       </div>
     </div>
   );
-};
+});
 
-const QuantitySelector = ({
+const QuantitySelector = memo(({
   quantity,
   setQuantity,
   listing,
@@ -400,9 +345,9 @@ const QuantitySelector = ({
       Only <span className="text-red-500">12 Items Left!</span> Don’t miss it
     </span>
   </div>
-);
+));
 
-const SpecificationCard = ({ title, details }) => (
+const SpecificationCard = memo(({ title, details }) => (
   <div className="bg-white dark:bg-gray-800 shadow-lg p-6 rounded-2xl border border-gray-200 dark:border-gray-700 transition hover:shadow-xl">
     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
       {title}
@@ -419,9 +364,9 @@ const SpecificationCard = ({ title, details }) => (
       ))}
     </div>
   </div>
-);
+));
 
-const ProductSpecifications = ({ listing }) => {
+const ProductSpecifications = memo(({ listing }) => {
   const prod = listing.product || {};
   const generalDetails = [
     { label: "Brand", value: prod.brand ? prod.brand : "N/A" },
@@ -447,9 +392,9 @@ const ProductSpecifications = ({ listing }) => {
       </div>
     </div>
   );
-};
+});
 
-const SimilarItems = ({ similarListings, addToCart }) => {
+const SimilarItems = memo(({ similarListings, addToCart }) => {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
   return (
@@ -458,51 +403,471 @@ const SimilarItems = ({ similarListings, addToCart }) => {
         Similar Items You Might Like
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {similarListings.map((item) => (
-          <motion.div
-            key={item.id}
-            onClick={() => router.push(`/shop/product/${item.id}`)}
-            className="relative bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-4 flex flex-col items-center transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400"
-            whileHover={{ scale: 1.03 }}
-          >
-            <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
-              {/* <motion.img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
-                whileHover={{ rotate: 2 }}
-              /> */}
-              <Image
-                width={300}
-                height={300}
-                loader = {loaderProp}
-                src={imageError ? load.src : item.image}
-                alt={`Product image of ${item.title}`}
-                className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
-                onError={() => setImageError(true)}
-              />
-            </div>
-            <p className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mt-3 text-center truncate w-full">
-              {item.title}
-            </p>
-            <p className="text-yellow-600 dark:text-yellow-400 font-bold text-lg md:text-xl mt-1">
-              ${item.finalPrice}
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.07 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                addToCart(item);
-              }}
-              className="mt-3 w-[90%] md:w-full flex items-center justify-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-full shadow-lg hover:from-yellow-600 hover:to-yellow-700 transition text-sm md:text-base"
-              aria-label="Add to Cart"
-            >
-              <ShoppingCartIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" /> Add
-            </motion.button>
-          </motion.div>
+        {similarListings &&  similarListings.length > 0 &&  similarListings.map((product) => (
+          <ProductCard  key={product.id} product={product} addToCart={addToCart}/>
         ))}
       </div>
     </div>
   );
+});
+
+const categoryConfigs = {
+  Books: {
+    title: "Book Details",
+    fields: [
+      { key: "author", label: "Author" },
+      { key: "publisher", label: "Publisher" },
+      { key: "isbn", label: "ISBN" },
+    ],
+  },
+  Clothing: {
+    title: "Clothing Details",
+    fields: [
+      { key: "fabricComposition", label: "Fabric Composition" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  Fashion: "Clothing",
+  "Home Appliances": {
+    title: "Home Appliance Details",
+    fields: [
+      { key: "energyRating", label: "Energy Rating" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+      { key: "applianceDimensions", label: "Dimensions" },
+    ],
+  },
+  "Beauty Products": {
+    title: "Beauty Product Details",
+    fields: [
+      { key: "ingredients", label: "Ingredients" },
+      { key: "usageInstructions", label: "Usage Instructions" },
+      { key: "expirationDate", label: "Expiration Date", isDate: true },
+    ],
+  },
+  Skincare: "Beauty Products",
+  Haircare: "Beauty Products",
+  Electronics: {
+    title: "Electronics Details",
+    fields: [
+      { key: "batteryLife", label: "Battery Life" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+      { key: "features", label: "Features" },
+    ],
+  },
+  "Mobile Phones": "Electronics",
+  "Laptops & Computers": "Electronics",
+  "Home & Kitchen": {
+    title: "Home & Kitchen Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Sports & Outdoors": {
+    title: "Sports & Outdoors Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Toys & Games": {
+    title: "Toys & Games Details",
+    fields: [
+      { key: "recommendedAge", label: "Recommended Age" },
+      { key: "material", label: "Material" },
+      { key: "safetyCertifications", label: "Safety Certifications" },
+    ],
+  },
+  "Automotive": {
+    title: "Automotive Details",
+    fields: [
+      { key: "vehicleCompatibility", label: "Vehicle Compatibility" },
+      { key: "installationInstructions", label: "Installation Instructions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Sports Equipment": {
+    title: "Sports Equipment Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Health & Personal Care": {
+    title: "Health & Personal Care Details",
+    fields: [
+      { key: "ingredients", label: "Ingredients" },
+      { key: "usageInstructions", label: "Usage Instructions" },
+      { key: "expirationDate", label: "Expiration Date", isDate: true },
+    ],
+  },
+  "Pet Supplies": {
+    title: "Pet Supplies Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Office Supplies": {
+    title: "Office Supplies Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Grocery & Gourmet Food": {
+    title: "Grocery & Gourmet Food Details",
+    fields: [
+      { key: "ingredients", label: "Ingredients" },
+      { key: "expirationDate", label: "Expiration Date", isDate: true },
+      { key: "storageInstructions", label: "Storage Instructions" },
+    ],
+  },
+  "Arts & Crafts": {
+    title: "Arts & Crafts Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Baby Products": {
+    title: "Baby Products Details",
+    fields: [
+      { key: "recommendedAge", label: "Recommended Age" },
+      { key: "material", label: "Material" },
+      { key: "safetyCertifications", label: "Safety Certifications" },
+    ],
+  },
+  "Musical Instruments": {
+    title: "Musical Instruments Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Video Games": {
+    title: "Video Games Details",
+    fields: [
+      { key: "platform", label: "Platform" },
+      { key: "genre", label: "Genre" },
+      { key: "releaseDate", label: "Release Date", isDate: true },
+    ],
+  },
+  "Collectibles": {
+    title: "Collectibles Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Home Decor": {
+    title: "Home Decor Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Gardening Supplies": {
+    title: "Gardening Supplies Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Smart Home Devices": {
+    title: "Smart Home Devices Details",
+    fields: [
+      { key: "compatibility", label: "Compatibility" },
+      { key: "features", label: "Features" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Fitness Equipment": {
+    title: "Fitness Equipment Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Camping & Hiking": {
+    title: "Camping & Hiking Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Travel Accessories": {
+    title: "Travel Accessories Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Bags & Luggage": {
+    title: "Bags & Luggage Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Watches": {
+    title: "Watches Details",
+    fields: [
+      { key: "brand", label: "Brand" },
+      { key: "model", label: "Model" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Jewelry": {
+    title: "Jewelry Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Footwear": {
+    title: "Footwear Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "careInstructions", label: "Care Instructions" },
+    ],
+  },
+  "Furniture": {
+    title: "Furniture Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "assemblyInstructions", label: "Assembly Instructions" },
+    ],
+  },
+  "Home Improvement": {
+    title: "Home Improvement Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "assemblyInstructions", label: "Assembly Instructions" },
+    ],
+  },
+  "Office Furniture": {
+    title: "Office Furniture Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "assemblyInstructions", label: "Assembly Instructions" },
+    ],
+  },
+  "Outdoor Furniture": {
+    title: "Outdoor Furniture Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "assemblyInstructions", label: "Assembly Instructions" },
+    ],
+  },
+  "Kitchen Appliances": {
+    title: "Kitchen Appliances Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Small Appliances": {
+    title: "Small Appliances Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Large Appliances": {
+    title: "Large Appliances Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Home Electronics": {
+    title: "Home Electronics Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Outdoor Gear": {
+    title: "Outdoor Gear Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Camping Gear": {
+    title: "Camping Gear Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Fishing Gear": {
+    title: "Fishing Gear Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Hunting Gear": {
+    title: "Hunting Gear Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Cycling Gear": {
+    title: "Cycling Gear Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
+  "Running Gear": {
+    title: "Running Gear Details",
+    fields: [
+      { key: "material", label: "Material" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "warrantyPeriod", label: "Warranty Period" },
+    ],
+  },
 };
+
+const DetailSection = ({ title, fields, data }) => (
+  <div className="max-w-7xl mx-auto px-6">
+    <h2 className="text-2xl mt-6 font-extrabold text-gray-800 dark:text-white mb-6 text-center">
+      {title}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {fields.map((field) => (
+        <div key={field.key} className="bg-white dark:bg-gray-800 shadow-lg p-6 rounded-2xl border border-gray-200 dark:border-gray-700 transition hover:shadow-xl">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {field.label}
+          </h3>
+          <p className="text-gray-700 dark:text-gray-300">
+            {field.isDate
+              ? new Date(data[field.key]).toLocaleDateString()
+              : data[field.key] || "N/A"}
+          </p>
+        </div>
+      ))}
+    </div>  
+  </div>
+);
+
+DetailSection.propTypes = {
+  title: PropTypes.string.isRequired,
+  fields: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      isDate: PropTypes.bool,
+    })
+  ).isRequired,
+  data: PropTypes.object.isRequired,
+};
+
+const ExtendedDetails = memo(({ listing }) => {
+  const { category } = listing;
+
+  // Resolve config, support aliases
+  const config = useMemo(() => {
+    const entry = categoryConfigs[category];
+    if (typeof entry === "string") {
+      return categoryConfigs[entry];
+    }
+    return entry;
+  }, [category]);
+
+  if (!config) return null;
+
+  return <DetailSection title={config.title} fields={config.fields} data={listing} />;
+});
+
+ExtendedDetails.propTypes = {
+  listing: PropTypes.shape({
+    category: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
+const ProductCard = memo(({ product,addToCart }) => {
+  const router = useRouter();
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <motion.div
+      onClick={() => router.push(`/shop/product/${product.id}`)}
+      whileHover={{ scale: 1.03 }}
+      className="relative bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl shadow-xl transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400 mb-4 break-inside-avoid"
+    >
+      {/* Product Image */}
+      <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
+        <Image
+            width={300}
+            height={300}
+            loader = {loaderProp}
+            src={imageError ? load.src : product.image}
+            alt={`Product image of ${product.title}`}
+            className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImageError(true)}
+          />
+      </div>
+
+      {/* Product Info */}
+      <div className="w-full mt-3 flex flex-col items-center">
+        <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
+          {product.title}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
+          {product.description || "No description available"}
+        </p>
+
+        {/* Price & Add to Cart Button */}
+        <div className="flex justify-between items-center w-full mt-2">
+          <span className="text-yellow-600 dark:text-yellow-400 font-bold text-xs md:text-xl">
+            ${product.finalPrice ? product.finalPrice.toFixed(2) : 0}
+          </span>
+
+           <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => addToCart(product)}
+              className="flex items-center bg-yellow-500 text-black p-3 rounded-xl shadow-lg hover:shadow-xl transition"
+              aria-label="Add to Cart"
+            >
+              <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
+            </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+});

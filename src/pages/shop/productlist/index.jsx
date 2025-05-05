@@ -218,4 +218,5 @@ const ProductCard = memo(({ product,addToCart }) => {
   );
 });
 
+
 export default ProductList;
