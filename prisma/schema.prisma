@@ -127,6 +127,7 @@ model ProductCategory {
 
   Product            Product[]
   MarketplaceListing MarketplaceListing[]
+  StoreCategory      StoreCategory[]
 }
 
 model Subcategory {
@@ -143,6 +144,26 @@ model UsersCategory {
   name   String
   status String
   users  User[]
+}
+
+/// Associates a Company with a ProductCategory,
+/// plus any store-specific settings.
+model StoreCategory {
+  company    Company         @relation(fields: [companyId], references: [id])
+  companyId  String          @db.ObjectId
+  category   ProductCategory @relation(fields: [categoryId], references: [id])
+  categoryId String          @db.ObjectId
+
+  // Store-specific overrides:
+  displayName String? // e.g. “Gadgets” instead of “Tech Gadgets”
+  icon        String? // override the global icon
+  sortOrder   Int     @default(0)
+  visible     Boolean @default(true)
+
+  id String @id @default(auto()) @map("_id") @db.ObjectId // Add a single primary key
+
+  @@unique([companyId, categoryId]) // Use a unique constraint instead
+  @@index([companyId, sortOrder]) // speed up ordering queries
 }
 
 model Company {
@@ -162,6 +183,15 @@ model Company {
   policies      Json? // e.g. { shipping: "", returns: "", terms: "" }
   shippingZones Json? // e.g. ["KE","UG","TZ"]
 
+  domain           String? @unique
+  currency         String  @default("KES")
+  locale           String  @default("en-US")
+  themeSettings    Json?
+  seo              Json?
+  analyticsConfig  Json?
+  paymentSettings  Json?
+  shippingSettings Json?
+
   salesAgents     SalesAgent[]
   products        Product[]
   inventory       InventoryItem[]
@@ -169,8 +199,9 @@ model Company {
   productRequests Request[]
   Target          Target[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  StoreCategory StoreCategory[]
 }
 
 model Product {

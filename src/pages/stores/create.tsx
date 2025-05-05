@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
-import { GetServerSidePropsContext } from "next";
+import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
@@ -13,12 +13,27 @@ const CATEGORIES = [
   "Toys & Hobbies",
   "Other",
 ];
+interface CategoryOption { value: string; label: string; }
+interface StoreForm {
+  name: string;
+  slug: string;
+  description: string;
+  logoUrl: string;
+  bannerUrl: string;
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+  socialLinks: string;
+  policies: string;
+  shippingZones: string;
+  categories: CategoryOption[];
+}
 
-export default function CreateStorePage() {
+export default function CreateStorePage({ availableCategories }: { availableCategories: CategoryOption[] }) {
   const { data: session } = useSession();
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   const [form, setForm] = useState({
     name: "",
@@ -33,6 +48,7 @@ export default function CreateStorePage() {
     socialLinks: JSON.stringify({ twitter: "", instagram: "", facebook: "" }, null, 2),
     policies: JSON.stringify({ shipping: "", returns: "", terms: "" }, null, 2),
     shippingZones: JSON.stringify([], null, 2),
+    categories: []
   });
 
   // Auto-generate slug from name
@@ -47,6 +63,14 @@ export default function CreateStorePage() {
       }));
     }
   }, [form.name]);
+
+   const onDragEnd = (result: any) => {
+    if (!result.destination) return;
+    const items = Array.from(form.categories);
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
+    setForm(f => ({ ...f, categories: items }));
+  };
 
   const handleChange = (
     e: ChangeEvent<
@@ -102,8 +126,9 @@ export default function CreateStorePage() {
 
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
           {step === 1 && 'Basic Info'}
-          {step === 2 && 'Media & Description'}
-          {step === 3 && 'Contact & Advanced'}
+          {step === 2 && 'Store Product Categories'}
+          {step === 3 && 'Media & Description'}
+          {step === 4 && 'Contact & Advanced'}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -165,7 +190,61 @@ export default function CreateStorePage() {
             </>
           )}
 
-          {step === 2 && (
+            {step === 2 && (
+            <>
+              {/* Category Selection without extra libs */}
+              <div>
+                <p className="block text-sm font-medium">Select Categories</p>
+                <div className="mt-2 max-h-60 overflow-y-auto border rounded">
+                  {availableCategories.map(cat => (
+                    <label key={cat.value} className="flex items-center p-2 hover:bg-gray-100">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        checked={form.categories.some((c:any) => c.value === cat.value)}
+                        onChange={() => {
+                          setForm((f:any) => {
+                            const exists = f.categories.find((c:any) => c.value === cat.value);
+                            const newCats = exists
+                              ? f.categories.filter((c:any) => c.value !== cat.value)
+                              : [...f.categories, { value: cat.value, label: cat.label }];
+                            return { ...f, categories: newCats };
+                          });
+                        }}
+                      />
+                      {cat.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Drag to reorder categories:</p>
+              <ul className="mt-2 space-y-2">
+                {form.categories.map(({cat, idx} :any) => (
+                  <li
+                    key={cat.value}
+                    draggable
+                    onDragStart={e => e.dataTransfer.setData('text/plain', String(idx))}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => {
+                      const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+                      const toIndex = idx;
+                      setForm(f => {
+                        const items = Array.from(f.categories);
+                        const [moved] = items.splice(fromIndex, 1);
+                        items.splice(toIndex, 0, moved);
+                        return { ...f, categories: items };
+                      });
+                    }}
+                    className="p-2 border rounded bg-gray-50 cursor-move"
+                  >
+                    {cat.label}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {step === 3 && (
             <>  
               <div>
                 <label
@@ -217,7 +296,7 @@ export default function CreateStorePage() {
             </>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -350,6 +429,21 @@ export default function CreateStorePage() {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  // ensure auth if needed
+  // const session = await getSession(ctx);
+  // if (!session) return { redirect: { destination: '/auth', permanent: false } };
+
+  // fetch global categories
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop/categories`);
+  const cats = await res.json(); // assume [{ id, name }]
+  console.log(cats);
+  const options = cats.categories.map((c: any) => ({ value: c.id, label: c.name }));
+
+  return { props: { availableCategories: options } };
+};
+
 
 // export const getServerSideProps = async (
 //   ctx: GetServerSidePropsContext
