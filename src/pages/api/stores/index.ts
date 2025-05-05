@@ -5,19 +5,22 @@ import prisma from "@/server/db/prismadb";
 import { getSession } from "next-auth/react";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getSession({ req });
-  if (!session) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  // const session = await getSession({ req });
+  // if (!session) {
+  //   return res.status(401).json({ error: "Unauthorized" });
+  // }
 
   switch (req.method) {
     case "GET":
       try {
-        if (!session.user) {
-          return res.status(401).json({ error: "Unauthorized: User not found in session" });
-        }
+        // if (!session.user) {
+        //   return res.status(401).json({ error: "Unauthorized: User not found in session" });
+        // }
         const stores = await prisma.company.findMany({
-          where: { userId: session.user.id },
+          where: { 
+            // userId: session.user.id,
+            userId: "67c5b0192e2372b5f2366dbf",//session.user.id,
+          },//session.user.id
         });
         return res.status(200).json(stores);
       } catch (error) {
@@ -42,9 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           shippingZones,
         } = req.body;
 
-        if (!session.user) {
-          return res.status(401).json({ error: "Unauthorized: User not found in session" });
-        }
+        // if (!session.user) {
+        //   return res.status(401).json({ error: "Unauthorized: User not found in session" });
+        // }
 
         const newStore = await prisma.company.create({
           data: {
@@ -60,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             socialLinks,
             policies,
             shippingZones,
-            user: { connect: { id: session.user.id } },
+            user: { connect: { id: "67c5b0192e2372b5f2366dbf", } },//session.user.id
           },
         });
 

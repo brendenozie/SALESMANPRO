@@ -23,10 +23,15 @@ export default function StoresPage() {
       .catch(console.error);
   }, []);
 
-  const totalPages = Math.ceil(stores.length / pageSize);
-  const paginated = stores.slice((page - 1) * pageSize, page * pageSize);
+  const storeList = Array.isArray(stores) ? stores : [];
+  const totalPages = Math.ceil(storeList.length / pageSize);
+  const paginated = storeList.slice((page - 1) * pageSize, page * pageSize);
+
+  // const totalPages = Math.ceil(stores.length / pageSize);
+  // const paginated = stores.slice((page - 1) * pageSize, page * pageSize);
 
   const handleEdit = (id: string) => router.push(`/stores/${id}`);
+  
   const handleDelete = async (id: string) => {
     if (confirm('Delete this store?')) {
       await fetch(`/api/stores/${id}`, { method: 'DELETE' });
@@ -110,7 +115,7 @@ export default function StoresPage() {
               {/* Footer Actions */}
               <div className="flex justify-between items-center">
                 <button
-                  onClick={() => router.push(`/stores/${store.id}/products`)}
+                  onClick={() => router.push(`/admin`)}//stores/${store.id}/products
                   className="text-blue-600 hover:underline flex items-center text-sm"
                 >
                   View Products

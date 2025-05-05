@@ -82,7 +82,7 @@ export default function CreateStorePage() {
     }
   };
 
-  if (!session) return null;
+  // if (!session) return null;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
@@ -351,12 +351,12 @@ export default function CreateStorePage() {
   );
 }
 
-export const getServerSideProps = async (
-  ctx: GetServerSidePropsContext
-) => {
-  const session = await getSession(ctx);
-  if (!session) {
-    return { redirect: { destination: "/auth", permanent: false } };
-  }
-  return { props: {} };
-};
+// export const getServerSideProps = async (
+//   ctx: GetServerSidePropsContext
+// ) => {
+//   // const session = await getSession(ctx);
+//   // if (!session) {
+//   //   return { redirect: { destination: "/auth", permanent: false } };
+//   // }
+//   return { props: {} };
+// };
