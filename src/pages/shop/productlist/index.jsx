@@ -207,7 +207,7 @@ const ProductCard = memo(({ product,addToCart }) => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => addToCart(product)}
-              className="flex items-center bg-yellow-500 text-black p-3 rounded-full shadow-lg hover:shadow-xl transition"
+              className="flex items-center bg-yellow-500 text-black p-3 rounded-xl shadow-lg hover:shadow-xl transition"
               aria-label="Add to Cart"
             >
               <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
