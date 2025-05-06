@@ -643,3 +643,60 @@ function Footer() {
     </footer>
   );
 }
+
+export const metadata = {
+  title: 'StoreName - Your One-Stop Shop',
+  description: 'Discover our exclusive collection of products tailored just for you.',
+  openGraph: {
+    title: 'StoreName - Your One-Stop Shop',
+    description: 'Discover our exclusive collection of products tailored just for you.',
+    url: 'https://yourstore.com',
+    siteName: 'StoreName',
+    images: [
+      {
+        url: 'https://via.placeholder.com/1200x630?text=StoreName',
+        width: 1200,
+        height: 630,
+        alt: 'StoreName',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'StoreName - Your One-Stop Shop',
+    description: 'Discover our exclusive collection of products tailored just for you.',
+    images: ['https://via.placeholder.com/1200x630?text=StoreName'],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
+  themeColor: '#ffffff',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+  },
+  viewport: 'width=device-width, initial-scale=1.0',
+  robots: {
+    index: true,
+    follow: true,
+    noarchive: false,
+    noimageindex: false,
+    nosnippet: false,
+    noydir: false,
+    notranslate: false,
+    nofollow: false,
+    noindex: false,
+  },
+  alternates: {
+    canonical: 'https://yourstore.com',
+    languages: {
+      'en-US': 'https://yourstore.com/en',
+      'es-ES': 'https://yourstore.com/es',
+    },
+  },
+}
