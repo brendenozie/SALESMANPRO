@@ -1,241 +1,158 @@
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { MagnifyingGlassIcon, ShoppingCartIcon, UserIcon } from '@heroicons/react/24/outline';
+// pages/products/[slug].tsx
+import { useState } from "react";
+import { GetStaticPaths, GetStaticProps } from "next";
+import Head from "next/head";
+import Image from "next/image";
 
-const HERO_VIDEO = '/hero-loop.mp4';
-const PLACEHOLDER = 'https://via.placeholder.com';
+// Type definitions
+interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }
+interface Store { name: string; logoUrl: string; bannerUrl: string; category: string; description: string; contactEmail: string; contactPhone: string; address: string; products: Product[]; StoreCategory: StoreCategoryUI[]; }
+interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
+interface Category { id: string; name: string; imageUrl: string; }
+interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
 
-// Loader for next/image
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
+// Mock data fetchers (replace with real API calls)
+async function fetchAllProducts(): Promise<Product[]> {
+  // ...
+  return [];
+}
+async function fetchProductBySlug(slug: string): Promise<Product | null> {
+  // ...
+  return null;
+}
+async function fetchRelatedProducts(categorySlug: string, excludeId: string): Promise<Product[]> {
+  // ...
+  return [];
+}
 
-const HomepageMockup: React.FC = () => {
+export const getStaticPaths: GetStaticPaths = async () => {
+  const products = await fetchAllProducts();
+  const paths = products.map((p) => ({ params: { slug: p.slug } }));
+  return { paths, fallback: "blocking" };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const slug = params?.slug as string;
+  const product = await fetchProductBySlug(slug);
+  if (!product) return { notFound: true };
+  const related = await fetchRelatedProducts(product.categorySlug, product.id);
+  return {
+    props: { product, related },
+    revalidate: 60,
+  };
+};
+
+export default function ProductDetailPage({ product, related }: { product: Product; related: Product[]; }) {
+  const [mainImage, setMainImage] = useState(product.imageUrls[0]);
+
   return (
-    <div className="font-sans text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-200">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
-          <Link href="/">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-full" />
-              <span className="text-2xl font-black">StoreName</span>
-            </div>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-5 w-5 text-gray-400 -translate-y-1/2" />
-              <input
-                className="pl-10 pr-4 py-2 w-64 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-200 transition"
-                placeholder="Search products..."
-              />
-            </div>
-            <Link href="/cart"><ShoppingCartIcon className="h-6 w-6 hover:text-blue-500 transition" /></Link>
-            <Link href="/account"><UserIcon className="h-6 w-6 hover:text-blue-500 transition" /></Link>
-          </div>
-        </div>
-      </header>
+    <>
+      <Head>
+        <title>{product.name} | MyStore</title>
+        <meta name="description" content={product.description.slice(0, 160)} />
+        <meta property="og:title" content={product.name} />
+        <meta property="og:description" content={product.description.slice(0, 160)} />
+        <meta property="og:image" content={product.imageUrls[0]} />
+      </Head>
 
-      {/* Hero Video */}
-      <div className="relative h-[80vh] w-full overflow-hidden">
-        <video
-          src={HERO_VIDEO}
-          autoPlay
-          muted
-          loop
-          className="absolute inset-0 w-full h-full object-cover brightness-75"
-        />
-        <div className="absolute inset-0 flex flex-col justify-center items-start px-8">
-          <motion.h1
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl md:text-6xl font-black text-white mb-4"
-          >
-            Welcome to StoreName
-          </motion.h1>
-          <motion.p
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-lg md:text-xl text-white max-w-xl"
-          >
-            Discover our exclusive collection of products tailored just for you.
-          </motion.p>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-            <Link href="#shop" className="mt-6 inline-block bg-blue-600 px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-700 transition text-white">
-              Start Shopping
-            </Link>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Category Carousel */}
-      <section id="shop" className="mt-12">
-        <h2 className="max-w-7xl mx-auto px-6 text-3xl font-semibold mb-6">Shop by Category</h2>
-        <div className="max-w-7xl mx-auto overflow-x-auto snap-x snap-mandatory flex space-x-6 px-6 pb-4">
-          {['Tech', 'Fashion', 'Sports', 'Beauty'].map((cat, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ scale: 1.03 }}
-              className="snap-start min-w-[250px] h-[300px] rounded-2xl overflow-hidden shadow-lg relative"
-            >
-              <Image
-                src={`${PLACEHOLDER}/400x300?text=${cat}`}
-                layout="fill"
-                objectFit="cover"
-                loader={loader}
-                alt={cat}
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-end p-4">
-                <h3 className="text-2xl font-bold text-white">{cat}</h3>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="mt-16">
-        <h2 className="max-w-7xl mx-auto px-6 text-3xl font-semibold mb-6">Featured Products</h2>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-6">
-          {Array.from({ length: 4 }).map((_, idx) => (
-            <motion.div
-              key={idx}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow transition transform"
-            >
-              <div className="relative h-48 w-full">
-                <Image
-                  src={`${PLACEHOLDER}/300x300?text=Product+${idx+1}`}
-                  layout="fill"
-                  objectFit="cover"
-                  alt={`Product ${idx+1}`}
-                  loader={loader}
-                />
-              </div>
-              <div className="p-4">
-                <h4 className="text-lg font-medium mb-2">Product {idx+1}</h4>
-                <p className="text-xl font-semibold mb-4">${(idx+1)*19.99}</p>
-                <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition">
-                  Add to Cart
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Flash Deal */}
-      <section className="mt-16 max-w-7xl mx-auto px-6">
-        <motion.div whileHover={{ y: -3 }} className="p-6 bg-red-50 rounded-2xl flex items-center justify-between shadow-md">
+      <main className="py-12 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Image Gallery */}
           <div>
-            <h4 className="text-2xl font-bold mb-2">Flash Deal: 25% off!</h4>
-            <p className="font-medium">Ends in 02:15:30</p>
+            <div className="w-full h-[400px] relative rounded-lg overflow-hidden shadow">
+              <Image
+                src={mainImage}
+                alt={product.name}
+                fill
+                className="object-cover"
+                loader={({ src }) => src}
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-4 gap-2">
+              {product.imageUrls.map((url) => (
+                <button
+                  key={url}
+                  onClick={() => setMainImage(url)}
+                  className={
+                    `relative h-20 w-full rounded overflow-hidden border-2 ${
+                      mainImage === url ? 'border-green-600' : 'border-transparent'
+                    }`
+                  }
+                >
+                  <Image
+                    src={url}
+                    alt={`${product.name} thumbnail`}
+                    fill
+                    className="object-cover"
+                    loader={({ src }) => src}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
-          <button className="px-6 py-3 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 transition">
-            Shop Now
-          </button>
-        </motion.div>
-      </section>
 
-      {/* Newsletter */}
-      <section className="mt-16 mb-12 glass mx-auto max-w-2xl p-8 rounded-2xl text-center">
-        <h3 className="text-2xl font-bold mb-4">Join Our Newsletter</h3>
-        <p className="mb-6">Get updates on new products and upcoming sales.</p>
-        <div className="flex justify-center space-x-2">
-          <input
-            type="email"
-            placeholder="Your email address"
-            className="w-3/4 p-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-200 transition"
-          />
-          <button className="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition">
-            Subscribe
-          </button>
+          {/* Product Info */}
+          <div className="space-y-4">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+              {product.name}
+            </h1>
+            <div className="flex items-center space-x-2">
+              <span className="text-xl font-semibold text-green-600">
+                ${product.price.toFixed(2)}
+              </span>
+              <div className="flex items-center">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star
+                    key={i}
+                    className={
+                      `h-5 w-5 ${
+                        i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'
+                      }`
+                    }
+                  />
+                ))}
+                <span className="ml-2 text-sm text-gray-600">({product.rating.toFixed(1)})</span>
+              </div>
+            </div>
+            <p className="text-gray-700 dark:text-gray-300">
+              {product.description}
+            </p>
+            <div className="flex items-center space-x-4">
+              <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition">
+                Add to Cart
+              </button>
+              <button className="border border-green-600 text-green-600 hover:bg-green-50 px-6 py-3 rounded-lg text-sm font-medium transition">
+                Buy Now
+              </button>
+            </div>
+            {/* Additional Info */}
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Category:</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{product.categoryName}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Availability:</h4>
+                <p className={`text-sm font-medium ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
+                  {product.inStock ? 'In Stock' : 'Out of Stock'}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-100 dark:bg-gray-800 py-8 text-center text-gray-600 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} StoreName. All rights reserved.
-      </footer>
-    </div>
+        {/* Related Products */}
+        {related.length > 0 && (
+          <Section title="Related Products">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {related.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </Section>
+        )}
+      </main>
+    </>
   );
-};
-
-export default HomepageMockup;
-export const getStaticProps = async () => {
-  return {
-    props: {
-      title: 'StoreName - Your One-Stop Shop',
-      description: 'Discover our exclusive collection of products tailored just for you.',
-    },
-  };
-};
-
-export const getStaticPaths = async () => {
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
-};
-export const config = {
-  unstable_runtimeJS: false,
-};
-export const metadata = {
-  title: 'StoreName - Your One-Stop Shop',
-  description: 'Discover our exclusive collection of products tailored just for you.',
-  openGraph: {
-    title: 'StoreName - Your One-Stop Shop',
-    description: 'Discover our exclusive collection of products tailored just for you.',
-    url: 'https://yourstore.com',
-    siteName: 'StoreName',
-    images: [
-      {
-        url: 'https://via.placeholder.com/1200x630?text=StoreName',
-        width: 1200,
-        height: 630,
-        alt: 'StoreName',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'StoreName - Your One-Stop Shop',
-    description: 'Discover our exclusive collection of products tailored just for you.',
-    images: ['https://via.placeholder.com/1200x630?text=StoreName'],
-  },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: '/site.webmanifest',
-  themeColor: '#ffffff',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-  },
-  viewport: 'width=device-width, initial-scale=1.0',
-  robots: {
-    index: true,
-    follow: true,
-    noarchive: false,
-    noimageindex: false,
-    nosnippet: false,
-    noydir: false,
-    notranslate: false,
-    nofollow: false,
-    noindex: false,
-  },
-  alternates: {
-    canonical: 'https://yourstore.com',
-    languages: {
-      'en-US': 'https://yourstore.com/en',
-      'es-ES': 'https://yourstore.com/es',
-    },
-  },
 }
