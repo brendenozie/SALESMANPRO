@@ -194,7 +194,7 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
 
     commissionRate: product?.product?.commissionRate || 0,
     commissionType: product?.product?.commissionType || 'COST', // Default to "Percentage"
-    companyId: product?.product?.companyId || '63f7c9e2d91b1b2a5e80b007',
+    companyId: product?.product?.companyId || '68193ae0ab67ac0915b51a23',
     // Vehicle-specific keys
     make: product?.product?.make || "",
     trim: product?.product?.trim || "",
@@ -430,7 +430,7 @@ const handleCreateListing = async () => {
       dimension: formData.dimension,
       commissionRate: formData.commissionRate || 0,
       commissionType: formData.commissionType || 'COST', // Default to "Percentage"
-      companyId: formData.companyId || '63f7c9e2d91b1b2a5e80b007',
+      companyId: formData.companyId || '68193ae0ab67ac0915b51a23',
       material: Array.isArray(formData.material)
         ? formData.material
         : formData.material
