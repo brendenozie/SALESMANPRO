@@ -168,8 +168,8 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     description: product?.product?.description || "",
     productCategoryId: product?.product?.productCategoryId || "",
     model: product?.product?.model || "",
-    color: product?.product?.color || "",
-    size: product?.product?.size || "",
+    color: product?.product?.color || [],
+    size: product?.product?.size || [],
     weight: product?.product?.weight || "",
     condition: product?.product?.condition || "",
     dimension:  product?.product?.dimension || "",
@@ -194,7 +194,7 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
 
     commissionRate: product?.product?.commissionRate || 0,
     commissionType: product?.product?.commissionType || 'COST', // Default to "Percentage"
-    companyId: product?.product?.companyId || '68193ae0ab67ac0915b51a23',
+    companyId: product?.product?.companyId || '68193adfab67ac0915b51a20',
     // Vehicle-specific keys
     make: product?.product?.make || "",
     trim: product?.product?.trim || "",
@@ -272,18 +272,19 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
 
   useEffect(() => {
     if (categories.length > 0) return;
-    const cachedCategories = localStorage.getItem("categories");
-    if (cachedCategories) {
-      setCategories(JSON.parse(cachedCategories));
-    } else {
-      fetch(`${apiUrl}/shop/categories?limit=100`)
+    // const cachedCategories = localStorage.getItem("categories");
+    // if (cachedCategories) {
+    //   setCategories(JSON.parse(cachedCategories));
+    // } else {
+      fetch(`${apiUrl}/admin/get-store-categories?limit=100&companyId=68193adfab67ac0915b51a20`)
         .then((res) => res.json())
         .then((data) => {
-          setCategories(data.categories);
-          localStorage.setItem("categories", JSON.stringify(data.categories));
+          setCategories(data.results);
+          localStorage.setItem("categories", JSON.stringify(data.results));
+          console.log("Fetched categories:", data);
         })
         .catch(console.error);
-    }
+    // }
   }, [categories]);
 
   const filteredBrands = useMemo(() => {
@@ -416,7 +417,8 @@ const handleCreateListing = async () => {
       description: formData.description,
       quantity: formData.quantity,
       // image: images || [], // Use the first uploaded image
-      image: updatedImages.filter((img:any) => img.url.startsWith("https://")),
+      // image: images.filter((img:any) => img.url.startsWith("https://")),
+      image:[],
       productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
       category: formData.category?.name || "",
       subCategory:formData.subCategory,
@@ -430,7 +432,7 @@ const handleCreateListing = async () => {
       dimension: formData.dimension,
       commissionRate: formData.commissionRate || 0,
       commissionType: formData.commissionType || 'COST', // Default to "Percentage"
-      companyId: formData.companyId || '68193ae0ab67ac0915b51a23',
+      companyId: formData.companyId || '68193adfab67ac0915b51a20',
       material: Array.isArray(formData.material)
         ? formData.material
         : formData.material

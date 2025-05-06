@@ -985,3 +985,19 @@ enum OrderSource {
   IN_PERSON
   MOBILE
 }
+
+model Banners {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String?
+  imageUrl     String
+  productImage String?
+  bannerType   String // e.g., "homepage", "category", "product"
+  link         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  status       String    @default("active") // e.g., "active", "inactive"
+  startDate    DateTime?
+  endDate      DateTime?
+  tags         String[]
+}

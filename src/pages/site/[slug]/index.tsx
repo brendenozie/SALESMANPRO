@@ -18,33 +18,6 @@ const SAMPLE_PROMOS: Promo[] = [
   { id: 'promo2', title: 'New Arrivals', subtitle: 'Just landed this week', imageUrl: 'https://via.placeholder.com/600x300?text=New+Arrivals' },
   { id: 'promo3', title: 'Best Sellers', subtitle: 'Our most popular picks', imageUrl: 'https://via.placeholder.com/600x300?text=Best+Sellers' },
 ];
-// Theme per category
-const CATEGORY_THEMES: Record<string, { gradient: string; accent: string }> = {
-  'Tech Gadgets': { gradient: 'from-blue-600 to-blue-400', accent: 'text-blue-200' },
-  'Vehicles': { gradient: 'from-gray-800 to-gray-600', accent: 'text-yellow-300' },
-  'Fashion': { gradient: 'from-pink-500 to-purple-500', accent: 'text-white' },
-  'Household': { gradient: 'from-green-600 to-green-400', accent: 'text-green-100' },
-  'Sports & Outdoors': { gradient: 'from-orange-500 to-yellow-400', accent: 'text-white' },
-  'Beauty & Health': { gradient: 'from-pink-700 to-pink-500', accent: 'text-white' },
-  'Toys & Hobbies': { gradient: 'from-purple-600 to-pink-400', accent: 'text-white' },
-  'Other': { gradient: 'from-gray-500 to-gray-300', accent: 'text-white' },
-};
-
-const SAMPLE_CATEGORIES: Category[] = [
-  { id: 'tech', name: 'Tech Gadgets', imageUrl: 'https://via.placeholder.com/400x300?text=Tech' },
-  { id: 'fashion', name: 'Fashion', imageUrl: 'https://via.placeholder.com/400x300?text=Fashion' },
-  { id: 'sports', name: 'Sports & Outdoors', imageUrl: 'https://via.placeholder.com/400x300?text=Sports' },
-  { id: 'beauty', name: 'Beauty & Health', imageUrl: 'https://via.placeholder.com/400x300?text=Beauty' },
-];
-
-// type Product = { id: string; name: string; price: number; imageUrl: string; slug: string; };
-const SAMPLE_PRODUCTS: Product[] = Array.from({ length: 8 }).map((_, i) => ({
-  id: `${i + 1}`,
-  name: `Sample Product ${i + 1}`,
-  slug: `product-${i + 1}`,
-  price: ((i + 1) * 10) + 0.99,
-  imageUrl: 'https://via.placeholder.com/300',
-}));
 
 // Loader for next/image
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
@@ -70,30 +43,19 @@ export default function StorePage({ store }: { store: Store }) {
       <StoreInfo store={store} />
       <PromoCarousel promos={SAMPLE_PROMOS} />
       <Section title="Shop by Category">
-        {/* <CategoryGrid categories={SAMPLE_CATEGORIES} /> */}
         <CategoryGrid categories={storeCategories} />
       </Section>
       <Section title="Featured Products">
-         <section className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {SAMPLE_PRODUCTS.map(p => (
-            <Link key={p.id} href={`/products/${p.slug}`} className="group block bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow hover:shadow-lg transition transform hover:-translate-y-1">
-                <div className="relative h-56 w-full">
-                  <Image src={p.imageUrl} alt={p.name} layout="fill" objectFit="cover" loader={loader}/>
-                </div>
-                <div className="p-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white group-hover:text-blue-600 transition">{p.name}</h4>
-                  <p className="mt-2 text-xl font-semibold text-gray-800 dark:text-gray-200">${p.price.toFixed(2)}</p>
-                  <button className="mt-3 w-full text-center px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold hover:bg-blue-700 transition">
-                    Add to Cart
-                  </button>
-                </div>
-              
-            </Link>
-          ))}
-        </div>
-      </section>
         <ProductGrid products={store.products} />
+      </Section>
+      <Section title="All Products">
+        <ProductGrid products={store.products} />
+      </Section>
+      <Section title="Customer Reviews">
+        <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-8">
+          <p className="text-lg">"Great products and fast shipping!"</p>
+          <p className="text-sm text-gray-500">- Happy Customer</p>
+        </div>
       </Section>
       <Footer />
     </div>

@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { motion } from "framer-motion";
 
 interface ProductVariantsProps {
   formData: Record<string, string[]>;
@@ -16,7 +17,7 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
   const handleMultiSelect = useCallback(
     (key: keyof typeof VARIANT_OPTIONS, value: string) => {
       setFormData(prev => {
-        const current = prev[key] as string[] || [];
+        const current = (prev[key] as string[]) || [];
         const updated = current.includes(value)
           ? current.filter(v => v !== value)
           : [...current, value];
@@ -27,26 +28,42 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
   );
 
   return (
-    <section className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
-      <h3 className="text-xl font-semibold">Product Variants</h3>
-      { (Object.keys(VARIANT_OPTIONS) as Array<keyof typeof VARIANT_OPTIONS>).map(category => (
-        <div key={category}>
-          <label className="block text-gray-800 font-medium capitalize">{category}</label>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {VARIANT_OPTIONS[category].map(option => (
-              <button
-                key={option}
-                type="button"
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-                  formData[category]?.includes(option)
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-                onClick={() => handleMultiSelect(category, option)}
-              >
-                {option}
-              </button>
-            ))}
+    <section className="p-6 bg-white rounded-2xl shadow-lg space-y-8 border border-gray-200">
+      <h3 className="text-2xl font-bold text-gray-800">Product Variants</h3>
+
+      {(Object.keys(VARIANT_OPTIONS) as Array<keyof typeof VARIANT_OPTIONS>).map(category => (
+        <div key={category} className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-lg font-medium capitalize text-gray-700">
+              {category}
+            </label>
+            {formData[category]?.length > 0 && (
+              <span className="text-sm text-blue-600">
+                {formData[category].length} selected
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {VARIANT_OPTIONS[category].map(option => {
+              const isSelected = formData[category]?.includes(option);
+              return (
+                <motion.button
+                  key={option}
+                  type="button"
+                  onClick={() => handleMultiSelect(category, option)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-5 py-2 rounded-2xl font-medium transition-colors focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-200 
+                    ${isSelected 
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                  `}
+                >
+                  {option}
+                </motion.button>
+              );
+            })}
           </div>
         </div>
       ))}
