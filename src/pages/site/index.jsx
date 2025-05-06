@@ -22,13 +22,13 @@ export async function fetchCategories() {
   ];
 }
 
-export async function fetchStoresByCategory(category: string) {
+export async function fetchStoresByCategory(category: any) {
   const res = await fetch(`/api/stores?category=${encodeURIComponent(category)}`);
   if (!res.ok) throw new Error("Failed to fetch stores");
   return res.json();
 }
 
-export async function fetchStoreById(id: string) {
+export async function fetchStoreById(id: any) {
   const res = await fetch(`/api/stores/${id}`);
   if (!res.ok) throw new Error("Failed to fetch store");
   return res.json();
