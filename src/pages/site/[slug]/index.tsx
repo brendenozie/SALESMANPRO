@@ -1,11 +1,12 @@
-import React,{useState } from 'react';
+import React,{ useState, useEffect, useRef } from 'react';
 import { GetServerSideProps } from 'next';
 import prisma from '@/server/db/prismadb';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon, FaceSmileIcon, BookOpenIcon, TruckIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import banner from '@/assets/homebanner.png';
+import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 
 
 // Type definitions
@@ -41,20 +42,25 @@ export default function StorePage({ store }: { store: Store }) {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       <Header store={store} />
-      <Hero bannerUrl={store.bannerUrl} />
-      <StoreInfo store={store} />
-      <PromoCarousel promos={SAMPLE_PROMOS} />
-      <Section title="Shop by Category">
-        <CategoryGrid categories={storeCategories} />
+      <HeroSlider bannerUrl={store.bannerUrl} />
+      <Section title="">
+        <ServiceFeatures store={store} />
       </Section>
-      <Section title="Featured Products">
+      <Section title="">
+        <CategoryBanners categories={storeCategories} />
+      </Section>
+      <Section title="Trending Products">
         <ProductGrid products={store.products} />
-      </Section>
+      </Section> 
+      <Section title="Top Selling">
+        <ProductGrid products={store.products} />
+      </Section> 
       <Section title="All Products">
         <ProductGrid products={store.products} />
-      </Section>
-      <Section title="Customer Reviews">
-        <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-8">
+      </Section> 
+      <NewsletterSection />
+      <Section title="">
+        <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-8 mb-8">
           <p className="text-lg">"Great products and fast shipping!"</p>
           <p className="text-sm text-gray-500">- Happy Customer</p>
         </div>
@@ -256,7 +262,7 @@ function SearchBar() {
 
 function Hero({ bannerUrl }: { bannerUrl: string }) {
   return (
-    <div className="relative h-96 w-full overflow-hidden">
+    <div className="relative h-[450px] w-full overflow-hidden">
       <Image loader={loader} src={banner} alt="Hero" layout="fill" objectFit="cover" className="brightness-75" />
       <div className="absolute inset-0 flex flex-col justify-center items-start p-8">
         <motion.h1 initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-5xl font-bold text-white">
@@ -373,9 +379,249 @@ function EmptyState() {
 
 function Footer() {
   return (
-    <footer className="bg-gray-100 dark:bg-gray-800 py-8 mt-12 text-center text-gray-600 dark:text-gray-400">
-      &copy; {new Date().getFullYear()} All Rights Reserved.
+    <footer className="bg-gray-800 text-gray-300 py-12">
+      <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 className="font-bold mb-4 text-white">About Us</h3>
+          <p className="text-sm">We’re the best marketplace for everything you need.</p>
+        </div>
+        <div>
+          <h3 className="font-bold mb-4 text-white">Quick Links</h3>
+          <ul className="space-y-2 text-sm">
+            <li><a href="/about" className="hover:text-white">About</a></li>
+            <li><a href="/contact" className="hover:text-white">Contact</a></li>
+            <li><a href="/privacy" className="hover:text-white">Privacy Policy</a></li>
+            <li><a href="/terms" className="hover:text-white">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-bold mb-4 text-white">Customer Care</h3>
+          <ul className="space-y-2 text-sm">
+            <li><a href="/help" className="hover:text-white">Help Center</a></li>
+            <li><a href="/returns" className="hover:text-white">Returns</a></li>
+            <li><a href="/shipping" className="hover:text-white">Shipping</a></li>
+            <li><a href="/track" className="hover:text-white">Track Order</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-bold mb-4 text-white">Follow Us</h3>
+          <div className="flex space-x-4">
+            <a href="#" className="hover:text-white"><FaceSmileIcon className="h-5 w-5" /></a>
+            <a href="#" className="hover:text-white"><BuildingLibraryIcon className="h-5 w-5" /></a>
+            <a href="#" className="hover:text-white"><BookOpenIcon className="h-5 w-5" /></a>
+          </div>
+        </div>
+      </div>
+      <div className="mt-8 text-center text-sm text-gray-500">
+        &copy; {new Date().getFullYear()} Your Store. All rights reserved.
+      </div>
     </footer>
   );
 }
 
+function NewsletterSection() {
+  return (
+    <section className="py-12">
+      <div className="container mx-auto text-center">
+        <h2 className="text-2xl font-bold mb-4">Join Our Newsletter</h2>
+        <p className="text-gray-600 mb-6">Get the latest offers and updates straight to your inbox.</p>
+        <form className="max-w-md mx-auto flex">
+          <input
+            type="email"
+            placeholder="Enter your email"
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none"
+          />
+          <button className="px-6 bg-green-600 hover:bg-green-700 text-white rounded-r-lg">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </section>
+  );
+}
+
+function ProductShowcase({ title, products }: { title: string; products: Product[] }) {
+  return (
+    <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {products.map(p => (
+        <Link key={p.id} href={`/products/${p.slug}`}>  
+          <motion.div whileHover={{ scale: 1.03 }} className="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow transition transform">
+            <div className="relative h-52 w-full">
+              <Image loader={loader} src={p.imageUrl} alt={p.name} layout="fill" objectFit="cover" />
+            </div>
+            <div className="p-4">
+              <h4 className="text-lg font-medium group-hover:text-blue-600 transition">{p.name}</h4>
+              <p className="mt-2 text-xl font-semibold">${p.price.toFixed(2)}</p>
+              <button className="mt-3 w-full px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold hover:bg-blue-700 transition">
+                Add to Cart
+              </button>
+            </div>
+          </motion.div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+
+function CategoryBanners(   { categories }: { categories: StoreCategoryUI[] }) {
+  return (
+    <section className="py-12">
+        <div className="container max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+          {categories.map((cat, idx) => (
+            <a
+              key={idx}
+              // href={cat.link}
+              className="relative block h-48 overflow-hidden rounded-lg group"
+            >
+              {/* icon */}
+              <div className="absolute top-4 left-4 text-white text-3xl">
+                {cat.icon}
+              </div>
+              {/* <Image
+                src={cat.img}
+                alt={cat.name}
+                fill
+                className="object-cover transform group-hover:scale-110 transition"
+                loader={loader}
+              /> */}
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <span className="text-white text-xl font-semibold">{cat.name}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+    </section>
+  );
+}
+
+const features = [
+  { Icon: TruckIcon, title: 'Free Delivery', desc: 'On orders over $99' },
+  { Icon: PhoneIcon, title: '24/7 Support', desc: 'We’re here to help' },
+  { Icon: ShieldCheckIcon, title: 'Secure Payment', desc: '100% secure checkout' },
+  { Icon: ArrowsUpDownIcon, title: 'Easy Returns', desc: '30-day return policy' },
+];
+
+function ServiceFeatures({ store }: { store: Store }) {
+  return (
+      <div className="py-12 bg-gray-50">
+        <div className="container max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map(({ Icon, title, desc }, idx) => (
+            <div key={idx} className="flex items-start space-x-4">
+              <Icon className="h-8 w-8 text-green-600" />
+              <div>
+                <h3 className="font-semibold">{title}</h3>
+                <p className="text-sm text-gray-600">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+  );
+}
+
+// 'use client';
+// import { useState, useEffect, useRef } from 'react';
+// import Image from 'next/image';
+
+const slides = [
+  {
+    image: '/images/slider-1.jpg',
+    subtitle: 'Super Value Deals',
+    title: 'On all products',
+    ctaText: 'Shop Now',
+    ctaLink: '/shop',
+  },
+  {
+    image: '/images/slider-2.jpg',
+    subtitle: 'Hot Deals',
+    title: 'Up to 50% off',
+    ctaText: 'Explore',
+    ctaLink: '/deals',
+  },
+];
+
+function HeroSlider({ bannerUrl }: { bannerUrl: string }) {
+  const [current, setCurrent] = useState(0);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
+  // auto-advance
+  useEffect(() => {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearTimeout(timeoutRef.current);
+  }, [current]);
+
+  const goTo = (idx: number) => {
+    clearTimeout(timeoutRef.current);
+    setCurrent(idx);
+  };
+
+  const prev = () => goTo((current - 1 + slides.length) % slides.length);
+  const next = () => goTo((current + 1) % slides.length);
+
+  return (
+    <section className="relative h-[500px] overflow-hidden">
+      {slides.map((slide, i) => (
+        <div
+          key={i}
+          className={`
+            absolute inset-0 transition-opacity duration-1000
+            ${i === current ? 'opacity-100' : 'opacity-0'}
+          `}
+        >
+          <Image
+            src={slide.image}
+            alt={slide.title}
+            fill
+            className="object-cover"
+             loader={loader}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col justify-center items-start px-8 md:px-16 text-white">
+            <p className="text-lg md:text-xl mb-2">{slide.subtitle}</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">{slide.title}</h2>
+            <a
+              href={slide.ctaLink}
+              className="inline-block bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-white font-medium"
+            >
+              {slide.ctaText}
+            </a>
+          </div>
+        </div>
+      ))}
+
+      {/* Prev/Next buttons */}
+      <button
+        onClick={prev}
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full text-white"
+        aria-label="Previous slide"
+      >
+        ‹
+      </button>
+      <button
+        onClick={next}
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full text-white"
+        aria-label="Next slide"
+      >
+        ›
+      </button>
+
+      {/* Pagination dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+        {slides.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => goTo(idx)}
+            className={`
+              w-3 h-3 rounded-full
+              ${idx === current ? 'bg-white' : 'bg-white bg-opacity-50'}
+            `}
+            aria-label={`Go to slide ${idx + 1}`}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
