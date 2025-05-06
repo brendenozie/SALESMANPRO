@@ -1,10 +1,12 @@
-import React from 'react';
+import React,{useState } from 'react';
 import { GetServerSideProps } from 'next';
 import prisma from '@/server/db/prismadb';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import banner from '@/assets/homebanner.png';
+
 
 // Type definitions
 interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }
@@ -63,10 +65,6 @@ export default function StorePage({ store }: { store: Store }) {
 }
 
 // Server-side fetch
-
-
-// pages/site/[slug].tsx (or stores/[slug].tsx)
-// Server-side fetch
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const raw = await prisma.company.findUnique({
     where: { slug: String(params?.slug) },
@@ -76,7 +74,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         select: {
           id: true,
           name: true,
-          // slug: true,
           finalPrice: true,
           images: true
         }
@@ -143,11 +140,10 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
     // map products into your ProductGrid shape
     products: raw.products.map(p => ({
-      id: p.id,
+      imageUrl: (p.images[0] as { url: string })?.url ?? '/placeholder.png',
       name: p.name,
       // slug: p.slug,
       price: p.finalPrice,
-      imageUrl: p.images[0] ?? '/placeholder.png'
     }))
   };
 
@@ -156,84 +152,94 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   };
 };
 
+function Header({ store }:any) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'de', label: 'Deutsch' },
+    // add more
+  ];
+  const [lang, setLang] = useState(languages[0]);
 
-
-
-
-// export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-//   const store = await prisma.company.findUnique({
-//     where: { slug: String(params?.slug) },
-//     include: {
-//       products: {
-//         take: 8,
-//         select: {
-//           id: true,
-//           name: true,
-//           finalPrice: true,
-//           images: true
-//         }
-//       },
-//       StoreCategory: {
-//         orderBy: { sortOrder: 'asc' },
-//         include: { category: true }
-//       }
-//     }
-//   });
-//   // ...
-//   return {
-//     props: {
-//       store: {
-//         ...store,
-//         products: store?.products?.map(p => ({
-//           id: p.id,
-//           name: p.name,
-//           price: p.finalPrice,
-//           imageUrl: p.images[0] ?? '/placeholder.png'
-//         }))
-//       }
-//     }
-//   };
-// };
-
-// export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-//   const slug = params?.slug as string;
-//   const store = await prisma.company.findUnique({
-//     where: { slug },
-//     select: {
-//       name: true,
-//       logoUrl: true,
-//       bannerUrl: true,
-//       category: true,
-//       products: { take: 8, select: { id: true, name: true, finalPrice: true, images: true } },
-//     },
-//   });
-//   if (!store) return { notFound: true };
-//   return { props: { store } };
-// };
-
-// Components
-function Header({ store }: { store: Store }) {
   return (
-    <header className="sticky top-0 z-30 bg-white dark:bg-gray-800 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
-        <Link href="/">
-          <div className="flex items-center gap-3">
-            <Image loader={loader} src={store.logoUrl} alt="logo" width={50} height={50} className="rounded-full" />
-            <span className="text-2xl font-extrabold">{store.name}</span>
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Top Promo Bar */}
+        <div className="flex items-center justify-between h-8 bg-green-50 text-green-800 text-sm font-medium">
+          <div>Super Value Deals — Save more with coupons</div>
+          <div className="flex items-center space-x-4">
+            <select
+              value={lang.code}
+              // onChange={(e) => setLang(languages.find(l => l.code === e.target.value))}
+              className="bg-white border border-gray-300 rounded-md px-2 py-1 text-sm"
+            >
+              {languages.map((l) => (
+                <option key={l.code} value={l.code}>{l.label}</option>
+              ))}
+            </select>
+            <Link href="/login" className="text-sm text-green-600 hover:underline">Login</Link>
+            <Link href="/register" className="text-sm text-green-600 hover:underline">Register</Link>
+            <Link href="/cart" className="text-sm text-green-600 hover:underline">Cart</Link>
+            </div>
+        </div>
+        {/* Main Nav */}
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-6">
+            <Link href="/">
+              <img src="/logo.svg" alt="logo" className="h-8 w-auto" />
+            </Link>
+            <div className="hidden lg:flex lg:space-x-4">
+              <Link href="/" className="hover:text-green-600">Home</Link>
+              <Link href="/shop" className="hover:text-green-600">Shop</Link>
+            </div>
           </div>
-        </Link>
-        <div className="flex items-center space-x-5">
-          <SearchBar />
-          <Link href="/cart"><ShoppingBagIcon className="h-6 w-6 hover:text-blue-500 transition" /></Link>
-          <Link href="/account"><UserIcon className="h-6 w-6 hover:text-blue-500 transition" /></Link>
+
+          <div className="flex-1 mx-8 hidden lg:block">
+            <div className="relative">
+              <input
+                type="search"
+                placeholder="Search products..."
+                className="w-full border border-gray-300 rounded-full pl-4 pr-10 py-2 focus:ring-green-500 focus:border-green-500"
+              />
+              <button className="absolute right-3 top-1/2 -translate-y-1/2">
+                <MagnifyingGlassCircleIcon className="h-5 w-5 text-gray-500 hover:text-green-600" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <button className="relative hover:text-green-600">
+              <HeartIcon className="h-6 w-6" />
+              <span className="absolute -top-1 -right-2 bg-green-600 text-white rounded-full text-xs px-1">5</span>
+            </button>
+            <button className="relative hover:text-green-600">
+              <UserIcon className="h-6 w-6" />
+            </button>
+            <button className="relative hover:text-green-600">
+              <ShoppingBagIcon className="h-6 w-6" />
+              <span className="absolute -top-1 -right-2 bg-green-600 text-white rounded-full text-xs px-1">{store.cartCount}</span>
+            </button>
+            <button className="lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3BottomLeftIcon className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </div>
-      <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-2">
-        <span className="px-4 py-1 bg-white bg-opacity-30 rounded-full font-medium">{store.category}</span>
-      </div>
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-white border-t">
+          <div className="px-4 py-3 space-y-2">
+            <Link href="/" className="block">Home</Link>
+            <Link href="/shop" className="block">Shop</Link>
+            <Link href="/categories" className="block">Categories</Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
+
 
 function SearchBar() {
   return (
@@ -251,7 +257,7 @@ function SearchBar() {
 function Hero({ bannerUrl }: { bannerUrl: string }) {
   return (
     <div className="relative h-96 w-full overflow-hidden">
-      <Image loader={loader} src={bannerUrl} alt="Hero" layout="fill" objectFit="cover" className="brightness-75" />
+      <Image loader={loader} src={banner} alt="Hero" layout="fill" objectFit="cover" className="brightness-75" />
       <div className="absolute inset-0 flex flex-col justify-center items-start p-8">
         <motion.h1 initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-5xl font-bold text-white">
           Discover Amazing Products
@@ -372,3 +378,4 @@ function Footer() {
     </footer>
   );
 }
+
