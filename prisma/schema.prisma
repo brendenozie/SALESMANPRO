@@ -167,41 +167,157 @@ model StoreCategory {
 }
 
 model Company {
-  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  slug          String  @unique
+  slug          String            @unique
+  tagline       String? // short marketing line
   description   String?
   category      String
   logoUrl       String?
   bannerUrl     String?
-  userId        String? @db.ObjectId
-  user          User?   @relation(fields: [userId], references: [id])
+  heroSlides    Banner[] // relational banners/slides
   contactEmail  String
   contactPhone  String?
   address       String?
-  socialLinks   Json? // e.g. { twitter: "", instagram: "", facebook: "" }
-  policies      Json? // e.g. { shipping: "", returns: "", terms: "" }
-  shippingZones Json? // e.g. ["KE","UG","TZ"]
+  geoLocation   Json? // { lat: number, lng: number }
+  openingHours  Json? // { mon: "9–5", tue: "...", … }
+  socialLinks   SocialLink[] // structured social profiles
+  policies      Policy[] // structured, editable policies
+  faqs          FAQ[] // common questions
+  testimonials  Testimonial[] // customer quotes
+  promotions    Promotion[] // site-wide deals
+  featuredCats  StoreCategory[] // already exists
+  themeSettings Json? // colors, fonts, layout toggles
+  seo           SEO?              @relation(fields: [sEOId], references: [id]) // SEO settings
+  analytics     AnalyticsConfig?  @relation(fields: [analyticsConfigId], references: [id])
+  payment       PaymentSettings?  @relation(fields: [paymentSettingsId], references: [id])
+  shipping      ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
 
-  domain           String? @unique
-  currency         String  @default("KES")
-  locale           String  @default("en-US")
-  themeSettings    Json?
-  seo              Json?
-  analyticsConfig  Json?
-  paymentSettings  Json?
-  shippingSettings Json?
-
+  // existing relations
+  user            User?            @relation(fields: [userId], references: [id])
+  userId          String?          @db.ObjectId
   salesAgents     SalesAgent[]
   products        Product[]
   inventory       InventoryItem[]
   clients         Client[]
   productRequests Request[]
   Target          Target[]
+  commissions     Commission[]
+  commissionsRate CommissionRate[]
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  StoreCategory StoreCategory[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  sEOId              String?       @db.ObjectId
+  analyticsConfigId  String?       @db.ObjectId
+  paymentSettingsId  String?       @db.ObjectId
+  shippingSettingsId String?       @db.ObjectId
+  PageSection        PageSection[]
+  BlogPost           BlogPost[]
+  Collection         Collection[]
+}
+
+// Examples of new small models:
+
+model SocialLink {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+  channel   String // e.g. "twitter", "instagram"
+  url       String
+}
+
+model Policy {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+  type      String // e.g. "shipping", "returns", "privacy"
+  title     String?
+  content   String
+}
+
+model FAQ {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+  question  String
+  answer    String
+  order     Int     @default(0)
+}
+
+model Testimonial {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+  author    String
+  quote     String
+  avatarUrl String?
+  rating    Int? // 1–5 stars
+  order     Int     @default(0)
+}
+
+model Banner {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+  imageUrl  String
+  headline  String?
+  subline   String?
+  ctaText   String?
+  ctaLink   String?
+  order     Int     @default(0)
+}
+
+model Promotion {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  company     Company   @relation(fields: [companyId], references: [id])
+  companyId   String    @db.ObjectId
+  code        String?
+  title       String
+  description String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  bannerUrl   String?
+}
+
+model AnalyticsConfig {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  googleTag   String?
+  facebookTag String?
+  Company     Company[]
+}
+
+model PaymentSettings {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  stripeKey String?
+  paypalKey String?
+  Company   Company[]
+}
+
+model ShippingSettings {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  carrierName String?
+  trackingUrl String?
+  Company     Company[]
+}
+
+model PageSection {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company     @relation(fields: [companyId], references: [id])
+  companyId String      @db.ObjectId
+  type      SectionType
+  order     Int         @default(0)
+  settings  Json // e.g. { background: "dark", padding: "xl" }
+  content   Json // e.g. { headline: "...", blocks: [ ... ] }
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+enum SectionType {
+  Hero
+  FeatureGrid
+  TestimonialCarousel
+  BlogPreview
+  CustomHtml
 }
 
 model Product {
@@ -277,13 +393,41 @@ model Product {
   bedrooms Json? // Updated to support multiple bedroom types
   studios  Json? // Updated to support multiple bedroom types
 
-  status ListingStatus @default(ACTIVE)
+  status         ListingStatus    @default(ACTIVE)
+  Collection     Collection?      @relation(fields: [collectionId], references: [id])
+  collectionId   String?          @db.ObjectId
+  CollectionItem CollectionItem[]
+  Review         Review[]
+  Question       Question[]
+  RecentlyViewed RecentlyViewed[]
+  WishlistItem   WishlistItem[]
 
   @@index([name])
   @@index([finalPrice])
   @@index([isFeatured])
   @@index([createdAt])
   @@index([status])
+}
+
+model BlogPost {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  company     Company    @relation(fields: [companyId], references: [id])
+  companyId   String     @db.ObjectId
+  title       String
+  slug        String     @unique
+  excerpt     String
+  content     String // Markdown or HTML
+  author      String?
+  coverImage  String?
+  tags        String[]
+  publishedAt DateTime?
+  status      PostStatus @default(DRAFT)
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 model Blog {
@@ -297,7 +441,7 @@ model Blog {
   tags        String[] // Array of relevant tags
   author      Author     @relation(fields: [authorId], references: [id])
   authorId    String     @db.ObjectId
-  seo         Seo?
+  seo         SeoBlog?
   status      BlogStatus @default(DRAFT)
   publishedAt DateTime?
   views       Int        @default(0)
@@ -314,13 +458,21 @@ model Author {
   blogs        Blog[]
 }
 
-model Seo {
+model SeoBlog {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String?
   description String?
   keywords    String[]
   blogId      String   @unique @db.ObjectId
   blog        Blog     @relation(fields: [blogId], references: [id])
+}
+
+model SEO {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String?
+  description String?
+  keywords    String[]
+  Company     Company[]
 }
 
 model Comment {
@@ -461,6 +613,10 @@ model User {
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
   Company               Company[]
+  Review                Review[]
+  Question              Question[]
+  RecentlyViewed        RecentlyViewed[]
+  Wishlist              Wishlist[]
 }
 
 enum Status {
@@ -548,6 +704,8 @@ model CommissionRate {
   startDate      DateTime       @default(now())
   endDate        DateTime?
   createdAt      DateTime       @default(now())
+  Company        Company?       @relation(fields: [companyId], references: [id])
+  companyId      String?        @db.ObjectId
 }
 
 model Commission {
@@ -562,6 +720,8 @@ model Commission {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   status           CommissionStatus @default(PENDING)
+  Company          Company?         @relation(fields: [companyId], references: [id])
+  companyId        String?          @db.ObjectId
 
   @@unique([salesAgentId, productId]) // Composite unique constraint
   @@index([salesAgentId, status])
@@ -1000,4 +1160,77 @@ model Banners {
   startDate    DateTime?
   endDate      DateTime?
   tags         String[]
+}
+
+model Collection {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  company        Company          @relation(fields: [companyId], references: [id])
+  companyId      String           @db.ObjectId
+  name           String
+  slug           String           @unique
+  description    String?
+  image          String?
+  products       Product[]
+  order          Int              @default(0)
+  CollectionItem CollectionItem[]
+}
+
+model CollectionItem {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  collectionId String     @db.ObjectId
+  product      Product    @relation(fields: [productId], references: [id])
+  productId    String     @db.ObjectId
+  sortOrder    Int        @default(0)
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String   @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
+  rating    Int // 1–5
+  title     String?
+  body      String
+  photos    String[] // URLs
+  createdAt DateTime @default(now())
+}
+
+model Question {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String   @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
+  question  String
+  answer    String?
+  createdAt DateTime @default(now())
+}
+
+model RecentlyViewed {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String   @db.ObjectId
+  viewedAt  DateTime @default(now())
+}
+
+model Wishlist {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String         @db.ObjectId
+  name         String
+  // products Product[] @relation(references: [id], through: WishlistItem)
+  WishlistItem WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id])
+  wishlistId String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String   @db.ObjectId
+  addedAt    DateTime @default(now())
 }

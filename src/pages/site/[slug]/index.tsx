@@ -10,6 +10,24 @@ import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid'
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 
+const tabs: Array<keyof typeof sampleProducts> = ['New Arrivals', 'Best Sellers', 'Trending'];
+
+const sampleProducts = {
+  'New Arrivals': [
+    { id: 1, name: 'Wireless Earbuds', price: 'Ksh 3,500' },
+    { id: 2, name: 'Smartwatch', price: 'Ksh 6,999' },
+  ],
+  'Best Sellers': [
+    { id: 3, name: 'Bluetooth Speaker', price: 'Ksh 4,200' },
+    { id: 4, name: 'Gaming Mouse', price: 'Ksh 2,800' },
+  ],
+  'Trending': [
+    { id: 5, name: 'Phone Gimbal', price: 'Ksh 7,000' },
+    { id: 6, name: 'Portable Projector', price: 'Ksh 12,000' },
+  ],
+};
+
+
 const slides = [
   {
     image: '/images/slider-1.jpg',
@@ -34,6 +52,9 @@ const features = [
   { Icon: ArrowsUpDownIcon, title: 'Easy Returns', desc: '30-day return policy' },
 ];
 
+// Loader for next/image
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 // Type definitions
 interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }
 interface Store { name: string; logoUrl: string; bannerUrl: string; category: string; description: string; contactEmail: string; contactPhone: string; address: string; products: Product[]; StoreCategory: StoreCategoryUI[]; }
@@ -41,9 +62,6 @@ interface Promo { id: string; title: string; subtitle: string; imageUrl: string;
 interface Category { id: string; name: string; imageUrl: string; }
 interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
 
-
-// Loader for next/image
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function StorePage({ store }: { store: Store }) {
 
@@ -59,6 +77,7 @@ export default function StorePage({ store }: { store: Store }) {
   }));
 
   if (!store) return <EmptyState />;
+
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       <Header store={store} />
@@ -114,7 +133,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
               slug: true,
               image: true,
               icon: true,
-              // omit createdAt/updatedAt if you don't need them
             }
           }
         }
@@ -187,9 +205,10 @@ function Header({ store }: any) {
   const [lang, setLang] = useState(languages[0]);
 
   return (
+    <>
     <header className="bg-white shadow-md sticky top-0 z-50">
       {/* Top Bar */}
-      <div className="bg-green-50 text-green-800 text-sm font-medium py-2 px-4 flex justify-between items-center">
+      <div className="bg-orange-50 text-orange-800 text-sm font-medium py-2 px-4 flex justify-between items-center">
         <span>🎉 Super Value Deals — Save more with coupons</span>
         <div className="flex items-center gap-4 text-sm">
           <select
@@ -197,7 +216,7 @@ function Header({ store }: any) {
             onChange={(e) =>
               setLang(languages.find((l) => l.code === e.target.value)!)
             }
-            className="border border-gray-300 rounded px-2 py-1 bg-white focus:ring-green-500 focus:border-green-500"
+            className="border border-gray-300 rounded px-2 py-1 bg-white focus:ring-orange-500 focus:border-orange-500"
           >
             {languages.map((l) => (
               <option key={l.code} value={l.code}>
@@ -205,9 +224,9 @@ function Header({ store }: any) {
               </option>
             ))}
           </select>
-          <Link href="/login" className="text-green-600 hover:underline">Login</Link>
-          <Link href="/register" className="text-green-600 hover:underline">Register</Link>
-          <Link href="/cart" className="text-green-600 hover:underline">Cart</Link>
+          <Link href="/login" className="text-orange-600 hover:underline">Login</Link>
+          <Link href="/register" className="text-orange-600 hover:underline">Register</Link>
+          <Link href="/cart" className="text-orange-600 hover:underline">Cart</Link>
         </div>
       </div>
 
@@ -220,9 +239,9 @@ function Header({ store }: any) {
               <img src="/logo.svg" alt="logo" className="h-8 w-auto" />
             </Link>
             <nav className="hidden lg:flex items-center gap-6 font-medium text-gray-700">
-              <Link href="/" className="hover:text-green-600 transition">Home</Link>
-              <Link href="/shop" className="hover:text-green-600 transition">Shop</Link>
-              <Link href="/categories" className="hover:text-green-600 transition">Categories</Link>
+              <Link href="/" className="hover:text-orange-600 transition">Home</Link>
+              <Link href="/shop" className="hover:text-orange-600 transition">Shop</Link>
+              <Link href="/categories" className="hover:text-orange-600 transition">Categories</Link>
             </nav>
           </div>
 
@@ -232,33 +251,33 @@ function Header({ store }: any) {
               <input
                 type="search"
                 placeholder="Search products..."
-                className="w-full border border-gray-300 rounded-full pl-4 pr-10 py-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                className="w-full border border-gray-300 rounded-full pl-4 pr-10 py-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
               />
               <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <MagnifyingGlassCircleIcon className="h-5 w-5 text-gray-500 hover:text-green-600" />
+                <MagnifyingGlassCircleIcon className="h-5 w-5 text-gray-500 hover:text-orange-600" />
               </button>
             </div>
           </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            <button className="relative text-gray-600 hover:text-green-600">
+            <button className="relative text-gray-600 hover:text-orange-600">
               <HeartIcon className="h-6 w-6" />
-              <span className="absolute -top-1 -right-2 bg-green-600 text-white rounded-full text-xs px-1">
+              <span className="absolute -top-1 -right-2 bg-orange-600 text-white rounded-full text-xs px-1">
                 5
               </span>
             </button>
-            <button className="relative text-gray-600 hover:text-green-600">
+            <button className="relative text-gray-600 hover:text-orange-600">
               <UserIcon className="h-6 w-6" />
             </button>
-            <button className="relative text-gray-600 hover:text-green-600">
+            <button className="relative text-gray-600 hover:text-orange-600">
               <ShoppingBagIcon className="h-6 w-6" />
-              <span className="absolute -top-1 -right-2 bg-green-600 text-white rounded-full text-xs px-1">
+              <span className="absolute -top-1 -right-2 bg-orange-600 text-white rounded-full text-xs px-1">
                 {store?.cartCount ?? 0}
               </span>
             </button>
             <button
-              className="lg:hidden text-gray-600 hover:text-green-600"
+              className="lg:hidden text-gray-600 hover:text-orange-600"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -275,13 +294,14 @@ function Header({ store }: any) {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-200 shadow-md">
           <div className="px-4 py-4 space-y-2 text-sm font-medium text-gray-700">
-            <Link href="/" className="block hover:text-green-600">Home</Link>
-            <Link href="/shop" className="block hover:text-green-600">Shop</Link>
-            <Link href="/categories" className="block hover:text-green-600">Categories</Link>
+            <Link href="/" className="block hover:text-orange-600">Home</Link>
+            <Link href="/shop" className="block hover:text-orange-600">Shop</Link>
+            <Link href="/categories" className="block hover:text-orange-600">Categories</Link>
           </div>
         </div>
       )}
     </header>
+    </>
   );
 }
 
@@ -400,7 +420,7 @@ function NewsletterSection() {
             placeholder="Enter your email"
             className="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none"
           />
-          <button className="px-6 bg-green-600 hover:bg-green-700 text-white rounded-r-lg">
+          <button className="px-6 bg-orange-600 hover:bg-orange-700 text-white rounded-r-lg">
             Subscribe
           </button>
         </form>
@@ -465,7 +485,7 @@ function ServiceFeatures({ store }: { store: Store }) {
               transition={{ duration: 0.3 }}
               className="flex flex-col items-start bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
             >
-              <div className="flex items-center justify-center bg-green-100 text-green-600 rounded-full w-12 h-12 mb-4">
+              <div className="flex items-center justify-center bg-orange-100 text-orange-600 rounded-full w-12 h-12 mb-4">
                 <Icon className="h-6 w-6" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-1">
@@ -542,7 +562,7 @@ function HeroSlider({ bannerUrl }: { bannerUrl: string }) {
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.7 }}
-                  className="inline-block bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-white font-medium"
+                  className="inline-block bg-orange-600 hover:bg-orange-700 px-6 py-2 rounded-lg text-white font-medium"
                 >
                   {slide.ctaText}
                 </motion.a>
