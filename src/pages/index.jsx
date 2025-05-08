@@ -13,6 +13,7 @@ import Cart from "../components/cart";
 import SignInModal from "../components/SignInModal";
 import { useStateContext } from '../contexts/ContextProvider';
 import LocationModal from "../components/locationManager";
+import PricingTable from "@/components/pricingTable";
 
 const ShopPages = () => {
   const [categories, setCategories] = useState([]);
@@ -110,6 +111,7 @@ const ShopPages = () => {
         <Footer />
         <Cart /> 
         <LocationModal />
+        {/* <PricingTable /> */}
         {isModalOpen && <SignInModal isOpen={isModalOpen} onClose={(modalState) => setModalOpen(modalState)} />}
       </div>
     </>

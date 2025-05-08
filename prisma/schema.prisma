@@ -167,31 +167,36 @@ model StoreCategory {
 }
 
 model Company {
-  id            String            @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  slug          String            @unique
-  tagline       String? // short marketing line
-  description   String?
-  category      String
-  logoUrl       String?
-  bannerUrl     String?
-  heroSlides    Banner[] // relational banners/slides
-  contactEmail  String
-  contactPhone  String?
-  address       String?
-  geoLocation   Json? // { lat: number, lng: number }
-  openingHours  Json? // { mon: "9–5", tue: "...", … }
-  socialLinks   SocialLink[] // structured social profiles
-  policies      Policy[] // structured, editable policies
-  faqs          FAQ[] // common questions
-  testimonials  Testimonial[] // customer quotes
-  promotions    Promotion[] // site-wide deals
-  featuredCats  StoreCategory[] // already exists
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  slug         String        @unique
+  tagline      String? // short marketing line
+  description  String?
+  category     String
+  logoUrl      String?
+  bannerUrl    String?
+  heroSlides   Banner[] // relational banners/slides
+  contactEmail String
+  contactPhone String?
+  address      String?
+  geoLocation  Json? // { lat: number, lng: number }
+  openingHours Json? // { mon: "9–5", tue: "...", … }
+  domain       String?       @unique
+  currency     String        @default("KES")
+  locale       String        @default("en-US")
+  socialLinks  SocialLink[] // structured social profiles
+  policies     Policy[] // structured, editable policies
+  faqs         FAQ[] // common questions
+  testimonials Testimonial[] // customer quotes
+  promotions   Promotion[] // site-wide deals
+
   themeSettings Json? // colors, fonts, layout toggles
   seo           SEO?              @relation(fields: [sEOId], references: [id]) // SEO settings
   analytics     AnalyticsConfig?  @relation(fields: [analyticsConfigId], references: [id])
   payment       PaymentSettings?  @relation(fields: [paymentSettingsId], references: [id])
   shipping      ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
+
+  StoreCategory StoreCategory[]
 
   // existing relations
   user            User?            @relation(fields: [userId], references: [id])
