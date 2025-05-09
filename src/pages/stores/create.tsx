@@ -17,7 +17,7 @@ interface PromotionOption { code?: string; title: string; description?: string; 
 
 interface SEOOption { title?: string; description?: string; keywords?: string[]; canonical?: string; }
 interface AnalyticsConfigOption { googleTag?: string; facebookTag?: string; }
-interface PaymentSettingsOption { stripeKey?: string; paypalKey?: string; }
+interface PaymentSettingsOption { stripeKey?: string; paypalKey?: string; m }
 interface ShippingSettingsOption { carrierName?: string; trackingUrl?: string; }
 
 interface StoreForm {
@@ -64,7 +64,10 @@ interface CreateStorePageProps {
   availableCategories: CategoryOption[];
 }
 
+
+
 export default function CreateStorePage({ availableCategories }: CreateStorePageProps) {
+
   const { data: session } = useSession();
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -112,7 +115,6 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
     }
   }, [form.name]);
 
-  // Basic field change
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value } as any));
@@ -147,82 +149,94 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
     });
   };
 
-  // Submit
+  const next = () => setStep(s => Math.min(s + 1, totalSteps));
+  const prev = () => setStep(s => Math.max(s - 1, 1));
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await fetch('/api/stores', {
+    const res = await fetch('/api/stores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     });
-    router.push('/stores');
+    if (res.ok) router.push('/stores');
   };
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl p-8">
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-600 transition-all"
-              style={{ width: `${(step / totalSteps) * 100}%` }}
-            />
-          </div>
-          <p className="text-sm text-gray-600 mt-2">
-            Step {step} of {totalSteps}
-          </p>
-        </div>
-
-        {/* Title */}
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          {['Basic', 'Categories', 'Media', 'Contact', 'Advanced'][step - 1]} Info
-        </h1>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 1. Basic */}
-          {step === 1 && (
-            <div className="grid gap-4">
-              {['name', 'tagline', 'category'].map(field => (
-                <div key={field}>
-                  <label className="block text-sm font-medium capitalize">{field}</label>
-                  <input
-                    name={field}
-                    value={(form as any)[field]}
-                    onChange={handleChange}
-                    required={field === 'name' || field === 'category'}
-                    className="mt-1 w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* 2. Categories */}
-          {step === 2 && (
-            <div>
-              <p className="block text-sm font-medium">Select Categories</p>
-              <div className="mt-2 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
-                {availableCategories.map(cat => (
-                  <label
-                    key={cat.id}
-                    className="flex items-center p-2 bg-gray-50 rounded hover:bg-gray-100"
-                  >
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      checked={form.storeCategories?.some(c => c.id === cat.id)}
-                      onChange={() => handleCategoryToggle(cat)}
-                    />
-                    <span className="text-gray-700">{cat.name}</span>
-                  </label>
-                ))}
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+            <h2 className="text-lg font-semibold">Basic Info</h2>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium">Name</label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Slug</label>
+                <input
+                  name="slug"
+                  value={form.slug}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Tagline</label>
+                <input
+                  name="tagline"
+                  value={form.tagline}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Domain</label>
+                <input
+                  name="domain"
+                  value={form.domain}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
             </div>
-          )}
-
-          {/* 3. Media */}
-          {step === 3 && (
+          </div>
+        );
+      case 2:
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-semibold mb-2">Select Categories</h2>
+            <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+              {availableCategories.map(cat => (
+                <label key={cat.id} className="flex items-center p-2 border rounded hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={form.storeCategories?.some(c => c.id === cat.id)}
+                    onChange={() => {
+                      const exists = form.storeCategories?.some(c => c.id === cat.id);
+                      const newCats = exists
+                        ? form.storeCategories!.filter(c => c.id !== cat.id)
+                        : [...(form.storeCategories || []), cat];
+                      setForm(f => ({ ...f, storeCategories: newCats } as any));
+                    }}
+                    className="mr-2"
+                  />
+                  <span className="text-gray-700">{cat.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        );
+      // Steps 3-4 follow similar structure...
+      case 3:
+        return (
             <div className="grid gap-4">
               {['bannerUrl', 'logoUrl', 'description'].map(field => (
                 <div key={field}>
@@ -247,10 +261,11 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
                 </div>
               ))}
             </div>
-          )}
+          )
 
           {/* 4. Contact & Location */}
-          {step === 4 && (
+      case 4:
+        return (
             <div className="grid gap-4">
               <div>
                 <label className="block text-sm font-medium">Contact Email</label>
@@ -296,11 +311,783 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
                 </div>
               </div>
             </div>
-          )}
+          )
+      {/* 5. Advanced Settings */}
+      case 5:
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+      <h2 className="text-lg font-semibold">Advanced Settings</h2>
 
-          {/* 5. Advanced */}
-          {step === 5 && (
-            <div className="space-y-6">
+      {/* Social Links Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 flex justify-between cursor-pointer">
+          <span>Social Links</span>
+          <span>{(form.socialLinks?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.socialLinks || []).map((s, i) => (
+            <div key={i} className="flex space-x-2 items-center">
+              <input
+                placeholder="Channel (e.g. Twitter)"
+                value={s.channel}
+                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'channel', e.target.value)}
+                className="flex-1 border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <input
+                placeholder="URL"
+                value={s.url}
+                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'url', e.target.value)}
+                className="flex-2 border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('socialLinks', i)} className="text-red-500">×</button>
+            </div>
+          ))}
+          <button
+            disabled={(form.socialLinks || []).some(s => !s.channel || !s.url)}
+            onClick={() => addArrayItem<SocialLinkOption>('socialLinks', { channel: '', url: '' })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add Social Link
+          </button>
+        </div>
+      </details>
+
+      {/* Policies Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 flex justify-between cursor-pointer">
+          <span>Policies</span>
+          <span>{(form.policies?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.policies || []).map((p, i) => (
+            <div key={i} className="space-y-1">
+              <input
+                placeholder="Type (e.g. Refunds)"
+                value={p.type}
+                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'type', e.target.value)}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <textarea
+                placeholder="Content"
+                value={p.content}
+                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'content', e.target.value)}
+                rows={2}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('policies', i)} className="text-red-500">Remove</button>
+            </div>
+          ))}
+          <button
+            disabled={(form.policies || []).some(p => !p.type || !p.content)}
+            onClick={() => addArrayItem<PolicyOption>('policies', { type: '', content: '' })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add Policy
+          </button>
+        </div>
+      </details>
+
+      {/* FAQs Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 flex justify-between cursor-pointer">
+          <span>FAQs</span>
+          <span>{(form.faqs?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.faqs || []).map((f, i) => (
+            <div key={i} className="space-y-1">
+              <input
+                placeholder="Question"
+                value={f.question}
+                onChange={e => handleArrayChange<FAQOption>('faqs', i, 'question', e.target.value)}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <textarea
+                placeholder="Answer"
+                value={f.answer}
+                onChange={e => handleArrayChange<FAQOption>('faqs', i, 'answer', e.target.value)}
+                rows={2}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('faqs', i)} className="text-red-500">Remove</button>
+            </div>
+          ))}
+          <button
+            disabled={(form.faqs || []).some(f => !f.question || !f.answer)}
+            onClick={() => addArrayItem<FAQOption>('faqs', { question: '', answer: '', order: (form.faqs || []).length })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add FAQ
+          </button>
+        </div>
+      </details>
+
+      {/* Testimonials Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 flex justify-between cursor-pointer">
+          <span>Testimonials</span>
+          <span>{(form.testimonials?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.testimonials || []).map((t, i) => (
+            <div key={i} className="space-y-1">
+              <input
+                placeholder="Author"
+                value={t.author}
+                onChange={e => handleArrayChange<TestimonialOption>('testimonials', i, 'author', e.target.value)}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <textarea
+                placeholder="Quote"
+                value={t.quote}
+                onChange={e => handleArrayChange<TestimonialOption>('testimonials', i, 'quote', e.target.value)}
+                rows={2}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('testimonials', i)} className="text-red-500">Remove</button>
+            </div>
+          ))}
+          <button
+            disabled={(form.testimonials || []).some(t => !t.author || !t.quote)}
+            onClick={() => addArrayItem<TestimonialOption>('testimonials', { author: '', quote: '', avatarUrl: '', rating: 0, order: (form.testimonials || []).length })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add Testimonial
+          </button>
+        </div>
+      </details>
+
+      {/* Hero Slides Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 flex justify-between cursor-pointer">
+          <span>Hero Slides</span>
+          <span>{(form.heroSlides?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.heroSlides || []).map((h, i) => (
+            <div key={i} className="space-y-1">
+              <input
+                placeholder="Image URL"
+                value={h.imageUrl}
+                onChange={e => handleArrayChange<BannerOption>('heroSlides', i, 'imageUrl', e.target.value)}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <input
+                placeholder="Headline"
+                value={h.headline}
+                onChange={e => handleArrayChange<BannerOption>('heroSlides', i, 'headline', e.target.value)}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('heroSlides', i)} className="text-red-500">Remove</button>
+            </div>
+          ))}
+          <button
+            disabled={(form.heroSlides || []).some(h => !h.imageUrl || !h.headline)}
+            onClick={() => addArrayItem<BannerOption>('heroSlides', { imageUrl: '', headline: '', subline: '', ctaText: '', ctaLink: '', order: (form.heroSlides || []).length })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add Hero Slide
+          </button>
+        </div>
+      </details>
+
+      {/* Promotions Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 flex justify-between cursor-pointer">
+          <span>Promotions</span>
+          <span>{(form.promotions?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.promotions || []).map((p, i) => (
+            <div key={i} className="space-y-1">
+              <input
+                placeholder="Code"
+                value={p.code}
+                onChange={e => handleArrayChange<PromotionOption>('promotions', i, 'code', e.target.value)}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <textarea
+                placeholder="Description"
+                value={p.description}
+                onChange={e => handleArrayChange<PromotionOption>('promotions', i, 'description', e.target.value)}
+                rows={2}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('promotions', i)} className="text-red-500">Remove</button>
+            </div>
+          ))}
+          <button
+            disabled={(form.promotions || []).some(p => !p.code || !p.description)}
+            onClick={() => addArrayItem<PromotionOption>('promotions', { title:'', code: '', description: '', startsAt: '', endsAt: '', bannerUrl: '' })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add Promotion
+          </button>
+        </div>
+      </details>
+
+      {/* JSON Config Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 flex justify-between cursor-pointer">
+          <span>Raw JSON Config</span>
+          <span>⚙️</span>
+        </summary>
+        <div className="p-4 space-y-4 font-mono text-sm">
+          <div>
+            <label>Theme Settings</label>
+            <textarea
+              rows={3}
+              value={JSON.stringify(form.themeSettings, null, 2)}
+              onChange={e => setForm(f => ({ ...f, themeSettings: JSON.parse(e.target.value) }))}
+              className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+            />
+          </div>
+          <div>
+            <label>SEO Settings</label>
+            <textarea
+              rows={3}
+              value={JSON.stringify(form.seo, null, 2)}
+              onChange={e => setForm(f => ({ ...f, seo: JSON.parse(e.target.value) }))}
+              className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+            />
+          </div>
+          {/* add analyticsConfig, paymentSettings, shippingSettings similarly */}
+          <details className="border rounded">
+  <summary className="px-4 py-2 flex justify-between cursor-pointer">
+    <span>Advanced Settings</span>
+    <span>⚙️</span>
+  </summary>
+  <div className="p-4 space-y-6">
+    {/* Theme Settings */}
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">Theme Settings</h3>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs">Primary Color</label>
+          <input
+            type="text"
+            value={form.themeSettings?.primaryColor || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                themeSettings: { ...f.themeSettings, primaryColor: e.target.value }
+              }))
+            }
+            placeholder="#4f46e5"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Secondary Color</label>
+          <input
+            type="text"
+            value={form.themeSettings?.secondaryColor || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                themeSettings: { ...f.themeSettings, secondaryColor: e.target.value }
+              }))
+            }
+            placeholder="#facc15"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-xs">Font Family</label>
+          <input
+            type="text"
+            value={form.themeSettings?.fontFamily || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                themeSettings: { ...f.themeSettings, fontFamily: e.target.value }
+              }))
+            }
+            placeholder="Inter, sans-serif"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* SEO Settings */}
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">SEO Settings</h3>
+      <div className="space-y-2">
+        <div>
+          <label className="block text-xs">Page Title</label>
+          <input
+            type="text"
+            value={form.seo?.title || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                seo: { ...f.seo, title: e.target.value }
+              }))
+            }
+            placeholder="My Awesome Store"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Meta Description</label>
+          <textarea
+            rows={2}
+            value={form.seo?.description || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                seo: { ...f.seo, description: e.target.value }
+              }))
+            }
+            placeholder="Best deals on fashion, electronics, and more."
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Keywords (comma-separated)</label>
+          <input
+            type="text"
+            value={form.seo?.keywords?.join(', ') || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                seo: { ...f.seo, keywords: e.target.value.split(',').map(k => k.trim()) }
+              }))
+            }
+            placeholder="ecommerce, fashion, electronics"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+<details className="border rounded">
+  <summary className="px-4 py-2 flex justify-between cursor-pointer">
+    <span>Advanced Settings</span>
+    <span>⚙️</span>
+  </summary>
+  <div className="p-4 space-y-6">
+    {/* Theme Settings */}
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">Theme Settings</h3>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs">Primary Color</label>
+          <input
+            type="text"
+            value={form.themeSettings?.primaryColor || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                themeSettings: { ...f.themeSettings, primaryColor: e.target.value }
+              }))
+            }
+            placeholder="#4f46e5"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Secondary Color</label>
+          <input
+            type="text"
+            value={form.themeSettings?.secondaryColor || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                themeSettings: { ...f.themeSettings, secondaryColor: e.target.value }
+              }))
+            }
+            placeholder="#facc15"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-xs">Font Family</label>
+          <input
+            type="text"
+            value={form.themeSettings?.fontFamily || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                themeSettings: { ...f.themeSettings, fontFamily: e.target.value }
+              }))
+            }
+            placeholder="Inter, sans-serif"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* SEO Settings */}
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">SEO Settings</h3>
+      <div className="space-y-2">
+        <div>
+          <label className="block text-xs">Page Title</label>
+          <input
+            type="text"
+            value={form.seo?.title || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                seo: { ...f.seo, title: e.target.value }
+              }))
+            }
+            placeholder="My Awesome Store"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Meta Description</label>
+          <textarea
+            rows={2}
+            value={form.seo?.description || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                seo: { ...f.seo, description: e.target.value }
+              }))
+            }
+            placeholder="Best deals on fashion, electronics, and more."
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Keywords (comma-separated)</label>
+          <input
+            type="text"
+            value={form.seo?.keywords?.join(', ') || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                seo: { ...f.seo, keywords: e.target.value.split(',').map(k => k.trim()) }
+              }))
+            }
+            placeholder="ecommerce, fashion, electronics"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Analytics Config */}
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">Analytics</h3>
+      <div className="space-y-2">
+        <div>
+          <label className="block text-xs">Google Tag ID</label>
+          <input
+            type="text"
+            value={form.analyticsConfig?.googleTag || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                analyticsConfig: { ...f.analyticsConfig, googleTag: e.target.value }
+              }))
+            }
+            placeholder="G-XXXXXXXXXX"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Facebook Pixel ID</label>
+          <input
+            type="text"
+            value={form.analyticsConfig?.facebookTag || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                analyticsConfig: { ...f.analyticsConfig, facebookTag: e.target.value }
+              }))
+            }
+            placeholder="1234567890"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Payment Settings */}
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">Payment Settings</h3>
+      <div className="space-y-2">
+        <div>
+          <label className="block text-xs">Stripe Public Key</label>
+          <input
+            type="text"
+            value={form.paymentSettings?.stripeKey || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                paymentSettings: { ...f.paymentSettings, stripeKey: e.target.value }
+              }))
+            }
+            placeholder="pk_test_..."
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">PayPal Client ID</label>
+          <input
+            type="text"
+            value={form.paymentSettings?.paypalKey || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                paymentSettings: { ...f.paymentSettings, paypalKey: e.target.value }
+              }))
+            }
+            placeholder="AbCdEfGhIjKlMnOpQrStUvWxYz"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        {/* Payment Settings */}
+<div className="space-y-2">
+  <h3 className="text-sm font-semibold">Payment Settings</h3>
+  <div className="space-y-4">
+
+    {/* Stripe */}
+    <div>
+      <label className="block text-xs">Stripe Public Key</label>
+      <input
+        type="text"
+        value={form.paymentSettings?.stripeKey || ''}
+        onChange={e =>
+          setForm(f => ({
+            ...f,
+            paymentSettings: { ...f.paymentSettings, stripeKey: e.target.value }
+          }))
+        }
+        placeholder="pk_test_..."
+        className="w-full border rounded px-2 py-1 text-sm"
+      />
+    </div>
+
+    {/* PayPal */}
+    <div>
+      <label className="block text-xs">PayPal Client ID</label>
+      <input
+        type="text"
+        value={form.paymentSettings?.paypalKey || ''}
+        onChange={e =>
+          setForm(f => ({
+            ...f,
+            paymentSettings: { ...f.paymentSettings, paypalKey: e.target.value }
+          }))
+        }
+        placeholder="AbCdEfGhIjKlMnOpQrStUvWxYz"
+        className="w-full border rounded px-2 py-1 text-sm"
+      />
+    </div>
+
+    {/* M-Pesa */}
+    <fieldset className="border rounded p-3">
+      <legend className="text-xs font-medium">M-Pesa (Daraja API)</legend>
+      <div className="space-y-2">
+        <div>
+          <label className="block text-xs">Business Shortcode</label>
+          <input
+            type="text"
+            value={form.paymentSettings?.mpesaShortcode || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                paymentSettings: { ...f.paymentSettings, mpesaShortcode: e.target.value }
+              }))
+            }
+            placeholder="e.g. 123456"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">API Consumer Key</label>
+          <input
+            type="text"
+            value={form.paymentSettings?.mpesaConsumerKey || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                paymentSettings: { ...f.paymentSettings, mpesaConsumerKey: e.target.value }
+              }))
+            }
+            placeholder="Your Daraja Consumer Key"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">API Consumer Secret</label>
+          <input
+            type="text"
+            value={form.paymentSettings?.mpesaConsumerSecret || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                paymentSettings: { ...f.paymentSettings, mpesaConsumerSecret: e.target.value }
+              }))
+            }
+            placeholder="Your Daraja Consumer Secret"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Callback URL</label>
+          <input
+            type="url"
+            value={form.paymentSettings?.mpesaCallbackUrl || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                paymentSettings: { ...f.paymentSettings, mpesaCallbackUrl: e.target.value }
+              }))
+            }
+            placeholder="https://yourdomain.com/api/mpesa/callback"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+
+  </div>
+</div>
+
+      </div>
+    </div>
+
+    {/* Shipping Settings */}
+    <div className="space-y-2">
+      <h3 className="text-sm font-semibold">Shipping Settings</h3>
+      <div className="space-y-2">
+        <div>
+          <label className="block text-xs">Carrier Name</label>
+          <input
+            type="text"
+            value={form.shippingSettings?.carrierName || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                shippingSettings: { ...f.shippingSettings, carrierName: e.target.value }
+              }))
+            }
+            placeholder="DHL, FedEx, etc."
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs">Tracking URL Template</label>
+          <input
+            type="text"
+            value={form.shippingSettings?.trackingUrl || ''}
+            onChange={e =>
+              setForm(f => ({
+                ...f,
+                shippingSettings: { ...f.shippingSettings, trackingUrl: e.target.value }
+              }))
+            }
+            placeholder="https://tracking.example.com/track?code={tracking_number}"
+            className="w-full border rounded px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+        </div>
+      </details>
+    </div>
+    
+  );
+
+      case 7:
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+      <h2 className="text-lg font-semibold">Advanced Settings</h2>
+
+      {/* Social Links Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 cursor-pointer flex justify-between">
+          <span>Social Links</span>
+          <span>{(form.socialLinks?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.socialLinks || []).map((s, i) => (
+            <div key={i} className="flex space-x-2 items-center">
+              <input
+                placeholder="Channel (e.g. Twitter)"
+                value={s.channel}
+                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'channel', e.target.value)}
+                className="flex-1 border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <input
+                placeholder="URL"
+                value={s.url}
+                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'url', e.target.value)}
+                className="flex-2 border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('socialLinks', i)} className="text-red-500">×</button>
+            </div>
+          ))}
+          <button
+            disabled={(form.socialLinks || []).some(s => !s.channel || !s.url)}
+            onClick={() => addArrayItem<SocialLinkOption>('socialLinks', { channel: '', url: '' })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add Social Link
+          </button>
+        </div>
+      </details>
+
+      {/* Policies Accordion */}
+      <details className="border rounded">
+        <summary className="px-4 py-2 cursor-pointer flex justify-between">
+          <span>Policies</span>
+          <span>{(form.policies?.length || 0) > 0 ? '✅' : '+'}</span>
+        </summary>
+        <div className="p-4 space-y-2">
+          {(form.policies || []).map((p, i) => (
+            <div key={i} className="space-y-1">
+              <input
+                placeholder="Type (e.g. Refunds)"
+                value={p.type}
+                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'type', e.target.value)}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <textarea
+                placeholder="Content"
+                value={p.content}
+                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'content', e.target.value)}
+                rows={2}
+                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+              />
+              <button onClick={() => removeArrayItem('policies', i)} className="text-red-500 text-left">
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            disabled={(form.policies || []).some(p => !p.type || !p.content)}
+            onClick={() => addArrayItem<PolicyOption>('policies', { type: '', content: '' })}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+          >
+            Add Policy
+          </button>
+        </div>
+      </details>
+
+      {/* …repeat for FAQs, Testimonials etc.… */}
+
+    </div>
+  );
+
+      case 6:
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+            <h2 className="text-lg font-semibold">Advanced Settings</h2>
+              <div className="space-y-6">
               {/* Social Links */}
               <div>
                 <p className="block text-sm font-medium">Social Links</p>
@@ -700,24 +1487,43 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
-          {/* Navigation */}
-          <div className="flex justify-between pt-4">
-            {step > 1 && (
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+      <div className="w-full max-w-3xl">
+        {/* Progress Bar */}
+        <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-indigo-600 transition-all"
+            style={{ width: `${(step / totalSteps) * 100}%` }}
+          />
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {renderStep()}
+
+          <div className="flex justify-between">
+            {step > 1 ? (
               <button
                 type="button"
-                onClick={() => setStep(s => s - 1)}
+                onClick={prev}
                 className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
               >
                 Previous
               </button>
-            )}
+            ) : <div />}
+
             {step < totalSteps ? (
               <button
                 type="button"
-                onClick={() => setStep(s => s + 1)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={next}
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
               >
                 Next
               </button>
