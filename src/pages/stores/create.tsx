@@ -21,6 +21,8 @@ const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer)
 const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
 const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
+const useMapEvents = dynamic(() => import('react-leaflet').then(m => m.useMapEvents), { ssr: false });
+
 
 interface CategoryOption { id: string; name: string; }
 
@@ -542,271 +544,154 @@ interface GeoLocation {
   lng: number;
 }
 
-interface ContactLocationAccordionProps {
-  form: {
-    contactEmail: string;
-    geoLocation: GeoLocation;
+function useDebounce(fn: Function, delay: number) {
+  const timeout = useRef<number>();
+  return (...args: any[]) => {
+    window.clearTimeout(timeout.current);
+    timeout.current = window.setTimeout(() => fn(...args), delay);
   };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleLocationChange: (coord: Partial<GeoLocation>) => void;
 }
 
-// Draggable marker component
-const DraggableMarker: React.FC<{
-  position: [number, number];
-  onChange: (lat: number, lng: number) => void;
-}> = ({ position, onChange }) => {
-  const markerRef = React.useRef<any>(null);
-
-  // useMapEvents({
-  //   dragend: () => {
-  //     const marker = markerRef.current;
-  //     if (marker) {
-  //       const { lat, lng } = marker.getLatLng();
-  //       onChange(lat, lng);
-  //     }
-  //   },
-  // });
-
-
-
-  return (
-    <Marker
-      // draggable
-      eventHandlers={{
-        dragend: () => {
-          const marker = markerRef.current;
-          if (marker) {
-            const { lat, lng } = marker.getLatLng();
-            onChange(lat, lng);
-          }
-        },
-      }}
-      position={position}
-      ref={markerRef}
-    />
-  );
+type Props = {
+  form: {
+    contactEmail: string;
+    openingHours: Record<string,string>;
+    geoLocation: { lat: number; lng: number; radius: number };
+  };
+  handleChange: React.ChangeEventHandler;
+  handleLocationChange: (loc: Partial<{lat:number;lng:number;radius:number}>) => void;
 };
 
-export const ContactLocationAccordion: React.FC<ContactLocationAccordionProps> = ({
+export const ContactLocationAccordion: React.FC<Props> = ({
   form,
   handleChange,
   handleLocationChange,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState({ lat: 51.505, lng: -0.09 });
-  const [loading, setLoading] = useState(false);
-  const [fetchingLocation, setFetchingLocation] = useState(false);
-  const [zoom, setZoom] = useState(6);
-  const [address, setAddress] = useState("");
-  const [radius, setRadius] = useState(500);
-  const [dragging, setDragging] = useState(false);
-  const [savedAddress, setSavedAddress] = useState(null);
+  const [address, setAddress]     = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [mapCenter, setMapCenter] = useState(form.geoLocation);
 
-  const position: [number, number] = [
-    form.geoLocation.lat,
-    form.geoLocation.lng,
-  ];
+  // Simple debounced reverse-geocode
+  const fetchAddress = async (lat: number, lng: number) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get('/api/reverse', { params: { lat, lon: lng, format: 'json' } });
+      setAddress(data.display_name || '');
+      handleLocationChange({ lat, lng });
+    } catch {
+      setAddress('Unknown location');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const debouncedFetch = useDebounce(fetchAddress, 500);
 
-  const MapUpdater = dynamic(
-        () => import("react-leaflet").then((m) => ({
-          default: function ({ onMapClick }) {
-            const { useMap } = m;
-            if (!useMap) return null;
-            const map = useMap();
-            useEffect(() => {
-              map.setView(mapCenter, zoom);
-            }, [mapCenter, zoom, map]);
-            return null;
-          },
-        })),
-        { ssr: false }
-  );
-    
-  // Handle map drag movement
-  // Dynamically import useMapEvents to ensure it only runs on the client
-  const MapDragHandler = dynamic(() =>
-    import("react-leaflet").then((m) => ({
-      default: function ({ setMapCenter, setSelectedLocation, debouncedFetchAddress, setDragging }) {
-        const { useMapEvents } = m;
-        if (!useMapEvents) return null;
-  
-        useMapEvents({
-          move: (e) => {
-            setDragging(true);
-            const center = e.target.getCenter();
-            setMapCenter({ lat: center.lat, lng: center.lng });
-          },
-          moveend: (e) => {
-            setDragging(false);
-            const center = e.target.getCenter();
-            setSelectedLocation({ lat: center.lat, lng: center.lng });
-            debouncedFetchAddress(center.lat, center.lng);
-          },
-        });
-  
-        return null;
-      },
-    })),
-    { ssr: false }
-  );
-  
-  // Handle marker drag event
-  const handleMarkerDragEnd = (event) => {
-      const position = event.target.getLatLng();
-      setSelectedLocation(position);
-      setMapCenter(position);
-      // debouncedFetchAddress(position.lat, position.lng);
+  // Hook up map movements
+  const MapMover = () => {
+    // const map = useMapEvents({
+    //   moveend: e => {
+    //     const c = e.target.getCenter();
+    //     setMapCenter({ lat: c.lat, lng: c.lng, radius: form.geoLocation.radius });
+    //     debouncedFetch(c.lat, c.lng);
+    //   },
+    // });
+    return null;
   };
 
-  const handleMapClick = (e) => {
-      const { lat, lng } = e.latlng;
-      setSelectedLocation({ lat, lng });
-      setMapCenter({ lat, lng });
-      // fetchAddress(lat, lng);
-  };
-
-  // Fetch address based on coordinates
-  const fetchAddress = async (lat, lng) => {
-        try {
-          setLoading(true);
-          const { data } = await axios.get(`${API_BASE}/reverse`, {
-            params: { format: "json", lat, lon: lng },
-          });
-          setAddress(data.display_name || "Unknown Location");
-          setSearchTerm(data.display_name || ""); // Update search input dynamically
-          onAddressSelect({display_name : data.display_name,
-                            lat:lat,
-                            lng:lng}); // Pass address to parent
-        } catch (error) {
-          console.error("Error fetching address:", error);
-        } finally {
-          setLoading(false);
-        }
-  };
-
-  // Debounced address fetching
-  const debouncedFetchAddress = useMemo(() => debounce(fetchAddress, 500), []);
-  useEffect(() => () => debouncedFetchAddress.cancel(), [debouncedFetchAddress]);
-
-  const days = ['mon','tue','wed','thu','fri','sat','sun'];
+  // Sync external form radius → local center
+  useEffect(() => {
+    setMapCenter(form.geoLocation);
+  }, [form.geoLocation]);
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
-      <details className="group">
-        <summary className="flex justify-between items-center cursor-pointer p-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition">
+      <details open className="group">
+        <summary className="flex justify-between items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition">
           <div className="flex items-center space-x-2">
             <MapPinIcon className="h-6 w-6 text-blue-500" />
-            <span className="text-lg font-semibold text-gray-800">
-              Contact & Location
-            </span>
+            <span className="text-lg font-semibold text-gray-800">Contact & Location</span>
           </div>
-          <ChevronDownIcon className="h-6 w-6 text-gray-500 transition-transform group-open:rotate-180" />
+          <span className="transform transition group-open:rotate-180">▼</span>
         </summary>
-        <div className="mt-4 space-y-6">
-          {/* Contact Email */}
+
+        <div className="mt-6 space-y-6">
+          {/* Opening Hours */}
+          <fieldset className="grid grid-cols-2 gap-4 p-4 border border-gray-200 rounded-lg">
+            <legend className="col-span-2 font-medium">Opening Hours</legend>
+            {['mon','tue','wed','thu','fri','sat','sun'].map(day => (
+              <div key={day}>
+                <label className="block text-sm font-medium capitalize">{day}</label>
+                <input
+                  type="time"
+                  name={`openingHours.${day}`}
+                  value={form.openingHours[day] || ''}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            ))}
+          </fieldset>
+
+          {/* Email */}
           <div>
-            <label>Opening Hours</label>
-            {days.map(d => (
-              <input key={d} name={`openingHours.${d}`} placeholder={d} value={(form.openingHours ?? {})[d]} onChange={e => setForm(f => ({
-        ...f, openingHours: { ...f.openingHours, [d]: e.target.value }
-      }))} />))}</div>
-          <div className="space-y-1">
-            <label
-              htmlFor="contactEmail"
-              className="flex items-center text-sm font-medium text-gray-700"
-            >
+            <label className="flex items-center text-sm font-medium text-gray-700">
               <InboxIcon className="h-5 w-5 mr-2 text-gray-600" />
               Contact Email
-              <span
-                className="ml-1 text-gray-400 cursor-help"
-                title="Primary contact email for inquiries"
-              >
-                ?
-              </span>
             </label>
             <input
-              id="contactEmail"
-              name="contactEmail"
               type="email"
+              name="contactEmail"
+              placeholder="you@example.com"
+              required
               value={form.contactEmail}
               onChange={handleChange}
-              required
-              placeholder="you@example.com"
-              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Geo Coordinates */}
-          <div className="space-y-1">
-            <div className="flex items-center text-sm font-medium text-gray-700">
+          {/* Map + Radius */}
+          <div>
+            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <MapPinIcon className="h-5 w-5 mr-2 text-gray-600" />
-              Coordinates
-              <span
-                className="ml-1 text-gray-400 cursor-help"
-                title="Drag the pin on the map or enter lat/lng manually"
+              Select Location
+            </label>
+            <div className="relative h-64 rounded-lg overflow-hidden border border-gray-300">
+              {/* Leaflet Map */}
+              <MapContainer
+                center={[mapCenter.lat, mapCenter.lng]}
+                zoom={13}
+                style={{ height: '100%', width: '100%' }}
               >
-                ?
-              </span>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <MapMover />
+              </MapContainer>
+
+              {/* Center‑pin & spinner */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full text-red-500">
+                {loading
+                  ? <div className="animate-spin h-6 w-6 border-4 border-red-500 border-t-transparent rounded-full"></div>
+                  : <MapPinIcon className="h-8 w-8" />}
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            {/* Radius slider */}
+            <div className="mt-4">
+              <label className="text-sm font-medium text-gray-700">Radius: {form.geoLocation.radius} m</label>
               <input
-                type="number"
-                step="any"
-                name="lat"
-                value={form.geoLocation.lat}
-                onChange={(e) =>
-                  handleLocationChange({ lat: parseFloat(e.target.value) })
-                }
-                placeholder="Latitude"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="number"
-                step="any"
-                name="lng"
-                value={form.geoLocation.lng}
-                onChange={(e) =>
-                  handleLocationChange({ lng: parseFloat(e.target.value) })
-                }
-                placeholder="Longitude"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="range"
+                min={100}
+                max={5000}
+                step={100}
+                value={form.geoLocation.radius}
+                onChange={e => handleLocationChange({ radius: +e.target.value })}
+                className="w-full mt-1"
               />
             </div>
-            <div className="h-48 mt-4 rounded-lg overflow-hidden">
-              <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }}>
-                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        <MapUpdater onMapClick={handleMapClick}/>
-                        <MapDragHandler 
-                          setMapCenter={setMapCenter} 
-                          setSelectedLocation={setSelectedLocation} 
-                          debouncedFetchAddress={debouncedFetchAddress} 
-                          setDragging={setDragging} 
-                        />
-                        {selectedLocation && (
-                          <>
-                            <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
-                              <Popup>{address}</Popup>
-                            </Marker>
-                            {selectedLocation && (
-                                <div
-                                  className="absolute z-[1000] pointer-events-none"
-                                  style={{
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: `translate(-50%, -100%)`, // Adjust position
-                                  }}
-                                >
-                                  {<MapPinIcon className="w-8 h-8 text-red-500 animate-bounce" />}
-                                </div>
-                              )} 
-                            <Circle center={[selectedLocation.lat, selectedLocation.lng]} radius={radius} fillOpacity={0.1} />
-                          </>
-                        )}
-                      </MapContainer>
-            </div>
+
+            {/* Display address */}
+            {address && (
+              <p className="mt-2 text-sm text-gray-600">Address: {address}</p>
+            )}
           </div>
         </div>
       </details>
