@@ -17,7 +17,7 @@ interface PromotionOption { code?: string; title: string; description?: string; 
 
 interface SEOOption { title?: string; description?: string; keywords?: string[]; canonical?: string; }
 interface AnalyticsConfigOption { googleTag?: string; facebookTag?: string; }
-interface PaymentSettingsOption { stripeKey?: string; paypalKey?: string; m }
+interface PaymentSettingsOption { stripeKey?: string; paypalKey?: string; mpesaShortcode?: string; mpesaConsumerKey?: string; mpesaConsumerSecret?: string; }
 interface ShippingSettingsOption { carrierName?: string; trackingUrl?: string; }
 
 interface StoreForm {
