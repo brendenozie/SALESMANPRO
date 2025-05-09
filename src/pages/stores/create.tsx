@@ -71,7 +71,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
   const { data: session } = useSession();
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 12;
 
   const [form, setForm] = useState<StoreForm>({
     id: '',
@@ -791,20 +791,19 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
           
           );
       case 6 : 
-       return ( <SocialLinksAccordion />   );
-
+       return ( <SocialLinksAccordion form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />   );
       case 7 : 
-        return (<PoliciesAccordion />);
-
+        return (<PoliciesAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
       case 8 : 
-        return (<FAQsAccordion />);
-
+        return (<FAQsAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
       case 9 : 
-        return (<TestimonialsAccordion />);
+        return (<TestimonialsAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
       case 10 :
-        return (<HeroSlidesAccordion />);
+        return (<HeroSlidesAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
       case 11 :
-        return (<PromotionsAccordion />);
+        return (<PromotionsAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
+      case 12 :
+        return ( <AdvancedJsonAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
       
       default:
         return null;
@@ -866,10 +865,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   return { props: { availableCategories: options } };
 };
 
-
-
-
-const SocialLinksAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+const SocialLinksAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }:any) => (
   <details className="border rounded">
     <summary className="px-4 py-2 flex justify-between cursor-pointer">
       <span>Social Links</span>
@@ -904,7 +900,7 @@ const SocialLinksAccordion = ({ form, handleArrayChange, addArrayItem, removeArr
   </details>
 );
 
-const PoliciesAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+const PoliciesAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }:any) => (
   <details className="border rounded">
     <summary className="px-4 py-2 flex justify-between cursor-pointer">
       <span>Policies</span>
@@ -940,7 +936,7 @@ const PoliciesAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayI
   </details>
 );
 
-const FAQsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+const FAQsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }:any) => (
   <details className="border rounded">
     <summary className="px-4 py-2 flex justify-between cursor-pointer">
       <span>FAQs</span>
@@ -976,7 +972,7 @@ const FAQsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem 
   </details>
 );
 
-const TestimonialsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+const TestimonialsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }:any) => (
   <details className="border rounded">
     <summary className="px-4 py-2 flex justify-between cursor-pointer">
       <span>Testimonials</span>
@@ -1012,7 +1008,7 @@ const TestimonialsAccordion = ({ form, handleArrayChange, addArrayItem, removeAr
   </details>
 );
 
-const HeroSlidesAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+const HeroSlidesAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }:any) => (
   <details className="border rounded">
     <summary className="px-4 py-2 flex justify-between cursor-pointer">
       <span>Hero Slides</span>
@@ -1047,6 +1043,14 @@ const HeroSlidesAccordion = ({ form, handleArrayChange, addArrayItem, removeArra
   </details>
 );
 
+const PromotionsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }:any) => (
+  <details className="border rounded">
+    <summary className="px-4 py-2 flex justify-between cursor-pointer">
+      <span>Promotions</span>
+      <span>{(form.promotions?.length || 0) > 0 ? '✅' : '+'}</span>
+    </summary>
+    <div className="p-4 space-y-2">
+      {(form.promotions || []).map((p, i) => (
         <div key={i} className="space-y-1">
           <input
             placeholder="Title"
@@ -1075,38 +1079,320 @@ const HeroSlidesAccordion = ({ form, handleArrayChange, addArrayItem, removeArra
   </details>
 );
 
-const AdvancedJsonAccordion = ({ form, setForm }) => (
-  <details className="border rounded">
-    <summary className="px-4 py-2 flex justify-between cursor-pointer">
-      <span>Advanced Config (JSON)</span>
-      <span>{form.advancedJson ? '✅' : '+'}</span>
-    </summary>
-    <div className="p-4 space-y-2">
-      <textarea
-        placeholder="Paste or edit your JSON config here"
-        value={form.advancedJson}
-        onChange={e => {
-          try {
-            const parsed = JSON.parse(e.target.value);
-            setForm(prev => ({ ...prev, advancedJson: e.target.value, parsedAdvancedJson: parsed }));
-          } catch {
-            setForm(prev => ({ ...prev, advancedJson: e.target.value }));
-          }
-        }}
-        rows={8}
-        className="w-full border rounded px-2 py-1 font-mono focus:ring-indigo-400"
-      />
-      <p className="text-sm text-gray-500">Ensure your JSON is valid. This will include theme, SEO, analytics, and payment configurations.</p>
-    </div>
-  </details>
-);
+const AdvancedJsonAccordion = ({ form, setForm }:any) => (
+  {/* JSON Config Accordion */}
+            <details className="border rounded">
+              <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                <span>Advanced Settings</span>
+                <span>⚙️</span>
+              </summary>
+              <div className="p-4 space-y-6">
+                {/* Theme Settings */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">Theme Settings</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs">Primary Color</label>
+                      <input
+                        type="text"
+                        value={form.themeSettings?.primaryColor || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            themeSettings: { ...f.themeSettings, primaryColor: e.target.value }
+                          }))
+                        }
+                        placeholder="#4f46e5"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Secondary Color</label>
+                      <input
+                        type="text"
+                        value={form.themeSettings?.secondaryColor || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            themeSettings: { ...f.themeSettings, secondaryColor: e.target.value }
+                          }))
+                        }
+                        placeholder="#facc15"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs">Font Family</label>
+                      <input
+                        type="text"
+                        value={form.themeSettings?.fontFamily || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            themeSettings: { ...f.themeSettings, fontFamily: e.target.value }
+                          }))
+                        }
+                        placeholder="Inter, sans-serif"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-// export {
-//   SocialLinksAccordion,
-//   PoliciesAccordion,
-//   FAQsAccordion,
-//   TestimonialsAccordion,
-//   HeroSlidesAccordion,
-//   PromotionsAccordion,
-//   AdvancedJsonAccordion,
-// };
+                {/* SEO Settings */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">SEO Settings</h3>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs">Page Title</label>
+                      <input
+                        type="text"
+                        value={form.seo?.title || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            seo: { ...f.seo, title: e.target.value }
+                          }))
+                        }
+                        placeholder="My Awesome Store"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Meta Description</label>
+                      <textarea
+                        rows={2}
+                        value={form.seo?.description || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            seo: { ...f.seo, description: e.target.value }
+                          }))
+                        }
+                        placeholder="Best deals on fashion, electronics, and more."
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Keywords (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={form.seo?.keywords?.join(', ') || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            seo: { ...f.seo, keywords: e.target.value.split(',').map(k => k.trim()) }
+                          }))
+                        }
+                        placeholder="ecommerce, fashion, electronics"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Analytics Config */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">Analytics</h3>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs">Google Tag ID</label>
+                      <input
+                        type="text"
+                        value={form.analyticsConfig?.googleTag || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            analyticsConfig: { ...f.analyticsConfig, googleTag: e.target.value }
+                          }))
+                        }
+                        placeholder="G-XXXXXXXXXX"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Facebook Pixel ID</label>
+                      <input
+                        type="text"
+                        value={form.analyticsConfig?.facebookTag || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            analyticsConfig: { ...f.analyticsConfig, facebookTag: e.target.value }
+                          }))
+                        }
+                        placeholder="1234567890"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Settings */}
+                <div className="space-y-2">
+                      <h3 className="text-sm font-semibold">Payment Settings</h3>
+                      <div className="space-y-4">
+                        {/* M-Pesa */}
+                        <fieldset className="border rounded p-3">
+                          <legend className="text-xs font-medium">M-Pesa (Daraja API)</legend>
+                          <div className="space-y-2">
+                            <div>
+                              <label className="block text-xs">Business Shortcode</label>
+                              <input
+                                type="text"
+                                value={form.paymentSettings?.mpesaShortcode || ''}
+                                onChange={e =>
+                                  setForm(f => ({
+                                    ...f,
+                                    paymentSettings: { ...f.paymentSettings, mpesaShortcode: e.target.value }
+                                  }))
+                                }
+                                placeholder="e.g. 123456"
+                                className="w-full border rounded px-2 py-1 text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs">API Consumer Key</label>
+                              <input
+                                type="text"
+                                value={form.paymentSettings?.mpesaConsumerKey || ''}
+                                onChange={e =>
+                                  setForm(f => ({
+                                    ...f,
+                                    paymentSettings: { ...f.paymentSettings, mpesaConsumerKey: e.target.value }
+                                  }))
+                                }
+                                placeholder="Your Daraja Consumer Key"
+                                className="w-full border rounded px-2 py-1 text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs">API Consumer Secret</label>
+                              <input
+                                type="text"
+                                value={form.paymentSettings?.mpesaConsumerSecret || ''}
+                                onChange={e =>
+                                  setForm(f => ({
+                                    ...f,
+                                    paymentSettings: { ...f.paymentSettings, mpesaConsumerSecret: e.target.value }
+                                  }))
+                                }
+                                placeholder="Your Daraja Consumer Secret"
+                                className="w-full border rounded px-2 py-1 text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs">Callback URL</label>
+                              <input
+                                type="url"
+                                value={form.paymentSettings?.mpesaCallbackUrl || ''}
+                                onChange={e =>
+                                  setForm(f => ({
+                                    ...f,
+                                    paymentSettings: { ...f.paymentSettings, mpesaCallbackUrl: e.target.value }
+                                  }))
+                                }
+                                placeholder="https://yourdomain.com/api/mpesa/callback"
+                                className="w-full border rounded px-2 py-1 text-sm"
+                              />
+                            </div>
+                          </div>
+                        </fieldset>
+
+
+                      </div>
+                    </div>
+
+                {/* Shipping Settings */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">Shipping Settings</h3>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs">Carrier Name</label>
+                      <input
+                        type="text"
+                        value={form.shippingSettings?.carrierName || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            shippingSettings: { ...f.shippingSettings, carrierName: e.target.value }
+                          }))
+                        }
+                        placeholder="DHL, FedEx, etc."
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Tracking URL Template</label>
+                      <input
+                        type="text"
+                        value={form.shippingSettings?.trackingUrl || ''}
+                        onChange={e =>
+                          setForm(f => ({
+                            ...f,
+                            shippingSettings: { ...f.shippingSettings, trackingUrl: e.target.value }
+                          }))
+                        }
+                        placeholder="https://tracking.example.com/track?code={tracking_number}"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              
+                <textarea
+                  placeholder="Paste or edit your JSON config here"
+                  value={form.advancedJson}
+                  onChange={e => {
+                    try {
+                      const parsed = JSON.parse(e.target.value);
+                      setForm(prev => ({ ...prev, advancedJson: e.target.value, parsedAdvancedJson: parsed }));
+                    } catch {
+                      setForm(prev => ({ ...prev, advancedJson: e.target.value }));
+                    }
+                  }}
+                  rows={8}
+                  className="w-full border rounded px-2 py-1 font-mono focus:ring-indigo-400"
+                />
+                <p className="text-sm text-gray-500">Ensure your JSON is valid. This will include theme, SEO, analytics, and payment configurations.</p>
+              </div>
+            </details>
+);
+const initialFormState = {
+  name: '',
+  description: '',
+  categories: [],
+  logoUrl: '',
+  bannerUrl: '',
+  socialLinks: [],
+  policies: [],
+  faqs: [],
+  testimonials: [],
+  heroSlides: [],
+  promotions: [],
+  themeSettings: {
+    primaryColor: '#4f46e5',
+    secondaryColor: '#facc15',
+    fontFamily: 'Inter, sans-serif'
+  },
+  seo: {
+    title: '',
+    description: '',
+    keywords: []
+  },
+  analyticsConfig: {
+    googleTag: '',
+    facebookTag: ''
+  },
+  paymentSettings: {
+    mpesaShortcode: '',
+    mpesaConsumerKey: '',
+    mpesaConsumerSecret: '',
+    mpesaCallbackUrl: ''
+  },
+  shippingSettings: {
+    carrierName: '',
+    trackingUrl: ''
+  },
+};
+
