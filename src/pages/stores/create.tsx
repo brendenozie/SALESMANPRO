@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect, useMemo } from 'react';
 import { GetServerSideProps } from 'next';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -353,6 +353,59 @@ interface CategoryAccordionProps {
 }
 
 const CategoryAccordion: React.FC<CategoryAccordionProps> = ({ availableCategories, form, handleCategoryToggle }) => {
+  const [search, setSearch] = useState('');
+
+  // Filter categories based on search
+  const filtered = useMemo(
+    () => availableCategories.filter(cat => cat.name.toLowerCase().includes(search.toLowerCase())),
+    [search, availableCategories]
+  );
+
+  const selectedCount = form.storeCategories?.length || 0;
+
+  return (
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">Categories</h2>
+        <span className="text-sm font-medium text-indigo-600">{selectedCount} selected</span>
+      </div>
+      <div className="mb-4">
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search categories..."
+          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {filtered.map(cat => {
+          const isSelected = form.storeCategories?.some(c => c.id === cat.id);
+          return (
+            <button
+              key={cat.id}
+              onClick={() => handleCategoryToggle(cat)}
+              className={`flex items-center space-x-1 px-4 py-2 rounded-full border transition-all duration-200 focus:outline-none
+                ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'}`}
+            >
+              {isSelected && (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              <span className="text-sm font-medium">{cat.name}</span>
+            </button>
+          );
+        })}
+      </div>
+      {filtered.length === 0 && (
+        <p className="mt-4 text-center text-gray-500">No categories match "{search}".</p>
+      )}
+    </div>
+  );
+};
+
+const CategoryAccordionV1: React.FC<CategoryAccordionProps> = ({ availableCategories, form, handleCategoryToggle }) => {
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Select Categories</h2>
@@ -464,7 +517,6 @@ const BannerLogoAccordion: React.FC<BannerLogoAccordionProps> = ({ form, handleC
     </div>
   );
 };
-
 
 interface GeoLocation {
   lat: number;
@@ -1175,7 +1227,7 @@ const PaymentAccordion: React.FC<PaymentAccordionProps> = ({ form, setForm }) =>
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <h2 className="flex justify-between items-center text-2xl font-bold text-gray-800 mb-4">
-        <span>Payments & Shipping</span>
+        <span>Payments</span>
         <span className="text-xl">💳</span>
       </h2>
 
@@ -1237,10 +1289,12 @@ const PaymentAccordion: React.FC<PaymentAccordionProps> = ({ form, setForm }) =>
   );
 };
 
-
 interface ShippingSettings {
   carrierName?: string;
   trackingUrl?: string;
+  regions?: string[];
+  enablePickup?: boolean;
+  pickupInstructions?: string;
 }
 
 interface ShippingAccordionProps {
@@ -1251,12 +1305,14 @@ interface ShippingAccordionProps {
 }
 
 export const ShippingAccordion: React.FC<ShippingAccordionProps> = ({ form, setForm }) => {
-  const updateField = (key: keyof ShippingSettings, value: string) => {
+  const updateField = <K extends keyof ShippingSettings>(key: K, value: ShippingSettings[K]) => {
     setForm((f: any) => ({
       ...f,
       shippingSettings: { ...f.shippingSettings, [key]: value }
     }));
   };
+
+  const regionsValue = form.shippingSettings?.regions?.join(', ') || '';
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
@@ -1264,35 +1320,76 @@ export const ShippingAccordion: React.FC<ShippingAccordionProps> = ({ form, setF
         <span>Shipping Settings</span>
         <span className="text-xl">🚚</span>
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="carrierName" className="block text-xs font-medium text-gray-600">Carrier Name</label>
-          <input
-            id="carrierName"
-            type="text"
-            value={form.shippingSettings?.carrierName || ''}
-            onChange={e => updateField('carrierName', e.target.value)}
-            placeholder="DHL, FedEx, etc."
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="carrierName" className="block text-xs font-medium text-gray-600">Carrier Name</label>
+            <input
+              id="carrierName"
+              type="text"
+              value={form.shippingSettings?.carrierName || ''}
+              onChange={e => updateField('carrierName', e.target.value)}
+              placeholder="DHL, FedEx, etc."
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="trackingUrl" className="block text-xs font-medium text-gray-600">Tracking URL Template</label>
+            <input
+              id="trackingUrl"
+              type="text"
+              value={form.shippingSettings?.trackingUrl || ''}
+              onChange={e => updateField('trackingUrl', e.target.value)}
+              placeholder="https://tracking.example.com/track?code={tracking_number}"
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
         </div>
+
+        {/* Shipping Regions */}
         <div>
-          <label htmlFor="trackingUrl" className="block text-xs font-medium text-gray-600">Tracking URL Template</label>
+          <label htmlFor="regions" className="block text-xs font-medium text-gray-600">Shipping Regions</label>
           <input
-            id="trackingUrl"
+            id="regions"
             type="text"
-            value={form.shippingSettings?.trackingUrl || ''}
-            onChange={e => updateField('trackingUrl', e.target.value)}
-            placeholder="https://tracking.example.com/track?code={tracking_number}"
+            value={regionsValue}
+            onChange={e => updateField('regions', e.target.value.split(',').map(r => r.trim()))}
+            placeholder="e.g. US, EU, Asia"
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+          <p className="mt-1 text-xs text-gray-500">Comma-separated list of regions you ship to.</p>
+        </div>
+
+        {/* Pickup Options */}
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <input
+              id="enablePickup"
+              type="checkbox"
+              checked={form.shippingSettings?.enablePickup || false}
+              onChange={e => updateField('enablePickup', e.target.checked)}
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <label htmlFor="enablePickup" className="ml-2 block text-sm font-medium text-gray-700">Enable Local Pickup</label>
+          </div>
+          {form.shippingSettings?.enablePickup && (
+            <div>
+              <label htmlFor="pickupInstructions" className="block text-xs font-medium text-gray-600">Pickup Instructions</label>
+              <textarea
+                id="pickupInstructions"
+                rows={3}
+                value={form.shippingSettings?.pickupInstructions || ''}
+                onChange={e => updateField('pickupInstructions', e.target.value)}
+                placeholder="Provide details for customers picking up orders locally..."
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
-
 
 
 
