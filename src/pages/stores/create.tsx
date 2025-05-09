@@ -693,6 +693,8 @@ export const ContactLocationAccordion: React.FC<ContactLocationAccordionProps> =
   const debouncedFetchAddress = useMemo(() => debounce(fetchAddress, 500), []);
   useEffect(() => () => debouncedFetchAddress.cancel(), [debouncedFetchAddress]);
 
+  const days = ['mon','tue','wed','thu','fri','sat','sun'];
+
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <details className="group">
@@ -707,6 +709,12 @@ export const ContactLocationAccordion: React.FC<ContactLocationAccordionProps> =
         </summary>
         <div className="mt-4 space-y-6">
           {/* Contact Email */}
+          <div>
+            <label>Opening Hours</label>
+            {days.map(d => (
+              <input key={d} name={`openingHours.${d}`} placeholder={d} value={(form.openingHours ?? {})[d]} onChange={e => setForm(f => ({
+        ...f, openingHours: { ...f.openingHours, [d]: e.target.value }
+      }))} />))}</div>
           <div className="space-y-1">
             <label
               htmlFor="contactEmail"
