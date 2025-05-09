@@ -17,7 +17,7 @@ interface PromotionOption { code?: string; title: string; description?: string; 
 
 interface SEOOption { title?: string; description?: string; keywords?: string[]; canonical?: string; }
 interface AnalyticsConfigOption { googleTag?: string; facebookTag?: string; }
-interface PaymentSettingsOption {  mpesaShortcode?: string; mpesaConsumerKey?: string; mpesaConsumerSecret?: string; }
+interface PaymentSettingsOption {  mpesaShortcode?: string; mpesaConsumerKey?: string; mpesaConsumerSecret?: string; mpesaCallbackUrl?: string; }
 interface ShippingSettingsOption { carrierName?: string; trackingUrl?: string; }
 
 interface StoreForm {
@@ -676,9 +676,6 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
 
               {/* Payment Settings */}
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Payment Settings</h3>
-                <div className="space-y-2">
-                  <div className="space-y-2">
                     <h3 className="text-sm font-semibold">Payment Settings</h3>
                     <div className="space-y-4">
                       {/* M-Pesa */}
@@ -751,8 +748,6 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
 
                     </div>
                   </div>
-                </div>
-              </div>
 
               {/* Shipping Settings */}
               <div className="space-y-2">
