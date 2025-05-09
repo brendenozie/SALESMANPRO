@@ -187,7 +187,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
       case 2:
         return (<CategoryAccordion availableCategories={availableCategories} form={form} handleCategoryToggle={handleCategoryToggle} />   );
       case 3:
-        return (<BannerLogoAccordion form={form} handleChange={handleChange} handleUpload={} handleRemove={}/> );
+        return (<BannerLogoAccordion form={form} handleChange={handleChange} /> );//handleUpload={} handleRemove={}
       case 4:
         return (<ContactLocationAccordion form={form} handleChange={handleChange} /> ); 
       case 5 : 
