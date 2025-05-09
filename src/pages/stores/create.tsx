@@ -183,15 +183,15 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
   const renderStep = () => {
     switch (step) {
       case 1:
-        return ( <BasicInfo form={form} handleChange={handleChange} />  );
+        return (<BasicInfo form={form} handleChange={handleChange} />  );
       case 2:
-        return ( <CategoryAccordion availableCategories={availableCategories} form={form} handleCategoryToggle={handleCategoryToggle} />   );
+        return (<CategoryAccordion availableCategories={availableCategories} form={form} handleCategoryToggle={handleCategoryToggle} />   );
       case 3:
-        return ( <BannerLogoAccordion form={form} handleChange={handleChange}  /> );
+        return (<BannerLogoAccordion form={form} handleChange={handleChange} handleUpload={} handleRemove={}/> );
       case 4:
-        return ( <ContactLocationAccordion form={form} handleChange={handleChange} />  ); 
+        return (<ContactLocationAccordion form={form} handleChange={handleChange} /> ); 
       case 5 : 
-       return ( <SocialLinksAccordion form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />   );
+        return (<SocialLinksAccordion form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />   );
       case 6 : 
         return (<PoliciesAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
       case 7 : 
@@ -203,15 +203,15 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
       case 10 :
         return (<PromotionsAccordion  form={form} handleArrayChange={handleArrayChange} addArrayItem={addArrayItem} removeArrayItem={removeArrayItem} />);
       case 11 :
-        return ( <ThemeSettingsAccordion  form={form} setForm={handleArrayChange}/>);
+        return (<ThemeSettingsAccordion  form={form} setForm={handleArrayChange}/>);
       case 12 :
-        return ( <SeoSettingsAccordion  form={form} setForm={handleArrayChange}/>);
+        return (<SeoSettingsAccordion  form={form} setForm={handleArrayChange}/>);
       case 13 :
-        return ( <SettingsAccordion  form={form} setForm={handleArrayChange}/>);
+        return (<SettingsAccordion  form={form} setForm={handleArrayChange}/>);
       case 14 :
-        return ( <PaymentAccordion  form={form} setForm={handleArrayChange}/>);
+        return (<PaymentAccordion  form={form} setForm={handleArrayChange}/>);
       case 15 :
-        return ( <ShippingAccordion  form={form} setForm={handleArrayChange}/>);
+        return (<ShippingAccordion  form={form} setForm={handleArrayChange}/>);
       
       default:
         return null;
