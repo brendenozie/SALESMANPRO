@@ -1,7 +1,28 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect, useMemo } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect, useMemo, useRef } from 'react';
 import { GetServerSideProps } from 'next';
 import { useSession } from 'next-auth/react';
+import dynamic from "next/dynamic";
 import { useRouter } from 'next/router';
+import debounce from "lodash.debounce";
+import {
+  MapPinIcon,
+  ChevronDownIcon,
+  InboxIcon,
+  PlusIcon,
+  CheckIcon,
+  TrashIcon,
+  ChevronUpIcon, 
+  PaintBrushIcon,
+  PhotoIcon,
+} from "@heroicons/react/24/outline";
+
+
+
+const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
+const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
 
 interface CategoryOption { id: string; name: string; }
 
@@ -59,12 +80,9 @@ interface CompanyFormProps {
   onSubmit: (data: StoreForm) => void;
 }
 
-
 interface CreateStorePageProps {
   availableCategories: CategoryOption[];
 }
-
-
 
 export default function CreateStorePage({ availableCategories }: CreateStorePageProps) {
 
@@ -169,7 +187,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
       case 2:
         return ( <CategoryAccordion availableCategories={availableCategories} form={form} handleCategoryToggle={handleCategoryToggle} />   );
       case 3:
-        return ( <BannerLogoAccordion form={form} handleChange={handleChange} /> );
+        return ( <BannerLogoAccordion form={form} handleChange={handleChange}  /> );
       case 4:
         return ( <ContactLocationAccordion form={form} handleChange={handleChange} />  ); 
       case 5 : 
@@ -405,33 +423,6 @@ const CategoryAccordion: React.FC<CategoryAccordionProps> = ({ availableCategori
   );
 };
 
-const CategoryAccordionV1: React.FC<CategoryAccordionProps> = ({ availableCategories, form, handleCategoryToggle }) => {
-  return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Select Categories</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-60 overflow-y-auto">
-        {availableCategories.map(cat => {
-          const isSelected = form.storeCategories?.some(c => c.id === cat.id);
-          return (
-            <label
-              key={cat.id}
-              className={`flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 ${isSelected ? 'bg-indigo-50 border-indigo-300' : 'border-gray-200'}`}
-            >
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => handleCategoryToggle(cat)}
-                className="mr-3 h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span className="text-gray-700">{cat.name}</span>
-            </label>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
 interface BannerLogoAccordionProps {
   form: {
     bannerUrl?: string;
@@ -439,63 +430,92 @@ interface BannerLogoAccordionProps {
     description?: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleUpload: (field: 'bannerUrl' | 'logoUrl', file: File) => void;
+  handleRemove: (field: 'bannerUrl' | 'logoUrl') => void;
 }
 
-const BannerLogoAccordion: React.FC<BannerLogoAccordionProps> = ({ form, handleChange }) => {
+const BannerLogoAccordion: React.FC<BannerLogoAccordionProps> = ({ form, handleChange, handleUpload, handleRemove }) => {
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Media & Description</h2>
 
-      {/* Banner URL */}
-      <div>
-        <label htmlFor="bannerUrl" className="block text-sm font-medium text-gray-700">
-          Banner URL
-          <span title="Enter a fully qualified URL for your banner image" className="ml-1 cursor-help">?</span>
-        </label>
-        <input
-          id="bannerUrl"
-          name="bannerUrl"
-          type="url"
-          value={form.bannerUrl || ''}
-          onChange={handleChange}
-          placeholder="https://example.com/banner.jpg"
-          className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        {form.bannerUrl && (
-          <div className="mt-2">
-            <img
-              src={form.bannerUrl}
-              alt="Banner Preview"
-              className="w-full h-48 object-cover rounded-md border"
-            />
+      {/* Banner Section */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Banner Image</label>
+        {form.bannerUrl ? (
+          <div className="relative">
+            <img src={form.bannerUrl} alt="Banner Preview" className="w-full h-48 object-cover rounded-md border" />
+            <div className="absolute inset-0 flex justify-end p-2 space-x-2">
+              <button
+                onClick={() => bannerInputRef.current?.click()}
+                className="bg-white bg-opacity-75 rounded-full p-1 hover:bg-opacity-100 focus:outline-none"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleRemove('bannerUrl')}
+                className="bg-white bg-opacity-75 rounded-full p-1 hover:bg-opacity-100 focus:outline-none text-red-500"
+              >
+                Delete
+              </button>
+            </div>
           </div>
+        ) : (
+          <button
+            onClick={() => bannerInputRef.current?.click()}
+            className="w-full border-dashed border-2 border-gray-300 rounded-lg py-6 text-center text-gray-500 hover:border-gray-400"
+          >
+            Upload Banner
+          </button>
         )}
+        <input
+          ref={bannerInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => e.target.files?.[0] && handleUpload('bannerUrl', e.target.files[0])}
+        />
       </div>
 
-      {/* Logo URL */}
-      <div>
-        <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700">
-          Logo URL
-          <span title="Enter a fully qualified URL for your logo image" className="ml-1 cursor-help">?</span>
-        </label>
-        <input
-          id="logoUrl"
-          name="logoUrl"
-          type="url"
-          value={form.logoUrl || ''}
-          onChange={handleChange}
-          placeholder="https://example.com/logo.png"
-          className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        {form.logoUrl && (
-          <div className="mt-2 max-w-xs">
-            <img
-              src={form.logoUrl}
-              alt="Logo Preview"
-              className="w-24 h-24 object-contain rounded-md border"
-            />
+      {/* Logo Section */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Logo Image</label>
+        {form.logoUrl ? (
+          <div className="relative inline-block">
+            <img src={form.logoUrl} alt="Logo Preview" className="w-24 h-24 object-contain rounded-md border" />
+            <div className="absolute top-0 right-0 flex space-x-1">
+              <button
+                onClick={() => logoInputRef.current?.click()}
+                className="bg-white bg-opacity-75 rounded-full p-1 hover:bg-opacity-100 focus:outline-none"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleRemove('logoUrl')}
+                className="bg-white bg-opacity-75 rounded-full p-1 hover:bg-opacity-100 focus:outline-none text-red-500"
+              >
+                Delete
+              </button>
+            </div>
           </div>
+        ) : (
+          <button
+            onClick={() => logoInputRef.current?.click()}
+            className="border-dashed border-2 border-gray-300 rounded-lg p-4 text-center text-gray-500 hover:border-gray-400"
+          >
+            Upload Logo
+          </button>
         )}
+        <input
+          ref={logoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={e => e.target.files?.[0] && handleUpload('logoUrl', e.target.files[0])}
+        />
       </div>
 
       {/* Description */}
@@ -518,6 +538,7 @@ const BannerLogoAccordion: React.FC<BannerLogoAccordionProps> = ({ form, handleC
   );
 };
 
+
 interface GeoLocation {
   lat: number;
   lng: number;
@@ -532,64 +553,257 @@ interface ContactLocationAccordionProps {
   handleLocationChange: (coord: Partial<GeoLocation>) => void;
 }
 
-const ContactLocationAccordion: React.FC<ContactLocationAccordionProps> = ({ form, handleChange, handleLocationChange }) => {
+// Draggable marker component
+const DraggableMarker: React.FC<{
+  position: [number, number];
+  onChange: (lat: number, lng: number) => void;
+}> = ({ position, onChange }) => {
+  const markerRef = React.useRef<any>(null);
+
+  // useMapEvents({
+  //   dragend: () => {
+  //     const marker = markerRef.current;
+  //     if (marker) {
+  //       const { lat, lng } = marker.getLatLng();
+  //       onChange(lat, lng);
+  //     }
+  //   },
+  // });
+
+
+
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Contact & Location</h2>
+    <Marker
+      // draggable
+      eventHandlers={{
+        dragend: () => {
+          const marker = markerRef.current;
+          if (marker) {
+            const { lat, lng } = marker.getLatLng();
+            onChange(lat, lng);
+          }
+        },
+      }}
+      position={position}
+      ref={markerRef}
+    />
+  );
+};
 
-      {/* Contact Email */}
-      <div>
-        <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700">
-          Contact Email
-          <span title="Primary contact email for inquiries" className="ml-1 cursor-help">?</span>
-        </label>
-        <input
-          id="contactEmail"
-          name="contactEmail"
-          type="email"
-          value={form.contactEmail}
-          onChange={handleChange}
-          required
-          placeholder="you@example.com"
-          className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+export const ContactLocationAccordion: React.FC<ContactLocationAccordionProps> = ({
+  form,
+  handleChange,
+  handleLocationChange,
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 51.505, lng: -0.09 });
+  const [loading, setLoading] = useState(false);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
+  const [zoom, setZoom] = useState(6);
+  const [address, setAddress] = useState("");
+  const [radius, setRadius] = useState(500);
+  const [dragging, setDragging] = useState(false);
+  const [savedAddress, setSavedAddress] = useState(null);
 
-      {/* Geo Coordinates */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="geoLat" className="block text-sm font-medium text-gray-700">
-            Latitude
-            <span title="Geographic latitude (e.g., 37.422)" className="ml-1 cursor-help">?</span>
-          </label>
-          <input
-            id="geoLat"
-            name="lat"
-            type="number"
-            step="any"
-            value={form.geoLocation.lat}
-            onChange={e => handleLocationChange({ lat: parseFloat(e.target.value) })}
-            placeholder="0.000"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+  const position: [number, number] = [
+    form.geoLocation.lat,
+    form.geoLocation.lng,
+  ];
+
+  const MapUpdater = dynamic(
+        () => import("react-leaflet").then((m) => ({
+          default: function ({ onMapClick }) {
+            const { useMap } = m;
+            if (!useMap) return null;
+            const map = useMap();
+            useEffect(() => {
+              map.setView(mapCenter, zoom);
+            }, [mapCenter, zoom, map]);
+            return null;
+          },
+        })),
+        { ssr: false }
+  );
+    
+  // Handle map drag movement
+  // Dynamically import useMapEvents to ensure it only runs on the client
+  const MapDragHandler = dynamic(() =>
+    import("react-leaflet").then((m) => ({
+      default: function ({ setMapCenter, setSelectedLocation, debouncedFetchAddress, setDragging }) {
+        const { useMapEvents } = m;
+        if (!useMapEvents) return null;
+  
+        useMapEvents({
+          move: (e) => {
+            setDragging(true);
+            const center = e.target.getCenter();
+            setMapCenter({ lat: center.lat, lng: center.lng });
+          },
+          moveend: (e) => {
+            setDragging(false);
+            const center = e.target.getCenter();
+            setSelectedLocation({ lat: center.lat, lng: center.lng });
+            debouncedFetchAddress(center.lat, center.lng);
+          },
+        });
+  
+        return null;
+      },
+    })),
+    { ssr: false }
+  );
+  
+  // Handle marker drag event
+  const handleMarkerDragEnd = (event) => {
+      const position = event.target.getLatLng();
+      setSelectedLocation(position);
+      setMapCenter(position);
+      // debouncedFetchAddress(position.lat, position.lng);
+  };
+
+  const handleMapClick = (e) => {
+      const { lat, lng } = e.latlng;
+      setSelectedLocation({ lat, lng });
+      setMapCenter({ lat, lng });
+      // fetchAddress(lat, lng);
+  };
+
+  // Fetch address based on coordinates
+  const fetchAddress = async (lat, lng) => {
+        try {
+          setLoading(true);
+          const { data } = await axios.get(`${API_BASE}/reverse`, {
+            params: { format: "json", lat, lon: lng },
+          });
+          setAddress(data.display_name || "Unknown Location");
+          setSearchTerm(data.display_name || ""); // Update search input dynamically
+          onAddressSelect({display_name : data.display_name,
+                            lat:lat,
+                            lng:lng}); // Pass address to parent
+        } catch (error) {
+          console.error("Error fetching address:", error);
+        } finally {
+          setLoading(false);
+        }
+  };
+
+  // Debounced address fetching
+  const debouncedFetchAddress = useMemo(() => debounce(fetchAddress, 500), []);
+  useEffect(() => () => debouncedFetchAddress.cancel(), [debouncedFetchAddress]);
+
+  return (
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+      <details className="group">
+        <summary className="flex justify-between items-center cursor-pointer p-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition">
+          <div className="flex items-center space-x-2">
+            <MapPinIcon className="h-6 w-6 text-blue-500" />
+            <span className="text-lg font-semibold text-gray-800">
+              Contact & Location
+            </span>
+          </div>
+          <ChevronDownIcon className="h-6 w-6 text-gray-500 transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="mt-4 space-y-6">
+          {/* Contact Email */}
+          <div className="space-y-1">
+            <label
+              htmlFor="contactEmail"
+              className="flex items-center text-sm font-medium text-gray-700"
+            >
+              <InboxIcon className="h-5 w-5 mr-2 text-gray-600" />
+              Contact Email
+              <span
+                className="ml-1 text-gray-400 cursor-help"
+                title="Primary contact email for inquiries"
+              >
+                ?
+              </span>
+            </label>
+            <input
+              id="contactEmail"
+              name="contactEmail"
+              type="email"
+              value={form.contactEmail}
+              onChange={handleChange}
+              required
+              placeholder="you@example.com"
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Geo Coordinates */}
+          <div className="space-y-1">
+            <div className="flex items-center text-sm font-medium text-gray-700">
+              <MapPinIcon className="h-5 w-5 mr-2 text-gray-600" />
+              Coordinates
+              <span
+                className="ml-1 text-gray-400 cursor-help"
+                title="Drag the pin on the map or enter lat/lng manually"
+              >
+                ?
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input
+                type="number"
+                step="any"
+                name="lat"
+                value={form.geoLocation.lat}
+                onChange={(e) =>
+                  handleLocationChange({ lat: parseFloat(e.target.value) })
+                }
+                placeholder="Latitude"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="number"
+                step="any"
+                name="lng"
+                value={form.geoLocation.lng}
+                onChange={(e) =>
+                  handleLocationChange({ lng: parseFloat(e.target.value) })
+                }
+                placeholder="Longitude"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="h-48 mt-4 rounded-lg overflow-hidden">
+              <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }}>
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <MapUpdater onMapClick={handleMapClick}/>
+                        <MapDragHandler 
+                          setMapCenter={setMapCenter} 
+                          setSelectedLocation={setSelectedLocation} 
+                          debouncedFetchAddress={debouncedFetchAddress} 
+                          setDragging={setDragging} 
+                        />
+                        {selectedLocation && (
+                          <>
+                            <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
+                              <Popup>{address}</Popup>
+                            </Marker>
+                            {selectedLocation && (
+                                <div
+                                  className="absolute z-[1000] pointer-events-none"
+                                  style={{
+                                    top: "50%",
+                                    left: "50%",
+                                    transform: `translate(-50%, -100%)`, // Adjust position
+                                  }}
+                                >
+                                  {<MapPinIcon className="w-8 h-8 text-red-500 animate-bounce" />}
+                                </div>
+                              )} 
+                            <Circle center={[selectedLocation.lat, selectedLocation.lng]} radius={radius} fillOpacity={0.1} />
+                          </>
+                        )}
+                      </MapContainer>
+            </div>
+          </div>
         </div>
-        <div>
-          <label htmlFor="geoLng" className="block text-sm font-medium text-gray-700">
-            Longitude
-            <span title="Geographic longitude (e.g., -122.084)" className="ml-1 cursor-help">?</span>
-          </label>
-          <input
-            id="geoLng"
-            name="lng"
-            type="number"
-            step="any"
-            value={form.geoLocation.lng}
-            onChange={e => handleLocationChange({ lng: parseFloat(e.target.value) })}
-            placeholder="0.000"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
+      </details>
     </div>
   );
 };
@@ -649,12 +863,24 @@ const SocialLinksAccordion: React.FC<SocialLinksAccordionProps> = ({ form, handl
               </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() => addArrayItem('socialLinks', { channel: '', url: '' })}
+            className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
+          >
+            Add Another Link
+          </button>
+          <p className="text-sm text-gray-500 mt-2">
+            Add links to your social media profiles. You can add multiple links.
+          </p>
+          <p className="text-sm text-gray-500">
+            Example: <code>Twitter</code>, <code>Facebook</code>, <code>Instagram</code>
+          </p>
         </div>
       )}
     </div>
   );
 };
-
 
 interface Policy {
   type: string;
@@ -713,6 +939,20 @@ const PoliciesAccordion: React.FC<PoliciesAccordionProps> = ({ form, handleArray
               </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() => addArrayItem('policies', { type: '', content: '' })}
+            className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
+          >
+            Add Another Policy
+          </button>
+          <p className="text-sm text-gray-500 mt-2">
+            Add your store policies. You can add multiple policies.
+          </p>
+          <p className="text-sm text-gray-500">
+            Example: <code>Refund Policy</code>, <code>Shipping Policy</code>, <code>Privacy Policy</code>
+          </p>
+
         </div>
       )}
     </div>
@@ -777,6 +1017,13 @@ const FAQsAccordion: React.FC<FAQsAccordionProps> = ({ form, handleArrayChange, 
               </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() => addArrayItem('faqs', { question: '', answer: '', order: faqs.length })}
+            className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
+          >
+            Add Another FAQ
+          </button>
         </div>
       )}
     </div>
@@ -843,6 +1090,21 @@ const TestimonialsAccordion: React.FC<TestimonialsAccordionProps> = ({ form, han
               </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() => addArrayItem('testimonials', { author: '', quote: '', avatarUrl: '', rating: 0, order: testimonials.length })}
+            className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
+          >
+            Add Another Testimonial
+          </button>
+          <p className="text-sm text-gray-500 mt-2">
+            Add testimonials from your customers. You can add multiple testimonials.
+          </p>
+          <p className="text-sm text-gray-500">
+            Example: <code>"Great service!"</code>, <code>"Loved the product!"</code>
+          </p>
+        
+
         </div>
       )}
     </div>
@@ -859,82 +1121,177 @@ interface HeroSlide {
 }
 
 interface HeroSlidesAccordionProps {
-  form: {
-    heroSlides?: HeroSlide[];
-  };
-  handleArrayChange: (field: 'heroSlides', index: number, key: keyof HeroSlide, value: string) => void;
-  addArrayItem: (field: 'heroSlides', item: HeroSlide) => void;
-  removeArrayItem: (field: 'heroSlides', index: number) => void;
+  form: { heroSlides?: HeroSlide[] };
+  handleArrayChange: (
+    field: "heroSlides",
+    index: number,
+    key: keyof HeroSlide,
+    value: string
+  ) => void;
+  addArrayItem: (field: "heroSlides", item: HeroSlide) => void;
+  removeArrayItem: (field: "heroSlides", index: number) => void;
+  handleImageUpload?: (
+    field: "heroSlides",
+    index: number,
+    file: File
+  ) => void;
 }
 
-const HeroSlidesAccordion: React.FC<HeroSlidesAccordionProps> = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => {
+export const HeroSlidesAccordion: React.FC<HeroSlidesAccordionProps> = ({
+  form,
+  handleArrayChange,
+  addArrayItem,
+  removeArrayItem,
+  handleImageUpload,
+}) => {
   const slides = form.heroSlides || [];
-  const allFilled = slides.every(s => s.imageUrl && s.headline);
+  const allFilled = slides.every((s) => s.imageUrl && s.headline);
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-      <button
-        type="button"
-        onClick={() => addArrayItem('heroSlides', { imageUrl: '', headline: '', subline: '', ctaText: '', ctaLink: '', order: slides.length })}
-        disabled={!allFilled}
-        className="w-full text-left px-6 py-4 bg-indigo-600 text-white font-medium flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-      >
-        <span>Hero Slides</span>
-        <span className="text-xl">{slides.length > 0 ? '✅' : '+'}</span>
-      </button>
+      <details className="group">
+        <summary className="flex justify-between items-center cursor-pointer px-6 py-4 bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
+          <span>Hero Slides</span>
+          {slides.length > 0 ? <CheckIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />}
+        </summary>
 
-      {slides.length > 0 && (
         <div className="p-6 space-y-6">
           {slides.map((s, i) => (
-            <div key={i} className="space-y-4">
-              <input
-                placeholder="Image URL"
-                value={s.imageUrl}
-                onChange={e => handleArrayChange('heroSlides', i, 'imageUrl', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
-              <img src={s.imageUrl} alt={`Slide ${i+1} Preview`} className="w-full h-48 object-cover rounded-md" />
-              <input
-                placeholder="Headline"
-                value={s.headline}
-                onChange={e => handleArrayChange('heroSlides', i, 'headline', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
-              <input
-                placeholder="Subline (optional)"
-                value={s.subline || ''}
-                onChange={e => handleArrayChange('heroSlides', i, 'subline', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  placeholder="CTA Text (optional)"
-                  value={s.ctaText || ''}
-                  onChange={e => handleArrayChange('heroSlides', i, 'ctaText', e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                />
-                <input
-                  placeholder="CTA Link (optional)"
-                  value={s.ctaLink || ''}
-                  onChange={e => handleArrayChange('heroSlides', i, 'ctaLink', e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                />
+            <div key={i} className="space-y-4 border-b pb-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-800">Slide {i + 1}</h3>
+                <button
+                  type="button"
+                  onClick={() => removeArrayItem("heroSlides", i)}
+                  className="text-red-500 hover:text-red-700 focus:outline-none"
+                  aria-label="Delete slide"
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => removeArrayItem('heroSlides', i)}
-                className="text-red-500 font-medium focus:outline-none"
-                title="Remove Slide"
-              >
-                Remove
-              </button>
+
+              {/* Image Upload & Preview */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <label className="flex flex-col items-center justify-center w-full sm:w-1/3 h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 transition">
+                  {s.imageUrl ? (
+                    <img
+                      src={s.imageUrl}
+                      alt={`Slide ${i + 1}`}
+                      className="object-cover h-full w-full rounded-md"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center text-gray-400">
+                      <PhotoIcon className="h-8 w-8 mb-2" />
+                      <span>Upload Image</span>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (handleImageUpload) {
+                          handleImageUpload("heroSlides", i, file);
+                        } else {
+                          const url = URL.createObjectURL(file);
+                          handleArrayChange("heroSlides", i, "imageUrl", url);
+                        }
+                      }
+                    }}
+                  />
+                </label>
+
+                {/* Text Fields */}
+                <div className="flex-1 space-y-3">
+                  <input
+                    placeholder="Headline"
+                    value={s.headline}
+                    onChange={(e) =>
+                      handleArrayChange(
+                        "heroSlides",
+                        i,
+                        "headline",
+                        e.target.value
+                      )
+                    }
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    required
+                  />
+                  <input
+                    placeholder="Subline (optional)"
+                    value={s.subline || ""}
+                    onChange={(e) =>
+                      handleArrayChange(
+                        "heroSlides",
+                        i,
+                        "subline",
+                        e.target.value
+                      )
+                    }
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      placeholder="CTA Text (optional)"
+                      value={s.ctaText || ""}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "heroSlides",
+                          i,
+                          "ctaText",
+                          e.target.value
+                        )
+                      }
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    />
+                    <input
+                      placeholder="CTA Link (optional)"
+                      value={s.ctaLink || ""}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "heroSlides",
+                          i,
+                          "ctaLink",
+                          e.target.value
+                        )
+                      }
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
+
+          {/* Add New Slide Button */}
+          <div className="pt-4">
+            <button
+              type="button"
+              onClick={() =>
+                addArrayItem("heroSlides", {
+                  imageUrl: "",
+                  headline: "",
+                  subline: "",
+                  ctaText: "",
+                  ctaLink: "",
+                  order: slides.length,
+                })
+              }
+              disabled={!allFilled}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+            >
+              <PlusIcon className="h-5 w-5" />
+              <span>Add Slide</span>
+            </button>
+          </div>
         </div>
-      )}
+      </details>
     </div>
   );
 };
+
 
 interface Promotion {
   title: string;
@@ -994,6 +1351,19 @@ const PromotionsAccordion: React.FC<PromotionsAccordionProps> = ({ form, handleA
               </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() => addArrayItem('promotions', { title: '', details: '', order: promotions.length })}
+            className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
+          >
+            Add Another Promotion
+          </button>
+          <p className="text-sm text-gray-500 mt-2">
+            Add promotional messages or announcements. You can add multiple promotions.
+          </p>
+          <p className="text-sm text-gray-500">
+            Example: <code>Free Shipping on Orders Over $50</code>, <code>20% Off Your First Order</code>
+          </p>
         </div>
       )}
     </div>
@@ -1014,6 +1384,9 @@ interface ThemeSettingsAccordionProps {
 }
 
 const ThemeSettingsAccordion: React.FC<ThemeSettingsAccordionProps> = ({ form, setForm }) => {
+  const [open, setOpen] = useState(true);
+  const { primaryColor = '#4f46e5', secondaryColor = '#facc15', fontFamily = 'Inter, sans-serif' } = form.themeSettings || {};
+
   const updateTheme = (key: keyof ThemeSettings, value: string) => {
     setForm((f: any) => ({
       ...f,
@@ -1023,44 +1396,83 @@ const ThemeSettingsAccordion: React.FC<ThemeSettingsAccordionProps> = ({ form, s
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
-      <h2 className="flex justify-between items-center text-2xl font-bold text-gray-800 mb-4">
-        <span>Theme Settings</span>
-        <span className="text-xl">🎨</span>
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="primaryColor" className="block text-xs font-medium text-gray-600">Primary Color</label>
-          <input
-            id="primaryColor"
-            type="text"
-            value={form.themeSettings?.primaryColor || ''}
-            onChange={e => updateTheme('primaryColor', e.target.value)}
-            placeholder="#4f46e5"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+      <div
+        className="flex justify-between items-center cursor-pointer"
+        onClick={() => setOpen(prev => !prev)}
+      >
+        <h2 className="flex items-center text-2xl font-bold text-gray-800">
+          <PaintBrushIcon className="h-6 w-6 mr-2 text-indigo-600" />
+          Theme Settings
+        </h2>
+        {open ? (
+          <ChevronUpIcon className="h-6 w-6 text-gray-500" />
+        ) : (
+          <ChevronDownIcon className="h-6 w-6 text-gray-500" />
+        )}
+      </div>
+
+      {open && (
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="primaryColor" className="block text-xs font-medium text-gray-600">
+              Primary Color
+            </label>
+            <input
+              id="primaryColor"
+              type="color"
+              value={primaryColor}
+              onChange={e => updateTheme('primaryColor', e.target.value)}
+              className="mt-1 w-full h-10 p-0 border-0 focus:outline-none" 
+            />
+          </div>
+          <div>
+            <label htmlFor="secondaryColor" className="block text-xs font-medium text-gray-600">
+              Secondary Color
+            </label>
+            <input
+              id="secondaryColor"
+              type="color"
+              value={secondaryColor}
+              onChange={e => updateTheme('secondaryColor', e.target.value)}
+              className="mt-1 w-full h-10 p-0 border-0 focus:outline-none"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="fontFamily" className="block text-xs font-medium text-gray-600">
+              Font Family
+            </label>
+            <input
+              id="fontFamily"
+              type="text"
+              value={fontFamily}
+              onChange={e => updateTheme('fontFamily', e.target.value)}
+              placeholder="Inter, sans-serif"
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor="secondaryColor" className="block text-xs font-medium text-gray-600">Secondary Color</label>
-          <input
-            id="secondaryColor"
-            type="text"
-            value={form.themeSettings?.secondaryColor || ''}
-            onChange={e => updateTheme('secondaryColor', e.target.value)}
-            placeholder="#facc15"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="fontFamily" className="block text-xs font-medium text-gray-600">Font Family</label>
-          <input
-            id="fontFamily"
-            type="text"
-            value={form.themeSettings?.fontFamily || ''}
-            onChange={e => updateTheme('fontFamily', e.target.value)}
-            placeholder="Inter, sans-serif"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
+      )}
+
+      {/* Live Preview */}
+      <div
+        className="mt-6 p-6 rounded-lg border border-gray-200 transition-shadow hover:shadow-md"
+        style={{
+          backgroundColor: secondaryColor,
+          fontFamily: fontFamily
+        }}
+      >
+        <h3 className="text-xl font-bold" style={{ color: primaryColor }}>
+          Sample Heading
+        </h3>
+        <p className="mt-2 text-sm text-gray-700">
+          This is a live preview of your current theme selection.
+        </p>
+        <button
+          className="mt-4 px-4 py-2 rounded-lg font-medium transition-transform transform hover:scale-105"
+          style={{ backgroundColor: primaryColor, color: '#ffffff' }}
+        >
+          Preview Button
+        </button>
       </div>
     </div>
   );
