@@ -261,9 +261,9 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
                 </div>
               ))}
             </div>
-          )
+        )
 
-          {/* 4. Contact & Location */}
+      {/* 4. Contact & Location */}
       case 4:
         return (
             <div className="grid gap-4">
@@ -314,970 +314,482 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
           )
       {/* 5. Advanced Settings */}
       case 5:
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
-      <h2 className="text-lg font-semibold">Advanced Settings</h2>
-
-      {/* Social Links Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 flex justify-between cursor-pointer">
-          <span>Social Links</span>
-          <span>{(form.socialLinks?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.socialLinks || []).map((s, i) => (
-            <div key={i} className="flex space-x-2 items-center">
-              <input
-                placeholder="Channel (e.g. Twitter)"
-                value={s.channel}
-                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'channel', e.target.value)}
-                className="flex-1 border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <input
-                placeholder="URL"
-                value={s.url}
-                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'url', e.target.value)}
-                className="flex-2 border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('socialLinks', i)} className="text-red-500">×</button>
-            </div>
-          ))}
-          <button
-            disabled={(form.socialLinks || []).some(s => !s.channel || !s.url)}
-            onClick={() => addArrayItem<SocialLinkOption>('socialLinks', { channel: '', url: '' })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add Social Link
-          </button>
-        </div>
-      </details>
-
-      {/* Policies Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 flex justify-between cursor-pointer">
-          <span>Policies</span>
-          <span>{(form.policies?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.policies || []).map((p, i) => (
-            <div key={i} className="space-y-1">
-              <input
-                placeholder="Type (e.g. Refunds)"
-                value={p.type}
-                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'type', e.target.value)}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <textarea
-                placeholder="Content"
-                value={p.content}
-                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'content', e.target.value)}
-                rows={2}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('policies', i)} className="text-red-500">Remove</button>
-            </div>
-          ))}
-          <button
-            disabled={(form.policies || []).some(p => !p.type || !p.content)}
-            onClick={() => addArrayItem<PolicyOption>('policies', { type: '', content: '' })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add Policy
-          </button>
-        </div>
-      </details>
-
-      {/* FAQs Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 flex justify-between cursor-pointer">
-          <span>FAQs</span>
-          <span>{(form.faqs?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.faqs || []).map((f, i) => (
-            <div key={i} className="space-y-1">
-              <input
-                placeholder="Question"
-                value={f.question}
-                onChange={e => handleArrayChange<FAQOption>('faqs', i, 'question', e.target.value)}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <textarea
-                placeholder="Answer"
-                value={f.answer}
-                onChange={e => handleArrayChange<FAQOption>('faqs', i, 'answer', e.target.value)}
-                rows={2}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('faqs', i)} className="text-red-500">Remove</button>
-            </div>
-          ))}
-          <button
-            disabled={(form.faqs || []).some(f => !f.question || !f.answer)}
-            onClick={() => addArrayItem<FAQOption>('faqs', { question: '', answer: '', order: (form.faqs || []).length })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add FAQ
-          </button>
-        </div>
-      </details>
-
-      {/* Testimonials Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 flex justify-between cursor-pointer">
-          <span>Testimonials</span>
-          <span>{(form.testimonials?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.testimonials || []).map((t, i) => (
-            <div key={i} className="space-y-1">
-              <input
-                placeholder="Author"
-                value={t.author}
-                onChange={e => handleArrayChange<TestimonialOption>('testimonials', i, 'author', e.target.value)}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <textarea
-                placeholder="Quote"
-                value={t.quote}
-                onChange={e => handleArrayChange<TestimonialOption>('testimonials', i, 'quote', e.target.value)}
-                rows={2}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('testimonials', i)} className="text-red-500">Remove</button>
-            </div>
-          ))}
-          <button
-            disabled={(form.testimonials || []).some(t => !t.author || !t.quote)}
-            onClick={() => addArrayItem<TestimonialOption>('testimonials', { author: '', quote: '', avatarUrl: '', rating: 0, order: (form.testimonials || []).length })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add Testimonial
-          </button>
-        </div>
-      </details>
-
-      {/* Hero Slides Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 flex justify-between cursor-pointer">
-          <span>Hero Slides</span>
-          <span>{(form.heroSlides?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.heroSlides || []).map((h, i) => (
-            <div key={i} className="space-y-1">
-              <input
-                placeholder="Image URL"
-                value={h.imageUrl}
-                onChange={e => handleArrayChange<BannerOption>('heroSlides', i, 'imageUrl', e.target.value)}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <input
-                placeholder="Headline"
-                value={h.headline}
-                onChange={e => handleArrayChange<BannerOption>('heroSlides', i, 'headline', e.target.value)}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('heroSlides', i)} className="text-red-500">Remove</button>
-            </div>
-          ))}
-          <button
-            disabled={(form.heroSlides || []).some(h => !h.imageUrl || !h.headline)}
-            onClick={() => addArrayItem<BannerOption>('heroSlides', { imageUrl: '', headline: '', subline: '', ctaText: '', ctaLink: '', order: (form.heroSlides || []).length })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add Hero Slide
-          </button>
-        </div>
-      </details>
-
-      {/* Promotions Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 flex justify-between cursor-pointer">
-          <span>Promotions</span>
-          <span>{(form.promotions?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.promotions || []).map((p, i) => (
-            <div key={i} className="space-y-1">
-              <input
-                placeholder="Code"
-                value={p.code}
-                onChange={e => handleArrayChange<PromotionOption>('promotions', i, 'code', e.target.value)}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <textarea
-                placeholder="Description"
-                value={p.description}
-                onChange={e => handleArrayChange<PromotionOption>('promotions', i, 'description', e.target.value)}
-                rows={2}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('promotions', i)} className="text-red-500">Remove</button>
-            </div>
-          ))}
-          <button
-            disabled={(form.promotions || []).some(p => !p.code || !p.description)}
-            onClick={() => addArrayItem<PromotionOption>('promotions', { title:'', code: '', description: '', startsAt: '', endsAt: '', bannerUrl: '' })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add Promotion
-          </button>
-        </div>
-      </details>
-
-      {/* JSON Config Accordion */}
-      <details className="border rounded">
-            <summary className="px-4 py-2 flex justify-between cursor-pointer">
-              <span>Advanced Settings</span>
-              <span>⚙️</span>
-            </summary>
-            <div className="p-4 space-y-6">
-              {/* Theme Settings */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Theme Settings</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs">Primary Color</label>
-                    <input
-                      type="text"
-                      value={form.themeSettings?.primaryColor || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          themeSettings: { ...f.themeSettings, primaryColor: e.target.value }
-                        }))
-                      }
-                      placeholder="#4f46e5"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Secondary Color</label>
-                    <input
-                      type="text"
-                      value={form.themeSettings?.secondaryColor || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          themeSettings: { ...f.themeSettings, secondaryColor: e.target.value }
-                        }))
-                      }
-                      placeholder="#facc15"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-xs">Font Family</label>
-                    <input
-                      type="text"
-                      value={form.themeSettings?.fontFamily || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          themeSettings: { ...f.themeSettings, fontFamily: e.target.value }
-                        }))
-                      }
-                      placeholder="Inter, sans-serif"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* SEO Settings */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">SEO Settings</h3>
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-xs">Page Title</label>
-                    <input
-                      type="text"
-                      value={form.seo?.title || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          seo: { ...f.seo, title: e.target.value }
-                        }))
-                      }
-                      placeholder="My Awesome Store"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Meta Description</label>
-                    <textarea
-                      rows={2}
-                      value={form.seo?.description || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          seo: { ...f.seo, description: e.target.value }
-                        }))
-                      }
-                      placeholder="Best deals on fashion, electronics, and more."
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Keywords (comma-separated)</label>
-                    <input
-                      type="text"
-                      value={form.seo?.keywords?.join(', ') || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          seo: { ...f.seo, keywords: e.target.value.split(',').map(k => k.trim()) }
-                        }))
-                      }
-                      placeholder="ecommerce, fashion, electronics"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Analytics Config */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Analytics</h3>
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-xs">Google Tag ID</label>
-                    <input
-                      type="text"
-                      value={form.analyticsConfig?.googleTag || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          analyticsConfig: { ...f.analyticsConfig, googleTag: e.target.value }
-                        }))
-                      }
-                      placeholder="G-XXXXXXXXXX"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Facebook Pixel ID</label>
-                    <input
-                      type="text"
-                      value={form.analyticsConfig?.facebookTag || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          analyticsConfig: { ...f.analyticsConfig, facebookTag: e.target.value }
-                        }))
-                      }
-                      placeholder="1234567890"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Settings */}
-              <div className="space-y-2">
-                    <h3 className="text-sm font-semibold">Payment Settings</h3>
-                    <div className="space-y-4">
-                      {/* M-Pesa */}
-                      <fieldset className="border rounded p-3">
-                        <legend className="text-xs font-medium">M-Pesa (Daraja API)</legend>
-                        <div className="space-y-2">
-                          <div>
-                            <label className="block text-xs">Business Shortcode</label>
-                            <input
-                              type="text"
-                              value={form.paymentSettings?.mpesaShortcode || ''}
-                              onChange={e =>
-                                setForm(f => ({
-                                  ...f,
-                                  paymentSettings: { ...f.paymentSettings, mpesaShortcode: e.target.value }
-                                }))
-                              }
-                              placeholder="e.g. 123456"
-                              className="w-full border rounded px-2 py-1 text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs">API Consumer Key</label>
-                            <input
-                              type="text"
-                              value={form.paymentSettings?.mpesaConsumerKey || ''}
-                              onChange={e =>
-                                setForm(f => ({
-                                  ...f,
-                                  paymentSettings: { ...f.paymentSettings, mpesaConsumerKey: e.target.value }
-                                }))
-                              }
-                              placeholder="Your Daraja Consumer Key"
-                              className="w-full border rounded px-2 py-1 text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs">API Consumer Secret</label>
-                            <input
-                              type="text"
-                              value={form.paymentSettings?.mpesaConsumerSecret || ''}
-                              onChange={e =>
-                                setForm(f => ({
-                                  ...f,
-                                  paymentSettings: { ...f.paymentSettings, mpesaConsumerSecret: e.target.value }
-                                }))
-                              }
-                              placeholder="Your Daraja Consumer Secret"
-                              className="w-full border rounded px-2 py-1 text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs">Callback URL</label>
-                            <input
-                              type="url"
-                              value={form.paymentSettings?.mpesaCallbackUrl || ''}
-                              onChange={e =>
-                                setForm(f => ({
-                                  ...f,
-                                  paymentSettings: { ...f.paymentSettings, mpesaCallbackUrl: e.target.value }
-                                }))
-                              }
-                              placeholder="https://yourdomain.com/api/mpesa/callback"
-                              className="w-full border rounded px-2 py-1 text-sm"
-                            />
-                          </div>
-                        </div>
-                      </fieldset>
-
-
-                    </div>
-                  </div>
-
-              {/* Shipping Settings */}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold">Shipping Settings</h3>
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-xs">Carrier Name</label>
-                    <input
-                      type="text"
-                      value={form.shippingSettings?.carrierName || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          shippingSettings: { ...f.shippingSettings, carrierName: e.target.value }
-                        }))
-                      }
-                      placeholder="DHL, FedEx, etc."
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Tracking URL Template</label>
-                    <input
-                      type="text"
-                      value={form.shippingSettings?.trackingUrl || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          shippingSettings: { ...f.shippingSettings, trackingUrl: e.target.value }
-                        }))
-                      }
-                      placeholder="https://tracking.example.com/track?code={tracking_number}"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </details>
-    </div>
-    
-  );
-
-      case 7:
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
-      <h2 className="text-lg font-semibold">Advanced Settings</h2>
-
-      {/* Social Links Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 cursor-pointer flex justify-between">
-          <span>Social Links</span>
-          <span>{(form.socialLinks?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.socialLinks || []).map((s, i) => (
-            <div key={i} className="flex space-x-2 items-center">
-              <input
-                placeholder="Channel (e.g. Twitter)"
-                value={s.channel}
-                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'channel', e.target.value)}
-                className="flex-1 border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <input
-                placeholder="URL"
-                value={s.url}
-                onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'url', e.target.value)}
-                className="flex-2 border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('socialLinks', i)} className="text-red-500">×</button>
-            </div>
-          ))}
-          <button
-            disabled={(form.socialLinks || []).some(s => !s.channel || !s.url)}
-            onClick={() => addArrayItem<SocialLinkOption>('socialLinks', { channel: '', url: '' })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add Social Link
-          </button>
-        </div>
-      </details>
-
-      {/* Policies Accordion */}
-      <details className="border rounded">
-        <summary className="px-4 py-2 cursor-pointer flex justify-between">
-          <span>Policies</span>
-          <span>{(form.policies?.length || 0) > 0 ? '✅' : '+'}</span>
-        </summary>
-        <div className="p-4 space-y-2">
-          {(form.policies || []).map((p, i) => (
-            <div key={i} className="space-y-1">
-              <input
-                placeholder="Type (e.g. Refunds)"
-                value={p.type}
-                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'type', e.target.value)}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <textarea
-                placeholder="Content"
-                value={p.content}
-                onChange={e => handleArrayChange<PolicyOption>('policies', i, 'content', e.target.value)}
-                rows={2}
-                className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
-              />
-              <button onClick={() => removeArrayItem('policies', i)} className="text-red-500 text-left">
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            disabled={(form.policies || []).some(p => !p.type || !p.content)}
-            onClick={() => addArrayItem<PolicyOption>('policies', { type: '', content: '' })}
-            className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
-          >
-            Add Policy
-          </button>
-        </div>
-      </details>
-
-      {/* …repeat for FAQs, Testimonials etc.… */}
-
-    </div>
-  );
-
-      case 6:
         return (
           <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
             <h2 className="text-lg font-semibold">Advanced Settings</h2>
-              <div className="space-y-6">
-              {/* Social Links */}
-              <div>
-                <p className="block text-sm font-medium">Social Links</p>
+
+            {/* Social Links Accordion */}
+            <details className="border rounded">
+              <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                <span>Social Links</span>
+                <span>{(form.socialLinks?.length || 0) > 0 ? '✅' : '+'}</span>
+              </summary>
+              <div className="p-4 space-y-2">
                 {(form.socialLinks || []).map((s, i) => (
-                  <div key={i} className="flex space-x-2 items-center mb-2">
+                  <div key={i} className="flex space-x-2 items-center">
                     <input
-                      placeholder="Channel"
+                      placeholder="Channel (e.g. Twitter)"
                       value={s.channel}
-                      onChange={e =>
-                        handleArrayChange<SocialLinkOption>('socialLinks', i, 'channel', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'channel', e.target.value)}
+                      className="flex-1 border rounded px-2 py-1 focus:ring-indigo-400"
                     />
                     <input
                       placeholder="URL"
                       value={s.url}
-                      onChange={e =>
-                        handleArrayChange<SocialLinkOption>('socialLinks', i, 'url', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 flex-1"
+                      onChange={e => handleArrayChange<SocialLinkOption>('socialLinks', i, 'url', e.target.value)}
+                      className="flex-2 border rounded px-2 py-1 focus:ring-indigo-400"
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('socialLinks', i)}
-                      className="text-red-500"
-                    >
-                      ×
-                    </button>
+                    <button onClick={() => removeArrayItem('socialLinks', i)} className="text-red-500">×</button>
                   </div>
                 ))}
                 <button
-                  type="button"
+                  disabled={(form.socialLinks || []).some(s => !s.channel || !s.url)}
                   onClick={() => addArrayItem<SocialLinkOption>('socialLinks', { channel: '', url: '' })}
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
                 >
-                  Add Social
+                  Add Social Link
                 </button>
               </div>
+            </details>
 
-              {/* Policies */}
-              <div>
-                <p className="block text-sm font-medium">Policies</p>
+            {/* Policies Accordion */}
+            <details className="border rounded">
+              <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                <span>Policies</span>
+                <span>{(form.policies?.length || 0) > 0 ? '✅' : '+'}</span>
+              </summary>
+              <div className="p-4 space-y-2">
                 {(form.policies || []).map((p, i) => (
-                  <div key={i} className="flex flex-col gap-2 mb-2">
+                  <div key={i} className="space-y-1">
                     <input
-                      placeholder="Type"
+                      placeholder="Type (e.g. Refunds)"
                       value={p.type}
                       onChange={e => handleArrayChange<PolicyOption>('policies', i, 'type', e.target.value)}
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                      placeholder="Title"
-                      value={p.title || ''}
-                      onChange={e =>
-                        handleArrayChange<PolicyOption>('policies', i, 'title', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
                     <textarea
                       placeholder="Content"
                       value={p.content}
                       onChange={e => handleArrayChange<PolicyOption>('policies', i, 'content', e.target.value)}
                       rows={2}
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('policies', i)}
-                      className="text-red-500 text-left"
-                    >
-                      × Remove
-                    </button>
+                    <button onClick={() => removeArrayItem('policies', i)} className="text-red-500">Remove</button>
                   </div>
                 ))}
                 <button
-                  type="button"
-                  onClick={() => addArrayItem<PolicyOption>('policies', { type: '', title: '', content: '' })}
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  disabled={(form.policies || []).some(p => !p.type || !p.content)}
+                  onClick={() => addArrayItem<PolicyOption>('policies', { type: '', content: '' })}
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
                 >
                   Add Policy
                 </button>
               </div>
+            </details>
 
-              {/* FAQs */}
-              <div>
-                <p className="block text-sm font-medium">FAQs</p>
+            {/* FAQs Accordion */}
+            <details className="border rounded">
+              <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                <span>FAQs</span>
+                <span>{(form.faqs?.length || 0) > 0 ? '✅' : '+'}</span>
+              </summary>
+              <div className="p-4 space-y-2">
                 {(form.faqs || []).map((f, i) => (
-                  <div key={i} className="flex flex-col gap-2 mb-2">
+                  <div key={i} className="space-y-1">
                     <input
                       placeholder="Question"
                       value={f.question}
                       onChange={e => handleArrayChange<FAQOption>('faqs', i, 'question', e.target.value)}
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
                     <textarea
                       placeholder="Answer"
                       value={f.answer}
                       onChange={e => handleArrayChange<FAQOption>('faqs', i, 'answer', e.target.value)}
                       rows={2}
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('faqs', i)}
-                      className="text-red-500 text-left"
-                    >
-                      × Remove
-                    </button>
+                    <button onClick={() => removeArrayItem('faqs', i)} className="text-red-500">Remove</button>
                   </div>
                 ))}
                 <button
-                  type="button"
-                  onClick={() =>
-                    addArrayItem<FAQOption>('faqs', { question: '', answer: '', order: (form.faqs ?? []).length })
-                  }
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  disabled={(form.faqs || []).some(f => !f.question || !f.answer)}
+                  onClick={() => addArrayItem<FAQOption>('faqs', { question: '', answer: '', order: (form.faqs || []).length })}
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
                 >
                   Add FAQ
                 </button>
               </div>
+            </details>
 
-              {/* Testimonials */}
-              <div>
-                <p className="block text-sm font-medium">Testimonials</p>
+            {/* Testimonials Accordion */}
+            <details className="border rounded">
+              <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                <span>Testimonials</span>
+                <span>{(form.testimonials?.length || 0) > 0 ? '✅' : '+'}</span>
+              </summary>
+              <div className="p-4 space-y-2">
                 {(form.testimonials || []).map((t, i) => (
-                  <div key={i} className="flex flex-col gap-2 mb-2">
+                  <div key={i} className="space-y-1">
                     <input
                       placeholder="Author"
                       value={t.author}
-                      onChange={e =>
-                        handleArrayChange<TestimonialOption>('testimonials', i, 'author', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      onChange={e => handleArrayChange<TestimonialOption>('testimonials', i, 'author', e.target.value)}
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
                     <textarea
                       placeholder="Quote"
                       value={t.quote}
-                      onChange={e =>
-                        handleArrayChange<TestimonialOption>('testimonials', i, 'quote', e.target.value)
-                      }
+                      onChange={e => handleArrayChange<TestimonialOption>('testimonials', i, 'quote', e.target.value)}
                       rows={2}
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
-                    <input
-                      placeholder="Avatar URL"
-                      value={t.avatarUrl || ''}
-                      onChange={e =>
-                        handleArrayChange<TestimonialOption>('testimonials', i, 'avatarUrl', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                      placeholder="Rating"
-                      type="number"
-                      value={t.rating || ''}
-                      onChange={e =>
-                        handleArrayChange<TestimonialOption>(
-                          'testimonials',
-                          i,
-                          'rating',
-                          parseInt(e.target.value, 10)
-                        )
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('testimonials', i)}
-                      className="text-red-500 text-left"
-                    >
-                      × Remove
-                    </button>
+                    <button onClick={() => removeArrayItem('testimonials', i)} className="text-red-500">Remove</button>
                   </div>
                 ))}
                 <button
-                  type="button"
-                  onClick={() =>
-                    addArrayItem<TestimonialOption>('testimonials', {
-                      author: '',
-                      quote: '',
-                      avatarUrl: '',
-                      rating: 0,
-                      order: form.testimonials?.length || 0,
-                    })
-                  }
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  disabled={(form.testimonials || []).some(t => !t.author || !t.quote)}
+                  onClick={() => addArrayItem<TestimonialOption>('testimonials', { author: '', quote: '', avatarUrl: '', rating: 0, order: (form.testimonials || []).length })}
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
                 >
                   Add Testimonial
                 </button>
               </div>
+            </details>
 
-              {/* Hero Slides */}
-              <div>
-                <p className="block text-sm font-medium">Hero Slides</p>
+            {/* Hero Slides Accordion */}
+            <details className="border rounded">
+              <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                <span>Hero Slides</span>
+                <span>{(form.heroSlides?.length || 0) > 0 ? '✅' : '+'}</span>
+              </summary>
+              <div className="p-4 space-y-2">
                 {(form.heroSlides || []).map((h, i) => (
-                  <div key={i} className="flex flex-col gap-2 mb-2">
+                  <div key={i} className="space-y-1">
                     <input
                       placeholder="Image URL"
                       value={h.imageUrl}
-                      onChange={e =>
-                        handleArrayChange<BannerOption>('heroSlides', i, 'imageUrl', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      onChange={e => handleArrayChange<BannerOption>('heroSlides', i, 'imageUrl', e.target.value)}
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
                     <input
                       placeholder="Headline"
-                      value={h.headline || ''}
-                      onChange={e =>
-                        handleArrayChange<BannerOption>('heroSlides', i, 'headline', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      value={h.headline}
+                      onChange={e => handleArrayChange<BannerOption>('heroSlides', i, 'headline', e.target.value)}
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
-                    <input
-                      placeholder="Subline"
-                      value={h.subline || ''}
-                      onChange={e =>
-                        handleArrayChange<BannerOption>('heroSlides', i, 'subline', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                      placeholder="CTA Text"
-                      value={h.ctaText || ''}
-                      onChange={e =>
-                        handleArrayChange<BannerOption>('heroSlides', i, 'ctaText', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                      placeholder="CTA Link"
-                      value={h.ctaLink || ''}
-                      onChange={e =>
-                        handleArrayChange<BannerOption>('heroSlides', i, 'ctaLink', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('heroSlides', i)}
-                      className="text-red-500 text-left"
-                    >
-                      × Remove
-                    </button>
+                    <button onClick={() => removeArrayItem('heroSlides', i)} className="text-red-500">Remove</button>
                   </div>
                 ))}
                 <button
-                  type="button"
-                  onClick={() =>
-                    addArrayItem<BannerOption>('heroSlides', {
-                      imageUrl: '',
-                      headline: '',
-                      subline: '',
-                      ctaText: '',
-                      ctaLink: '',
-                      order: form.heroSlides?.length ?? 0,
-                    })
-                  }
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  disabled={(form.heroSlides || []).some(h => !h.imageUrl || !h.headline)}
+                  onClick={() => addArrayItem<BannerOption>('heroSlides', { imageUrl: '', headline: '', subline: '', ctaText: '', ctaLink: '', order: (form.heroSlides || []).length })}
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
                 >
-                  Add Slide
+                  Add Hero Slide
                 </button>
               </div>
+            </details>
 
-              {/* Promotions */}
-              <div>
-                <p className="block text-sm font-medium">Promotions</p>
+            {/* Promotions Accordion */}
+            <details className="border rounded">
+              <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                <span>Promotions</span>
+                <span>{(form.promotions?.length || 0) > 0 ? '✅' : '+'}</span>
+              </summary>
+              <div className="p-4 space-y-2">
                 {(form.promotions || []).map((p, i) => (
-                  <div key={i} className="flex flex-col gap-2 mb-2">
+                  <div key={i} className="space-y-1">
                     <input
                       placeholder="Code"
-                      value={p.code || ''}
-                      onChange={e =>
-                        handleArrayChange<PromotionOption>('promotions', i, 'code', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                      placeholder="Title"
-                      value={p.title}
-                      onChange={e => handleArrayChange<PromotionOption>('promotions', i, 'title', e.target.value)}
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      value={p.code}
+                      onChange={e => handleArrayChange<PromotionOption>('promotions', i, 'code', e.target.value)}
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
                     <textarea
                       placeholder="Description"
-                      value={p.description || ''}
-                      onChange={e =>
-                        handleArrayChange<PromotionOption>('promotions', i, 'description', e.target.value)
-                      }
+                      value={p.description}
+                      onChange={e => handleArrayChange<PromotionOption>('promotions', i, 'description', e.target.value)}
                       rows={2}
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
                     />
-                    <div className="flex space-x-2">
-                      <input
-                        type="datetime-local"
-                        value={p.startsAt || ''}
-                        onChange={e =>
-                          handleArrayChange<PromotionOption>('promotions', i, 'startsAt', e.target.value)
-                        }
-                        className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 flex-1"
-                      />
-                      <input
-                        type="datetime-local"
-                        value={p.endsAt || ''}
-                        onChange={e =>
-                          handleArrayChange<PromotionOption>('promotions', i, 'endsAt', e.target.value)
-                        }
-                        className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 flex-1"
-                      />
-                    </div>
-                    <input
-                      placeholder="Banner URL"
-                      value={p.bannerUrl || ''}
-                      onChange={e =>
-                        handleArrayChange<PromotionOption>('promotions', i, 'bannerUrl', e.target.value)
-                      }
-                      className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('promotions', i)}
-                      className="text-red-500 text-left"
-                    >
-                      × Remove
-                    </button>
+                    <button onClick={() => removeArrayItem('promotions', i)} className="text-red-500">Remove</button>
                   </div>
                 ))}
                 <button
-                  type="button"
-                  onClick={() =>
-                    addArrayItem<PromotionOption>('promotions', {
-                      code: '',
-                      title: '',
-                      description: '',
-                      startsAt: '',
-                      endsAt: '',
-                      bannerUrl: '',
-                    })
-                  }
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  disabled={(form.promotions || []).some(p => !p.code || !p.description)}
+                  onClick={() => addArrayItem<PromotionOption>('promotions', { title:'', code: '', description: '', startsAt: '', endsAt: '', bannerUrl: '' })}
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
                 >
                   Add Promotion
                 </button>
               </div>
+            </details>
 
-              {/* Config JSON */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium">Theme Settings (JSON)</label>
-                  <textarea
-                    rows={3}
-                    value={JSON.stringify(form.themeSettings, null, 2)}
-                    onChange={e => setForm(f => ({ ...f, themeSettings: JSON.parse(e.target.value) }))}
-                    className="mt-1 w-full border rounded-md px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium">SEO Settings (JSON)</label>
-                  <textarea
-                    rows={3}
-                    value={JSON.stringify(form.seo, null, 2)}
-                    onChange={e => setForm(f => ({ ...f, seo: JSON.parse(e.target.value) }))}
-                    className="mt-1 w-full border rounded-md px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium">Analytics Config (JSON)</label>
-                  <textarea
-                    rows={2}
-                    value={JSON.stringify(form.analyticsConfig, null, 2)}
-                    onChange={e =>
-                      setForm(f => ({ ...f, analyticsConfig: JSON.parse(e.target.value) }))
-                    }
-                    className="mt-1 w-full border rounded-md px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium">Payment Settings (JSON)</label>
-                  <textarea
-                    rows={2}
-                    value={JSON.stringify(form.paymentSettings, null, 2)}
-                    onChange={e =>
-                      setForm(f => ({ ...f, paymentSettings: JSON.parse(e.target.value) }))
-                    }
-                    className="mt-1 w-full border rounded-md px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium">Shipping Settings (JSON)</label>
-                  <textarea
-                    rows={2}
-                    value={JSON.stringify(form.shippingSettings, null, 2)}
-                    onChange={e =>
-                      setForm(f => ({ ...f, shippingSettings: JSON.parse(e.target.value) }))
-                    }
-                    className="mt-1 w-full border rounded-md px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
+            {/* JSON Config Accordion */}
+            <details className="border rounded">
+                  <summary className="px-4 py-2 flex justify-between cursor-pointer">
+                    <span>Advanced Settings</span>
+                    <span>⚙️</span>
+                  </summary>
+                  <div className="p-4 space-y-6">
+                    {/* Theme Settings */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-semibold">Theme Settings</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs">Primary Color</label>
+                          <input
+                            type="text"
+                            value={form.themeSettings?.primaryColor || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                themeSettings: { ...f.themeSettings, primaryColor: e.target.value }
+                              }))
+                            }
+                            placeholder="#4f46e5"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs">Secondary Color</label>
+                          <input
+                            type="text"
+                            value={form.themeSettings?.secondaryColor || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                themeSettings: { ...f.themeSettings, secondaryColor: e.target.value }
+                              }))
+                            }
+                            placeholder="#facc15"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-xs">Font Family</label>
+                          <input
+                            type="text"
+                            value={form.themeSettings?.fontFamily || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                themeSettings: { ...f.themeSettings, fontFamily: e.target.value }
+                              }))
+                            }
+                            placeholder="Inter, sans-serif"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SEO Settings */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-semibold">SEO Settings</h3>
+                      <div className="space-y-2">
+                        <div>
+                          <label className="block text-xs">Page Title</label>
+                          <input
+                            type="text"
+                            value={form.seo?.title || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                seo: { ...f.seo, title: e.target.value }
+                              }))
+                            }
+                            placeholder="My Awesome Store"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs">Meta Description</label>
+                          <textarea
+                            rows={2}
+                            value={form.seo?.description || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                seo: { ...f.seo, description: e.target.value }
+                              }))
+                            }
+                            placeholder="Best deals on fashion, electronics, and more."
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs">Keywords (comma-separated)</label>
+                          <input
+                            type="text"
+                            value={form.seo?.keywords?.join(', ') || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                seo: { ...f.seo, keywords: e.target.value.split(',').map(k => k.trim()) }
+                              }))
+                            }
+                            placeholder="ecommerce, fashion, electronics"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Analytics Config */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-semibold">Analytics</h3>
+                      <div className="space-y-2">
+                        <div>
+                          <label className="block text-xs">Google Tag ID</label>
+                          <input
+                            type="text"
+                            value={form.analyticsConfig?.googleTag || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                analyticsConfig: { ...f.analyticsConfig, googleTag: e.target.value }
+                              }))
+                            }
+                            placeholder="G-XXXXXXXXXX"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs">Facebook Pixel ID</label>
+                          <input
+                            type="text"
+                            value={form.analyticsConfig?.facebookTag || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                analyticsConfig: { ...f.analyticsConfig, facebookTag: e.target.value }
+                              }))
+                            }
+                            placeholder="1234567890"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment Settings */}
+                    <div className="space-y-2">
+                          <h3 className="text-sm font-semibold">Payment Settings</h3>
+                          <div className="space-y-4">
+                            {/* M-Pesa */}
+                            <fieldset className="border rounded p-3">
+                              <legend className="text-xs font-medium">M-Pesa (Daraja API)</legend>
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="block text-xs">Business Shortcode</label>
+                                  <input
+                                    type="text"
+                                    value={form.paymentSettings?.mpesaShortcode || ''}
+                                    onChange={e =>
+                                      setForm(f => ({
+                                        ...f,
+                                        paymentSettings: { ...f.paymentSettings, mpesaShortcode: e.target.value }
+                                      }))
+                                    }
+                                    placeholder="e.g. 123456"
+                                    className="w-full border rounded px-2 py-1 text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs">API Consumer Key</label>
+                                  <input
+                                    type="text"
+                                    value={form.paymentSettings?.mpesaConsumerKey || ''}
+                                    onChange={e =>
+                                      setForm(f => ({
+                                        ...f,
+                                        paymentSettings: { ...f.paymentSettings, mpesaConsumerKey: e.target.value }
+                                      }))
+                                    }
+                                    placeholder="Your Daraja Consumer Key"
+                                    className="w-full border rounded px-2 py-1 text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs">API Consumer Secret</label>
+                                  <input
+                                    type="text"
+                                    value={form.paymentSettings?.mpesaConsumerSecret || ''}
+                                    onChange={e =>
+                                      setForm(f => ({
+                                        ...f,
+                                        paymentSettings: { ...f.paymentSettings, mpesaConsumerSecret: e.target.value }
+                                      }))
+                                    }
+                                    placeholder="Your Daraja Consumer Secret"
+                                    className="w-full border rounded px-2 py-1 text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs">Callback URL</label>
+                                  <input
+                                    type="url"
+                                    value={form.paymentSettings?.mpesaCallbackUrl || ''}
+                                    onChange={e =>
+                                      setForm(f => ({
+                                        ...f,
+                                        paymentSettings: { ...f.paymentSettings, mpesaCallbackUrl: e.target.value }
+                                      }))
+                                    }
+                                    placeholder="https://yourdomain.com/api/mpesa/callback"
+                                    className="w-full border rounded px-2 py-1 text-sm"
+                                  />
+                                </div>
+                              </div>
+                            </fieldset>
+
+
+                          </div>
+                        </div>
+
+                    {/* Shipping Settings */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-semibold">Shipping Settings</h3>
+                      <div className="space-y-2">
+                        <div>
+                          <label className="block text-xs">Carrier Name</label>
+                          <input
+                            type="text"
+                            value={form.shippingSettings?.carrierName || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                shippingSettings: { ...f.shippingSettings, carrierName: e.target.value }
+                              }))
+                            }
+                            placeholder="DHL, FedEx, etc."
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs">Tracking URL Template</label>
+                          <input
+                            type="text"
+                            value={form.shippingSettings?.trackingUrl || ''}
+                            onChange={e =>
+                              setForm(f => ({
+                                ...f,
+                                shippingSettings: { ...f.shippingSettings, trackingUrl: e.target.value }
+                              }))
+                            }
+                            placeholder="https://tracking.example.com/track?code={tracking_number}"
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </details>
           </div>
-        );
+          
+          );
       default:
         return null;
     }
@@ -1337,3 +849,248 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const options = cats.categories.map((c: any) => ({ id: c.id, name: c.name }));
   return { props: { availableCategories: options } };
 };
+
+
+import React from 'react';
+
+const SocialLinksAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+  <details className="border rounded">
+    <summary className="px-4 py-2 flex justify-between cursor-pointer">
+      <span>Social Links</span>
+      <span>{(form.socialLinks?.length || 0) > 0 ? '✅' : '+'}</span>
+    </summary>
+    <div className="p-4 space-y-2">
+      {(form.socialLinks || []).map((s, i) => (
+        <div key={i} className="flex space-x-2 items-center">
+          <input
+            placeholder="Channel (e.g. Twitter)"
+            value={s.channel}
+            onChange={e => handleArrayChange('socialLinks', i, 'channel', e.target.value)}
+            className="flex-1 border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <input
+            placeholder="URL"
+            value={s.url}
+            onChange={e => handleArrayChange('socialLinks', i, 'url', e.target.value)}
+            className="flex-2 border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <button onClick={() => removeArrayItem('socialLinks', i)} className="text-red-500">×</button>
+        </div>
+      ))}
+      <button
+        disabled={(form.socialLinks || []).some(s => !s.channel || !s.url)}
+        onClick={() => addArrayItem('socialLinks', { channel: '', url: '' })}
+        className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+      >
+        Add Social Link
+      </button>
+    </div>
+  </details>
+);
+
+const PoliciesAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+  <details className="border rounded">
+    <summary className="px-4 py-2 flex justify-between cursor-pointer">
+      <span>Policies</span>
+      <span>{(form.policies?.length || 0) > 0 ? '✅' : '+'}</span>
+    </summary>
+    <div className="p-4 space-y-2">
+      {(form.policies || []).map((p, i) => (
+        <div key={i} className="space-y-1">
+          <input
+            placeholder="Type (e.g. Refunds)"
+            value={p.type}
+            onChange={e => handleArrayChange('policies', i, 'type', e.target.value)}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <textarea
+            placeholder="Content"
+            value={p.content}
+            onChange={e => handleArrayChange('policies', i, 'content', e.target.value)}
+            rows={2}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <button onClick={() => removeArrayItem('policies', i)} className="text-red-500">Remove</button>
+        </div>
+      ))}
+      <button
+        disabled={(form.policies || []).some(p => !p.type || !p.content)}
+        onClick={() => addArrayItem('policies', { type: '', content: '' })}
+        className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+      >
+        Add Policy
+      </button>
+    </div>
+  </details>
+);
+
+const FAQsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+  <details className="border rounded">
+    <summary className="px-4 py-2 flex justify-between cursor-pointer">
+      <span>FAQs</span>
+      <span>{(form.faqs?.length || 0) > 0 ? '✅' : '+'}</span>
+    </summary>
+    <div className="p-4 space-y-2">
+      {(form.faqs || []).map((f, i) => (
+        <div key={i} className="space-y-1">
+          <input
+            placeholder="Question"
+            value={f.question}
+            onChange={e => handleArrayChange('faqs', i, 'question', e.target.value)}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <textarea
+            placeholder="Answer"
+            value={f.answer}
+            onChange={e => handleArrayChange('faqs', i, 'answer', e.target.value)}
+            rows={2}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <button onClick={() => removeArrayItem('faqs', i)} className="text-red-500">Remove</button>
+        </div>
+      ))}
+      <button
+        disabled={(form.faqs || []).some(f => !f.question || !f.answer)}
+        onClick={() => addArrayItem('faqs', { question: '', answer: '', order: (form.faqs || []).length })}
+        className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+      >
+        Add FAQ
+      </button>
+    </div>
+  </details>
+);
+
+const TestimonialsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+  <details className="border rounded">
+    <summary className="px-4 py-2 flex justify-between cursor-pointer">
+      <span>Testimonials</span>
+      <span>{(form.testimonials?.length || 0) > 0 ? '✅' : '+'}</span>
+    </summary>
+    <div className="p-4 space-y-2">
+      {(form.testimonials || []).map((t, i) => (
+        <div key={i} className="space-y-1">
+          <input
+            placeholder="Author"
+            value={t.author}
+            onChange={e => handleArrayChange('testimonials', i, 'author', e.target.value)}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <textarea
+            placeholder="Quote"
+            value={t.quote}
+            onChange={e => handleArrayChange('testimonials', i, 'quote', e.target.value)}
+            rows={2}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <button onClick={() => removeArrayItem('testimonials', i)} className="text-red-500">Remove</button>
+        </div>
+      ))}
+      <button
+        disabled={(form.testimonials || []).some(t => !t.author || !t.quote)}
+        onClick={() => addArrayItem('testimonials', { author: '', quote: '', avatarUrl: '', rating: 0, order: (form.testimonials || []).length })}
+        className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+      >
+        Add Testimonial
+      </button>
+    </div>
+  </details>
+);
+
+const HeroSlidesAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
+  <details className="border rounded">
+    <summary className="px-4 py-2 flex justify-between cursor-pointer">
+      <span>Hero Slides</span>
+      <span>{(form.heroSlides?.length || 0) > 0 ? '✅' : '+'}</span>
+    </summary>
+    <div className="p-4 space-y-2">
+      {(form.heroSlides || []).map((h, i) => (
+        <div key={i} className="space-y-1">
+          <input
+            placeholder="Image URL"
+            value={h.imageUrl}
+            onChange={e => handleArrayChange('heroSlides', i, 'imageUrl', e.target.value)}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <input
+            placeholder="Headline"
+            value={h.headline}
+            onChange={e => handleArrayChange('heroSlides', i, 'headline', e.target.value)}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <button onClick={() => removeArrayItem('heroSlides', i)} className="text-red-500">Remove</button>
+        </div>
+      ))}
+      <button
+        disabled={(form.heroSlides || []).some(h => !h.imageUrl || !h.headline)}
+        onClick={() => addArrayItem('heroSlides', { imageUrl: '', headline: '', subline: '', ctaText: '', ctaLink: '', order: (form.heroSlides || []).length })}
+        className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+      >
+        Add Hero Slide
+      </button>
+    </div>
+  </details>
+);
+
+        <div key={i} className="space-y-1">
+          <input
+            placeholder="Title"
+            value={p.title}
+            onChange={e => handleArrayChange('promotions', i, 'title', e.target.value)}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <textarea
+            placeholder="Details"
+            value={p.details}
+            onChange={e => handleArrayChange('promotions', i, 'details', e.target.value)}
+            rows={2}
+            className="w-full border rounded px-2 py-1 focus:ring-indigo-400"
+          />
+          <button onClick={() => removeArrayItem('promotions', i)} className="text-red-500">Remove</button>
+        </div>
+      ))}
+      <button
+        disabled={(form.promotions || []).some(p => !p.title || !p.details)}
+        onClick={() => addArrayItem('promotions', { title: '', details: '', order: (form.promotions || []).length })}
+        className="mt-2 px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+      >
+        Add Promotion
+      </button>
+    </div>
+  </details>
+);
+
+const AdvancedJsonAccordion = ({ form, setForm }) => (
+  <details className="border rounded">
+    <summary className="px-4 py-2 flex justify-between cursor-pointer">
+      <span>Advanced Config (JSON)</span>
+      <span>{form.advancedJson ? '✅' : '+'}</span>
+    </summary>
+    <div className="p-4 space-y-2">
+      <textarea
+        placeholder="Paste or edit your JSON config here"
+        value={form.advancedJson}
+        onChange={e => {
+          try {
+            const parsed = JSON.parse(e.target.value);
+            setForm(prev => ({ ...prev, advancedJson: e.target.value, parsedAdvancedJson: parsed }));
+          } catch {
+            setForm(prev => ({ ...prev, advancedJson: e.target.value }));
+          }
+        }}
+        rows={8}
+        className="w-full border rounded px-2 py-1 font-mono focus:ring-indigo-400"
+      />
+      <p className="text-sm text-gray-500">Ensure your JSON is valid. This will include theme, SEO, analytics, and payment configurations.</p>
+    </div>
+  </details>
+);
+
+// export {
+//   SocialLinksAccordion,
+//   PoliciesAccordion,
+//   FAQsAccordion,
+//   TestimonialsAccordion,
+//   HeroSlidesAccordion,
+//   PromotionsAccordion,
+//   AdvancedJsonAccordion,
+// };
