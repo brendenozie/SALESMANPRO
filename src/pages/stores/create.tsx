@@ -17,7 +17,7 @@ interface PromotionOption { code?: string; title: string; description?: string; 
 
 interface SEOOption { title?: string; description?: string; keywords?: string[]; canonical?: string; }
 interface AnalyticsConfigOption { googleTag?: string; facebookTag?: string; }
-interface PaymentSettingsOption { stripeKey?: string; paypalKey?: string; mpesaShortcode?: string; mpesaConsumerKey?: string; mpesaConsumerSecret?: string; }
+interface PaymentSettingsOption {  mpesaShortcode?: string; mpesaConsumerKey?: string; mpesaConsumerSecret?: string; }
 interface ShippingSettingsOption { carrierName?: string; trackingUrl?: string; }
 
 interface StoreForm {
@@ -678,146 +678,79 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold">Payment Settings</h3>
                 <div className="space-y-2">
-                  <div>
-                    <label className="block text-xs">Stripe Public Key</label>
-                    <input
-                      type="text"
-                      value={form.paymentSettings?.stripeKey || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          paymentSettings: { ...f.paymentSettings, stripeKey: e.target.value }
-                        }))
-                      }
-                      placeholder="pk_test_..."
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">PayPal Client ID</label>
-                    <input
-                      type="text"
-                      value={form.paymentSettings?.paypalKey || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          paymentSettings: { ...f.paymentSettings, paypalKey: e.target.value }
-                        }))
-                      }
-                      placeholder="AbCdEfGhIjKlMnOpQrStUvWxYz"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  {/* Payment Settings */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold">Payment Settings</h3>
-            <div className="space-y-4">
-
-              {/* Stripe */}
-              <div>
-                <label className="block text-xs">Stripe Public Key</label>
-                <input
-                  type="text"
-                  value={form.paymentSettings?.stripeKey || ''}
-                  onChange={e =>
-                    setForm(f => ({
-                      ...f,
-                      paymentSettings: { ...f.paymentSettings, stripeKey: e.target.value }
-                    }))
-                  }
-                  placeholder="pk_test_..."
-                  className="w-full border rounded px-2 py-1 text-sm"
-                />
-              </div>
-
-              {/* PayPal */}
-              <div>
-                <label className="block text-xs">PayPal Client ID</label>
-                <input
-                  type="text"
-                  value={form.paymentSettings?.paypalKey || ''}
-                  onChange={e =>
-                    setForm(f => ({
-                      ...f,
-                      paymentSettings: { ...f.paymentSettings, paypalKey: e.target.value }
-                    }))
-                  }
-                  placeholder="AbCdEfGhIjKlMnOpQrStUvWxYz"
-                  className="w-full border rounded px-2 py-1 text-sm"
-                />
-              </div>
-
-              {/* M-Pesa */}
-              <fieldset className="border rounded p-3">
-                <legend className="text-xs font-medium">M-Pesa (Daraja API)</legend>
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-xs">Business Shortcode</label>
-                    <input
-                      type="text"
-                      value={form.paymentSettings?.mpesaShortcode || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          paymentSettings: { ...f.paymentSettings, mpesaShortcode: e.target.value }
-                        }))
-                      }
-                      placeholder="e.g. 123456"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">API Consumer Key</label>
-                    <input
-                      type="text"
-                      value={form.paymentSettings?.mpesaConsumerKey || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          paymentSettings: { ...f.paymentSettings, mpesaConsumerKey: e.target.value }
-                        }))
-                      }
-                      placeholder="Your Daraja Consumer Key"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">API Consumer Secret</label>
-                    <input
-                      type="text"
-                      value={form.paymentSettings?.mpesaConsumerSecret || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          paymentSettings: { ...f.paymentSettings, mpesaConsumerSecret: e.target.value }
-                        }))
-                      }
-                      placeholder="Your Daraja Consumer Secret"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Callback URL</label>
-                    <input
-                      type="url"
-                      value={form.paymentSettings?.mpesaCallbackUrl || ''}
-                      onChange={e =>
-                        setForm(f => ({
-                          ...f,
-                          paymentSettings: { ...f.paymentSettings, mpesaCallbackUrl: e.target.value }
-                        }))
-                      }
-                      placeholder="https://yourdomain.com/api/mpesa/callback"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                </div>
-              </fieldset>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold">Payment Settings</h3>
+                    <div className="space-y-4">
+                      {/* M-Pesa */}
+                      <fieldset className="border rounded p-3">
+                        <legend className="text-xs font-medium">M-Pesa (Daraja API)</legend>
+                        <div className="space-y-2">
+                          <div>
+                            <label className="block text-xs">Business Shortcode</label>
+                            <input
+                              type="text"
+                              value={form.paymentSettings?.mpesaShortcode || ''}
+                              onChange={e =>
+                                setForm(f => ({
+                                  ...f,
+                                  paymentSettings: { ...f.paymentSettings, mpesaShortcode: e.target.value }
+                                }))
+                              }
+                              placeholder="e.g. 123456"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs">API Consumer Key</label>
+                            <input
+                              type="text"
+                              value={form.paymentSettings?.mpesaConsumerKey || ''}
+                              onChange={e =>
+                                setForm(f => ({
+                                  ...f,
+                                  paymentSettings: { ...f.paymentSettings, mpesaConsumerKey: e.target.value }
+                                }))
+                              }
+                              placeholder="Your Daraja Consumer Key"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs">API Consumer Secret</label>
+                            <input
+                              type="text"
+                              value={form.paymentSettings?.mpesaConsumerSecret || ''}
+                              onChange={e =>
+                                setForm(f => ({
+                                  ...f,
+                                  paymentSettings: { ...f.paymentSettings, mpesaConsumerSecret: e.target.value }
+                                }))
+                              }
+                              placeholder="Your Daraja Consumer Secret"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs">Callback URL</label>
+                            <input
+                              type="url"
+                              value={form.paymentSettings?.mpesaCallbackUrl || ''}
+                              onChange={e =>
+                                setForm(f => ({
+                                  ...f,
+                                  paymentSettings: { ...f.paymentSettings, mpesaCallbackUrl: e.target.value }
+                                }))
+                              }
+                              placeholder="https://yourdomain.com/api/mpesa/callback"
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                        </div>
+                      </fieldset>
 
 
-            </div>
-          </div>
-
+                    </div>
+                  </div>
                 </div>
               </div>
 
