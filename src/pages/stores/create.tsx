@@ -1094,18 +1094,9 @@ interface AnalyticsConfig {
   facebookTag?: string;
 }
 
-interface PaymentSettings {
-  mpesaShortcode?: string;
-  mpesaConsumerKey?: string;
-  mpesaConsumerSecret?: string;
-  mpesaCallbackUrl?: string;
-}
-
 interface SettingsAccordionProps {
   form: {
     analyticsConfig?: AnalyticsConfig;
-    paymentSettings?: PaymentSettings;
-    shippingSettings?: ShippingSettings;
   };
   setForm: React.Dispatch<React.SetStateAction<any>>;
 }
