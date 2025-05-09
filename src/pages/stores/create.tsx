@@ -790,6 +790,22 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
           </div>
           
           );
+      case 6 : 
+       return ( <SocialLinksAccordion />   );
+
+      case 7 : 
+        return (<PoliciesAccordion />);
+
+      case 8 : 
+        return (<FAQsAccordion />);
+
+      case 9 : 
+        return (<TestimonialsAccordion />);
+      case 10 :
+        return (<HeroSlidesAccordion />);
+      case 11 :
+        return (<PromotionsAccordion />);
+      
       default:
         return null;
     }
@@ -851,7 +867,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
 };
 
 
-import React from 'react';
+
 
 const SocialLinksAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => (
   <details className="border rounded">
