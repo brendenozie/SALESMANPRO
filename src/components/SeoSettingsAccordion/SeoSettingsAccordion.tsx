@@ -1,29 +1,5 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect, useMemo, useRef } from 'react';
-import { GetServerSideProps } from 'next';
-import { useSession } from 'next-auth/react';
-import dynamic from "next/dynamic";
-import { useRouter } from 'next/router';
-import debounce from "lodash.debounce";
-import {
-  MapPinIcon,
-  ChevronDownIcon,
-  InboxIcon,
-  PlusIcon,
-  CheckIcon,
-  TrashIcon,
-  ChevronUpIcon, 
-  PaintBrushIcon,
-  PhotoIcon,
-} from "@heroicons/react/24/outline";
-import { PhoneIcon } from '@heroicons/react/24/solid';
+import React from 'react';
 
-const loaderProp = ({ src, width, quality }) => {
-  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
-  if (quality) {
-    params.push(`q=${quality}`);
-  }
-  return `${src}?${params.join("&")}`;
-};
 
 interface SEOSettings {
   title?: string;
@@ -34,9 +10,6 @@ interface SEOSettings {
 interface SeoSettingsAccordionProps {
   form: {
     seo?: SEOSettings;
-    analyticsConfig?: AnalyticsConfig;
-    paymentSettings?: PaymentSettings;
-    shippingSettings?: ShippingSettings;
   };
   setForm: React.Dispatch<React.SetStateAction<any>>;
 }

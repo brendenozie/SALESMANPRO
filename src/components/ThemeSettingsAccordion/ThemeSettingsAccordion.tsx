@@ -1,14 +1,6 @@
 import React, { useState} from "react";
-import load from "../../assets/load.png";
-import Image from "next/image";
+import { PaintBrushIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 
-const loaderProp = ({ src, width, quality }) => {
-  const params = [`w=${width || 800}`]; // Default width to 800 if not provided
-  if (quality) {
-    params.push(`q=${quality}`);
-  }
-  return `${src}?${params.join("&")}`;
-};
 
 interface ThemeSettings {
   primaryColor?: string;

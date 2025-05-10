@@ -1,21 +1,26 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect, useMemo, useRef } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect, } from 'react';
 import { GetServerSideProps } from 'next';
 import { useSession } from 'next-auth/react';
 import dynamic from "next/dynamic";
 import { useRouter } from 'next/router';
-import debounce from "lodash.debounce";
-import {
-  MapPinIcon,
-  ChevronDownIcon,
-  InboxIcon,
-  PlusIcon,
-  CheckIcon,
-  TrashIcon,
-  ChevronUpIcon, 
-  PaintBrushIcon,
-  PhotoIcon,
-} from "@heroicons/react/24/outline";
-import { PhoneIcon } from '@heroicons/react/24/solid';
+
+import BasicInfo from '@/components/BasicInfo/BasicInfo';
+import CategoryAccordion from '@/components/CategoryAccordion/CategoryAccordion';
+import BannerLogoAccordion from '@/components/BannerLogoAccordion/BannerLogoAccordion';
+import ContactAccordion from '@/components/ContactAccordion/ContactAccordion';
+import LocationAccordion from '@/components/LocationAccordion/LocationAccordion';
+import SocialLinksAccordion from '@/components/SocialLinksAccordion/SocialLinksAccordion';
+import PoliciesAccordion from '@/components/PoliciesAccordion/PoliciesAccordion';
+import FAQsAccordion from '@/components/FAQsAccordion/FAQsAccordion';
+import TestimonialsAccordion from '@/components/TestimonialsAccordion/TestimonialsAccordion';
+import HeroSlidesAccordion from '@/components/HeroSlidesAccordion/HeroSlidesAccordion';
+import PromotionsAccordion from '@/components/PromotionsAccordion/PromotionsAccordion';
+import ThemeSettingsAccordion from '@/components/ThemeSettingsAccordion/ThemeSettingsAccordion';
+import SeoSettingsAccordion from '@/components/SeoSettingsAccordion/SeoSettingsAccordion';
+import SettingsAccordion from '@/components/SettingsAccordion/SettingsAccordion';
+import PaymentAccordion from '@/components/PaymentAccordion/PaymentAccordion';
+import ShippingAccordion from '@/components/ShippingAccordion/ShippingAccordion';
+
 
 const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
