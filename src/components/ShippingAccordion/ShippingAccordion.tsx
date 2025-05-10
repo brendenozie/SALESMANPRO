@@ -8,14 +8,7 @@ interface ShippingSettings {
   pickupInstructions?: string;
 }
 
-interface ShippingAccordionProps {
-  form: {
-    shippingSettings?: ShippingSettings;
-  };
-  setForm: React.Dispatch<React.SetStateAction<any>>;
-}
-
-export const ShippingAccordion: React.FC<ShippingAccordionProps> = ({ form, setForm }) => {
+export const ShippingAccordion  = ({ form, setForm } : any) => {
   const updateField = <K extends keyof ShippingSettings>(key: K, value: ShippingSettings[K]) => {
     setForm((f: any) => ({
       ...f,

@@ -1,6 +1,5 @@
 import React from 'react';
 
-
 interface PaymentSettings {
   mpesaShortcode?: string;
   mpesaConsumerKey?: string;
@@ -8,14 +7,7 @@ interface PaymentSettings {
   mpesaCallbackUrl?: string;
 }
 
-interface PaymentAccordionProps {
-  form: {
-    paymentSettings?: PaymentSettings;
-  };
-  setForm: React.Dispatch<React.SetStateAction<any>>;
-}
-
-const PaymentAccordion: React.FC<PaymentAccordionProps> = ({ form, setForm }) => {
+const PaymentAccordion = ({ form, setForm } : any) => {
   const updateSection = <K extends string>(section: string, key: K, value: any) => {
     setForm((f: any) => ({
       ...f,

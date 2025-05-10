@@ -1,21 +1,14 @@
 import React, { useState} from "react";
 import { PaintBrushIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 
-
 interface ThemeSettings {
   primaryColor?: string;
   secondaryColor?: string;
   fontFamily?: string;
 }
 
-interface ThemeSettingsAccordionProps {
-  form: {
-    themeSettings?: ThemeSettings;
-  };
-  setForm: React.Dispatch<React.SetStateAction<any>>;
-}
 
-const ThemeSettingsAccordion: React.FC<ThemeSettingsAccordionProps> = ({ form, setForm }) => {
+const ThemeSettingsAccordion = ({ form, setForm }: any) => {
   const [open, setOpen] = useState(true);
   const { primaryColor = '#4f46e5', secondaryColor = '#facc15', fontFamily = 'Inter, sans-serif' } = form.themeSettings || {};
 

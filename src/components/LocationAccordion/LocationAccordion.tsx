@@ -5,11 +5,6 @@ import {
 } from "@heroicons/react/24/outline";
 
 
-interface GeoLocation {
-  lat: number;
-  lng: number;
-}
-
 function useDebounce(fn: Function, delay: number) {
   const timeout = useRef<number>();
   return (...args: any[]) => {
@@ -18,17 +13,7 @@ function useDebounce(fn: Function, delay: number) {
   };
 }
 
-type Props = {
-  form: {
-    contactEmail: string;
-    openingHours: Record<string,string>;
-    geoLocation: { lat: number; lng: number; radius: number };
-  };
-  handleChange: React.ChangeEventHandler;
-  handleLocationChange: (loc: Partial<{lat:number;lng:number;radius:number}>) => void;
-};
-
-const LocationAccordion: React.FC<Props> = ({ form, handleChange, handleLocationChange }) => {
+const LocationAccordion = ({ form, handleChange, handleLocationChange } : any) => {
 
   const [address, setAddress]     = useState('');
   const [loading, setLoading]     = useState(false);
@@ -38,9 +23,9 @@ const LocationAccordion: React.FC<Props> = ({ form, handleChange, handleLocation
   const fetchAddress = async (lat: number, lng: number) => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/reverse', { params: { lat, lon: lng, format: 'json' } });
-      setAddress(data.display_name || '');
-      handleLocationChange({ lat, lng });
+      // const { data } = await axios.get('/api/reverse', { params: { lat, lon: lng, format: 'json' } });
+      // setAddress(data.display_name || '');
+      // handleLocationChange({ lat, lng });
     } catch {
       setAddress('Unknown location');
     } finally {
@@ -87,14 +72,14 @@ const LocationAccordion: React.FC<Props> = ({ form, handleChange, handleLocation
             </label>
             <div className="relative h-64 rounded-lg overflow-hidden border border-gray-300">
               {/* Leaflet Map */}
-              <MapContainer
+              {/* <MapContainer
                 center={[mapCenter.lat, mapCenter.lng]}
                 zoom={13}
                 style={{ height: '100%', width: '100%' }}
               >
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <MapMover />
-              </MapContainer>
+              </MapContainer> */}
 
               {/* Center‑pin & spinner */}
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full text-red-500">

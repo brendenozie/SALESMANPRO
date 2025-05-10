@@ -7,41 +7,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 
-interface HeroSlide {
-  imageUrl: string;
-  headline: string;
-  subline?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  order?: number;
-}
+export const HeroSlidesAccordion = ({  form,  handleArrayChange,  addArrayItem,  removeArrayItem,  handleImageUpload, } : any) => {
 
-interface HeroSlidesAccordionProps {
-  form: { heroSlides?: HeroSlide[] };
-  handleArrayChange: (
-    field: "heroSlides",
-    index: number,
-    key: keyof HeroSlide,
-    value: string
-  ) => void;
-  addArrayItem: (field: "heroSlides", item: HeroSlide) => void;
-  removeArrayItem: (field: "heroSlides", index: number) => void;
-  handleImageUpload?: (
-    field: "heroSlides",
-    index: number,
-    file: File
-  ) => void;
-}
-
-export const HeroSlidesAccordion: React.FC<HeroSlidesAccordionProps> = ({
-  form,
-  handleArrayChange,
-  addArrayItem,
-  removeArrayItem,
-  handleImageUpload,
-}) => {
   const slides = form.heroSlides || [];
-  const allFilled = slides.every((s) => s.imageUrl && s.headline);
+  const allFilled = slides.every((s : any) => s.imageUrl && s.headline);
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -52,7 +21,7 @@ export const HeroSlidesAccordion: React.FC<HeroSlidesAccordionProps> = ({
         </summary>
 
         <div className="p-6 space-y-6">
-          {slides.map((s, i) => (
+          {slides.map(({s, i} : any) => (
             <div key={i} className="space-y-4 border-b pb-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">Slide {i + 1}</h3>

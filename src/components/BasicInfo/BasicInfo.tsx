@@ -1,16 +1,7 @@
 import React from 'react';
 
-interface BasicInfoProps {
-  form: {
-    name: string;
-    slug: string;
-    tagline: string;
-    domain: string;
-  };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
 
-const BasicInfo: React.FC<BasicInfoProps> = ({ form, handleChange }: any) => (  
+const BasicInfo = ({ form, handleChange }: any) => (  
   <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Basic Info</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

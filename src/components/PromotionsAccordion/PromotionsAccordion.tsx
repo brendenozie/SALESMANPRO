@@ -1,23 +1,8 @@
 import React from 'react';
 
-interface Promotion {
-  title: string;
-  details: string;
-  order?: number;
-}
-
-interface PromotionsAccordionProps {
-  form: {
-    promotions?: Promotion[];
-  };
-  handleArrayChange: (field: 'promotions', index: number, key: keyof Promotion, value: string) => void;
-  addArrayItem: (field: 'promotions', item: Promotion) => void;
-  removeArrayItem: (field: 'promotions', index: number) => void;
-}
-
-const PromotionsAccordion: React.FC<PromotionsAccordionProps> = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => {
+const PromotionsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }: any) => {
   const promotions = form.promotions || [];
-  const allFilled = promotions.every(p => p.title && p.details);
+  const allFilled = promotions.every((p : any) => p.title && p.details);
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -33,7 +18,7 @@ const PromotionsAccordion: React.FC<PromotionsAccordionProps> = ({ form, handleA
 
       {promotions.length > 0 && (
         <div className="p-6 space-y-6">
-          {promotions.map((p, i) => (
+          {promotions.map(({p, i} : any) => (
             <div key={i} className="space-y-3">
               <input
                 placeholder="Title"

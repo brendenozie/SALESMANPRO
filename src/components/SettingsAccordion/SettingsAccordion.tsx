@@ -1,19 +1,11 @@
 import React from 'react';
 
-
 interface AnalyticsConfig {
   googleTag?: string;
   facebookTag?: string;
 }
 
-interface SettingsAccordionProps {
-  form: {
-    analyticsConfig?: AnalyticsConfig;
-  };
-  setForm: React.Dispatch<React.SetStateAction<any>>;
-}
-
-const SettingsAccordion: React.FC<SettingsAccordionProps> = ({ form, setForm }) => {
+const SettingsAccordion  = ({ form, setForm } : any) => {
   const updateSection = <K extends string>(section: string, key: K, value: any) => {
     setForm((f: any) => ({
       ...f,

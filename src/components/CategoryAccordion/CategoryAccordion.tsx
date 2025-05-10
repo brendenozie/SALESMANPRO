@@ -1,27 +1,11 @@
 import React, { useState, useMemo } from 'react';
 
-
-interface Category {
-  id: string | number;
-  name: string;
-}
-
-interface BasicForm {
-  storeCategories?: Category[];
-}
-
-interface CategoryAccordionProps {
-  availableCategories: Category[];
-  form: BasicForm;
-  handleCategoryToggle: (category: Category) => void;
-}
-
-const CategoryAccordion: React.FC<CategoryAccordionProps> = ({ availableCategories, form, handleCategoryToggle }) => {
+const CategoryAccordion = ({ availableCategories, form, handleCategoryToggle } : any) => {
   const [search, setSearch] = useState('');
 
   // Filter categories based on search
   const filtered = useMemo(
-    () => availableCategories.filter(cat => cat.name.toLowerCase().includes(search.toLowerCase())),
+    () => availableCategories.filter((cat:any) => cat.name.toLowerCase().includes(search.toLowerCase())),
     [search, availableCategories]
   );
 
@@ -42,8 +26,8 @@ const CategoryAccordion: React.FC<CategoryAccordionProps> = ({ availableCategori
         />
       </div>
       <div className="flex flex-wrap gap-2">
-        {filtered.map(cat => {
-          const isSelected = form.storeCategories?.some(c => c.id === cat.id);
+        {filtered.map((cat : any) => {
+          const isSelected = form.storeCategories?.some((c : any) => c.id === cat.id);
           return (
             <button
               key={cat.id}

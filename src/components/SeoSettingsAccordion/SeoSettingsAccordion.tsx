@@ -7,14 +7,7 @@ interface SEOSettings {
   keywords?: string[];
 }
 
-interface SeoSettingsAccordionProps {
-  form: {
-    seo?: SEOSettings;
-  };
-  setForm: React.Dispatch<React.SetStateAction<any>>;
-}
-
-const SeoSettingsAccordion: React.FC<SeoSettingsAccordionProps> = ({ form, setForm }) => {
+const SeoSettingsAccordion  = ({ form, setForm } : any) => {
   const updateSection = <K extends string>(section: string, key: K, value: any) => {
     setForm((f: any) => ({
       ...f,

@@ -14,12 +14,8 @@ type Props = {
   handleLocationChange: (loc: Partial<{lat:number;lng:number;radius:number}>) => void;
 };
 
-const ContactAccordion: React.FC<Props> = ({
-  form,
-  handleChange,
-}) => {
+const ContactAccordion = ({ form, handleChange } : any) => {
   
-
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <details open className="group">

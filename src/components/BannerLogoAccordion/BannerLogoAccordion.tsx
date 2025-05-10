@@ -1,18 +1,6 @@
 import React, { useRef } from 'react';
 
-
-interface BannerLogoAccordionProps {
-  form: {
-    bannerUrl?: string;
-    logoUrl?: string;
-    description?: string;
-  };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleUpload: (field: 'bannerUrl' | 'logoUrl', file: File) => void;
-  handleRemove: (field: 'bannerUrl' | 'logoUrl') => void;
-}
-
-const BannerLogoAccordion: React.FC<BannerLogoAccordionProps> = ({ form, handleChange, handleUpload, handleRemove }) => {
+const BannerLogoAccordion = ({ form, handleChange, handleUpload, handleRemove } :any) => {
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
