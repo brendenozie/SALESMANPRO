@@ -387,7 +387,7 @@ const CategoryAccordion: React.FC<CategoryAccordionProps> = ({ availableCategori
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Categories</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Select your Product Categories</h2>
       </div>
       <div className="mb-4">
         <input
