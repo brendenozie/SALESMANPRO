@@ -19,11 +19,20 @@ export default function LocationAccordion({
     setSelectedAddress(address || '');
   }, [address]);
 
-  const handleSelect = (display_name: string, lat: number, lng: number ) => {
+  const handleSelectV1 = (display_name: string, lat: number, lng: number ) => {
     setSelectedAddress(display_name);
     const location = { lat, lng };
     onAddressSelect(display_name, location);
   };
+
+  const handleSelect = (
+      display_name: string,
+      geoLocation: { lat: number; lng: number }
+    ) => {
+      setSelectedAddress(display_name);
+      // pass straight through
+      onAddressSelect(display_name, geoLocation);
+    };
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
