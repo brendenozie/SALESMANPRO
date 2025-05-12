@@ -11,6 +11,7 @@ export default function LocationAccordion({
   address,
   onAddressSelect,
 }: LocationAccordionProps) {
+  
   const [isOpen, setIsOpen] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(address || '');
 
