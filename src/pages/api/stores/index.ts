@@ -31,7 +31,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     case "POST": {
       try {
+        // const {
+        //   name,
+        //   slug,
+        //   description,
+        //   logoUrl,
+        //   bannerUrl,
+        //   contactEmail,
+        //   contactPhone,
+        //   address,
+        //   socialLinks,
+        //   policies,
+        //   shippingZones,
+        //   category,
+        //   categories // array of { id, sortOrder, displayName }
+        // } = req.body;
+
+
         const {
+          name,
+          slug,
+          domain,
+          tagline,
+          description,
+          category,
+          logoUrl,
+          bannerUrl,
+          contactEmail,
+          contactPhone,
+          address,
+          geoLocation,
+          openingHours,
+          socialLinks,
+          policies,
+          faqs,
+          testimonials,
+          heroSlides,
+          promotions,
+          themeSettings,
+          seo,
+          analyticsConfig,
+          paymentSettings,
+          shippingSettings,
+          storeCategories
+      } = req.body;
+
+
+      const 
+
+      const newStore = await prisma.company.create({
+        data: {
           name,
           slug,
           description,
@@ -44,40 +93,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           policies,
           shippingZones,
           category,
-          categories // array of { id, sortOrder, displayName }
-        } = req.body;
-
-        const newStore = await prisma.company.create({
-          data: {
-            name,
-            slug,
-            description,
-            logoUrl,
-            bannerUrl,
-            contactEmail,
-            contactPhone,
-            address,
-            socialLinks,
-            policies,
-            shippingZones,
-            category,
-            user: { connect: { id: "67c5b0192e2372b5f2366dbf" } },
-            StoreCategory: {
-              create: categories.map((c: any) => ({
-                category: { connect: { id: c.id } },
-                sortOrder: c.sortOrder,
-                displayName: c.displayName,
-                visible: true
-              }))
-            },
+          user: { connect: { id: "67c5b0192e2372b5f2366dbf" } },
+          StoreCategory: {
+            create: categories.map((c: any) => ({
+              category: { connect: { id: c.id } },
+              sortOrder: c.sortOrder,
+              displayName: c.displayName,
+              visible: true
+            }))
           },
-          include: {
-            StoreCategory: {
-              orderBy: { sortOrder: 'asc' },
-              include: { category: true }
-            }
+        },
+        include: {
+          StoreCategory: {
+            orderBy: { sortOrder: 'asc' },
+            include: { category: true }
           }
-        });
+        }
+      });
+        
 
         return res.status(201).json(newStore);
       } catch (error) {

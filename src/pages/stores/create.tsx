@@ -132,6 +132,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
     logoUrl: '',
     bannerUrl: '',
     contactEmail: '',
+    contactPhone:'',
     address: '',
     geoLocation: { lat: 0, lng: 0 } as GeoLocation,
     openingHours: { mon: '', tue: '', wed: '', thu: '', fri: '', sat: '', sun: '' } as OpeningHours,
@@ -301,6 +302,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
           <ContactAccordion
             openingHours={form.openingHours}
             contactEmail={form.contactEmail}
+            contactPhone={form.contactPhone}
             onChange={handleChange}
           />
         );

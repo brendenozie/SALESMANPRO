@@ -16,6 +16,7 @@ export interface OpeningHours {
 export interface ContactAccordionProps {
   openingHours: OpeningHours;
   contactEmail: string;
+  contactPhone: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -32,6 +33,7 @@ const days: { label: keyof OpeningHours; display: string }[] = [
 export default function ContactAccordion({
   openingHours,
   contactEmail,
+  contactPhone,
   onChange,
 }: ContactAccordionProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -69,24 +71,43 @@ export default function ContactAccordion({
           >
             <div className="space-y-6">              
 
-              {/* Email Input */}
-              <div className="flex flex-col">
-                <label htmlFor="contactEmail" className="flex items-center text-sm font-medium text-gray-700">
-                  <InboxIcon className="h-5 w-5 mr-2 text-gray-600" />
-                  Contact Email
-                </label>
-                <input
-                  id="contactEmail"
-                  type="email"
-                  name="contactEmail"
-                  placeholder="you@example.com"
-                  required
-                  value={contactEmail}
-                  onChange={onChange}
-                  className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-                <p className="mt-1 text-xs text-gray-500">Users use this email to communicate with you.</p>
-              </div>
+            {/* Email Input */}
+            <div className="flex flex-col">
+              <label htmlFor="contactEmail" className="flex items-center text-sm font-medium text-gray-700">
+                <InboxIcon className="h-5 w-5 mr-2 text-gray-600" />
+                Contact Email
+              </label>
+              <input
+                id="contactEmail"
+                type="email"
+                name="contactEmail"
+                placeholder="you@example.com"
+                required
+                value={contactEmail}
+                onChange={onChange}
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <p className="mt-1 text-xs text-gray-500">Users use this email to communicate with you.</p>
+            </div>              
+
+            {/* Email Input */}
+            <div className="flex flex-col">
+              <label htmlFor="contactPhone" className="flex items-center text-sm font-medium text-gray-700">
+                <InboxIcon className="h-5 w-5 mr-2 text-gray-600" />
+                Contact Phone
+              </label>
+              <input
+                id="contactPhone"
+                type="email"
+                name="contactPhone"
+                placeholder="0700 000 000"
+                required
+                value={contactPhone}
+                onChange={onChange}
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <p className="mt-1 text-xs text-gray-500">Users use this email to communicate with you.</p>
+            </div>
 
               {/* Opening Hours Grid */}
               <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-xl">
