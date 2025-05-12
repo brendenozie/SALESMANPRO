@@ -4,28 +4,14 @@ import axios from "axios";
 import debounce from "lodash.debounce";
 import { MapPinIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-// Leaflet client-side import
-// const isClient = typeof window !== "undefined";
-// const L = isClient ? require("leaflet") : null;
-
 const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
 const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
 const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
-// import { useMapEvents } from "react-leaflet";
-
-
-// Define Custom Leaflet Icon using the SVG MapPinIcon
-// const mapPinIcon = new L.Icon({
-//   iconUrl: <MapPinIcon/>, // Create an SVG file or use a data URL
-//   iconSize: [40, 40], // Adjust size
-//   iconAnchor: [20, 40], // Center bottom aligns with location
-//   popupAnchor: [0, -35], // Adjust popup position
-// });
 
 const API_BASE = "https://nominatim.openstreetmap.org";
-const API_ENDPOINT = "http://127.0.0.1:3000/api";
+const API_ENDPOINT =  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 const LocationPicker = ({ onAddressSelect }) => {
   const [searchTerm, setSearchTerm] = useState("");

@@ -67,25 +67,7 @@ export default function ContactAccordion({
             transition={{ duration: 0.3 }}
             className="overflow-hidden mt-4"
           >
-            <div className="space-y-6">
-
-              {/* Opening Hours Grid */}
-              <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-gray-50 rounded-xl">
-                <legend className="text-lg font-medium text-gray-800">Opening Hours</legend>
-                {days.map(({ label, display }) => (
-                  <div key={label} className="flex flex-col">
-                    <label htmlFor={label} className="text-sm font-medium text-gray-700">{display}</label>
-                    <input
-                      id={label}
-                      type="time"
-                      name={`openingHours.${label}`}
-                      value={openingHours[label] || ''}
-                      onChange={onChange}
-                      className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-                ))}
-              </fieldset>
+            <div className="space-y-6">              
 
               {/* Email Input */}
               <div className="flex flex-col">
@@ -105,6 +87,24 @@ export default function ContactAccordion({
                 />
                 <p className="mt-1 text-xs text-gray-500">Users use this email to communicate with you.</p>
               </div>
+
+              {/* Opening Hours Grid */}
+              <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-xl">
+                <legend className="text-lg font-medium text-gray-800">Opening Hours</legend>
+                {days.map(({ label, display }) => (
+                  <div key={label} className="flex flex-col">
+                    <label htmlFor={label} className="text-sm font-medium text-gray-700">{display}</label>
+                    <input
+                      id={label}
+                      type="time"
+                      name={`openingHours.${label}`}
+                      value={openingHours[label] || ''}
+                      onChange={onChange}
+                      className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                ))}
+              </fieldset>
 
             </div>
           </motion.div>
