@@ -198,13 +198,72 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/stores', {
+    if (!session) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      headers: {
+        'Content-Type': 'application/json',
+        // Authorization: `Bearer ${session.accessToken}`,
+      },
+      body: JSON.stringify({ ...form, }),//userId: session.user.id }),
     });
-    if (res.ok) router.push('/stores');
+
+    if (res.ok) {
+      router.push('/stores');
+    } else {
+      console.error('Failed to create store');
+    }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' && step < totalSteps) next();
+      if (e.key === 'ArrowLeft' && step > 1) prev();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [step]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        window.localStorage.setItem('storeForm', JSON.stringify(form));
+      } else {
+        const savedForm = window.localStorage.getItem('storeForm');
+        if (savedForm) {
+          setForm(JSON.parse(savedForm));
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []); 
+
+  useEffect(() => {
+    const savedForm = window.localStorage.getItem('storeForm');
+    if (savedForm) {
+      setForm(JSON.parse(savedForm));
+    }
+  }, []); 
+
+  useEffect(() => {
+    const handleUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, []); 
 
   const renderStep = () => {
     switch (step) {
@@ -249,7 +308,8 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
         return (
           <LocationAccordion
             address={form.address}
-            onAddressSelect={(address, geo) => setForm(f => ({ ...f, address, geoLocation: geo }))}
+            onAddressSelect={(address, geoLocation) => setForm(f => ({ ...f, address, geoLocation }))}
+            
           />
         );
       case 6:
