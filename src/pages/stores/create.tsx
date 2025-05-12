@@ -415,7 +415,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
           <div className="h-full bg-indigo-600 transition-all" style={{ width: `${(step / totalSteps) * 100}%` }} />
         </div>
-        <form className="space-y-6">
+        <div className="space-y-6">
           {renderStep()}
           <div className="flex justify-between">
             {step > 1 ? (
@@ -433,7 +433,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
               </button>
             )}
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
