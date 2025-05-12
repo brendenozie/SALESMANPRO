@@ -21,17 +21,7 @@ import SettingsAccordion from '@/components/SettingsAccordion/SettingsAccordion'
 import PaymentAccordion from '@/components/PaymentAccordion/PaymentAccordion';
 import ShippingAccordion from '@/components/ShippingAccordion/ShippingAccordion';
 
-
-const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
-const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
-const useMapEvents = dynamic(() => import('react-leaflet').then(m => m.useMapEvents), { ssr: false });
-
-
 interface CategoryOption { id: string; name: string; }
-
 interface GeoLocation { lat: number; lng: number; }
 interface OpeningHours { [key: string]: string; } // e.g. { mon: "9–5", tue: "..." }
 
@@ -46,7 +36,6 @@ interface SEOOption { title?: string; description?: string; keywords?: string[];
 interface AnalyticsConfigOption { googleTag?: string; facebookTag?: string; }
 interface PaymentSettingsOption {  mpesaShortcode?: string; mpesaConsumerKey?: string; mpesaConsumerSecret?: string; mpesaCallbackUrl?: string; }
 interface ShippingSettingsOption { carrierName?: string; trackingUrl?: string; }
-
 interface StoreForm {
   id?: string;
   name: string;
@@ -80,12 +69,6 @@ interface StoreForm {
   createdAt?: string;
   updatedAt?: string;
 }
-
-interface CompanyFormProps {
-  initialData?: Partial<StoreForm>;
-  onSubmit: (data: StoreForm) => void;
-}
-
 interface CreateStorePageProps {
   availableCategories: CategoryOption[];
 }
