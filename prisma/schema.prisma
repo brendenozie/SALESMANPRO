@@ -161,6 +161,8 @@ model StoreCategory {
   visible     Boolean @default(true)
 
   id String @id @default(auto()) @map("_id") @db.ObjectId // Add a single primary key
+  // createdAt DateTime @default(now())
+  // updatedAt DateTime @updatedAt
 
   @@unique([companyId, categoryId]) // Use a unique constraint instead
   @@index([companyId, sortOrder]) // speed up ordering queries
@@ -220,8 +222,6 @@ model Company {
   BlogPost           BlogPost[]
   Collection         Collection[]
 }
-
-// Examples of new small models:
 
 model SocialLink {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
