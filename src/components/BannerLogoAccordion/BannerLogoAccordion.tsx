@@ -85,7 +85,7 @@ const BannerLogoAccordion = ({ form, handleChange, handleUpload, handleRemove } 
       </div>
 
       {/* Description */}
-      <div>
+      {/* <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700">
           Description
           <span title="A brief description of your store or app" className="ml-1 cursor-help">?</span>
@@ -99,7 +99,7 @@ const BannerLogoAccordion = ({ form, handleChange, handleUpload, handleRemove } 
           placeholder="Write a short description or tagline..."
           className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
-      </div>
+      </div> */}
     </div>
   );
 };
