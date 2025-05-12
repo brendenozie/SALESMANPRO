@@ -309,7 +309,6 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
           <LocationAccordion
             address={form.address}
             onAddressSelect={(address, geoLocation) => setForm(f => ({ ...f, address, geoLocation }))}
-            
           />
         );
       case 6:
