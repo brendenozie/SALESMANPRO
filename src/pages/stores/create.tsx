@@ -198,9 +198,9 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!session) return;
+    // if (!session) return;
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -415,7 +415,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
           <div className="h-full bg-indigo-600 transition-all" style={{ width: `${(step / totalSteps) * 100}%` }} />
         </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6">
           {renderStep()}
           <div className="flex justify-between">
             {step > 1 ? (
@@ -428,7 +428,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
                 Next
               </button>
             ) : (
-              <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+              <button onClick={handleSubmit} className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
                 Create Store
               </button>
             )}
