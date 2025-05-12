@@ -39,10 +39,13 @@ export default function LocationAccordion({
 
       {isOpen && (
         <div className="mt-6 space-y-6">
-          <ShippingAddress onAddressSelect={handleSelect} />
           {selectedAddress && (
-            <p className="mt-2 text-sm text-gray-600">Address: {selectedAddress}</p>
+            <div className="p-4 bg-gray-50 rounded-lg shadow">
+              <h3 className="text-lg font-semibold text-gray-800">Selected Address</h3>
+              <p className="text-gray-600">{selectedAddress}</p>
+            </div>
           )}
+          <ShippingAddress onAddressSelect={handleSelect} />          
         </div>
       )}
     </div>
