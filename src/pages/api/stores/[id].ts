@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             address,
             socialLinks,
             policies,
-            shippingZones,
+            // shippingZones,
           },
         });
         return res.status(200).json(updated);
