@@ -1,42 +1,46 @@
-import React, { useState} from "react";
-import { PaintBrushIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
+import React, { useState } from 'react';
+import { PaintBrushIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 
-interface ThemeSettings {
+export interface ThemeSettings {
   primaryColor?: string;
   secondaryColor?: string;
   fontFamily?: string;
 }
 
+export interface ThemeSettingsAccordionProps {
+  themeSettings: ThemeSettings;
+  onChange: (updated: ThemeSettings) => void;
+}
 
-const ThemeSettingsAccordion = ({ form, setForm }: any) => {
-  const [open, setOpen] = useState(true);
-  const { primaryColor = '#4f46e5', secondaryColor = '#facc15', fontFamily = 'Inter, sans-serif' } = form.themeSettings || {};
+export default function ThemeSettingsAccordion({
+  themeSettings,
+  onChange,
+}: ThemeSettingsAccordionProps) {
+  const [isOpen, setIsOpen] = useState(true);
+  const { primaryColor = '#4f46e5', secondaryColor = '#facc15', fontFamily = 'Inter, sans-serif' } = themeSettings;
 
-  const updateTheme = (key: keyof ThemeSettings, value: string) => {
-    setForm((f: any) => ({
-      ...f,
-      themeSettings: { ...f.themeSettings, [key]: value }
-    }));
+  const updateField = (key: keyof ThemeSettings, value: string) => {
+    onChange({ ...themeSettings, [key]: value });
   };
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <div
         className="flex justify-between items-center cursor-pointer"
-        onClick={() => setOpen(prev => !prev)}
+        onClick={() => setIsOpen(prev => !prev)}
       >
         <h2 className="flex items-center text-2xl font-bold text-gray-800">
           <PaintBrushIcon className="h-6 w-6 mr-2 text-indigo-600" />
           Theme Settings
         </h2>
-        {open ? (
+        {isOpen ? (
           <ChevronUpIcon className="h-6 w-6 text-gray-500" />
         ) : (
           <ChevronDownIcon className="h-6 w-6 text-gray-500" />
         )}
       </div>
 
-      {open && (
+      {isOpen && (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label htmlFor="primaryColor" className="block text-xs font-medium text-gray-600">
@@ -46,8 +50,8 @@ const ThemeSettingsAccordion = ({ form, setForm }: any) => {
               id="primaryColor"
               type="color"
               value={primaryColor}
-              onChange={e => updateTheme('primaryColor', e.target.value)}
-              className="mt-1 w-full h-10 p-0 border-0 focus:outline-none" 
+              onChange={e => updateField('primaryColor', e.target.value)}
+              className="mt-1 w-full h-10 p-0 border-0 focus:outline-none"
             />
           </div>
           <div>
@@ -58,7 +62,7 @@ const ThemeSettingsAccordion = ({ form, setForm }: any) => {
               id="secondaryColor"
               type="color"
               value={secondaryColor}
-              onChange={e => updateTheme('secondaryColor', e.target.value)}
+              onChange={e => updateField('secondaryColor', e.target.value)}
               className="mt-1 w-full h-10 p-0 border-0 focus:outline-none"
             />
           </div>
@@ -70,7 +74,7 @@ const ThemeSettingsAccordion = ({ form, setForm }: any) => {
               id="fontFamily"
               type="text"
               value={fontFamily}
-              onChange={e => updateTheme('fontFamily', e.target.value)}
+              onChange={e => updateField('fontFamily', e.target.value)}
               placeholder="Inter, sans-serif"
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -78,13 +82,9 @@ const ThemeSettingsAccordion = ({ form, setForm }: any) => {
         </div>
       )}
 
-      {/* Live Preview */}
       <div
         className="mt-6 p-6 rounded-lg border border-gray-200 transition-shadow hover:shadow-md"
-        style={{
-          backgroundColor: secondaryColor,
-          fontFamily: fontFamily
-        }}
+        style={{ backgroundColor: secondaryColor, fontFamily }}
       >
         <h3 className="text-xl font-bold" style={{ color: primaryColor }}>
           Sample Heading
@@ -101,6 +101,4 @@ const ThemeSettingsAccordion = ({ form, setForm }: any) => {
       </div>
     </div>
   );
-};
-
-export default ThemeSettingsAccordion;
+}

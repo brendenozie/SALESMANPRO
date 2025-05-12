@@ -1,18 +1,22 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 
-
-interface SEOSettings {
+export interface SEOSettings {
   title?: string;
   description?: string;
   keywords?: string[];
 }
 
-const SeoSettingsAccordion  = ({ form, setForm } : any) => {
-  const updateSection = <K extends string>(section: string, key: K, value: any) => {
-    setForm((f: any) => ({
-      ...f,
-      [section]: { ...f[section], [key]: value }
-    }));
+export interface SeoSettingsAccordionProps {
+  seo: SEOSettings;
+  onChange: (updated: SEOSettings) => void;
+}
+
+export default function SeoSettingsAccordion({
+  seo,
+  onChange,
+}: SeoSettingsAccordionProps) {
+  const updateField = (key: keyof SEOSettings, value: string | string[]) => {
+    onChange({ ...seo, [key]: value });
   };
 
   return (
@@ -26,35 +30,46 @@ const SeoSettingsAccordion  = ({ form, setForm } : any) => {
       <section className="mb-6">
         <h3 className="text-lg font-semibold text-gray-700 mb-3">SEO Settings</h3>
         <div className="space-y-4">
+          {/* Page Title */}
           <div>
-            <label htmlFor="seoTitle" className="block text-xs font-medium text-gray-600">Page Title</label>
+            <label htmlFor="seoTitle" className="block text-xs font-medium text-gray-600">
+              Page Title
+            </label>
             <input
               id="seoTitle"
               type="text"
-              value={form.seo?.title || ''}
-              onChange={e => updateSection('seo', 'title', e.target.value)}
+              value={seo.title || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('title', e.target.value)}
               placeholder="My Awesome Store"
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+          {/* Meta Description */}
           <div>
-            <label htmlFor="metaDescription" className="block text-xs font-medium text-gray-600">Meta Description</label>
+            <label htmlFor="metaDescription" className="block text-xs font-medium text-gray-600">
+              Meta Description
+            </label>
             <textarea
               id="metaDescription"
               rows={2}
-              value={form.seo?.description || ''}
-              onChange={e => updateSection('seo', 'description', e.target.value)}
+              value={seo.description || ''}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateField('description', e.target.value)}
               placeholder="Best deals on fashion, electronics, and more."
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             />
           </div>
+          {/* Keywords */}
           <div>
-            <label htmlFor="keywords" className="block text-xs font-medium text-gray-600">Keywords (comma-separated)</label>
+            <label htmlFor="keywords" className="block text-xs font-medium text-gray-600">
+              Keywords (comma-separated)
+            </label>
             <input
               id="keywords"
               type="text"
-              value={form.seo?.keywords?.join(', ') || ''}
-              onChange={e => updateSection('seo', 'keywords', e.target.value.split(',').map(k => k.trim()))}
+              value={seo.keywords?.join(', ') || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                updateField('keywords', e.target.value.split(',').map(k => k.trim()))
+              }
               placeholder="ecommerce, fashion, electronics"
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -63,6 +78,4 @@ const SeoSettingsAccordion  = ({ form, setForm } : any) => {
       </section>
     </div>
   );
-};
-
-export default SeoSettingsAccordion;
+}

@@ -1,29 +1,30 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 
-
-interface Policy {
+export interface Policy {
   type: string;
   content: string;
 }
 
-interface PoliciesAccordionProps {
-  form: {
-    policies?: Policy[];
-  };
-  handleArrayChange: (field: 'policies', index: number, key: keyof Policy, value: string) => void;
-  addArrayItem: (field: 'policies', item: Policy) => void;
-  removeArrayItem: (field: 'policies', index: number) => void;
+export interface PoliciesAccordionProps {
+  policies: Policy[];
+  onUpdatePolicy: (index: number, field: keyof Policy, value: string) => void;
+  onAddPolicy: () => void;
+  onRemovePolicy: (index: number) => void;
 }
 
-const PoliciesAccordion: React.FC<PoliciesAccordionProps> = ({ form, handleArrayChange, addArrayItem, removeArrayItem }) => {
-  const policies = form.policies || [];
-  const isValid = policies.every(p => p.type && p.content);
+export default function PoliciesAccordion({
+  policies,
+  onUpdatePolicy,
+  onAddPolicy,
+  onRemovePolicy,
+}: PoliciesAccordionProps) {
+  const isValid = policies.every(policy => policy.type && policy.content);
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
       <button
         type="button"
-        onClick={() => addArrayItem('policies', { type: '', content: '' })}
+        onClick={onAddPolicy}
         disabled={!isValid}
         className="w-full text-left px-6 py-4 bg-indigo-600 text-white font-medium flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
       >
@@ -32,24 +33,24 @@ const PoliciesAccordion: React.FC<PoliciesAccordionProps> = ({ form, handleArray
       </button>
 
       <div className="p-6 space-y-6">
-        {policies.map((p, i) => (
-          <div key={i} className="space-y-3">
+        {policies.map((policy, idx) => (
+          <div key={idx} className="space-y-3">
             <input
               placeholder="Type (e.g. Refunds)"
-              value={p.type}
-              onChange={e => handleArrayChange('policies', i, 'type', e.target.value)}
+              value={policy.type}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdatePolicy(idx, 'type', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <textarea
               placeholder="Content"
-              value={p.content}
-              onChange={e => handleArrayChange('policies', i, 'content', e.target.value)}
+              value={policy.content}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onUpdatePolicy(idx, 'content', e.target.value)}
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
             />
             <button
               type="button"
-              onClick={() => removeArrayItem('policies', i)}
+              onClick={() => onRemovePolicy(idx)}
               className="text-red-500 font-medium focus:outline-none"
               title="Remove Policy"
             >
@@ -57,23 +58,22 @@ const PoliciesAccordion: React.FC<PoliciesAccordionProps> = ({ form, handleArray
             </button>
           </div>
         ))}
+
         <button
           type="button"
-          onClick={() => addArrayItem('policies', { type: '', content: '' })}
+          onClick={onAddPolicy}
           className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
         >
           Add Another Policy
         </button>
+
         <p className="text-sm text-gray-500 mt-2">
           Add your store policies. You can add multiple policies.
         </p>
         <p className="text-sm text-gray-500">
           Example: <code>Refund Policy</code>, <code>Shipping Policy</code>, <code>Privacy Policy</code>
         </p>
-
       </div>
     </div>
   );
-};
-
-export default PoliciesAccordion;
+}

@@ -1,12 +1,40 @@
-import React from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import { InboxIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import { PhoneIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+export interface OpeningHours {
+  mon?: string;
+  tue?: string;
+  wed?: string;
+  thu?: string;
+  fri?: string;
+  sat?: string;
+  sun?: string;
+}
 
-const ContactAccordion = ({ form, handleChange } : any) => {
-  const [isOpen, setIsOpen] = React.useState(true);
+export interface ContactAccordionProps {
+  openingHours: OpeningHours;
+  contactEmail: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+}
+
+const days: { label: keyof OpeningHours; display: string }[] = [
+  { label: 'mon', display: 'Mon' },
+  { label: 'tue', display: 'Tue' },
+  { label: 'wed', display: 'Wed' },
+  { label: 'thu', display: 'Thu' },
+  { label: 'fri', display: 'Fri' },
+  { label: 'sat', display: 'Sat' },
+  { label: 'sun', display: 'Sun' },
+];
+
+export default function ContactAccordion({
+  openingHours,
+  contactEmail,
+  onChange,
+}: ContactAccordionProps) {
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-xl">
@@ -44,15 +72,15 @@ const ContactAccordion = ({ form, handleChange } : any) => {
               {/* Opening Hours Grid */}
               <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-gray-50 rounded-xl">
                 <legend className="text-lg font-medium text-gray-800">Opening Hours</legend>
-                {days.map(day => (
-                  <div key={day} className="flex flex-col">
-                    <label htmlFor={day} className="text-sm font-medium text-gray-700">{day}</label>
+                {days.map(({ label, display }) => (
+                  <div key={label} className="flex flex-col">
+                    <label htmlFor={label} className="text-sm font-medium text-gray-700">{display}</label>
                     <input
-                      id={day}
+                      id={label}
                       type="time"
-                      name={`openingHours.${day.toLowerCase()}`}
-                      value={form.openingHours[day.toLowerCase()] || ''}
-                      onChange={handleChange}
+                      name={`openingHours.${label}`}
+                      value={openingHours[label] || ''}
+                      onChange={onChange}
                       className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                   </div>
@@ -71,11 +99,11 @@ const ContactAccordion = ({ form, handleChange } : any) => {
                   name="contactEmail"
                   placeholder="you@example.com"
                   required
-                  value={form.contactEmail}
-                  onChange={handleChange}
+                  value={contactEmail}
+                  onChange={onChange}
                   className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
-                <p className="mt-1 text-xs text-gray-500">User's use this email to communicate with you.</p>
+                <p className="mt-1 text-xs text-gray-500">Users use this email to communicate with you.</p>
               </div>
 
             </div>
@@ -84,6 +112,4 @@ const ContactAccordion = ({ form, handleChange } : any) => {
       </AnimatePresence>
     </div>
   );
-};
-
-export default ContactAccordion;
+}

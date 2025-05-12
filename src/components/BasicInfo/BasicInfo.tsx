@@ -1,4 +1,14 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
+
+export interface BasicInfoProps {
+  name: string;
+  slug: string;
+  category: string;
+  description: string;
+  tagline: string;
+  domain: string;
+  handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+}
 
 const CATEGORIES = [
   "Tech Gadgets",
@@ -11,8 +21,17 @@ const CATEGORIES = [
   "Other",
 ];
 
-const BasicInfo = ({ form, handleChange }: any) => (  
-  <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+export default function BasicInfo({
+  name,
+  slug,
+  category,
+  description,
+  tagline,
+  domain,
+  handleChange,
+}: BasicInfoProps) {
+  return (
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Basic Info</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Name */}
@@ -24,13 +43,13 @@ const BasicInfo = ({ form, handleChange }: any) => (
           <input
             id="name"
             name="name"
-            value={form.name}
+            value={name}
             onChange={handleChange}
             required
             placeholder="My Awesome App"
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-        </div>        
+        </div>
         
         {/* Slug */}
         <div>
@@ -41,7 +60,7 @@ const BasicInfo = ({ form, handleChange }: any) => (
           <input
             id="slug"
             name="slug"
-            value={form.slug}
+            value={slug}
             onChange={handleChange}
             placeholder="my-awesome-app"
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -57,7 +76,7 @@ const BasicInfo = ({ form, handleChange }: any) => (
           <select
             id="category"
             name="category"
-            value={form.category}
+            value={category}
             onChange={handleChange}
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
@@ -77,7 +96,7 @@ const BasicInfo = ({ form, handleChange }: any) => (
             id="description"
             name="description"
             rows={4}
-            value={form.description || ''}
+            value={description}
             onChange={handleChange}
             placeholder="Write a short description or tagline..."
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
@@ -93,7 +112,7 @@ const BasicInfo = ({ form, handleChange }: any) => (
           <input
             id="tagline"
             name="tagline"
-            value={form.tagline}
+            value={tagline}
             onChange={handleChange}
             placeholder="Empower Your Workflow"
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -109,7 +128,7 @@ const BasicInfo = ({ form, handleChange }: any) => (
           <input
             id="domain"
             name="domain"
-            value={form.domain}
+            value={domain}
             onChange={handleChange}
             placeholder="app.example.com"
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -117,6 +136,5 @@ const BasicInfo = ({ form, handleChange }: any) => (
         </div>
       </div>
     </div>
-);
-
-export default BasicInfo;
+  );
+}

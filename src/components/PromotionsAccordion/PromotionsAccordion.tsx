@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 
-const PromotionsAccordion = ({ form, handleArrayChange, addArrayItem, removeArrayItem }: any) => {
-  const promotions = form.promotions || [];
-  const allFilled = promotions.every((p : any) => p.title && p.details);
+export interface Promotion {
+  title: string;
+  description: string;
+  startsAt?: string;
+  endsAt?: string;
+  bannerUrl?: string;
+  order?: number;
+}
+
+export interface PromotionsAccordionProps {
+  promotions: Promotion[];
+  onUpdatePromotion: (index: number, field: keyof Promotion, value: string) => void;
+  onAddPromotion: () => void;
+  onRemovePromotion: (index: number) => void;
+}
+
+export default function PromotionsAccordion({
+  promotions,
+  onUpdatePromotion,
+  onAddPromotion,
+  onRemovePromotion,
+}: PromotionsAccordionProps) {
+  const allFilled = promotions.every(promo => promo.title && promo.description);
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
       <button
         type="button"
-        onClick={() => addArrayItem('promotions', { title: '', details: '', order: promotions.length })}
+        onClick={onAddPromotion}
         disabled={!allFilled}
         className="w-full text-left px-6 py-4 bg-indigo-600 text-white font-medium flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
       >
@@ -17,24 +37,24 @@ const PromotionsAccordion = ({ form, handleArrayChange, addArrayItem, removeArra
       </button>
 
       <div className="p-6 space-y-6">
-        {promotions.map(({p, i} : any) => (
-          <div key={i} className="space-y-3">
+        {promotions.map((promo, idx) => (
+          <div key={idx} className="space-y-3">
             <input
               placeholder="Title"
-              value={p.title}
-              onChange={e => handleArrayChange('promotions', i, 'title', e.target.value)}
+              value={promo.title}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdatePromotion(idx, 'title', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             <textarea
-              placeholder="Details"
-              value={p.details}
-              onChange={e => handleArrayChange('promotions', i, 'details', e.target.value)}
+              placeholder="Description"
+              value={promo.description}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onUpdatePromotion(idx, 'description', e.target.value)}
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
             />
             <button
               type="button"
-              onClick={() => removeArrayItem('promotions', i)}
+              onClick={() => onRemovePromotion(idx)}
               className="text-red-500 font-medium focus:outline-none"
               title="Remove Promotion"
             >
@@ -44,7 +64,7 @@ const PromotionsAccordion = ({ form, handleArrayChange, addArrayItem, removeArra
         ))}
         <button
           type="button"
-          onClick={() => addArrayItem('promotions', { title: '', details: '', order: promotions.length })}
+          onClick={onAddPromotion}
           className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
         >
           Add Another Promotion
@@ -56,9 +76,6 @@ const PromotionsAccordion = ({ form, handleArrayChange, addArrayItem, removeArra
           Example: <code>Free Shipping on Orders Over $50</code>, <code>20% Off Your First Order</code>
         </p>
       </div>
-        
     </div>
   );
-};
-
-export default PromotionsAccordion;
+}

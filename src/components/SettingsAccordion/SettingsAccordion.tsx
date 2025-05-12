@@ -1,16 +1,21 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 
-interface AnalyticsConfig {
+export interface AnalyticsConfig {
   googleTag?: string;
   facebookTag?: string;
 }
 
-const SettingsAccordion  = ({ form, setForm } : any) => {
-  const updateSection = <K extends string>(section: string, key: K, value: any) => {
-    setForm((f: any) => ({
-      ...f,
-      [section]: { ...f[section], [key]: value }
-    }));
+export interface SettingsAccordionProps {
+  analyticsConfig: AnalyticsConfig;
+  onChange: (updated: AnalyticsConfig) => void;
+}
+
+export default function SettingsAccordion({
+  analyticsConfig,
+  onChange,
+}: SettingsAccordionProps) {
+  const updateField = (key: keyof AnalyticsConfig, value: string) => {
+    onChange({ ...analyticsConfig, [key]: value });
   };
 
   return (
@@ -25,33 +30,33 @@ const SettingsAccordion  = ({ form, setForm } : any) => {
         <h3 className="text-lg font-semibold text-gray-700 mb-3">Analytics</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="googleTag" className="block text-xs font-medium text-gray-600">Google Tag ID</label>
+            <label htmlFor="googleTag" className="block text-xs font-medium text-gray-600">
+              Google Tag ID
+            </label>
             <input
               id="googleTag"
               type="text"
-              value={form.analyticsConfig?.googleTag || ''}
-              onChange={e => updateSection('analyticsConfig', 'googleTag', e.target.value)}
+              value={analyticsConfig.googleTag || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('googleTag', e.target.value)}
               placeholder="G-XXXXXXXXXX"
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label htmlFor="facebookTag" className="block text-xs font-medium text-gray-600">Facebook Pixel ID</label>
+            <label htmlFor="facebookTag" className="block text-xs font-medium text-gray-600">
+              Facebook Pixel ID
+            </label>
             <input
               id="facebookTag"
               type="text"
-              value={form.analyticsConfig?.facebookTag || ''}
-              onChange={e => updateSection('analyticsConfig', 'facebookTag', e.target.value)}
+              value={analyticsConfig.facebookTag || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('facebookTag', e.target.value)}
               placeholder="1234567890"
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
       </section>
-      
     </div>
   );
-};
-
-
-export default SettingsAccordion;
+}
