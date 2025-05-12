@@ -32,42 +32,41 @@ const FAQsAccordion: React.FC<FAQsAccordionProps> = ({ form, handleArrayChange, 
         <span className="text-xl">{faqs.length > 0 ? '✅' : '+'}</span>
       </button>
 
-      {faqs.length > 0 && (
-        <div className="p-6 space-y-6">
-          {faqs.map((f, i) => (
-            <div key={i} className="space-y-3">
-              <input
-                placeholder="Question"
-                value={f.question}
-                onChange={e => handleArrayChange('faqs', i, 'question', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
-              <textarea
-                placeholder="Answer"
-                value={f.answer}
-                onChange={e => handleArrayChange('faqs', i, 'answer', e.target.value)}
-                rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
-              />
-              <button
-                type="button"
-                onClick={() => removeArrayItem('faqs', i)}
-                className="text-red-500 font-medium focus:outline-none"
-                title="Remove FAQ"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => addArrayItem('faqs', { question: '', answer: '', order: faqs.length })}
-            className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
-          >
-            Add Another FAQ
-          </button>
-        </div>
-      )}
+      <div className="p-6 space-y-6">
+        {faqs.map((f, i) => (
+          <div key={i} className="space-y-3">
+            <input
+              placeholder="Question"
+              value={f.question}
+              onChange={e => handleArrayChange('faqs', i, 'question', e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            <textarea
+              placeholder="Answer"
+              value={f.answer}
+              onChange={e => handleArrayChange('faqs', i, 'answer', e.target.value)}
+              rows={3}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+            />
+            <button
+              type="button"
+              onClick={() => removeArrayItem('faqs', i)}
+              className="text-red-500 font-medium focus:outline-none"
+              title="Remove FAQ"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => addArrayItem('faqs', { question: '', answer: '', order: faqs.length })}
+          className="mt-4 w-full text-center text-indigo-600 font-medium hover:underline focus:outline-none"
+        >
+          Add Another FAQ
+        </button>
+      </div>
+        
     </div>
   );
 };
