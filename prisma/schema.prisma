@@ -193,12 +193,12 @@ model Company {
   promotions   Promotion[] // site-wide deals
 
   themeSettings Json? // colors, fonts, layout toggles
-  seo           SEO?              @relation(fields: [sEOId], references: [id]) // SEO settings
-  analytics     AnalyticsConfig?  @relation(fields: [analyticsConfigId], references: [id])
-  payment       PaymentSettings?  @relation(fields: [paymentSettingsId], references: [id])
-  shipping      ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
+  seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
+  // analytics     AnalyticsConfig?  @relation(fields: [analyticsConfigId], references: [id])
+  // payment       PaymentSettings?  @relation(fields: [paymentSettingsId], references: [id])
 
-  StoreCategory StoreCategory[]
+  shippingSettingsId String?         @db.ObjectId
+  StoreCategory      StoreCategory[]
 
   // existing relations
   user            User?            @relation(fields: [userId], references: [id])
@@ -212,15 +212,16 @@ model Company {
   commissions     Commission[]
   commissionsRate CommissionRate[]
 
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  sEOId              String?       @db.ObjectId
-  analyticsConfigId  String?       @db.ObjectId
-  paymentSettingsId  String?       @db.ObjectId
-  shippingSettingsId String?       @db.ObjectId
-  PageSection        PageSection[]
-  BlogPost           BlogPost[]
-  Collection         Collection[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sEOId     String?  @db.ObjectId
+
+  PageSection      PageSection[]
+  BlogPost         BlogPost[]
+  Collection       Collection[]
+  ShippingSettings ShippingSettings[]
+  AnalyticsConfig  AnalyticsConfig[]
+  PaymentSettings  PaymentSettings[]
 }
 
 model SocialLink {
@@ -285,24 +286,34 @@ model Promotion {
 }
 
 model AnalyticsConfig {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   googleTag   String?
   facebookTag String?
-  Company     Company[]
+  company     Company @relation(fields: [companyId], references: [id])
+  companyId   String  @db.ObjectId
 }
 
 model PaymentSettings {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  stripeKey String?
-  paypalKey String?
-  Company   Company[]
+  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
+  stripeKey           String?
+  paypalKey           String?
+  mpesaShortcode      String?
+  mpesaConsumerKey    String?
+  mpesaConsumerSecret String?
+  mpesaCallbackUrl    String?
+  company             Company @relation(fields: [companyId], references: [id])
+  companyId           String  @db.ObjectId
 }
 
 model ShippingSettings {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  carrierName String?
-  trackingUrl String?
-  Company     Company[]
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  carrierName        String?
+  trackingUrl        String?
+  regions            Json?
+  enablePickup       Boolean?
+  pickupInstructions String?
+  company            Company  @relation(fields: [companyId], references: [id])
+  companyId          String   @db.ObjectId
 }
 
 model PageSection {

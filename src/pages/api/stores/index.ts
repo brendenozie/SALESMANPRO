@@ -142,10 +142,10 @@ export default async function handler(
       // order: p.order
     })) } : undefined,
     seo: body.seo ? { create: body.seo } : undefined,
-    analyticsConfig: body.analyticsConfig ? { create: body.analyticsConfig } : undefined,
-    paymentSettings: body.paymentSettings ? { create: body.paymentSettings } : undefined,
-    shippingSettings: body.shippingSettings ? { create: body.shippingSettings } : undefined,
-    storeCategory: body.storeCategories ? {
+    AnalyticsConfig: body.analyticsConfig ? { create: body.analyticsConfig } : undefined,
+    PaymentSettings: body.paymentSettings ? { create: body.paymentSettings } : undefined,
+    ShippingSettings: body.shippingSettings ? { create: body.shippingSettings } : undefined,
+    StoreCategory: body.storeCategories ? {
       create: body.storeCategories.map(sc => ({
         category: { connect: { id: sc.id } },
         displayName: sc.displayName,
