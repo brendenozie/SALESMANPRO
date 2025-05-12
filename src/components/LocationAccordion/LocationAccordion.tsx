@@ -21,7 +21,8 @@ export default function LocationAccordion({
 
   const handleSelect = (display_name: string, lat: number, lng: number ) => {
     setSelectedAddress(display_name);
-    onAddressSelect(display_name, { lat, lng });
+    const location = { lat, lng };
+    onAddressSelect(display_name, location);
   };
 
   return (

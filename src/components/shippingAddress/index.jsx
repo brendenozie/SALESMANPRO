@@ -88,8 +88,8 @@ const LocationPicker = ({ onAddressSelect }) => {
     setSearchTerm(suggestion.display_name);
     setSuggestions([]);
     onAddressSelect(suggestion.display_name,
-                        {lat: suggestion.lat,
-                        lng: suggestion.lng});
+                        {lat: lat,
+                        lng: lng});
   };
 
 

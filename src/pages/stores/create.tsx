@@ -217,46 +217,26 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' && step < totalSteps) next();
-      if (e.key === 'ArrowLeft' && step > 1) prev();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [step]);
+  // 1) Remove all your existing visibilitychange & beforeunload effects
+  //    (you can delete the two useEffect blocks that reference them).
 
+  // 2) Keep just one on-mount loader:
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    try {
+      const saved = window.localStorage.getItem('storeForm');
+      if (saved) setForm(JSON.parse(saved));
+    } catch (err) {
+      console.warn('Couldn’t parse saved form', err);
+    }
   }, []);
 
+  // 3) Add a single saver that runs on *any* form change:
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        window.localStorage.setItem('storeForm', JSON.stringify(form));
-      } else {
-        const savedForm = window.localStorage.getItem('storeForm');
-        if (savedForm) {
-          setForm(JSON.parse(savedForm));
-        }
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []); 
+    // Debounce if you like, but JSON.stringify is usually fast enough
+    window.localStorage.setItem('storeForm', JSON.stringify(form));
+  }, [form]);
 
-  useEffect(() => {
-    const savedForm = window.localStorage.getItem('storeForm');
-    if (savedForm) {
-      setForm(JSON.parse(savedForm));
-    }
-  }, []); 
-
+  // 4) (Optional) If you really want a “dirty page” prompt, keep one beforeunload:
   useEffect(() => {
     const handleUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -264,7 +244,8 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
     };
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
-  }, []); 
+  }, []);
+
 
   const renderStep = () => {
     switch (step) {
