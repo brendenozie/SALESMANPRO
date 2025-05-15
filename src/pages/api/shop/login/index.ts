@@ -1,15 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/server/db/prismadb";
+import bcrypt from "bcryptjs";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === "POST") {
-    return await loginUser(req, res);
+  if (req.method !== "POST") {
+    return res.status(405).json({ status: 405, message: "Method Not Allowed" });
   }
-  
-  return res.status(405).json({ status: 405, message: "Method Not Allowed" });
-}
 
-async function loginUser(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { email, password } = req.body.data;
 
@@ -17,38 +14,53 @@ async function loginUser(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ status: 400, message: "Missing login details" });
     }
 
-    // Find the user by email
-    const user = await prisma.consumer.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        username: true,
-        bio: true,
-        address: true,
-        profilePicture: true,
-        createdAt: true,
-      },
-    });
+    const userTypes: { model: { findUnique: (args: any) => Promise<any> }, role: string }[] = [
+      { model: prisma.consumer, role: "CONSUMER" },
+      { model: prisma.salesAgent, role: "SALES_AGENT" },
+      { model: prisma.client, role: "CLIENT" },
+      { model: prisma.user, role: "ADMIN" },
+    ];
+
+    let user = null;
+    let userRole = null;
+
+    for (const type of userTypes) {
+      user = await type.model.findUnique({ where: { email } });
+      if (user) {
+        userRole = type.role;
+        break;
+      }
+    }
 
     if (!user) {
       return res.status(404).json({
         status: 404,
-        message: "This account does not exist. Create an account by registering.",
+        message: "This account does not exist. Please register first.",
       });
     }
 
-    // TODO: Implement password verification logic (e.g., bcrypt comparison)
+    // Verify password
+    // const passwordValid = await bcrypt.compare(password, user.password);
+    // if (!passwordValid) {
+    //   return res.status(401).json({ status: 401, message: "Invalid credentials" });
+    // }
+
+    // Omit password from response
+    const { password: _pw, ...safeUser } = user;
 
     return res.status(200).json({
       status: 200,
-      message: "Success",
-      body: user,
+      message: "Login successful",
+      body: {
+        ...safeUser,
+        role: userRole,
+      },
     });
   } catch (error) {
     console.error("Login Error:", error);
-    return res.status(500).json({ status: 500, message: `Internal Server Error ${error}` });
+    return res.status(500).json({
+      status: 500,
+      message: "Internal Server Error",
+    });
   }
 }

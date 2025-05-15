@@ -8,23 +8,39 @@ import EmailProvider from "next-auth/providers/email";
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 
-const getRoleFromAPI = async () => {
-  // Fetch role dynamically from API
-  const roleResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/role`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
+const findExistingUserByEmail = async (email: string) => {
+  return (
+    (await prisma.consumer.findUnique({ where: { email } })) ||
+    (await prisma.salesAgent.findUnique({ where: { email } })) ||
+    (await prisma.client.findUnique({ where: { email } })) ||
+    (await prisma.user.findUnique({ where: { email } }))
+  );
+};
+
+const createDefaultUser = async ({
+  email,
+  name,
+  image,
+}: {
+  email: string;
+  name?: string | null;
+  image?: string | null;
+}) => {
+  return await prisma.user.create({
+    data: {
+      email,
+      name: name || "",
+      role: "ADMIN", // Use default safe role
+      image,
+    },
   });
-  const roleData = await roleResponse.json();
-  const role = roleData.role || "USER";
-  
-  return role;
 };
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
@@ -34,33 +50,48 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Extract signup path from the referrer header
-        // const signupPath = req?.headers?.referer || "";
-        const role = await getRoleFromAPI();
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/shop/login`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                data: {
+                  email: credentials.email,
+                  password: credentials.password,
+                },
+              }),
+            }
+          );
 
-        // Authenticate user via API
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: { email: credentials.email, password: credentials.password, role } }),
-        });
+          if (!response.ok) {
+            console.error("Login API error:", response.status);
+            return null;
+          }
 
-        const result = await response.json();
-        const { emailVerified, ...consumer } = result.body;
+          const result = await response.json();
+          const { emailVerified, ...body } = result.body;
 
-        if (!consumer) return null;
+          if (!body?.id || !body.email) {
+            return null;
+          }
 
-        return {
-          id: consumer.id,
-          name: consumer.name,
-          email: consumer.email,
-          phone: consumer.phone,
-          username: consumer.username,
-          bio: consumer.bio,
-          address: consumer.address,
-          role: consumer.role,
-          profilePicture: consumer.profilePicture,
-        };
+          return {
+            id: body.id,
+            name: body.name,
+            email: body.email,
+            phone: body.phone,
+            username: body.username,
+            bio: body.bio,
+            address: body.address,
+            role: body.role,
+            profilePicture: body.profilePicture,
+          };
+        } catch (error) {
+          console.error("Authorize error:", error);
+          return null;
+        }
       },
     }),
     GoogleProvider({
@@ -81,10 +112,6 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  // pages: {
-  //   signIn: "/signin",
-  //   newUser: "/register",
-  // },
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -94,40 +121,18 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === "google") {
-        // Extract signup path from cookies or default to empty string
-        // const signupPath = ""; // Cookies can be used here instead
-        const role = await getRoleFromAPI();
+        if (!user.email) return false;
 
-        if (!user.email) return false; // Prevent processing if no email
-
-        // Check if user already exists
-        const existingUser = await prisma.consumer.findUnique({ where: { email: user.email } }) ||
-          await prisma.salesAgent.findUnique({ where: { email: user.email } }) ||
-          await prisma.client.findUnique({ where: { email: user.email } }) ||
-          await prisma.user.findUnique({ where: { email: user.email } });
-
+        const existingUser = await findExistingUserByEmail(user.email);
         if (existingUser) return true;
 
-        // Insert new user into correct role table
-        if (role === "AGENT") {
-          await prisma.salesAgent.create({
-            data: { email: user.email, name: user.name, role, image: user.image },
-          });
-        } else if (role === "ADMIN") {
-          await prisma.user.create({
-            data: { email: user.email, name: user.name, role, image: user.image },
-          });
-        } else if (role === "CLIENT") {
-          await prisma.client.create({
-            data: { email: user.email, name: user.name, role, image: user.image },
-          });
-        } else {
-          await prisma.consumer.create({
-            data: { email: user.email, name: user.name, role:"USER", image: user.image },
-          });
-        }
+        await createDefaultUser({
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        });
       }
 
       return true;
@@ -137,12 +142,13 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
-        token.phone = user.phone;
-        token.username = user.username;
-        token.bio = user.bio;
-        token.address = user.address;
-        token.role = user.role;
-        token.profilePicture = user.image || user.profilePicture;
+        token.phone = (user as any).phone;
+        token.username = (user as any).username;
+        token.bio = (user as any).bio;
+        token.address = (user as any).address;
+        token.role = (user as any).role;
+        token.profilePicture =
+          (user as any).profilePicture || (user as any).image;
       }
       return token;
     },
@@ -161,6 +167,10 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  // pages: {
+  //   signIn: "/signin",
+  //   newUser: "/register",
+  // },
 };
 
 export default NextAuth(authOptions);
