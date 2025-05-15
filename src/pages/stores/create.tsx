@@ -207,7 +207,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
         'Content-Type': 'application/json',
         // Authorization: `Bearer ${session.accessToken}`,
       },
-      body: JSON.stringify({ ...form, }),//userId: session.user.id }),
+      body: JSON.stringify({ ...form, userId: session?.user?.id ?? null }),
     });
 
     if (res.ok) {

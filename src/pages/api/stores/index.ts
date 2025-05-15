@@ -36,9 +36,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+
+  const { method, query, body } = req;
+  const ownerId = query.ownerId as string | undefined;
+
   if (req.method === 'GET') {
     // Fetch all stores
+    const where = ownerId ? { userId:ownerId } : {};
     const stores = await prisma.company.findMany({
+      where,
       include: {
         socialLinks: true,
         policies: true,
@@ -62,7 +68,6 @@ export default async function handler(
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const body = req.body as Partial<StorePayload>;
   const errors: ErrorResponse = [];
 
   // Required string fields Validation
@@ -133,7 +138,7 @@ export default async function handler(
     faqs: body.faqs ? { create: body.faqs } : undefined,
     testimonials: body.testimonials ? { create: body.testimonials } : undefined,
     heroSlides: body.heroSlides ? { create: body.heroSlides } : undefined,
-    promotions: body.promotions ? { create: body.promotions.map(p => ({
+    promotions: body.promotions ? { create: body.promotions.map(( p : any ) => ({
       title: p.title,
       description: p.description,
       startsAt: p.startsAt ? new Date(p.startsAt) : undefined,
@@ -146,7 +151,7 @@ export default async function handler(
     PaymentSettings: body.paymentSettings ? { create: body.paymentSettings } : undefined,
     ShippingSettings: body.shippingSettings ? { create: body.shippingSettings } : undefined,
     StoreCategory: body.storeCategories ? {
-      create: body.storeCategories.map(sc => ({
+      create: body.storeCategories.map(( sc : any) => ({
         category: { connect: { id: sc.id } },
         displayName: sc.displayName,
         sortOrder: sc.sortOrder,
