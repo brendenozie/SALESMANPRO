@@ -38,11 +38,12 @@ export default async function handler(
 ) {
 
   const { method, query, body } = req;
-  const ownerId = query.ownerId as string | undefined;
+  const userId = query.ownerId as string | undefined;
 
   if (req.method === 'GET') {
     // Fetch all stores
-    const where = ownerId ? { userId:ownerId } : {};
+    const where = userId ? { userId: userId } : {};
+
     const stores = await prisma.company.findMany({
       where,
       include: {
@@ -132,6 +133,7 @@ export default async function handler(
     geoLocation: body.geoLocation || undefined,
     openingHours: body.openingHours || undefined,
     themeSettings: body.themeSettings || undefined,
+    user: { connect: { id: body.userId!.trim() } },
     // Nested creates
     socialLinks: body.socialLinks ? { create: body.socialLinks } : undefined,
     policies: body.policies ? { create: body.policies } : undefined,

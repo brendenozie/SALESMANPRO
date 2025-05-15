@@ -127,6 +127,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
     slug: '',
     domain: '',
     tagline: '',
+    userId: session?.user?.id,
     description: '',
     category: '',
     logoUrl: '',
@@ -199,7 +200,7 @@ export default function CreateStorePage({ availableCategories }: CreateStorePage
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // if (!session) return;
+    if (!session || !session.user || !session.user.id) return;
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
       method: 'POST',
