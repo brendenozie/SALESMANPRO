@@ -1076,7 +1076,6 @@ model Consumer {
   role                 ROLE?                  @default(USER)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
-  orders               CustomerOrder[]
   ConsumerInventory    ConsumerInventory[]
   ConsumerInventoryLog ConsumerInventoryLog[]
 }
@@ -1112,7 +1111,6 @@ model ConsumerInventoryLog {
 model CustomerOrder {
   id                    String      @id @default(auto()) @map("_id") @db.ObjectId
   consumerId            String      @db.ObjectId
-  consumer              Consumer    @relation(fields: [consumerId], references: [id])
   items                 OrderItem[] // Relationship to multiple order items
   totalPrice            Float
   orderSource           OrderSource @default(WEBSITE)
