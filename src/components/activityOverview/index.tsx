@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingBagIcon,
@@ -7,6 +7,8 @@ import {
   BookmarkIcon,
   BookOpenIcon,
 } from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
+import axios from "axios";
 
 const tabs = [
   { id: "orders", label: "Orders", icon: ShoppingBagIcon },
@@ -16,37 +18,54 @@ const tabs = [
   { id: "downloads", label: "Downloads", icon: BookOpenIcon },
 ];
 
-const sampleData = {
-  orders: [
-    { id: "#12345", product: "Wireless Headphones", date: "Feb 12, 2025", status: "Delivered" },
-    { id: "#67890", product: "Smartwatch", date: "Feb 10, 2025", status: "Shipped" },
-  ],
-  recent: [
-    { activity: "Reviewed a product", date: "Feb 15, 2025" },
-    { activity: "Updated profile info", date: "Feb 14, 2025" },
-  ],
-  wishlist: [
-    { product: "Gaming Laptop", price: "$1299" },
-    { product: "Mechanical Keyboard", price: "$99" },
-  ],
-  saved: [
-    { item: "Article: Best Coding Practices", source: "TechBlog" },
-    { item: "Video: UI/UX Design Tips", source: "YouTube" },
-  ],
-  downloads: [
-    { file: "Invoice #12345.pdf", date: "Feb 12, 2025" },
-    { file: "E-book: React Guide.pdf", date: "Feb 11, 2025" },
-  ],
-};
+const ActivityOverview: React.FC = () => {
+  const { data: session, status } = useSession();
+  const [activeTab, setActiveTab] = useState<string>("orders");
+  const [data, setData] = useState<Record<string, any[]>>({
+    orders: [],
+    recent: [],
+    wishlist: [],
+    saved: [],
+    downloads: [],
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-const ActivityOverview = () => {
-  const [activeTab, setActiveTab] = useState("orders");
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchActivity(activeTab);
+    }
+  }, [activeTab, status]);
+
+  const fetchActivity = async (tabId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const userId = session?.user?.id;
+      if (!userId) throw new Error("User not authenticated");
+
+      const response = await axios.get(
+        `/api/shop/activity?userId=${userId}&tab=${tabId}`
+      );
+
+      setData((prev) => ({
+        ...prev,
+        [tabId]: response.data.body || [],
+      }));
+    } catch (err) {
+      console.error("Error fetching activity:", err);
+      setError("Failed to load data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-6 w-full max-w-3xl mx-auto shadow-xl rounded-3xl bg-white dark:bg-gray-800 dark:text-white">
       <h2 className="text-2xl font-extrabold mb-6 text-center">📦 Activity Overview</h2>
 
-      {/* Tabs List (Scrollable for Mobile) */}
+      {/* Tabs List */}
       <div className="relative flex overflow-x-auto scrollbar-hide justify-between gap-2 mb-6 border-b dark:border-gray-700 md:justify-center md:flex-wrap">
         {tabs.map((tab) => (
           <button
@@ -59,7 +78,10 @@ const ActivityOverview = () => {
             <tab.icon className="h-5 w-5" />
             <span className="text-xs md:text-sm">{tab.label}</span>
             {activeTab === tab.id && (
-              <motion.div layoutId="underline" className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 dark:bg-blue-400 rounded-full" />
+              <motion.div
+                layoutId="underline"
+                className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 dark:bg-blue-400 rounded-full"
+              />
             )}
           </button>
         ))}
@@ -79,20 +101,37 @@ const ActivityOverview = () => {
                   transition={{ duration: 0.3 }}
                   className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-md"
                 >
-                  {sampleData[tab.id].length > 0 ? (
+                  {loading ? (
+                    <p className="text-center">Loading...</p>
+                  ) : error ? (
+                    <p className="text-center text-red-500">{error}</p>
+                  ) : data[tab.id]?.length > 0 ? (
                     <ul className="space-y-3">
-                      {sampleData[tab.id].map((item, index) => (
-                        <li key={index} className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                      {data[tab.id].map((item, idx) => (
+                        <li
+                          key={idx}
+                          className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                        >
                           {Object.entries(item).map(([key, value]) => (
-                            <p key={key} className="text-gray-700 dark:text-gray-300">
-                              <strong className="capitalize">{key.replace("_", " ")}:</strong> {value}
+                            <p
+                              key={key}
+                              className="text-gray-700 dark:text-gray-300"
+                            >
+                              <strong className="capitalize">
+                                {key.replace(/_/g, " ")}:
+                              </strong>{" "}
+                              {typeof value === "object" && value !== null
+                                ? JSON.stringify(value)
+                                : String(value)}
                             </p>
                           ))}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-gray-700 dark:text-gray-300">No {tab.label.toLowerCase()} found.</p>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      No {tab.label.toLowerCase()} found.
+                    </p>
                   )}
                 </motion.div>
               )

@@ -3,30 +3,34 @@ import dynamic from "next/dynamic";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { MapPinIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
 
-const MapContainer = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
+const MapContainer: any = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
+const Marker = dynamic<any>(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
-const Circle = dynamic(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
+const Circle = dynamic<any>(() => import("react-leaflet").then((m) => m.Circle), { ssr: false });
 
 const API_BASE = "https://nominatim.openstreetmap.org";
-const API_ENDPOINT =  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
-const LocationPicker = ({ onAddressSelect }) => {
+const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { lat: number; lng: number }) => void }> = ({ onAddressSelect }) => {
+  const { data: session, status } = useSession();
+  const userId = session?.user?.id;
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState({ lat: 51.505, lng: -0.09 });
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 51.505, lng: -0.09 });
   const [loading, setLoading] = useState(false);
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [zoom, setZoom] = useState(6);
   const [address, setAddress] = useState("");
   const [radius, setRadius] = useState(500);
-  const [dragging, setDragging] = useState(false);
-  const [savedAddress, setSavedAddress] = useState(null);
+  const [savedAddress, setSavedAddress] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchSuggestions = async (query) => {
+  const fetchSuggestions = async (query: string) => {
     if (!query) return setSuggestions([]);
     try {
       setLoading(true);
@@ -34,8 +38,8 @@ const LocationPicker = ({ onAddressSelect }) => {
         params: { q: query, format: "json", addressdetails: 1, limit: 5 },
       });
       setSuggestions(data);
-    } catch (error) {
-      console.error("Error fetching suggestions:", error);
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
     } finally {
       setLoading(false);
     }
@@ -44,73 +48,70 @@ const LocationPicker = ({ onAddressSelect }) => {
   const debouncedFetchSuggestions = useMemo(() => debounce(fetchSuggestions, 300), []);
   useEffect(() => () => debouncedFetchSuggestions.cancel(), [debouncedFetchSuggestions]);
 
-  // Fetch address based on coordinates
-  const fetchAddress = async (lat, lng) => {
+  const fetchAddress = async (lat: number, lng: number) => {
     try {
       setLoading(true);
       const { data } = await axios.get(`${API_BASE}/reverse`, {
         params: { format: "json", lat, lon: lng },
       });
-      setAddress(data.display_name || "Unknown Location");
-      setSearchTerm(data.display_name || ""); // Update search input dynamically
-      onAddressSelect(
-                        data.display_name,
-                        {lat:lat,
-                        lng:lng}); // Pass address to parent
-    } catch (error) {
-      console.error("Error fetching address:", error);
+      const display = data.display_name || "Unknown Location";
+      setAddress(display);
+      setSearchTerm(display);
+      onAddressSelect(display, { lat, lng });
+    } catch (err) {
+      console.error("Error fetching address:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Debounced address fetching
   const debouncedFetchAddress = useMemo(() => debounce(fetchAddress, 500), []);
   useEffect(() => () => debouncedFetchAddress.cancel(), [debouncedFetchAddress]);
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     debouncedFetchSuggestions(e.target.value);
   };
 
-  const handleMapClick = (e) => {
+  const handleMapClick = (e: any) => {
     const { lat, lng } = e.latlng;
     setSelectedLocation({ lat, lng });
     setMapCenter({ lat, lng });
     fetchAddress(lat, lng);
   };
 
-  const handleSuggestionSelect = (suggestion) => {
+  const handleSuggestionSelect = (suggestion: any) => {
     const lat = parseFloat(suggestion.lat);
     const lng = parseFloat(suggestion.lon);
     setSelectedLocation({ lat, lng });
     setMapCenter({ lat, lng });
     setSearchTerm(suggestion.display_name);
     setSuggestions([]);
-    onAddressSelect(suggestion.display_name,
-                        {lat: lat,
-                        lng: lng});
+    onAddressSelect(suggestion.display_name, { lat, lng });
   };
 
-
   const handleSaveAddress = async () => {
+    if (!userId || !selectedLocation) return;
     try {
-      const payload = { userId: "123", latitude: selectedLocation.lat, longitude: selectedLocation.lng, address };
-      await axios.post(`${API_ENDPOINT}/shop/setLocation`, payload);
-      setSavedAddress(payload);
-    } catch (error) {
-      console.error("Error saving address:", error);
+      const payload = { userId, latitude: selectedLocation.lat, longitude: selectedLocation.lng, address, description:address };
+      const response = await axios.post(`${API_ENDPOINT}/shop/setLocation`, payload);
+      setSavedAddress(response.data.body || payload);
+    } catch (err) {
+      console.error("Error saving address:", err);
+      setError("Failed to save address.");
     }
   };
 
   const handleDeleteAddress = async () => {
+    if (!userId) return;
     try {
-      await axios.delete(`${API_ENDPOINT}/deleteLocation?userId=123`);
+      await axios.delete(`${API_ENDPOINT}/shop/deleteLocation`, { params: { userId } });
       setSavedAddress(null);
       setSelectedLocation(null);
       setAddress("");
-    } catch (error) {
-      console.error("Error deleting address:", error);
+    } catch (err) {
+      console.error("Error deleting address:", err);
+      setError("Failed to delete address.");
     }
   };
 
@@ -126,82 +127,70 @@ const LocationPicker = ({ onAddressSelect }) => {
         fetchAddress(latitude, longitude);
         setFetchingLocation(false);
       },
-      (error) => {
-        console.error("Error getting location:", error);
-        setFetchingLocation(false);
-      }
+      () => setFetchingLocation(false)
     );
   };
 
-  useEffect(() => {
-    fetchSavedAddress();
-  }, []);
-
   const fetchSavedAddress = async () => {
+    if (!userId) return;
     try {
-      const { data } = await axios.get(`${API_ENDPOINT}/shop/getLocation?userId=123`);
-      if (data && data.address) {
-        setSavedAddress(data);
-        setMapCenter({ lat: data.latitude, lng: data.longitude });
-        setSelectedLocation({ lat: data.latitude, lng: data.longitude });
+      const { data } = await axios.get(`${API_ENDPOINT}/shop/getLocation`, { params: { userId } });
+      if (data.body && data.body.address) {
+        const addr = data.body;
+        setSavedAddress(addr);
+        setMapCenter({ lat: addr.latitude, lng: addr.longitude });
+        setSelectedLocation({ lat: addr.latitude, lng: addr.longitude });
         setZoom(15);
-        fetchAddress(data.latitude, data.longitude);
-        setFetchingLocation(false);
-      }else{
+        fetchAddress(addr.latitude, addr.longitude);
+      } else {
         handleUseMyLocation();
       }
-    } catch (error) {
-      console.error("Error fetching saved address:", error);
+    } catch (err) {
+      console.error("Error fetching saved address:", err);
       handleUseMyLocation();
     }
   };
 
-   const MapUpdater = dynamic(
-        () => import("react-leaflet").then((m) => ({
-          default: function ({ onMapClick }) {
-            const { useMap } = m;
-            if (!useMap) return null;
-            const map = useMap();
-            useEffect(() => {
-              map.setView(mapCenter, zoom);
-            }, [mapCenter, zoom, map]);
-            return null;
-          },
-        })),
-        { ssr: false }
+  useEffect(() => {
+    if (status === "authenticated") fetchSavedAddress();
+  }, [status]);
+
+  const MapUpdater = dynamic(
+    () => import("react-leaflet").then((m) => ({
+      default: function ({ }) {
+        const { useMap } = m;
+        const map = useMap();
+        useEffect(() => {
+          map.setView(mapCenter, zoom);
+        }, [mapCenter, zoom, map]);
+        return null;
+      },
+    })),
+    { ssr: false }
   );
-  
-  // Handle map drag movement
-  // Dynamically import useMapEvents to ensure it only runs on the client
-const MapDragHandler = dynamic(() =>
-  import("react-leaflet").then((m) => ({
-    default: function ({ setMapCenter, setSelectedLocation, debouncedFetchAddress, setDragging }) {
-      const { useMapEvents } = m;
-      if (!useMapEvents) return null;
 
-      useMapEvents({
-        move: (e) => {
-          setDragging(true);
-          const center = e.target.getCenter();
-          setMapCenter({ lat: center.lat, lng: center.lng });
-        },
-        moveend: (e) => {
-          setDragging(false);
-          const center = e.target.getCenter();
-          setSelectedLocation({ lat: center.lat, lng: center.lng });
-          debouncedFetchAddress(center.lat, center.lng);
-        },
-      });
+  const MapDragHandler = dynamic(
+    () => import("react-leaflet").then((m) => ({
+      default: function () {
+        const { useMapEvents } = m;
+        useMapEvents({
+          move: (e: any) => {
+            const center = e.target.getCenter();
+            setMapCenter({ lat: center.lat, lng: center.lng });
+          },
+          moveend: (e: any) => {
+            const center = e.target.getCenter();
+            setSelectedLocation({ lat: center.lat, lng: center.lng });
+            debouncedFetchAddress(center.lat, center.lng);
+          },
+        });
+        return null;
+      },
+    })),
+    { ssr: false }
+  );
 
-      return null;
-    },
-  })),
-  { ssr: false }
-);
-
-
-    // Handle marker drag event
-  const handleMarkerDragEnd = (event) => {
+  const handleMarkerDragEnd = (event: any) => {
     const position = event.target.getLatLng();
     setSelectedLocation(position);
     setMapCenter(position);
@@ -229,8 +218,8 @@ const MapDragHandler = dynamic(() =>
         {loading && <p className="text-sm text-gray-500 mt-2">Searching...</p>}
         {suggestions.length > 0 && (
           <ul className="relative bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto w-full z-10">
-            {suggestions.map((s, index) => (
-              <li key={index} onClick={() => handleSuggestionSelect(s)} className="p-2 cursor-pointer hover:bg-gray-100">
+            {suggestions.map((s, idx) => (
+              <li key={idx} onClick={() => handleSuggestionSelect(s)} className="p-2 cursor-pointer hover:bg-gray-100">
                 {s.display_name}
               </li>
             ))}
@@ -239,45 +228,35 @@ const MapDragHandler = dynamic(() =>
       </div>
 
       <div className="mt-4 h-96 w-full rounded-lg overflow-hidden">
-        <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }}>
+        <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }} onClick={handleMapClick}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <MapUpdater onMapClick={handleMapClick}/>
-          <MapDragHandler 
-            setMapCenter={setMapCenter} 
-            setSelectedLocation={setSelectedLocation} 
-            debouncedFetchAddress={debouncedFetchAddress} 
-            setDragging={setDragging} 
-          />
+          <MapUpdater />
+          <MapDragHandler />
           {selectedLocation && (
             <>
               <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
                 <Popup>{address}</Popup>
               </Marker>
-              {selectedLocation && (
-                  <div
-                    className="absolute z-[1000] pointer-events-none"
-                    style={{
-                      top: "50%",
-                      left: "50%",
-                      transform: `translate(-50%, -100%)`, // Adjust position
-                    }}
-                  >
-                    {<MapPinIcon className="w-8 h-8 text-red-500 animate-bounce" />}
-                  </div>
-                )} 
               <Circle center={[selectedLocation.lat, selectedLocation.lng]} radius={radius} fillOpacity={0.1} />
             </>
           )}
         </MapContainer>
       </div>
+
+      {error && <p className="text-red-500 mt-2">{error}</p>}
       <button onClick={handleUseMyLocation} className="w-full bg-blue-500 text-white py-2 rounded-md mt-4 hover:bg-blue-600">
         {fetchingLocation ? "Fetching location..." : "Use My Location"}
       </button>
       <button onClick={handleSaveAddress} className="w-full bg-yellow-500 text-white py-2 rounded-md mt-4 hover:bg-yellow-600">
         Save Address
       </button>
+      {savedAddress && (
+        <button onClick={handleDeleteAddress} className="w-full bg-red-500 text-white py-2 rounded-md mt-2 hover:bg-red-600">
+          Delete Saved Address
+        </button>
+      )}
     </div>
   );
 };
 
-export default LocationPicker;//dynamic(() => Promise.resolve(LocationPicker), { ssr: false });
+export default LocationPicker;

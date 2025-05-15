@@ -11,13 +11,11 @@ import {
   MoonIcon,
   SunIcon,
   XMarkIcon,
-  Bars3Icon,
   ShoppingBagIcon,
   BellIcon,
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
   ClipboardDocumentCheckIcon,
-  LinkIcon,
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import ProfileSettings from '../../../components/profileSettings';

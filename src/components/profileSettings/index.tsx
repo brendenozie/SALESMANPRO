@@ -1,41 +1,39 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
-  ShoppingBagIcon,
-  Bars3Icon,
   PencilIcon,
-  UserIcon,
   CheckCircleIcon,
-  MoonIcon,
-  SunIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
+import axios from "axios";
 
 const ProfileSettings = () => {
   const [isEditing, setIsEditing] = useState(false);
-  
   const { data: session } = useSession();
 
   const [profile, setProfile] = useState({
-    name: session?.user?.name || '',
-    username: session?.user?.username || '',
-    email: session?.user?.email || '',
-    phone: session?.user?.phone || '',
-    bio: session?.user?.bio || '',
-    address: session?.user?.address || '',
-    profilePicture: session?.user?.image || 'https://via.placeholder.com/150'
+    name: session?.user?.name || "",
+    username: session?.user?.username || "",
+    email: session?.user?.email || "",
+    phone: session?.user?.phone || "",
+    bio: session?.user?.bio || "",
+    address: session?.user?.address || "",
+    profilePicture: session?.user?.image || "https://via.placeholder.com/150",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProfile({ ...profile, [name]: value });
   };
 
   const handleUpdateProfile = async () => {
     try {
-      const response = await axios.put("/api/shop/consumer/updateProfile", profile);
+      const role = session?.user?.role?.toLowerCase() || "consumer"; // fallback to consumer
+      const endpoint = `/api/shop/${role}/updateProfile`;
+
+      const response = await axios.put(endpoint, profile);
       alert(response.data.message);
-      setIsEditing(false)
+      setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
       alert("Failed to update profile.");
@@ -68,7 +66,7 @@ const ProfileSettings = () => {
             className="mt-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-full hover:from-yellow-300 hover:to-yellow-400 transition-transform transform hover:scale-105 flex items-center gap-2"
           >
             {isEditing ? <CheckCircleIcon className="w-4 h-4" /> : <PencilIcon className="w-4 h-4" />}
-            {isEditing ? 'Cancel' : 'Edit Profile'}
+            {isEditing ? "Cancel" : "Edit Profile"}
           </button>
         </div>
       </div>
@@ -76,10 +74,10 @@ const ProfileSettings = () => {
       <div className="mt-6 space-y-4">
         {isEditing ? (
           <form className="space-y-4">
-            {['name', 'username', 'email', 'phone', 'address'].map((field) => (
+            {(["name", "username", "email", "phone", "address"] as Array<keyof typeof profile>).map((field) => (
               <input
                 key={field}
-                type={field === 'email' ? 'email' : 'text'}
+                type={field === "email" ? "email" : "text"}
                 name={field}
                 value={profile[field]}
                 onChange={handleChange}
