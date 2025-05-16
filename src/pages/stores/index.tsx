@@ -137,7 +137,7 @@ export default function StoresPage() {
                       View Website
                     </button>
                     <button
-                      onClick={() => router.push('/admin')}
+                      onClick={() => router.push(`/admin/${store.id}`)}
                       className="text-green-600 hover:underline flex items-center text-sm"
                     >
                       View Store
