@@ -213,6 +213,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
               <AddToProductMarketModal
                 showRequestProductModal={showAddToMarketProductModal}
                 setShowRequestProductModal={setShowAddToMarketProductModal}
+                categories={categoriesData}
                 product={selectedProduct}
                 inventoryItemId={selectedAgent?.id}
                 agentInventoryItemId={selectedAgent?.id}

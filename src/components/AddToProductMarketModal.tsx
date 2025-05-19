@@ -138,7 +138,7 @@ const CATEGORY_STEPS: Record<string, number[]> = {
 // MAIN MODAL COMPONENT
 // -------------------
 
-const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem, companyId }: any) => {
+const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem, companyId, categories }: any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -238,7 +238,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   const currentDynamicStep = stepsForCategory[step - 1];
   const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
 
-  const [categories, setCategories] = useState([]);
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -246,23 +245,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     if (!formData.category) return [];
     return formData.category.subcategories;
   }, [formData.category]);
-
-  useEffect(() => {
-    if (categories.length > 0) return;
-    const cachedCategories = localStorage.getItem("categories");
-    if (cachedCategories) {
-      setCategories(JSON.parse(cachedCategories));
-    } else {
-      fetch(`${apiUrl}/shop/categories?limit=100`)
-        .then((res) => res.json())
-        .then((data) => {
-          setCategories(data.categories);
-          localStorage.setItem("categories", JSON.stringify(data.categories));
-        })
-        .catch(console.error);
-    }
-  }, [categories]);
-
+  
   const filteredBrands = useMemo(() => {
     if (!formData.category) return [];
     return formData.category.allBrands;
