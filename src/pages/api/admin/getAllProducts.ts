@@ -1,10 +1,29 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/server/db/prismadb";
+import { OrderStatus } from "@prisma/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { page = 1, limit = 5, status = 'all', search = '', companyId = '' } = req.query;
+
+  const currentPage = parseInt(page as string, 10) || 1;
+  const itemsPerPage = parseInt(limit as string, 10) || 5;
+
+  const skip = (currentPage - 1) * itemsPerPage;
+  const take = itemsPerPage;
+
   if (req.method === "GET") {
     try {
+      const where: any = {
+        companyId
+            // AND: [
+            //  status !== 'all' ? { status: status as OrderStatus } : {},
+            //   search ? { client: { name: { contains: search as string, mode: 'insensitive' } } } : {},
+              // companyId
+            // ],
+          };
+
       const products = await prisma.product.findMany({
+        where,
         include: {
           productCategory: true,
           inventoryItems: {

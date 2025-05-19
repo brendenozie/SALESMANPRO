@@ -1,28 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import Modal from "../components/Modal";
-import { useDropzone, Accept } from "react-dropzone";
-import { debounce } from "lodash";
-import { motion } from "framer-motion";
-import {
-  ArrowUpCircleIcon,
-  PhotoIcon,
-  TagIcon,
-  CurrencyDollarIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckIcon,
-  CheckCircleIcon,
-  MapPinIcon
-} from "@heroicons/react/24/outline";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUpTrayIcon,
-  CameraIcon,
-  ListBulletIcon,
-  PhoneIcon
-} from "@heroicons/react/24/solid";
+import React, { useState, useEffect, } from "react";
+
 const CategoryPicker = ({
   formData,
   handleInputChange,
