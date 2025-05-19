@@ -929,7 +929,7 @@ const CATEGORY_STEPS: any = {
 // MAIN MODAL COMPONENT
 // -------------------
 
-const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem }: any) => {
+const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem, companyId }: any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -1059,8 +1059,10 @@ const handleCreateListing = async () => {
     // Build a listing object conforming to the updated MarketplaceListing model
     const listing = {
       id: formData.id, // If updating; otherwise backend auto-generates
-      sellerId: "63f7c9e2d91b1b2a5e80b007", // Replace with actual seller ID
-      sellerType: "CLIENT", // Or "CONSUMER", as appropriate
+      // sellerId: "63f7c9e2d91b1b2a5e80b007", // Replace with actual seller ID
+      sellerType: "COMPANY", // Or "CONSUMER", as appropriate
+      companyId: companyId, // Replace with actual seller ID
+      // sellerType: "CLIENT", // Or "CONSUMER", as appropriate
       productId: formData.productId,
       title: formData.title,
       description: formData.description,
