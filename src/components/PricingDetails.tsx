@@ -1,28 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import Modal from "../components/Modal";
-import { useDropzone, Accept } from "react-dropzone";
-import { debounce } from "lodash";
-import { motion } from "framer-motion";
-import {
-  ArrowUpCircleIcon,
-  PhotoIcon,
-  TagIcon,
-  CurrencyDollarIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckIcon,
-  CheckCircleIcon,
-  MapPinIcon
-} from "@heroicons/react/24/outline";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUpTrayIcon,
-  CameraIcon,
-  ListBulletIcon,
-  PhoneIcon
-} from "@heroicons/react/24/solid";
+import React, { useState, useEffect, } from "react";
 
 
 const PricingDetails = ({ formData, setFormData ,handleInputChange }: any) => {
@@ -49,7 +25,7 @@ const PricingDetails = ({ formData, setFormData ,handleInputChange }: any) => {
           <input
             type="number"
             name="costPrice"
-            value={formData.costPrice}
+            value={formData.costPrice || formData.buyingPrice}
             onChange={handleInputChange}
             placeholder="$0.00"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -60,7 +36,7 @@ const PricingDetails = ({ formData, setFormData ,handleInputChange }: any) => {
           <input
             type="number"
             name="salesPrice"
-            value={formData.salesPrice}
+            value={formData.salesPrice || formData.sellingPrice || formData.buyingPrice}
             onChange={handleInputChange}
             placeholder="$0.00"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"

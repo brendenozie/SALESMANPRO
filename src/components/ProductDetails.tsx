@@ -54,7 +54,7 @@ const ProductDetails = ({ formData, setFormData }: any) => {
           name="name"
           className="peer w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           placeholder=" "
-          value={formData.name}
+          value={formData.name || formData.title}
           onChange={handleChange}
         />
         <label className="absolute left-3 top-3 text-gray-500 text-sm transition-all">

@@ -812,6 +812,8 @@ model AuditLog {
 enum SellerType {
   CLIENT
   CONSUMER
+  ADMIN
+  COMPANY
 }
 
 model UserActivity {

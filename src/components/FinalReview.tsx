@@ -34,7 +34,7 @@ const FinalReview = ({ formData }: any) => {
         {/* Basic Information */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <h3 className="font-semibold mb-2">Basic Information</h3>
-          <p><strong>Title:</strong> {formData.name || "N/A"}</p>
+          <p><strong>Title:</strong> {formData.name || formData.title || "N/A"}</p>
           <p><strong>Description:</strong> {formData.description || "N/A"}</p>
           <p><strong>Category:</strong> {formData.category?.name || "N/A"}</p>
           <p><strong>Status:</strong> {formData.status || "N/A"}</p>
@@ -77,8 +77,8 @@ const FinalReview = ({ formData }: any) => {
         {/* Pricing Information */}
         <div className="p-4 bg-gray-100 rounded-lg">
           <h3 className="font-semibold mb-2">Pricing Information</h3>
-          <p><strong>Cost Price:</strong> {formData.costPrice || "N/A"}</p>
-          <p><strong>Selling Price:</strong> {formData.salesPrice || "N/A"}</p>
+          <p><strong>Cost Price:</strong> {formData.costPrice || formData.buyingPrice || "N/A"}</p>
+          <p><strong>Selling Price:</strong> {formData.salesPrice || formData.sellingPrice || formData.buyingPrice || "N/A"}</p>
           <p><strong>Discount (%):</strong> {formData.discount || "0"}</p>
           <p><strong>Final Price:</strong> {formData.finalPrice || "N/A"}</p>
           <p><strong>Profit Margin (%):</strong> {formData.profitMargin || "N/A"}</p>

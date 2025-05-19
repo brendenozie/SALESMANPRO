@@ -275,7 +275,7 @@ const handleCreateListing = async () => {
     const listing = {
       id: formData.id, // If updating; otherwise backend auto-generates
       // sellerId: "63f7c9e2d91b1b2a5e80b007", // Replace with actual seller ID
-      sellerType: "COMPANY", // Or "CONSUMER", as appropriate
+      sellerType: "ADMIN", // Or "CONSUMER", as appropriate
       companyId: companyId, // Replace with actual seller ID
       // sellerType: "CLIENT", // Or "CONSUMER", as appropriate
       productId: formData.productId,
@@ -334,7 +334,7 @@ const handleCreateListing = async () => {
     };
 
     try {
-      const response = await fetch(`${apiUrl}/clients/addToMarketList`, {
+      const response = await fetch(`${apiUrl}/admin/addToMarketList`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
