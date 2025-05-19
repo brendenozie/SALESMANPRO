@@ -231,8 +231,6 @@ export const getServerSideProps = async () => {
     if (productsResponse.ok) {
       productsData = await productsResponse.json();
     }
-
-    console.log(productsData);
     
     const categoriesResponse = await fetch(`${apiUrl}/admin/get-all-categories`);
 

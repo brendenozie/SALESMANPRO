@@ -3,10 +3,9 @@ import { getProviders, getSession, signIn, signOut } from "next-auth/react";
 import Head from "next/head";
 import Image from "next/image";
 import { useState } from "react";
-import Drawer from "../../components/Drawer";
-import Header from "../../components/Header";
-import { ISuggestionFormatted, provider } from "../../types/typings";
-import travelsignin from "../../public/travel-signin.svg";
+import Drawer from "@/components/Drawer";
+import Header from "@/components/Header";
+import { provider } from "@/types/typings";
 import { useRouter } from "next/router";
 
 const SignIn = ({ providers }: { providers: provider[] }) => {
