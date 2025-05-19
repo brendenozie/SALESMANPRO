@@ -216,12 +216,13 @@ model Company {
   updatedAt DateTime @updatedAt
   sEOId     String?  @db.ObjectId
 
-  PageSection      PageSection[]
-  BlogPost         BlogPost[]
-  Collection       Collection[]
-  ShippingSettings ShippingSettings[]
-  AnalyticsConfig  AnalyticsConfig[]
-  PaymentSettings  PaymentSettings[]
+  PageSection        PageSection[]
+  BlogPost           BlogPost[]
+  Collection         Collection[]
+  ShippingSettings   ShippingSettings[]
+  AnalyticsConfig    AnalyticsConfig[]
+  PaymentSettings    PaymentSettings[]
+  MarketplaceListing MarketplaceListing[]
 }
 
 model SocialLink {
@@ -827,8 +828,10 @@ model UserActivity {
 
 model MarketplaceListing {
   id                String          @id @default(auto()) @map("_id") @db.ObjectId
-  sellerId          String          @db.ObjectId
-  sellerType        SellerType
+  companyId         String?         @db.ObjectId
+  company           Company?        @relation(fields: [companyId], references: [id])
+  sellerId          String?         @db.ObjectId
+  sellerType        SellerType?
   productId         String?         @db.ObjectId
   product           Product?        @relation(fields: [productId], references: [id])
   subCategoryName   String?
