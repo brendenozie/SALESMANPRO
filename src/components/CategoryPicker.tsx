@@ -92,18 +92,18 @@ const CategoryPicker = ({
         </button>
         <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
           {categories
-            .filter((cat: any) => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
+            .filter((cat: any) => cat.category.name.toLowerCase().includes(searchTerm.toLowerCase()))
             .map((cat: any) => (
               <button
                 key={cat.id}
-                onClick={() => handleSelection("category", cat)}
+                onClick={() => handleSelection("category", cat.category)}
                 className={`snap-start px-4 py-2 h-12 min-w-[120px] flex items-center justify-center rounded-lg border text-sm transition-all duration-200 ${
                   selectedCategory?.id === cat.id
                     ? "bg-orange-500 text-white border-orange-500"
                     : "bg-gray-100 text-gray-700 hover:bg-orange-100 hover:border-orange-300"
                 }`}
               >
-                {cat.name}
+                {cat.category.name}
               </button>
             ))}
         </div>

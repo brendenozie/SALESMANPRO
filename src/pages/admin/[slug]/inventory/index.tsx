@@ -5,6 +5,7 @@ import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
 import UserNav from "@/components/UserNav";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -51,6 +52,10 @@ type Props = {
 };
 
 const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData = [] }: Props) => {
+
+  const router = useRouter();
+  const { slug: companyId } = router.query as { slug?: string };
+  
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showAssignProductModal, setShowAssignProductModal] = useState(false);
   const [showReturnProductModal, setShowReturnProductModal] = useState(false);
@@ -163,6 +168,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
             <AddProductModal
               showRequestProductModal={showAddProductModal}
               setShowRequestProductModal={setShowAddProductModal}
+              companyId={companyId}
               categories={categoriesData}
             />
           )}
@@ -172,6 +178,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
               showRequestProductModal={showEditProductModal}
               setShowRequestProductModal={setShowEditProductModal}
               categories={categoriesData}
+              companyId={companyId}
               product={selectedProduct} // Pass the selected product for editing
             />
           )}
@@ -188,6 +195,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
               showAssignProductModal={showAssignProductModal}
               setShowAssignProductModal={setShowAssignProductModal}
               product={selectedProduct}
+              companyId={companyId}
               agents={agentsData}
             />
           )}
@@ -197,6 +205,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
               showReturnProductModal={showReturnProductModal}
               setShowReturnProductModal={setShowReturnProductModal}
               product={selectedProduct}
+              companyId={companyId}
             />
           )}
 
@@ -209,6 +218,7 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
                 agentInventoryItemId={selectedAgent?.id}
                 quantity={stockAmount}
                 sellerId={"63f7c9e2d91b1b2a5e80b013"}
+                companyId={companyId}
                 salesAgentId={selectedAgent}
                 sellerType={"ADMIN"}
               />
@@ -221,18 +231,21 @@ const AdminInventoryPage = ({ productsData = [], agentsData = [], categoriesData
 
 export default AdminInventoryPage;
 
-export const getServerSideProps = async () => {
+export const getServerSideProps = async ({ params }:any) => {
+
+  const companyId = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
+  
   let productsData: Product[] = [];
   let categoriesData: Category[] = [];
 
   try {
-    const productsResponse = await fetch(`${apiUrl}/admin/getAllProducts`);
+    const productsResponse = await fetch(`${apiUrl}/admin/getAllProducts?companyId=${companyId}`);
 
     if (productsResponse.ok) {
       productsData = await productsResponse.json();
     }
     
-    const categoriesResponse = await fetch(`${apiUrl}/admin/get-all-categories`);
+    const categoriesResponse = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`);
 
     if (categoriesResponse.ok) {
       const categories = await categoriesResponse.json();

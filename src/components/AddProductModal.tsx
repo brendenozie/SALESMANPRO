@@ -23,13 +23,10 @@ import ContactLocation from "../components/ContactLocation";
 import AmenitiesStep from "../components/AmenitiesStep";
 import VehicleAmenitiesStep from "../components/VehicleAmenitiesStep";
 
-
 // -------------------
 // MAPPINGS
 // -------------------
-// ------------------- 
-// FORM → component mapping 
-// -------------------
+
 const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   1: CategoryPicker,
   2: ProductDetails,
@@ -142,7 +139,7 @@ const CATEGORY_STEPS: Record<string, number[]> = {
 // MAIN MODAL COMPONENT
 // -------------------
 
-const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product, companyId }: any) => {
+const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product, companyId, categories }: any) => {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -179,7 +176,7 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
 
     commissionRate: product?.product?.commissionRate || 0,
     commissionType: product?.product?.commissionType || 'COST', // Default to "Percentage"
-    companyId: product?.product?.companyId || '68193adfab67ac0915b51a20',
+    companyId: product?.product?.companyId || `${companyId}`,
     // Vehicle-specific keys
     make: product?.product?.make || "",
     trim: product?.product?.trim || "",
@@ -237,8 +234,6 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
   const currentDynamicStep = stepsForCategory[step - 1];
   const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
 
-  const [categories, setCategories] = useState([]);
-
   const [newImages, setNewImages] = useState<File[]>([]);
 
   const [images, setImages] = useState(
@@ -250,19 +245,6 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     if (!formData.category) return [];
     return formData.category.subcategories;
   }, [formData.category]);
-
-  useEffect(() => {
-    if (categories.length > 0) return;
-    
-      fetch(`${apiUrl}/admin/get-store-categories?limit=100&companyId=${companyId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setCategories(data.results);
-          localStorage.setItem("categories", JSON.stringify(data.results));
-          console.log("Fetched categories:", data);
-        })
-        .catch(console.error);
-  }, [categories]);
 
   const filteredBrands = useMemo(() => {
     if (!formData.category) return [];
@@ -342,7 +324,6 @@ const handleCreateListing = async () => {
       }));
 
       console.log("New Images with IDs:", newImagesWithIds);
-
 
       // Upload images with a retry mechanism
       const uploadedUrls = await Promise.all(
@@ -483,7 +464,6 @@ const handleCreateListing = async () => {
     }
   }
 };
-
 
   return (
     <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>

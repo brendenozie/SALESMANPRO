@@ -14,6 +14,11 @@ interface Category {
   subcategories: [];
 }
 
+interface Categorylist{
+  id: string;
+  category:Category;
+}
+
 interface CategoryPickerProps {
   formData: {
     category: Category | null;
@@ -21,7 +26,7 @@ interface CategoryPickerProps {
     brand: string | null;
   };
   handleInputChange: (event: { target: { name: string; value: any } }) => void;
-  categories: Category[];
+  categories: Categorylist[];
   subCategories: { id: string; name: string }[];
   brands: string[];
   filteredSubCategories: { id: string; name: string }[];
@@ -47,7 +52,7 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
 
   // Memoize filtered categories
   const filteredCategories = useMemo(
-    () => categories.filter((cat) => cat.name.toLowerCase().includes(searchTerm.toLowerCase())),
+    () => categories.filter((cat) => cat.category.name.toLowerCase().includes(searchTerm.toLowerCase())),
     [categories, searchTerm]
   );
 
@@ -138,7 +143,7 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
                       : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-orange-100 dark:hover:bg-orange-500 hover:border-orange-300"
                   }`}
               >
-                {cat.name}
+                {cat.category.name}
               </button>
             ))}
           </div>

@@ -15,19 +15,31 @@ export default async function handle(
     const currentPage = parseInt(page as string, 10) || 0;
     const skip = currentPage > 0 ? currentPage * 20 : 0;
 
-    // Define filter: only categories linked to this company via StoreCategory
+    // Define filter: only categories linked to this company
     const whereFilter = {
-      StoreCategory: {
-        some: { companyId: companyId }
-      }
+      companyId: companyId
     };
 
     // Run count and paginated query in a transaction
     const [totalCount, categories] = await prisma.$transaction([
-      prisma.productCategory.count({ where: whereFilter }),
-      prisma.productCategory.findMany({
+      prisma.storeCategory.count({ where: whereFilter }),
+      prisma.storeCategory.findMany({
         where: whereFilter,
         skip,
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              image: true,
+              icon: true,
+              allBrands: true,
+              tags: true,
+              subcategories : true,
+            }
+          }
+        },
         take: 20,
         orderBy: { sortOrder: 'asc' }
       }),
@@ -37,7 +49,7 @@ export default async function handle(
     const nextPage = currentPage + 1 < totalPages ? currentPage + 1 : null;
     const prevPage = currentPage > 0 ? currentPage - 1 : null;
 
-    console.log("Categories: ", categories);
+    console.log(categories);
 
     return res.status(200).json({
       InfoResponse: {
