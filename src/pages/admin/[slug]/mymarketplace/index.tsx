@@ -125,13 +125,14 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
 
 export default ClientInventoryPage;
 
-export const getServerSideProps = async () => {
-  const clientId = "63f7c9e2d91b1b2a5e80b007";
+export const getServerSideProps = async ({ params }:any) => {
+
+  const companyId = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
 
   let productsData: MarketplaceProduct[] = [];
 
   try {
-    const response = await fetch(`${apiUrl}/clients/my-market-place?sellerId=${clientId}`);
+    const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`);
     if (response.ok) {
       const data = await response.json();
       productsData = data.products;
