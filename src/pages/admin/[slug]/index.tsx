@@ -6,20 +6,20 @@ import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
 import { Session } from "next-auth";
 import { getSession } from "next-auth/react";
-import salesIcon from "../../assets/bmi.png";
-import targetIcon from "../../assets/hb.png";
+import salesIcon from "@/assets/bmi.png";
+import targetIcon from "@/assets/hb.png";
 import ChartThree from "@/components/ChartThree";
 import ChartTwo from "@/components/ChartTwo";
 import React from 'react';
-import clientsIcon from "../../assets/bmi.png";
-import productIcon from "../../assets/bmi.png";
-import agentIcon from "../../assets/bmi.png";
-import orderIcon from "../../assets/bmi.png";
-import communicationIcon from "../../assets/bmi.png";
-import demoIcon from "../../assets/calories.png";
-import commissionIcon from "../assets/sleep.png";
-import edit from "../../assets/edit.png";
-import waterbottle from "../assets/water.png"
+import clientsIcon from "@/assets/bmi.png";
+import productIcon from "@/assets/bmi.png";
+import agentIcon from "@/assets/bmi.png";
+import orderIcon from "@/assets/bmi.png";
+import communicationIcon from "@/assets/bmi.png";
+import demoIcon from "@/assets/calories.png";
+import commissionIcon from "@/assets/sleep.png";
+import edit from "@/assets/edit.png";
+import waterbottle from "@/assets/water.png"
 import Layout from "@/components/AdminLayout";
 import AdminLayout from "@/components/AdminLayout";
 
