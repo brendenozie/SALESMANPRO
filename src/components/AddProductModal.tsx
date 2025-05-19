@@ -4,25 +4,10 @@ import { useDropzone, Accept } from "react-dropzone";
 import { debounce } from "lodash";
 import { motion } from "framer-motion";
 import {
-  ArrowUpCircleIcon,
-  PhotoIcon,
-  TagIcon,
-  CurrencyDollarIcon,
-  ChevronDownIcon,
-  XMarkIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  CheckIcon,
   CheckCircleIcon,
-  MapPinIcon
 } from "@heroicons/react/24/outline";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUpTrayIcon,
-  CameraIcon,
-  ListBulletIcon,
-  PhoneIcon
-} from "@heroicons/react/24/solid";
 import CategoryPicker from "../components/CategoryPicker";
 import Stepper from "../components/Stepper";
 import ProductDetails from "../components/ProductDetails";
@@ -157,7 +142,7 @@ const CATEGORY_STEPS: Record<string, number[]> = {
 // MAIN MODAL COMPONENT
 // -------------------
 
-const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product, sellerId, sellerType }: any) => {
+const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product, companyId }: any) => {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -256,10 +241,6 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
 
   const [newImages, setNewImages] = useState<File[]>([]);
 
-  // const [images, setImages] = useState<{name: string;  url: string; index: number }[]>(
-  //   property?.images?.map((url: string, index: number) => ({ url, index: index })) || []
-  // );
-
   const [images, setImages] = useState(
     product?.product?.images?.map((img: any, index: number) => ({ ...img, index })) || []
   );
@@ -272,11 +253,8 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
 
   useEffect(() => {
     if (categories.length > 0) return;
-    // const cachedCategories = localStorage.getItem("categories");
-    // if (cachedCategories) {
-    //   setCategories(JSON.parse(cachedCategories));
-    // } else {
-      fetch(`${apiUrl}/admin/get-store-categories?limit=100&companyId=68193adfab67ac0915b51a20`)
+    
+      fetch(`${apiUrl}/admin/get-store-categories?limit=100&companyId=${companyId}`)
         .then((res) => res.json())
         .then((data) => {
           setCategories(data.results);
@@ -284,7 +262,6 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
           console.log("Fetched categories:", data);
         })
         .catch(console.error);
-    // }
   }, [categories]);
 
   const filteredBrands = useMemo(() => {
@@ -432,7 +409,7 @@ const handleCreateListing = async () => {
       dimension: formData.dimension,
       commissionRate: formData.commissionRate || 0,
       commissionType: formData.commissionType || 'COST', // Default to "Percentage"
-      companyId: formData.companyId || '68193adfab67ac0915b51a20',
+      companyId: formData.companyId || `${companyId}`,
       material: Array.isArray(formData.material)
         ? formData.material
         : formData.material
