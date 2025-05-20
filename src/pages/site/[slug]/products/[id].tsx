@@ -3,6 +3,8 @@ import { useState } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import Header from "../../../../components/site/header/Header";
+import Footer from "../../../../components/site/footer/Footer";
 
 // Type definitions
 interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }

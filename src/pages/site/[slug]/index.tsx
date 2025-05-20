@@ -8,6 +8,8 @@ import banner from '@/assets/homebanner.png';
 import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
+import Header from "../../../components/site/header/Header";
+import Footer from "../../../components/site/footer/Footer";
 
 const slides = [
   {
@@ -71,28 +73,17 @@ interface Store {
 
 export default function StorePage({ store }: { store: Store }) {
 
-  const storeCategories = store.StoreCategory
-  .filter((sc:any) => sc.visible)
-  // .sort(({a, b}:any) => a.sortOrder - b.sortOrder)
-  .map((sc:any) => ({
-    id: sc.category.id,
-    name: sc.displayName || sc.category.name,
-    imageUrl: sc.category.image || "",
-    slug: sc.category.slug || "",
-    icon: sc.icon || sc.category.icon || ""
-  }));
-
   if (!store) return <EmptyState />;
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <Header store={store} />
+      <Header />
       <HeroSlider bannerUrl={store.bannerUrl ?? ""} />
       <Section title="">
         <ServiceFeatures store={store} />
       </Section>
       <Section title="">
-        <CategoryBanners categories={storeCategories} />
+        <CategoryBanners categories={store.StoreCategory} />
       </Section>
       <Section title="Trending Products">
         <ProductGrid products={store.products} />
@@ -152,7 +143,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       promotions: true
     }
   });
-
   
   if (!raw) return { notFound: true };
 
@@ -175,7 +165,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       icon: sc.icon ?? sc.category.icon ?? undefined
     })),
     socialLinks: raw.socialLinks.map(s => ({ channel: s.channel, url: s.url })),
-    policies: raw.policies.map(p => ({ type: p.type, title: p.title ?? undefined, content: p.content })),
+    policies: raw.policies.map(p => ({ type: p.type, 
+                                        title: "p.title",// ?? undefined, 
+                                        content: p.content })),
     // socialLinks: raw.socialLinks,
   //   // policies: raw.policies,
   //   // shippingZones: raw.shippingZones,
@@ -186,8 +178,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     testimonials: raw.testimonials.map(t => ({
       author: t.author,
       quote: t.quote,
-      avatarUrl: t.avatarUrl ?? undefined,
-      rating: t.rating ?? undefined
+      avatarUrl: "t.avatarUrl",// ?? undefined,
+      rating: 0,//t.rating ?? undefined
     })),
     heroSlides: raw.heroSlides.map(b => ({
       imageUrl: b.imageUrl,
@@ -197,12 +189,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       ctaLink: b.ctaLink ?? undefined
     })),
     promotions: raw.promotions.map(p => ({
-      code: p.code ?? undefined,
+      code: "0",//p.code ?? undefined,
       title: p.title,
       description: p.description ?? undefined,
-      startsAt: p.startsAt?.toISOString(),
-      endsAt: p.endsAt?.toISOString(),
-      bannerUrl: p.bannerUrl ?? undefined
+      startsAt: "1/1/2001",//p.startsAt?.toISOString(),
+      endsAt: "1/1/2001",//p.endsAt?.toISOString(),
+      bannerUrl: "p.bannerUrl",// ?? undefined
     })),
     products: raw.MarketplaceListing.map(p => ({
       id: p.id,
@@ -220,7 +212,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   };
 };
 
-function Header({ store }: any) {
+function Headerv1({ store }: any) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const languages = [
     { code: "en", label: "English" },
@@ -285,12 +277,12 @@ function Header({ store }: any) {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
-            <button className="relative text-gray-600 hover:text-orange-600">
+            {/* <button className="relative text-gray-600 hover:text-orange-600">
               <HeartIcon className="h-6 w-6" />
               <span className="absolute -top-1 -right-2 bg-orange-600 text-white rounded-full text-xs px-1">
                 5
               </span>
-            </button>
+            </button> */}
             <button className="relative text-gray-600 hover:text-orange-600">
               <UserIcon className="h-6 w-6" />
             </button>
@@ -454,6 +446,7 @@ function NewsletterSection() {
 }
 
 function CategoryBanners({ categories }: { categories: StoreCategoryUI[];}) {
+
   return (
     <section className="py-16 bg-gradient-to-br from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -629,64 +622,7 @@ function HeroSlider({ bannerUrl }: { bannerUrl: string }) {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="bg-gray-900 text-gray-300 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-b border-gray-700 pb-12">
-        
-        {/* About Us */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">About Us</h3>
-          <p className="text-sm leading-relaxed text-gray-400">
-            We’re the best marketplace for everything you need. Join thousands of satisfied customers today.
-          </p>
-        </div>
 
-        {/* Quick Links */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href="/about" className="hover:text-white transition-colors">About</a></li>
-            <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
-            <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
-          </ul>
-        </div>
-
-        {/* Customer Care */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Customer Care</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href="/help" className="hover:text-white transition-colors">Help Center</a></li>
-            <li><a href="/returns" className="hover:text-white transition-colors">Returns</a></li>
-            <li><a href="/shipping" className="hover:text-white transition-colors">Shipping</a></li>
-            <li><a href="/track" className="hover:text-white transition-colors">Track Order</a></li>
-          </ul>
-        </div>
-
-        {/* Follow Us */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Follow Us</h3>
-          <div className="flex space-x-4">
-            <a href="#" className="text-gray-400 hover:text-white transition-colors bg-gray-800 p-2 rounded-full">
-              <FaceSmileIcon className="h-5 w-5" />
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors bg-gray-800 p-2 rounded-full">
-              <BuildingLibraryIcon className="h-5 w-5" />
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors bg-gray-800 p-2 rounded-full">
-              <BookOpenIcon className="h-5 w-5" />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} Your Store. All rights reserved.
-      </div>
-    </footer>
-  );
-}
 
 export const metadata = {
   title: 'StoreName - Your One-Stop Shop',
