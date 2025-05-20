@@ -1,20 +1,9 @@
-import React,{ useState, useEffect, useRef } from 'react';
-import { GetServerSideProps } from 'next';
-import prisma from '@/server/db/prismadb';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon, FaceSmileIcon, BookOpenIcon, TruckIcon, ArrowsUpDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import banner from '@/assets/homebanner.png';
-import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
-import clsx from "clsx";
-import { motion, AnimatePresence } from "framer-motion";
-import Header from "../../../components/site/header/Header";
-import Footer from "../../../components/site/footer/Footer";
-import Cart from "../../../components/cart";
-import SignInModal from "../../../components/SignInModal";
-import { useStateContext } from '../../../contexts/ContextProvider';
-import LocationModal from "../../../components/locationManager";
-import ProductGrid from '@/components/site/productGrid/ProductGrid';
+import { PhoneIcon, TruckIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon } from '@heroicons/react/24/solid';
+import { motion } from "framer-motion";
 
 interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
 
@@ -92,3 +81,24 @@ const CategoryBanners = ({ categories }: { categories: StoreCategoryUI[];}) => {
 }
 
 export default CategoryBanners;
+
+// const categories: StoreCategoryUI[] = [
+//   { id: "1", name: "Electronics", imageUrl: `${PLACEHOLDER}/300x300?text=Electronics`, slug: "electronics" },
+//   { id: "2", name: "Fashion", imageUrl: `${PLACEHOLDER}/300x300?text=Fashion`, slug: "fashion" },
+//   { id: "3", name: "Home & Kitchen", imageUrl: `${PLACEHOLDER}/300x300?text=Home+%26+Kitchen`, slug: "home-kitchen" },
+//   { id: "4", name: "Sports", imageUrl: `${PLACEHOLDER}/300x300?text=Sports`, slug: "sports" },
+//   { id: "5", name: "Beauty", imageUrl: `${PLACEHOLDER}/300x300?text=Beauty`, slug: "beauty" },
+//   { id: "6", name: "Toys", imageUrl: `${PLACEHOLDER}/300x300?text=Toys`, slug: "toys" },
+//   { id: "7", name: "Books", imageUrl: `${PLACEHOLDER}/300x300?text=Books`, slug: "books" },
+//   { id: "8", name: "Automotive", imageUrl: `${PLACEHOLDER}/300x300?text=Automotive`, slug: "automotive" },
+//   { id: "9", name: "Health", imageUrl: `${PLACEHOLDER}/300x300?text=Health`, slug: "health" },
+//   { id: "10", name: "Grocery", imageUrl: `${PLACEHOLDER}/300x300?text=Grocery`, slug: "grocery" },
+//   { id: "11", name: "Pet Supplies", imageUrl: `${PLACEHOLDER}/300x300?text=Pet+Supplies`, slug: "pet-supplies" },
+//   { id: "12", name: "Office Supplies", imageUrl: `${PLACEHOLDER}/300x300?text=Office+Supplies`, slug: "office-supplies" },
+//   { id: "13", name: "Garden", imageUrl: `${PLACEHOLDER}/300x300?text=Garden`, slug: "garden" },
+//   { id: "14", name: "Baby", imageUrl: `${PLACEHOLDER}/300x300?text=Baby`, slug: "baby" },
+//   { id: "15", name: "Jewelry", imageUrl: `${PLACEHOLDER}/300x300?text=Jewelry`, slug: "jewelry" },
+//   { id: "16", name: "Footwear", imageUrl: `${PLACEHOLDER}/300x300?text=Footwear`, slug: "footwear" },
+//   { id: "17", name: "Luggage", imageUrl: `${PLACEHOLDER}/300x300?text=Luggage`, slug: "luggage" },
+// ];
+
