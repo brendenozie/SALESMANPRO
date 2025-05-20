@@ -1,528 +1,203 @@
-
-// pages/products/index.tsx
-import { GetServerSideProps } from "next";
-import { useRouter } from "next/router";
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import { GetServerSideProps } from 'next';
 import prisma from '@/server/db/prismadb';
-import Head from "next/head";
-import { FaceSmileIcon, BuildingLibraryIcon, BookOpenIcon, Bars3BottomLeftIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useRouter } from 'next/router';
+import { useStateContext } from '../../../../contexts/ContextProvider';
+import ProductGrid from '@/components/site/productGrid/ProductGrid';
+import { debounce } from 'lodash';
 import Header from "../../../../components/site/header/Header";
 import Footer from "../../../../components/site/footer/Footer";
-import Image from 'next/image';
-import { motion, AnimatePresence } from "framer-motion";
-import Link from 'next/link';
+import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import Section from '@/components/site/Section/Section';
 
-
-// Type definitions
-interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }
-interface Store { name: string; logoUrl: string; bannerUrl: string; category: string; description: string; contactEmail: string; contactPhone: string; address: string; products: Product[]; StoreCategory: StoreCategoryUI[]; }
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-
-
-const ITEMS_PER_PAGE = 12;
-
-const SORT_OPTIONS = [
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc", label: "Price: High to Low" },
-  { value: "rating_desc", label: "Rating: High to Low" },
-  { value: "newest", label: "Newest" },
-];
-
-function FiltersSidebar({ 
-  categories, searchTerm, setSearchTerm, 
-  selectedCat, setSelectedCat, 
-  minPrice, setMinPrice, 
-  maxPrice, setMaxPrice, 
-  resetFilters, applyPriceFilter 
-} : any) {
-  const [openFacet, setOpenFacet] = useState<string | null>(null);
-
-  const toggle = (name: string) =>
-    setOpenFacet(openFacet === name ? null : name);
-
-  return (
-    <aside className="space-y-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-      
-      {/* Search */}
-      <div>
-        <input
-          type="search"
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={e => { setSearchTerm(e.target.value); }}
-          className="w-full border border-gray-300 dark:border-gray-700 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-        />
-      </div>
-
-      {/* Category Facet */}
-      <div>
-        <button
-          onClick={() => toggle("category")}
-          className="flex justify-between w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-        >
-          <span className="font-medium">Category</span>
-          <span className={`transform transition-transform ${openFacet==="category"? "rotate-180":""}`}>▾</span>
-        </button>
-        {openFacet === "category" && (
-          <ul className="mt-2 space-y-1 text-sm">
-            <li>
-              <button
-                onClick={() => setSelectedCat(null)}
-                className={`block w-full text-left px-2 py-1 rounded ${
-                  !selectedCat ? "bg-orange-100 text-orange-700" : "hover:bg-gray-50"
-                }`}
-              >
-                All
-              </button>
-            </li>
-            {categories.map((cat:any) => (
-              <li key={cat.slug}>
-                <button
-                  onClick={() => setSelectedCat(cat.slug)}
-                  className={`block w-full text-left px-2 py-1 rounded ${
-                    selectedCat === cat.slug
-                      ? "bg-orange-100 text-orange-700"
-                      : "hover:bg-gray-50"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Price Facet */}
-      <div>
-        <button
-          onClick={() => toggle("price")}
-          className="flex justify-between w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-        >
-          <span className="font-medium">Price</span>
-          <span className={`transform transition-transform ${openFacet==="price"? "rotate-180":""}`}>▾</span>
-        </button>
-        {openFacet === "price" && (
-          <div className="mt-2 space-y-2">
-            <div className="flex space-x-2">
-              <input
-                type="number"
-                placeholder="Min"
-                value={minPrice}
-                onChange={e => setMinPrice(e.target.value)}
-                className="w-1/2 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-sm"
-              />
-              <input
-                type="number"
-                placeholder="Max"
-                value={maxPrice}
-                onChange={e => setMaxPrice(e.target.value)}
-                className="w-1/2 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-sm"
-              />
-            </div>
-            <button
-              onClick={applyPriceFilter}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white py-1 rounded-lg text-sm transition"
-            >
-              Apply
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Reset */}
-      <button
-        onClick={resetFilters}
-        className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition"
-      >
-        Clear All
-      </button>
-    </aside>
-  );
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  imageUrl: string;
+  rating?: number;
 }
 
-function ActiveFilters({ selectedCat, minPrice, maxPrice, clearFilter } : any) {
-  const chips = [];
-  if (selectedCat) chips.push({ label: selectedCat, key: "cat" });
-  if (minPrice || maxPrice)
-    chips.push({ label: `${minPrice || 0}–${maxPrice || "∞"}`, key: "price" });
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Props {
+  products: Product[];
+  categories: Category[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  selectedCategory?: string;
+  searchTerm?: string;
+  sortBy?: string;
+}
+
+export default function ProductListPage({ products, categories, totalCount, page, pageSize, selectedCategory, searchTerm, sortBy }: Props) {
+  const router = useRouter();
+  const { slug } = router.query;
+
+  const [term, setTerm] = useState(searchTerm || '');
+  const [category, setCategory] = useState(selectedCategory || '');
+  const [sort, setSort] = useState(sortBy || 'newest');
+
+  // Debounce URL updates
+  const updateQuery = debounce((q: any) => {
+    router.push({
+      pathname: `/site/${slug}/products`,
+      query: { ...router.query, ...q, page: 1 }
+    }, undefined, { shallow: true });
+  }, 500);
+
+  useEffect(() => {
+    updateQuery({ search: term, category, sort });
+  }, [term, category, sort]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  const goToPage = (p: number) => {
+    router.push({
+      pathname: `/site/${slug}/products`,
+      query: { ...router.query, page: p }
+    });
+  };
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
-      {chips.map(({ label, key }) => (
-        <span
-          key={key}
-          className="flex items-center bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm"
-        >
-          {label}
-          <button
-            onClick={() => clearFilter(key)}
-            className="ml-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Filters & Sorting */}
+        <div className="flex flex-col lg:flex-row items-center justify-between mb-6 space-y-4 lg:space-y-0">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            className="border border-gray-300 rounded-full px-4 py-2 w-full lg:w-1/3 focus:outline-none"
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="border border-gray-300 rounded px-4 py-2 w-full lg:w-1/4"
           >
-            ×
-          </button>
-        </span>
-      ))}
+            <option value="">All Categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="border border-gray-300 rounded px-4 py-2 w-full lg:w-1/4"
+          >
+            <option value="newest">Newest</option>
+            <option value="priceAsc">Price: Low to High</option>
+            <option value="priceDesc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
+
+        {/* Product Grid */}
+        <ProductGrid
+          products={products}
+          // addToCart={() => {}}
+          // decreaseQuantity={() => {}}
+          // removeFromCart={() => {}}
+        />
+
+        {/* Pagination */}
+        <div className="flex justify-center items-center space-x-2 mt-8">
+          <button
+            onClick={() => goToPage(page - 1)}
+            disabled={page <= 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >Previous</button>
+          {[...Array(totalPages)].map((_, idx) => (
+            <button
+              key={idx + 1}
+              onClick={() => goToPage(idx + 1)}
+              className={`px-3 py-1 border rounded ${idx + 1 === page ? 'bg-gray-200' : ''}`}
+            >{idx + 1}</button>
+          ))}
+          <button
+            onClick={() => goToPage(page + 1)}
+            disabled={page >= totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >Next</button>
+        </div>
+      </div>
+      <NewsletterSection />
+      <Section title="">
+        <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-8 mb-8">
+          <p className="text-lg">"Great products and fast shipping!"</p>
+          <p className="text-sm text-gray-500">- Happy Customer</p>
+        </div>
+      </Section>
+      <Footer />
     </div>
   );
 }
 
+export const getServerSideProps: GetServerSideProps = async ({ query, params }) => {
+  const slug = params?.slug as string;
+  const page = parseInt(query.page as string) || 1;
+  const pageSize = 12;
+  const search = (query.search as string) || '';
+  const categoryId = (query.category as string) || null;
+  const sort = (query.sort as string) || 'newest';
 
-export default function StorePage({ store, products, categories }: { store: Store; products: Product[]; categories: StoreCategoryUI[] }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCat, setSelectedCat] = useState<string | null>(null);
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [sort, setSort] = useState("");
-  const [minRating, setMinRating] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const { slug } = router.query;
-  const [filterProps, setFilterProps] = useState({
-    categories,
-    searchTerm,
-    setSearchTerm,
-    selectedCat,
-    setSelectedCat,
-    minPrice,
-    setMinPrice,
-    maxPrice,
-    setMaxPrice,
-  });
+  // Base filter: by store slug
+  const baseCompany = await prisma.company.findUnique({ where: { slug } });
+  if (!baseCompany) return { notFound: true };
 
-  const [chipProps, setChipProps] = useState({
-    selectedCat,
-    minPrice,
-    maxPrice,
-    clearFilter: (key: string) => {
-      if (key === "cat") setSelectedCat(null);
-      if (key === "price") {
-        setMinPrice("");
-        setMaxPrice("");
-      }
-    },
-  });
+  const where: any = { companyId: baseCompany.id };
+  if (search) where.title = { contains: search, mode: 'insensitive' };
+  if (categoryId) where.categoryId = categoryId;
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const res = await fetch(`/api/store/${slug}`);
-  //       const data = await res.json();
-  //       setStore(data.store);
-  //       setProducts(data.products);
-  //       setCategories(data.categories);
-  //     } catch (error) {
-  //       console.error("Error fetching store data:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [slug]);
+  // Determine order
+  let orderBy: any = { createdAt: 'desc' };
+  if (sort === 'priceAsc') orderBy = { finalPrice: 'asc' };
+  if (sort === 'priceDesc') orderBy = { finalPrice: 'desc' };
+  if (sort === 'rating') orderBy = { rating: 'desc' };
 
-  useEffect(() => {
-    setFilterProps({
-      categories,
-      searchTerm,
-      setSearchTerm,
-      selectedCat,
-      setSelectedCat,
-      minPrice,
-      setMinPrice,
-      maxPrice,
-      setMaxPrice,
-    });
-    setChipProps({
-      selectedCat,
-      minPrice,
-      maxPrice,
-      clearFilter: (key: string) => {
-        if (key === "cat") setSelectedCat(null);
-        if (key === "price") {
-          setMinPrice("");
-          setMaxPrice("");
-        }
-      },
-    });
-  }, [categories, searchTerm, selectedCat, minPrice, maxPrice]);
+  const [listings, totalCount, categories] = await Promise.all([
+    prisma.marketplaceListing.findMany({
+      where,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      // include: { images: true },
+      orderBy,
+    }),
+    prisma.marketplaceListing.count({ where }),
+    prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
+  ]);
 
-  const applyPriceFilter = () => {
-    setCurrentPage(1);
-    setFilterProps({
-      ...filterProps,
-      minPrice,
-      maxPrice,
-    });
-  };
+  const products = listings.map((p) => ({
+    id: p.id,
+    name: p.title,
+    // slug: p.slug,
+    price: p.finalPrice,
+    rating: 0,//p.rating,
+    // imageUrl: p.images[0]?.url || '/placeholder.png',
+    imageUrl: (typeof p.images[0] === 'object' && p.images[0] !== null && 'url' in p.images[0])
+        ? (p.images[0] as { url: string }).url
+        : '/placeholder.png',
+  }));
 
-  const resetFilters = () => {
-    setSearchTerm("");
-    setSelectedCat(null);
-    setMinPrice("");
-    setMaxPrice("");
-    setSort("");
-    setMinRating(0);
-    setCurrentPage(1);
-  };
-
-  // if (loading) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <div className="loader"></div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!store) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <p className="text-gray-500">Store not found.</p>
-  //     </div>
-  //   );
-  // }
-
-  return (
-    <>
-      <Head>
-        <title>{store?.name} - Products</title>
-        <meta name="description" content={store?.description} />
-        <link rel="icon" href={store?.logoUrl} />
-      </Head>
-      <Header />
-      <main className="bg-white dark:bg-gray-900">
-        <div className="bg-gray-100 dark:bg-gray-800 py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{store?.name}</h1>
-            <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">{store?.description}</p>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          {/* Mobile filter button */}
-          <div className="lg:hidden flex justify-end my-4">
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg"
-            >
-              Filters
-            </button>
-          </div>
-
-          <div className="lg:flex lg:space-x-8">
-            {/* Sidebar */}
-            <div className={`${drawerOpen ? "fixed inset-0 z-50 bg-black bg-opacity-30" : "hidden lg:block"} lg:relative lg:w-1/4`}>
-              {drawerOpen && (
-                <div className="absolute right-0 w-3/4 h-full bg-white dark:bg-gray-800 p-4 shadow-lg">
-                  <button
-                    onClick={() => setDrawerOpen(false)}
-                    className="mb-4 text-gray-600 dark:text-gray-300"
-                  >
-                    Close ×
-                  </button>
-                  <FiltersSidebar {...filterProps} />
-                </div>
-              )}
-              {!drawerOpen && (
-                <FiltersSidebar {...filterProps} />
-              )}
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1 my-4">
-              <ActiveFilters {...chipProps} />
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
-                {products.map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
-              </div>
-              {products.length === 0 && (
-                <p className="text-center text-gray-500 dark:text-gray-400 my-16">
-                  No products found.
-                </p>
-              )}
-
-            </div>
-          </div>
-        </div>
-    
-      </main>
-      <Footer />
-    
-    </>
-  );
-}
-
-// Server-side fetch
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const raw = await prisma.company.findUnique({
-    where: { slug: String(params?.slug) },
-    include: {
-      products: {
-        take: 8,
-        select: {
-          id: true,
-          name: true,
-          finalPrice: true,
-          images: true
-        }
-      },
-      StoreCategory: {
-        orderBy: { sortOrder: 'asc' },
-        include: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              image: true,
-              icon: true,
-              // omit createdAt/updatedAt if you don't need them
-            }
-          }
-        }
-      }
-    }
-  });
-
-  if (!raw) {
-    return { notFound: true };
-  }
-
-  // Build a clean, serializable DTO
-  const store = {
-    id: raw.id,
-    name: raw.name,
-    slug: raw.slug,
-    description: raw.description,
-    category: raw.category,
-    logoUrl: raw.logoUrl,
-    bannerUrl: raw.bannerUrl,
-    contactEmail: raw.contactEmail,
-    contactPhone: raw.contactPhone,
-    address: raw.address,
-    socialLinks: raw.socialLinks,
-    policies: raw.policies,
-    shippingZones: raw.shippingZones,
-    domain: raw.domain,
-    currency: raw.currency,
-    locale: raw.locale,
-    // convert dates to strings if you need them
-    createdAt: raw.createdAt.toISOString(),
-    updatedAt: raw.updatedAt.toISOString(),
-
-    // map categories into the shape your UI expects
-    StoreCategory: raw.StoreCategory.map(sc => ({
-      id: sc.id,
-      sortOrder: sc.sortOrder,
-      visible: sc.visible,
-      displayName: sc.displayName,
-      icon: sc.icon,
-      category: {
-        id: sc.category.id,
-        name: sc.category.name,
-        slug: sc.category.slug,
-        imageUrl: sc.category.image,
-        icon: sc.category.icon,
-      }
-    })),
-
-    // map products into your ProductGrid shape
-    products: raw.products.map(p => ({
-      imageUrl: (p.images[0] as { url: string })?.url ?? '/placeholder.png',
-      name: p.name,
-      // slug: p.slug,
-      price: p.finalPrice,
-    }))
-  };
+  const cats = categories.map((c) => ({ id: c.id, name: c.name }));
 
   return {
-    props: {  
-      products: store.products,
-      categories: store.StoreCategory.map((c : any) => ({
-        id: c.category.id,
-        name: c.category.name,
-        imageUrl: c.category.imageUrl,
-        slug: c.category.slug,
-        icon: c.category.icon,
-      })),
-      store,
+    props: {
+      products,
+      categories: cats,
+      totalCount,
+      page,
+      pageSize,
+      selectedCategory: categoryId,
+      searchTerm: search,
+      sortBy: sort,
     },
-    // revalidate: 60, // Revalidate every 60 seconds
-    // notFound: !store.products.length, // Return 404 if no products found
-      }
   };
-
-function ProductCard({ p }: { p: Product }) {
-  return (
-    <Link key={p.id} href={`/products/${p.slug}`} className="focus:outline-none group">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
-              >
-                <div className="relative h-56 w-full overflow-hidden">
-                  <Image
-                    loader={loader}
-                    src={p.imageUrl}
-                    alt={p.name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-4 flex flex-col justify-between h-40">
-                  <div>
-                    <h4 className="text-md font-semibold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 truncate">
-                      {p.name}
-                    </h4>
-                    <p className="mt-1 text-lg font-bold text-blue-600 dark:text-blue-400">${p.price.toFixed(2)}</p>
-                  </div>
-                  <button
-                    className="mt-3 w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium py-2 px-4 rounded-full text-sm transition"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </motion.div>
-            </Link>
-            
-  );
-}
-
-// Sample data for testing
-const PLACEHOLDER = "https://via.placeholder.com";
-const loader = ({ src }: { src: string }) => {
-  return `${src}`;
 };
-
-const products: Product[] = Array.from({ length: 50 }, (_, i) => ({
-  id: String(i + 1),
-  name: `Product ${i + 1}`,
-  price: Math.floor(Math.random() * 100) + 1,
-  imageUrl: `${PLACEHOLDER}/300x300?text=Product+${i + 1}`,
-  slug: `product-${i + 1}`,
-}));
-
-const categories: StoreCategoryUI[] = [
-  { id: "1", name: "Electronics", imageUrl: `${PLACEHOLDER}/300x300?text=Electronics`, slug: "electronics" },
-  { id: "2", name: "Fashion", imageUrl: `${PLACEHOLDER}/300x300?text=Fashion`, slug: "fashion" },
-  { id: "3", name: "Home & Kitchen", imageUrl: `${PLACEHOLDER}/300x300?text=Home+%26+Kitchen`, slug: "home-kitchen" },
-  { id: "4", name: "Sports", imageUrl: `${PLACEHOLDER}/300x300?text=Sports`, slug: "sports" },
-  { id: "5", name: "Beauty", imageUrl: `${PLACEHOLDER}/300x300?text=Beauty`, slug: "beauty" },
-  { id: "6", name: "Toys", imageUrl: `${PLACEHOLDER}/300x300?text=Toys`, slug: "toys" },
-  { id: "7", name: "Books", imageUrl: `${PLACEHOLDER}/300x300?text=Books`, slug: "books" },
-  { id: "8", name: "Automotive", imageUrl: `${PLACEHOLDER}/300x300?text=Automotive`, slug: "automotive" },
-  { id: "9", name: "Health", imageUrl: `${PLACEHOLDER}/300x300?text=Health`, slug: "health" },
-  { id: "10", name: "Grocery", imageUrl: `${PLACEHOLDER}/300x300?text=Grocery`, slug: "grocery" },
-  { id: "11", name: "Pet Supplies", imageUrl: `${PLACEHOLDER}/300x300?text=Pet+Supplies`, slug: "pet-supplies" },
-  { id: "12", name: "Office Supplies", imageUrl: `${PLACEHOLDER}/300x300?text=Office+Supplies`, slug: "office-supplies" },
-  { id: "13", name: "Garden", imageUrl: `${PLACEHOLDER}/300x300?text=Garden`, slug: "garden" },
-  { id: "14", name: "Baby", imageUrl: `${PLACEHOLDER}/300x300?text=Baby`, slug: "baby" },
-  { id: "15", name: "Jewelry", imageUrl: `${PLACEHOLDER}/300x300?text=Jewelry`, slug: "jewelry" },
-  { id: "16", name: "Footwear", imageUrl: `${PLACEHOLDER}/300x300?text=Footwear`, slug: "footwear" },
-  { id: "17", name: "Luggage", imageUrl: `${PLACEHOLDER}/300x300?text=Luggage`, slug: "luggage" },
-];
-

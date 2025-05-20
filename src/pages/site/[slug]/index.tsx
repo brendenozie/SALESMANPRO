@@ -15,6 +15,10 @@ import SignInModal from "../../../components/SignInModal";
 import { useStateContext } from '../../../contexts/ContextProvider';
 import LocationModal from "../../../components/locationManager";
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
+import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners';
+import ServiceFeatures from '@/components/site/ServiceFeatures/ServiceFeatures';
+import Section from '@/components/site/Section/Section';
 
 const slides = [
   {
@@ -31,13 +35,6 @@ const slides = [
     ctaText: 'Explore',
     ctaLink: '/deals',
   },
-];
-
-const features = [
-  { Icon: TruckIcon, title: 'Free Delivery', desc: 'On orders over $99' },
-  { Icon: PhoneIcon, title: '24/7 Support', desc: 'We’re here to help' },
-  { Icon: ShieldCheckIcon, title: 'Secure Payment', desc: '100% secure checkout' },
-  { Icon: ArrowsUpDownIcon, title: 'Easy Returns', desc: '30-day return policy' },
 ];
 
 // Loader for next/image
@@ -78,8 +75,6 @@ interface Store {
 
 export default function StorePage({ store }: { store: Store }) {
   
-  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
-
   if (!store) return <EmptyState />;
 
   return (
@@ -343,148 +338,11 @@ function StoreInfo({ store }: { store: Store }) {
   );
 }
 
-
-
-function Section({ title, children, background = "none", }: { title: string; children: React.ReactNode; background?: "light" | "dark" | "none"; }) {
-
-  const bgClass = clsx({
-    "bg-gray-50": background === "light",
-    "bg-gray-900 text-white": background === "dark",
-    "": background === "none",
-  });
-
-  return (
-    <section className={clsx("py-16", bgClass)}>
-      <div className="max-w-7xl mx-auto px-6">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className={clsx(
-            "text-3xl sm:text-4xl font-bold mb-4",
-            background === "dark" ? "text-white" : "text-gray-800"
-          )}
-        >
-          {title}
-        </motion.h2>
-        {title !== "" && (
-          <>
-            <div  className={clsx("w-16 h-1 rounded mb-8",  background === "dark" ? "bg-blue-400" : "bg-blue-600")} />
-          </>
-        )}        
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-gray-600 mb-6"
-        >
-          {children}
-        </motion.p>
-      </div>
-    </section>
-  );
-}
-
 function EmptyState() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-xl">Store not found</p>
     </div>
-  );
-}
-
-function NewsletterSection() {
-  return (
-    <section className="py-12">
-      <div className="container mx-auto text-center">
-        <h2 className="text-2xl font-bold mb-4">Join Our Newsletter</h2>
-        <p className="text-gray-600 mb-6">Get the latest offers and updates straight to your inbox.</p>
-        <form className="max-w-md mx-auto flex">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none"
-          />
-          <button className="px-6 bg-orange-600 hover:bg-orange-700 text-white rounded-r-lg">
-            Subscribe
-          </button>
-        </form>
-      </div>
-    </section>
-  );
-}
-
-function CategoryBanners({ categories }: { categories: StoreCategoryUI[];}) {
-
-  return (
-    <section className="py-16 bg-gradient-to-br from-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-          Explore Categories
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => (
-            <Link
-              key={idx}
-              href={cat.id ?? "#"}
-              className="group relative block rounded-xl overflow-hidden shadow-lg"
-            >
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                transition={{ duration: 0.4 }}
-                className="relative w-full h-48"
-              >
-                <Image
-                  src={cat.icon ?? cat.imageUrl}
-                  alt={cat.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  loader={loader}
-                />
-
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all" />
-
-                <div className="absolute inset-0 flex flex-col items-start justify-end p-4 z-10">
-                  <div className="text-white text-3xl mb-1">{cat.icon}</div>
-                  <span className="text-white text-lg font-semibold">
-                    {cat.name}
-                  </span>
-                </div>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ServiceFeatures({ store }: { store: Store }) {
-  return (
-    <section className="py-16 bg-gradient-to-br from-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map(({ Icon, title, desc }, idx) => (
-            <motion.div
-              key={idx}
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col items-start bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
-            >
-              <div className="flex items-center justify-center bg-orange-100 text-orange-600 rounded-full w-12 h-12 mb-4">
-                <Icon className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                {title}
-              </h3>
-              <p className="text-sm text-gray-600">{desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }
 
