@@ -23,8 +23,8 @@ const Header: React.FC = () => {
       <header className="bg-white shadow-md sticky top-0 z-50">
         {/* Top Bar */}
         <div className="bg-orange-50 text-orange-800 text-sm font-medium py-2 px-4 flex justify-between items-center">
-          <span>🎉 Super Value Deals — Save more with coupons</span>
-          <div className="flex items-center gap-4">
+          <span>🎉 Super Value Deals </span>
+          {/* <div className="flex items-center gap-4">
             <select
               value={lang.code}
               onChange={(e) =>
@@ -44,7 +44,7 @@ const Header: React.FC = () => {
             </Link>
             <Link href="/cart" className="text-orange-600 hover:underline">Cart
             </Link>
-          </div>
+          </div> */}
         </div>
 
         {/* Main Navigation */}

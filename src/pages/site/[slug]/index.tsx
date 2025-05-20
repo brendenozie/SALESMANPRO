@@ -10,6 +10,11 @@ import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../../../components/site/header/Header";
 import Footer from "../../../components/site/footer/Footer";
+import Cart from "../../../components/cart";
+import SignInModal from "../../../components/SignInModal";
+import { useStateContext } from '../../../contexts/ContextProvider';
+import LocationModal from "../../../components/locationManager";
+import ProductGrid from '@/components/site/productGrid/ProductGrid';
 
 const slides = [
   {
@@ -72,6 +77,8 @@ interface Store {
 
 
 export default function StorePage({ store }: { store: Store }) {
+  
+  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
 
   if (!store) return <EmptyState />;
 
@@ -86,13 +93,14 @@ export default function StorePage({ store }: { store: Store }) {
         <CategoryBanners categories={store.StoreCategory} />
       </Section>
       <Section title="Trending Products">
-        <ProductGrid products={store.products} />
+        <ProductGrid products={store.products} /> 
       </Section> 
       <Section title="Top Selling">
         <ProductGrid products={store.products} />
       </Section> 
       <Section title="All Products">
-        <ProductGrid products={store.products} />
+        <ProductGrid products={store.products}/>
+        {/* addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} */}
       </Section> 
       <NewsletterSection />
       <Section title="">
@@ -335,44 +343,7 @@ function StoreInfo({ store }: { store: Store }) {
   );
 }
 
-function ProductGrid({ products }: { products: Product[] }) {
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map((p) => (
-        <Link key={p.id} href={`/products/${p.slug}`} className="focus:outline-none group">
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
-          >
-            <div className="relative h-56 w-full overflow-hidden">
-              <Image
-                loader={loader}
-                src={p.imageUrl}
-                alt={p.name}
-                layout="fill"
-                objectFit="cover"
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-            <div className="p-4 flex flex-col justify-between h-40">
-              <div>
-                <h4 className="text-md font-semibold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 truncate">
-                  {p.name}
-                </h4>
-                <p className="mt-1 text-lg font-bold text-blue-600 dark:text-blue-400">${p.price.toFixed(2)}</p>
-              </div>
-              <button
-                className="mt-3 w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-medium py-2 px-4 rounded-full text-sm transition"
-              >
-                Add to Cart
-              </button>
-            </div>
-          </motion.div>
-        </Link>
-      ))}
-    </div>
-  );
-}
+
 
 function Section({ title, children, background = "none", }: { title: string; children: React.ReactNode; background?: "light" | "dark" | "none"; }) {
 
