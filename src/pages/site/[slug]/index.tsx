@@ -4,7 +4,6 @@ import prisma from '@/server/db/prismadb';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon, FaceSmileIcon, BookOpenIcon, TruckIcon, ArrowsUpDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-
 import banner from '@/assets/homebanner.png';
 import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
 import clsx from "clsx";
@@ -114,11 +113,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const raw = await prisma.company.findUnique({
     where: { slug: String(params?.slug) },
     include: {
-      products: {
+      MarketplaceListing: {
         take: 8,
         select: {
           id: true,
-          name: true,
+          title: true,
           finalPrice: true,
           images: true
         }
@@ -183,9 +182,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     })),
 
     // map products into your ProductGrid shape
-    products: raw.products.map(p => ({
+    products: raw.MarketplaceListing.map(p => ({
       imageUrl: (p.images[0] as { url: string })?.url ?? '/placeholder.png',
-      name: p.name,
+      name: p.title,
       // slug: p.slug,
       price: p.finalPrice,
     }))
