@@ -31,6 +31,9 @@ interface ProductDetailProps {
   }[];
 }
 
+// Loader for next/image
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 const ProductPage: React.FC<ProductDetailProps> = ({ product, related }) => {
   const { slug } = useRouter().query;
   const { addToCart, cart } = useStateContext();
@@ -45,6 +48,7 @@ const ProductPage: React.FC<ProductDetailProps> = ({ product, related }) => {
         <div>
           <div className="relative w-full h-[400px] rounded-lg overflow-hidden shadow-md">
             <Image
+              loader={loader}
               src={product.images[mainIndex]?.url || '/placeholder.png'}
               alt={product.title}
               layout="fill"
@@ -55,7 +59,7 @@ const ProductPage: React.FC<ProductDetailProps> = ({ product, related }) => {
             {product.images.map((img, idx) => (
               <button key={idx} onClick={() => setMainIndex(idx)} className={idx === mainIndex ? 'ring-2 ring-blue-500 rounded' : ''}>
                 <div className="relative w-20 h-20 rounded overflow-hidden">
-                  <Image src={img.url} alt={`${product.title}-${idx}`} layout="fill" objectFit="cover" />
+                  <Image src={img.url} alt={`${product.title}-${idx}`} layout="fill" objectFit="cover" loader={loader}/>
                 </div>
               </button>
             ))}
@@ -111,12 +115,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const productId = params?.productId as string;
 
   // Ensure company exists
-  const company = await prisma.company.findUnique({ where: { slug } });
-  if (!company) return { notFound: true };
+  // const company = await prisma.company.findUnique({ where: { slug } });
+  // if (!company) return { notFound: true };
 
   // Fetch product with images
   const product = await prisma.marketplaceListing.findFirst({
-    where: { id: productId, companyId: company.id },
+    where: { id: productId },//, companyId: company.id
     // include: { images: true },
   });
   if (!product) return { notFound: true };
@@ -124,7 +128,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   // Fetch related by same category
   const related = await prisma.marketplaceListing.findMany({
     where: {
-      companyId: company.id,
+      companyId: product.companyId,
       productCategoryId: product.productCategoryId,
       NOT: { id: product.id },
     },

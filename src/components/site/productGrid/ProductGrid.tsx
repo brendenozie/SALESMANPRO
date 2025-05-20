@@ -46,7 +46,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products }) => {
             </span>
 
             {/* Image */}
-            <Link href={`/products/${product.slug}`} className="block relative h-56 w-full overflow-hidden">
+            <Link href={`/site/${product.slug}/${product.id}`} className="block relative h-56 w-full overflow-hidden">
                 <Image
                   loader={loader}
                   src={product.imageUrl}
