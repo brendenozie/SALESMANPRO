@@ -1,22 +1,8 @@
-import React,{ useState, useEffect, useRef } from 'react';
-import { GetServerSideProps } from 'next';
-import prisma from '@/server/db/prismadb';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon, FaceSmileIcon, BookOpenIcon, TruckIcon, ArrowsUpDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import banner from '@/assets/homebanner.png';
-import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
+import React from 'react';
+import {PhoneIcon, TruckIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon } from '@heroicons/react/24/solid';
 import clsx from "clsx";
-import { motion, AnimatePresence } from "framer-motion";
-import Header from "../../../components/site/header/Header";
-import Footer from "../../../components/site/footer/Footer";
-import Cart from "../../../components/cart";
-import SignInModal from "../../../components/SignInModal";
-import { useStateContext } from '../../../contexts/ContextProvider';
-import LocationModal from "../../../components/locationManager";
-import ProductGrid from '@/components/site/productGrid/ProductGrid';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners';
+import { motion } from "framer-motion";
 
 // Loader for next/image
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
