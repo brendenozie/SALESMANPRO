@@ -9,24 +9,6 @@ import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid'
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 
-const tabs: Array<keyof typeof sampleProducts> = ['New Arrivals', 'Best Sellers', 'Trending'];
-
-const sampleProducts = {
-  'New Arrivals': [
-    { id: 1, name: 'Wireless Earbuds', price: 'Ksh 3,500' },
-    { id: 2, name: 'Smartwatch', price: 'Ksh 6,999' },
-  ],
-  'Best Sellers': [
-    { id: 3, name: 'Bluetooth Speaker', price: 'Ksh 4,200' },
-    { id: 4, name: 'Gaming Mouse', price: 'Ksh 2,800' },
-  ],
-  'Trending': [
-    { id: 5, name: 'Phone Gimbal', price: 'Ksh 7,000' },
-    { id: 6, name: 'Portable Projector', price: 'Ksh 12,000' },
-  ],
-};
-
-
 const slides = [
   {
     image: '/images/slider-1.jpg',
@@ -55,11 +37,36 @@ const features = [
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Type definitions
-interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }
-interface Store { name: string; logoUrl: string; bannerUrl: string; category: string; description: string; contactEmail: string; contactPhone: string; address: string; products: Product[]; StoreCategory: StoreCategoryUI[]; }
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
 interface Category { id: string; name: string; imageUrl: string; }
 interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
+interface SocialLink { channel: string; url: string }
+interface Policy { type: string; title?: string; content: string }
+interface FAQ { question: string; answer: string }
+interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
+interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
+interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
+interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
+interface Store {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  category: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  contactEmail: string;
+  contactPhone?: string;
+  address?: string;
+  StoreCategory: StoreCategoryUI[];
+  socialLinks: SocialLink[];
+  policies: Policy[];
+  faqs: FAQ[];
+  testimonials: Testimonial[];
+  heroSlides: Banner[];
+  promotions: Promotion[];
+  products: Product[];
+}
 
 
 export default function StorePage({ store }: { store: Store }) {
@@ -70,9 +77,9 @@ export default function StorePage({ store }: { store: Store }) {
   .map((sc:any) => ({
     id: sc.category.id,
     name: sc.displayName || sc.category.name,
-    imageUrl: sc.category.image,
-    slug: sc.category.slug,
-    icon: sc.icon || sc.category.icon
+    imageUrl: sc.category.image || "",
+    slug: sc.category.slug || "",
+    icon: sc.icon || sc.category.icon || ""
   }));
 
   if (!store) return <EmptyState />;
@@ -80,7 +87,7 @@ export default function StorePage({ store }: { store: Store }) {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       <Header store={store} />
-      <HeroSlider bannerUrl={store.bannerUrl} />
+      <HeroSlider bannerUrl={store.bannerUrl ?? ""} />
       <Section title="">
         <ServiceFeatures store={store} />
       </Section>
@@ -119,7 +126,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
           id: true,
           title: true,
           finalPrice: true,
-          images: true
+          images: true,
+          // slug: true
         }
       },
       StoreCategory: {
@@ -135,61 +143,78 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             }
           }
         }
-      }
+      },
+      socialLinks: true,
+      policies: true,
+      faqs: true,
+      testimonials: true,
+      heroSlides: true,
+      promotions: true
     }
   });
 
-  if (!raw) {
-    return { notFound: true };
-  }
+  
+  if (!raw) return { notFound: true };
 
-  // Build a clean, serializable DTO
-  const store = {
+  const store: Store = {
     id: raw.id,
     name: raw.name,
     slug: raw.slug,
-    description: raw.description,
+    description: raw.description ?? undefined,
     category: raw.category,
-    logoUrl: raw.logoUrl,
-    bannerUrl: raw.bannerUrl,
+    logoUrl: raw.logoUrl ?? undefined,
+    bannerUrl: raw.bannerUrl ?? undefined,
     contactEmail: raw.contactEmail,
-    contactPhone: raw.contactPhone,
-    address: raw.address,
-    // socialLinks: raw.socialLinks,
-    // policies: raw.policies,
-    // shippingZones: raw.shippingZones,
-    // domain: raw.domain,
-    // currency: raw.currency,
-    // locale: raw.locale,
-    // convert dates to strings if you need them
-    createdAt: raw.createdAt.toISOString(),
-    updatedAt: raw.updatedAt.toISOString(),
-
-    // map categories into the shape your UI expects
-    StoreCategory: raw.StoreCategory.map(sc => ({
-      id: sc.id,
-      sortOrder: sc.sortOrder,
-      visible: sc.visible,
-      displayName: sc.displayName,
-      icon: sc.icon,
-      category: {
-        id: sc.category.id,
-        name: sc.category.name,
-        slug: sc.category.slug,
-        imageUrl: sc.category.image,
-        icon: sc.category.icon,
-      }
+    contactPhone: raw.contactPhone ?? undefined,
+    address: raw.address ?? undefined,
+    StoreCategory: raw.StoreCategory?.map(sc => ({
+      id: sc.category.id,
+      name: sc.displayName || sc.category.name,
+      imageUrl: sc.category.image ?? '/placeholder.png',
+      slug: sc.category.slug,
+      icon: sc.icon ?? sc.category.icon ?? undefined
     })),
-
-    // map products into your ProductGrid shape
+    socialLinks: raw.socialLinks.map(s => ({ channel: s.channel, url: s.url })),
+    policies: raw.policies.map(p => ({ type: p.type, title: p.title ?? undefined, content: p.content })),
+    // socialLinks: raw.socialLinks,
+  //   // policies: raw.policies,
+  //   // shippingZones: raw.shippingZones,
+  //   // domain: raw.domain,
+  //   // currency: raw.currency,
+  //   // locale: raw.locale,
+    faqs: raw.faqs.map(f => ({ question: f.question, answer: f.answer })),
+    testimonials: raw.testimonials.map(t => ({
+      author: t.author,
+      quote: t.quote,
+      avatarUrl: t.avatarUrl ?? undefined,
+      rating: t.rating ?? undefined
+    })),
+    heroSlides: raw.heroSlides.map(b => ({
+      imageUrl: b.imageUrl,
+      headline: b.headline ?? undefined,
+      subline: b.subline ?? undefined,
+      ctaText: b.ctaText ?? undefined,
+      ctaLink: b.ctaLink ?? undefined
+    })),
+    promotions: raw.promotions.map(p => ({
+      code: p.code ?? undefined,
+      title: p.title,
+      description: p.description ?? undefined,
+      startsAt: p.startsAt?.toISOString(),
+      endsAt: p.endsAt?.toISOString(),
+      bannerUrl: p.bannerUrl ?? undefined
+    })),
     products: raw.MarketplaceListing.map(p => ({
-      imageUrl: (p.images[0] as { url: string })?.url ?? '/placeholder.png',
+      id: p.id,
       name: p.title,
-      // slug: p.slug,
-      price: p.finalPrice,
-    }))
+      price: p.finalPrice ?? 0,
+      imageUrl: (typeof p.images[0] === 'object' && p.images[0] !== null && 'url' in p.images[0])
+        ? (p.images[0] as { url: string }).url
+        : '/placeholder.png',
+      // slug: p.slug
+    })),
   };
-
+  
   return {
     props: { store }
   };
