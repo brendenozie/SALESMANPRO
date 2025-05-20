@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from "react";
-
-// Loader for next/image
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MagnifyingGlassCircleIcon, UserIcon, ShoppingBagIcon, Bars3BottomLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useStateContext } from "../../../contexts/ContextProvider";
 
-interface HeaderProps {
-  store?: { cartCount?: number };
-}
+// Loader for next/image
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
-const Header: React.FC<HeaderProps> = ({ store }) => {
+const Header: React.FC = () => {
+  const { cart } = useStateContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const languages = [
     { code: "en", label: "English" },
     { code: "de", label: "Deutsch" },
@@ -43,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             </Link>
             <Link href="/register"  className="text-orange-600 hover:underline">Register
             </Link>
-            <Link href="/cart"  className="text-orange-600 hover:underline">Cart
+            <Link href="/cart" className="text-orange-600 hover:underline">Cart
             </Link>
           </div>
         </div>
@@ -54,10 +53,16 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             {/* Left Section */}
             <div className="flex items-center gap-6">
               <Link href="/">
-                  <Image src="/logo.svg" alt="logo" width={120} height={40} loader={loader}/>
+                  <Image
+                    src="/logo.svg"
+                    alt="logo"
+                    width={120}
+                    height={40}
+                    loader={loader}
+                  />
               </Link>
               <nav className="hidden lg:flex items-center gap-6 font-medium text-gray-700">
-                <Link href="/" className="hover:text-orange-600 transition">Home
+                <Link href="/"  className="hover:text-orange-600 transition">Home
                 </Link>
                 <Link href="/shop"  className="hover:text-orange-600 transition">Shop
                 </Link>
@@ -88,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
               <button className="relative text-gray-600 hover:text-orange-600">
                 <ShoppingBagIcon className="h-6 w-6" />
                 <span className="absolute -top-1 -right-2 bg-orange-600 text-white rounded-full text-xs px-1">
-                  {store?.cartCount ?? 0}
+                  {cart.length}
                 </span>
               </button>
               <button
