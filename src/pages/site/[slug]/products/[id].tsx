@@ -1,160 +1,198 @@
-// pages/products/[slug].tsx
-import { useState } from "react";
-import { GetStaticPaths, GetStaticProps } from "next";
-import Head from "next/head";
-import Image from "next/image";
-import Header from "../../../../components/site/header/Header";
-import Footer from "../../../../components/site/footer/Footer";
+import React, { useState } from 'react';
+import { GetServerSideProps } from 'next';
+import prisma from '@/server/db/prismadb';
+import { useRouter } from 'next/router';
+import Image from 'next/image';
+import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import Header from '@/components/site/header/Header';
+import Footer from '@/components/site/footer/Footer';
+import ProductGrid from '@/components/site/productGrid/ProductGrid';
+import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import Section from '@/components/site/Section/Section';
+import { useStateContext } from '../../../../contexts/ContextProvider';
 
-// Type definitions
-interface Product { id: string; name: string; price: number; imageUrl: string; slug: string; }
-interface Store { name: string; logoUrl: string; bannerUrl: string; category: string; description: string; contactEmail: string; contactPhone: string; address: string; products: Product[]; StoreCategory: StoreCategoryUI[]; }
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-
-
-// Mock data fetchers (replace with real API calls)
-async function fetchAllProducts(): Promise<Product[]> {
-  // ...
-  return [];
-}
-async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  // ...
-  return null;
-}
-async function fetchRelatedProducts(categorySlug: string, excludeId: string): Promise<Product[]> {
-  // ...
-  return [];
-}
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  const products = await fetchAllProducts();
-  const paths = products.map((p) => ({ params: { slug: p.slug } }));
-  return { paths, fallback: "blocking" };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const slug = params?.slug as string;
-  const product = await fetchProductBySlug(slug);
-  if (!product) return { notFound: true };
-  const related = await fetchRelatedProducts(product.categorySlug, product.id);
-  return {
-    props: { product, related },
-    revalidate: 60,
+interface ProductDetailProps {
+  product: {
+    id: string;
+    title: string;
+    description: string;
+    finalPrice: number;
+    rating?: number;
+    images: { url: string }[];
+    company: { slug: string };
   };
-};
+  related: {
+    id: string;
+    title: string;
+    slug: string;
+    finalPrice: number;
+    images: { url: string }[];
+  }[];
+}
 
-export default function ProductDetailPage({ product, related }: { product: Product; related: Product[]; }) {
-  const [mainImage, setMainImage] = useState(product.imageUrls[0]);
+const ProductPage: React.FC<ProductDetailProps> = ({ product, related }) => {
+  const { slug } = useRouter().query;
+  const { addToCart, cart } = useStateContext();
+  const [mainIndex, setMainIndex] = useState(0);
+  const quantity = cart.find((c :any ) => c.id === product.id)?.quantity || 0;
 
   return (
-    <>
-      <Head>
-        <title>{product.name} | MyStore</title>
-        <meta name="description" content={product.description.slice(0, 160)} />
-        <meta property="og:title" content={product.name} />
-        <meta property="og:description" content={product.description.slice(0, 160)} />
-        <meta property="og:image" content={product.imageUrls[0]} />
-      </Head>
-
-      <main className="py-12 bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Image Gallery */}
-          <div>
-            <div className="w-full h-[400px] relative rounded-lg overflow-hidden shadow">
-              <Image
-                src={mainImage}
-                alt={product.name}
-                fill
-                className="object-cover"
-                loader={({ src }) => src}
-              />
-            </div>
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              {product.imageUrls.map((url) => (
-                <button
-                  key={url}
-                  onClick={() => setMainImage(url)}
-                  className={
-                    `relative h-20 w-full rounded overflow-hidden border-2 ${
-                      mainImage === url ? 'border-green-600' : 'border-transparent'
-                    }`
-                  }
-                >
-                  <Image
-                    src={url}
-                    alt={`${product.name} thumbnail`}
-                    fill
-                    className="object-cover"
-                    loader={({ src }) => src}
-                  />
-                </button>
-              ))}
-            </div>
+    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Image Gallery */}
+        <div>
+          <div className="relative w-full h-[400px] rounded-lg overflow-hidden shadow-md">
+            <Image
+              src={product.images[mainIndex]?.url || '/placeholder.png'}
+              alt={product.title}
+              layout="fill"
+              objectFit="cover"
+            />
           </div>
-
-          {/* Product Info */}
-          <div className="space-y-4">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-              {product.name}
-            </h1>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl font-semibold text-green-600">
-                ${product.price.toFixed(2)}
-              </span>
-              <div className="flex items-center">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Star
-                    key={i}
-                    className={
-                      `h-5 w-5 ${
-                        i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'
-                      }`
-                    }
-                  />
-                ))}
-                <span className="ml-2 text-sm text-gray-600">({product.rating.toFixed(1)})</span>
-              </div>
-            </div>
-            <p className="text-gray-700 dark:text-gray-300">
-              {product.description}
-            </p>
-            <div className="flex items-center space-x-4">
-              <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition">
-                Add to Cart
+          <div className="flex mt-4 space-x-2">
+            {product.images.map((img, idx) => (
+              <button key={idx} onClick={() => setMainIndex(idx)} className={idx === mainIndex ? 'ring-2 ring-blue-500 rounded' : ''}>
+                <div className="relative w-20 h-20 rounded overflow-hidden">
+                  <Image src={img.url} alt={`${product.title}-${idx}`} layout="fill" objectFit="cover" />
+                </div>
               </button>
-              <button className="border border-green-600 text-green-600 hover:bg-green-50 px-6 py-3 rounded-lg text-sm font-medium transition">
-                Buy Now
-              </button>
-            </div>
-            {/* Additional Info */}
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div>
-                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Category:</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{product.categoryName}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Availability:</h4>
-                <p className={`text-sm font-medium ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                  {product.inStock ? 'In Stock' : 'Out of Stock'}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Related Products */}
-        {related.length > 0 && (
-          <Section title="Related Products">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-              {related.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          </Section>
-        )}
-      </main>
-    </>
+        {/* Details */}
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">{product.title}</h1>
+          <div className="flex items-center">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <StarIcon key={i} className={`h-5 w-5 ${product.rating && product.rating > i ? 'text-yellow-400' : 'text-gray-300'}`} />
+            ))}
+            <span className="ml-2 text-gray-600">({product.rating ?? 0})</span>
+          </div>
+          <p className="text-2xl font-semibold text-blue-600">${product.finalPrice.toFixed(2)}</p>
+          <p className="leading-relaxed">{product.description}</p>
+
+          {/* Quantity & Add to Cart */}
+          <div className="flex items-center space-x-4">
+            <button onClick={() => addToCart(product)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Add to Cart</button>
+            {quantity > 0 && (
+              <div className="flex items-center space-x-2">
+                <button onClick={() => addToCart(product)}><PlusIcon className="h-5 w-5" /></button>
+                <span>{quantity}</span>
+                <button onClick={() => quantity > 1 ? addToCart({ ...product, quantity: -1 } as any) : undefined}><MinusIcon className="h-5 w-5" /></button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Related Products */}
+      {related.length > 0 && (
+        <Section title="You might also like">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {related.map((r) => (
+              <ProductGrid key={r.id} products={[{ id: r.id, name: r.title, slug: r.slug, price: r.finalPrice, imageUrl: r.images[0]?.url }]} />
+            ))}
+          </div>
+        </Section>
+      )}
+
+      <NewsletterSection />
+      <Footer />
+    </div>
   );
-}
+};
+
+
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const slug = params?.slug as string;
+  const productId = params?.productId as string;
+
+  // Ensure company exists
+  const company = await prisma.company.findUnique({ where: { slug } });
+  if (!company) return { notFound: true };
+
+  // Fetch product with images
+  const product = await prisma.marketplaceListing.findFirst({
+    where: { id: productId, companyId: company.id },
+    // include: { images: true },
+  });
+  if (!product) return { notFound: true };
+
+  // Fetch related by same category
+  const related = await prisma.marketplaceListing.findMany({
+    where: {
+      companyId: company.id,
+      productCategoryId: product.productCategoryId,
+      NOT: { id: product.id },
+    },
+    take: 4,
+    // include: { images: true },
+  });
+
+  return {
+    props: {
+      product: {
+        id: product.id,
+        title: product.title,
+        description: product.description ?? '',
+        finalPrice: product.finalPrice,
+        rating:  0,//product.rating ??
+        images: product.images,
+      },
+      related: related.map((r) => ({
+        id: r.id,
+        title: r.title,
+        slug: "r.slug",
+        finalPrice: r.finalPrice,
+        images: r.images,
+      })),
+    },
+  };
+};
+
+// export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+//   const slug = params?.slug as string;
+//   const productSlug = params?.productSlug as string;
+
+//   const company = await prisma.company.findUnique({ where: { slug } });
+//   if (!company) return { notFound: true };
+
+//   const product = await prisma.marketplaceListing.findFirst({
+//     where: { slug: productSlug, companyId: company.id },
+//     // include: { images: true }
+//   });
+//   if (!product) return { notFound: true };
+
+//   // Fetch related by same category
+//   const related = await prisma.marketplaceListing.findMany({
+//     where: { companyId: company.id, productCategoryId: product.productCategoryId, NOT: { id: product.id } },
+//     take: 4,
+//     // include: { images: true }
+//   });
+
+//   return {
+//     props: {
+//       product: {
+//         id: product.id,
+//         title: product.title,
+//         description: product.description ?? '',
+//         finalPrice: product.finalPrice,
+//         rating: 0,//product.rating ?? 
+//         images: product.images,
+//         company: { slug: company.slug }
+//       },
+//       related: related.map(r => ({
+//         id: r.id,
+//         title: r.title,
+//         slug: 0,//r.slug,
+//         finalPrice: r.finalPrice,
+//         images: r.images
+//       }))
+//     }
+//   };
+// };
+
+export default ProductPage;

@@ -3,10 +3,8 @@ import { GetServerSideProps } from 'next';
 import prisma from '@/server/db/prismadb';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon, FaceSmileIcon, BookOpenIcon, TruckIcon, ArrowsUpDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import banner from '@/assets/homebanner.png';
-import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
-import clsx from "clsx";
+import {  MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon, FaceSmileIcon, BookOpenIcon, TruckIcon, ArrowsUpDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../../../components/site/header/Header";
 import Footer from "../../../components/site/footer/Footer";
@@ -95,7 +93,6 @@ export default function StorePage({ store }: { store: Store }) {
       </Section> 
       <Section title="All Products">
         <ProductGrid products={store.products}/>
-        {/* addToCart={addToCart} decreaseQuantity={decreaseQuantity} removeFromCart={removeFromCart} */}
       </Section> 
       <NewsletterSection />
       <Section title="">
