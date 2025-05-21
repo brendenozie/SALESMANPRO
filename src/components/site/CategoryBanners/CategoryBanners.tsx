@@ -47,7 +47,8 @@ const CategoryBanners = ({ categories }: { categories: StoreCategoryUI[];}) => {
           {categories.map((cat, idx) => (
             <Link
               key={idx}
-              href={cat.id ?? "#"}
+              // href={cat.id ?? "#"}
+              href={`/site/duka-yangu/products?slug=duka-yangu&category=${cat.id}`}
               className="group relative block rounded-xl overflow-hidden shadow-lg"
             >
               <motion.div
