@@ -118,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
               {["Home", "Shop", "Categories"].map((label) => (
                 <Link
                   key={label}
-                  href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase()}`}
+                  href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" :  label.toLowerCase() === "shop" ? "products" : label.toLowerCase()}`}
                   className="hover:underline"
                   style={{ color: "#444" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -152,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             <motion.button whileHover={{ scale: 1.1 }} className="relative text-gray-600 dark:text-gray-200">
               <ShoppingBagIcon className="h-6 w-6" />
               {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-ping">
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ">
                   {cart.length}
                 </span>
               )}
@@ -179,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             {["Home", "Shop", "Categories"].map((label) => (
               <Link
                 key={label}
-                href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase()}`}
+                href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase() === "shop" ? "products" : label.toLowerCase() }`}
                 className="block hover:underline"
                 style={{ color: "#444" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = primary)}

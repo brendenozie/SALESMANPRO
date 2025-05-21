@@ -30,7 +30,7 @@ interface Store {
   contactEmail: string;
   contactPhone?: string;
   address?: string;
-  // themeSettings
+  themeSettings:any;
   StoreCategory: StoreCategoryUI[];
   socialLinks: SocialLink[];
   policies: Policy[];

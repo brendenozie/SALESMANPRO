@@ -51,7 +51,7 @@ const Footer :React.FC<FooterProps> = ({ store }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">About Us</h3>
           <p className="text-sm leading-relaxed text-gray-400">
-            Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day.
+          {store.description || "Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day."}
           </p>
         </div>
 
@@ -81,21 +81,36 @@ const Footer :React.FC<FooterProps> = ({ store }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Follow Us</h3>
           <div className="flex space-x-4">
+          {store.socialLinks.map((s) => (
             <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
               <FaceSmileIcon className="h-5 w-5" />
             </motion.a>
-            <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
+            // <a
+            //   key={s.channel}
+            //   href={s.url}
+            //   target="_blank"
+            //   rel="noreferrer"
+            //   style={{ color: primary }}
+            //   onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
+            //   onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
+            //   className="capitalize transition-colors"
+            // >
+            //   {s.channel}
+            // </a>
+          ))}
+            
+            {/* <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
               <BuildingLibraryIcon className="h-5 w-5" />
             </motion.a>
             <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
               <BookOpenIcon className="h-5 w-5" />
-            </motion.a>
+            </motion.a> */}
           </div>
         </div>
       </div>
 
       <div className="mt-8 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} Your Store. All rights reserved.
+        &copy; {new Date().getFullYear()} {store.name}. All rights reserved.
       </div>
     </footer>
   );
