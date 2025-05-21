@@ -77,7 +77,7 @@ export default function StorePage({ store }: { store: Store }) {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <Header />
+      <Header store={store} />
       <HeroSlider bannerUrl={store.bannerUrl ?? ""} />
       <Section title="">
         <ServiceFeatures store={store} />
@@ -101,7 +101,7 @@ export default function StorePage({ store }: { store: Store }) {
           <p className="text-sm text-gray-500">- Happy Customer</p>
         </div>
       </Section>
-      <Footer />
+      <Footer store={store}/>
     </div>
   );
 }
@@ -447,8 +447,6 @@ function HeroSlider({ bannerUrl }: { bannerUrl: string }) {
     </section>
   );
 }
-
-
 
 export const metadata = {
   title: 'StoreName - Your One-Stop Shop',

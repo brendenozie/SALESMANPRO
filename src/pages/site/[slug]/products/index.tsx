@@ -10,6 +10,35 @@ import Footer from "../../../../components/site/footer/Footer";
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import Section from '@/components/site/Section/Section';
 
+interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
+interface SocialLink { channel: string; url: string }
+interface Policy { type: string; title?: string; content: string }
+interface FAQ { question: string; answer: string }
+interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
+interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
+interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
+// interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
+interface Store {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  category: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  contactEmail: string;
+  contactPhone?: string;
+  address?: string;
+  StoreCategory: StoreCategoryUI[];
+  socialLinks: SocialLink[];
+  policies: Policy[];
+  faqs: FAQ[];
+  testimonials: Testimonial[];
+  heroSlides: Banner[];
+  promotions: Promotion[];
+  products: Product[];
+}
+
 interface Product {
   id: string;
   name: string;
@@ -25,6 +54,7 @@ interface Category {
 }
 
 interface Props {
+  store: Store;
   products: Product[];
   categories: Category[];
   totalCount: number;
@@ -35,7 +65,7 @@ interface Props {
   sortBy?: string;
 }
 
-export default function ProductListPage({ products, categories, totalCount, page, pageSize, selectedCategory, searchTerm, sortBy }: Props) {
+export default function ProductListPage({ store, products, categories, totalCount, page, pageSize, selectedCategory, searchTerm, sortBy }: Props) {
   const router = useRouter();
   const { slug } = router.query;
 
@@ -66,7 +96,7 @@ export default function ProductListPage({ products, categories, totalCount, page
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <Header />
+      <Header store={store}/>
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Filters & Sorting */}
         <div className="flex flex-col lg:flex-row items-center justify-between mb-6 space-y-4 lg:space-y-0">
@@ -135,7 +165,7 @@ export default function ProductListPage({ products, categories, totalCount, page
           <p className="text-sm text-gray-500">- Happy Customer</p>
         </div>
       </Section>
-      <Footer />
+      <Footer store={store}/>
     </div>
   );
 }
@@ -190,6 +220,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query, params }) 
 
   return {
     props: {
+      store:baseCompany,
       products,
       categories: cats,
       totalCount,
