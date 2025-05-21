@@ -11,7 +11,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../contexts/ContextProvider";
 
-
 // Type definitions
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
 interface Category { id: string; name: string; imageUrl: string; }
@@ -35,7 +34,7 @@ interface Store {
   contactEmail: string;
   contactPhone?: string;
   address?: string;
-  // themeSettings
+  themeSettings: any;
   StoreCategory: StoreCategoryUI[];
   socialLinks: SocialLink[];
   policies: Policy[];
@@ -50,15 +49,23 @@ interface HeaderProps {
   store: Store;
 }
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
 const Header: React.FC<HeaderProps> = ({ store }) => {
   const { cart } = useStateContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const primary = store?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
+  const secondary = store?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
+
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm transition-shadow">
-      <div className="hidden md:flex justify-between items-center px-6 py-2 bg-orange-50 text-orange-800 text-sm font-medium">
+      {/* Top Info Bar */}
+      <div
+        className="hidden md:flex justify-between items-center px-6 py-2 text-sm font-medium"
+        style={{ backgroundColor: `${primary}1A`, color: primary }}
+      >
         <div className="flex items-center space-x-6">
           {store.contactEmail && (
             <a href={`mailto:${store.contactEmail}`} className="flex items-center hover:underline">
@@ -78,7 +85,10 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
               href={s.url}
               target="_blank"
               rel="noreferrer"
-              className="hover:text-orange-600 transition-colors capitalize"
+              style={{ color: primary }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
+              className="capitalize transition-colors"
             >
               {s.channel}
             </a>
@@ -86,6 +96,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
         </div>
       </div>
 
+      {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center space-x-4">
@@ -103,32 +114,42 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
                 <span className="text-xl font-bold text-gray-800 dark:text-white">{store.name}</span>
               )}
             </Link>
-            <nav className="hidden lg:flex space-x-6 text-gray-700 dark:text-gray-200 font-medium">
-              <Link href={`/site/${store.slug}`} className="hover:text-orange-600">Home</Link>
-              <Link href={`/site/${store.slug}/products`} className="hover:text-orange-600">Shop</Link>
-              <Link href={`/site/${store.slug}/categories`} className="hover:text-orange-600">Categories</Link>
+            <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
+              {["Home", "Shop", "Categories"].map((label) => (
+                <Link
+                  key={label}
+                  href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase()}`}
+                  className="hover:underline"
+                  style={{ color: "#444" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+                >
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
 
+          {/* Search */}
           <div className="flex-1 mx-6 hidden lg:block">
             <div className="relative">
               <input
                 type="search"
                 placeholder="Search products..."
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm rounded-full py-2 px-4 pl-10 shadow-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm rounded-full py-2 px-4 pl-10 shadow-sm focus:outline-none"
+                onFocus={(e) => (e.currentTarget.style.boxShadow = `0 0 0 2px ${primary}`)}
+                onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
               />
               <MagnifyingGlassCircleIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
           </div>
 
+          {/* Icons */}
           <div className="flex items-center space-x-4">
             <motion.button whileHover={{ scale: 1.1 }} className="text-gray-600 dark:text-gray-200">
               <UserIcon className="h-6 w-6" />
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              className="relative text-gray-600 dark:text-gray-200"
-            >
+            <motion.button whileHover={{ scale: 1.1 }} className="relative text-gray-600 dark:text-gray-200">
               <ShoppingBagIcon className="h-6 w-6" />
               {cart.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-ping">
@@ -151,12 +172,22 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
         </div>
       </div>
 
+      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shadow-md">
           <div className="space-y-3">
-            <Link href={`/site/${store.slug}`} className="block hover:text-orange-600">Home</Link>
-            <Link href={`/site/${store.slug}/products`} className="block hover:text-orange-600">Shop</Link>
-            <Link href={`/site/${store.slug}/categories`} className="block hover:text-orange-600">Categories</Link>
+            {["Home", "Shop", "Categories"].map((label) => (
+              <Link
+                key={label}
+                href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase()}`}
+                className="block hover:underline"
+                style={{ color: "#444" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       )}

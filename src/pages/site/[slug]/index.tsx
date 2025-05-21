@@ -49,6 +49,8 @@ interface Testimonial { author: string; quote: string; avatarUrl?: string; ratin
 interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
 interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
 interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
+interface ThemeSettings { primaryColor?: string; secondaryColor?: number }
+
 interface Store {
   id: string;
   name: string;
@@ -60,6 +62,7 @@ interface Store {
   contactEmail: string;
   contactPhone?: string;
   address?: string;
+  themeSettings: any;
   StoreCategory: StoreCategoryUI[];
   socialLinks: SocialLink[];
   policies: Policy[];
@@ -157,6 +160,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     contactEmail: raw.contactEmail,
     contactPhone: raw.contactPhone ?? undefined,
     address: raw.address ?? undefined,
+    themeSettings:raw.themeSettings,
     StoreCategory: raw.StoreCategory?.map(sc => ({
       id: sc.category.id,
       name: sc.displayName || sc.category.name,

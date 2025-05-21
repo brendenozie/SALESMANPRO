@@ -6,10 +6,52 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 import { useStateContext } from '../../../../contexts/ContextProvider';
 import { motion } from 'framer-motion';
 
+
+// Type definitions
+interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
+interface Category { id: string; name: string; imageUrl: string; }
+interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
+interface SocialLink { channel: string; url: string }
+interface Policy { type: string; title?: string; content: string }
+interface FAQ { question: string; answer: string }
+interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
+interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
+interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
+interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
+
+interface Store {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  category: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  contactEmail: string;
+  contactPhone?: string;
+  address?: string;
+  // themeSettings
+  StoreCategory: StoreCategoryUI[];
+  socialLinks: SocialLink[];
+  policies: Policy[];
+  faqs: FAQ[];
+  testimonials: Testimonial[];
+  heroSlides: Banner[];
+  promotions: Promotion[];
+  products: Product[];
+}
+
+interface ProfilePageProps {
+  store: Store;
+}
+
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
+
 interface OrderItem { id: string; name: string; qty: number; price: number; thumbnail: string; }
 interface Order { id: string; date: string; total: number; status: string; items: OrderItem[]; }
 
-const ProfilePage: React.FC = () => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ store })=> {
   const { user, orders: initialOrders } = useStateContext();
   const [activeTab, setActiveTab] = useState<'profile'|'orders'>('profile');
   const [name, setName] = useState(user?.name || '');
@@ -44,7 +86,7 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-      <Header />
+      <Header store={store}/>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Tabs */}
         <div className="flex space-x-4 mb-6">
@@ -145,7 +187,7 @@ const ProfilePage: React.FC = () => {
 
       </div>
       <NewsletterSection />
-      <Footer />
+      <Footer  store={store}/>
     </div>
   );
 };

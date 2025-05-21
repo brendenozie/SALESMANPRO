@@ -65,7 +65,7 @@ interface Props {
   sortBy?: string;
 }
 
-export default function ProductListPage({ store, products, categories, totalCount, page, pageSize, selectedCategory, searchTerm, sortBy }: Props) {
+const ProductListPage: React.FC<Props> = ({ store, products, categories, totalCount, page, pageSize, selectedCategory, searchTerm, sortBy }: Props) => {
   const router = useRouter();
   const { slug } = router.query;
 
@@ -233,3 +233,5 @@ export const getServerSideProps: GetServerSideProps = async ({ query, params }) 
   };
 };
 
+
+export default ProductListPage;
