@@ -99,10 +99,13 @@ export default function StorePage({ store }: { store: Store }) {
       </Section> 
       <NewsletterSection />
       <Section title="">
-        <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-8 mb-8">
-          <p className="text-lg">"Great products and fast shipping!"</p>
-          <p className="text-sm text-gray-500">- Happy Customer</p>
-        </div>
+        {store.testimonials && 
+          store.testimonials.map((t) => (
+            <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-8 mb-8">
+            <p className="text-lg">{t.quote}</p>
+            <p className="text-sm text-gray-500">- {t.author}</p>
+          </div>
+          ))}
       </Section>
       <Footer store={store}/>
     </div>

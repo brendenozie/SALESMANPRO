@@ -7,10 +7,10 @@ import Section from '@/components/site/Section/Section';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { CreditCardIcon, MapPinIcon, CheckIcon } from '@heroicons/react/24/outline';
 
-
 // Type definitions
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
 interface Category { id: string; name: string; imageUrl: string; }
+
 interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
 interface SocialLink { channel: string; url: string }
 interface Policy { type: string; title?: string; content: string }
