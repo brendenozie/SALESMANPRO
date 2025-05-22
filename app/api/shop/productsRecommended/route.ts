@@ -1,64 +1,55 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../server/db/prismadb";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return NextResponse.json({ error: "Method Not Allowed" });
-  }
-
-  const { userId } = req.query;
-  
-  const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
-
-  if (!userId) {
-    return NextResponse.json({ error: "User ID is required" });
-  }
-
+// GET /api/recommendations?userId=&agentId=&limit=&offset=
+export async function GET(req: Request) {
   try {
-    // Find recently interacted products by the user
-    const recentInteractions = await prisma.userActivity.findMany({
-      where: { userId: String(userId) },
-      orderBy: { createdAt: "desc" },
-      take: 5,
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "5", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+    if (!userId) {
+      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    }
+    if (isNaN(limit) || limit < 1 || isNaN(offset) || offset < 0) {
+      return NextResponse.json({ error: "Invalid pagination parameters." }, { status: 400 });
+    }
+
+    // Fetch recent interactions
+    const recent = await prisma.userActivity.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      skip: offset,
+      take: limit,
       include: { product: true },
     });
 
-    if (!recentInteractions.length) {
-      return res.status(200).json([]);
-    }
+    const interactedProductIds = recent.map(i => i.productId);
+    const categories = recent.map(i => i.product?.productCategoryId).filter(Boolean) as string[];
+    const tags = recent.flatMap(i => i.product?.tags || []);
 
-    // Extract category & tags of recently interacted products
-    const productCategories = recentInteractions.map((interaction) => interaction.product?.productCategoryId);
-    const productTags = recentInteractions.flatMap((interaction) => interaction.product?.tags || []);
-
-    // Find similar products based on category & tags
-    const recommendedProducts = await prisma.marketplaceListing.findMany({
+    // Recommendations
+    const recommendations = await prisma.marketplaceListing.findMany({
       where: {
+        ...(agentId && { companyId: agentId }),
         OR: [
-          { productCategoryId: { in: productCategories } },
-          { tags: { hasSome: productTags } },
+          ...(categories.length ? [{ productCategoryId: { in: categories } }] : []),
+          ...(tags.length ? [{ tags: { hasSome: tags } }] : []),
         ],
-        NOT: { id: { in: recentInteractions.map((i) => i.productId) } }, // Exclude already interacted products
+        NOT: { id: { in: interactedProductIds } },
       },
-      take: 10,
+      take: limit,
+      skip: 0,
     });
 
-    return res.status(200).json(recommendedProducts);
-  } catch (error) {
-    console.error("Error fetching recommended products:", error);
-    return NextResponse.json({ error: "Internal Server Error" });
+    return NextResponse.json(
+      { data: recommendations, meta: { interactedCount: recent.length, recommendationCount: recommendations.length } },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("Error fetching recommendations:", err);
+    return NextResponse.json({ error: "Failed to fetch recommendations", detail: err.message }, { status: 500 });
   }
 }

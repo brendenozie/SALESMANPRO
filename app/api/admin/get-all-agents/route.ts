@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
+
   if (req.method === "GET") {
     try {
       const agents = await prisma.salesAgent.findMany({

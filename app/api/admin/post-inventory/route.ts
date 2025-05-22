@@ -5,25 +5,25 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 // POST /api/post
 
 export default async function GET( req : Request ) {
-  const { wiDate,
-    wiAmount,
-    userId
-  } = req.body;
+  // const { wiDate,
+  //   wiAmount,
+  //   userId
+  // } = req.body;
 
-  if (!wiAmount || !wiDate|| !userId) {
-    return NextResponse.json({ message: 'Please provide fromDate and toDate query parameters' });
-  }
+  // if (!wiAmount || !wiDate|| !userId) {
+  //   return NextResponse.json({ message: 'Please provide fromDate and toDate query parameters' });
+  // }
 
-  if (typeof wiDate !== 'string') {
-    return NextResponse.json({ message: 'Please provide fromDate and toDate as strings' });
-  }
+  // if (typeof wiDate !== 'string') {
+  //   return NextResponse.json({ message: 'Please provide fromDate and toDate as strings' });
+  // }
 
-  const tarehe = new Date(wiDate);
-  const wi_amount = parseFloat(wiAmount);
+  // const tarehe = new Date(wiDate);
+  // const wi_amount = parseFloat(wiAmount);
 
-  if (isNaN(tarehe.getTime())) {
-    return NextResponse.json({ message: 'Invalid date format provided' });
-  }
+  // if (isNaN(tarehe.getTime())) {
+  //   return NextResponse.json({ message: 'Invalid date format provided' });
+  // }
 
   // const result = await prisma.waterIntakeProgress.create({
   //   data: {

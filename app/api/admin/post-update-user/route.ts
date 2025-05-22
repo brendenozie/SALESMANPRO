@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
-
-// POST /api/post
-
-export default async function GET( req : Request ) {
-  // const { id } = req.query;
+// PUT /api/user?agentId=&limit=&offset=
+export async function PUT(req: Request) {
   const { searchParams } = new URL(req.url);
-
   const agentId = searchParams.get("agentId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const offset = parseInt(searchParams.get("offset") || "0", 10);
@@ -19,13 +15,8 @@ export default async function GET( req : Request ) {
     );
   }
 
-
-  // Ensure it's a PUT request
-  if (req.method !== 'PUT') {
-    return NextResponse.json({ error: 'Method not allowed' });
-  }
-
   try {
+    const body = await req.json();
     const {
       id,
       name,
@@ -42,69 +33,59 @@ export default async function GET( req : Request ) {
       weightInKgGoal,
       physicalActivityLevel,
       bmiResult,
-      imgUri
-    } = req.body;
+      imgUri,
+    } = body;
 
-
-    // Create a data object with only the fields that are present
-    const dataToUpdate: any = {};
-    if (name && name !== undefined) dataToUpdate.name = name;
-    if (email && email !== undefined) dataToUpdate.email = email;
-    if (password && password !== undefined) dataToUpdate.hashedPassword = password;
-    if (role && role !== undefined) dataToUpdate.role = role;
-    if (gender && gender !== undefined) dataToUpdate.gender = gender;
-    if (exerciseGoal && exerciseGoal !== undefined) dataToUpdate.exerciseGoal = exerciseGoal;
-    if (focusArea && focusArea !== undefined) dataToUpdate.focusArea = focusArea;
-    if (currentHeightInCm && currentHeightInCm !== undefined) dataToUpdate.currentHeightInCm = Number(currentHeightInCm);
-    if (currentWeightInKg && currentWeightInKg !== undefined) dataToUpdate.currentWeightInKg = Number(currentWeightInKg);
-    if (birthYear && birthYear !== undefined) dataToUpdate.birthYear = Number(birthYear);
-    if (weeklyGoalInKM && weeklyGoalInKM !== undefined) dataToUpdate.weeklyGoalInKM = Number(weeklyGoalInKM);
-    if (weightInKgGoal && weightInKgGoal !== undefined) dataToUpdate.weightInKgGoal = Number(weightInKgGoal);
-    if (physicalActivityLevel && physicalActivityLevel !== undefined) dataToUpdate.physicalActivityLevel = physicalActivityLevel;
-    if (bmiResult && bmiResult !== undefined) dataToUpdate.bmiResult = Number(bmiResult);
-    if (imgUri && imgUri !== undefined) dataToUpdate.imgUri = imgUri;
-
-    // Check if there's anything to update
-    if (Object.keys(dataToUpdate).length === 0) {
-      return NextResponse.json({ error: 'No fields provided to update' });
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing user ID." },
+        { status: 400 }
+      );
     }
 
-    // Update user in the database using Prisma
+    // Build update payload
+    const dataToUpdate: any = {};
+    if (name !== undefined) dataToUpdate.name = name;
+    if (email !== undefined) dataToUpdate.email = email;
+    if (password !== undefined) dataToUpdate.hashedPassword = password;
+    if (role !== undefined) dataToUpdate.role = role;
+    if (gender !== undefined) dataToUpdate.gender = gender;
+    if (exerciseGoal !== undefined) dataToUpdate.exerciseGoal = exerciseGoal;
+    if (focusArea !== undefined) dataToUpdate.focusArea = focusArea;
+    if (currentHeightInCm !== undefined)
+      dataToUpdate.currentHeightInCm = Number(currentHeightInCm);
+    if (currentWeightInKg !== undefined)
+      dataToUpdate.currentWeightInKg = Number(currentWeightInKg);
+    if (birthYear !== undefined) dataToUpdate.birthYear = Number(birthYear);
+    if (weeklyGoalInKM !== undefined)
+      dataToUpdate.weeklyGoalInKM = Number(weeklyGoalInKM);
+    if (weightInKgGoal !== undefined)
+      dataToUpdate.weightInKgGoal = Number(weightInKgGoal);
+    if (physicalActivityLevel !== undefined)
+      dataToUpdate.physicalActivityLevel = physicalActivityLevel;
+    if (bmiResult !== undefined) dataToUpdate.bmiResult = Number(bmiResult);
+    if (imgUri !== undefined) dataToUpdate.imgUri = imgUri;
+
+    if (Object.keys(dataToUpdate).length === 0) {
+      return NextResponse.json(
+        { error: "No fields provided to update." },
+        { status: 400 }
+      );
+    }
+
+    // Update user
     const updatedUser = await prisma.user.update({
-      where: {
-        id: String(id), // Assuming ID is an ObjectId string
-      },
+      where: { id: String(id) },
       data: dataToUpdate,
     });
 
-    // Update user in the database using Prisma
-    // const updatedUser = await prisma.user.update({
-    //   where: {
-    //     id: String(id), // Assuming ID is an ObjectId string
-    //   },
-    //   data: {
-    //     name,
-    //     email,
-    //     hashedPassword,
-    //     role,
-    //     gender,
-    //     exerciseGoal,
-    //     focusArea,
-    //     currentHeightInCm: Number(currentHeightInCm),
-    //     currentWeightInKg: Number(currentWeightInKg),
-    //     birthYear: Number(birthYear),
-    //     weeklyGoalInKM: Number(weeklyGoalInKM),
-    //     weightInKgGoal: Number(weightInKgGoal),
-    //     physicalActivityLevel,
-    //     bmiResult: Number(bmiResult),
-    //     imgUri,
-    //   },
-    // });
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.error(error);
-    NextResponse.json({ error: 'Failed to update user' });
+    return NextResponse.json(updatedUser, { status: 200 });
+  } catch (error: any) {
+    console.error("Error updating user:", error);
+    return NextResponse.json(
+      { error: "Failed to update user.", detail: error.message },
+      { status: 500 }
+    );
   } finally {
     await prisma.$disconnect();
   }

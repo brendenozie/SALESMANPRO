@@ -7,15 +7,15 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 // Optional fields in body: content
 export default async function GET( req : Request ) {
   if (req.method === 'POST') {
-    const { title, message, } = req.body;
+    // const { title, message, } = req.body;
 
-    try {
-      const newNotification = await prisma.notification.create({
-        data: { title, message },
-      });
-      res.status(201).json(newNotification);
-    } catch (error) {
-      NextResponse.json({ error: 'Error creating notification' });
-    }
+    // try {
+    //   const newNotification = await prisma.notification.create({
+    //     data: { title, message },
+    //   });
+    //   res.status(201).json(newNotification);
+    // } catch (error) {
+    //   NextResponse.json({ error: 'Error creating notification' });
+    // }
   }
 }

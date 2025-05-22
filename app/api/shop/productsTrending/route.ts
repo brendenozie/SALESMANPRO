@@ -1,29 +1,58 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../server/db/prismadb";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return NextResponse.json({ error: "Method Not Allowed" });
-  }
-
+// GET /api/trending?agentId=&limit=&days=&weightViews=&weightPurchases=&weightFavorites=
+export async function GET(req: Request) {
   try {
-    // Fetch top 10 trending products based on engagement metrics
-    const trendingProducts = await prisma.productMetrics.findMany({
-      orderBy: [
-        { purchases: "desc" },
-        { favorites: "desc" },
-        { views: "desc" },
-      ],
-      take: 10,
-      include: {
-        product: true, // Include product details
-      },
+    const { searchParams } = new URL(req.url);
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const days = parseInt(searchParams.get("days") || "30", 10);
+    const weightViews = parseFloat(searchParams.get("weightViews") || "1");
+    const weightPurchases = parseFloat(searchParams.get("weightPurchases") || "2");
+    const weightFavorites = parseFloat(searchParams.get("weightFavorites") || "1.5");
+
+    if (isNaN(limit) || limit < 1 || isNaN(days) || days < 1) {
+      return NextResponse.json({ error: "Invalid query parameters." }, { status: 400 });
+    }
+
+    // Optional filter by agent/company
+    const whereFilter: any = {};
+    if (agentId) whereFilter.companyId = agentId;
+
+    // Fetch metrics (optionally could filter by recent metrics if timestamped)
+    const metrics = await prisma.productMetrics.findMany({
+      where: whereFilter,
+      include: { product: true },
     });
 
-    return res.status(200).json(trendingProducts);
-  } catch (error) {
-    console.error("Error fetching trending products:", error);
-    return NextResponse.json({ error: "Internal Server Error" });
+    // Calculate trending score
+    const trending = metrics.map((m) => {
+      const score =
+        (m.views || 0) * weightViews +
+        (m.purchases || 0) * weightPurchases +
+        (m.favorites || 0) * weightFavorites;
+      return {
+        product: m.product,
+        views: m.views,
+        purchases: m.purchases,
+        favorites: m.favorites,
+        score,
+      };
+    });
+
+    // Sort descending by score
+    trending.sort((a, b) => b.score - a.score);
+
+    // Return top N
+    const top = trending.slice(0, limit);
+
+    return NextResponse.json(
+      { data: top, meta: { limit, weights: { views: weightViews, purchases: weightPurchases, favorites: weightFavorites } } },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("Error fetching trending products:", err);
+    return NextResponse.json({ error: "Internal Server Error", detail: err.message }, { status: 500 });
   }
 }

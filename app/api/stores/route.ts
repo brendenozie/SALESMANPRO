@@ -1,50 +1,59 @@
-// pages/api/stores.ts
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../server/db/prismadb";
+import { z } from "zod";
 
+// Zod schemas
+const urlSchema = z.string().url();
+const geoSchema = z.object({ lat: z.number(), lng: z.number() });
+const socialLinkSchema = z.object({ channel: z.string(), url: urlSchema });
+const policySchema = z.object({ type: z.string(), title: z.string().optional(), content: z.string() });
+const faqSchema = z.object({ question: z.string(), answer: z.string(), order: z.number().optional() });
+const testimonialSchema = z.object({ author: z.string(), quote: z.string(), avatarUrl: urlSchema.optional(), rating: z.number().min(1).max(5).optional(), order: z.number().optional() });
+const slideSchema = z.object({ imageUrl: urlSchema, headline: z.string(), subline: z.string().optional(), ctaText: z.string().optional(), ctaLink: urlSchema.optional(), order: z.number().optional() });
+const promoSchema = z.object({ title: z.string(), description: z.string(), startsAt: z.string().optional(), endsAt: z.string().optional(), bannerUrl: urlSchema });
+const seoSchema = z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.array(z.string()).optional() });
+const analyticsSchema = z.object({ googleTag: z.string().optional(), facebookTag: z.string().optional() });
+const paymentSchema = z.object({ stripeKey: z.string().optional(), paypalKey: z.string().optional() });
+const shippingSchema = z.object({ carrierName: z.string().optional(), trackingUrl: urlSchema.optional() });
+const storeCategorySchema = z.object({ id: z.string(), displayName: z.string().optional(), sortOrder: z.number().optional(), visible: z.boolean().optional() });
 
-type StorePayload = {
-  name: string;
-  slug: string;
-  domain?: string;
-  tagline?: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  geoLocation?: { lat: number; lng: number };
-  openingHours?: Record<string, string>;
-  socialLinks?: { channel: string; url: string }[];
-  policies?: { type: string; title?: string; content: string }[];
-  faqs?: { question: string; answer: string; order?: number }[];
-  testimonials?: { author: string; quote: string; avatarUrl?: string; rating?: number; order?: number }[];
-  heroSlides?: { imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number }[];
-  promotions?: { title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }[];
-  themeSettings?: Record<string, any>;
-  seo?: { title?: string; description?: string; keywords?: string[] };
-  analyticsConfig?: { googleTag?: string; facebookTag?: string };
-  paymentSettings?: { stripeKey?: string; paypalKey?: string };
-  shippingSettings?: { carrierName?: string; trackingUrl?: string };
-  storeCategories?: { id: string; displayName?: string; sortOrder?: number; visible?: boolean }[];
-};
+const storeSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  domain: urlSchema.optional(),
+  tagline: z.string().optional(),
+  description: z.string().optional(),
+  category: z.string().min(1),
+  logoUrl: urlSchema.optional(),
+  bannerUrl: urlSchema,
+  contactEmail: z.string().email(),
+  contactPhone: z.string().optional(),
+  address: z.string().optional(),
+  geoLocation: geoSchema.optional(),
+  openingHours: z.record(z.string(), z.string()).optional(),
+  socialLinks: z.array(socialLinkSchema).optional(),
+  policies: z.array(policySchema).optional(),
+  faqs: z.array(faqSchema).optional(),
+  testimonials: z.array(testimonialSchema).optional(),
+  heroSlides: z.array(slideSchema).optional(),
+  promotions: z.array(promoSchema).optional(),
+  themeSettings: z.record(z.string(), z.any()).optional(),
+  seo: seoSchema.optional(),
+  analyticsConfig: analyticsSchema.optional(),
+  paymentSettings: paymentSchema.optional(),
+  shippingSettings: shippingSchema.optional(),
+  storeCategories: z.array(storeCategorySchema).optional(),
+  ownerId: z.string().min(1)
+});
 
-type ErrorResponse = { field: string; message: string }[];
+// GET /api/stores?ownerId=
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const ownerId = searchParams.get("ownerId");
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+  const where = ownerId ? { userId: ownerId } : {};
 
-  const { method, query, body } = req;
-  const userId = query.ownerId as string | undefined;
-
-  if (req.method === 'GET') {
-    // Fetch all stores
-    const where = userId ? { userId: userId } : {};
-
+  try {
     const stores = await prisma.company.findMany({
       where,
       include: {
@@ -55,119 +64,62 @@ export default async function handler(
         heroSlides: true,
         promotions: true,
         seo: true,
-        // analyticsConfig: true,
-        // paymentSettings: true,
-        // shippingSettings: true,
-        // storeCategory: {
-        //   include: { category: true }
-        // }
+        AnalyticsConfig: true,
+        PaymentSettings: true,
+        ShippingSettings: true,
+        StoreCategory: true
       }
     });
-    return res.status(200).json(stores);
+    return NextResponse.json(stores, { status: 200 });
+  } catch (error: any) {
+    console.error("Error fetching stores:", error);
+    return NextResponse.json({ error: "Failed to fetch stores", detail: error.message }, { status: 500 });
   }
+}
 
-  if (req.method !== 'POST') {
-    return NextResponse.json({ message: 'Method Not Allowed' });
+// POST /api/stores
+export async function POST(req: Request) {
+  const body = await req.json();
+  const parseResult = storeSchema.safeParse(body);
+  if (!parseResult.success) {
+    return NextResponse.json({ errors: parseResult.error.errors }, { status: 400 });
   }
-
-  const errors: ErrorResponse = [];
-
-  // Required string fields Validation
-  const requiredFields = ['name', 'slug', 'category', 'contactEmail', 'bannerUrl'] as const;
-  for (const field of requiredFields) {
-    const val = body[field];
-    if (typeof val !== 'string' || !val.trim()) {
-      errors.push({ field, message: `${field} is required and must be a non-empty string.` });
-    }
-  }
-
-  // Email format
-  if (
-    body.contactEmail &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.contactEmail)
-  ) {
-    errors.push({ field: 'contactEmail', message: 'Invalid email address.' });
-  }
-
-  // URL fields
-  const urlFields: Array<keyof StorePayload> = ['bannerUrl', 'logoUrl', 'domain'];
-  for (const field of urlFields) {
-    const val = body[field];
-    if (val) {
-      try {
-        if (typeof val === 'string') {
-          new URL(val);
-        } else {
-          errors.push({ field, message: `${field} must be a valid URL.` });
-        }
-      } catch {
-        errors.push({ field, message: `${field} must be a valid URL.` });
-      }
-    }
-  }
-
-  // geoLocation
-  if (body.geoLocation) {
-    const { lat, lng } = body.geoLocation as any;
-    if (typeof lat !== 'number' || typeof lng !== 'number') {
-      errors.push({ field: 'geoLocation', message: 'geoLocation.lat and lng must be numbers.' });
-    }
-  }
-
-  if (errors.length) {
-    return NextResponse.json({ errors });
-  }
-
-  // Build data payload
-  const data: any = {
-    name: body.name!.trim(),
-    slug: body.slug!.trim(),
-    domain: body.domain?.trim(),
-    tagline: body.tagline?.trim(),
-    description: body.description?.trim(),
-    category: body.category!.trim(),
-    logoUrl: body.logoUrl?.trim(),
-    bannerUrl: body.bannerUrl!.trim(),
-    contactEmail: body.contactEmail!.trim(),
-    contactPhone: body.contactPhone?.trim(),
-    address: body.address?.trim(),
-    geoLocation: body.geoLocation || undefined,
-    openingHours: body.openingHours || undefined,
-    themeSettings: body.themeSettings || undefined,
-    user: { connect: { id: body.userId!.trim() } },
-    // Nested creates
-    socialLinks: body.socialLinks ? { create: body.socialLinks } : undefined,
-    policies: body.policies ? { create: body.policies } : undefined,
-    faqs: body.faqs ? { create: body.faqs } : undefined,
-    testimonials: body.testimonials ? { create: body.testimonials } : undefined,
-    heroSlides: body.heroSlides ? { create: body.heroSlides } : undefined,
-    promotions: body.promotions ? { create: body.promotions.map(( p : any ) => ({
-      title: p.title,
-      description: p.description,
-      startsAt: p.startsAt ? new Date(p.startsAt) : undefined,
-      endsAt: p.endsAt ? new Date(p.endsAt) : undefined,
-      bannerUrl: p.bannerUrl,
-      // order: p.order
-    })) } : undefined,
-    seo: body.seo ? { create: body.seo } : undefined,
-    AnalyticsConfig: body.analyticsConfig ? { create: body.analyticsConfig } : undefined,
-    PaymentSettings: body.paymentSettings ? { create: body.paymentSettings } : undefined,
-    ShippingSettings: body.shippingSettings ? { create: body.shippingSettings } : undefined,
-    StoreCategory: body.storeCategories ? {
-      create: body.storeCategories.map(( sc : any) => ({
-        category: { connect: { id: sc.id } },
-        displayName: sc.displayName,
-        sortOrder: sc.sortOrder,
-        visible: sc.visible
-      }))
-    } : undefined,
-  };
+  const data = parseResult.data;
 
   try {
-    const store = await prisma.company.create({ data });
-    return res.status(201).json(store);
-  } catch (error) {
-    console.error('Store creation error:', error);
-    return NextResponse.json({ message: 'Internal server error' });
+    const store = await prisma.company.create({
+      data: {
+        name: data.name,
+        slug: data.slug,
+        domain: data.domain,
+        tagline: data.tagline,
+        description: data.description,
+        category: data.category,
+        logoUrl: data.logoUrl,
+        bannerUrl: data.bannerUrl,
+        contactEmail: data.contactEmail,
+        contactPhone: data.contactPhone,
+        address: data.address,
+        geoLocation: data.geoLocation,
+        openingHours: data.openingHours,
+        themeSettings: data.themeSettings,
+        user: { connect: { id: data.ownerId } },
+        socialLinks: data.socialLinks ? { create: data.socialLinks } : undefined,
+        policies: data.policies ? { create: data.policies } : undefined,
+        faqs: data.faqs ? { create: data.faqs } : undefined,
+        testimonials: data.testimonials ? { create: data.testimonials } : undefined,
+        heroSlides: data.heroSlides ? { create: data.heroSlides } : undefined,
+        promotions: data.promotions ? { create: data.promotions.map(p => ({ ...p, startsAt: p.startsAt ? new Date(p.startsAt) : undefined, endsAt: p.endsAt ? new Date(p.endsAt) : undefined })) } : undefined,
+        seo: data.seo ? { create: data.seo } : undefined,
+        AnalyticsConfig: data.analyticsConfig ? { create: data.analyticsConfig } : undefined,
+        PaymentSettings: data.paymentSettings ? { create: data.paymentSettings } : undefined,
+        ShippingSettings: data.shippingSettings ? { create: data.shippingSettings } : undefined,
+        StoreCategory: data.storeCategories ? { create: data.storeCategories.map((sc:any) => ({ category: { connect: { id: sc.id } }, displayName: sc.displayName, sortOrder: sc.sortOrder, visible: sc.visible })) } : undefined
+      }
+    });
+    return NextResponse.json(store, { status: 201 });
+  } catch (error: any) {
+    console.error("Store creation error:", error);
+    return NextResponse.json({ error: "Internal server error", detail: error.message }, { status: 500 });
   }
 }

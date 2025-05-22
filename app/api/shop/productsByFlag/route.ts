@@ -1,53 +1,68 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../server/db/prismadb";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// GET /api/marketplace-listings?agentId=&flag=&page=&limit=&sortBy=&order=
+export async function GET(req: Request) {
   try {
-    const { page = 1, limit = 25, flag = '' } = req.query;
-
     const { searchParams } = new URL(req.url);
-  
     const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
+    const flag = searchParams.get("flag") || "";
+
+    // Pagination params
+    const pageParam = parseInt(searchParams.get("page") || "1", 10);
+    const limitParam = parseInt(searchParams.get("limit") || "25", 10);
+    if (isNaN(pageParam) || pageParam < 1 || isNaN(limitParam) || limitParam < 1) {
+      return NextResponse.json({ error: "Invalid pagination parameters." }, { status: 400 });
     }
-  
-  
-    const currentPage = parseInt(page as string, 10) || 1;
-    const itemsPerPage = parseInt(limit as string, 10) || 5;
+    const skip = (pageParam - 1) * limitParam;
+    const take = limitParam;
 
-    const skip = (currentPage - 1) * itemsPerPage;
-    const take = itemsPerPage;
+    // Sorting params
+    const sortBy = searchParams.get("sortBy") || "createdAt";
+    const orderParam = (searchParams.get("order") || "desc").toLowerCase();
+    const order = orderParam === "asc" ? "asc" : "desc";
 
-    const products = await prisma.marketplaceListing.findMany({
-      skip: skip,
-      take: take,
-      where: {
-        [flag as string]: true,
+    // Build where filter
+    const whereFilter: any = {};
+    if (flag) whereFilter[flag] = true;
+    if (agentId) whereFilter.companyId = agentId;
+
+    // Fetch data and count in parallel
+    const [total, listings] = await Promise.all([
+      prisma.marketplaceListing.count({ where: whereFilter }),
+      prisma.marketplaceListing.findMany({
+        where: whereFilter,
+        skip,
+        take,
+        orderBy: { [sortBy]: order },
+        // include: {
+        //   product: true,
+        //   inventoryItem: { include: { product: true } },
+        // },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / take);
+
+    return NextResponse.json(
+      {
+        data: listings,
+        meta: {
+          total,
+          perPage: take,
+          currentPage: pageParam,
+          totalPages,
+          sortBy,
+          order,
+        },
       },
-      // include: {
-      //   inventoryItem: {
-      //     include: {
-      //       product: true,
-      //     },
-      //   },
-      // },
-    });
-
-    const totalProducts = await prisma.marketplaceListing.count();
-
-    res.status(200).json({
-      products,
-      totalPages: Math.ceil(totalProducts / take),
-    });
-  } catch (error) {
-    NextResponse.json({ error: 'Failed to fetch products' });
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("Error fetching marketplace listings:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch listings", detail: error.message },
+      { status: 500 }
+    );
   }
 }

@@ -1,26 +1,35 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../server/db/prismadb";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return NextResponse.json({ error: "Method Not Allowed" });
-  }
-
-  const { productId, action } = req.body;
-  if (!productId || !action) {
-    return NextResponse.json({ error: "Missing required fields" });
-  }
-
+// POST /api/product-metrics
+export async function POST(req: Request) {
   try {
-    // Update the product metrics
+    const { productId, action } = await req.json();
+    if (!productId || !action) {
+      return NextResponse.json(
+        { error: "Missing required fields: productId and action" },
+        { status: 400 }
+      );
+    }
+
+    // Determine update increments
+    const dataUpdate: any = {};
+    if (action === "view") dataUpdate.views = { increment: 1 };
+    if (action === "purchase") dataUpdate.purchases = { increment: 1 };
+    if (action === "favorite") dataUpdate.favorites = { increment: 1 };
+
+    // Validate action
+    if (Object.keys(dataUpdate).length === 0) {
+      return NextResponse.json(
+        { error: "Invalid action. Must be one of: view, purchase, favorite" },
+        { status: 400 }
+      );
+    }
+
+    // Upsert metrics
     await prisma.productMetrics.upsert({
       where: { productId },
-      update: {
-        views: action === "view" ? { increment: 1 } : undefined,
-        purchases: action === "purchase" ? { increment: 1 } : undefined,
-        favorites: action === "favorite" ? { increment: 1 } : undefined,
-      },
+      update: dataUpdate,
       create: {
         productId,
         views: action === "view" ? 1 : 0,
@@ -29,10 +38,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    return res.status(200).json({ message: "Product metrics updated successfully" });
-  } catch (error) {
+    return NextResponse.json(
+      { message: "Product metrics updated successfully" },
+      { status: 200 }
+    );
+  } catch (error: any) {
     console.error("Error updating product metrics:", error);
-    return NextResponse.json({ error: "Internal Server Error" });
+    return NextResponse.json(
+      { error: "Internal Server Error", detail: error.message },
+      { status: 500 }
+    );
   }
 }
-

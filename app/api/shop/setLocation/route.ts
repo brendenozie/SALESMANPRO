@@ -1,29 +1,41 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../server/db/prismadb";
+import { requireAuth } from "../../../../lib/auth";
+import { rateLimit } from "../../../../lib/rate-limit";
 
+export async function POST(req: Request) {
+  const ip = req.headers.get("x-forwarded-for") || "local";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return NextResponse.json({ message: "Method Not Allowed" });
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ message: "Too many requests" }, { status: 429 });
   }
 
+  const authResult = await requireAuth(req);
+  if (authResult instanceof Response) return authResult;
+
   try {
-    const { userId, latitude, longitude, address, description } = req.body;
+    const body = await req.json();
+    const { userId, latitude, longitude, address, description } = body;
 
     if (!userId || !latitude || !longitude || !address) {
-      return NextResponse.json({ message: "All fields are required" });
+      return NextResponse.json(
+        { message: "All fields are required" },
+        { status: 400 }
+      );
     }
 
-    // Upsert location for the user
     const location = await prisma.location.upsert({
       where: { userId },
       update: { latitude, longitude, address, description },
       create: { userId, latitude, longitude, address, description },
     });
 
-    res.status(200).json({ message: "Location updated", location });
+    return NextResponse.json(
+      { message: "Location updated", location },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error(error);
-    NextResponse.json({ message: "Server Error" });
+    console.error("Error updating location:", error);
+    return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
 }

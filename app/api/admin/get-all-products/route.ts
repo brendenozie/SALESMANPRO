@@ -3,13 +3,18 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 import { OrderStatus } from "@prisma/client";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { page = 1, limit = 5, status = 'all', search = '', companyId = '' } = req.query;
+export default async function GET( req : Request ) {
+
+  // const { page = 1, limit = 5, status = 'all', search = '', companyId = '' } = req.query;
   const { searchParams } = new URL(req.url);
 
   const agentId = searchParams.get("agentId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const offset = parseInt(searchParams.get("offset") || "0", 10);
+  const page = parseInt(searchParams.get("offset") || "0", 10);
+  const status = searchParams.get("status") || "0";
+  const search = searchParams.get("offset") || "0";
+  const companyId = searchParams.get("search") || "0";
 
   if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
     return NextResponse.json(
@@ -18,9 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
   }
 
-
-  const currentPage = parseInt(page as string, 10) || 1;
-  const itemsPerPage = parseInt(limit as string, 10) || 5;
+  const currentPage = page;
+  const itemsPerPage = limit;
 
   const skip = (currentPage - 1) * itemsPerPage;
   const take = itemsPerPage;
@@ -82,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         };
       });
 
-      return res.status(200).json(formattedProducts);
+      return NextResponse.json(formattedProducts);
     } catch (error) {
       console.error(error);
       return NextResponse.json({ message: "Internal server error" });

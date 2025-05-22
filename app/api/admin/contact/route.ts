@@ -51,7 +51,7 @@ export default async function GET( req : Request ) {
 });
 
 
-    return res.status(200).json({ message: "Message sent successfully!" });
+    return NextResponse.json({ message: "Message sent successfully!" });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "Something went wrong." });

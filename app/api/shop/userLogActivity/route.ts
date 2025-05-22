@@ -1,27 +1,65 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
+import { requireAuth } from "../../../../lib/auth";
+import { rateLimit } from "../../../../lib/rate-limit";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return NextResponse.json({ error: "Method Not Allowed" });
-  }
+// Optional: Define allowed action types
+const VALID_ACTIONS = ["view", "purchase", "favorite"];
 
-  const { userId, productId, action } = req.body;
-  if (!userId || !productId || !action) {
-    return NextResponse.json({ error: "Missing required fields" });
-  }
-
+export async function POST(req: Request) {
   try {
-    // Log the user action
+    const ip = req.headers.get("x-forwarded-for") || "local";
+    
+      if (!rateLimit(ip)) {
+        return NextResponse.json({ message: "Too many requests" }, { status: 429 });
+      }
+    
+      const authResult = await requireAuth(req);
+      if (authResult instanceof Response) return authResult;
+    
+
+    const body = await req.json();
+    const { userId, productId, action } = body;
+
+    if (!userId || !productId || !action) {
+      return NextResponse.json(
+        { error: "Missing userId, productId, or action" },
+        { status: 400 }
+      );
+    }
+
+    if (!VALID_ACTIONS.includes(action)) {
+      return NextResponse.json(
+        { error: `Invalid action type. Allowed: ${VALID_ACTIONS.join(", ")}` },
+        { status: 400 }
+      );
+    }
+
     await prisma.userActivity.create({
-      data: { userId, productId, action },
+      data: {
+        userId,
+        productId,
+        action,
+      },
     });
 
-    return res.status(200).json({ message: "User activity logged successfully" });
+    return NextResponse.json(
+      { message: "User activity logged successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error logging user activity:", error);
-    return NextResponse.json({ error: "Internal Server Error" });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
+export function GET() {
+  return NextResponse.json(
+    { error: "Method Not Allowed" },
+    { status: 405 }
+  );
+}

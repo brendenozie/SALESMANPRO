@@ -2,16 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const { page = "0", companyId } = req.query;
+export default async function GET( req : Request ) {
+
+  // const { page = "0", companyId } = req.query;
   const { searchParams } = new URL(req.url);
 
-  const agentId = searchParams.get("agentId");
+  const companyId = searchParams.get("companyId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const offset = parseInt(searchParams.get("offset") || "0", 10);
+  const page = parseInt(searchParams.get("page") || "0", 10);
 
   if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
     return NextResponse.json(
@@ -26,7 +25,7 @@ export default async function handle(
   }
 
   if (req.method === "GET") {
-    const currentPage = parseInt(page as string, 10) || 0;
+    const currentPage = page;
     const skip = currentPage > 0 ? currentPage * 20 : 0;
 
     // Define filter: only categories linked to this company
@@ -65,7 +64,7 @@ export default async function handle(
 
     console.log(categories);
 
-    return res.status(200).json({
+    return NextResponse.json({
       InfoResponse: {
         count: totalCount,
         next: nextPage,
@@ -75,9 +74,8 @@ export default async function handle(
       results: categories,
     });
   } else {
-    res.setHeader('Allow', ['GET']);
-    return res
-      .status(405)
+    // res.setHeader('Allow', ['GET']);
+    return NextResponse
       .json({ error: `The HTTP ${req.method} method is not supported at this route.` });
   }
 }

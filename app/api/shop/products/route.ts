@@ -1,118 +1,78 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../server/db/prismadb";
+import type { Prisma } from "@prisma/client";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// GET /api/marketplace-listings?agentId=&search=&brand=&category=&subCategory=&minPrice=&maxPrice=&availability=&sort=&page=&limit=
+export async function GET(req: Request) {
   try {
-    const {
-      page = "1",
-      limit = "25",
-      search,
-      brand,
-      category,
-      subCategory,
-      minPrice,
-      maxPrice,
-      sort,
-      availability,
-    } = req.query;
-
-    const currentPage = parseInt(page as string, 10) || 1;
-    const itemsPerPage = parseInt(limit as string, 10) || 25;
-    const skip = (currentPage - 1) * itemsPerPage;
-
     const { searchParams } = new URL(req.url);
-  
     const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
+    const search = searchParams.get("search") || undefined;
+    const brand = searchParams.getAll("brand");
+    const category = searchParams.getAll("category");
+    const subCategory = searchParams.getAll("subCategory");
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    const availabilityParam = searchParams.get("availability");
+    const sortParam = searchParams.get("sort");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "25", 10);
+
+    if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
+      return NextResponse.json({ error: "Invalid pagination parameters." }, { status: 400 });
     }
-  
+    const skip = (page - 1) * limit;
 
-    // Build the root-level where clause
-    const whereClause: Prisma.MarketplaceListingWhereInput = {
-      // Full-text search on title
-      title: search
-        ? { contains: search as string, mode: "insensitive" }
-        : undefined,
-
-      // Price range filter
-      sellingPrice: {
-        gte:
-          minPrice && !isNaN(Number(minPrice))
-            ? parseFloat(minPrice as string)
-            : undefined,
-        lte:
-          maxPrice && !isNaN(Number(maxPrice))
-            ? parseFloat(maxPrice as string)
-            : undefined,
+    // Build where clause
+    const where: Prisma.MarketplaceListingWhereInput = {
+      ...(agentId && { companyId: agentId }),
+      ...(search && { title: { contains: search, mode: 'insensitive' } }),
+      ...(minPrice || maxPrice) && {
+        sellingPrice: {
+          ...(minPrice && !isNaN(Number(minPrice)) && { gte: Number(minPrice) }),
+          ...(maxPrice && !isNaN(Number(maxPrice)) && { lte: Number(maxPrice) }),
+        },
       },
-
-      // Availability toggle
-      isAvailable:
-        availability === "true"
-          ? true
-          : availability === "false"
-          ? false
-          : undefined,
-
-      // Simple scalar filters
-      brand: brand
-        ? { in: Array.isArray(brand) ? brand : [brand] }
-        : undefined,
-      category: category
-        ? { in: Array.isArray(category) ? category : [category] }
-        : undefined,
-
-        
-      // JSON filter on subCategory.name
-      // subCategoryName: subCategory
-      //   ? { in: Array.isArray(subCategory) ? subCategory : [subCategory] }
-      //   : undefined,
-      // ...(subCategory
-      //   ? {
-      //       subCategory: {
-      //         path: ["name"],
-      //         equals: Array.isArray(subCategory)
-      //           ? undefined
-      //           : (subCategory as string),
-      //         array_contains: Array.isArray(subCategory)
-      //           ? subCategory
-      //           : undefined,
-      //       },
-      //     }
-      //   : {}),
+      ...(availabilityParam === 'true' ? { isAvailable: true } : availabilityParam === 'false' ? { isAvailable: false } : {}),
+      ...(brand.length > 0 && { brand: { in: brand } }),
+      ...(category.length > 0 && { category: { in: category } }),
+      // If subCategory is a JSON field, use 'hasSome' for array matching
+      // ...(subCategory.length > 0 && { subCategory: { hasSome: subCategory } }),
     };
 
-    // (Optional) Sorting
-    const orderBy = sort
-      ? { [sort as string]: sort === "asc" || sort === "desc" ? sort : "asc" }
-      : undefined;
+    // Sorting
+    // Default sort by createdAt desc, or allow sorting by price or createdAt
+    let orderBy: Prisma.MarketplaceListingOrderByWithRelationInput = { createdAt: 'desc' };
+    if (sortParam) {
+      const [field, direction] = sortParam.split(':');
+      if (
+        (field === 'createdAt' || field === 'sellingPrice') &&
+        (direction === 'asc' || direction === 'desc')
+      ) {
+        orderBy = { [field]: direction };
+      }
+    }
 
-    // Fetch
-    const [products, total] = await Promise.all([
+    const [listings, total] = await Promise.all([
       prisma.marketplaceListing.findMany({
-        where: whereClause,
+        where,
         skip,
-        take: itemsPerPage,
-        orderBy: orderBy ? [orderBy] : undefined,
+        take: limit,
+        orderBy,
       }),
-      prisma.marketplaceListing.count({ where: whereClause }),
+      prisma.marketplaceListing.count({ where }),
     ]);
 
-    return res.status(200).json({
-      products,
-      totalPages: Math.ceil(total / itemsPerPage),
-      currentPage,
-    });
-  } catch (error) {
-    console.error("Error fetching listings:", error);
-    return NextResponse.json({ error: "Failed to fetch listings" });
+    const totalPages = Math.ceil(total / limit);
+    return NextResponse.json(
+      { data: listings, meta: { total, perPage: limit, page, totalPages, orderBy } },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("Error fetching listings:", err);
+    return NextResponse.json(
+      { error: "Failed to fetch listings", detail: err.message },
+      { status: 500 }
+    );
   }
 }

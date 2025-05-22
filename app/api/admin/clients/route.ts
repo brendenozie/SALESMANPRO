@@ -56,7 +56,7 @@ export default async function GET( req : Request ) {
       };
     });
 
-    res.status(200).json(processedClients);
+    NextResponse.json(processedClients);
   } catch (error) {
     console.error("Error fetching clients:", error);
     NextResponse.json({ error: "Internal server error" });

@@ -1,113 +1,78 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../server/db/prismadb";
+import type { OrderStatus } from "@prisma/client";
 
-import { OrderStatus } from "@prisma/client";
-
-const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
-  // Updated query parameter to consumerId to match the new model
-  const { page = 1, limit = 5, status = 'all', search = '', consumerId } = req.query;
-  const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
-
-  const currentPage = parseInt(page as string, 10) || 1;
-  const itemsPerPage = parseInt(limit as string, 10) || 5;
-
-  const skip = (currentPage - 1) * itemsPerPage;
-  const take = itemsPerPage;
-
+// GET /api/orders?consumerId=&status=&search=&page=&limit=&agentId=
+export async function GET(req: Request) {
   try {
-    // Updated the "where" clause to use consumerId and the consumer relation for searching by name
-    const where: any = {
-      AND: [
-        consumerId ? { consumerId: consumerId as string } : {},
-        status !== 'all' ? { status: status as OrderStatus } : {},
-        search ? { consumer: { name: { contains: search as string, mode: 'insensitive' } } } : {},
-      ],
-    };
+    const { searchParams } = new URL(req.url);
+    const consumerId = searchParams.get("consumerId");
+    const statusParam = searchParams.get("status") || "all";
+    const search = searchParams.get("search") || "";
+    const agentId = searchParams.get("agentId");
 
-    // Use the updated CustomerOrder model and include consumer details and order items
+    // Pagination
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "5", 10);
+    if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
+      return NextResponse.json({ error: "Invalid pagination parameters." }, { status: 400 });
+    }
+    const skip = (page - 1) * limit;
+
+    // Build where filter
+    const where: any = {};
+    if (consumerId) where.consumerId = consumerId;
+    if (agentId) where.salesAgentId = agentId;
+    if (statusParam !== "all") where.status = statusParam as OrderStatus;
+    if (search) where.consumer = { name: { contains: search, mode: 'insensitive' } };
+
+    // Fetch paginated orders and count
     const [orders, totalOrders] = await prisma.$transaction([
       prisma.customerOrder.findMany({
         where,
         include: {
-          consumer: true,
-          items: {
-            include: {
-              marketplaceListing: true,
-            },
-          },
+          // consumer: true,
+          items: { include: { marketplaceListing: true } },
         },
         skip,
-        take,
+        take: limit,
         orderBy: { createdAt: 'desc' },
       }),
       prisma.customerOrder.count({ where }),
     ]);
 
-    // Update aggregate queries to reference consumerId and the CustomerOrder model
-    const totalRevenue = await prisma.customerOrder.aggregate({
-      _sum: { totalPrice: true },
-      where: { consumerId: consumerId as string },
-    });
+    // Revenue aggregates
+    const baseWhere = { ...(consumerId && { consumerId }) };
+    const totalRev = await prisma.customerOrder.aggregate({ _sum: { totalPrice: true }, where: baseWhere });
+    const pendingRev = await prisma.customerOrder.aggregate({ _sum: { totalPrice: true }, where: { ...baseWhere, status: 'PENDING' } });
+    const completedRev = await prisma.customerOrder.aggregate({ _sum: { totalPrice: true }, where: { ...baseWhere, status: 'COMPLETED' } });
 
-    const pendingRevenue = await prisma.customerOrder.aggregate({
-      _sum: { totalPrice: true },
-      where: { status: 'PENDING', consumerId: consumerId as string },
-    });
-
-    const completedRevenue = await prisma.customerOrder.aggregate({
-      _sum: { totalPrice: true },
-      where: { status: 'COMPLETED', consumerId: consumerId as string },
-    });
-
-    // Monthly revenue calculation based on the updated model
-    const ordersForMonthlyRevenue = await prisma.customerOrder.findMany({
-      select: { createdAt: true, totalPrice: true },
-      where: { consumerId: consumerId as string },
-    });
-
+    // Monthly revenue
+    const allOrders = await prisma.customerOrder.findMany({ where: baseWhere, select: { createdAt: true, totalPrice: true } });
     const monthlyRevenue = Array(12).fill(0);
-    ordersForMonthlyRevenue.forEach((order) => {
-      const month = new Date(order.createdAt).getMonth();
-      monthlyRevenue[month] += order.totalPrice;
+    allOrders.forEach(o => {
+      const m = o.createdAt.getMonth();
+      monthlyRevenue[m] += o.totalPrice;
     });
 
-    const allOrders = {
-      orders,
-      totalOrders,
-      totalPages: Math.ceil(totalOrders / itemsPerPage),
-      totalRevenue: totalRevenue._sum.totalPrice || 0,
-      pendingRevenue: pendingRevenue._sum.totalPrice || 0,
-      completedRevenue: completedRevenue._sum.totalPrice || 0,
-      monthlyRevenue,
-    };
+    // Meta
+    const totalPages = Math.ceil(totalOrders / limit);
 
-    console.log('Fetched orders for consumerId:', consumerId, allOrders);
-    res.status(200).json(allOrders);
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    NextResponse.json({ error: 'Failed to fetch orders' });
-  }
-};
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  switch (req.method) {
-    case 'GET':
-      await getOrders(req, res);
-      break;
-    default:
-      res.setHeader('Allow', ['GET']);
-      NextResponse.end(`Method ${req.method} Not Allowed`);
+    return NextResponse.json({
+      data: orders,
+      meta: {
+        totalOrders,
+        perPage: limit,
+        currentPage: page,
+        totalPages,
+        totalRevenue: totalRev._sum.totalPrice ?? 0,
+        pendingRevenue: pendingRev._sum.totalPrice ?? 0,
+        completedRevenue: completedRev._sum.totalPrice ?? 0,
+        monthlyRevenue,
+      }
+    }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error fetching orders:", error);
+    return NextResponse.json({ error: "Failed to fetch orders", detail: error.message }, { status: 500 });
   }
 }

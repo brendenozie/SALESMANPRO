@@ -2,16 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const { page } = req.query;
+export default async function GET( req : Request ) {
+
+  // const { page } = req.query;
   const { searchParams } = new URL(req.url);
 
   const agentId = searchParams.get("agentId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const offset = parseInt(searchParams.get("offset") || "0", 10);
+  const page = parseInt(searchParams.get("page") || "0", 10);
 
   if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
     return NextResponse.json(
@@ -40,7 +39,7 @@ export default async function handle(
       }),
     ]);
 
-    res.json({InfoResponse:{count: results[0] ?? 0,
+    NextResponse.json({InfoResponse:{count: results[0] ?? 0,
                   next: currentPage * 20 > results[0] ? currentPage : 0 ,
                   pages: results[0]/20 > 0 ? results[0]/20 : 1 ,
                   prev: currentPage-1 > 0 ? currentPage-1 : 0},

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
-
+import prisma from "../../../../server/db/prismadb"; // Adjust the path as needed
 
 // Utility to safely parse JSON
 const parseJsonSafely = (data: any) => {
@@ -14,71 +13,68 @@ const parseJsonSafely = (data: any) => {
 // Normalize inputs to array
 const normalizeArray = (val: any) => Array.isArray(val) ? val : (val ? [val] : []);
 
-export default async function GET( req : Request ) {
-  if (req.method !== "POST") {
-    return NextResponse.json({ message: "Method not allowed. Use POST." });
-  }
-
-  const body = req.body;
-  const {
-    companyId,
-    sellerId,
-    sellerType,
-    productId,
-    title,
-    description,
-    quantity,
-    buyingPrice,
-    sellingPrice,
-    finalPrice,
-    category,
-    subCategory,
-    productCategoryId,
-    tags,
-    brand,
-    model,
-    color,
-    size,
-    weight,
-    condition,
-    dimension,
-    material,
-    isAvailable,
-    isOnOffer,
-    isFlashDeal,
-    isNewArrival,
-    isDiscounted,
-    isFeatured,
-    author,
-    publisher,
-    isbn,
-    fabricComposition,
-    careInstructions,
-    energyRating,
-    warrantyPeriod,
-    applianceDimensions,
-    ingredients,
-    usageInstructions,
-    expirationDate,
-    contact,
-    location,
-    discount,
-    images,
-    video,
-    amenities,
-    bedrooms,
-    studios
-  } = body;
-
-  if (!productCategoryId) {
-    return NextResponse.json({ message: "Missing Details." });
-  }
-
-  if (!["CLIENT", "CONSUMER", "AGENT", "ADMIN", "COMPANY"].includes(sellerType)) {
-    return NextResponse.json({ message: "Invalid seller type." });
-  }
-
+export async function POST(req: Request) {
   try {
+    const body = await req.json();
+
+    const {
+      companyId,
+      sellerId,
+      sellerType,
+      productId,
+      title,
+      description,
+      quantity,
+      buyingPrice,
+      sellingPrice,
+      finalPrice,
+      category,
+      subCategory,
+      productCategoryId,
+      tags,
+      brand,
+      model,
+      color,
+      size,
+      weight,
+      condition,
+      dimension,
+      material,
+      isAvailable,
+      isOnOffer,
+      isFlashDeal,
+      isNewArrival,
+      isDiscounted,
+      isFeatured,
+      author,
+      publisher,
+      isbn,
+      fabricComposition,
+      careInstructions,
+      energyRating,
+      warrantyPeriod,
+      applianceDimensions,
+      ingredients,
+      usageInstructions,
+      expirationDate,
+      contact,
+      location,
+      discount,
+      images,
+      video,
+      amenities,
+      bedrooms,
+      studios
+    } = body;
+
+    if (!productCategoryId) {
+      return NextResponse.json({ message: "Missing Details." }, { status: 400 });
+    }
+
+    if (!["CLIENT", "CONSUMER", "AGENT", "ADMIN", "COMPANY"].includes(sellerType)) {
+      return NextResponse.json({ message: "Invalid seller type." }, { status: 400 });
+    }
+
     let createdProductId = productId;
     let newProduct = null;
     let marketplaceListing = null;
@@ -98,53 +94,6 @@ export default async function GET( req : Request ) {
     const now = new Date();
 
     await prisma.$transaction(async (tx) => {
-      // 1. Create product if not provided
-      // if (!productId) {
-      //   newProduct = await tx.product.create({
-      //     data: {
-      //       name: title ?? "Unnamed Product",
-      //       description,
-      //       category,
-      //       subCategory: safeSubCategory,
-      //       images: safeImages,
-      //       video,
-      //       tags: safeTags,
-      //       brand,
-      //       model,
-      //       color: safeColor,
-      //       size: safeSize,
-      //       weight,
-      //       condition,
-      //       dimension,
-      //       material: safeMaterial,
-      //       author,
-      //       publisher,
-      //       isbn,
-      //       fabricComposition,
-      //       careInstructions,
-      //       energyRating,
-      //       warrantyPeriod,
-      //       applianceDimensions,
-      //       ingredients,
-      //       usageInstructions,
-      //       expirationDate: expirationDate ? new Date(expirationDate) : null,
-      //       companyId: sellerId,
-      //       productCategory: { connect: { id: productCategoryId } },
-      //       contact,
-      //       location: safeLocation,
-      //       amenities: safeAmenities,
-      //       bedrooms: safeBedrooms,
-      //       studios: safeStudios,
-      //       costPrice: buyingPrice ?? 0,
-      //       salesPrice: sellingPrice ?? 0,
-      //       finalPrice: finalPrice ?? 0,
-      //       discount: discount ?? 0,
-      //     },
-      //   });
-
-      //   createdProductId = newProduct.id;
-      // }
-
       const existingListing = await tx.marketplaceListing.findFirst({
         where: {
           companyId,
@@ -153,10 +102,8 @@ export default async function GET( req : Request ) {
       });
 
       const commonData = {
-        company: { connect: { id: companyId } },        
-        // sellerId,
+        company: { connect: { id: companyId } },
         sellerType,
-        // product: { connect: { id: createdProductId } },
         ...(createdProductId && {
           product: { connect: { id: createdProductId } },
         }),
@@ -222,16 +169,17 @@ export default async function GET( req : Request ) {
       }
     });
 
-    return res.status(201).json({
+    return NextResponse.json({
       message: "Marketplace listing processed successfully.",
       listing: marketplaceListing,
       product: newProduct ?? undefined,
-    });
+    }, { status: 201 });
+
   } catch (error: any) {
     console.error("❌ Error processing marketplace listing:", error);
     return NextResponse.json({
       message: "An error occurred while processing the marketplace listing.",
       error: error.message ?? "Unknown error",
-    });
+    }, { status: 500 });
   }
 }

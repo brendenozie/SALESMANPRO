@@ -3,13 +3,16 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 import { OrderStatus } from "@prisma/client";
 
-const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { page = 1, limit = 5, status = 'all', search = '' } = req.query;
+export default async function GET( req : Request ) {
+  // const { page = 1, limit = 5, status = 'all', search = '' } = req.query;
   const { searchParams } = new URL(req.url);
 
   const agentId = searchParams.get("agentId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const offset = parseInt(searchParams.get("offset") || "0", 10);
+  const page = parseInt(searchParams.get("page") || "0", 10);
+  const status = searchParams.get("status") || "all";
+  const search = searchParams.get("search") || "";
 
   if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
     return NextResponse.json(
@@ -19,8 +22,8 @@ const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
 
-  const currentPage = parseInt(page as string, 10) || 1;
-  const itemsPerPage = parseInt(limit as string, 10) || 5;
+  const currentPage = page;
+  const itemsPerPage = limit;
 
   const skip = (currentPage - 1) * itemsPerPage;
   const take = itemsPerPage;
@@ -85,20 +88,10 @@ const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
 
     console.log('Fetched orders:', allOrders);
 
-    res.status(200).json(allOrders);
+    NextResponse.json(allOrders);
   } catch (error) {
     console.error('Error fetching orders:', error);
     NextResponse.json({ error: 'Failed to fetch orders' });
   }
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  switch (req.method) {
-    case 'GET':
-      await getOrders(req, res);
-      break;
-    default:
-      res.setHeader('Allow', ['GET']);
-      NextResponse.end(`Method ${req.method} Not Allowed`);
-  }
-}
