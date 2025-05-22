@@ -1,0 +1,137 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import BannerSlider from "../components/shop/BannerSlider/BannerSlider";
+import FlashDeals from "../components/shop/flashDeals/FlashDeals";
+import TopCate from "../components/shop/top/TopCate";
+import NewArrivals from "../components/shop/newarrivals/NewArrivals";
+import Discount from "../components/shop/discount/Discount";
+import Shop from "../components/shops/Shop";
+import Annocument from "../components/shop/annocument/Annocument";
+import Wrapper from "../components/shop/wrapper/Wrapper";
+import { useStateContext } from '../contexts/ContextProvider';
+// import PricingTable from "../../components/pricingTable";
+
+const HomePage = () => {
+  const [categories, setCategories] = useState<any>([]);
+  const [productsByCategory, setProductsByCategory] = useState<any>({});
+  const [offers, setOffers] = useState<any>([]);
+  const [flashDeals, setFlashDeals] = useState<any>([]);
+  const [newArrivals, setNewArrivals] = useState<any>([]);
+  const [discounts, setDiscounts] = useState<any>([]);
+  const [featured, setFeatured] = useState<any>([]);
+  const [loading, setLoading] = useState<any>(false);
+  const [error, setError] = useState<any>(null);
+  const [CartItem, setCartItem] = useState<any>([]);
+  const [featuredCategories, setFeaturedCategories] = useState<any>({});
+  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
+  const [isModalOpen, setModalOpen] = useState<any>(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/shop/categories');
+        if (!response.ok) throw new Error("Failed to fetch categories.");
+        const data = await response.json();
+        setCategories(data.categories);
+        setFeaturedCategories(data.categories[2]);
+      } catch (err:any) {
+        setError(err.message);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProductsByCategory = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const products: { [key: string]: any } = {};
+        const response = await fetch(`/api/shop/productsByCategory?categoryId=${featuredCategories.id}`);
+        if (!response.ok) throw new Error(`Failed to fetch products for category ${featuredCategories.name}.`);
+        const data = await response.json();
+        products[String(featuredCategories.name)] = data;
+        setProductsByCategory(products);
+      } catch (err:any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (categories.length > 0) {
+      fetchProductsByCategory();
+    }
+  }, [featuredCategories]);
+
+  useEffect(() => {
+    const fetchProductsByFlag = async (flag: string, setState: any) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/shop/productsByFlag?flag=${flag}`);
+        if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
+        const data = await response.json();
+        setState(data);
+      } catch (err:any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductsByFlag("isOnOffer", setOffers);
+    fetchProductsByFlag("isFlashDeal", setFlashDeals);
+    fetchProductsByFlag("isNewArrival", setNewArrivals);
+    fetchProductsByFlag("isDiscounted", setDiscounts);
+    fetchProductsByFlag("isFeatured", setFeatured);
+  }, []);
+
+  return (
+    <>
+      {categories && <BannerSlider categories={categories} />}
+      {flashDeals.products && (
+        <FlashDeals
+          productItems={flashDeals.products}
+          addToCart={addToCart}
+          decreaseQuantity={decreaseQuantity}
+          removeFromCart={removeFromCart}
+        />
+      )}
+      {categories.length > 0 && <TopCate categories={categories} />}
+      {newArrivals.products && (
+        <NewArrivals
+          productItems={newArrivals.products}
+          addToCart={addToCart}
+          decreaseQuantity={decreaseQuantity}
+          removeFromCart={removeFromCart}
+        />
+      )}
+      {discounts.products && (
+        <Discount
+          productItems={discounts.products}
+          addToCart={addToCart}
+          decreaseQuantity={decreaseQuantity}
+          removeFromCart={removeFromCart}
+        />
+      )}
+      {featuredCategories &&
+        productsByCategory[featuredCategories.name] && (
+          <Shop
+            category={featuredCategories}
+            shopItems={productsByCategory[featuredCategories.name]}
+            addToCart={addToCart}
+            decreaseQuantity={decreaseQuantity}
+            removeFromCart={removeFromCart}
+          />
+        )}
+      <Annocument />
+      <Wrapper />
+      
+    </>
+  );
+};
+
+export default HomePage;
