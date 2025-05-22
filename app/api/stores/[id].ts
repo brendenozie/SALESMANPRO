@@ -1,7 +1,8 @@
 // pages/api/stores/[id].ts
 
-import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../server/db/prismadb";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 import { getSession } from "next-auth/react";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

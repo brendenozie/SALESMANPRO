@@ -1,42 +1,40 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../server/db/prismadb";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed. Use GET." });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+
+  const agentId = searchParams.get("agentId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+  // Validate pagination
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return NextResponse.json(
+      { message: "Invalid pagination parameters." },
+      { status: 400 }
+    );
   }
 
-  const { agentId, limit = 10, offset = 0 } = req.query;
-
-// Validate limit and offset as integers
-const parsedLimit = parseInt(limit as string, 10);
-const parsedOffset = parseInt(offset as string, 10);
-
-if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffset < 0) {
-  return res.status(400).json({ message: "Invalid pagination parameters." });
-}
-
-  // Validate agentId
+  // Optionally validate agentId if needed
   // if (!agentId || typeof agentId !== "string") {
-  //   return res.status(400).json({ message: "Invalid or missing clientId." });
+  //   return NextResponse.json({ message: "Missing or invalid agentId" }, { status: 400 });
   // }
 
   try {
-
-    // Fetch product requests with pagination
     const productRequests = await prisma.request.findMany({
-      where: {  requestedByType : "SALES_AGENT",
-        // requestedById: agentId 
+      where: {
+        requestedByType: "SALES_AGENT",
+        // requestedById: agentId,
       },
       include: {
         product: true,
         salesAgent: true,
       },
-      take: parsedLimit,
-      skip: parsedOffset,
+      take: limit,
+      skip: offset,
     });
 
-    // Format the response
     const formattedRequests = productRequests.map((request) => ({
       requestId: request.id,
       productId: request.productId,
@@ -48,19 +46,18 @@ if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffse
       requestedAt: request.createdAt.toISOString(),
     }));
 
-    console.log(formattedRequests);
-
-    // Respond with structured data
-    return res.status(200).json({
+    return NextResponse.json({
       agentId,
       requests: formattedRequests,
     });
   } catch (error: any) {
     console.error("Error fetching product requests:", error);
-
-    return res.status(500).json({
-      message: "An error occurred while fetching product requests.",
-      error: error.message || "Unknown error",
-    });
+    return NextResponse.json(
+      {
+        message: "An error occurred while fetching product requests.",
+        error: error.message || "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }

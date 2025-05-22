@@ -1,6 +1,7 @@
 // pages/api/stores.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../server/db/prismadb';
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 
 type StorePayload = {
   name: string;

@@ -32,7 +32,7 @@ const Cart = () => {
           onClick={() => setIsCartOpen(false)}
         >
           <motion.div
-            className="bg-white dark:bg-gray-900 h-full w-80 p-6 shadow-2xl rounded-l-2xl overflow-y-auto"
+            className="bg-white dark:bg-gray-900 h-full w-96 p-6 shadow-2xl rounded-l-2xl overflow-y-auto"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

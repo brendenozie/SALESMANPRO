@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../server/db/prismadb";
-import { getSession } from 'next-auth/react';
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {

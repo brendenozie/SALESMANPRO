@@ -1,5 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../server/db/prismadb";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 import bcrypt from "bcryptjs";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

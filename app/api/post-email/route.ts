@@ -1,4 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 import SendMail from "../../../service/mailservice";
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

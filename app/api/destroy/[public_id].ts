@@ -1,5 +1,7 @@
 import cloudinary from "../../../server/cloudinary";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 
 
 export default function assetDestroyer(req: NextApiRequest, res: NextApiResponse) {

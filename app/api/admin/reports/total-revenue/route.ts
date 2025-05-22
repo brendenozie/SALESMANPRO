@@ -1,5 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../server/db/prismadb";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 
 const getTotalRevenue = async (req: NextApiRequest, res: NextApiResponse) => {
   const { startDate, endDate } = req.query;

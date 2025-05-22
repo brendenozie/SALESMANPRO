@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import prisma, { client } from "../../../server/db/prismadb";
-import { CommissionType, PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { agentInventoryId, clientId, quantity } = req.body;

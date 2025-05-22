@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next"; 
-import prisma from "../../../server/db/prismadb";
-import { OrderStatus } from "@prisma/client";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 
 const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
   const { page = 1, limit = 10, status = 'all', search = '', agentId } = req.query;

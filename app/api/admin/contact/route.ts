@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
-import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from "../../../server/db/prismadb";
+import { NextResponse } from "next/server";
+import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
