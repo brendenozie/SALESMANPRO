@@ -51,7 +51,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       event = stripe.webhooks.constructEvent(payload, sig, endpointSecret);
     } catch (err: any) {
       console.log("ERROR", err.message);
-      return res.status(400).send(`Webhook error: ${err.message}`);
+      return NextResponse.send(`Webhook error: ${err.message}`);
     }
     // Handle the checkout.session.completed event
     if (event.type === "checkout.session.completed") {
@@ -60,7 +60,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       return fulfillBooking(session)
         .then(() => res.status(200))
         .catch((err) => {
-          res.status(400).send(`Webhook Error: ${err.message}`);
+          NextResponse.send(`Webhook Error: ${err.message}`);
         });
     }
   }

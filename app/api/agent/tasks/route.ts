@@ -3,7 +3,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 
   try {
@@ -22,6 +22,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);
-    res.status(500).json({ message: "Internal server error" });
+    NextResponse.json({ message: "Internal server error" });
   }
 }

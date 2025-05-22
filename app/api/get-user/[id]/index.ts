@@ -24,6 +24,19 @@ export default async function handle(
 
 async function deleteUser(req: NextApiRequest, res: NextApiResponse) {
   const amaId = req.query.id as string
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
   try {
     // const ama = await prisma.exercise.delete({
     //   where: {
@@ -33,7 +46,7 @@ async function deleteUser(req: NextApiRequest, res: NextApiResponse) {
     // return res.status(204).json({ id: ama.id })
   } catch (e) {
     console.log(e)
-    res.status(500)
+    NextResponse
   }
 }
 
@@ -59,6 +72,6 @@ async function updateUser(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json("ama")
   } catch (e) {
     console.log(e)
-    res.status(500).end()
+    NextResponse.end()
   }
 }

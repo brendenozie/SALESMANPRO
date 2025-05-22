@@ -3,7 +3,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 import SendMail from "../../../service/mailservice";
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   const {
     fname,
     lname,

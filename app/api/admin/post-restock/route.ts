@@ -5,14 +5,14 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 // POST /api/post
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return NextResponse.json({ error: 'Method Not Allowed' });
   }
 
   const { productId, quantity, damaged, action, companyId, salesAgentId, reason, adminId, commissionRate, commissionType, target } = req.body;
 
   // Input validation
   if (!productId || !action || !quantity || quantity <= 0) {
-    return res.status(400).json({ error: 'Invalid product ID or quantity.' });
+    return NextResponse.json({ error: 'Invalid product ID or quantity.' });
   }
 
   try {
@@ -84,7 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (action === 'ASSIGN') {
       // Ensure sufficient quantity in inventory
       if (inventoryItem.quantity < quantity) {
-        return res.status(400).json({ error: 'Insufficient inventory quantity.' });
+        return NextResponse.json({ error: 'Insufficient inventory quantity.' });
       }
 
       // Find agent inventory item by product ID
@@ -210,7 +210,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Ensure sufficient quantity in inventory
       if (inventoryItem.quantity < quantity) {
-        return res.status(400).json({ error: 'Insufficient Agent inventory quantity.' });
+        return NextResponse.json({ error: 'Insufficient Agent inventory quantity.' });
       }
 
       // Find agent inventory item by product ID
@@ -219,12 +219,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (!agentinventoryItem || agentinventoryItem.quantity < quantity) {
-          return res.status(400).json({ error: 'Insufficient Agent inventory quantity.' });
+          return NextResponse.json({ error: 'Insufficient Agent inventory quantity.' });
         }
 
       // If inventory item doesn't exist and action is RESTOCK or NEWSTOCK, create a new inventory item
       if (!agentinventoryItem) {    
-        return res.status(400).json({ message: 'Error Something\'s not write.'});
+        return NextResponse.json({ message: 'Error Something\'s not write.'});
       }
       
       // Update main inventory quantity
@@ -295,10 +295,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // return res.status(200).json({ message: 'Request submitted successfully.', request });
     }
     
-    return res.status(400).json({ error: 'Invalid action or quantity.' });
+    return NextResponse.json({ error: 'Invalid action or quantity.' });
 
   } catch (error) {
     console.error('Restock Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return NextResponse.json({ error: 'Internal Server Error' });
   }
 }

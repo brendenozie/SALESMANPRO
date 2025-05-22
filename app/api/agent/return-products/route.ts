@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { agentId, clientId, inventoryItemId, quantity } = req.body;
 
   if (!agentId || !clientId || !inventoryItemId || !quantity) {
-    return res.status(400).json({ error: "Missing required fields." });
+    return NextResponse.json({ error: "Missing required fields." });
   }
 
   try {
@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!clientInventory || clientInventory.quantity < quantity) {
-      return res.status(400).json({
+      return NextResponse.json({
         error: "Insufficient quantity in the client's inventory for return.",
       });
     }

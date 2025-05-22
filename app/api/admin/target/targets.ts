@@ -15,10 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(200).json(targets);
     } catch (error) {
       console.error("Error fetching targets:", error);
-      res.status(500).json({ error: "Failed to fetch targets" });
+      NextResponse.json({ error: "Failed to fetch targets" });
     }
   } else {
     res.setHeader("Allow", ["GET"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    NextResponse.end(`Method ${req.method} Not Allowed`);
   }
 }

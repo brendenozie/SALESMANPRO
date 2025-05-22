@@ -5,13 +5,26 @@ import { OrderStatus } from "@prisma/client";
 
 const getSellerOrderItems = async (req: NextApiRequest, res: NextApiResponse) => {
   const { page = 1, limit = 5, search = '', sellerId ='63f7c9e2d91b1b2a5e80b007' } = req.query;
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
   const currentPage = parseInt(page as string, 10) || 1;
   const itemsPerPage = parseInt(limit as string, 10) || 5;
   const skip = (currentPage - 1) * itemsPerPage;
   const take = itemsPerPage;
 
   if (!sellerId) {
-    return res.status(400).json({ error: "sellerId is required" });
+    return NextResponse.json({ error: "sellerId is required" });
   }
 
   try {
@@ -97,7 +110,7 @@ const getSellerOrderItems = async (req: NextApiRequest, res: NextApiResponse) =>
     res.status(200).json(responseData);
   } catch (error) {
     console.error('Error fetching order items:', error);
-    res.status(500).json({ error: 'Failed to fetch order items' });
+    NextResponse.json({ error: 'Failed to fetch order items' });
   }
 };
 
@@ -108,6 +121,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       break;
     default:
       res.setHeader('Allow', ['GET']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      NextResponse.end(`Method ${req.method} Not Allowed`);
   }
 }

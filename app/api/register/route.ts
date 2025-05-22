@@ -5,7 +5,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 // POST /api/post
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
 
   if (req.method === 'POST') {
     await RegisterUser(req, res);

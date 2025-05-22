@@ -4,12 +4,25 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 // POST /api/post
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   // const { id } = req.query;
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
 
   // Ensure it's a PUT request
   if (req.method !== 'PUT') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return NextResponse.json({ error: 'Method not allowed' });
   }
 
   try {
@@ -53,7 +66,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     // Check if there's anything to update
     if (Object.keys(dataToUpdate).length === 0) {
-      return res.status(400).json({ error: 'No fields provided to update' });
+      return NextResponse.json({ error: 'No fields provided to update' });
     }
 
     // Update user in the database using Prisma
@@ -91,7 +104,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update user' });
+    NextResponse.json({ error: 'Failed to update user' });
   } finally {
     await prisma.$disconnect();
   }

@@ -4,9 +4,22 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 const getSalesAgentRevenue = async (req: NextApiRequest, res: NextApiResponse) => {
   const { salesAgentId, startDate, endDate } = req.query;
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
 
   if (!salesAgentId) {
-    return res.status(400).json({ error: "salesAgentId is required" });
+    return NextResponse.json({ error: "salesAgentId is required" });
   }
 
   try {
@@ -16,7 +29,7 @@ const getSalesAgentRevenue = async (req: NextApiRequest, res: NextApiResponse) =
 
     // Validate dates
     if (start > end) {
-      return res.status(400).json({ error: "Invalid date range: startDate cannot be after endDate." });
+      return NextResponse.json({ error: "Invalid date range: startDate cannot be after endDate." });
     }
 
     // Aggregate revenue over the specified period
@@ -46,7 +59,7 @@ const getSalesAgentRevenue = async (req: NextApiRequest, res: NextApiResponse) =
     // });
   } catch (error) {
     console.error("Error calculating revenue:", error);
-    res.status(500).json({ error: "Failed to calculate revenue." });
+    NextResponse.json({ error: "Failed to calculate revenue." });
   }
 };
 
@@ -57,6 +70,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       break;
     default:
       res.setHeader("Allow", ["GET"]);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      NextResponse.end(`Method ${req.method} Not Allowed`);
   }
 }

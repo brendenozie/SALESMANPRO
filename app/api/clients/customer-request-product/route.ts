@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 
   const { productId, quantity, customerId, salesAgentId } = req.body;
 
   if (!productId || !quantity || !customerId || !salesAgentId) {
-    return res.status(400).json({ message: "All fields are required." });
+    return NextResponse.json({ message: "All fields are required." });
   }
 
   try {
@@ -27,6 +27,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     res.status(201).json("request");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to create product request." });
+    NextResponse.json({ message: "Failed to create product request." });
   }
 }

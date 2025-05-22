@@ -49,7 +49,7 @@ router.use(async (req, res, next) => {
     next();
   } catch (err) {
     console.error('File upload error:', err);
-    return res.status(500).json({ error: `File upload error ${err}` });
+    return NextResponse.json({ error: `File upload error ${err}` });
   }
 });
 
@@ -58,7 +58,7 @@ router.post(async (req, res) => {
   const { type } = req.body; // The file type (image or video)
 
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+    return NextResponse.json({ error: 'No file uploaded' });
   }
 
   try {
@@ -86,14 +86,14 @@ router.post(async (req, res) => {
       };
       uploadResult = await s3.upload(videoParams).promise();
     } else {
-      return res.status(400).json({ error: 'Invalid file type' });
+      return NextResponse.json({ error: 'Invalid file type' });
     }
 
     // Return the uploaded file URL
     res.status(201).json({ url: uploadResult.Location });
   } catch (error) {
     console.error('Error uploading file:', error);
-    res.status(500).json({ error: `Failed to upload file ${error}` });
+    NextResponse.json({ error: `Failed to upload file ${error}` });
   }
 });
 

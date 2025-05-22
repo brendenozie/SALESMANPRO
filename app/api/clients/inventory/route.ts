@@ -2,16 +2,29 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed. Use GET." });
+    return NextResponse.json({ message: "Method not allowed. Use GET." });
   }
 
   const { clientId } = req.query;
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
 
   // Validate clientId
   if (!clientId || typeof clientId !== "string") {
-    return res.status(400).json({ message: "Invalid or missing clientId." });
+    return NextResponse.json({ message: "Invalid or missing clientId." });
   }
 
   try {
@@ -55,7 +68,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   } catch (error: any) {
     console.error("Error fetching client inventory:", error);
 
-    return res.status(500).json({
+    return NextResponse.json({
       message: "An error occurred while fetching client inventory.",
       error: error.message || "Unknown error",
     });

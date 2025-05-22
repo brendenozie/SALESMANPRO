@@ -5,14 +5,14 @@ import bcrypt from "bcryptjs";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
-    return res.status(405).json({ status: 405, message: "Method Not Allowed" });
+    return NextResponse.json({ status: 405, message: "Method Not Allowed" });
   }
 
   try {
     const { email, password } = req.body.data;
 
     if (!email || !password) {
-      return res.status(400).json({ status: 400, message: "Missing login details" });
+      return NextResponse.json({ status: 400, message: "Missing login details" });
     }
 
     const userTypes: { model: { findUnique: (args: any) => Promise<any> }, role: string }[] = [
@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     console.error("Login Error:", error);
-    return res.status(500).json({
+    return NextResponse.json({
       status: 500,
       message: "Internal Server Error",
     });

@@ -4,12 +4,12 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
+    return NextResponse.json({ error: "Method Not Allowed" });
   }
 
   const { productId, action } = req.body;
   if (!productId || !action) {
-    return res.status(400).json({ error: "Missing required fields" });
+    return NextResponse.json({ error: "Missing required fields" });
   }
 
   try {
@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ message: "Product metrics updated successfully" });
   } catch (error) {
     console.error("Error updating product metrics:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return NextResponse.json({ error: "Internal Server Error" });
   }
 }
 

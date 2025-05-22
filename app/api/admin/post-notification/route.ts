@@ -5,7 +5,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 // POST /api/post
 // Required fields in body: title
 // Optional fields in body: content
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method === 'POST') {
     const { title, message, } = req.body;
 
@@ -15,7 +15,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
       res.status(201).json(newNotification);
     } catch (error) {
-      res.status(500).json({ error: 'Error creating notification' });
+      NextResponse.json({ error: 'Error creating notification' });
     }
   }
 }

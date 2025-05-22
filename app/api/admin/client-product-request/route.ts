@@ -2,24 +2,36 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
+
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed. Use GET." });
+    return NextResponse.json({ message: "Method not allowed. Use GET." });
   }
 
-  const { agentId, limit = 10, offset = 0 } = req.query;
+  const { searchParams } = new URL(req.url);
 
-// Validate limit and offset as integers
-const parsedLimit = parseInt(limit as string, 10);
-const parsedOffset = parseInt(offset as string, 10);
+  const agentId = searchParams.get("agentId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffset < 0) {
-  return res.status(400).json({ message: "Invalid pagination parameters." });
-}
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return NextResponse.json(
+      { message: "Invalid pagination parameters." },
+      { status: 400 }
+    );
+  }
+
+  // limit and offset are already parsed as numbers above
+  const parsedLimit = limit;
+  const parsedOffset = offset;
+
+  if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffset < 0) {
+    return NextResponse.json({ message: "Invalid pagination parameters." });
+  }
 
   // Validate agentId
   // if (!agentId || typeof agentId !== "string") {
-  //   return res.status(400).json({ message: "Invalid or missing clientId." });
+  //   return NextResponse.json({ message: "Invalid or missing clientId." });
   // }
 
   try {
@@ -52,14 +64,14 @@ if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffse
     console.log(formattedRequests);
 
     // Respond with structured data
-    return res.status(200).json({
+    return NextResponse.json({
       agentId,
       requests: formattedRequests,
     });
   } catch (error: any) {
     console.error("Error fetching product requests:", error);
 
-    return res.status(500).json({
+    return NextResponse.json({
       message: "An error occurred while fetching product requests.",
       error: error.message || "Unknown error",
     });

@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (req.method === "POST") {
         const validation = orderSchema.safeParse(req.body);
         if (!validation.success)
-          return res.status(400).json({ error: validation.error.errors });
+          return NextResponse.json({ error: validation.error.errors });
 
         const { consumerId, items, totalPrice, shippingAddress, shippingMethod, delivery, paymentOption } = req.body;
 
@@ -73,12 +73,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(201).json(order);
         } catch (error) {
           console.error("Error creating order:", error);
-          return res.status(500).json({ error: "Internal Server Error" });
+          return NextResponse.json({ error: "Internal Server Error" });
         }
       }
 
       if (req.method === "GET") {
         const { page = "1", limit = "10" } = req.query;
+        const { searchParams } = new URL(req.url);
+  
+        const agentId = searchParams.get("agentId");
+        const limit = parseInt(searchParams.get("limit") || "10", 10);
+        const offset = parseInt(searchParams.get("offset") || "0", 10);
+      
+        if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+          return NextResponse.json(
+            { message: "Invalid pagination parameters." },
+            { status: 400 }
+          );
+        }
+      
         const pageNumber = parseInt(Array.isArray(page) ? page[0] : page);
         const limitNumber = parseInt(Array.isArray(limit) ? limit[0] : limit);
 
@@ -114,7 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { id } = req.body;
         const order = await prisma.customerOrder.findUnique({ where: { id } });
         if (!order || order.status !== "PENDING")
-          return res.status(400).json({ error: "Only pending orders can be canceled" });
+          return NextResponse.json({ error: "Only pending orders can be canceled" });
         const canceledOrder = await prisma.customerOrder.update({
           where: { id },
           data: { status: "CANCELLED", deliveryStatus: "Order Canceled" },
@@ -123,10 +136,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       res.setHeader("Allow", ["POST", "GET", "PUT", "DELETE"]);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      NextResponse.end(`Method ${req.method} Not Allowed`);
     } catch (error) {
       console.error("API Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      NextResponse.json({ error: "Internal Server Error" });
     }
   });
 }

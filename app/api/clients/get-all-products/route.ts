@@ -51,10 +51,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(formattedProducts);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Internal server error" });
+      return NextResponse.json({ message: "Internal server error" });
     }
   } else {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 }
 
@@ -65,6 +65,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 // export default async function handler(req, res) {
 //   if (req.method === 'GET') {
 //     const { lat, lng } = req.query;
+const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
 //     const db = (await clientPromise).db();
 //     const products = await db.collection('Product')
 //       .aggregate([

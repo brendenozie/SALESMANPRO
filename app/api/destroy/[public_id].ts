@@ -9,6 +9,20 @@ export default function assetDestroyer(req: NextApiRequest, res: NextApiResponse
   const public_id = req.query.public_id as string;
   const method = req.method;
 
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
+
   switch (method) {
     case "POST":
       // Get data from your database
@@ -23,6 +37,6 @@ export default function assetDestroyer(req: NextApiRequest, res: NextApiResponse
       break;
     default:
       res.setHeader("Allow", ["GET", "PUT"]);
-      res.status(405).end(`Method ${method} Not Allowed`);
+      NextResponse.end(`Method ${method} Not Allowed`);
   }
 }

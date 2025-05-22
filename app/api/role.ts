@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method Not Allowed" });
+    return NextResponse.json({ message: "Method Not Allowed" });
   }
 
   const signupPath = getCookie("signup_path", { req }) || "";

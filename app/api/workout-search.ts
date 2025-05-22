@@ -2,12 +2,25 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../server/db/prismadb";
 
 // Define the API route
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Only GET requests are allowed' });
+    return NextResponse.json({ message: 'Only GET requests are allowed' });
   }
 
   const { category, focusArea, level, query } = req.query;
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
 
   try {
   //   // Create filters based on provided query parameters
@@ -63,6 +76,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   //   res.status(200).json(exercises);
   } catch (error) {
     console.error('Error fetching exercises:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    NextResponse.json({ message: 'Internal server error' });
   }
 }

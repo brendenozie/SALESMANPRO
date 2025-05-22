@@ -6,6 +6,19 @@ export default async function handle(
   res: NextApiResponse
 ) {
   const amaId = req.query.id as string
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
   if (req.method === 'PUT') {
     // const ama = await prisma.booking.update({
     //   where: {

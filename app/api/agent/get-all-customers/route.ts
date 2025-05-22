@@ -5,9 +5,22 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const { id } = req.query;
+    const { searchParams } = new URL(req.url);
+
+  const agentId = searchParams.get("agentId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return NextResponse.json(
+      { message: "Invalid pagination parameters." },
+      { status: 400 }
+    );
+  }
+
 
     if (!id || typeof id !== "string") {
-      return res.status(400).json({ message: "Agent ID is required and must be a string." });
+      return NextResponse.json({ message: "Agent ID is required and must be a string." });
     }
 
     try {
@@ -43,9 +56,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(formattedClients);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Internal server error" });
+      return NextResponse.json({ message: "Internal server error" });
     }
   } else {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 }

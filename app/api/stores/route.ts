@@ -67,7 +67,7 @@ export default async function handler(
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    return NextResponse.json({ message: 'Method Not Allowed' });
   }
 
   const errors: ErrorResponse = [];
@@ -115,7 +115,7 @@ export default async function handler(
   }
 
   if (errors.length) {
-    return res.status(400).json({ errors });
+    return NextResponse.json({ errors });
   }
 
   // Build data payload
@@ -168,6 +168,6 @@ export default async function handler(
     return res.status(201).json(store);
   } catch (error) {
     console.error('Store creation error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return NextResponse.json({ message: 'Internal server error' });
   }
 }

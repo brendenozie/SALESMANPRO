@@ -30,9 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(formattedAgents);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Internal server error" });
+      return NextResponse.json({ message: "Internal server error" });
     }
   } else {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 }

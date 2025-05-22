@@ -31,6 +31,19 @@ export default async function handle(
 
 // async function GetExercise(req: NextApiRequest, res: NextApiResponse) {
 //   const exerciseId = req.query.id as string
+const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
 
 //   try {
 
@@ -50,7 +63,7 @@ export default async function handle(
 //       results: exercise
 //     })
 //   } catch (e) {
-//     res.status(500)
+//     NextResponse
 //   }
 // }
 
@@ -65,7 +78,7 @@ export default async function handle(
 //     return res.status(204).json({ id: ama.id })
 //   } catch (e) {
 //     console.log(e)
-//     res.status(500)
+//     NextResponse
 //   }
 // }
 
@@ -97,6 +110,6 @@ export default async function handle(
 
 //   } catch (e) {
 //     console.log(e)
-//     res.status(500).end()
+//     NextResponse.end()
 //   }
 // }

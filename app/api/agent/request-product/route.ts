@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed. Use POST." });
+    return NextResponse.json({ message: "Method not allowed. Use POST." });
   }
 
   const { salesAgentId, productId, quantity, } = req.body;
 
   // Validate the request body
   if (!salesAgentId || !productId || !quantity || typeof quantity !== "number") {
-    return res.status(400).json({ message: "Invalid or missing request data." });
+    return NextResponse.json({ message: "Invalid or missing request data." });
   }
 
   try {
@@ -95,7 +95,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   } catch (error: any) {
     console.error("Error creating product request:", error);
 
-    return res.status(500).json({
+    return NextResponse.json({
       message: "An error occurred while creating the product request.",
       error: error.message || "Unknown error",
     });

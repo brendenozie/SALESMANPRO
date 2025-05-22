@@ -11,9 +11,23 @@ const generateCacheKey = (queryParams: any) => {
   return `exercise_${JSON.stringify(queryParams)}`;
 };
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method === "GET") {
     const { category, focusArea, level, query, page } = req.query;
+    
+    const { searchParams } = new URL(req.url);
+    
+      const agentId = searchParams.get("agentId");
+      const limit = parseInt(searchParams.get("limit") || "10", 10);
+      const offset = parseInt(searchParams.get("offset") || "0", 10);
+    
+      if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+        return NextResponse.json(
+          { message: "Invalid pagination parameters." },
+          { status: 400 }
+        );
+      }
+    
 
     let currentPage = page ? Number(page) : 1;
     let skip = currentPage > 1 ? (currentPage - 1) * 5 : 0;
@@ -74,11 +88,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     //     return res.status(200).json(responseData);
     //   } catch (error) {
     //     console.error('Error fetching data:', error);
-    //     return res.status(500).json({ error: 'Failed to fetch data' });
+    //     return NextResponse.json({ error: 'Failed to fetch data' });
     //   }
     // });
   } else {
-    return res.status(405).json({
+    return NextResponse.json({
       error: `The HTTP ${req.method} method is not supported at this route.`
     });
   }

@@ -32,6 +32,19 @@ export default async function handle(
 
 async function GetCity(req: NextApiRequest, res: NextApiResponse) {
   const cityId = req.query.id as string
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
   try {
     // const city = await prisma.exercise.findFirst({
     //   where: {
@@ -46,7 +59,7 @@ async function GetCity(req: NextApiRequest, res: NextApiResponse) {
     //           })
   } catch (e) {
     console.log(e)
-    res.status(500)
+    NextResponse
   }
 }
 
@@ -61,7 +74,7 @@ async function deleteCity(req: NextApiRequest, res: NextApiResponse) {
     // return res.status(204).json({ id: ama.id })
   } catch (e) {
     console.log(e)
-    res.status(500)
+    NextResponse
   }
 }
 
@@ -89,6 +102,6 @@ async function updateCity(req: NextApiRequest, res: NextApiResponse) {
 
   } catch (e) {
     console.log(e)
-    res.status(500).end()
+    NextResponse.end()
   }
 }

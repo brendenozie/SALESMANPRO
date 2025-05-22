@@ -2,16 +2,18 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed. Use GET." });
+    return NextResponse.json({ message: "Method not allowed. Use GET." });
   }
 
   const { salesAgentId } = req.query;
 
+
+
   // Validate salesAgentId
   if (!salesAgentId || typeof salesAgentId !== "string") {
-    return res.status(400).json({ message: "Invalid or missing salesAgentId." });
+    return NextResponse.json({ message: "Invalid or missing salesAgentId." });
   }
 
   try {
@@ -81,7 +83,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   } catch (error: any) {
     console.error("Error fetching inventory:", error);
 
-    return res.status(500).json({
+    return NextResponse.json({
       message: "An error occurred while fetching inventory.",
       error: error.message || "Unknown error",
     });

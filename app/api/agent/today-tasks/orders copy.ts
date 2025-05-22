@@ -5,6 +5,19 @@ import { OrderStatus } from "@prisma/client";
 
 const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
   const { page = 1, limit = 5, status = 'all', search = '', salesAgentId } = req.query;
+  const { searchParams } = new URL(req.url);
+  
+    const agentId = searchParams.get("agentId");
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+  
+    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+      return NextResponse.json(
+        { message: "Invalid pagination parameters." },
+        { status: 400 }
+      );
+    }
+  
 
   const currentPage = parseInt(page as string, 10) || 1;
   const itemsPerPage = parseInt(limit as string, 10) || 5;
@@ -79,7 +92,7 @@ const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(200).json("allOrders");
   } catch (error) {
     console.error('Error fetching orders:', error);
-    res.status(500).json({ error: 'Failed to fetch orders' });
+    NextResponse.json({ error: 'Failed to fetch orders' });
   }
 };
 
@@ -90,6 +103,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       break;
     default:
       res.setHeader('Allow', ['GET']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      NextResponse.end(`Method ${req.method} Not Allowed`);
   }
 }

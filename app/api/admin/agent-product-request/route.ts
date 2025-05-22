@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 export async function GET(request: Request) {
+  
   const { searchParams } = new URL(request.url);
 
   const agentId = searchParams.get("agentId");

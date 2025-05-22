@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!agentInventoryId || typeof agentInventoryId !== 'string' || 
       !clientId || typeof clientId !== 'string' || 
       !quantity || quantity <= 0 || !Number.isInteger(quantity)) {
-    return res.status(400).json({ error: "Invalid input data. Please verify all fields." });
+    return NextResponse.json({ error: "Invalid input data. Please verify all fields." });
   }
 
   try {
@@ -90,6 +90,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error: any) {
     console.error("Error:", error.message || error);
-    res.status(500).json({ error: error.message || "An error occurred." });
+    NextResponse.json({ error: error.message || "An error occurred." });
   }
 }

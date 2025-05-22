@@ -3,7 +3,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
 // POST /api/product
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   const {
     id,
     companyId,
@@ -57,7 +57,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   
   // Validate required fields
   if (!name || !costPrice || !salesPrice || !companyId || !commissionType || commissionRate === undefined) {
-    return res.status(400).json({
+    return NextResponse.json({
       message: "Missing required fields: name, price, companyId, commissionType, or commissionRate",
     });
   }
@@ -68,7 +68,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const parsedCommissionRate = parseFloat(commissionRate);
 
   if (isNaN(parsedCostPrice) || isNaN(parsedSalesPrice) || isNaN(parsedCommissionRate)) {
-    return res.status(400).json({
+    return NextResponse.json({
       message: "Invalid number format provided for costPrice, salesPrice, or commissionRate",
     });
   }
@@ -78,11 +78,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const parsedEndDate = endDate ? new Date(endDate) : null;
 
   if (parsedStartDate && isNaN(parsedStartDate.getTime())) {
-    return res.status(400).json({ message: "Invalid startDate format. Provide a valid date." });
+    return NextResponse.json({ message: "Invalid startDate format. Provide a valid date." });
   }
 
   if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
-    return res.status(400).json({ message: "Invalid endDate format. Provide a valid date." });
+    return NextResponse.json({ message: "Invalid endDate format. Provide a valid date." });
   }
 
   // Validate optional fields
@@ -214,6 +214,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     res.status(201).json({ product, commissionRate: commissionRateRecord });
   } catch (error) {
     console.error("Error creating or updating product and commission rate:", error);
-    res.status(500).json({ message: "Internal server error" });
+    NextResponse.json({ message: "Internal server error" });
   }
 }

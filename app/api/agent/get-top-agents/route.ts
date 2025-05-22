@@ -5,7 +5,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 // GET top-performing agents
 export async function getTopAgents(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 
   try {
@@ -17,6 +17,6 @@ export async function getTopAgents(req: NextApiRequest, res: NextApiResponse) {
     res.status(200).json(topAgents);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    NextResponse.json({ message: "Internal server error" });
   }
 }

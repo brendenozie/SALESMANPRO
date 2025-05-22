@@ -7,6 +7,19 @@ export default async function handle(
   res: NextApiResponse
 ) {
 //   let { page, userId} = req.query;
+const { searchParams } = new URL(req.url);
+
+  const agentId = searchParams.get("agentId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return NextResponse.json(
+      { message: "Invalid pagination parameters." },
+      { status: 400 }
+    );
+  }
+
 
 //   if (req.method === "GET") {
 
@@ -27,7 +40,7 @@ export default async function handle(
 //     }
     
 //   if(!userIdString){
-//     return res.status(400).json({ message: 'Invalid date format provided' });
+//     return NextResponse.json({ message: 'Invalid date format provided' });
 //   }
 
 //     // Fetch the count and DailyPlans
@@ -103,6 +116,6 @@ export default async function handle(
 //       results: dailyPlansWithExercises,
 //     });
 //   } else {
-//     return res.status(405).json({ message: `The HTTP ${req.method} method is not supported at this route.` });
+//     return NextResponse.json({ message: `The HTTP ${req.method} method is not supported at this route.` });
 //   }
 }

@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 
   try {
@@ -18,6 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Fetch tasks due today
     // Fetch tasks due today
     const amaId = req.query.id as string
+    const { searchParams } = new URL(req.url);
+    
+      const agentId = searchParams.get("agentId");
+      const limit = parseInt(searchParams.get("limit") || "10", 10);
+      const offset = parseInt(searchParams.get("offset") || "0", 10);
+    
+      if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+        return NextResponse.json(
+          { message: "Invalid pagination parameters." },
+          { status: 400 }
+        );
+      }
+    
     const tasks = await prisma.task.findFirst({
       where: {
         id: amaId,
@@ -32,6 +45,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);
-    res.status(500).json({ message: "Internal server error" });
+    NextResponse.json({ message: "Internal server error" });
   }
 }

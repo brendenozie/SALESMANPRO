@@ -7,9 +7,22 @@ export default async function handle(
   res: NextApiResponse
 ) {
   const { page = "0", companyId } = req.query;
+  const { searchParams } = new URL(req.url);
+
+  const agentId = searchParams.get("agentId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return NextResponse.json(
+      { message: "Invalid pagination parameters." },
+      { status: 400 }
+    );
+  }
+
 
   if (!companyId || typeof companyId !== 'string') {
-    return res.status(400).json({ error: 'Missing or invalid `companyId` query parameter.' });
+    return NextResponse.json({ error: 'Missing or invalid `companyId` query parameter.' });
   }
 
   if (req.method === "GET") {

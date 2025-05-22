@@ -5,18 +5,18 @@ import prisma, { client } from "../../../../server/db/prismadb";
 
 // POST /api/post
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method === 'POST') {
         const { userId, subscriptionPlanId, amount, status, currency, startingAt, endingAt } = req.body;
 
         try {
                 if (!userId || amount === undefined || !currency || !status || !startingAt || !endingAt) {
-                    return res.status(400).json({ message: 'Please provide required parameters' });
+                    return NextResponse.json({ message: 'Please provide required parameters' });
                 }
 
                
                 if (typeof startingAt !== 'string' || typeof endingAt !== 'string') {
-                    return res.status(400).json({ message: 'Please provide startingAt and endingAt as strings' });
+                    return NextResponse.json({ message: 'Please provide startingAt and endingAt as strings' });
                 }
 
                 const tareheStart = new Date(startingAt);
@@ -42,13 +42,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                     // });
                     // return res.status(201).json(transaction);
                 } catch (error) {
-                    return res.status(500).json({ message: 'Transaction creation failed', error });
+                    return NextResponse.json({ message: 'Transaction creation failed', error });
                 }
 
         } catch (error) {
-            res.status(500).json({ error: 'Error creating transaction' });
+            NextResponse.json({ error: 'Error creating transaction' });
         }
     } else {
-        res.status(405).json({ error: 'Method not allowed' });
+        NextResponse.json({ error: 'Method not allowed' });
     }
 }

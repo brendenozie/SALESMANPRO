@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
+export default async function GET( request : Request ) {
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+  if (request.method !== "GET") {
+    return NextResponse.json({ message: "Method not allowed" });
   }
 
   try {
@@ -62,9 +62,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     );
 
     // Respond with the list of agents
-    return res.status(200).json(response);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching sales agents:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return NextResponse.json({ error: "Internal server error" });
   }
 }

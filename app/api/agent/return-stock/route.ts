@@ -5,7 +5,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 // POST return stock from an agent
 export async function returnStock(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" });
   }
 
   const { productId, agentId, quantity, isDamaged } = req.body;
@@ -16,7 +16,7 @@ export async function returnStock(req: NextApiRequest, res: NextApiResponse) {
     // });
 
     // if (!agentInventory || agentInventory.quantity < quantity) {
-    //   return res.status(400).json({ message: "Insufficient agent stock" });
+    //   return NextResponse.json({ message: "Insufficient agent stock" });
     // }
 
     // // Deduct from agent stock
@@ -41,6 +41,6 @@ export async function returnStock(req: NextApiRequest, res: NextApiResponse) {
     res.status(200).json({ message: "Stock returned successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    NextResponse.json({ message: "Internal server error" });
   }
 }

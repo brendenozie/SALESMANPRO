@@ -14,9 +14,9 @@ const parseJsonSafely = (data: any) => {
 // Normalize inputs to array
 const normalizeArray = (val: any) => Array.isArray(val) ? val : (val ? [val] : []);
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET( req : Request ) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed. Use POST." });
+    return NextResponse.json({ message: "Method not allowed. Use POST." });
   }
 
   const body = req.body;
@@ -71,11 +71,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   } = body;
 
   if (!productCategoryId) {
-    return res.status(400).json({ message: "Missing Details." });
+    return NextResponse.json({ message: "Missing Details." });
   }
 
   if (!["CLIENT", "CONSUMER", "AGENT", "ADMIN", "COMPANY"].includes(sellerType)) {
-    return res.status(400).json({ message: "Invalid seller type." });
+    return NextResponse.json({ message: "Invalid seller type." });
   }
 
   try {
@@ -229,7 +229,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
   } catch (error: any) {
     console.error("❌ Error processing marketplace listing:", error);
-    return res.status(500).json({
+    return NextResponse.json({
       message: "An error occurred while processing the marketplace listing.",
       error: error.message ?? "Unknown error",
     });
