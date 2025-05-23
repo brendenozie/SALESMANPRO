@@ -21,6 +21,7 @@ import { useStateContext } from "../../../contexts/ContextProvider.js";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { debounce } from "lodash";
+import { usePathname } from 'next/navigation';
 
 const Header = () => {
   const {user, isDarkMode, setMode, cart, isCartOpen, setIsCartOpen, location, setLocation, locationName, setLocationName,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
@@ -32,6 +33,10 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const path = usePathname();
+  // bail out on /stores or any deeper stores route
+  if (path.startsWith('/stores')) return null;
   
 
   return (
