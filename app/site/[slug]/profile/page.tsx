@@ -1,75 +1,29 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
-import Header from '../../../../components/site/header/Header';
-import Footer from '../../../../components/site/footer/Footer';
-import Section from '../../../../components/site/Section/Section';
-import NewsletterSection from '../../../../components/site/NewsletterSection/NewsletterSection';
-import { useStateContext } from '../../../../contexts/ContextProvider';
+// app/[slug]/profile/page.tsx
+'use client';
+
+import React, { useState, ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
+import Section from '@/components/site/Section/Section';
+import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { useStore } from '../../../../contexts/StoreContext';
+import { useStateContext } from '../../../../contexts/ContextProvider';
 
-
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  // themeSettings
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
-
-interface ProfilePageProps {
-  store: Store;
-}
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-
-interface OrderItem { id: string; name: string; qty: number; price: number; thumbnail: string; }
-interface Order { id: string; date: string; total: number; status: string; items: OrderItem[]; }
-
-const ProfilePage: React.FC<ProfilePageProps> = ()=> {
+export default function ProfilePage() {
+  const store = useStore();
   const { user, orders: initialOrders } = useStateContext();
-  const [activeTab, setActiveTab] = useState<'profile'|'orders'>('profile');
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'orders'>('profile');
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || '/default-avatar.png');
-  const [orders, setOrders] = useState<Order[]>(initialOrders || []);
+  const [orders] = useState(initialOrders || []);
   const [message, setMessage] = useState('');
-  const store = useStore();
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarPreview(url);
-      // TODO: upload file to server
-    }
+    if (file) setAvatarPreview(URL.createObjectURL(file));
+    // TODO: upload avatar
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,8 +31,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ()=> {
     setMessage('');
     try {
       const res = await fetch('/api/user/update', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone }),
       });
       setMessage(res.ok ? 'Profile updated!' : 'Update failed.');
     } catch {
@@ -86,27 +41,44 @@ const ProfilePage: React.FC<ProfilePageProps> = ()=> {
     }
   };
 
+  if (!store) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-xl">Store not found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-      <Header store={store}/>
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <Section title=''>
         {/* Tabs */}
         <div className="flex space-x-4 mb-6">
-          {['profile','orders'].map(tab => (
+          {['profile', 'orders'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`px-4 py-2 rounded-md font-medium ${activeTab===tab ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}
-            >{tab === 'profile' ? 'My Profile' : 'Order History'}</button>
+              className={`px-4 py-2 rounded-md font-medium ${
+                activeTab === tab
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              {tab === 'profile' ? 'My Profile' : 'Order History'}
+            </button>
           ))}
         </div>
 
         {activeTab === 'profile' && (
-          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="space-y-6">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             {/* Avatar & Stats */}
             <div className="flex items-center space-x-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
               <div className="relative group">
-                <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-blue-500" />
+                <img
+                  src={avatarPreview}
+                  alt="Avatar"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+                />
                 <label className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity cursor-pointer">
                   <input type="file" className="hidden" onChange={handleAvatarChange} />
                   <span className="text-white text-sm">Change</span>
@@ -119,7 +91,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ()=> {
                     <span className="font-semibold">{orders.length}</span>
                     <span>Orders</span>
                   </div>
-                  {/* Add more stats if available */}
                 </div>
               </div>
             </div>
@@ -128,35 +99,40 @@ const ProfilePage: React.FC<ProfilePageProps> = ()=> {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
               {message && <p className="text-green-500 mb-4">{message}</p>}
               <form onSubmit={handleSubmit} className="space-y-4">
-                {['Name', 'Email', 'Phone'].map((label,i) => {
-                  const state = [name,email,phone][i];
-                  const setter = [setName,setEmail,setPhone][i];
-                  const type = label === 'Email'? 'email': label === 'Phone'? 'tel':'text';
+                {['Name', 'Email', 'Phone'].map((label, i) => {
+                  const state = [name, email, phone][i];
+                  const setter = [setName, setEmail, setPhone][i];
+                  const type = label === 'Email' ? 'email' : label === 'Phone' ? 'tel' : 'text';
                   return (
                     <div key={label}>
                       <label className="block text-sm font-medium">{label}</label>
                       <input
                         type={type}
                         value={state}
-                        onChange={(e) => setter(e.target.value)}
+                        onChange={e => setter(e.target.value)}
                         className="mt-1 w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   );
                 })}
-                <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">Save Changes</button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+                >
+                  Save Changes
+                </button>
               </form>
             </div>
           </motion.div>
         )}
 
         {activeTab === 'orders' && (
-          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="space-y-4">
-            {orders.map(o => (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            {orders.map((o : any) => (
               <motion.div
                 key={o.id}
-                initial={{ opacity:0, y:10 }}
-                animate={{ opacity:1, y:0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow hover:shadow-lg transition"
               >
                 <div className="flex justify-between items-center">
@@ -167,14 +143,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ()=> {
                       <p className="text-sm text-gray-500">{new Date(o.date).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs ${
-                      o.status==='Delivered'? 'bg-green-100 text-green-800': o.status==='In Transit'? 'bg-yellow-100 text-yellow-800': 'bg-red-100 text-red-800'
-                    }`}>{o.status}</span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs ${
+                      o.status === 'Delivered'
+                        ? 'bg-green-100 text-green-800'
+                        : o.status === 'In Transit'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {o.status}
+                  </span>
                 </div>
                 <details className="mt-2">
                   <summary className="cursor-pointer text-blue-600">View Items</summary>
                   <ul className="mt-2 space-y-1">
-                    {o.items.map(item => (
+                    {o.items.map((item:any) => (
                       <li key={item.id} className="flex justify-between">
                         <span>{item.name}</span>
                         <span>x{item.qty}</span>
@@ -186,12 +170,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ()=> {
             ))}
           </motion.div>
         )}
-
-      </div>
+      </Section>
       <NewsletterSection />
-      <Footer  store={store}/>
     </div>
   );
-};
-
-export default ProfilePage;
+}

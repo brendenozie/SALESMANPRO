@@ -1,8 +1,6 @@
 
 // 3. Privacy Policy (privacy-policy.tsx)
 import React from 'react';
-import Header from '../../../../components/site/header/Header';
-import Footer from '../../../../components/site/footer/Footer';
 import Section from '../../../../components/site/Section/Section';
 import { motion } from 'framer-motion';
 import { useStore } from '../../../../contexts/StoreContext';
@@ -51,8 +49,6 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 const PrivacyPolicyPage: React.FC<PrivacyPolicyProps> = () => {
   const store = useStore();
   return (
-      <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-        <Header store={store}/>
         <Section title="Privacy Policy" background="none">
           <motion.div
             initial={{ opacity: 0 }}
@@ -67,8 +63,6 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyProps> = () => {
             {/* Add all policy sections here */}
           </motion.div>
         </Section>
-        <Footer store={store}/>
-      </div>
     )
 };
 export default PrivacyPolicyPage;

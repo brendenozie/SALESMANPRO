@@ -2,8 +2,6 @@
 
 // 1. About Page (about.tsx)
 import React from 'react';
-import Header from '../../../../components/site/header/Header';
-import Footer from '../../../../components/site/footer/Footer';
 import Section from '../../../../components/site/Section/Section';
 import { motion } from 'framer-motion';
 import { useStore } from '../../../../contexts/StoreContext';
@@ -55,8 +53,6 @@ const AboutPage: React.FC<AboutProps> = () => {
   const store = useStore();
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-      <Header store={store}/>
       <Section title="About Us" background="none">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -69,8 +65,6 @@ const AboutPage: React.FC<AboutProps> = () => {
           <p>Meet the team behind the scenes.</p>
         </motion.div>
       </Section>
-      <Footer store={store}/>
-    </div>
   )
 }
 ;

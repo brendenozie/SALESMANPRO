@@ -1,8 +1,6 @@
 
 // 4. Terms of Service (terms-of-service.tsx)
 import React from 'react';
-import Header from '../../../../components/site/header/Header';
-import Footer from '../../../../components/site/footer/Footer';
 import Section from '../../../../components/site/Section/Section';
 import { motion } from 'framer-motion';
 import { useStore } from '../../../../contexts/StoreContext';
@@ -52,8 +50,6 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 const TermsPage: React.FC<TermsPageProps> = () => {
   const store = useStore();
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-      <Header store={ store }/>
       <Section title="Terms of Service" background="none">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }} className="max-w-3xl mx-auto space-y-4 text-sm">
           <h3 className="font-semibold text-lg">Acceptance of Terms</h3>
@@ -61,8 +57,6 @@ const TermsPage: React.FC<TermsPageProps> = () => {
           {/* Add rest of clauses */}
         </motion.div>
       </Section>
-      <Footer store={ store }/>
-    </div>
   )
 };
 

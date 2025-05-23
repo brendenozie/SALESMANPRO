@@ -1,8 +1,6 @@
 
 // 5. Help Center (help-center.tsx)
 import React from 'react';
-import Header from '../../../../components/site/header/Header';
-import Footer from '../../../../components/site/footer/Footer';
 import Section from '../../../../components/site/Section/Section';
 import Link from 'next/link';
 import { useStore } from '../../../../contexts/StoreContext';
@@ -54,8 +52,6 @@ const HelpCenter: React.FC<HelpCenterProps> = () => {
   const store = useStore();
 
   return (
-      <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-        <Header store={store}/>
         <Section title="Help Center" background="none">
           <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
@@ -70,8 +66,6 @@ const HelpCenter: React.FC<HelpCenterProps> = () => {
             ))}
           </div>
         </Section>
-        <Footer  store={store} />
-      </div>
     )
 };
 export default HelpCenter;
