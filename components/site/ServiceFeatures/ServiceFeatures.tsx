@@ -1,25 +1,6 @@
-import React,{ useState, useEffect, useRef } from 'react';
-import { GetServerSideProps } from 'next';
-import prisma from '../../../server/db/prismadb';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ChevronDownIcon, HeartIcon, MagnifyingGlassCircleIcon, ShoppingBagIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, XMarkIcon, Bars3BottomLeftIcon, FaceSmileIcon, BookOpenIcon, TruckIcon, ArrowsUpDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import banner from '@/assets/homebanner.png';
-import { BuildingLibraryIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
-import clsx from "clsx";
-import { motion, AnimatePresence } from "framer-motion";
-import Header from "../header/Header";
-import Footer from "../footer/Footer";
-import Cart from "../../shop/cart";
-import SignInModal from "../../SignInModal";
-import { useStateContext } from '../../../contexts/ContextProvider';
-import LocationModal from "../../locationManager";
-import ProductGrid from '../productGrid/ProductGrid';
-import NewsletterSection from '../NewsletterSection/NewsletterSection';
-import CategoryBanners from '../CategoryBanners/CategoryBanners';
-
-// Loader for next/image
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+import React from 'react';
+import { PhoneIcon, TruckIcon, ArrowsUpDownIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { motion } from "framer-motion";
 
 // Type definitions
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }

@@ -1,51 +1,6 @@
 import React from 'react';
-import {PhoneIcon, TruckIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
-import { ShieldCheckIcon } from '@heroicons/react/24/solid';
 import clsx from "clsx";
 import { motion } from "framer-motion";
-
-// Loader for next/image
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
-
-const features = [
-  { Icon: TruckIcon, title: 'Free Delivery', desc: 'On orders over $99' },
-  { Icon: PhoneIcon, title: '24/7 Support', desc: 'We’re here to help' },
-  { Icon: ShieldCheckIcon, title: 'Secure Payment', desc: '100% secure checkout' },
-  { Icon: ArrowsUpDownIcon, title: 'Easy Returns', desc: '30-day return policy' },
-];
 
 const Section = ({ title, children, background = "none", }: { title: string; children: React.ReactNode; background?: "light" | "dark" | "none"; }) => {
 
@@ -63,8 +18,7 @@ const Section = ({ title, children, background = "none", }: { title: string; chi
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className={clsx(
-            "text-3xl sm:text-4xl font-bold mb-4",
+          className={clsx("text-3xl sm:text-4xl font-bold mb-4",
             background === "dark" ? "text-white" : "text-gray-800"
           )}
         >

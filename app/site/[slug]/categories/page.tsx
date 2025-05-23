@@ -7,6 +7,9 @@ import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
 import { useStore } from '../../../../contexts/StoreContext';
 
+// Loader for next/image
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 export default function CategoriesPage() {
   const store  = useStore();
   const categories = store?.StoreCategory || [];
@@ -35,6 +38,7 @@ export default function CategoriesPage() {
                   <Image
                     src={cat.imageUrl}
                     alt={cat.name}
+                    loader={loader}
                     fill
                     sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
