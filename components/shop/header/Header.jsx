@@ -36,9 +36,12 @@ const Header = () => {
 
   const path = usePathname();
   // bail out on /stores or any deeper stores route
-  if (path.startsWith('/stores')) return null;
+  if (path.startsWith('/stores')) return null;  
+  if (path.startsWith('/admin')) return null;
+  if (path.startsWith('/agent')) return null;
+  if (path.startsWith('/clients')) return null;
+  if (path.startsWith('/site')) return null;
   
-
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">
       <TopBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName} isOpen={isOpen} setIsOpen={setIsOpen} onClose={onClose} onUpdate={onUpdate}/>

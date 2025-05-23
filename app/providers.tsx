@@ -6,7 +6,7 @@ import { ContextProvider } from "../contexts/ContextProvider";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
-import 'leaflet/dist/leaflet.css';
+// import 'leaflet/dist/leaflet.css';
 
 type Props = {
   children: ReactNode;

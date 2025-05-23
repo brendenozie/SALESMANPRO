@@ -8,6 +8,8 @@ const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr:
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 const useMap = dynamic(() => import('react-leaflet').then(m => m.useMap), { ssr: false });
 
+import "leaflet/dist/leaflet.css";
+
 const DEFAULT_LOCATION = { lat: 0, lng: 0 }; // Provide a safe fallback
 
 const ResizeHandler = () => {

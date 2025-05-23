@@ -6,6 +6,11 @@ const Footer = () => {
   const path = usePathname();
   // bail out on /stores or any deeper stores route
   if (path.startsWith('/stores')) return null;
+  if (path.startsWith('/admin')) return null;
+  if (path.startsWith('/agent')) return null;
+  if (path.startsWith('/clients')) return null;  
+  if (path.startsWith('/site')) return null;
+
   return (
     <footer className="bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100 dark:from-black dark:via-gray-900 dark:to-black py-20 text-gray-900 dark:text-white">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 px-8">
