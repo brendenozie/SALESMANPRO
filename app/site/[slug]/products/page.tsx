@@ -45,7 +45,9 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   if (sort === 'rating') orderBy = { rating: 'desc' };
 
   const [listings, totalCount, categories] = await Promise.all([
-    prisma.marketplaceListing.findMany({ where, skip: (page - 1) * pageSize, take: pageSize, orderBy, include: { images: { select: { url: true } } } }),
+    prisma.marketplaceListing.findMany({ where, skip: (page - 1) * pageSize, take: pageSize, orderBy, 
+      // include: { images: { select: { url: true } } }
+     }),
     prisma.marketplaceListing.count({ where }),
     prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
   ]);

@@ -42,7 +42,7 @@ export default async function ProductPage({ params }: PageProps) {
   // Fetch product and related items
   const product = await prisma.marketplaceListing.findFirst({
     where: { id: productId, company: { slug } },
-    include: { images: true },
+    // include: { images: true },
   });
   if (!product) notFound();
 
@@ -53,7 +53,7 @@ export default async function ProductPage({ params }: PageProps) {
       NOT: { id: product.id },
     },
     take: 4,
-    include: { images: true },
+    // include: { images: true },
   });
 
   // Render inside context provider
