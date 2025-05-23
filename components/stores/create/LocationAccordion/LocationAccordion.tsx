@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPinIcon } from '@heroicons/react/24/outline';
-import ShippingAddress from '../shippingAddress';
+import ShippingAddress from '../../../shippingAddress';
 
 export interface LocationAccordionProps {
   address?: string;

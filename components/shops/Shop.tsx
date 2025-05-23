@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import { PlusIcon, ArrowPathIcon, ArrowRightCircleIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/router";
+
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import load from "../../assets/load.png";
 import Image from "next/image";
@@ -55,7 +56,7 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
           </aside>}
 
           <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {shopItems?.products?.map((item : any, index : any) => (
+            {shopItems?.data?.map((item : any, index : any) => (
               <div key={index} onClick={()=>{ router.push(`/shop/product/${item.id}`)}} className="relative group bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition">
                 {/* <img src={item.cover} alt={item.title} className="w-full h-64 object-cover rounded-xl" /> */}
                 <Image
@@ -134,7 +135,7 @@ const ProductGrid = ({ loading, shopItems }:any) => (
             className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg hover:shadow-xl transition mb-4 break-inside-avoid"
           />
         ))
-      : shopItems?.products.map((product:any) => <ProductCard key={product.id} product={product} />)}
+      : shopItems?.data?.map((product:any, index : any) => <div key={index}><ProductCard key={product.id} product={product} /></div>)}
 
     {loading && (
       <div className="col-span-full flex justify-center mt-6">
@@ -165,7 +166,8 @@ const ProductCard = ({ product, addToCart }:any) => {
             width={300}
             height={300}
             loader = {loaderProp}
-            src={imageError ? load.src : product.image}
+            // src={imageError ? load.src : product.image}
+            src={imageError ? load.src : product.image ? product.image : "/killimall" }
             alt={`Product image of ${product.title}`}
             className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
             onError={() => setImageError(true)}
@@ -226,7 +228,7 @@ const ProductGridV1 = ({ shopItems } : any) => {
               width={300}
               height={300}
               loader = {loaderProp}
-              src={imageError ? load.src : item.cover}
+              src={imageError ? load.src : item.cover ? item.cover : "/killimall" }
               alt={`Product image of ${item.title}`}
               className="w-full h-full object-contain transition-transform duration-300 hover:scale-110"
               onError={() => setImageError(true)}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import { ArrowRightCircleIcon, ArrowLeftCircleIcon, ChevronRightIcon, HeartIcon, ShoppingCartIcon, StarIcon, GifIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import load from "../../../assets/load.png";

@@ -80,7 +80,9 @@ const TopCate = ({ categories }) => {
 
         <Slider {...settings}>
           {categories.map((value, index) => (
-            <CategoryCard value={value} index={index}/>
+            <div key={index}>
+              <CategoryCard value={value} index={index}/>
+            </div>
           ))}
         </Slider>
       </div>

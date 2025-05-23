@@ -54,6 +54,8 @@ const HomePage = () => {
         const data = await response.json();
         products[String(featuredCategories.name)] = data;
         setProductsByCategory(products);
+        
+        console.log(products);
       } catch (err:any) {
         setError(err.message);
       } finally {
@@ -73,8 +75,8 @@ const HomePage = () => {
       try {
         const response = await fetch(`/api/shop/productsByFlag?flag=${flag}`);
         if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
-        const data = await response.json();
-        setState(data);
+        const responsedata = await response.json();
+        setState(responsedata.data);
       } catch (err:any) {
         setError(err.message);
       } finally {
@@ -92,26 +94,26 @@ const HomePage = () => {
   return (
     <>
       {categories && <BannerSlider categories={categories} />}
-      {flashDeals.products && (
+      {flashDeals && (
         <FlashDeals
-          productItems={flashDeals.products}
+          productItems={flashDeals}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}
         />
       )}
       {categories.length > 0 && <TopCate categories={categories} />}
-      {newArrivals.products && (
+      {newArrivals && (
         <NewArrivals
-          productItems={newArrivals.products}
+          productItems={newArrivals}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}
         />
       )}
-      {discounts.products && (
+      {discounts && (
         <Discount
-          productItems={discounts.products}
+          productItems={discounts}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}

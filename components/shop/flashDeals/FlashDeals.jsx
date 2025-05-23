@@ -11,7 +11,7 @@ import {
   ShoppingCartIcon
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import load from "../../../assets/load.png";
 import Image from "next/image";
 

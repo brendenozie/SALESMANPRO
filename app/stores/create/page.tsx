@@ -3,22 +3,22 @@ import { GetServerSideProps } from 'next';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
-import BasicInfo from '../../components/BasicInfo/BasicInfo';
-import CategoryAccordion from '../../components/CategoryAccordion/CategoryAccordion';
-import BannerLogoAccordion from '../../components/BannerLogoAccordion/BannerLogoAccordion';
-import ContactAccordion from '../../components/ContactAccordion/ContactAccordion';
-import LocationAccordion from '../../components/LocationAccordion/LocationAccordion';
-import SocialLinksAccordion from '../../components/SocialLinksAccordion/SocialLinksAccordion';
-import PoliciesAccordion from '../../components/PoliciesAccordion/PoliciesAccordion';
-import FAQsAccordion from '../../components/FAQsAccordion/FAQsAccordion';
-import TestimonialsAccordion from '../../components/TestimonialsAccordion/TestimonialsAccordion';
-import HeroSlidesAccordion from '../../components/HeroSlidesAccordion/HeroSlidesAccordion';
-import PromotionsAccordion from '../../components/PromotionsAccordion/PromotionsAccordion';
-import ThemeSettingsAccordion from '../../components/ThemeSettingsAccordion/ThemeSettingsAccordion';
-import SeoSettingsAccordion from '../../components/SeoSettingsAccordion/SeoSettingsAccordion';
-import SettingsAccordion from '../../components/SettingsAccordion/SettingsAccordion';
-import PaymentAccordion from '../../components/PaymentAccordion/PaymentAccordion';
-import ShippingAccordion from '../../components/ShippingAccordion/ShippingAccordion';
+import BasicInfo from '../../../components/stores/create/BasicInfo/BasicInfo';
+import CategoryAccordion from '../../../components/stores/create/CategoryAccordion/CategoryAccordion';
+import BannerLogoAccordion from '../../../components/stores/create/BannerLogoAccordion/BannerLogoAccordion';
+import ContactAccordion from '../../../components/stores/create/ContactAccordion/ContactAccordion';
+import LocationAccordion from '../../../components/stores/create/LocationAccordion/LocationAccordion';
+import SocialLinksAccordion from '../../../components/stores/create/SocialLinksAccordion/SocialLinksAccordion';
+import PoliciesAccordion from '../../../components/stores/create/PoliciesAccordion/PoliciesAccordion';
+import FAQsAccordion from '../../../components/stores/create/FAQsAccordion/FAQsAccordion';
+import TestimonialsAccordion from '../../../components/stores/create/TestimonialsAccordion/TestimonialsAccordion';
+import HeroSlidesAccordion from '../../../components/stores/create/HeroSlidesAccordion/HeroSlidesAccordion';
+import PromotionsAccordion from '../../../components/stores/create/PromotionsAccordion/PromotionsAccordion';
+import ThemeSettingsAccordion from '../../../components/stores/create/ThemeSettingsAccordion/ThemeSettingsAccordion';
+import SeoSettingsAccordion from '../../../components/stores/create/SeoSettingsAccordion/SeoSettingsAccordion';
+import SettingsAccordion from '../../../components/stores/create/SettingsAccordion/SettingsAccordion';
+import PaymentAccordion from '../../../components/stores/create/PaymentAccordion/PaymentAccordion';
+import ShippingAccordion from '../../../components/stores/create/ShippingAccordion/ShippingAccordion';
 
 interface CategoryOption { id: string; name: string; }
 interface GeoLocation { lat: number; lng: number; }
