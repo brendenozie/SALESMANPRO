@@ -1,10 +1,10 @@
 // app/[slug]/layout.tsx
-import prisma from '../../../server/db/prismadb';
-import { Store, StoreContextProvider } from '../../../contexts/StoreContext';
+import prisma from '../../server/db/prismadb';
+import { Store, StoreContextProvider } from '../../contexts/StoreContext';
 import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';
-import Header from '../../../components/site/header/Header';
-import Footer from '../../../components/site/footer/Footer';
+import Header from '../../components/site/header/Header';
+import Footer from '../../components/site/footer/Footer';
 
 export default async function StoreLayout({
   params,
