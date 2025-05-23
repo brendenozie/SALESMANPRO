@@ -11,7 +11,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../contexts/ContextProvider";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 // Type definitions
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }

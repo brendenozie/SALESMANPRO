@@ -1,5 +1,5 @@
 import React from 'react';
-import { BuildingLibraryIcon, FaceSmileIcon, BookOpenIcon } from '@heroicons/react/24/solid';
+import {FaceSmileIcon } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 
 // Type definitions
@@ -81,30 +81,11 @@ const Footer :React.FC<FooterProps> = ({ store }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Follow Us</h3>
           <div className="flex space-x-4">
-          {store.socialLinks.map((s) => (
+          {/* {store.socialLinks.map((s) => (
             <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
               <FaceSmileIcon className="h-5 w-5" />
             </motion.a>
-            // <a
-            //   key={s.channel}
-            //   href={s.url}
-            //   target="_blank"
-            //   rel="noreferrer"
-            //   style={{ color: primary }}
-            //   onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
-            //   onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
-            //   className="capitalize transition-colors"
-            // >
-            //   {s.channel}
-            // </a>
-          ))}
-            
-            {/* <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
-              <BuildingLibraryIcon className="h-5 w-5" />
-            </motion.a>
-            <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
-              <BookOpenIcon className="h-5 w-5" />
-            </motion.a> */}
+          ))} */}
           </div>
         </div>
       </div>
