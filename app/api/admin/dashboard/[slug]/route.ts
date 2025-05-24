@@ -1,25 +1,40 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "../../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function GET( req : Request ) {
+export default async function GET( req : Request,
+  { params }: { params: { slug: string } }
+ ) {
+
   if (req.method !== "GET") {
     return NextResponse.json({ message: "Method not allowed" });
   }
 
+  // params.slug is the value from the URL
+  const { slug } = params;
+
   try {
     // Calculate new clients (clients added today)
     const newClients = await prisma.client.count({
-      where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+      where: { 
+        createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        companyId: slug
+      },
     });
 
     // Calculate low-stock inventory items
     const lowStock = await prisma.inventoryItem.count({
-      where: { quantity: { lte: 5 } }, // Assuming low stock is <= 5
+      where: { 
+        quantity: { lte: 5 },
+        companyId: slug
+       }, // Assuming low stock is <= 5
     });
 
     // Find the top agent by sales
     const topAgent = await prisma.salesAgent.findMany({
+      where:{
+        companyId:slug
+      },
       include: {
         AgentInventory: {
           include: { AgentInventoryLog: true },
@@ -45,7 +60,9 @@ export default async function GET( req : Request ) {
 
     // Count communications today
     const communicationsToday = await prisma.communication.count({
-      where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+      where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+      // companyId: slug
+     },
     });
 
     // Count pending orders
@@ -55,7 +72,8 @@ export default async function GET( req : Request ) {
 
     // Count pending requests
     const pendingRequests = await prisma.request.count({
-      where: { status: "PENDING" },
+      where: { status: "PENDING",
+        companyId: slug },
     });
 
     // Sales and commission data
@@ -118,9 +136,11 @@ export default async function GET( req : Request ) {
       taskData: { tasks },
     };
 
-    return res.status(200).json(response);
+    console.log(response);
+    
+    return NextResponse.json(response,{status : 200});
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
-    return NextResponse.json({ error: "Internal server error" });
+    return NextResponse.json({ error: "Internal server error" }, {status : 500});
   }
 }

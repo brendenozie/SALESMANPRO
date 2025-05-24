@@ -8,32 +8,32 @@ export default async function middleware(request: NextRequest) {
   const matchesProtectedPath = protectedPaths.some((path) =>
     pathname.startsWith(path)
   );
-  if (matchesProtectedPath) {
-    const token = await getToken({ req: request });
-    if (!token) {
-      const url = new URL(`/signin`, request.url);
-      url.searchParams.set("callbackUrl", encodeURI(request.url));
-      return NextResponse.redirect(url);
-    }
-    if (token.role !== "admin") {
-      const url = new URL(`/403`, request.url);
-      return NextResponse.rewrite(url);
-    }
-    if (token.role === "admin") {
-      const url = new URL(`/admin`, request.url);
-      return NextResponse.rewrite(url);
-    }
+  // if (matchesProtectedPath) {
+  //   const token = await getToken({ req: request });
+  //   if (!token) {
+  //     const url = new URL(`/signin`, request.url);
+  //     url.searchParams.set("callbackUrl", encodeURI(request.url));
+  //     return NextResponse.redirect(url);
+  //   }
+  //   if (token.role !== "admin") {
+  //     const url = new URL(`/403`, request.url);
+  //     return NextResponse.rewrite(url);
+  //   }
+  //   if (token.role === "admin") {
+  //     const url = new URL(`/admin`, request.url);
+  //     return NextResponse.rewrite(url);
+  //   }
     
-    if (token.role === "agent") {
-      const url = new URL(`/agent`, request.url);
-      return NextResponse.rewrite(url);
-    }
+  //   if (token.role === "agent") {
+  //     const url = new URL(`/agent`, request.url);
+  //     return NextResponse.rewrite(url);
+  //   }
     
-    if (token.role === "clients") {
-      const url = new URL(`/clients`, request.url);
-      return NextResponse.rewrite(url);
-    }
+  //   if (token.role === "clients") {
+  //     const url = new URL(`/clients`, request.url);
+  //     return NextResponse.rewrite(url);
+  //   }
 
-  }
+  // }
   return NextResponse.next();
 }

@@ -1,8 +1,8 @@
 // app/[slug]/layout.tsx
 
-import UserNav from "../../components/UserNav";
+import UserNav from "../../../components/UserNav";
 import React, { ReactNode, useState } from 'react';
-import AdminLayout from "../../components/AdminLayout";
+import AdminLayout from "../../../components/AdminLayout";
 
 export default async function StoreLayout({
   params,

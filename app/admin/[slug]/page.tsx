@@ -14,12 +14,11 @@ export default async function AdminDashboardPage({
   const session = await getAuthSession();
 
   if (!session?.user?.id) {
-    console.log("nothing");
     redirect('/');
   }
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard`,//${params.slug}
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${params.slug}`,
     { cache: 'no-store' }
   );
 

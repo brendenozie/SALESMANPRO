@@ -5,19 +5,17 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Session } from 'next-auth';
-import UserLayout from '@/components/UserLayout';
 import ChartTwo from '@/components/ChartTwo';
 import ChartThree from '@/components/ChartThree';
-import Drawer from '@/components/Drawer';
 
 // Asset imports
-import salesIcon from '@/assets/bmi.png';
-import targetIcon from '@/assets/hb.png';
-import clientsIcon from '@/assets/bmi.png';
-import productIcon from '@/assets/bmi.png';
-import agentIcon from '@/assets/bmi.png';
-import orderIcon from '@/assets/bmi.png';
-import communicationIcon from '@/assets/bmi.png';
+import salesIcon from '../../assets/bmi.png';
+import targetIcon from '../../assets/hb.png';
+import clientsIcon from '../../assets/bmi.png';
+import productIcon from '../../assets/bmi.png';
+import agentIcon from '../../assets/bmi.png';
+import orderIcon from '../../assets/bmi.png';
+import communicationIcon from '../../assets/bmi.png';
 
 export interface DashboardData {
   clientData: { newClients: number };

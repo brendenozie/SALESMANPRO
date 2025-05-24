@@ -1,6 +1,7 @@
 // components/AdminLayout.tsx
+"use client"
 import React, { useState, PropsWithChildren } from "react";
-import { useRouter } from "next/router";
+import { useRouter, usePathname } from "next/navigation";
 import {
   HomeIcon,
   UsersIcon,
@@ -18,8 +19,10 @@ import { AdminContext } from "../contexts/AdminContextProvider";
 const AdminLayout = ({ children }: PropsWithChildren) => {
 
   const router = useRouter();
-  const { slug } = router.query;
-  const adminSlug = Array.isArray(slug) ? slug[0] : slug ?? "";
+  const pathname = usePathname();
+  // Extract adminSlug from the current path (e.g., /admin/[slug]/...)
+    const pathMatch = pathname.match(/^\/admin\/([^\/]+)/);
+    const adminSlug = pathMatch ? pathMatch[1] : "";
 
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
@@ -69,8 +72,7 @@ const AdminLayout = ({ children }: PropsWithChildren) => {
   const toggleSubmenu = (label: string) => {
     setOpenSubmenu(openSubmenu === label ? null : label);
   };
-
-  const currentPath = router.asPath;
+  const currentPath = pathname;
 
   return (
     <AdminContext.Provider value={{ id: adminSlug }}>
