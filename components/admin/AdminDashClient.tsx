@@ -1,4 +1,4 @@
-// File: app/admin/dashboard/AdminDashClient.tsx
+
 'use client';
 
 import React, { useState } from 'react';

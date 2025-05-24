@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { getAuthSession } from '../../../lib/auth';
-import AdminDashClient, { DashboardData } from './AdminDashClient';
+import AdminDashClient, { DashboardData } from '../../../components/admin/AdminDashClient';
 
 export const dynamic = 'force-dynamic';
 
