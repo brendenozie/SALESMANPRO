@@ -22,7 +22,7 @@ export default function FAQsAccordion({
   const allFilled = faqs.every(faq => faq.question && faq.answer);
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="max-w-3xl mx-auto overflow-hidden">
       <button
         type="button"
         onClick={onAddFAQ}

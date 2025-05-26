@@ -35,7 +35,7 @@ export default function LocationAccordion({
     };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+    <div className="max-w-3xl mx-auto p-6 ">
       <div
         onClick={() => setIsOpen(prev => !prev)}
         className="flex justify-between items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition"

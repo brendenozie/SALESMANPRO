@@ -31,7 +31,7 @@ const LazyMap = ({ location = DEFAULT_LOCATION, locationName = 'Selected Locatio
 
   return (
     <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] overflow-hidden">
-      <MapContainer center={[location.lat, location.lng]} zoom={13} className="w-full h-full rounded-lg">
+      <MapContainer key={`${location.lat}-${location.lng}`} center={[location.lat, location.lng]} zoom={13} className="w-full h-full rounded-lg">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <ResizeHandler />
         {location?.lat && location?.lng && (

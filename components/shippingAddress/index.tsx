@@ -1,20 +1,21 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { MapPinIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 
-const MapContainer: any = dynamic(() => import("react-leaflet").then((m) => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((m) => m.TileLayer), { ssr: false });
-const Marker = dynamic<any>(() => import("react-leaflet").then((m) => m.Marker), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr: false });
-const Circle = dynamic<any>(() => import("react-leaflet").then((m) => m.Circle), { ssr: false });
+const MapContainer: any = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
+const TileLayer    = dynamic(() => import("react-leaflet").then(m => m.TileLayer),   { ssr: false });
+const Marker       = dynamic<any>(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
+const Popup        = dynamic(() => import("react-leaflet").then(m => m.Popup),       { ssr: false });
+const Circle       = dynamic<any>(() => import("react-leaflet").then(m => m.Circle), { ssr: false });
 
 const API_BASE = "https://nominatim.openstreetmap.org";
 const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { lat: number; lng: number }) => void }> = ({ onAddressSelect }) => {
+  
   const { data: session, status } = useSession();
   const userId = session?.user?.id;
 
@@ -73,13 +74,6 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
     debouncedFetchSuggestions(e.target.value);
   };
 
-  const handleMapClick = (e: any) => {
-    const { lat, lng } = e.latlng;
-    setSelectedLocation({ lat, lng });
-    setMapCenter({ lat, lng });
-    fetchAddress(lat, lng);
-  };
-
   const handleSuggestionSelect = (suggestion: any) => {
     const lat = parseFloat(suggestion.lat);
     const lng = parseFloat(suggestion.lon);
@@ -131,6 +125,15 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
     );
   };
 
+  const handleMapClick = (e: any) => {
+    const { lat, lng } = e.latlng;
+    if (selectedLocation?.lat !== lat || selectedLocation?.lng !== lng) {
+      setSelectedLocation({ lat, lng });
+      setMapCenter({ lat, lng });
+      fetchAddress(lat, lng);
+    }
+  };
+  
   const fetchSavedAddress = async () => {
     if (!userId) return;
     try {
@@ -156,19 +159,19 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
   }, [status]);
 
   const MapUpdater = dynamic(
-    () => import("react-leaflet").then((m) => ({
-      default: function ({ }) {
+    () => import("react-leaflet").then(m => ({
+      default: function () {
         const { useMap } = m;
         const map = useMap();
         useEffect(() => {
           map.setView(mapCenter, zoom);
-        }, [mapCenter, zoom, map]);
+        }, [map, mapCenter, zoom]);
         return null;
-      },
+      }
     })),
     { ssr: false }
   );
-
+  
   const MapDragHandler = dynamic(
     () => import("react-leaflet").then((m) => ({
       default: function () {
@@ -196,6 +199,20 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
     setMapCenter(position);
     debouncedFetchAddress(position.lat, position.lng);
   };
+
+   // 1️⃣ Keep a ref to the map instance:
+   const mapRef = useRef<any>(null);
+
+   // 2️⃣ On unmount (or remount), always tear down that Leaflet instance:
+   useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+  
 
   return (
     <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-lg">
@@ -228,19 +245,27 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
       </div>
 
       <div className="mt-4 h-96 w-full rounded-lg overflow-hidden">
-        <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }} onClick={handleMapClick}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <MapUpdater />
-          <MapDragHandler />
-          {selectedLocation && (
-            <>
-              <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
-                <Popup>{address}</Popup>
-              </Marker>
-              <Circle center={[selectedLocation.lat, selectedLocation.lng]} radius={radius} fillOpacity={0.1} />
-            </>
-          )}
-        </MapContainer>
+      {
+      !mapRef.current && (
+        <MapContainer 
+          key={`${mapCenter.lat}-${mapCenter.lng}-${zoom}`}  // ← unique key forces full remount
+          center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} 
+          whenCreated={(map:any) => { mapRef.current = map }}
+          style={{ height: "100%", width: "100%" }} onClick={handleMapClick}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <MapUpdater />
+            <MapDragHandler />
+            {selectedLocation && (
+              <>
+                <Marker position={[selectedLocation.lat, selectedLocation.lng]} draggable eventHandlers={{ dragend: handleMarkerDragEnd }}>
+                  <Popup>{address}</Popup>
+                </Marker>
+                <Circle center={[selectedLocation.lat, selectedLocation.lng]} radius={radius} fillOpacity={0.1} />
+              </>
+            )}
+          </MapContainer>
+        )
+      }
       </div>
 
       {error && <p className="text-red-500 mt-2">{error}</p>}

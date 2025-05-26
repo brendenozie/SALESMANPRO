@@ -19,7 +19,7 @@ export default function SettingsAccordion({
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+    <div className="max-w-3xl mx-auto p-6">
       <h2 className="flex justify-between items-center text-2xl font-bold text-gray-800 mb-4">
         <span>System Settings</span>
         <span className="text-xl">⚙️</span>

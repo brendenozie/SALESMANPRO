@@ -21,7 +21,7 @@ export default function SocialLinksAccordion({
   const isValid = socialLinks.every(link => link.channel && link.url);
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="max-w-3xl mx-auto ">
       <button
         type="button"
         onClick={onAddLink}

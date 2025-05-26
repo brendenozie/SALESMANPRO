@@ -39,7 +39,7 @@ export default function ContactAccordion({
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-xl">
+    <div className="max-w-3xl mx-auto p-6 ">
       {/* Accordion Header */}
       <div
         onClick={() => setIsOpen(prev => !prev)}

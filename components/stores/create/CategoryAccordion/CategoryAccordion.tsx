@@ -30,7 +30,7 @@ export default function CategoryAccordion({
   );
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+    <div className="max-w-3xl mx-auto p-6  ">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-gray-800">Select your Product Categories</h2>
       </div>

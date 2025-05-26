@@ -5,7 +5,7 @@ import { MapPinIcon, XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outlin
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
 import { useStateContext } from "../../contexts/ContextProvider";
 
-const LazyMap = lazy(() => import("../lazyMap"));
+// const LazyMap = lazy(() => import("../lazyMap"));
 
 const LocationModal = () => {
   const { isOpen, onClose, onUpdate } = useStateContext();
@@ -159,9 +159,9 @@ const fetchLocationName = async (lat, lon) => {
             </div>
             {isMapVisible && (
               <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] overflow-hidden rounded-lg">
-                <Suspense fallback={<p>Loading map...</p>}>
+                {/* <Suspense fallback={<p>Loading map...</p>}>
                   <LazyMap location={location} locationName={locationName} />
-                </Suspense>
+                </Suspense> */}
               </div>
             )}
             <button

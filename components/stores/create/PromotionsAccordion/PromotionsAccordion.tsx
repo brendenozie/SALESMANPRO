@@ -25,7 +25,7 @@ export default function PromotionsAccordion({
   const allFilled = promotions.every(promo => promo.title && promo.description);
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="max-w-3xl mx-auto overflow-hidden">
       <button
         type="button"
         onClick={onAddPromotion}

@@ -28,7 +28,7 @@ export default function HeroSlidesAccordion({
   const allFilled = slides.every(s => s.imageUrl && s.headline);
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="max-w-3xl mx-auto overflow-hidden">
       <details className="group">
         <summary className="flex justify-between items-center cursor-pointer px-6 py-4 bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
           <span>Hero Slides</span>

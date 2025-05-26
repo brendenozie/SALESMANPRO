@@ -19,7 +19,6 @@ const ShopLayout: React.FC<ShopLayoutProps> = ({ children }) => {
       <Footer />
       <Cart />
       <LocationModal /> 
-      {/* {isModalOpen && <SignInModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />} */}
     </div>
   );
 };

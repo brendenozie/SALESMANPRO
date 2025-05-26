@@ -24,7 +24,7 @@ export default function TestimonialsAccordion({
   const allFilled = testimonials.every(t => t.author && t.quote);
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div className="max-w-3xl mx-auto overflow-hidden">
       <button
         type="button"
         onClick={onAddTestimonial}

@@ -24,7 +24,7 @@ export default function ThemeSettingsAccordion({
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+    <div className="max-w-3xl mx-auto p-6">
       <div
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(prev => !prev)}
