@@ -3,8 +3,6 @@ import { notFound } from 'next/navigation';
 import prisma from '../../../server/db/prismadb';
 import { ReactNode } from 'react';
 import { useStore, StoreContextProvider, Store } from '../../../contexts/StoreContext';
-import Header from '@/components/site/header/Header';
-import Footer from '@/components/site/footer/Footer';
 
 export const dynamic = 'force-dynamic'; // always fetch fresh
 
@@ -155,13 +153,40 @@ export default async function StoreLayout({
     })),
   };
 
-  return (
-    <StoreContextProvider initialStore={store}>
-      <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-        <Header store={store} />
-        {children}
-        <Footer store={store} />
-      </div>
-    </StoreContextProvider>
-  );
+  const type = store?.category ?? 'default'
+
+  switch (type) {
+        case 'services':
+          return (<StoreContextProvider initialStore={store}>
+                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+                      <ServicesLayout slug={params.slug}>{children}</ServicesLayout>
+                    </div>
+                  </StoreContextProvider>)
+
+    
+        case 'ecommerce':
+          return (<StoreContextProvider initialStore={store}>
+                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+                      <EcommerceLayout slug={params.slug}>{children}</EcommerceLayout>
+                    </div>
+                  </StoreContextProvider>)
+    
+        case 'bookings':
+          return (<StoreContextProvider initialStore={store}>
+                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+                      <BookingsLayout slug={params.slug}>{children}</BookingsLayout>
+                    </div>
+              </StoreContextProvider>)
+    
+        default:
+          return (<StoreContextProvider initialStore={store}>
+                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+                      <DefaultLayout slug={params.slug}>{children}</DefaultLayout>
+                    </div>
+              </StoreContextProvider>)
+      }
 }
+
+
+
+
