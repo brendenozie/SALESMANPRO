@@ -8,12 +8,12 @@ import { motion } from "framer-motion";
 import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
-interface ServicesLayoutProps {
+interface TravelLayoutProps {
   params: { store: any };
   children: ReactNode;
 }
 
-export default function ServicesHeaderLayout({ params, children }: ServicesLayoutProps) {
+export default function TravelLayout({ params, children }: TravelLayoutProps) {
   const { store } = params;
   const router = useRouter();
 
@@ -107,10 +107,10 @@ export default function ServicesHeaderLayout({ params, children }: ServicesLayou
         </div>
       </section>
 
-      {/* Featured Services Cards */}
+      {/* Featured Travel Cards */}
       <section className="py-20 bg-gray-100">
         <div className="container mx-auto px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-800 mb-12">Featured Services</h2>
+          <h2 className="text-4xl font-bold text-center text-gray-800 mb-12">Featured Travel</h2>
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -126,7 +126,7 @@ export default function ServicesHeaderLayout({ params, children }: ServicesLayou
                 key={svc.id}
                 variants={{ hidden: { y: 50, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
                 className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-2xl transition cursor-pointer"
-                onClick={() => handleInquiry(svc.id)}
+                onClick={() => {}}//handleInquiry(svc.id)
               >
                 <div className="relative h-64">
                   <Image src={svc.imageUrl} alt={svc.name} fill className="object-cover" />
