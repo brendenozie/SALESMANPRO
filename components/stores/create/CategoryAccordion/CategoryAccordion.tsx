@@ -1,4 +1,5 @@
 import React, { useState, useMemo, ChangeEvent } from 'react';
+import { CheckCircleIcon, MagnifyingGlassCircleIcon } from '@heroicons/react/24/solid';
 
 export interface CategoryOption {
   id: string;
@@ -30,48 +31,53 @@ export default function CategoryAccordion({
   );
 
   return (
-    <div className="max-w-3xl mx-auto p-6  ">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Select your Product Categories</h2>
+    <div className="max-w-3xl mx-auto p-6">
+      <div className="mb-6">
+        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
+          Select Product Categories
+        </h2>
+        <p className="text-sm text-gray-500">
+          Choose the categories that best describe your product.
+        </p>
       </div>
 
-      <div className="mb-4">
+      <div className="relative mb-6">
+        <MagnifyingGlassCircleIcon className="w-5 h-5 text-gray-400 absolute top-3.5 left-3" />
         <input
           type="text"
           value={search}
           onChange={handleSearchChange}
           placeholder="Search categories..."
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 shadow-sm text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
         />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {filteredCategories.map(cat => {
           const isSelected = selectedCategories.some(c => c.id === cat.id);
           return (
             <button
               key={cat.id}
               onClick={() => onToggleCategory(cat)}
-              className={`flex items-center space-x-1 px-4 py-2 rounded-full border transition-all duration-200 focus:outline-none
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shadow-sm transition-all transform hover:scale-[1.03] duration-200 focus:outline-none
                 ${isSelected
-                  ? 'bg-indigo-600 border-indigo-600 text-white'
-                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'}`}
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
             >
               {isSelected && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
+                <CheckCircleIcon className="w-4 h-4 text-white" />
               )}
-              <span className="text-sm font-medium">{cat.name}</span>
+              {cat.name}
             </button>
           );
         })}
       </div>
 
       {filteredCategories.length === 0 && (
-        <p className="mt-4 text-center text-gray-500">
-          No categories match "{search}".
-        </p>
+        <div className="mt-8 flex flex-col items-center text-gray-400">
+          <MagnifyingGlassCircleIcon className="w-8 h-8 mb-2" />
+          <p className="text-sm">No categories match “{search}”.</p>
+        </div>
       )}
     </div>
   );

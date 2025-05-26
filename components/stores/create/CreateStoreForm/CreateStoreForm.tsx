@@ -311,33 +311,89 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
     );
 
   return (
-    <form onSubmit={handleSubmit} className="min-h-screen flex bg-white">
-      <aside className="w-64 bg-indigo-50 p-4 hidden md:block">
-        <nav className="space-y-2">
-          {steps.map((s, i) => (
-            <button key={s.key} className={`w-full text-left px-3 py-2 rounded ${i === stepIndex ? 'bg-indigo-200' : ''}`} onClick={() => setStepIndex(i)}>
-              {s.title}
-            </button>
-          ))}
-          <button className={`w-full text-left px-3 py-2 rounded ${stepIndex === steps.length ? 'bg-indigo-200' : ''}`} onClick={() => setStepIndex(steps.length)}>
-            Review
-          </button>
-        </nav>
-      </aside>
-      <main className="flex-1 p-6">
-        <div className="mb-6">
-          <div className="h-2 bg-gray-200 rounded overflow-hidden">
-            <div className="h-full bg-indigo-600 transition-all" style={{ width: `${((stepIndex+1)/(steps.length+1))*100}%` }} />
-          </div>
-          <p className="text-sm text-gray-500 mt-1">Step {Math.min(stepIndex+1, steps.length)}/{steps.length+1}</p>
-        </div>
-        <h1 className="text-3xl font-bold mb-4">{stepIndex < steps.length ? steps[stepIndex].title : 'Review Your Store'}</h1>
-        <div className="text-sm text-gray-600 mb-4 h-[70vh] overflow-auto">{StepContent}</div>
-        <div className="flex justify-between mt-6">
-          <button type="button" onClick={prev} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300" disabled={stepIndex===0}>Back</button>
-          {stepIndex < steps.length && <button type="button" onClick={next} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Next</button>}
-        </div>
-      </main>
-    </form>
+    <form onSubmit={handleSubmit} className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
+  {/* Sidebar */}
+  <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
+    <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
+    <nav className="flex flex-col gap-2 overflow-y-auto">
+      {steps.map((s, i) => (
+        <button
+          key={s.key}
+          type="button"
+          className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+            i === stepIndex ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
+          }`}
+          onClick={() => setStepIndex(i)}
+        >
+          <span className="w-6 h-6 bg-indigo-200 text-indigo-700 rounded-full text-xs flex items-center justify-center">
+            {i + 1}
+          </span>
+          {s.title}
+        </button>
+      ))}
+      <button
+        type="button"
+        className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+          stepIndex === steps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
+        }`}
+        onClick={() => setStepIndex(steps.length)}
+      >
+        <span className="w-6 h-6 bg-green-200 text-green-700 rounded-full text-xs flex items-center justify-center">
+          ✔
+        </span>
+        Review
+      </button>
+    </nav>
+  </aside>
+
+  {/* Main content */}
+  <main className="flex-1 flex flex-col px-4 sm:px-8 py-8">
+    {/* Step progress */}
+    <div className="mb-6">
+      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+          style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
+        />
+      </div>
+      <div className="flex justify-between mt-2 text-sm text-gray-500">
+        <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
+        <span>{stepIndex < steps.length ? steps[stepIndex].title : 'Review & Submit'}</span>
+      </div>
+    </div>
+
+    {/* Dynamic step content */}
+    <div className="flex-1">{StepContent}</div>
+
+    {/* Navigation buttons */}
+    <div className="mt-8 flex justify-between items-center border-t pt-4">
+      <button
+        type="button"
+        disabled={stepIndex === 0}
+        onClick={prev}
+        className="px-5 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+      >
+        ← Back
+      </button>
+
+      {stepIndex < steps.length ? (
+        <button
+          type="button"
+          onClick={next}
+          className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+        >
+          Next →
+        </button>
+      ) : (
+        <button
+          type="submit"
+          className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+        >
+          Submit Store
+        </button>
+      )}
+    </div>
+  </main>
+</form>
   );
 }

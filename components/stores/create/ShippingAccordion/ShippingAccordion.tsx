@@ -39,56 +39,68 @@ export default function ShippingAccordion({
         <span className="text-xl">🚚</span>
       </h2>
 
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {/* Carrier & Tracking */}
+      <section className="mb-6">
+        <fieldset className="border border-gray-200 rounded-lg p-4 space-y-4">
+          <legend className="text-sm font-medium text-gray-600 px-2">Carrier & Tracking</legend>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="carrierName" className="block text-xs font-medium text-gray-600">
+                Carrier Name
+              </label>
+              <input
+                id="carrierName"
+                type="text"
+                value={carrierName}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('carrierName', e.target.value)}
+                placeholder="DHL, FedEx, etc."
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="trackingUrl" className="block text-xs font-medium text-gray-600">
+                Tracking URL Template
+              </label>
+              <input
+                id="trackingUrl"
+                type="text"
+                value={trackingUrl}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('trackingUrl', e.target.value)}
+                placeholder="https://tracking.example.com/track?code={tracking_number}"
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+        </fieldset>
+      </section>
+
+      {/* Shipping Regions */}
+      <section className="mb-6">
+        <fieldset className="border border-gray-200 rounded-lg p-4 space-y-2">
+          <legend className="text-sm font-medium text-gray-600 px-2">Regions</legend>
           <div>
-            <label htmlFor="carrierName" className="block text-xs font-medium text-gray-600">
-              Carrier Name
+            <label htmlFor="regions" className="block text-xs font-medium text-gray-600">
+              Shipping Regions
             </label>
             <input
-              id="carrierName"
+              id="regions"
               type="text"
-              value={carrierName}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('carrierName', e.target.value)}
-              placeholder="DHL, FedEx, etc."
+              value={regions.join(', ')}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                updateField('regions', e.target.value.split(',').map(r => r.trim()))
+              }
+              placeholder="e.g. US, EU, Asia"
               className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
+            <p className="mt-1 text-xs text-gray-500">Comma-separated list of regions you ship to.</p>
           </div>
-          <div>
-            <label htmlFor="trackingUrl" className="block text-xs font-medium text-gray-600">
-              Tracking URL Template
-            </label>
-            <input
-              id="trackingUrl"
-              type="text"
-              value={trackingUrl}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('trackingUrl', e.target.value)}
-              placeholder="https://tracking.example.com/track?code={tracking_number}"
-              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
+        </fieldset>
+      </section>
 
-        {/* Shipping Regions */}
-        <div>
-          <label htmlFor="regions" className="block text-xs font-medium text-gray-600">
-            Shipping Regions
-          </label>
-          <input
-            id="regions"
-            type="text"
-            value={regions.join(', ')}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              updateField('regions', e.target.value.split(',').map(r => r.trim()))
-            }
-            placeholder="e.g. US, EU, Asia"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <p className="mt-1 text-xs text-gray-500">Comma-separated list of regions you ship to.</p>
-        </div>
-
-        {/* Pickup Options */}
-        <div className="space-y-2">
+      {/* Pickup Options */}
+      <section>
+        <fieldset className="border border-gray-200 rounded-lg p-4 space-y-4">
+          <legend className="text-sm font-medium text-gray-600 px-2">Local Pickup</legend>
           <div className="flex items-center">
             <input
               id="enablePickup"
@@ -116,8 +128,8 @@ export default function ShippingAccordion({
               />
             </div>
           )}
-        </div>
-      </div>
+        </fieldset>
+      </section>
     </div>
   );
 }
