@@ -39,7 +39,7 @@ interface Store {
   products: Product[];
 }
 
-interface ServicesHeaderLayoutProps {
+interface FitnessLayoutProps {
   params: { store: Store };
   children: ReactNode;
 }
@@ -47,7 +47,7 @@ interface ServicesHeaderLayoutProps {
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const ServicesHeaderLayout: React.FC<ServicesHeaderLayoutProps> = (
+const FitnessLayout: React.FC<FitnessLayoutProps> = (
   {
     params,
     children,
@@ -74,4 +74,4 @@ const ServicesHeaderLayout: React.FC<ServicesHeaderLayoutProps> = (
   );
 };
 
-export default ServicesHeaderLayout;
+export default FitnessLayout;

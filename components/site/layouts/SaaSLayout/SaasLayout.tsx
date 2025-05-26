@@ -39,7 +39,7 @@ interface Store {
   products: Product[];
 }
 
-interface BookingsHeaderLayoutProps {
+interface SaasLayoutProps {
   params: { store: Store };
   children: ReactNode;
 }
@@ -47,7 +47,7 @@ interface BookingsHeaderLayoutProps {
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const BookingsHeaderLayout: React.FC<BookingsHeaderLayoutProps> = (
+const SaasLayout: React.FC<SaasLayoutProps> = (
   {
     params,
     children,
@@ -74,4 +74,4 @@ const BookingsHeaderLayout: React.FC<BookingsHeaderLayoutProps> = (
   );
 };
 
-export default BookingsHeaderLayout;
+export default SaasLayout;

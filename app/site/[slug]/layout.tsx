@@ -1,17 +1,22 @@
-// app/[slug]/layout.tsx
 import { notFound } from 'next/navigation';
 import prisma from '../../../server/db/prismadb';
 import { ReactNode } from 'react';
-import { useStore, StoreContextProvider, Store } from '../../../contexts/StoreContext';
+import { StoreContextProvider, Store } from '../../../contexts/StoreContext';
 
-export const dynamic = 'force-dynamic'; // always fetch fresh
+// Layout imports
+import ServicesHeaderLayout from '@/components/site/ServicesHeaderLayout/ServicesHeaderLayout';
+import EcommerceHeaderLayout from '@/components/site/EcommerceHeaderLayout/EcommerceHeaderLayout';
+import BookingsHeaderLayout from '@/components/site/BookingsHeaderLayout/BookingsHeaderLayout';
+import DefaultHeaderLayout from '@/components/site/DefaultHeaderLayout/DefaultHeaderLayout';
+// Optionally add more layouts:
+import RealEstateHeaderLayout from '@/components/site/RealEstateHeaderLayout/RealEstateHeaderLayout';
+import PortfolioHeaderLayout from '@/components/site/PortfolioHeaderLayout/PortfolioHeaderLayout';
+import RestaurantHeaderLayout from '@/components/site/RestaurantHeaderLayout/RestaurantHeaderLayout';
+// etc.
 
-// Generate per‐store metadata
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: { slug: string } }) {
   const raw = await prisma.company.findUnique({
     where: { slug: params.slug },
     select: {
@@ -153,40 +158,43 @@ export default async function StoreLayout({
     })),
   };
 
-  const type = store?.category ?? 'default'
+  const type = (store?.category ?? 'default').toLowerCase();
+
+  const renderWithLayout = (LayoutComponent: React.ComponentType<{ params: { store: Store }; children: ReactNode }>) => (
+    <StoreContextProvider initialStore={store}>
+      <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+        <LayoutComponent params={{ store }}>{children}</LayoutComponent>
+      </div>
+    </StoreContextProvider>
+  );
 
   switch (type) {
-        case 'services':
-          return (<StoreContextProvider initialStore={store}>
-                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-                      <ServicesLayout slug={params.slug}>{children}</ServicesLayout>
-                    </div>
-                  </StoreContextProvider>)
+    case 'services':
+    case 'service provider':
+      return renderWithLayout(ServicesHeaderLayout);
 
-    
-        case 'ecommerce':
-          return (<StoreContextProvider initialStore={store}>
-                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-                      <EcommerceLayout slug={params.slug}>{children}</EcommerceLayout>
-                    </div>
-                  </StoreContextProvider>)
-    
-        case 'bookings':
-          return (<StoreContextProvider initialStore={store}>
-                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-                      <BookingsLayout slug={params.slug}>{children}</BookingsLayout>
-                    </div>
-              </StoreContextProvider>)
-    
-        default:
-          return (<StoreContextProvider initialStore={store}>
-                    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-                      <DefaultLayout slug={params.slug}>{children}</DefaultLayout>
-                    </div>
-              </StoreContextProvider>)
-      }
+    case 'e-commerce':
+    case 'ecommerce':
+      return renderWithLayout(EcommerceHeaderLayout);
+
+    case 'bookings':
+    case 'booking & appointments':
+      return renderWithLayout(BookingsHeaderLayout);
+
+    case 'real estate':
+      return renderWithLayout(RealEstateHeaderLayout);
+
+    case 'portfolio':
+    case 'portfolio & personal branding':
+      return renderWithLayout(PortfolioHeaderLayout);
+
+    case 'restaurant':
+    case 'restaurant & food delivery':
+      return renderWithLayout(RestaurantHeaderLayout);
+
+    // add more cases here...
+
+    default:
+      return renderWithLayout(DefaultHeaderLayout);
+  }
 }
-
-
-
-

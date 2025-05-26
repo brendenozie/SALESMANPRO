@@ -2,13 +2,32 @@
 'use client';
 
 import React from 'react';
-import HeroSlider from '@/components/HeroSlider';
-import Section from '@/components/site/Section/Section';
-import ServiceFeatures from '@/components/site/ServiceFeatures/ServiceFeatures';
-import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners';
-import ProductGrid from '@/components/site/productGrid/ProductGrid';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { useStore } from '../../../contexts/StoreContext';
+import BookingsSite from './BookingsSite';
+import DefaultSite from './DefaultSite';
+import EcommerceSite from './EcommerceSite';
+import ServicesSite from './ServicesSite';
+
+// "E-commerce",
+// "Service Provider",
+// "Booking & Appointments",
+// "Portfolio & Personal Branding",
+// "Blog & Content",
+// "Directory & Listings",
+// "Educational & Online Courses",
+// "Nonprofit & Community",
+// "Restaurant & Food Delivery",
+// "Event & Ticketing",
+// "Real Estate",
+// "Healthcare & Clinics",
+// "SaaS & Web Apps",
+// "Media & Entertainment",
+// "Finance & Legal",
+// "Automotive",
+// "Travel & Tourism",
+// "Fitness & Wellness",
+// "Marketplace",
+// "Other",
 
 export default function StorePage() {
   const store  = useStore();
@@ -21,43 +40,14 @@ export default function StorePage() {
     );
   }
 
-  return (
-    <>
-      <HeroSlider store={store} />
+  const type = store?.category ?? 'default'
 
-      <Section title=''>
-        <ServiceFeatures store={store} />
-      </Section>
-
-      <Section title=''>
-        <CategoryBanners categories={store.StoreCategory} />
-      </Section>
-
-      <Section title="Trending Products">
-        <ProductGrid products={store.products} />
-      </Section>
-
-      <Section title="Top Selling">
-        <ProductGrid products={store.products} />
-      </Section>
-
-      <Section title="All Products">
-        <ProductGrid products={store.products} />
-      </Section>
-
-      <NewsletterSection />
-
-      <Section title=''>
-        {store.testimonials.map((t, i) => (
-          <div
-            key={i}
-            className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md my-8"
-          >
-            <p className="text-lg">{t.quote}</p>
-            <p className="text-sm text-gray-500">– {t.author}</p>
-          </div>
-        ))}
-      </Section>
-    </>
-  );
+  switch (type) {
+        case 'services':    return <ServicesSite store={store} />;
+        case 'booking':     return <BookingsSite store={store} />;
+        case 'ecommerce':   return <EcommerceSite store={store} />;
+        
+        default:           return <DefaultSite store={store} />;
+  }
+  
 }

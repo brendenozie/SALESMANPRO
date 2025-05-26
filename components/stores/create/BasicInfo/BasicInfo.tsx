@@ -10,16 +10,29 @@ export interface BasicInfoProps {
   handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
-const CATEGORIES = [
-  "Tech Gadgets",
-  "Vehicles",
-  "Fashion",
-  "Household",
-  "Sports & Outdoors",
-  "Beauty & Health",
-  "Toys & Hobbies",
+const SITE_CATEGORIES = [
+  "E-commerce",
+  "Service Provider",
+  "Booking & Appointments",
+  "Portfolio & Personal Branding",
+  "Blog & Content",
+  "Directory & Listings",
+  "Educational & Online Courses",
+  "Nonprofit & Community",
+  "Restaurant & Food Delivery",
+  "Event & Ticketing",
+  "Real Estate",
+  "Healthcare & Clinics",
+  "SaaS & Web Apps",
+  "Media & Entertainment",
+  "Finance & Legal",
+  "Automotive",
+  "Travel & Tourism",
+  "Fitness & Wellness",
+  "Marketplace",
   "Other",
 ];
+
 
 export default function BasicInfo({
   name,
@@ -80,7 +93,7 @@ export default function BasicInfo({
             onChange={handleChange}
             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            {CATEGORIES.map((cat) => (
+            {SITE_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>

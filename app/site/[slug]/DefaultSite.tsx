@@ -6,7 +6,7 @@ import Section from '@/components/site/Section/Section'
 import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners'
 import ProductGrid from '@/components/site/productGrid/ProductGrid'
 
-export default function BookingsSite({ store }:any) {
+export default function DefaultSite({ store }:any) {
   return (
     <>
       <HeroSlider store={store} />
@@ -39,8 +39,8 @@ export default function BookingsSite({ store }:any) {
             key={i}
             className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md my-8"
           >
-            <p className="text-lg">{t.quote}</p>
-            <p className="text-sm text-gray-500">– {t.author}</p>
+            <p className="text-lg">{t?.quote ?? "Awesome"}</p>
+            <p className="text-sm text-gray-500">– {t?.author ?? "Unknown"}</p>
           </div>
         ))}
       </Section>

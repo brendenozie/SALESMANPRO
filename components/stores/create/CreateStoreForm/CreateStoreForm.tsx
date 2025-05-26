@@ -75,7 +75,7 @@ export default function CreateStoreForm({ availableCategories }: CreateStoreForm
   const [step, setStep] = useState(1);
 
   const initialForm: StoreForm = {
-    name: '', slug: '', domain: '', tagline: '', description: '', category: '',
+    name: '', slug: '', domain: '', tagline: '', description: '', category: 'E-commerce',
     logoUrl: '', bannerUrl: '', contactEmail: '', contactPhone: '', address: '',
     geoLocation: { lat: 0, lng: 0 },
     openingHours: { mon: '', tue: '', wed: '', thu: '', fri: '', sat: '', sun: '' },
