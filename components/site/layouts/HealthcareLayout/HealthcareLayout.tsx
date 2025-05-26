@@ -1,6 +1,6 @@
 "use client"
 import React, { ReactNode, useState } from "react";
-import { useStateContext } from "../../../contexts/ContextProvider";
+import { useStateContext } from "../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
 import Header from "./header/Header";
 import Footer from "./footer/Footer";
