@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -27,7 +28,7 @@ import CommunicationSupport from '../../../components/communicationSupport';
 import AchievementsBadges from '../../../components/AchievementsBadges';
 import { useStateContext } from '../../../contexts/ContextProvider.js';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/router.js';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 const tabs = [

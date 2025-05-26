@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
@@ -246,9 +247,9 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
 
       <div className="mt-4 h-96 w-full rounded-lg overflow-hidden">
       {
-      !mapRef.current && (
+        
         <MapContainer 
-          key={`${mapCenter.lat}-${mapCenter.lng}-${zoom}`}  // ← unique key forces full remount
+        
           center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} 
           whenCreated={(map:any) => { mapRef.current = map }}
           style={{ height: "100%", width: "100%" }} onClick={handleMapClick}>
@@ -264,7 +265,6 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
               </>
             )}
           </MapContainer>
-        )
       }
       </div>
 
