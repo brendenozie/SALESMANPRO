@@ -5,12 +5,12 @@ import { z } from "zod";
 // Zod schemas
 const urlSchema = z.string().url();
 const geoSchema = z.object({ lat: z.number(), lng: z.number() });
-const socialLinkSchema = z.object({ channel: z.string(), url: urlSchema });
+const socialLinkSchema = z.object({ channel: z.string(), url: z.string() });
 const policySchema = z.object({ type: z.string(), title: z.string().optional(), content: z.string() });
 const faqSchema = z.object({ question: z.string(), answer: z.string(), order: z.number().optional() });
 const testimonialSchema = z.object({ author: z.string(), quote: z.string(), avatarUrl: urlSchema.optional(), rating: z.number().min(1).max(5).optional(), order: z.number().optional() });
-const slideSchema = z.object({ imageUrl: urlSchema, headline: z.string(), subline: z.string().optional(), ctaText: z.string().optional(), ctaLink: urlSchema.optional(), order: z.number().optional() });
-const promoSchema = z.object({ title: z.string(), description: z.string(), startsAt: z.string().optional(), endsAt: z.string().optional(), bannerUrl: urlSchema });
+const slideSchema = z.object({ imageUrl: z.string(), headline: z.string(), subline: z.string().optional(), ctaText: z.string().optional(), ctaLink: z.string().optional(), order: z.number().optional() });
+const promoSchema = z.object({ title: z.string(), description: z.string(), startsAt: z.string().optional(), endsAt: z.string().optional(), bannerUrl: z.string() });
 const seoSchema = z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.array(z.string()).optional() });
 const analyticsSchema = z.object({ googleTag: z.string().optional(), facebookTag: z.string().optional() });
 const paymentSchema = z.object({ stripeKey: z.string().optional(), paypalKey: z.string().optional() });
@@ -43,15 +43,15 @@ const storeSchema = z.object({
   paymentSettings: paymentSchema.optional(),
   shippingSettings: shippingSchema.optional(),
   storeCategories: z.array(storeCategorySchema).optional(),
-  ownerId: z.string().min(1)
+  userId: z.string().min(1)
 });
 
 // GET /api/stores?ownerId=
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const ownerId = searchParams.get("ownerId");
+  const userId = searchParams.get("userId");
 
-  const where = ownerId ? { userId: ownerId } : {};
+  const where = userId ? { userId: userId } : {};
 
   try {
     const stores = await prisma.company.findMany({
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
         geoLocation: data.geoLocation,
         openingHours: data.openingHours,
         themeSettings: data.themeSettings,
-        user: { connect: { id: data.ownerId } },
+        user: { connect: { id: data.userId } },
         socialLinks: data.socialLinks ? { create: data.socialLinks } : undefined,
         policies: data.policies ? { create: data.policies } : undefined,
         faqs: data.faqs ? { create: data.faqs } : undefined,

@@ -4,15 +4,26 @@ import { ReactNode } from 'react';
 import { StoreContextProvider, Store } from '../../../contexts/StoreContext';
 
 // Layout imports
-import ServicesHeaderLayout from '@/components/site/ServicesHeaderLayout/ServicesHeaderLayout';
-import EcommerceHeaderLayout from '@/components/site/EcommerceHeaderLayout/EcommerceHeaderLayout';
-import BookingsHeaderLayout from '@/components/site/BookingsHeaderLayout/BookingsHeaderLayout';
-import DefaultHeaderLayout from '@/components/site/DefaultHeaderLayout/DefaultHeaderLayout';
-// Optionally add more layouts:
-import RealEstateHeaderLayout from '@/components/site/RealEstateHeaderLayout/RealEstateHeaderLayout';
-import PortfolioHeaderLayout from '@/components/site/PortfolioHeaderLayout/PortfolioHeaderLayout';
-import RestaurantHeaderLayout from '@/components/site/RestaurantHeaderLayout/RestaurantHeaderLayout';
-// etc.
+import ServicesLayout from '@/components/site/layouts/ServicesLayout/ServicesLayout';
+import EcommerceLayout from '@/components/site/layouts/EcommerceLayout/EcommerceLayout';
+import BookingsLayout from '@/components/site/layouts/BookingsLayout/BookingsLayout';
+import DefaultLayout from '@/components/site/layouts/DefaultLayout/DefaultLayout';
+import RealEstateLayout from '@/components/site/layouts/RealEstateLayout/RealEstateLayout';
+import PortfolioLayout from '@/components/site/layouts/PortfolioLayout/PortfolioLayout';
+import BlogLayout from '@/components/site/layouts/BlogLayout/BlogLayout';
+import CoursesLayout from '@/components/site/layouts/CoursesLayout/CoursesLayout';
+import DirectoryLayout from '@/components/site/layouts/DirectoryLayout/DirectoryLayout';
+import EventsLayout from '@/components/site/layouts/EventsLayout/EventsLayout';
+import FinanceLayout from '@/components/site/layouts/FinanceLayout/FinanceLayout';
+import FitnessLayout from '@/components/site/layouts/FitnessLayout/FitnessLayout';
+import HealthcareLayout from '@/components/site/layouts/HealthcareLayout/HealthcareLayout';
+import MarketplaceLayout from '@/components/site/layouts/MarketplaceLayout/MarketplaceLayout';
+import NonprofitLayout from '@/components/site/layouts/NonprofitLayout/NonprofitLayout';
+import MediaLayout from '@/components/site/layouts/MediaLayout/MediaLayout';
+import TravelLayout from '@/components/site/layouts/TravelLayout/TravelLayout';
+import RestaurantLayout from '@/components/site/layouts/RestaurantLayout/RestaurantLayout';
+import AutomotiveLayout from '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout';
+import SaaSLayout from '@/components/site/layouts/SaaSLayout/SaasLayout';
 
 export const dynamic = 'force-dynamic';
 
@@ -171,30 +182,85 @@ export default async function StoreLayout({
   switch (type) {
     case 'services':
     case 'service provider':
-      return renderWithLayout(ServicesHeaderLayout);
+      return renderWithLayout(ServicesLayout);
 
     case 'e-commerce':
     case 'ecommerce':
-      return renderWithLayout(EcommerceHeaderLayout);
+      return renderWithLayout(EcommerceLayout);
 
     case 'bookings':
     case 'booking & appointments':
-      return renderWithLayout(BookingsHeaderLayout);
+      return renderWithLayout(BookingsLayout);
 
     case 'real estate':
-      return renderWithLayout(RealEstateHeaderLayout);
+      return renderWithLayout(RealEstateLayout);
 
     case 'portfolio':
     case 'portfolio & personal branding':
-      return renderWithLayout(PortfolioHeaderLayout);
+      return renderWithLayout(PortfolioLayout);
 
     case 'restaurant':
     case 'restaurant & food delivery':
-      return renderWithLayout(RestaurantHeaderLayout);
+      return renderWithLayout(RestaurantLayout);
 
-    // add more cases here...
+    case 'blog':
+    case 'blog & content':
+      return renderWithLayout(BlogLayout);
+
+    case 'directory':
+    case 'directory & listings':
+      return renderWithLayout(DirectoryLayout);
+            
+    case 'educational':
+    case 'educational & online courses':
+    case 'courses':
+      return renderWithLayout(CoursesLayout);
+
+    case 'nonprofit':
+    case 'nonprofit & community':
+      return renderWithLayout(NonprofitLayout);
+
+    case 'event':
+    case 'event & ticketing':
+      return renderWithLayout(EventsLayout);
+
+    case 'healthcare':
+    case 'healthcare & clinics':
+      return renderWithLayout(HealthcareLayout);
+
+    case 'saas':
+    case 'saas & web apps':
+      return renderWithLayout(SaaSLayout);
+
+    case 'automotive':
+    case 'automotive':
+      return renderWithLayout(AutomotiveLayout);
+
+    case 'media':
+    case 'media & entertainment':
+      return renderWithLayout(MediaLayout);
+
+    case 'finance':
+    case 'finance & legal':
+      return renderWithLayout(FinanceLayout);
+
+    case 'travel':
+    case 'travel & tourism':
+      return renderWithLayout(TravelLayout);
+
+    case 'fitness':
+    case 'fitness & wellness':
+      return renderWithLayout(FitnessLayout);
+
+    case 'marketplace':
+    case 'marketplace':
+      return renderWithLayout(MarketplaceLayout);
+
+    case 'other':
+    case 'Other':
+      return renderWithLayout(DefaultLayout);
 
     default:
-      return renderWithLayout(DefaultHeaderLayout);
+      return renderWithLayout(DefaultLayout);
   }
 }

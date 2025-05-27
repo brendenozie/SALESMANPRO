@@ -1,46 +1,39 @@
-// app/site/[slug]/ServicesSite.tsx
+// app/site/layouts/EcommerceLayouts/body/EcommerceSite.tsx
 import HeroSlider from '@/components/HeroSlider'
-import ServiceFeatures from '@/components/site/ServiceFeatures/ServiceFeatures'
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection'
-import Section from '@/components/site/Section/Section'
 import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners'
 import ProductGrid from '@/components/site/productGrid/ProductGrid'
+import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection'
+import Section from '@/components/site/Section/Section'
 
-export default function DefaultSite({ store }:any) {
+export default function EcommerceSite({ store }:any) {
   return (
     <>
       <HeroSlider store={store} />
 
-      <Section title=''>
-        <ServiceFeatures store={store} />
-      </Section>
-
-      <Section title=''>
+      <Section title="">
         <CategoryBanners categories={store.StoreCategory} />
       </Section>
 
       <Section title="Trending Products">
         <ProductGrid products={store.products} />
       </Section>
-
       <Section title="Top Selling">
         <ProductGrid products={store.products} />
       </Section>
-
       <Section title="All Products">
         <ProductGrid products={store.products} />
       </Section>
 
       <NewsletterSection />
 
-      <Section title=''>
+      <Section title="">
         {store.testimonials.map(({t, i}:any) => (
           <div
             key={i}
-            className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md my-8"
+            className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md my-8"
           >
-            <p className="text-lg">{t?.quote ?? "Awesome"}</p>
-            <p className="text-sm text-gray-500">– {t?.author ?? "Unknown"}</p>
+            <p className="text-lg">{t.quote}</p>
+            <p className="text-sm text-gray-500">– {t.author}</p>
           </div>
         ))}
       </Section>

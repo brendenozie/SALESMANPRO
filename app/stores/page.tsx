@@ -29,7 +29,7 @@ export default function StoresPage() {
       return;
     }
     setLoading(true);
-    fetch(`/api/stores?ownerId=${session.user.id}`)
+    fetch(`/api/stores?userId=${session.user.id}`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
@@ -141,7 +141,7 @@ export default function StoresPage() {
                       onClick={() => router.push(`/admin/${store.id}`)}
                       className="text-green-600 hover:underline flex items-center text-sm"
                     >
-                      View Store
+                      Manage Store
                       <ArrowRightCircleIcon className="h-5 w-5 ml-1" />
                     </button>
                   </div>

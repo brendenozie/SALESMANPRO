@@ -4,7 +4,7 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
-// Import all accordion components
+// Accordion components
 import BasicInfo from '../BasicInfo/BasicInfo';
 import CategoryAccordion from '../CategoryAccordion/CategoryAccordion';
 import BannerLogoAccordion from '../BannerLogoAccordion/BannerLogoAccordion';
@@ -62,38 +62,35 @@ type StoreForm = {
 };
 
 // Handlers signature
-type Handlers = {
-  handleChange: (e: ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) => void;
+interface Handlers {
+  handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onUpdateArray: <T>(key: keyof StoreForm, idx: number, field: keyof T, value: any) => void;
   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
   onToggleCategory: (cat: CategoryOption) => void;
   setAddress: (address: string, geo: GeoLocation) => void;
   onChangeSettings: (updated: Partial<StoreForm>) => void;
-};
+}
 
-// StepConfig with custom render
-type StepConfig = {
+// Step configuration
+interface StepConfig {
   key: string;
   title: string;
   render: (form: StoreForm, handlers: Handlers, availableCategories: CategoryOption[]) => React.ReactNode;
-};
+}
 
-
-
-  // Define all steps
-  const steps: StepConfig[] = [
+const steps: StepConfig[] = [
     {
-      key: 'basic', title: 'Basic Info', render: (f, h) => (
-        <BasicInfo
-          name={f.name} slug={f.slug} category={f.category} tagline={f.tagline}
-          description={f.description} domain={f.domain}
-          handleChange={h.handleChange}
-        />
+      key: 'basic',
+      title: 'Basic Info',
+      render: (f, h) => (
+        <BasicInfo {...f} handleChange={h.handleChange} />
       )
     },
     {
-      key: 'categories', title: 'Categories', render: (f, h, cats) => (
+      key: 'categories',
+      title: 'Categories',
+      render: (f, h, cats) => (
         <CategoryAccordion
           availableCategories={cats}
           selectedCategories={f.storeCategories}
@@ -102,28 +99,35 @@ type StepConfig = {
       )
     },
     {
-      key: 'branding', title: 'Branding', render: (f) => (
+      key: 'branding',
+      title: 'Branding',
+      render: (f) => (
         <BannerLogoAccordion
-          logoUrl={f.logoUrl} bannerUrl={f.bannerUrl}
-          onUpload={() => {}} onRemove={() => {}}
+          logoUrl={f.logoUrl}
+          bannerUrl={f.bannerUrl}
+          onUpload={() => {}}
+          onRemove={() => {}}
         />
       )
     },
     {
-      key: 'touchpoints', title: 'Customer Touchpoints', render: (f, h) => (
-        <ContactAccordion
-          contactEmail={f.contactEmail} contactPhone={f.contactPhone}
-          openingHours={f.openingHours} onChange={h.handleChange}
-        />
+      key: 'touchpoints',
+      title: 'Customer Touchpoints',
+      render: (f, h) => (
+        <ContactAccordion {...f} openingHours={f.openingHours} onChange={h.handleChange} />
       )
     },
     {
-      key: 'location', title: 'Location', render: (f, h) => (
+      key: 'location',
+      title: 'Location',
+      render: (f, h) => (
         <LocationAccordion address={f.address} onAddressSelect={h.setAddress} />
       )
     },
     {
-      key: 'social', title: 'Social Links', render: (f, h) => (
+      key: 'social',
+      title: 'Social Links',
+      render: (f, h) => (
         <SocialLinksAccordion
           socialLinks={f.socialLinks}
           onUpdateLink={(i, field, v) => h.onUpdateArray('socialLinks', i, field, v)}
@@ -208,7 +212,7 @@ type StepConfig = {
         <ShippingAccordion shippingSettings={f.shippingSettings} onChange={(upd) => h.onChangeSettings({ shippingSettings: upd })} />
       )
     }
-  ];
+];
 
 export default function CreateStoreForm({ availableCategories }: { availableCategories: CategoryOption[] }) {
   const { data: session } = useSession();
@@ -216,8 +220,8 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
 
   const initialForm: StoreForm = {
     name: '', slug: '', domain: '', tagline: '', description: '', category: 'E-commerce',
-    logoUrl: '', bannerUrl: '', contactEmail: '', contactPhone: '', address: '',
-    geoLocation: { lat: 0, lng: 0 }, openingHours: { mon:'',tue:'',wed:'',thu:'',fri:'',sat:'',sun:'' },
+    logoUrl: 'https://logourl.com', bannerUrl: 'https://bannerurl.com', contactEmail: '', contactPhone: '', address: '',
+    geoLocation: { lat: 0, lng: 0 }, openingHours: { mon: '', tue: '', wed: '', thu: '', fri: '', sat: '', sun: '' },
     socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [],
     themeSettings: {}, seo: {}, analyticsConfig: {}, paymentSettings: {}, shippingSettings: {},
     storeCategories: []
@@ -226,6 +230,13 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
   const [form, setForm] = useState<StoreForm>(initialForm);
   const totalSteps = steps.length + 1;
   const [stepIndex, setStepIndex] = useState(0);
+
+  // Auto-generate slug/domain from name
+  useEffect(() => {
+    const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const domain = slug ? `${slug}.yourdomain.com` : '';
+    setForm((prev) => ({ ...prev, slug, domain }));
+  }, [form.name]);
 
   // Slug & domain generator
   useEffect(() => {
@@ -294,24 +305,22 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
     if (res.ok) router.push('/stores');
   };
 
-  // Render step or review
-  const StepContent = stepIndex < steps.length
-    ? steps[stepIndex].render(form, handlers, availableCategories)
-    : (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Review Your Store</h2>
-        {steps.map((s, i) => (
-          <div key={s.key} className="p-4 border rounded hover:bg-gray-50 cursor-pointer" onClick={() => setStepIndex(i)}>
-            <h3 className="font-medium">{s.title}</h3>
-            <p className="text-sm text-gray-600">Click to edit</p>
-          </div>
-        ))}
-        <button type="submit" className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700">Create Store</button>
-      </div>
-    );
+// Render step or review
+const StepContent = stepIndex < steps.length
+? steps[stepIndex].render(form, handlers, availableCategories)
+: (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-semibold">Review Your Store</h2>
+      {steps.map((s, i) => (
+        <div key={s.key} className="p-4 border rounded hover:bg-gray-50 cursor-pointer" onClick={() => setStepIndex(i)}>
+          <h3 className="font-medium">{s.title}</h3>
+          <p className="text-sm text-gray-600">Click to edit</p>
+        </div>
+      ))}
+    </div>
+  );
 
-  return (
-    <form onSubmit={handleSubmit} className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
+  return <form onSubmit={handleSubmit} className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
   {/* Sidebar */}
   <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
     <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
@@ -347,7 +356,7 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
   </aside>
 
   {/* Main content */}
-  <main className="flex-1 flex flex-col px-4 sm:px-8 py-8">
+  <main className="flex-1 flex flex-col px-4 sm:px-8 py-8 max-h-screen">
     {/* Step progress */}
     <div className="mb-6">
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -363,7 +372,7 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
     </div>
 
     {/* Dynamic step content */}
-    <div className="flex-1">{StepContent}</div>
+    <div className="flex-1 max-h-screen overflow-auto">{StepContent}</div>
 
     {/* Navigation buttons */}
     <div className="mt-8 flex justify-between items-center border-t pt-4">
@@ -386,7 +395,7 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
         </button>
       ) : (
         <button
-          type="submit"
+          onClick={handleSubmit}
           className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
         >
           Submit Store
@@ -394,6 +403,5 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
       )}
     </div>
   </main>
-</form>
-  );
+</form>;
 }

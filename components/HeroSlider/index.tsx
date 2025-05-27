@@ -1,26 +1,11 @@
 import React,{ useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import AchievementsBadges from '../AchievementsBadges';
+import homeBanner from '../../assets/asset3.png'
 import Image from "next/image";
 
 
-const slides = [
-  {
-    image: '/images/slider-1.jpg',
-    subtitle: 'Super Value Deals',
-    title: 'On all products',
-    ctaText: 'Shop Now',
-    ctaLink: '/shop',
-  },
-  {
-    image: '/images/slider-2.jpg',
-    subtitle: 'Hot Deals',
-    title: 'Up to 50% off',
-    ctaText: 'Explore',
-    ctaLink: '/deals',
-  },
-];
+
 
 // Loader for next/image
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
@@ -71,7 +56,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
   useEffect(() => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
+      setCurrent((prev) => (prev + 1) % store.heroSlides.length);
     }, 5000);
     return () => clearTimeout(timeoutRef.current);
   }, [current]);
@@ -81,11 +66,11 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
     setCurrent(idx);
   };
 
-  const prev = () => goTo((current - 1 + slides.length) % slides.length);
-  const next = () => goTo((current + 1) % slides.length);
+  const prev = () => goTo((current - 1 + store.heroSlides.length) % store.heroSlides.length);
+  const next = () => goTo((current + 1) % store.heroSlides.length);
 
   return (
-    <section className="relative h-[500px] overflow-hidden">
+    <section className="relative h-screen overflow-hidden">
       <AnimatePresence>
         {store.heroSlides.map((slide, i) =>
           i === current ? (
@@ -98,7 +83,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
               className="absolute inset-0 w-full h-full"
             >
               <Image
-                src={slide.imageUrl}
+                src={slide.imageUrl ?? homeBanner.src}
                 alt={slide.headline ?? "banner image"}
                 fill
                 className="object-cover"
@@ -154,7 +139,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
 
       {/* Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2">
-        {slides.map((_, idx) => (
+        {store.heroSlides.map((_, idx) => (
           <button
             key={idx}
             onClick={() => goTo(idx)}
