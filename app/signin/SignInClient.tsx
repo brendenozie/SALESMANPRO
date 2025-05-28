@@ -100,10 +100,8 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       <Drawer isOpen={isOpen} setIsOpen={setIsOpen}>
         <p className="drawer-item">List of Favorites</p>
         <p className="drawer-item">Your Bookings</p>
-        <p
-          onClick={() => signOut({ redirect: false })}
-          className="drawer-item cursor-pointer text-red-600"
-        >
+        <p onClick={() => signOut({ redirect: false })}
+          className="drawer-item cursor-pointer text-red-600" >
           Sign out
         </p>
       </Drawer>

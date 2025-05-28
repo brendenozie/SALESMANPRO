@@ -121,17 +121,17 @@ const SlideCard = ({ slide, index }) => {
       variants={fadeInUp}
       className="relative flex flex-col md:flex-row items-center justify-center w-full text-white p-6 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-auto md:h-[650px] gap-8"
       style={{
-        backgroundImage: `url(${backgroundImage.src})`, // ✅ Fix applied
+        backgroundImage: `url(${backgroundImage.src})`, 
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >
       {/* Overlay to improve text visibility */}
-      <div className="absolute inset-0 bg-black/10 rounded-3xl"></div>
+      <div className="absolute inset-0 bg-black/20 rounded-3xl"></div>
 
       {/* Text Section */}
-      <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center justify-center text-center md:text-left md:items-start space-y-6 min-h-[200px] md:min-h-[450px] overflow-y-auto">
+      <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center justify-center text-center md:text-left md:p-20 md:items-start space-y-6 min-h-[200px] md:min-h-[450px] overflow-y-auto">
         <motion.h2
           variants={fadeInLeft}
           transition={{ delay: 0.2 }}
