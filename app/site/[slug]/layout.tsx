@@ -23,7 +23,7 @@ import MediaLayout from '@/components/site/layouts/MediaLayout/MediaLayout';
 import TravelLayout from '@/components/site/layouts/TravelLayout/TravelLayout';
 import RestaurantLayout from '@/components/site/layouts/RestaurantLayout/RestaurantLayout';
 import AutomotiveLayout from '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout';
-import SaaSLayout from '@/components/site/layouts/SaaSLayout/SaasLayout';
+import SaaSLayout from '@/components/site/layouts/SaaSLayout/SaaSLayout';
 
 export const dynamic = 'force-dynamic';
 

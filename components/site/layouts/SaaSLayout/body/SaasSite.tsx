@@ -9,7 +9,7 @@ import Link from "next/link";
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function ServicesLayout({ children, store,  slug }:any) {
+export default function SaaSSite({ children, store,  slug }:any) {
   
   const router = useRouter();
 
