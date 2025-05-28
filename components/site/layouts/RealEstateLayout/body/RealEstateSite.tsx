@@ -51,7 +51,7 @@ const store = {
   };
   
 
-const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function RealEstateSite() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function RealEstateSite() {
   }, []);
 
   const handleSearch = () => alert(`Searching in ${location} between KES ${minPrice} and KES ${maxPrice}`);
-  const handleNewsletter = (e) => { e.preventDefault(); setShowNewsletter(false); /* send email */ };
+  const handleNewsletter = (e:any) => { e.preventDefault(); setShowNewsletter(false); /* send email */ };
 
 
   return (

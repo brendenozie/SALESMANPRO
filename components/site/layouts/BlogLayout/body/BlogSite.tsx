@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import banner from "../../../../../assets/homebanner.png";
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -26,98 +27,73 @@ export default function BlogSite() {
 
   return (
     <div className="font-sans text-gray-900">
+      {/* Hero Section */}
+      <BlogHero />      
       
-
-      {/* Hero Carousel with Slide Controls */}
-      <section className="relative h-[90vh] overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Image
-            src="/images/blog-hero.jpg"
-            alt="Hero"
-            loader={loader}
-            fill
-            className="object-cover brightness-75"
-          />
-        </div>
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <motion.h2
-            initial={{ y: -40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl md:text-6xl font-extrabold text-white leading-tight"
-          >
-            Unleash Your Potential
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-4 text-lg md:text-2xl text-white max-w-2xl"
-          >
-            Deep insights, actionable tips, and inspiration to elevate your journey.
-          </motion.p>
-          <motion.button
-            onClick={() => router.push('/blog')}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="mt-8 px-8 py-3 bg-indigo-600 text-white font-semibold rounded-full shadow-xl hover:bg-indigo-700 hover:shadow-2xl transition"
-          >
-            Explore Now
-          </motion.button>
-        </div>
-      </section>
-
-      {/* Search & Category Filter */}
-      <section className="bg-gray-100 py-8">
-        <div className="container mx-auto flex flex-col md:flex-row items-center gap-4 px-4">
-          <input
+      <section className="bg-gradient-to-r from-indigo-50 via-white to-indigo-100 py-12">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Search Input */}
+          <motion.input
             type="search"
             placeholder="Search articles..."
-            className="flex-1 px-4 py-3 border rounded-lg focus:outline-none"
+            className="flex-1 px-6 py-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
           />
-          <select className="px-4 py-3 border rounded-lg focus:outline-none">
+          
+          {/* Category Filter */}
+          <motion.select
+            className="px-6 py-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             <option>All Categories</option>
             <option>Productivity</option>
             <option>Design</option>
             <option>Mindfulness</option>
             <option>Leadership</option>
-          </select>
+          </motion.select>
         </div>
       </section>
 
-      {/* Latest Insights Grid */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-6 py-20">
         <motion.h3
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-3xl md:text-4xl font-bold text-center mb-12"
+          transition={{ duration: 0.6 }}
+          className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-12"
         >
           Latest Insights
         </motion.h3>
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post, idx) => (
+
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
             <motion.article
               key={post.id}
-              whileHover={{ y: -5, boxShadow: '0px 10px 20px rgba(0,0,0,0.1)' }}
-              transition={{ type: 'spring', stiffness: 250 }}
-              className="bg-white rounded-2xl overflow-hidden cursor-pointer"
+              whileHover={{ scale: 1.05, boxShadow: '0 20px 30px rgba(0,0,0,0.1)' }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="bg-white rounded-3xl shadow-lg overflow-hidden cursor-pointer"
               onClick={() => router.push(`/blog/${post.id}`)}
             >
-              <div className="relative h-56">
-                <Image src={post.image} alt={post.title} fill loader={loader} className="object-cover" />
+              <div className="relative h-64">
+                <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" loader={loader}/>
               </div>
               <div className="p-6">
-                <h4 className="text-2xl font-semibold mb-2">{post.title}</h4>
+                <h4 className="text-xl font-semibold mb-2 text-gray-800">{post.title}</h4>
                 <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                <Link href={`/blog/${post.id}`}  className="inline-block text-indigo-600 font-medium hover:underline">
-                    Read More → 
+                <Link href={`/blog/${post.id}`} className="text-indigo-600 font-medium hover:underline transition-all">
+                  Read More → 
                 </Link>
               </div>
             </motion.article>
           ))}
         </div>
       </section>
+
+      <BlogInsights posts={posts} loader={loader} />
+
 
       {/* Newsletter Section */}
       <section className="bg-indigo-600 py-16">
@@ -144,3 +120,133 @@ export default function BlogSite() {
     </div>
   );
 }
+
+
+const BlogHero = () => {
+  const router = useRouter();
+
+  return (
+    <section className="relative h-[90vh] overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        <Image
+          src={banner.src}
+          alt="Hero"
+          loader={loader}
+          fill
+          className="object-cover brightness-[0.6]"
+          priority
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
+        <motion.h1
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-white text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight"
+        >
+          Unleash Your Potential
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-6 text-lg sm:text-xl md:text-2xl text-gray-200 max-w-3xl"
+        >
+          Deep insights, actionable tips, and inspiration to elevate your journey.
+        </motion.p>
+
+        <motion.button
+          onClick={() => router.push("/blog")}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.9 }}
+          className="mt-10 px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 font-semibold rounded-full shadow-xl hover:bg-white/20 hover:shadow-2xl transition-all duration-300"
+        >
+          Explore Now
+        </motion.button>
+      </div>
+    </section>
+  );
+};
+
+
+
+const BlogInsights = ({ posts, loader }: { posts: any; loader: any }) => {
+  const router = useRouter();
+
+  return (
+    <>
+      {/* Search & Category Filter */}
+      <section className="bg-white py-10 shadow-sm">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-6">
+          <input
+            type="search"
+            placeholder="Search articles..."
+            className="flex-1 px-6 py-3 border border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          />
+          <select className="px-6 py-3 border border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+            <option>All Categories</option>
+            <option>Productivity</option>
+            <option>Design</option>
+            <option>Mindfulness</option>
+            <option>Leadership</option>
+          </select>
+        </div>
+      </section>
+
+      {/* Latest Insights Grid */}
+      <section className="container mx-auto px-6 py-16">
+        <motion.h3
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800"
+        >
+          Latest Insights
+        </motion.h3>
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post: any) => (
+            <motion.article
+              key={post.id}
+              whileHover={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+              transition={{ type: "spring", stiffness: 250 }}
+              className="bg-white rounded-2xl overflow-hidden cursor-pointer transition-transform duration-300"
+              onClick={() => router.push(`/blog/${post.id}`)}
+            >
+              <div className="relative h-64">
+                <Image
+                  src={post.image}
+                  alt={post.title}
+                  fill
+                  loader={loader}
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-6">
+                <h4 className="text-2xl font-semibold mb-2 text-gray-900">
+                  {post.title}
+                </h4>
+                <p className="text-gray-600 mb-4 line-clamp-3">
+                  {post.excerpt}
+                </p>
+                <Link
+                  href={`/blog/${post.id}`}
+                  className="inline-block text-indigo-600 font-medium hover:underline"
+                >
+                  Read More →
+                </Link>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+};
+

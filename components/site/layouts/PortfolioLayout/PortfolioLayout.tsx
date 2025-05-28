@@ -31,7 +31,18 @@ export default function PortfolioHeaderLayout({ params, children }: PortfolioLay
 
   return (
     <>
-      <Header store={store} />
+      <Header
+        name={`${store.name}`}
+        logoUrl={store.logoUrl}
+        primaryColor={store.primaryColor} 
+        links={[
+          { label: "Home", href: "/" },
+          { label: "Projects", href: "#projects" },
+          { label: "About", href: "#about" },
+          { label: "Contact", href: "#contact" },
+        ]}
+      />
+
       {/* Main Content Area */}
       <section className="container">{children}</section>
       <Footer store={store} />
