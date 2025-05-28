@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+
 
 // Sample data for directory
 const store = {
@@ -41,56 +43,94 @@ const store = {
   const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 // Components
-function Hero({ title, description, bannerUrl, onSearch, searchTerm, setSearchTerm } : any) {
+
+
+const categories = [
+  { name: "Restaurants", icon: "🍽️", top: "10%", left: "15%" },
+  { name: "Healthcare", icon: "🩺", top: "20%", right: "10%" },
+  { name: "Shopping", icon: "🛍️", bottom: "15%", left: "12%" },
+  { name: "Services", icon: "🧰", bottom: "10%", right: "14%" },
+  { name: "Education", icon: "📚", top: "30%", left: "45%" },
+];
+
+function Hero({ title, description, bannerUrl, onSearch, searchTerm, setSearchTerm }: any) {
   return (
-    <section className="relative h-[60vh] bg-gradient-to-br from-green-600 to-teal-500 text-white flex items-center justify-center overflow-hidden">
+    <section className="relative h-[85vh] bg-gradient-to-br from-green-600 to-teal-500 text-white flex items-center justify-center overflow-hidden">
+      {/* Background */}
       <Image
         src={bannerUrl}
         alt="Directory Hero"
         fill
-        className="object-cover opacity-30"
+        className="object-cover opacity-40"
         priority
         loader={loader}
       />
-      <div className="relative z-10 text-center px-6 max-w-2xl">
-        <motion.h1
-          initial={{ y: -40, opacity: 0 }}
+      <div className="absolute inset-0 bg-black/30 z-0" />
+
+      {/* Floating Icons */}
+      {categories.map((cat, idx) => (
+        <motion.div
+          key={idx}
+          className="absolute text-2xl md:text-3xl"
+          style={{ ...cat }}
+          animate={{
+            y: [0, -10, 0],
+          }}
+          transition={{
+            duration: 3 + idx,
+            repeat: Infinity,
+          }}
+        >
+          <span title={cat.name}>{cat.icon}</span>
+        </motion.div>
+      ))}
+
+      {/* Main Content */}
+      <div className="relative z-10 text-center px-6 max-w-3xl">
+      <motion.h1
+          initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="text-5xl md:text-7xl font-extrabold mb-4 leading-tight"
+          className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-md"
         >
-          Discover {title}
+          Find & Explore <span className="text-orange-400">{title}</span>
         </motion.h1>
+
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-lg md:text-xl mb-8"
+          className="mt-4 text-lg md:text-xl text-white/90"
         >
           {description}
         </motion.p>
+
+        {/* Search */}
         <motion.form
           onSubmit={(e) => {
             e.preventDefault();
             onSearch();
           }}
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="flex w-full max-w-xl mx-auto"
           role="search"
-          aria-label="Search listings and categories"
+          aria-label="Search listings"
+          className="mt-8 flex w-full max-w-xl mx-auto rounded-full overflow-hidden bg-white/90 backdrop-blur"
         >
+          <div className="flex items-center px-4 text-gray-500">
+            <MagnifyingGlassIcon className="w-5 h-5" />
+          </div>
           <input
             type="search"
-            placeholder="Search listings or categories..."
+            placeholder="Search businesses or categories..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-4 py-3 rounded-l-full focus:outline-none text-gray-800"
+            className="flex-1 px-3 py-3 text-gray-800 focus:outline-none"
           />
           <button
             type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-r-full font-semibold transition-all focus:ring-2 focus:ring-orange-400"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 font-semibold transition-all"
           >
             Search
           </button>
@@ -102,21 +142,31 @@ function Hero({ title, description, bannerUrl, onSearch, searchTerm, setSearchTe
 
 function CategoryGrid({ categories, slug }: any) {
   const router = useRouter();
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 py-6 px-4">
       {categories.map((cat: any) => (
         <motion.div
           key={cat.id}
           whileHover={{ scale: 1.05 }}
-          className="text-center cursor-pointer"
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 300 }}
           onClick={() => router.push(`/${slug}/category/${cat.slug}`)}
           role="button"
           aria-label={`View ${cat.name}`}
+          className="group cursor-pointer text-center rounded-2xl bg-white/30 backdrop-blur-md border border-white/20 shadow-md p-4 transition-all hover:shadow-xl hover:ring-2 hover:ring-green-500/40"
         >
-          <div className="mx-auto w-24 h-24 rounded-full overflow-hidden shadow-md">
-            <Image src={cat.imageUrl} alt={cat.name} width={96} height={96} className="object-cover" loader={loader}/>
+          <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden">
+            <Image
+              src={cat.imageUrl}
+              alt={cat.name}
+              width={96}
+              height={96}
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              loader={loader}
+            />
           </div>
-          <p className="mt-3 font-medium text-gray-800 hover:text-green-600 transition-colors">
+          <p className="mt-4 text-base font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
             {cat.name}
           </p>
         </motion.div>
@@ -127,29 +177,47 @@ function CategoryGrid({ categories, slug }: any) {
 
 function ListingGrid({ listings, slug }: any) {
   const router = useRouter();
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <section className="bg-gradient-to-br from-white to-green-50 py-12 px-6 rounded-t-[3rem]">
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 py-6 px-4">
       {listings.map((item: any) => (
         <motion.article
           key={item.id}
-          whileHover={{ y: -5 }}
-          className="bg-white rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+          whileHover={{ y: -6, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 260 }}
           onClick={() => router.push(`/${slug}/listing/${item.slug}`)}
           role="link"
           aria-label={`View ${item.name}`}
+          className="group bg-white/70 backdrop-blur-sm border border-white/30 rounded-3xl shadow-md hover:shadow-2xl transition-all overflow-hidden cursor-pointer"
         >
-          <div className="relative h-48">
-            <Image src={item.imageUrl} alt={item.name} fill className="object-cover" loader={loader}/>
+          <div className="relative h-48 overflow-hidden rounded-t-3xl">
+            
+            <Image
+              src={item.imageUrl}
+              alt={item.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              loader={loader}
+            />
+            <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Featured</span>
           </div>
           <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">{item.name}</h3>
-            <p className="text-gray-600 truncate">{item.subtitle}</p>
+            <h3 className="text-lg font-bold text-gray-800 group-hover:text-green-600 transition-colors truncate">
+              {item.name}
+            </h3>
+            <p className="text-sm text-gray-600 truncate">{item.subtitle}</p>
           </div>
+          
         </motion.article>
       ))}
+      
     </div>
+    </section>
   );
 }
+
 
 function Testimonials({ testimonials }: any) {
   return (

@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
   const secondary = store.themeSettings?.secondaryColor || "#3b82f6";
 
   return (
-    <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-xl border-b border-gray-200 py-8">
+    <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-xl border-b border-gray-200 py-4 shadow-md transition-all">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push("/")}>

@@ -28,72 +28,10 @@ export default function BlogSite() {
   return (
     <div className="font-sans text-gray-900">
       {/* Hero Section */}
-      <BlogHero />      
-      
-      <section className="bg-gradient-to-r from-indigo-50 via-white to-indigo-100 py-12">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Search Input */}
-          <motion.input
-            type="search"
-            placeholder="Search articles..."
-            className="flex-1 px-6 py-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          />
-          
-          {/* Category Filter */}
-          <motion.select
-            className="px-6 py-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <option>All Categories</option>
-            <option>Productivity</option>
-            <option>Design</option>
-            <option>Mindfulness</option>
-            <option>Leadership</option>
-          </motion.select>
-        </div>
-      </section>
+      <BlogHero />
 
-      <section className="container mx-auto px-6 py-20">
-        <motion.h3
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-12"
-        >
-          Latest Insights
-        </motion.h3>
-
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <motion.article
-              key={post.id}
-              whileHover={{ scale: 1.05, boxShadow: '0 20px 30px rgba(0,0,0,0.1)' }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden cursor-pointer"
-              onClick={() => router.push(`/blog/${post.id}`)}
-            >
-              <div className="relative h-64">
-                <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" loader={loader}/>
-              </div>
-              <div className="p-6">
-                <h4 className="text-xl font-semibold mb-2 text-gray-800">{post.title}</h4>
-                <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                <Link href={`/blog/${post.id}`} className="text-indigo-600 font-medium hover:underline transition-all">
-                  Read More → 
-                </Link>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-      </section>
-
+      {/* Main Content */}
       <BlogInsights posts={posts} loader={loader} />
-
 
       {/* Newsletter Section */}
       <section className="bg-indigo-600 py-16">
@@ -201,49 +139,39 @@ const BlogInsights = ({ posts, loader }: { posts: any; loader: any }) => {
       </section>
 
       {/* Latest Insights Grid */}
-      <section className="container mx-auto px-6 py-16">
+      <section className="container mx-auto px-6 py-20">
         <motion.h3
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800"
+          className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-12"
         >
           Latest Insights
         </motion.h3>
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post: any) => (
+
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post:any) => (
             <motion.article
               key={post.id}
-              whileHover={{ scale: 1.02, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
-              transition={{ type: "spring", stiffness: 250 }}
-              className="bg-white rounded-2xl overflow-hidden cursor-pointer transition-transform duration-300"
+              whileHover={{ scale: 1.05, boxShadow: '0 20px 30px rgba(0,0,0,0.1)' }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="bg-white rounded-3xl shadow-lg overflow-hidden cursor-pointer"
               onClick={() => router.push(`/blog/${post.id}`)}
             >
               <div className="relative h-64">
-                <Image
-                  src={post.image}
-                  alt={post.title}
-                  fill
-                  loader={loader}
-                  className="object-cover"
-                />
+                <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" loader={loader}/>
               </div>
               <div className="p-6">
-                <h4 className="text-2xl font-semibold mb-2 text-gray-900">
-                  {post.title}
-                </h4>
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  {post.excerpt}
-                </p>
-                <Link
-                  href={`/blog/${post.id}`}
-                  className="inline-block text-indigo-600 font-medium hover:underline"
-                >
-                  Read More →
+                <h4 className="text-xl font-semibold mb-2 text-gray-800">{post.title}</h4>
+                <p className="text-gray-600 mb-4">{post.excerpt}</p>
+                <Link href={`/blog/${post.id}`} className="text-indigo-600 font-medium hover:underline transition-all">
+                  Read More → 
                 </Link>
               </div>
             </motion.article>
           ))}
+
+          
         </div>
       </section>
     </>
