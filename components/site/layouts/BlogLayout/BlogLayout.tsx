@@ -69,13 +69,10 @@ const BlogLayout: React.FC<BlogLayoutProps> = (
 
   return (
     <>
-      <Header store={params.store} />
-       
+      <Header store={params.store} />      
 
       {/* Child Content (post detail) */}
-      <section className="container mx-auto px-6 py-12">
-        {children}
-      </section>
+      <section className="container mx-auto px-6 py-12">{children} </section>
 
       <Footer store={params.store} />
     </>

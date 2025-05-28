@@ -38,8 +38,6 @@ export default function TravelLayout({ params, children }: TravelLayoutProps) {
     <>
       {/* Sticky Transparent Header */}
       <Header store={store}/>
-      {/* className="fixed w-full z-50 bg-opacity-50 backdrop-blur"  */}
-
 
       {/* Content */}
       <section className="container mx-auto px-8 py-16 bg-white">{children}</section>

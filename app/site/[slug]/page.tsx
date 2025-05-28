@@ -21,7 +21,7 @@ import BlogSite from '@/components/site/layouts/BlogLayout/body/BlogSite';
 import DefaultSite from '@/components/site/layouts/DefaultLayout/body/DefaultSite';
 import PortfolioSite from '@/components/site/layouts/PortfolioLayout/body/PortfolioSite';
 import ServiceSite from '@/components/site/layouts/ServicesLayout/body/ServiceSite';
-import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaasSite';
+import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaaSSite';
 
 // Import your site components
 
@@ -43,86 +43,130 @@ export default function StorePage() {
   switch (type) {
       case 'services':
       case 'service provider':
-        return <ServiceSite />
+        return <ServiceSite 
+            store={store}
+            slug={store.slug}
+        />
 
       case 'e-commerce':
       case 'ecommerce':
-        return <EcommerceSite/>
-  
+        return <EcommerceSite
+            store={store}
+            slug={store.slug}
+        />
+      
       case 'bookings':
       case 'booking & appointments':
-        return <BookingsSite/>
+        return <BookingsSite 
+                store={store}
+                slug={store.slug}/>
   
       case 'real estate':
-        return <RealEstateSite/>
+        return <RealEstateSite 
+                store={store}
+                slug={store.slug}/>
   
       case 'portfolio':
       case 'portfolio & personal branding':
-        return <PortfolioSite/>
+        return <PortfolioSite 
+                store={store}
+                slug={store.slug}/>
   
       case 'restaurant':
       case 'restaurant & food delivery':
-        return <RestaurantSite/>
+        return <RestaurantSite 
+                store={store}
+                slug={store.slug}/>
   
       case 'blog':
       case 'blog & content':
-        return <BlogSite/>
-  
+        return <BlogSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'directory':
       case 'directory & listings':
-        return <DirectorySite/>
+        return <DirectorySite 
+                store={store}
+                slug={store.slug}/>
               
       case 'educational':
       case 'educational & online courses':
       case 'courses':
-        return <CoursesSite/>
-  
+        return <CoursesSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'nonprofit':
       case 'nonprofit & community':
-        return <NonProfitSite/>
-  
+        return <NonProfitSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'event':
       case 'event & ticketing':
-        return <EventsSite/>
-  
+        return <EventsSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'healthcare':
       case 'healthcare & clinics':
-        return <HealthCareSite/>
-  
+        return <HealthCareSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'saas':
       case 'saas & web apps':
-        return <SaaSSite/>
-  
+        return <SaaSSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'automotive':
       case 'automotive':
-        return <AutomotiveSite/>
-  
+        return <AutomotiveSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'media':
       case 'media & entertainment':
-        return <MediaSite/>
-  
+        return <MediaSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'finance':
       case 'finance & legal':
-        return <FinanceSite/>
-  
+        return <FinanceSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'travel':
       case 'travel & tourism':
-        return <TravelSite/>
-  
+        return <TravelSite 
+                store={store}
+                slug={store.slug}/>
+
       case 'fitness':
       case 'fitness & wellness':
-        return <FitnessSite/>
+        return <FitnessSite 
+                store={store}
+                slug={store.slug}/>
   
       case 'marketplace':
       case 'marketplace':
-        return <MarketplaceSite/>
+        return <MarketplaceSite 
+                store={store}
+                slug={store.slug}/>
   
       case 'other':
       case 'Other':
-        return <DefaultSite/>
+        return <DefaultSite 
+                store={store}
+                slug={store.slug}/>
   
       default:
-        return <DefaultSite/>
+        return <DefaultSite 
+                store={store}
+                slug={store.slug}/>
     }
 
 }

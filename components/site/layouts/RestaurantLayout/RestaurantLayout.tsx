@@ -22,7 +22,6 @@ export default function RestaurantHeaderLayout({ params, children }: RestaurantL
     <>
       <Header store={store} />
 
-
       {/* Main Content Area */}
       <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
 

@@ -9,10 +9,20 @@ import Link from "next/link";
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function ServicesLayout({ children, store,  slug }:any) {
+export default function ServiceSite({ children, store,  slug }:any) {
+  const { setInquiryServiceId } = useStateContext();
+  const router = useRouter();
+  const handleInquiry = (serviceId: string) => {
+    setInquiryServiceId(serviceId);
+    router.push(`/${slug}/contact`);
+  };
+  if (!store) {
+    return null;
+  }
+
   return (
     <>
-      
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-blue-600 to-indigo-600 text-white h-[60vh] flex items-center">
         {store.bannerUrl && (
@@ -32,7 +42,7 @@ export default function ServicesLayout({ children, store,  slug }:any) {
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Our Services</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((cat) => (
+            {store.categories && store.categories.map((cat:any) => (
               <Link key={cat.id} href={`/${store.slug}/service-category/${cat.slug}`}  className="group bg-gray-50 p-4 rounded-lg shadow hover:shadow-lg transition flex flex-col items-center text-center">
                   <div className="w-16 h-16 mb-2">
                     <Image src={cat.icon || cat.imageUrl} alt={cat.name} width={64} height={64} className="object-cover rounded-full" loader={loader}/>
@@ -49,7 +59,7 @@ export default function ServicesLayout({ children, store,  slug }:any) {
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Featured Services</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredServices.map((svc) => (
+            {store.featuredServices && store.featuredServices.map((svc:any) => (
               <div key={svc.id} className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
                 <div className="relative h-48">
                   <Image src={svc.imageUrl} alt={svc.name} fill className="object-cover" loader={loader}/>
@@ -71,12 +81,12 @@ export default function ServicesLayout({ children, store,  slug }:any) {
       </section>
 
       {/* Testimonials */}
-      {testimonials.length > 0 && (
+      {store.testimonials.length > 0 && (
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 text-center">
             <h2 className="text-3xl font-bold text-gray-800 mb-8">What Clients Say</h2>
             <div className="space-y-8 max-w-2xl mx-auto">
-              {testimonials.map((t, i) => (
+              {store.testimonials.map((t:any, i:any) => (
                 <blockquote key={i} className="italic text-gray-700">“{t.quote}”<br/><span className="font-semibold text-gray-900">— {t.author}</span></blockquote>
               ))}
             </div>
@@ -85,7 +95,23 @@ export default function ServicesLayout({ children, store,  slug }:any) {
       )}
       
       <div className="container mx-auto">{children}</div>
-      <footer className="mt-12 text-center">All about services for {slug}</footer>
+
+      {/* FAQs */}
+      {store.faqs && store.faqs.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-6 max-w-2xl">
+            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">FAQs</h2>
+            <div className="space-y-6">
+              {store.faqs.map((q:any, i:any) => (
+                <details key={i} className="bg-white rounded-lg shadow p-4">
+                  <summary className="cursor-pointer font-medium">{q.question}</summary>
+                  <p className="mt-2 text-gray-600">{q.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   )
 }

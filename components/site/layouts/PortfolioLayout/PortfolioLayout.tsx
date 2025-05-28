@@ -32,7 +32,8 @@ export default function PortfolioHeaderLayout({ params, children }: PortfolioLay
   return (
     <>
       <Header store={store} />
-
+      {/* Main Content Area */}
+      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
       <Footer store={store} />
     </>
   );

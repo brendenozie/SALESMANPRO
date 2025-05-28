@@ -32,7 +32,6 @@ export default function CoursesHeaderLayout({ params, children }: CoursesLayoutP
     <>
       <Header store={store} />
 
-
       {/* Child Content (Course Details) */}
       <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
 

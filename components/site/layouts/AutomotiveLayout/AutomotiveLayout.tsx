@@ -68,7 +68,7 @@ const AutomotiveLayout: React.FC<AutomotiveLayoutProps> = (
     <>
       <Header store={params.store} />
 
-      {children}
+      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
 
       <Footer store={params.store} />
     </>

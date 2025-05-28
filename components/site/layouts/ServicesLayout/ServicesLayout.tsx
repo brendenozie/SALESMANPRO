@@ -42,24 +42,6 @@ export default function ServicesHeaderLayout({ params, children }: ServicesLayou
     <>
       <Header store={store} />
 
-
-      {/* FAQs */}
-      {faqs.length > 0 && (
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-6 max-w-2xl">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">FAQs</h2>
-            <div className="space-y-6">
-              {faqs.map((q, i) => (
-                <details key={i} className="bg-white rounded-lg shadow p-4">
-                  <summary className="cursor-pointer font-medium">{q.question}</summary>
-                  <p className="mt-2 text-gray-600">{q.answer}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Main Content Area */}
       <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
 

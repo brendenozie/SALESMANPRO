@@ -33,7 +33,6 @@ export default function FinanceHeaderLayout({ params, children }: FinanceLayoutP
     <>
       <Header store={store} />
 
-
       {/* Child Content */}
       <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
 
