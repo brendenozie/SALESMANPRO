@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { motion } from "framer-motion";
+// import { Store } from "../../../../../types/store";
+// import banner from "../../../assets/homebanner.png";
+import banner from '../../../../../assets/homebanner.png'
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -12,7 +15,8 @@ const store = {
   name: "AceTech Solutions",
   slug: "acetech",
   description: "Empowering your business with modern technology and innovative solutions.",
-  bannerUrl: "/banner.jpg",
+  bannerUrl: `${banner.src}`,
+  logoUrl:  `${banner.src}`,
   categories: [
     { id: 1, name: "Web Development", slug: "web-dev", icon: "/icons/web.svg" },
     { id: 2, name: "Mobile Apps", slug: "mobile-apps", icon: "/icons/mobile.svg" },
@@ -53,6 +57,7 @@ const store = {
 
 
 export default function ServiceSite({ children, slug }:any) {
+
   const { setInquiryServiceId } = useStateContext();
   const router = useRouter();
 
@@ -64,76 +69,39 @@ export default function ServiceSite({ children, slug }:any) {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-700 to-pink-600 overflow-hidden">
-        {/* Decorative SVG Blobs */}
-        <motion.div
-          className="absolute top-0 left-0 w-96 h-96 bg-pink-500 rounded-full opacity-30 filter blur-3xl"
-          animate={{ x: [0, -50, 0], y: [0, 50, 0] }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute bottom-0 right-0 w-80 h-80 bg-indigo-500 rounded-full opacity-30 filter blur-3xl"
-          animate={{ x: [0, 50, 0], y: [0, -50, 0] }}
-          transition={{ duration: 8, repeat: Infinity, delay: 2 }}
-        />
-        <div className="relative z-10 text-center px-6">
-          <motion.h1
-            className="text-6xl font-extrabold text-white mb-4"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            AceTech Solutions
-          </motion.h1>
-          <motion.p
-            className="text-lg text-white/90 max-w-2xl mx-auto mb-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1 }}
-          >
-            Empowering your business with modern technology and innovative solutions.
-          </motion.p>
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 1, duration: 0.5 }}
-          >
-            <Link
-              href={`/${slug}/contact`}
-              className="inline-block bg-white text-indigo-700 font-bold py-3 px-8 rounded-full shadow-lg hover:scale-105 transition-transform"
-            >
-              Get in Touch
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+      <HeroSection store={store} />      
 
-      {/* Service Categories */}
-      <section className="py-24 bg-gray-50">
+      {/* Redesigned Service Categories */}
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-12">
             Explore Our Services
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {store.categories.map((cat) => (
-              <motion.div
+              <Link
                 key={cat.id}
-                whileHover={{ y: -8, boxShadow: '0 10px 20px rgba(0,0,0,0.15)' }}
-                className="bg-white p-4 rounded-xl border border-gray-200 text-center cursor-pointer"
+                href={`/${store.slug}/service-category/${cat.slug}`}
+                className="group block bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-shadow"
               >
-                <Link href={`/${slug}/service-category/${cat.slug}`}>                  
-                  <div className="w-16 h-16 mx-auto mb-3">
-                    <Image
-                      src={cat.icon}
-                      alt={cat.name}
-                      width={64}
-                      height={64}
-                      loader={loader}
-                    />
-                  </div>
-                  <p className="text-gray-700 font-medium">{cat.name}</p>
-                </Link>
-              </motion.div>
+                <motion.div
+                  className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-2xl"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <Image
+                    loader={loader}
+                    src={cat.icon}
+                    alt={cat.name}
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </motion.div>
+                <h3 className="text-xl font-semibold text-gray-800 text-center group-hover:text-indigo-600 transition-colors">
+                  {cat.name}
+                </h3>
+              </Link>
             ))}
           </div>
         </div>
@@ -228,5 +196,77 @@ export default function ServiceSite({ children, slug }:any) {
         <div className="container mx-auto px-6 mt-12">{children}</div>
       </section>
     </>
+  );
+}
+
+
+interface HeroSectionProps {
+  store: {
+    slug: string;
+    bannerUrl?: string;
+    themeSettings?: { primaryColor?: string; secondaryColor?: string };
+  };
+}
+
+function HeroSection({ store }: HeroSectionProps) {
+  const { slug, bannerUrl, themeSettings = {} } = store;
+  const primary = themeSettings.primaryColor || "#4f46e5";
+  const secondary = themeSettings.secondaryColor || "#ec4899";
+
+  return (
+    <section
+      className="mt-16 relative h-screen flex items-center justify-center bg-cover bg-center overflow-hidden"
+      style={{
+        backgroundImage: `url(${bannerUrl ?? "/default-hero.jpg"})`,
+      }}
+    >
+      {/* Gradient overlay matching theme colors */}
+      <div
+        className={`absolute inset-0 bg-gradient-to-r from-black to-white opacity-50`}
+      />
+
+      {/* SVG Blobs */}
+      <motion.div
+        className="absolute top-0 left-0 w-96 h-96 bg-[${secondary}] rounded-full opacity-30 filter blur-3xl"
+        animate={{ x: [0, -50, 0], y: [0, 50, 0] }}
+        transition={{ duration: 8, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute bottom-0 right-0 w-80 h-80 bg-[${primary}] rounded-full opacity-30 filter blur-3xl"
+        animate={{ x: [0, 50, 0], y: [0, -50, 0] }}
+        transition={{ duration: 8, repeat: Infinity, delay: 2 }}
+      />
+
+      <div className="relative z-10 text-center px-6">
+        <motion.h1
+          className="text-6xl font-extrabold text-white mb-4"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          Welcome to {store.slug.replace(/-/g, ' ').toUpperCase()}
+        </motion.h1>
+        <motion.p
+          className="text-lg text-white/90 max-w-2xl mx-auto mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 1 }}
+        >
+          Empowering your business with modern technology and innovative solutions.
+        </motion.p>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 1, duration: 0.5 }}
+        >
+          <Link
+            href={`/${slug}/contact`}
+            className="inline-block bg-white text-gray-800 font-bold py-3 px-8 rounded-full shadow-lg hover:scale-105 transition-transform"
+          >
+            Get in Touch
+          </Link>
+        </motion.div>
+      </div>
+    </section>
   );
 }

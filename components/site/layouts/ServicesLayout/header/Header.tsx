@@ -1,217 +1,144 @@
-"use client"
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  MagnifyingGlassCircleIcon,
+  MagnifyingGlassIcon,
   ShoppingBagIcon,
-  Bars3BottomLeftIcon,
+  Bars3Icon,
   XMarkIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  themeSettings: any;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
-
-interface HeaderProps {
-  store: Store;
-}
-
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
+interface HeaderProps {
+  store: any;
+}
+
 const Header: React.FC<HeaderProps> = ({ store }) => {
   const { cart } = useStateContext();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  
+  React.useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const primary = store?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
-  const secondary = store?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
-
-  const sections = ["hero", "services", "featured", "testimonials", "faq"];
+  const primary = store.themeSettings?.primaryColor || "#f97316";
+  const sections = [
+    { id: "hero", label: "Home" },
+    { id: "services", label: "Services" },
+    { id: "featured", label: "Featured" },
+    { id: "testimonials", label: "Testimonials" },
+    { id: "faq", label: "FAQ" },
+  ];
 
   return (
-    <>
-     <motion.nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50" initial={{ y: -80 }} animate={{ y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="container mx-auto px-6 flex items-center justify-between h-16">
-            <Link href="/acetech" className="text-2xl font-bold text-indigo-700">AceTech</Link>
-            <div className="space-x-6">
-              {sections.map((id, idx) => (
-                <a key={id} href={`#${id}`} className={`font-medium text-gray-700 hover:text-indigo-600 transition  text-indigo-600`}>
-                  {id.charAt(0).toUpperCase() + id.slice(1)}
-                </a>
-              ))}
+    <header className="fixed w-full z-50 top-0 left-0">
+      <motion.nav
+        className={`w-full transition-colors duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-md' : 'bg-transparent'}`}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="container mx-auto px-6 flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href={`/${store.slug}`} className="flex items-center">
+            {store.logoUrl ? (
+              <Image
+                src={store.logoUrl}
+                loader={loader}
+                alt={store.name}
+                width={120}
+                height={40}
+                className="object-contain"
+              />
+            ) : (
+              <span className="text-2xl font-bold text-gray-800">{store.name}</span>
+            )}
+          </Link>
+
+          {/* Desktop Links & Search */}
+          <div className="hidden lg:flex items-center space-x-8">
+            {sections.map(({ id, label }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="text-gray-700 hover:text-gray-900 font-medium transition"
+              >
+                {label}
+              </a>
+            ))}
+            <div className="relative">
+              <input
+                type="search"
+                placeholder="Search services..."
+                className="pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2"
+                style={{ borderColor: primary }}
+              />
+              <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-500" />
             </div>
           </div>
-        </motion.nav>
-    </>
-    // <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm transition-shadow">
-    //   {/* Top Info Bar */}
-    //   <div
-    //     className="hidden md:flex justify-between items-center px-6 py-2 text-sm font-medium"
-    //     style={{ backgroundColor: `${primary}1A`, color: primary }}
-    //   >
-    //     <div className="flex items-center space-x-6">
-    //       {store.contactEmail && (
-    //         <a href={`mailto:${store.contactEmail}`} className="flex text-sm items-center uppercase hover:underline">
-    //           📧 <span className="ml-1">{store.contactEmail}</span>
-    //         </a>
-    //       )}
-    //       {store.contactPhone && (
-    //         <a href={`tel:${store.contactPhone}`} className="flex items-center hover:underline">
-    //           📞 <span className="ml-1">{store.contactPhone}</span>
-    //         </a>
-    //       )}
-    //     </div>
-    //     <div className="flex space-x-4">
-    //       {store.socialLinks.map((s) => (
-    //         <a
-    //           key={s.channel}
-    //           href={s.url}
-    //           target="_blank"
-    //           rel="noreferrer"
-    //           style={{ color: primary }}
-    //           onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
-    //           onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
-    //           className="capitalize transition-colors"
-    //         >
-    //           {s.channel}
-    //         </a>
-    //       ))}
-    //     </div>
-    //   </div>
 
-    //   {/* Main Header */}
-    //   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    //     <div className="flex items-center justify-between h-20">
-    //       <div className="flex items-center space-x-4">
-    //         <Link href={`/site/${store.slug}`} className="flex items-center space-x-2">
-    //           {store.logoUrl ? (
-    //             <Image
-    //               src={store.logoUrl}
-    //               alt={store.name}
-    //               width={120}
-    //               height={40}
-    //               className="object-contain"
-    //               loader={loader}
-    //             />
-    //           ) : (
-    //             <span className="text-xl font-bold text-gray-800 dark:text-white">{store.name}</span>
-    //           )}
-    //         </Link>
-    //         <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
-    //           {["Home", "Shop", "Categories"].map((label) => (
-    //             <Link
-    //               key={label}
-    //               href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" :  label.toLowerCase() === "shop" ? "products" : label.toLowerCase()}`}
-    //               className="hover:underline"
-    //               style={{ color: "#444" }}
-    //               onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-    //               onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
-    //             >
-    //               {label}
-    //             </Link>
-    //           ))}
-    //         </nav>
-    //       </div>
+          {/* Icons & Mobile Toggle */}
+          <div className="flex items-center space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={() => router.push(`/${store.slug}/profile`)}
+              className="text-gray-600"
+            >
+              <UserIcon className="w-6 h-6" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={() => router.push(`/${store.slug}/checkout`)}
+              className="relative text-gray-600"
+            >
+              <ShoppingBagIcon className="w-6 h-6" />
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </motion.button>
+            <button
+              className="lg:hidden text-gray-600"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
 
-    //       {/* Search */}
-    //       <div className="flex-1 mx-6 hidden lg:block">
-    //         <div className="relative">
-    //           <input
-    //             type="search"
-    //             placeholder="Search products..."
-    //             className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm rounded-full py-2 px-4 pl-10 shadow-sm focus:outline-none"
-    //             onFocus={(e) => (e.currentTarget.style.boxShadow = `0 0 0 2px ${primary}`)}
-    //             onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-    //           />
-    //           <MagnifyingGlassCircleIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-    //         </div>
-    //       </div>
-
-    //       {/* Icons */}
-    //       <div className="flex items-center space-x-4">
-    //         <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/profile`);}} className="text-gray-600 dark:text-gray-200">
-    //           <UserIcon className="h-6 w-6" />
-    //         </motion.button>
-    //         <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/checkout`);}} className="relative text-gray-600 dark:text-gray-200">
-    //           <ShoppingBagIcon className="h-6 w-6" />
-    //           {cart.length > 0 && (
-    //             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ">
-    //               {cart.length}
-    //             </span>
-    //           )}
-    //         </motion.button>
-    //         <button
-    //           className="lg:hidden text-gray-600 dark:text-gray-200"
-    //           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-    //           aria-label="Toggle menu"
-    //         >
-    //           {mobileMenuOpen ? (
-    //             <XMarkIcon className="h-6 w-6" />
-    //           ) : (
-    //             <Bars3BottomLeftIcon className="h-6 w-6" />
-    //           )}
-    //         </button>
-    //       </div>
-    //     </div>
-    //   </div>
-
-    //   {/* Mobile Menu */}
-    //   {mobileMenuOpen && (
-    //     <div className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shadow-md">
-    //       <div className="space-y-3">
-    //         {["Home", "Shop", "Categories"].map((label) => (
-    //           <Link
-    //             key={label}
-    //             href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase() === "shop" ? "products" : label.toLowerCase() }`}
-    //             className="block hover:underline"
-    //             style={{ color: "#444" }}
-    //             onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-    //             onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
-    //           >
-    //             {label}
-    //           </Link>
-    //         ))}
-    //       </div>
-    //     </div>
-    //   )}
-    // </header>
+        {/* Mobile Menu */}
+        {mobileOpen && (
+          <div className="lg:hidden bg-white shadow-inner">
+            <nav className="flex flex-col p-4 space-y-4">
+              {sections.map(({ id, label }) => (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  className="text-gray-700 font-medium hover:text-gray-900"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        )}
+      </motion.nav>
+    </header>
   );
 };
 
