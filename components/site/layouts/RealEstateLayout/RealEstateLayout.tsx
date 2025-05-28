@@ -23,7 +23,7 @@ export default function RealEstateHeaderLayout({ params, children }: RealEstateL
     <>
       <Header store={store} />
       {/* Main Content Area */}
-      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>

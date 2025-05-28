@@ -35,7 +35,7 @@ export default function MediaHeaderLayout({ params, children }: MediaLayoutProps
       <Header store={store} />
 
       {/* Content Area */}
-      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>

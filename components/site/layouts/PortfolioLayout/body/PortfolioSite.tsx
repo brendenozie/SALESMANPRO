@@ -123,6 +123,27 @@ export default function PortfolioSite() {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl font-bold text-gray-800 mb-12">What Clients Say</h2>
+          <div className="space-y-8 max-w-2xl mx-auto">
+            {testimonials.map((t:any, i:any) => (
+              <motion.blockquote
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 * i }}
+                className="italic text-gray-700 text-lg"
+              >
+                “{t.quote}”<br />
+                <span className="font-semibold text-gray-900">— {t.author}</span>
+              </motion.blockquote>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Video Testimonials Carousel */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 text-center">
@@ -179,10 +200,8 @@ export default function PortfolioSite() {
         <div className="container mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">Let's Work Together</h2>
           <p className="text-lg md:text-xl text-gray-600 mb-8">Ready to bring your ideas to life? Reach out for a free consultation.</p>
-          <Link href={`mailto:${store.contactEmail}`}>
-            <a className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-10 rounded-full font-semibold shadow-lg transition">
+          <Link href={`mailto:${store.contactEmail}`}  className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-10 rounded-full font-semibold shadow-lg transition">
               Contact Me
-            </a>
           </Link>
         </div>
       </section>

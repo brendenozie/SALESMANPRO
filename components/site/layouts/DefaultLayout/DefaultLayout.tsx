@@ -26,7 +26,7 @@ export default function DefaultHeaderLayout({ params, children }: DefaultHeaderL
       <Header store={store} />
 
       {/* Main Content */}
-      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>

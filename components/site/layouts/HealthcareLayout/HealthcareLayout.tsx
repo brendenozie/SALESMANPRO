@@ -35,7 +35,7 @@ export default function HealthcareHeaderLayout({ params, children }: HealthcareL
       <Header store={store} />
 
       {/* Child Content */}
-      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>

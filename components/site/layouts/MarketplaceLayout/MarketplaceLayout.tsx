@@ -35,7 +35,7 @@ export default function MarketplaceHeaderLayout({ params, children }: Marketplac
       <Header store={store} />
 
       {/* Child Content (Category/Product Pages) */}
-      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>

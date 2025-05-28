@@ -36,7 +36,7 @@ export default function EventsHeaderLayout({ params, children }: EventsLayoutPro
       <Header store={store} />
 
       {/* Child Content / Event Details */}
-      <section className="container mx-auto px-6 py-12 bg-white">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>
