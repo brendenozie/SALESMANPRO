@@ -1,177 +1,230 @@
-// app/site/layouts/BookingsLayout/body/BookingsSite.tsx
-
-import React, { ReactNode, useState, useEffect } from "react";
-import { useStateContext } from "../../../../../contexts/ContextProvider";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import DatePicker from "react-datepicker";
 
+// Sample store data
+const store = {
+name: "PrimeBookings Hub",
+slug: "primebookings",
+description: "Discover and book top-rated service providers in seconds!",
+bannerUrl: "/images/booking-hero.jpg",
+StoreCategory: [
+{ id: 1, name: "Hair Stylists", slug: "hair-stylists", imageUrl: "/categories/hair.jpg" },
+{ id: 2, name: "Fitness Trainers", slug: "fitness-trainers", imageUrl: "/categories/fitness.jpg" },
+{ id: 3, name: "Massage Therapists", slug: "massage-therapists", imageUrl: "/categories/massage.jpg" },
+{ id: 4, name: "Personal Chefs", slug: "personal-chefs", imageUrl: "/categories/chef.jpg" },
+],
+products: [
+{ id: "p1", name: "Elegant Updo", price: 2500, imageUrl: "/services/updo.jpg" },
+{ id: "p2", name: "HIIT Session", price: 1500, imageUrl: "/services/hiit.jpg" },
+{ id: "p3", name: "Swedish Massage", price: 3000, imageUrl: "/services/massage.jpg" },
+{ id: "p4", name: "Gourmet Dinner", price: 5000, imageUrl: "/services/dinner.jpg" },
+],
+testimonials: [
+{ quote: "Booked my stylist in minutes—fantastic!", author: "Emily R." },
+{ quote: "Trainer was amazing and motivating.", author: "Mark T." },
+{ quote: "Best massage experience ever.", author: "Sarah L." },
+],
+faqs: [
+{ question: "Can I reschedule?", answer: "Yes, modify your booking up to 24 hours before." },
+{ question: "Are there cancellation fees?", answer: "No fees if canceled before 12 hours." },
+],
+};
+
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+`${src}?w=${width}&q=${quality || 75}`;
 
-export default function BookingsSite({ store }:any) {
+export default function BookingsSite() {
+const [featured, setFeatured] = useState<any[]>([]);
+const [faqs, setFaqs] = useState<any[]>([]);
+const [searchTerm, setSearchTerm] = useState("");
+const [date, setDate] = useState<Date | null>(new Date());
+const [time, setTime] = useState<Date | null>(new Date());
 
-  const router = useRouter();
+useEffect(() => {
+setFeatured(store.products);
+setFaqs(store.faqs);
+}, []);
 
-  const [featured, setFeatured] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [date, setDate] = useState<Date | null>(new Date());
-  const [time, setTime] = useState<Date | null>(new Date());
+const handleSearch = () => {
+// simulate search
+alert(`Searching ${searchTerm} on ${date?.toLocaleDateString()} at ${time?.toLocaleTimeString()}`);
+};
 
-  useEffect(() => {
-    setFeatured(store.products.slice(0, 4));
-    setFaqs(store.faqs.slice(0, 3));
-  }, [store]);
+return ( <div className="space-y-20">
+{/* {/\* Hero \*/}  
+<section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-purple-700 via-indigo-600 to-blue-500 overflow-hidden">
+   <Image
+      loader={loader}
+       src={store.bannerUrl}
+       alt="Hero"
+       fill
+       className="object-cover opacity-30"
+     />
+     <div className="relative z-10 text-center px-6">
 
-  const handleSearch = () => {
-    const query = new URLSearchParams();
-    if (searchTerm) query.set("q", searchTerm);
-    if (date) query.set("date", date.toISOString());
-    if (time) query.set("time", time.toISOString());
-    router.push(`/${store.slug}/search?${query.toString()}`);
-  };
+<motion.h1
+initial={{ y: -50, opacity: 0 }}
+animate={{ y: 0, opacity: 1 }}
+transition={{ duration: 0.8 }}
+className="text-5xl md\:text-7xl font-bold text-white tracking-wide"
+>
+{store.name}
+</motion.h1>
+<motion.p
+initial={{ y: 50, opacity: 0 }}
+animate={{ y: 0, opacity: 1 }}
+transition={{ duration: 0.8, delay: 0.3 }}
+className="mt-4 text-xl md\:text-2xl text-white max-w-xl mx-auto"
+>
+{store.description}
+</motion.p>
+<motion.div
+initial={{ scale: 0.8, opacity: 0 }}
+animate={{ scale: 1, opacity: 1 }}
+transition={{ duration: 0.8, delay: 0.6 }}
+className="mt-8 flex flex-col sm\:flex-row gap-4 justify-center"
+>
+<input
+type="text"
+placeholder="Search providers..."
+value={searchTerm}
+onChange={(e) => setSearchTerm(e.target.value)}
+className="px-4 py-3 rounded-lg w-64 focus\:outline-none"
+/>
+<DatePicker
+selected={date}
+onChange={(d) => setDate(d)}
+className="px-4 py-3 rounded-lg w-44"
+dateFormat="MMM d, yyyy"
+/>
+<DatePicker
+selected={time}
+onChange={(t) => setTime(t)}
+className="px-4 py-3 rounded-lg w-32"
+showTimeSelect
+showTimeSelectOnly
+timeIntervals={30}
+dateFormat="h\:mm aa"
+/> <button
+           onClick={handleSearch}
+           className="bg-indigo-800 hover:bg-indigo-900 text-white px-6 py-3 rounded-full font-semibold shadow-lg"
+         >
+Find Slots </button>
+</motion.div> </div> </section>
 
-  return (
-    <>
-      
-      {/* Hero + Booking Search */}
-      <section className="relative bg-blue-600 text-white">
-        <Image
-          src={store.bannerUrl || "/images/booking-hero.jpg"}
-          alt="Booking Hero"
-          fill
-          className="object-cover opacity-25"
-          loader={loader}
-        />
-        <div className="relative z-10 container mx-auto py-24 text-center">
-          <h1 className="text-5xl font-extrabold drop-shadow-lg">{store.name}</h1>
-          <p className="mt-4 text-xl max-w-2xl mx-auto">{store.description}</p>
-          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-            <input
-              type="text"
-              placeholder="Search services or providers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full sm:w-1/3 px-4 py-3 rounded-lg focus:outline-none"
-            />
-            <DatePicker
-              selected={date}
-              onChange={(d) => setDate(d)}
-              className="w-full sm:w-1/4 px-4 py-3 rounded-lg"
-              dateFormat="MMMM d, yyyy"
-              placeholderText="Select Date"
-            />
-            <DatePicker
-              selected={time}
-              onChange={(t) => setTime(t)}
-              className="w-full sm:w-1/6 px-4 py-3 rounded-lg"
-              showTimeSelect
-              showTimeSelectOnly
-              timeIntervals={30}
-              timeCaption="Time"
-              dateFormat="h:mm aa"
-              placeholderText="Select Time"
-            />
-            <button
-              onClick={handleSearch}
-              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 rounded-lg font-semibold"
-            >
-              Find Slots
-            </button>
-          </div>
-        </div>
-      </section>
 
-      {/* Service Categories */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8">Browse Categories</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {store.StoreCategory.map((cat:any) => (
-              <Link key={cat.id} href={`/${store.slug}/category/${cat.slug}`} className="group block rounded-lg overflow-hidden shadow hover:shadow-lg transition">
-                  <div className="relative h-32">
-                    <Image
-                      src={cat.imageUrl}
-                      loader={loader}
-                      alt={cat.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-                  <div className="p-4 text-center">
-                    <span className="text-lg font-medium text-gray-900">{cat.name}</span>
-                  </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Providers */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8">Top-Rated Providers</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {featured.map((svc) => (
-              <div
-                key={svc.id}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition cursor-pointer"
-                onClick={() => router.push(`/${store.slug}/service/${svc.slug || svc.id}`)}
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={svc.imageUrl}
-                    loader={loader}
-                    alt={svc.name}
-                    fill
-                    className="object-cover rounded-t-lg"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold">{svc.name}</h3>
-                  <p className="mt-2 text-gray-600">KES {svc.price.toLocaleString()}</p>
-                </div>
+  {/* Categories */}
+  <section className="py-16 bg-white">
+    <div className="container mx-auto px-6">
+      <h2 className="text-4xl font-bold text-center mb-12">Browse by Category</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        {store.StoreCategory.map((cat) => (
+          <motion.div
+            key={cat.id}
+            whileHover={{ scale: 1.05 }}
+            className="overflow-hidden rounded-xl shadow-lg"
+          >
+            <Link href={`#`}>
+              <div className="relative h-40">
+                <Image
+                  loader={loader}
+                  src={cat.imageUrl}
+                  alt={cat.name}
+                  fill
+                  className="object-cover"
+                />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <div className="p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center">
+                {cat.name}
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
 
-      {/* Testimonials */}
-      {store.testimonials.length > 0 && (
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">Happy Clients</h2>
-            <div className="space-y-8">
-              {store.testimonials.slice(0, 3).map((t:any, i:any) => (
-                <div key={i} className="max-w-xl mx-auto">
-                  <p className="italic text-gray-700">“{t.quote}”</p>
-                  <p className="mt-4 font-semibold text-gray-900">— {t.author}</p>
-                </div>
-              ))}
+  {/* Featured Services */}
+  <section className="py-16 bg-gray-50">
+    <div className="container mx-auto px-6">
+      <h2 className="text-4xl font-bold text-center mb-12">Top Providers</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {featured.map((svc:any) => (
+          <motion.div
+            key={svc.id}
+            whileHover={{ y: -10 }}
+            className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer"
+          >
+            <div className="relative h-48">
+              <Image
+                loader={loader}
+                src={svc.imageUrl}
+                alt={svc.name}
+                fill
+                className="object-cover"
+              />
             </div>
-          </div>
-        </section>
-      )}
+            <div className="p-6">
+              <h3 className="text-xl font-semibold mb-2">{svc.name}</h3>
+              <p className="text-indigo-600 font-bold">KES {svc.price.toLocaleString()}</p>
+              <button
+                onClick={() => alert("Book " + svc.name)}
+                className="mt-4 block w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-medium"
+              >
+                Book Now
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
 
-      {/* FAQs Preview */}
-      {faqs.length > 0 && (
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6 max-w-3xl mx-auto">
-              {faqs.map((q, i) => (
-                <details key={i} className="bg-white rounded-lg shadow p-4">
-                  <summary className="cursor-pointer font-medium">{q.question}</summary>
-                  <p className="mt-2 text-gray-600">{q.answer}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-    </>
-  )
+  {/* Testimonials */}
+  <section className="py-16 bg-white">
+    <div className="container mx-auto px-6 text-center">
+      <h2 className="text-4xl font-bold mb-12">What Clients Are Saying</h2>
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {store.testimonials.map((t, i) => (
+          <motion.blockquote
+            key={i}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.2 }}
+            className="italic text-gray-700 text-xl"
+          >
+            “{t.quote}”<br />
+            <span className="font-semibold text-gray-900">— {t.author}</span>
+          </motion.blockquote>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* FAQs */}
+  <section className="py-16 bg-gray-50">
+    <div className="container mx-auto px-6 max-w-2xl">
+      <h2 className="text-4xl font-bold text-center mb-10">FAQs</h2>
+      <div className="space-y-4">
+        {faqs.map((q:any, i:any) => (
+          <motion.details
+            key={i}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 + i * 0.1 }}
+            className="bg-white p-6 rounded-2xl shadow-lg"
+          >
+            <summary className="cursor-pointer font-semibold text-gray-800">{q.question}</summary>
+            <p className="mt-2 text-gray-600">{q.answer}</p>
+          </motion.details>
+        ))}
+      </div>
+    </div>
+  </section>
+</div>
+
+);
 }

@@ -32,8 +32,8 @@ export default function EcommerceSite({ store }:any) {
             key={i}
             className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md my-8"
           >
-            <p className="text-lg">{t.quote}</p>
-            <p className="text-sm text-gray-500">– {t.author}</p>
+            <p className="text-lg">{t?.quote ?? ""}</p>
+            <p className="text-sm text-gray-500">– {t?.author ?? ""}</p>
           </div>
         ))}
       </Section>

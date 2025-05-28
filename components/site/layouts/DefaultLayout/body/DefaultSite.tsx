@@ -1,181 +1,125 @@
-// app/site/layouts/DefaultLayout/body/DefaultSite.tsx
-
-import React, { ReactNode, useEffect, useState } from "react";
-import { useStateContext } from "../../../../../contexts/ContextProvider";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+// Sample data fallback
+const store = {
+  name: "Your Store",
+  slug: "your-store",
+  description: "No site set yet. Contact the admin to configure your site.",
+  bannerUrl: "/images/default-hero.jpg",
+  heroSlides: [],
+  products: [],
+  StoreCategory: [],
+  testimonials: [
+    { quote: "Great support from the admin!", author: "Admin User" },
+  ],
+  faqs: [
+    { question: "How do I configure my site?", answer: "Reach out to admin@domain.com for setup assistance." },
+    { question: "Why can’t I see content?", answer: "No category selected—please contact admin to enable your site." },
+  ],
+};
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function DefaultSite({ store }:any) {
+export default function DefaultSite() {
   const router = useRouter();
-
   const [items, setItems] = useState<any[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    // We'll default to showing hero slides as items if available,
-    // otherwise fall back to products or categories
-    if (store.heroSlides?.length) {
-      setItems(store.heroSlides);
-    } else if (store.products?.length) {
-      setItems(store.products.slice(0, 5));
-    } else {
-      setItems(store.StoreCategory?.slice(0, 5) || []);
-    }
+    // Show a generic prompt card
+    setItems([
+      { id: 'c1', name: 'Contact Admin', subtitle: 'Click below to reach out', imageUrl: '/images/contact-admin.jpg', cta: () => router.push(`/contact`) }
+    ]);
+    setTestimonials(store.testimonials);
+    setFaqs(store.faqs);
+  }, []);
 
-    setTestimonials(store.testimonials?.slice(0, 3) || []);
-    setFaqs(store.faqs?.slice(0, 3) || []);
-  }, [store]);
-
-  const handlePrimaryCTA = () => {
-    // Send them to contact or shop based on category
-    const path = store.slug + (store.category === "e-commerce" ? "/shop" : "/contact");
-    router.push(`/${path}`);
-  };
-  
   return (
-    <>
-      
+    <div className="space-y-16 font-sans">
       {/* Hero */}
       <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        className="relative bg-gray-800 text-white h-[60vh] flex items-center"
+        className="relative h-[60vh] bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}
       >
-        {store.bannerUrl && (
-          <Image src={store.bannerUrl} alt="Hero" fill className="object-cover opacity-40" loader={loader}/>
-        )}
-        <div className="relative z-10 container mx-auto px-6 text-center">
-          <motion.h1
-            initial={{ y: -30 }}
-            animate={{ y: 0 }}
-            transition={{ delay: 0.5, type: "spring" }}
-            className="text-5xl font-bold drop-shadow-lg mb-4"
-          >
+        <Image src={store.bannerUrl} fill alt="Default Hero" className="object-cover opacity-30" loader={loader} />
+        <div className="relative z-10 text-center px-6">
+          <motion.h1 initial={{ y: -30 }} animate={{ y: 0 }} transition={{ delay: 0.5 }} className="text-5xl font-bold mb-4 drop-shadow-lg">
             {store.name}
           </motion.h1>
-          <motion.p
-            initial={{ x: -30 }}
-            animate={{ x: 0 }}
-            transition={{ delay: 0.8 }}
-            className="text-lg max-w-2xl mx-auto mb-6"
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-lg max-w-xl mx-auto mb-6">
             {store.description}
           </motion.p>
           <motion.button
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 1.1 }}
-            onClick={handlePrimaryCTA}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition"
+            whileHover={{ scale: 1.05 }}
+            onClick={() => router.push('/contact')}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-full font-semibold shadow-lg transition"
           >
-            {store.category === "e-commerce" ? "Start Shopping" : "Contact Us"}
+            Contact Admin
           </motion.button>
         </div>
       </motion.section>
 
-      {/* Dynamic Item Showcase */}
+      {/* Action Card */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            {store.heroSlides?.length ? "Highlights" : store.products?.length ? "Top Picks" : "Explore"}
-          </h2>
           <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={{
-              hidden: {},
-              visible: { transition: { staggerChildren: 0.2 } },
-            }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row"
+            initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.6 }}
           >
-            {items.map((it: any, idx: number) => (
-              <motion.div
-                key={idx}
-                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                className="bg-gray-100 rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer"
-                onClick={() =>
-                  router.push(
-                    store.heroSlides?.length
-                      ? it.ctaLink || `/${store.slug}/item/${it.id}`
-                      : store.products?.length
-                      ? `/${store.slug}/product/${it.slug || it.id}`
-                      : `/${store.slug}/category/${it.slug || it.id}`
-                  )
-                }
+            <div className="relative h-64 md:h-auto md:w-1/2">
+              <Image src={items[0]?.imageUrl ?? ""} fill alt={items[0]?.name ?? ""} className="object-cover" loader={loader} />
+            </div>
+            <div className="p-8 flex flex-col justify-center">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800">{items[0]?.name ?? "Awesome Name"}</h2>
+              <p className="text-gray-600 mb-6">{items[0]?.subtitle  ?? "Awesome Subtitle"}</p>
+              <button
+                onClick={items[0]?.cta ?? "Awesome Name"}
+                className="self-start bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-full font-semibold transition"
               >
-                <div className="relative h-48">
-                  <Image
-                    src={it.imageUrl || it.bannerUrl}
-                    alt={it.title || it.name}
-                    fill
-                    className="object-cover"
-                    loader={loader}
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900">{it.headline || it.name}</h3>
-                  <p className="mt-2 text-gray-600">{it.subline || it.subtitle || ""}</p>
-                </div>
-              </motion.div>
-            ))}
+                Contact Now
+              </button>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Testimonials */}
-      {testimonials.length > 0 && (
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">Testimonials</h2>
-            <div className="space-y-8 max-w-2xl mx-auto">
-              {testimonials.map((t, i) => (
-                <blockquote key={i} className="italic text-gray-700">
-                  “{t.quote}”
-                  <br />
-                  <span className="font-semibold text-gray-900">— {t.author}</span>
-                </blockquote>
-              ))}
-            </div>
+      <section className="py-16 bg-gray-100">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">Testimonials</h2>
+          <div className="max-w-2xl mx-auto space-y-8">
+            {testimonials.map((t, i) => (
+              <motion.blockquote
+                key={i}
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 * i }}
+                className="italic text-gray-700 text-lg"
+              >
+                “{t.quote}”<br /><span className="mt-2 block font-semibold text-gray-900">— {t.author}</span>
+              </motion.blockquote>
+            ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* FAQs */}
-      {faqs.length > 0 && (
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-6 max-w-2xl">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">FAQs</h2>
-            <div className="space-y-6">
-              {faqs.map((q, i) => (
-                <details key={i} className="bg-gray-100 rounded-lg shadow p-4">
-                  <summary className="cursor-pointer font-medium">{q.question}</summary>
-                  <p className="mt-2 text-gray-600">{q.answer}</p>
-                </details>
-              ))}
-            </div>
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-6 max-w-2xl">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">FAQs</h2>
+          <div className="space-y-4">
+            {faqs.map((q, i) => (
+              <motion.details key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + 0.1 * i }} className="bg-gray-50 p-4 rounded-lg shadow">
+                <summary className="cursor-pointer font-medium text-gray-800">{q.question}</summary>
+                <p className="mt-2 text-gray-600">{q.answer}</p>
+              </motion.details>
+            ))}
           </div>
-        </section>
-      )}
-
-      {/* Chat Button */}
-      <div className="fixed bottom-6 right-6">
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          className="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition"
-        >
-          💬
-        </motion.button>
-      </div>
-    </>
-  )
+        </div>
+      </section>
+    </div>
+  );
 }
-
-

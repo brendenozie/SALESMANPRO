@@ -44,8 +44,8 @@ export default function StorePage() {
       case 'services':
       case 'service provider':
         return <ServiceSite 
-            store={store}
-            slug={store.slug}
+            // store={store}
+            // slug={store.slug}
         />
 
       case 'e-commerce':
@@ -58,115 +58,134 @@ export default function StorePage() {
       case 'bookings':
       case 'booking & appointments':
         return <BookingsSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
   
       case 'real estate':
         return <RealEstateSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
   
       case 'portfolio':
       case 'portfolio & personal branding':
         return <PortfolioSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
   
       case 'restaurant':
       case 'restaurant & food delivery':
         return <RestaurantSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
   
       case 'blog':
       case 'blog & content':
         return <BlogSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'directory':
       case 'directory & listings':
         return <DirectorySite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
               
       case 'educational':
       case 'educational & online courses':
       case 'courses':
         return <CoursesSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'nonprofit':
       case 'nonprofit & community':
         return <NonProfitSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'event':
       case 'event & ticketing':
         return <EventsSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'healthcare':
       case 'healthcare & clinics':
         return <HealthCareSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'saas':
       case 'saas & web apps':
         return <SaaSSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'automotive':
       case 'automotive':
         return <AutomotiveSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'media':
       case 'media & entertainment':
         return <MediaSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'finance':
       case 'finance & legal':
         return <FinanceSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'travel':
       case 'travel & tourism':
         return <TravelSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
 
       case 'fitness':
       case 'fitness & wellness':
         return <FitnessSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
   
       case 'marketplace':
       case 'marketplace':
         return <MarketplaceSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
   
       case 'other':
       case 'Other':
         return <DefaultSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
   
       default:
         return <DefaultSite 
-                store={store}
-                slug={store.slug}/>
+                // store={store}
+                // slug={store.slug}
+                />
     }
 
 }
