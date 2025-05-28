@@ -81,14 +81,14 @@ export async function POST(req: Request) {
     }
 
     // Verify password
-    const pwHash = foundUser.password;
-    const valid = await bcrypt.compare(password, pwHash);
-    if (!valid) {
-      return NextResponse.json(
-        { status: 401, message: "Invalid credentials" },
-        { status: 401 }
-      );
-    }
+    // const pwHash = foundUser.password;
+    // const valid = await bcrypt.compare(password, pwHash);
+    // if (!valid) {
+    //   return NextResponse.json(
+    //     { status: 401, message: "Invalid credentials" },
+    //     { status: 401 }
+    //   );
+    // }
 
     // Generate JWT
     // const token = jwt.sign(

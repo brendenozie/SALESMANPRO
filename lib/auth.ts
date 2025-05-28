@@ -50,10 +50,16 @@ export const authOptions: NextAuthOptions = {
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ data: { email: credentials.email, password: credentials.password } }),
+              body:  JSON.stringify({ email: credentials.email, password: credentials.password }),
             }
           );
-          if (!response.ok) return null;
+          
+          if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error("Login failed:", errorResponse.message || "Unknown error");
+            return null;
+          }
+          
           const { body } = await response.json();
           if (!body?.id || !body.email) return null;
           return {
@@ -147,24 +153,3 @@ export const authOptions: NextAuthOptions = {
 
 // Helper for App Router
 export const getAuthSession = () => getServerSession(authOptions);
-
-
-// File: app/api/auth/[...nextauth]/route.ts
-// import NextAuth from "next-auth/next";
-// import { authOptions } from "../../../lib/auth";
-
-// const handler = NextAuth(authOptions);
-// export { handler as GET, handler as POST };
-
-
-
-// export async function requireAuth(req: Request) {
-//   const session = await getServerSession(authOptions);
-//   if (!session || !session.user) {
-//     return new Response(JSON.stringify({ message: "Unauthorized" }), {
-//       status: 401,
-//       headers: { "Content-Type": "application/json" },
-//     });
-//   }
-//   return session.user;
-// }
