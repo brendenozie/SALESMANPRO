@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Sample Data
+// Sample Data (ideally from CMS/API)
 const store = {
   name: "CreativeSpark Portfolio",
   slug: "creativespark",
@@ -32,14 +32,13 @@ const store = {
   contactEmail: "hello@creativespark.com",
 };
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function PortfolioSite() {
   const router = useRouter();
-  const [projects, setProjects] = useState<any[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any>([]);
+  const [testimonials, setTestimonials] = useState<any>([]);
+  const [faqs, setFaqs] = useState<any>([]);
 
   useEffect(() => {
     setProjects(store.projects);
@@ -48,16 +47,25 @@ export default function PortfolioSite() {
   }, []);
 
   return (
-    <div className="space-y-20 font-sans">
+    <div className="space-y-24 font-sans text-gray-800">
+
       {/* Hero Section */}
-      <section className="relative h-screen bg-gradient-to-br from-gray-900 to-black text-white flex items-center justify-center">
-        <Image src={store.bannerUrl} alt="Hero" fill className="object-cover opacity-40" loader={loader} />
-        <div className="relative z-10 text-center px-6 max-w-2xl">
+      <section className="relative h-screen overflow-hidden">
+        <Image
+          src={store.bannerUrl}
+          alt="Hero"
+          layout="fill"
+          objectFit="cover"
+          loader={loader}
+          className="object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 to-transparent" />
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
           <motion.h1
-            initial={{ opacity: 0, y: -30 }}
+            initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-bold mb-4"
+            transition={{ duration: 1 }}
+            className="text-5xl md:text-7xl font-bold text-white drop-shadow-xl"
           >
             {store.name}
           </motion.h1>
@@ -65,44 +73,49 @@ export default function PortfolioSite() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-lg md:text-xl mb-8"
+            className="mt-4 text-lg md:text-2xl text-gray-200 max-w-2xl"
           >
             {store.description}
           </motion.p>
-          <motion.div
+          <motion.button
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.8 }}
+            onClick={() => router.push(store.heroCta.link)}
+            className="mt-8 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-full font-semibold shadow-lg transform transition"
           >
-            <button
-              onClick={() => router.push(store.heroCta.link)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-full font-semibold shadow-lg transition"
-            >
-              {store.heroCta.text}
-            </button>
-          </motion.div>
+            {store.heroCta.text}
+          </motion.button>
         </div>
       </section>
 
       {/* Projects Gallery */}
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">Featured Projects</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Featured Projects</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects.map((proj, i) => (
+            {projects.map((proj :any, i:any) => (
               <motion.div
                 key={proj.id}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.03 }}
                 transition={{ type: 'spring', stiffness: 300 }}
-                className="bg-gray-100 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
                 onClick={() => router.push(`/${store.slug}/project/${proj.slug}`)}
+                className="relative group rounded-2xl overflow-hidden shadow-xl cursor-pointer"
               >
-                <div className="relative h-64">
-                  <Image src={proj.imageUrl} alt={proj.name} fill className="object-cover" loader={loader} />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">{proj.name}</h3>
-                  <p className="text-gray-700">{proj.subtitle}</p>
+                <Image
+                  src={proj.imageUrl}
+                  alt={proj.name}
+                  layout="responsive"
+                  width={400}
+                  height={300}
+                  objectFit="cover"
+                  loader={loader}
+                  className="group-hover:scale-110 transform transition"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition" />
+                <div className="absolute bottom-0 left-0 p-6 text-white">
+                  <h3 className="text-2xl font-semibold">{proj.name}</h3>
+                  <p className="mt-1 text-sm">{proj.subtitle}</p>
                 </div>
               </motion.div>
             ))}
@@ -110,41 +123,50 @@ export default function PortfolioSite() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 bg-gray-50">
+      {/* Video Testimonials Carousel */}
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-gray-800 mb-12">What Clients Say</h2>
-          <div className="space-y-8 max-w-2xl mx-auto">
-            {testimonials.map((t, i) => (
-              <motion.blockquote
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 * i }}
-                className="italic text-gray-700 text-lg"
-              >
-                “{t.quote}”<br />
-                <span className="font-semibold text-gray-900">— {t.author}</span>
-              </motion.blockquote>
-            ))}
+          <h2 className="text-4xl md:text-5xl font-bold mb-12">Client Stories</h2>
+          <div className="relative max-w-3xl mx-auto">
+            <AnimatePresence>
+              {testimonials.map((t:any, i:any) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.2 }}
+                  className="mb-8"
+                >
+                  <video controls className="w-full rounded-2xl shadow-lg">
+                    <source src={`/testimonials/video${i+1}.mp4`} type="video/mp4" />
+                    Your browser does not support video.
+                  </video>
+                  <p className="mt-4 italic text-gray-700">“{t.quote}”</p>
+                  <p className="mt-2 font-semibold text-gray-900">— {t.author}</p>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       </section>
 
-      {/* FAQs */}
-      <section className="py-16 bg-white">
+      {/* FAQs Accordion */}
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6 max-w-3xl">
-          <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">FAQs</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-10">FAQs</h2>
           <div className="space-y-4">
-            {faqs.map((faq, i) => (
+            {faqs.map((faq:any, i:any) => (
               <motion.details
                 key={i}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.1 }}
-                className="bg-gray-100 p-6 rounded-2xl shadow-lg"
+                className="bg-white p-6 rounded-2xl shadow-lg"
               >
-                <summary className="cursor-pointer text-lg font-semibold text-gray-800">{faq.question}</summary>
+                <summary className="cursor-pointer text-xl font-semibold text-gray-800">
+                  {faq.question}
+                </summary>
                 <p className="mt-2 text-gray-600">{faq.answer}</p>
               </motion.details>
             ))}
@@ -153,17 +175,18 @@ export default function PortfolioSite() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 bg-gray-50 text-center">
+      <section className="py-20 bg-white text-center">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Let's Work Together</h2>
-          <p className="text-gray-600 mb-8">Interested in collaborating? Reach out for a free consultation.</p>
-          <Link href={`mailto:${store.contactEmail}`}>  
-            <a className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-full font-semibold shadow-lg transition">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Let's Work Together</h2>
+          <p className="text-lg md:text-xl text-gray-600 mb-8">Ready to bring your ideas to life? Reach out for a free consultation.</p>
+          <Link href={`mailto:${store.contactEmail}`}>
+            <a className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-10 rounded-full font-semibold shadow-lg transition">
               Contact Me
             </a>
           </Link>
         </div>
       </section>
+
     </div>
   );
 }

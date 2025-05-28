@@ -17,7 +17,7 @@ export default function StoresPage() {
   const [stores, setStores] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const pageSize = 6;
+  const pageSize = 26;
   const router = useRouter();
 
   useEffect(() => {

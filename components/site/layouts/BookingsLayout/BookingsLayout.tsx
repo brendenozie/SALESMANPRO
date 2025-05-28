@@ -25,7 +25,7 @@ export default function BookingsLayout({ params, children }: BookingsLayoutProps
       <Header store={store} />
       
       {/* Child Content (Booking Form / Confirmation) */}
-      <section className="container mx-auto px-6 py-12">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>
