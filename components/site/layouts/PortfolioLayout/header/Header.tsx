@@ -21,10 +21,23 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ logoUrl, name, links, primaryColor = "#f97316" }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const handleScroll = () => {
+    setScrolled(window.scrollY > 50);
+  };
+  React.useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }
+  , []);
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/10 dark:bg-gray-900/70 backdrop-blur-lg shadow-md transition-all">
+    <header className={`sticky top-0 z-50  transition-all
+      ${scrolled ? 'bg-white/10 dark:bg-gray-900/70 backdrop-blur-lg shadow-md py-4' : 
+      'bg-transparent dark:bg-transparent backdrop-blur-none shadow-none py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Branding */}
         <Link href="/" className="flex items-center space-x-3">

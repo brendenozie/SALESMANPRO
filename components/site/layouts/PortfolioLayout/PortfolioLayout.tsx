@@ -45,6 +45,7 @@ export default function PortfolioHeaderLayout({ params, children }: PortfolioLay
 
       {/* Main Content Area */}
       <section className="container">{children}</section>
+      
       <Footer store={store} />
     </>
   );

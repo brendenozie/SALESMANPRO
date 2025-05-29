@@ -35,8 +35,8 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
     <>
       <motion.header
         className={`fixed inset-x-0 top-0 z-50 backdrop-blur-md transition-all ${
-          scrolled ? "bg-white/40 shadow-md py-6" : " py-6"
-        }`}
+          scrolled ? "bg-white/40 shadow-md" : " bg-white/0 shadow-none"
+        } py-8`}
       >
         <div className="container mx-auto flex items-center justify-between px-6">
           {/* Logo */}

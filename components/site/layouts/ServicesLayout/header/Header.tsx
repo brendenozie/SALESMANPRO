@@ -49,9 +49,9 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
         transition={{ duration: 0.5 }}
         className={`transition-all duration-300 ${
           scrolled ? "bg-white/80 backdrop-blur-lg shadow-md" : "bg-transparent"
-        }`}
+        }   py-4`}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between h-20  py-8">
+        <div className="container mx-auto px-6 flex items-center justify-between h-20">
           {/* Logo */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
             <Link href={`/${store.slug}`} className="flex items-center space-x-2">
