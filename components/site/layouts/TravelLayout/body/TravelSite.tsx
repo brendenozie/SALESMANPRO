@@ -316,9 +316,6 @@ return ( <div className="space-y-20 font-sans">
   {/* Listings Section */}
   <section className="py-12 bg-gray-50">
     <div className="container mx-auto px-6">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-8 text-gray-800">
-        Featured Trips & Tours
-      </motion.h2>
       <Listings />
     </div>
   </section>
@@ -343,115 +340,6 @@ return ( <div className="space-y-20 font-sans">
   
  </main>
 
-  {/* Expertise Categories */}
-  <section className="py-16 bg-white">
-    <div className="container mx-auto px-6">
-      <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-bold text-center text-gray-800 mb-12">
-        Our Expertise
-      </motion.h2>
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.15 } }
-        }}
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8"
-      >
-        {categories.map((cat) => (
-          <motion.div
-            key={cat.id}
-            variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1 } }}
-            whileHover={{ scale: 1.1 }}
-            className="flex flex-col items-center bg-gray-50 p-6 rounded-2xl shadow cursor-pointer"
-            onClick={() => router.push(`/${store.slug}/category/${cat.slug}`)}
-          >
-            <Image src={cat.icon} alt={cat.name} width={80} height={80} loader={loader} className="mb-4" />
-            <span className="text-lg font-medium text-gray-700">{cat.name}</span>
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
-  </section>
-
-  {/* Featured Travel Destinations */}
-  <section className="py-16 bg-gray-100">
-    <div className="container mx-auto px-6">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center text-gray-800 mb-12">
-        Featured Destinations
-      </motion.h2>
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.2 } }
-        }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12"
-      >
-        {featured.map((dest) => (
-          <motion.div
-            key={dest.id}
-            variants={{ hidden: { y: 50, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
-            className="bg-white rounded-3xl overflow-hidden shadow-2xl cursor-pointer"
-            onClick={() => router.push(`/${store.slug}/destination/${dest.id}`)}
-          >
-            <div className="relative h-64">
-              <Image src={dest.imageUrl} alt={dest.name} fill className="object-cover" loader={loader} />
-            </div>
-            <div className="p-8">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">{dest.name}</h3>
-              <p className="text-gray-600 mb-6">{dest.subtitle || dest.name}</p>
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full font-medium hover:from-blue-600 hover:to-indigo-600 transition">
-                Learn More
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
-  </section>
-
-  {/* Client Testimonials */}
-  <section className="py-16 bg-white">
-    <div className="container mx-auto px-6">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-12 text-gray-800">
-        Client Feedback
-      </motion.h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {testimonials.map((t, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 * i }}
-            className="bg-gray-50 p-6 rounded-2xl shadow-lg"
-          >
-            <p className="italic text-gray-700 mb-4">“{t.quote}”</p>
-            <p className="font-semibold text-gray-900">— {t.author}</p>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  {/* FAQs */}
-  <section className="py-16 bg-gray-100">
-    <div className="container mx-auto px-6 max-w-2xl">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-10 text-gray-800">
-        FAQs
-      </motion.h2>
-      <div className="space-y-6">
-        {faqs.map((q, i) => (
-          <motion.details key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.1 }} className="bg-white p-6 rounded-2xl shadow-lg cursor-pointer">
-            <summary className="font-semibold text-gray-800">{q.question}</summary>
-            <p className="mt-4 text-gray-600">{q.answer}</p>
-          </motion.details>
-        ))}
-      </div>
-    </div>
-  </section>
 
   {/* Chat Button */}
   <motion.div whileHover={{ scale: 1.2 }} className="fixed bottom-8 right-8">
@@ -463,10 +351,8 @@ return ( <div className="space-y-20 font-sans">
   <footer className="mt-12 text-center text-gray-600">All about services for {slug}</footer> */}
 </div>
 
-
 );
 }
-
 
 // components/Hero.tsx
 function Hero() {
@@ -662,8 +548,6 @@ function FilterBar() {
 }
 
 // components/ListingCard.tsx
-
-// components/ListingCard.tsx
 function ListingCard({ listing }: any) {
   return (
     <motion.div
@@ -680,6 +564,7 @@ function ListingCard({ listing }: any) {
           className="transform hover:scale-105 transition duration-300"
           placeholder="blur"
           blurDataURL="/assets/blur-placeholder.png"
+          loader={loader} 
         />
         {listing.badge && (
           <span
@@ -744,6 +629,7 @@ function TrendingCard({ loc }: any) {
         className="transform transition-transform duration-300"
         placeholder="blur"
         blurDataURL="/assets/blur-placeholder.png"
+        loader={loader} 
       />
       <div className="absolute inset-0 bg-black bg-opacity-30" />
       <div className="absolute bottom-4 left-4 text-white">
@@ -806,6 +692,7 @@ function VirtualTourCard({ tour, onOpen }: any) {
         className="transform hover:scale-105 transition duration-300"
         placeholder="blur"
         blurDataURL="/assets/blur-placeholder.png"
+        loader={loader} 
       />
       <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
         <motion.span
@@ -822,6 +709,7 @@ function VirtualTourCard({ tour, onOpen }: any) {
     </motion.div>
   )
 }
+
 // components/VirtualTours.tsx
 function VirtualTours() {
   const [openUrl, setOpenUrl] = useState<string | null>(null)
@@ -893,6 +781,7 @@ function AgentCard({ agent }: any) {
           className="rounded-full"
           placeholder="blur"
           blurDataURL="/assets/blur-placeholder.png"
+          loader={loader} 
         />
       </div>
       <h3 className="text-lg font-semibold">{agent.name}</h3>
@@ -904,6 +793,7 @@ function AgentCard({ agent }: any) {
     </motion.div>
   )
 }
+
 // components/MeetAgents.tsx
 function MeetAgents() {
   return (
@@ -949,6 +839,7 @@ function MarketInsights() {
                   src={rc.icon}
                   alt={rc.region}
                   layout="fill"
+                  loader={loader} 
                   objectFit="contain"
                 />
               </div>
@@ -1010,6 +901,7 @@ function TestimonialCard({ testimonial }: any) {
           objectFit="cover"
           className="rounded-full"
           placeholder="blur"
+          loader={loader} 
           blurDataURL="/assets/blur-placeholder.png"
         />
       </div>
@@ -1125,12 +1017,14 @@ function MobileAppPromo() {
                 alt="Download on the App Store"
                 width={150}
                 height={50}
+                loader={loader} 
               />
             </a>
             <a href="#" aria-label="Get it on Google Play">
               <Image
                 src="/assets/google-play-badge.png"
                 alt="Get it on Google Play"
+                loader={loader} 
                 width={150}
                 height={50}
               />
@@ -1149,6 +1043,7 @@ function MobileAppPromo() {
               src="/assets/device-mockup.png"
               alt="App on device"
               layout="fill"
+              loader={loader} 
               objectFit="contain"
               placeholder="blur"
               blurDataURL="/assets/blur-placeholder.png"
