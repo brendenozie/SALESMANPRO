@@ -33,7 +33,7 @@ export default function FitnessHeaderLayout({ params, children }: FitnessLayoutP
 
   return (
     <>
-      <Header store={store} />
+      <Header  />
 
       {/* Child Content */}
       <section className="container">{children}</section>
