@@ -1,175 +1,135 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  MagnifyingGlassCircleIcon,
+  MagnifyingGlassIcon,
   ShoppingBagIcon,
-  Bars3BottomLeftIcon,
+  Bars3Icon,
   XMarkIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  themeSettings: any;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
-
-interface HeaderProps {
-  store: Store;
-}
-
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const Header: React.FC<HeaderProps> = ({ store }) => {
+export default function EnhancedHeader({ store }:any) {
   const { cart } = useStateContext();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const primary = store?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
-  const secondary = store?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
+  const primary = store?.themeSettings?.primaryColor || "#6366F1"; // indigo
+  const secondary = store?.themeSettings?.secondaryColor || "#10B981"; // emerald
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm transition-shadow">
-      {/* Top Info Bar */}
-      <div
-        className="hidden md:flex justify-between items-center px-6 py-2 text-sm font-medium"
-        style={{ backgroundColor: `${primary}1A`, color: primary }}
+    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md">
+      {/* Top Promo Bar */}
+      <motion.div
+        className="flex justify-center items-center bg-gradient-to-r from-indigo-500 to-emerald-500 text-white text-sm py-1 px-6"
+        initial={{ y: -30 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
       >
-        <div className="flex items-center space-x-6">
-          {store.contactEmail && (
-            <a href={`mailto:${store.contactEmail}`} className="flex text-sm items-center uppercase hover:underline">
-              📧 <span className="ml-1">{store.contactEmail}</span>
-            </a>
-          )}
-          {store.contactPhone && (
-            <a href={`tel:${store.contactPhone}`} className="flex items-center hover:underline">
-              📞 <span className="ml-1">{store.contactPhone}</span>
-            </a>
-          )}
-        </div>
-        <div className="flex space-x-4">
-          {store.socialLinks.map((s) => (
-            <a
-              key={s.channel}
-              href={s.url}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: primary }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
-              className="capitalize transition-colors"
-            >
-              {s.channel}
-            </a>
-          ))}
-        </div>
-      </div>
+        <p className="flex items-center space-x-2">
+          <span>🚀 New Features Live!</span>
+          <Link href="#features" className="underline font-semibold">
+            Learn More
+          </Link>
+        </p>
+      </motion.div>
 
-      {/* Main Header */}
+      {/* Main Nav */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center space-x-4">
-            <Link href={`/site/${store.slug}`} className="flex items-center space-x-2">
+          {/* Logo & Menu */}
+          <div className="flex items-center space-x-8">
+            <Link href={`/site/${store.slug}`} className="flex items-center">
               {store.logoUrl ? (
                 <Image
                   src={store.logoUrl}
                   alt={store.name}
-                  width={120}
-                  height={40}
+                  width={140}
+                  height={48}
                   className="object-contain"
+                  priority
                   loader={loader}
                 />
               ) : (
-                <span className="text-xl font-bold text-gray-800 dark:text-white">{store.name}</span>
+                <span className="text-2xl font-extrabold text-gray-800 dark:text-white">
+                  {store.name}
+                </span>
               )}
             </Link>
-            <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
-              {["Home", "Shop", "Categories"].map((label) => (
-                <Link
-                  key={label}
-                  href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" :  label.toLowerCase() === "shop" ? "products" : label.toLowerCase()}`}
-                  className="hover:underline"
-                  style={{ color: "#444" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+
+            <nav className="hidden lg:flex space-x-6">
+              {[
+                { label: "Home", href: "" },
+                { label: "Products", href: "products" },
+                { label: "Categories", href: "categories" },
+                { label: "About", href: "about" },
+              ].map((item) => (
+                <motion.div
+                  key={item.label}
+                  whileHover={{ y: -2 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
                 >
-                  {label}
-                </Link>
+                  <Link
+                    href={`/site/${store.slug}/${item.href}`}
+                    className="text-gray-700 dark:text-gray-200 font-medium hover:text-indigo-600 dark:hover:text-emerald-400 transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </motion.div>
               ))}
             </nav>
           </div>
 
-          {/* Search */}
-          <div className="flex-1 mx-6 hidden lg:block">
-            <div className="relative">
+          {/* Search & Icons */}
+          <div className="flex items-center space-x-4">
+            <div className="relative hidden md:block">
               <input
                 type="search"
-                placeholder="Search products..."
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm rounded-full py-2 px-4 pl-10 shadow-sm focus:outline-none"
-                onFocus={(e) => (e.currentTarget.style.boxShadow = `0 0 0 2px ${primary}`)}
-                onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
+                placeholder="Search..."
+                className="pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
-              <MagnifyingGlassCircleIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-          </div>
 
-          {/* Icons */}
-          <div className="flex items-center space-x-4">
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/profile`);}} className="text-gray-600 dark:text-gray-200">
-              <UserIcon className="h-6 w-6" />
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={() => router.push(`/site/${store.slug}/profile`)}
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Profile"
+            >
+              <UserIcon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/checkout`);}} className="relative text-gray-600 dark:text-gray-200">
-              <ShoppingBagIcon className="h-6 w-6" />
+
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={() => router.push(`/site/${store.slug}/checkout`)}
+              className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Cart"
+            >
+              <ShoppingBagIcon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
               {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ">
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {cart.length}
                 </span>
               )}
             </motion.button>
+
             <button
-              className="lg:hidden text-gray-600 dark:text-gray-200"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => setOpen(!open)}
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
+              {open ? (
+                <XMarkIcon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
               ) : (
-                <Bars3BottomLeftIcon className="h-6 w-6" />
+                <Bars3Icon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
               )}
             </button>
           </div>
@@ -177,26 +137,31 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shadow-md">
-          <div className="space-y-3">
-            {["Home", "Shop", "Categories"].map((label) => (
+      {open && (
+        <motion.div
+          className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700"
+          initial={{ height: 0 }}
+          animate={{ height: 'auto' }}
+          transition={{ duration: 0.3 }}
+        >
+          <nav className="flex flex-col px-4 py-4 space-y-2">
+            {[
+              { label: "Home", href: "" },
+              { label: "Products", href: "products" },
+              { label: "Categories", href: "categories" },
+              { label: "About", href: "about" },
+            ].map((item) => (
               <Link
-                key={label}
-                href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase() === "shop" ? "products" : label.toLowerCase() }`}
-                className="block hover:underline"
-                style={{ color: "#444" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+                key={item.label}
+                href={`/site/${store.slug}/${item.href}`}
+                className="block text-gray-700 dark:text-gray-200 py-2 font-medium hover:text-indigo-600 dark:hover:text-emerald-400 transition-colors"
               >
-                {label}
+                {item.label}
               </Link>
             ))}
-          </div>
-        </div>
+          </nav>
+        </motion.div>
       )}
     </header>
   );
-};
-
-export default Header;
+}
