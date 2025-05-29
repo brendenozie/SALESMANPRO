@@ -58,59 +58,7 @@ export default function FinancSite() {
   return ( 
     <div className="space-y-24 font-sans">
         {/* Hero  */}
-          <section
-                className="relative flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 text-white py-20 h-screen overflow-hidden"
-                role="banner"
-                aria-label="Finance Hero"
-              >
-                {/* Decorative SVG BG */}
-                <svg
-                  className="absolute inset-0 w-full h-full"
-                  xmlns="http://www.w3.org/2000/svg"
-                  preserveAspectRatio="xMidYMid slice"
-                  viewBox="0 0 100 100"
-                >
-                  <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#2563EB" />
-                      <stop offset="100%" stopColor="#4F46E5" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="50" cy="50" r="75" fill="url(#grad)" opacity="0.3" />
-                </svg>
-
-                <motion.div
-                  className="relative z-10 text-center px-6 md:px-12 space-y-6 max-w-2xl"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
-                >
-                  <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
-                    Secure Your Financial Future Today
-                  </h1>
-                  <p className="text-base md:text-lg text-white/90">
-                    Expert legal and financial advisory services tailored to your needs. Trust our team to navigate complex regulations and optimize your wealth.
-                  </p>
-                  <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
-                    <motion.a
-                      href="#services"
-                      className="inline-block bg-white text-blue-600 font-semibold py-3 px-8 rounded-full shadow-lg hover:shadow-2xl transition"
-                      whileHover={{ scale: 1.05 }}
-                      aria-label="Our Services"
-                    >
-                      Our Services
-                    </motion.a>
-                    <motion.a
-                      href="#contact"
-                      className="inline-block bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-full hover:bg-white hover:text-blue-600 transition"
-                      whileHover={{ scale: 1.05 }}
-                      aria-label="Contact Us"
-                    >
-                      Contact Us
-                    </motion.a>
-                  </div>
-                </motion.div>
-          </section>
+          <Banner />
 
           <PracticeAreasSection />
 
@@ -119,111 +67,68 @@ export default function FinancSite() {
 
           <CaseStudiesTestimonials />
 
-          <ProcessWorkflowSection />
+          <ProcessWorkflowSection />          
 
-          {/* Metrics */}
-          <section className="py-16 bg-white">
-            <div className="container mx-auto px-6 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
-              {metrics.map((m, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 * i }}
-                >
-                  <h3 className="text-4xl font-bold text-gray-800">{m.value}</h3>
-                  <p className="mt-2 text-gray-600">{m.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-
-          {/* Services */}
-          <section className="py-16 bg-gray-50">
+          <section className="py-16 bg-gray-50 dark:bg-gray-800">
             <div className="container mx-auto px-6">
-              <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-12 text-gray-800">
-                Our Financial Services
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white"
+              >
+                Meet Our Experts
               </motion.h2>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {services.map((svc, i) => (
+                {[
+                  {
+                    name: "Ava Richardson",
+                    role: "Senior Legal Advisor",
+                    img: "/team/ava.jpg",
+                    bio: "20+ years in corporate and financial law.",
+                  },
+                  {
+                    name: "Liam Patel",
+                    role: "Tax & Compliance Specialist",
+                    img: "/team/liam.jpg",
+                    bio: "Expert in international tax regulations.",
+                  },
+                  {
+                    name: "Sophia Lee",
+                    role: "Financial Consultant",
+                    img: "/team/sophia.jpg",
+                    bio: "Helping clients grow wealth responsibly.",
+                  },
+                ].map((member, i) => (
                   <motion.div
-                    key={svc.id}
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-white rounded-2xl overflow-hidden shadow-lg cursor-pointer"
-                    onClick={() => router.push(`/${store.slug}/service/${svc.slug}`)}
+                    key={i}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    viewport={{ once: true }}
+                    className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 text-center"
                   >
-                    <div className="relative h-48">
-                      <Image src={svc.imageUrl} alt={svc.name} fill className="object-cover" loader={loader} />
+                    <div className="w-28 h-28 mx-auto mb-4">
+                      <Image
+                        src={member.img}
+                        alt={member.name}
+                        width={112}
+                        height={112}
+                        className="rounded-full object-cover"
+                        loader={loader}
+                      />
                     </div>
-                    <div className="p-6 text-center">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{svc.name}</h3>
-                      <p className="text-green-600 font-medium">View Details</p>
-                    </div>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">
+                      {member.name}
+                    </h3>
+                    <p className="text-indigo-600 font-medium dark:text-indigo-400 mb-2">{member.role}</p>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">{member.bio}</p>
                   </motion.div>
                 ))}
               </div>
             </div>
-          </section>
-
-          <section className="py-16 bg-gray-50 dark:bg-gray-800">
-          <div className="container mx-auto px-6">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white"
-            >
-              Meet Our Experts
-            </motion.h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  name: "Ava Richardson",
-                  role: "Senior Legal Advisor",
-                  img: "/team/ava.jpg",
-                  bio: "20+ years in corporate and financial law.",
-                },
-                {
-                  name: "Liam Patel",
-                  role: "Tax & Compliance Specialist",
-                  img: "/team/liam.jpg",
-                  bio: "Expert in international tax regulations.",
-                },
-                {
-                  name: "Sophia Lee",
-                  role: "Financial Consultant",
-                  img: "/team/sophia.jpg",
-                  bio: "Helping clients grow wealth responsibly.",
-                },
-              ].map((member, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 text-center"
-                >
-                  <div className="w-28 h-28 mx-auto mb-4">
-                    <Image
-                      src={member.img}
-                      alt={member.name}
-                      width={112}
-                      height={112}
-                      className="rounded-full object-cover"
-                      loader={loader}
-                    />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">
-                    {member.name}
-                  </h3>
-                  <p className="text-indigo-600 font-medium dark:text-indigo-400 mb-2">{member.role}</p>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">{member.bio}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
           </section>
 
           <section className="py-16 bg-white dark:bg-gray-900">
@@ -434,44 +339,7 @@ export default function FinancSite() {
               </motion.div>
             </div>
           </section>
-
-          {/* Testimonials */}
-          <section className="py-16 bg-white">
-            <div className="container mx-auto px-6 text-center">
-              <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold mb-12 text-gray-800">
-                Client Testimonials
-              </motion.h2>
-              <div className="max-w-3xl mx-auto space-y-8">
-                {testimonials.map((t, i) => (
-                  <motion.blockquote
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 * i }}
-                    className="italic text-gray-700 text-lg"
-                  >
-                    “{t.quote}”<br /><span className="mt-2 block font-semibold text-gray-900">— {t.author}</span>
-                  </motion.blockquote>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* FAQs */}
-          <section className="py-16 bg-gray-50">
-            <div className="container mx-auto px-6 max-w-2xl">
-              <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-10 text-gray-800">
-                Frequently Asked Questions
-              </motion.h2>
-              <div className="space-y-6">
-                {faqs.map((q, i) => (
-                  <motion.details key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + 0.1 * i }} className="bg-white p-6 rounded-2xl shadow-lg cursor-pointer">
-                    <summary className="font-semibold text-gray-800">{q.question}</summary>
-                    <p className="mt-2 text-gray-600">{q.answer}</p>
-                  </motion.details>
-                ))}
-              </div>
-            </div>
-          </section>
+          
     </div>
   );
 }
@@ -755,4 +623,82 @@ function ProcessWorkflowSection() {
   );
 }
 
+
+interface BannerProps {
+  headline?: string;
+  subline?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  imageUrl?: string;
+  primary?: string;
+  secondary?: string;
+}
+
+const Banner: React.FC<BannerProps> = ({
+  headline = 'Trusted Legal & Financial Solutions',
+  subline = 'Protect your assets, grow your wealth. Expert guidance at every step.',
+  ctaText = 'Get a Free Consultation',
+  ctaLink = '/contact',
+  imageUrl = '/hero-legal.svg', // Replace with actual image
+  primary = '#2563EB', // Fallback: Blue-600
+  secondary = '#9333EA', // Fallback: Purple-600
+}) => {
+  return (
+    <section
+      className="relative overflow-hidden text-white py-24 sm:py-32"
+      style={{ background: `linear-gradient(to right, ${primary}, ${secondary})` }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-12">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4">
+              {headline}
+            </h1>
+            <p className="text-lg sm:text-xl mb-6 text-white/90">{subline}</p>
+            <a
+              href={ctaLink}
+              className="inline-block px-6 py-3 rounded-full font-medium bg-white text-gray-900 hover:bg-gray-100 transition"
+            >
+              {ctaText}
+            </a>
+          </motion.div>
+
+          {imageUrl && (
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="hidden md:block"
+            >
+              <Image
+                src={imageUrl}
+                alt="Finance or Legal Visual"
+                width={500}
+                height={400}
+                className="w-full h-auto object-contain"
+                loader={loader}
+              />
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Optional decorative SVG background */}
+      <div className="absolute inset-0 pointer-events-none opacity-10">
+        <Image
+          src="/grid-light.svg"
+          alt="decor"
+          fill
+          className="object-cover"
+          style={{ mixBlendMode: 'overlay' }}
+          loader={loader}
+        />
+      </div>
+    </section>
+  );
+};
 
