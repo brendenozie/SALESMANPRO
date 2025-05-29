@@ -38,237 +38,98 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 `${src}?w=${width}&q=${quality || 75}`;
 
 export default function EventsSite() {
-const router = useRouter();
-const [categories, setCategories] = useState<any[]>([]);
-const [upcoming, setUpcoming] = useState<any[]>([]);
-const [testimonials, setTestimonials] = useState<any[]>([]);
-const [faqs, setFaqs] = useState<any[]>([]);
+  const router = useRouter();
+  const [categories, setCategories] = useState<any[]>([]);
+  const [upcoming, setUpcoming] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [faqs, setFaqs] = useState<any[]>([]);
 
-useEffect(() => {
-setCategories(store.categories);
-setUpcoming(store.upcoming);
-setTestimonials(store.testimonials);
-setFaqs(store.faqs);
-}, []);
+  useEffect(() => {
+  setCategories(store.categories);
+  setUpcoming(store.upcoming);
+  setTestimonials(store.testimonials);
+  setFaqs(store.faqs);
+  }, []);
 
-return ( <div className="space-y-24 font-sans">
-{/* Hero */}
-<section className="relative h-[70vh] bg-gradient-to-br from-indigo-800 via-purple-700 to-pink-600 flex items-center justify-center text-white overflow-hidden"> <Image
-       src={store.bannerUrl}
-       alt="Events Hero"
-       fill
-       className="object-cover opacity-30"
-       loader={loader}
-     /> <div className="relative z-10 text-center px-6 max-w-xl">
-<motion.h1
-initial={{ y: -40, opacity: 0 }}
-animate={{ y: 0, opacity: 1 }}
-transition={{ duration: 0.8 }}
-className="text-5xl md\:text-7xl font-bold mb-4 leading-tight"
->
-{store.name} Events
-</motion.h1>
-<motion.p
-initial={{ opacity: 0 }}
-animate={{ opacity: 1 }}
-transition={{ delay: 0.4 }}
-className="text-lg md\:text-xl mb-8"
->
-{store.description}
-</motion.p>
-<motion.button
-onClick={() => router.push(`/${store.slug}/events`)}
-initial={{ scale: 0.8, opacity: 0 }}
-animate={{ scale: 1, opacity: 1 }}
-transition={{ delay: 0.6 }}
-className="bg-white text-indigo-700 font-semibold py-3 px-8 rounded-full shadow-lg hover\:shadow-2xl transition"
->
-Explore Events
-</motion.button> </div> </section>
+  return (  <div className="font-sans">
 
+    {/* Hero Section */}
+    <HeroComponent />
 
-  {/* Categories */}
-  <section className="py-16 bg-white">
-    <div className="container mx-auto px-6">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-12 text-gray-800">
-        Event Categories
-      </motion.h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-        {categories.map((cat) => (
-          <motion.div
-            key={cat.id}
-            whileHover={{ scale: 1.1 }}
-            className="flex flex-col items-center cursor-pointer"
-            onClick={() => router.push(`/${store.slug}/category/${cat.slug}`)}
-          >
-            <div className="w-16 h-16 mb-3">
-              <Image src={cat.icon} alt={cat.name} width={64} height={64} loader={loader} />
-            </div>
-            <p className="text-lg font-medium text-gray-800">{cat.name}</p>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
+    {/* About Section */}
+    <AboutSection />
 
-  {/* Upcoming Events */}
-  <section className="py-16 bg-gray-50">
-    <div className="container mx-auto px-6">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-12 text-gray-800">
-        Upcoming Events
-      </motion.h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {upcoming.map((ev) => (
-          <motion.div
-            key={ev.id}
-            whileHover={{ y: -10 }}
-            className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer"
-            onClick={() => router.push(`/${store.slug}/event/${ev.slug}`)}
-          >
-            <div className="relative h-56">
-              <Image src={ev.imageUrl} alt={ev.name} fill className="object-cover" loader={loader} />
-            </div>
-            <div className="p-6">
-              <h3 className="text-2xl font-semibold mb-2 text-gray-900">{ev.name}</h3>
-              <p className="text-indigo-600 font-medium">{new Date(ev.date).toLocaleDateString()}</p>
-              <p className="mt-2 text-gray-700">{ev.subtitle}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
+    <FeaturesSection />
 
-  {/* Attendee Reviews */}
-  <section className="py-16 bg-white">
-    <div className="container mx-auto px-6 text-center">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold mb-12 text-gray-800">
-        Attendee Reviews
-      </motion.h2>
-      <div className="max-w-2xl mx-auto space-y-8">
-        {testimonials.map((t, i) => (
-          <motion.blockquote
-            key={i}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 * i }}
-            className="italic text-gray-700 text-lg"
-          >
-            “{t.quote}”<br />
-            <span className="mt-2 block font-semibold text-gray-900">— {t.author}</span>
-          </motion.blockquote>
-        ))}
-      </div>
-    </div>
-  </section>
+    <HowItWorksSection />
 
-  {/* FAQs */}
-  <section className="py-16 bg-gray-50">
-    <div className="container mx-auto px-6 max-w-3xl">
-      <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold text-center mb-10 text-gray-800">
-        FAQs
-      </motion.h2>
-      <div className="space-y-4">
-        {faqs.map((q, i) => (
-          <motion.details key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + 0.1 * i }} className="bg-white p-6 rounded-2xl shadow-lg cursor-pointer">
-            <summary className="font-semibold text-gray-800">{q.question}</summary>
-            <p className="mt-2 text-gray-600">{q.answer}</p>
-          </motion.details>
-        ))}
-      </div>
-    </div>
-  </section>
+    <LiveEventsSection />
 
-  <EventsLandingPage />
-
-  {/* Footer */}  
-</div>
-
-
-
-);
-}
-
-
-function EventsLandingPage() {
-  return (
-    <div className="font-sans">
-
-      {/* Hero Section */}
-      <HeroComponent />
-
-      {/* About Section */}
-      <AboutSection />
-
-      <FeaturesSection />
-
-      <HowItWorksSection />
-
-      <LiveEventsSection />
-
-      {/* Upcoming Events */}
-      <section id="upcoming" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-12">Upcoming Highlights</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white shadow-md rounded-2xl overflow-hidden">
-                <Image src={`/images/event${i}.jpg`} alt={`Event ${i}`} width={400} height={300} className="w-full object-cover" loader={loader}/>
-                <div className="p-6 text-left">
-                  <h3 className="text-2xl font-semibold mb-2">Event Name {i}</h3>
-                  <p className="text-sm text-gray-600">Date: June {10 + i}, 2025</p>
-                  <p className="text-sm text-gray-600">Location: City Hall</p>
-                  <p className="text-indigo-600 font-bold mt-2">From $49</p>
-                </div>
+    {/* Upcoming Events */}
+    <section id="upcoming" className="py-20 bg-gray-50">
+      <div className="container mx-auto px-6 text-center">
+        <h2 className="text-4xl font-bold mb-12">Upcoming Highlights</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white shadow-md rounded-2xl overflow-hidden">
+              <Image src={`/images/event${i}.jpg`} alt={`Event ${i}`} width={400} height={300} className="w-full object-cover" loader={loader}/>
+              <div className="p-6 text-left">
+                <h3 className="text-2xl font-semibold mb-2">Event Name {i}</h3>
+                <p className="text-sm text-gray-600">Date: June {10 + i}, 2025</p>
+                <p className="text-sm text-gray-600">Location: City Hall</p>
+                <p className="text-indigo-600 font-bold mt-2">From $49</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
 
-      <TestimonialsSection />
+    <TestimonialsSection />
 
-      <PricingSection />
+    <PricingSection />
 
-      {/* Testimonials */}
-      <section className="py-20 bg-white text-center">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-12">What Attendees Say</h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {[1, 2].map((i) => (
-              <blockquote key={i} className="p-6 border-l-4 border-indigo-600 bg-gray-50 rounded-md">
-                <p className="italic mb-2">“Absolutely loved the atmosphere and organization. Can’t wait for the next one!”</p>
-                <footer className="text-sm font-semibold">— Attendee {i}</footer>
-              </blockquote>
-            ))}
-          </div>
+    {/* Testimonials */}
+    <section className="py-20 bg-white text-center">
+      <div className="container mx-auto px-6">
+        <h2 className="text-4xl font-bold mb-12">What Attendees Say</h2>
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {[1, 2].map((i) => (
+            <blockquote key={i} className="p-6 border-l-4 border-indigo-600 bg-gray-50 rounded-md">
+              <p className="italic mb-2">“Absolutely loved the atmosphere and organization. Can’t wait for the next one!”</p>
+              <footer className="text-sm font-semibold">— Attendee {i}</footer>
+            </blockquote>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
 
-      <FAQSection />
+    <FAQSection />
 
-      {/* Call To Action */}
-      <section className="bg-indigo-600 text-white py-16 text-center relative">
-        <h3 className="text-3xl md:text-4xl font-bold mb-4">Host With Us</h3>
-        <p className="text-lg mb-6">Planning an event? Let us help you make it extraordinary.</p>
-        <Link href="/host" className="bg-white text-indigo-600 px-6 py-3 rounded-full font-semibold hover:bg-indigo-100 transition">
-          Get Started
-        </Link>
-      </section>
+     {/* Call To Action  */}
+    <section className="bg-indigo-600 text-white py-16 text-center relative">
+      <h3 className="text-3xl md:text-4xl font-bold mb-4">Host With Us</h3>
+      <p className="text-lg mb-6">Planning an event? Let us help you make it extraordinary.</p>
+      <Link href="/host" className="bg-white text-indigo-600 px-6 py-3 rounded-full font-semibold hover:bg-indigo-100 transition">
+        Get Started
+      </Link>
+    </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-10 px-6 text-center">
-        <p className="text-lg">Contact: info@eventsco.com</p>
-        <p className="mt-2">Follow us on social media for updates</p>
-        <div className="mt-4 flex justify-center space-x-6">
-          <Link href="#">Facebook</Link>
-          <Link href="#">Instagram</Link>
-          <Link href="#">Twitter</Link>
-        </div>
-        <p className="mt-4 text-sm text-gray-400">© 2025 Events Co.</p>
-      </footer>
-    </div>
-  );
+    {/* Footer */}
+    <footer className="bg-gray-900 text-white py-10 px-6 text-center">
+      <p className="text-lg">Contact: info@eventsco.com</p>
+      <p className="mt-2">Follow us on social media for updates</p>
+      <div className="mt-4 flex justify-center space-x-6">
+        <Link href="#">Facebook</Link>
+        <Link href="#">Instagram</Link>
+        <Link href="#">Twitter</Link>
+      </div>
+      <p className="mt-4 text-sm text-gray-400">© 2025 Events Co.</p>
+    </footer>
+  </div>
+  
+);
+
 }
 
 function HeroComponent() {
