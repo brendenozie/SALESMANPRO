@@ -23,12 +23,12 @@ export default function DefaultHeaderLayout({ params, children }: DefaultHeaderL
 
   return (
     <>
-      <Header store={store} />
+      {/* <Header store={store} /> */}
 
       {/* Main Content */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      {/* <Footer store={store} /> */}
     </>
   );
 }

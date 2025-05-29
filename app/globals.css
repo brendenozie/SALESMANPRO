@@ -108,3 +108,73 @@
 .input-style {
   @apply w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition;
 }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+/* Scroll snapping utilities if you need to extend beyond Tailwind's built-ins */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.snap-mandatory {
+  scroll-behavior: smooth;
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+/* Hide native scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Optional container utility */
+/* .container {
+  @apply max-w-6xl mx-auto;
+} */
+
+.clip-half {
+  /* clip right half off */
+  clip-path: inset(0 50% 0 0);
+}
+
+@keyframes fill {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: var(--tw-width);
+  }
+}
+
+.animate-fill {
+  animation: fill 1s ease-out forwards;
+}
