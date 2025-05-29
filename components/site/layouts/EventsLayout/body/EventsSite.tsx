@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ArrowRightIcon from "@heroicons/react/24/outline/ArrowRightIcon";
 import { BellIcon, CalendarIcon, CheckCircleIcon, ChevronDownIcon, FaceSmileIcon, MagnifyingGlassIcon, MapPinIcon, TagIcon, TicketIcon } from "@heroicons/react/24/outline";
-import { ToastIcon } from "react-hot-toast";
+import banner from "../../../../../assets/homebanner.png";
 
 // Sample data
 const store = {
@@ -65,44 +65,9 @@ export default function EventsSite() {
 
     <LiveEventsSection />
 
-    {/* Upcoming Events */}
-    <section id="upcoming" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-6 text-center">
-        <h2 className="text-4xl font-bold mb-12">Upcoming Highlights</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white shadow-md rounded-2xl overflow-hidden">
-              <Image src={`/images/event${i}.jpg`} alt={`Event ${i}`} width={400} height={300} className="w-full object-cover" loader={loader}/>
-              <div className="p-6 text-left">
-                <h3 className="text-2xl font-semibold mb-2">Event Name {i}</h3>
-                <p className="text-sm text-gray-600">Date: June {10 + i}, 2025</p>
-                <p className="text-sm text-gray-600">Location: City Hall</p>
-                <p className="text-indigo-600 font-bold mt-2">From $49</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
     <TestimonialsSection />
 
     <PricingSection />
-
-    {/* Testimonials */}
-    <section className="py-20 bg-white text-center">
-      <div className="container mx-auto px-6">
-        <h2 className="text-4xl font-bold mb-12">What Attendees Say</h2>
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {[1, 2].map((i) => (
-            <blockquote key={i} className="p-6 border-l-4 border-indigo-600 bg-gray-50 rounded-md">
-              <p className="italic mb-2">“Absolutely loved the atmosphere and organization. Can’t wait for the next one!”</p>
-              <footer className="text-sm font-semibold">— Attendee {i}</footer>
-            </blockquote>
-          ))}
-        </div>
-      </div>
-    </section>
 
     <FAQSection />
 
@@ -115,17 +80,6 @@ export default function EventsSite() {
       </Link>
     </section>
 
-    {/* Footer */}
-    <footer className="bg-gray-900 text-white py-10 px-6 text-center">
-      <p className="text-lg">Contact: info@eventsco.com</p>
-      <p className="mt-2">Follow us on social media for updates</p>
-      <div className="mt-4 flex justify-center space-x-6">
-        <Link href="#">Facebook</Link>
-        <Link href="#">Instagram</Link>
-        <Link href="#">Twitter</Link>
-      </div>
-      <p className="mt-4 text-sm text-gray-400">© 2025 Events Co.</p>
-    </footer>
   </div>
   
 );
@@ -134,7 +88,8 @@ export default function EventsSite() {
 
 function HeroComponent() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 text-white py-20 px-4 sm:px-10">
+    <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 text-white py-20 px-4 sm:px-10 min-h-screen flex items-center justify-center
+      before:absolute before:inset-0 before:bg-gradient-to-br before:from-indigo-600/20 before:to-purple-700/20 before:blur-3xl before:z-0">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         {/* Left Content */}
         <motion.div
@@ -168,8 +123,12 @@ function HeroComponent() {
           transition={{ duration: 0.9 }}
           className="relative"
         >
-          <img
-            src="/images/hero-image.png"
+          <Image
+            priority
+            src={`${banner.src}`}
+            loader={loader}
+            width={600}
+            height={400}
             alt="Hero"
             className="w-full max-w-md mx-auto md:mx-0 animate-float drop-shadow-xl"
           />

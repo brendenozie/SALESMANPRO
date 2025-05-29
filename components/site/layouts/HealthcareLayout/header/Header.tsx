@@ -1,202 +1,139 @@
-"use client"
-import React, { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
+"use client";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MagnifyingGlassCircleIcon,
-  ShoppingBagIcon,
   Bars3BottomLeftIcon,
   XMarkIcon,
-  UserIcon,
-} from "@heroicons/react/24/outline";
-import { useStateContext } from "../../../../../contexts/ContextProvider";
-import { useRouter } from "next/navigation";
+  HeartIcon,
+  ClipboardDocumentListIcon,
+} from '@heroicons/react/24/outline';
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
+const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality||75}`;
 
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  themeSettings: any;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
 
-interface HeaderProps {
-  store: Store;
-}
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
-const Header: React.FC<HeaderProps> = ({ store }) => {
-  const { cart } = useStateContext();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+export default function HealthcareHeader({store}:any) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
-  const primary = store?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
-  const secondary = store?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
+  
+  const links = [
+    { label: 'Home', href: `/${store.slug}` },
+    { label: 'Services', href: `/${store.slug}/services` },
+    { label: 'Doctors', href: `/${store.slug}/doctors` },
+    { label: 'Testimonials', href: `/${store.slug}/testimonials` },
+    { label: 'FAQs', href: `/${store.slug}/faqs` },
+    { label: 'Contact', href: `/${store.slug}/contact` },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm transition-shadow">
-      {/* Top Info Bar */}
-      <div
-        className="hidden md:flex justify-between items-center px-6 py-2 text-sm font-medium"
-        style={{ backgroundColor: `${primary}1A`, color: primary }}
-      >
-        <div className="flex items-center space-x-6">
-          {store.contactEmail && (
-            <a href={`mailto:${store.contactEmail}`} className="flex text-sm items-center uppercase hover:underline">
-              📧 <span className="ml-1">{store.contactEmail}</span>
-            </a>
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md dark:bg-gray-900/80 shadow-md">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        {/* Logo */}
+        <motion.div
+          className="flex items-center cursor-pointer"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          onClick={() => router.push(`/${store.slug}`)}
+        >
+          {store.logoUrl ? (
+            <Image
+              src={store.logoUrl}
+              alt={store.name}
+              width={120}
+              height={40}
+              loader={loader}
+              className="object-contain"
+            />
+          ) : (
+            <span className="text-2xl font-extrabold text-teal-700 dark:text-teal-300">
+              {store.name}
+            </span>
           )}
-          {store.contactPhone && (
-            <a href={`tel:${store.contactPhone}`} className="flex items-center hover:underline">
-              📞 <span className="ml-1">{store.contactPhone}</span>
-            </a>
-          )}
-        </div>
-        <div className="flex space-x-4">
-          {store.socialLinks.map((s) => (
-            <a
-              key={s.channel}
-              href={s.url}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: primary }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
-              className="capitalize transition-colors"
-            >
-              {s.channel}
-            </a>
+        </motion.div>
+
+        {/* Desktop Nav */}
+        <nav className="hidden lg:flex space-x-8">
+          {links.map(({ label, href }) => (
+            <motion.div key={label} whileHover={{ y: -2 }}>
+              <Link href={href} className="text-gray-700 dark:text-gray-200 font-medium hover:text-teal-600 transition">
+                {label}
+              </Link>
+            </motion.div>
           ))}
+        </nav>
+
+        {/* Actions */}
+        <div className="hidden lg:flex items-center space-x-4">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => router.push(`/${store.slug}/book`)}
+            className="flex items-center bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-full shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            aria-label="Book Appointment"
+          >
+            <HeartIcon className="w-5 h-5 mr-1" />
+            Book Appointment
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => router.push(`/${store.slug}/services`)}
+            className="flex items-center border border-teal-600 text-teal-600 font-medium px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            aria-label="View Services"
+          >
+            <ClipboardDocumentListIcon className="w-5 h-5 mr-1" />
+            Services
+          </motion.button>
         </div>
-      </div>
 
-      {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <div className="flex items-center space-x-4">
-            <Link href={`/site/${store.slug}`} className="flex items-center space-x-2">
-              {store.logoUrl ? (
-                <Image
-                  src={store.logoUrl}
-                  alt={store.name}
-                  width={120}
-                  height={40}
-                  className="object-contain"
-                  loader={loader}
-                />
-              ) : (
-                <span className="text-xl font-bold text-gray-800 dark:text-white">{store.name}</span>
-              )}
-            </Link>
-            <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
-              {["Home", "Shop", "Categories"].map((label) => (
-                <Link
-                  key={label}
-                  href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" :  label.toLowerCase() === "shop" ? "products" : label.toLowerCase()}`}
-                  className="hover:underline"
-                  style={{ color: "#444" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          {/* Search */}
-          <div className="flex-1 mx-6 hidden lg:block">
-            <div className="relative">
-              <input
-                type="search"
-                placeholder="Search products..."
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm rounded-full py-2 px-4 pl-10 shadow-sm focus:outline-none"
-                onFocus={(e) => (e.currentTarget.style.boxShadow = `0 0 0 2px ${primary}`)}
-                onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-              />
-              <MagnifyingGlassCircleIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-          </div>
-
-          {/* Icons */}
-          <div className="flex items-center space-x-4">
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/profile`);}} className="text-gray-600 dark:text-gray-200">
-              <UserIcon className="h-6 w-6" />
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/checkout`);}} className="relative text-gray-600 dark:text-gray-200">
-              <ShoppingBagIcon className="h-6 w-6" />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ">
-                  {cart.length}
-                </span>
-              )}
-            </motion.button>
-            <button
-              className="lg:hidden text-gray-600 dark:text-gray-200"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3BottomLeftIcon className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
+        {/* Mobile Toggle */}
+        <button
+          className="lg:hidden p-2 text-gray-700 dark:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          onClick={() => setOpen(o => !o)}
+          aria-label="Toggle menu"
+        >
+          {open ? <XMarkIcon className="w-6 h-6" /> : <Bars3BottomLeftIcon className="w-6 h-6" />}
+        </button>
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shadow-md">
-          <div className="space-y-3">
-            {["Home", "Shop", "Categories"].map((label) => (
-              <Link
-                key={label}
-                href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase() === "shop" ? "products" : label.toLowerCase() }`}
-                className="block hover:underline"
-                style={{ color: "#444" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="lg:hidden bg-white dark:bg-gray-800 overflow-hidden shadow-inner"
+          >
+            <nav className="flex flex-col px-6 py-4 space-y-4">
+              {links.map(({ label, href }) => (
+                <Link key={label} href={href} className="text-gray-700 dark:text-gray-200 font-medium hover:text-teal-600 transition">
+                  {label}
+                </Link>
+              ))}
+              <button
+                onClick={() => { setOpen(false); router.push(`/${store.slug}/book`); }}
+                className="mt-2 flex items-center bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-full shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                aria-label="Book Appointment"
               >
-                {label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+                <HeartIcon className="w-5 h-5 mr-1" />
+                Book Appointment
+              </button>
+              <button
+                onClick={() => { setOpen(false); router.push(`/${store.slug}/services`); }}
+                className="mt-2 flex items-center border border-teal-600 text-teal-600 font-medium px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                aria-label="View Services"
+              >
+                <ClipboardDocumentListIcon className="w-5 h-5 mr-1" />
+                Services
+              </button>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
-};
-
-export default Header;
+}
