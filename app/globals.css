@@ -104,3 +104,7 @@
 .submit-button {
   @apply bg-blue-600 text-white p-3 rounded-lg w-full text-lg font-semibold hover:bg-blue-700 transition;
 }
+
+.input-style {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition;
+}
