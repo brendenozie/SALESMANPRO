@@ -4,13 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-
+import   banner from "../../../../../assets/homebanner.png";
 
 // Sample data (could be fetched via getStaticProps)
 const store = {
   name: "Hope Horizon Foundation",
   slug: "hope-horizon",
-  bannerUrl: "/images/nonprofit-hero.jpg",
+  bannerUrl: banner.src,
   description: "Empowering communities through education, health, and sustainable development.",
   programs: [
     { id: "pr1", name: "Education for All", subtitle: "Scholarship & mentorship", imageUrl: "/programs/education.jpg", slug: "education-for-all" },
@@ -58,7 +58,7 @@ export default function NonProfitSite() {
       {/* Hero */}
       <section className="relative h-[90vh] flex items-center justify-center">
         <div className="absolute inset-0 -z-10">
-          <Image src={store.bannerUrl} alt="Hero" fill className="object-cover brightness-75" loader={loader} priority />
+          <Image src={banner.src} alt="Hero" fill className="object-cover brightness-75" loader={loader} priority />
         </div>
         <motion.div
           initial={{ y: -40, opacity: 0 }}
@@ -72,7 +72,7 @@ export default function NonProfitSite() {
           <p className="text-lg md:text-xl text-white/90">
             {store.description}
           </p>
-          <button onClick={handleDonate} className="bg-green-600 hover:bg-green-700 text-white shadow-xl">
+          <button onClick={handleDonate} className="bg-green-600 hover:bg-green-700 text-white shadow-xl rounded-full px-8 py-3 text-lg font-semibold transition-colors flex items-center justify-center">
             Donate Now <ArrowRightIcon className="ml-2 w-5 h-5" />
           </button>
         </motion.div>
@@ -102,7 +102,7 @@ export default function NonProfitSite() {
               >
                 <div className="relative h-48">
                   <Image
-                    src={prog.imageUrl}
+                    src={banner.src}
                     alt={prog.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

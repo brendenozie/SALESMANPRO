@@ -2,14 +2,15 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
+import banner from "../../../../../assets/homebanner.png";
+import Link from "next/link";
 // Sample data (replace with API data)
 
 const store = {
   name: "SavoryBites Restaurant",
   slug: "savorybites",
   description: "Indulge in gourmet flavors crafted for your delight.",
-  bannerUrl: "/images/restaurant-hero.jpg",
+  bannerUrl: `${banner.src}`,
   StoreCategory: [
   { id: 1, name: "Appetizers", slug: "appetizers", imageUrl: "/categories/appetizers.jpg" },
   { id: 2, name: "Main Courses", slug: "main-courses", imageUrl: "/categories/main.jpg" },
@@ -57,41 +58,54 @@ export default function RestaurantSite() {
     <div className="relative font-sans text-gray-800">
 
       {/* Hero */}
-      <section className="relative h-screen overflow-hidden">
-        <Image
-          src={store.bannerUrl}
-          alt="Hero"
-          layout="fill"
-          objectFit="cover"
-          loader={loader}
-          className="brightness-75"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-red-900/50" />
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
-          <motion.h1
-            initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg"
-          >
-            {store.name}
+      {/* Hero Section */}
+      <section className="relative h-screen bg-cover bg-center" style={{ backgroundImage: `url(${store.bannerUrl})` }}>
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white text-center px-4">
+          <motion.h1 className="text-5xl md:text-7xl font-extrabold mb-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
+            La Tavola Italiana
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-            className="mt-4 text-lg md:text-xl text-red-200 max-w-xl"
-          >
-            {store.description}
+          <motion.p className="text-xl md:text-2xl mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+            A Taste of Tradition, Perfected
           </motion.p>
-          <motion.button
-            initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.6 }}
-            onClick={() => router.push(`/${store.slug}/reserve`)}
-            className="mt-8 bg-red-600 hover:bg-red-700 text-white py-3 px-8 rounded-full font-semibold shadow-2xl transition"
-          >
-            Reserve Now
-          </motion.button>
+          <Link href="#menu" className="bg-white text-black px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition">
+            View Menu
+          </Link>
+        </div>
+      </section>
+
+      <section className="py-20 bg-white text-gray-800">
+        <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+          <Image src="/images/about.jpg" alt="Chef" width={600} height={400} className="rounded-2xl" loader={loader}/>
+          <div>
+            <h2 className="text-4xl font-bold mb-4">Our Story</h2>
+            <p className="text-lg mb-6">
+              At La Tavola Italiana, we blend timeless family recipes with modern flair. From hand-tossed pizzas to house-made pastas, every dish tells a story.
+            </p>
+            <p className="text-sm italic">— Chef Antonio Russo</p>
+          </div>
         </div>
       </section>
 
       {/* Categories */}
+      {/* Menu Highlights */}
+      <section id="menu" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl font-bold mb-12">Chef's Specials</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white shadow-md rounded-2xl overflow-hidden">
+                <Image src={`/images/dish${i}.jpg`} alt={`Dish ${i}`} width={400} height={300} className="w-full object-cover" loader={loader}/>
+                <div className="p-6 text-left">
+                  <h3 className="text-2xl font-semibold mb-2">Signature Dish {i}</h3>
+                  <p className="text-sm text-gray-600">A delightful mix of ingredients and tradition.</p>
+                  <p className="text-indigo-600 font-bold mt-2">$18.99</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Menu Categories</h2>
@@ -149,6 +163,30 @@ export default function RestaurantSite() {
             ))}
           </div>
         </div>
+      </section>
+
+       {/* Testimonials */}
+       <section className="py-20 bg-white text-center">
+        <div className="container mx-auto px-6">
+          <h2 className="text-4xl font-bold mb-12">What Our Guests Are Saying</h2>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {[1, 2].map((i) => (
+              <blockquote key={i} className="p-6 border-l-4 border-indigo-600 bg-gray-50 rounded-md">
+                <p className="italic mb-2">“Amazing food and cozy atmosphere. Will return soon!”</p>
+                <footer className="text-sm font-semibold">— Guest {i}</footer>
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Reservation CTA */}
+      <section className="bg-indigo-600 text-white py-16 text-center relative">
+        <h3 className="text-3xl md:text-4xl font-bold mb-4">Reserve Your Table Today</h3>
+        <p className="text-lg mb-6">Join us for an unforgettable dining experience.</p>
+        <Link href="/reserve" className="bg-white text-indigo-600 px-6 py-3 rounded-full font-semibold hover:bg-indigo-100 transition">
+          Book Now
+        </Link>
       </section>
 
       {/* Testimonials */}
