@@ -40,7 +40,7 @@ export default function TravelLayout({ params, children }: TravelLayoutProps) {
       <Header store={store}/>
 
       {/* Content */}
-      <section className="container mx-auto px-8 py-16 bg-white">{children}</section>
+      <section className="container">{children}</section>
 
       <Footer store={store} />
     </>
