@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function GET( req : Request ) {
+export async function GET( req : Request ) {
 
   // let { page, } = req.query;
   const { searchParams } = new URL(req.url);
@@ -36,7 +36,7 @@ export default async function GET( req : Request ) {
         }),
       ]);
   
-      res.json({InfoResponse:{count: results[0] ?? 0,
+      return NextResponse.json({InfoResponse:{count: results[0] ?? 0,
                     next: currentPage * 20 > results[0] ? currentPage : 0 ,
                     pages: results[0]/20 > 0 ? results[0]/20 : 1 ,
                     prev: currentPage-1 > 0 ? currentPage-1 : 0},
