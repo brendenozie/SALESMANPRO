@@ -13,6 +13,10 @@ interface BannerProps {
   secondary?: string;
 }
 
+
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
 const Banner: React.FC<BannerProps> = ({
   headline = 'Trusted Legal & Financial Solutions',
   subline = 'Protect your assets, grow your wealth. Expert guidance at every step.',
@@ -59,6 +63,7 @@ const Banner: React.FC<BannerProps> = ({
                 width={500}
                 height={400}
                 className="w-full h-auto object-contain"
+                loader={loader}
               />
             </motion.div>
           )}
@@ -72,6 +77,8 @@ const Banner: React.FC<BannerProps> = ({
           alt="decor"
           fill
           className="object-cover"
+          style={{ mixBlendMode: 'overlay' }}
+          loader={loader}
         />
       </div>
     </section>
