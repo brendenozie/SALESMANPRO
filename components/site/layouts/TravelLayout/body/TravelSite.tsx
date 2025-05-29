@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarDaysIcon, UserGroupIcon } from "@heroicons/react/24/outline";
+import { CalendarDaysIcon, ChevronDownIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 
 // Sample store & travel data
 const store = {
@@ -39,6 +39,254 @@ faqs: [
 
 const travelTypes = ['Adventure', 'Relaxation', 'Cultural', 'Family'];
 const regions = ['Europe', 'Asia', 'South America', 'Africa', 'Oceania'];
+
+// data/listings.ts
+export interface Listing {
+  id: string
+  title: string
+  thumbnail: string
+  price: number
+  beds: number
+  baths: number
+  area: number
+  badge?: 'New' | 'Hot' | 'Price Reduced'
+}
+
+export const listings: Listing[] = [
+  {
+    id: '1',
+    title: 'Tropical Bali Getaway',
+    thumbnail: '/assets/bali.jpg',
+    price: 1200,
+    beds: 1,
+    baths: 1,
+    area: 500,
+    badge: 'Hot',
+  },
+  {
+    id: '2',
+    title: 'Alpine Ski Retreat',
+    thumbnail: '/assets/alps.jpg',
+    price: 2500,
+    beds: 3,
+    baths: 2,
+    area: 1200,
+    badge: 'New',
+  },
+  {
+    id: '3',
+    title: 'Santorini Sunset Villa',
+    thumbnail: '/assets/santorini.jpg',
+    price: 3200,
+    beds: 2,
+    baths: 2,
+    area: 900,
+  },
+  {
+    id: '4',
+    title: 'Safari Lodge Adventure',
+    thumbnail: '/assets/safari.jpg',
+    price: 1800,
+    beds: 2,
+    baths: 2,
+    area: 1100,
+    badge: 'Price Reduced',
+  },
+  // …add as many as you like
+]
+
+
+
+// data/trendingLocations.ts
+export interface TrendingLocation {
+  id: string
+  name: string
+  image: string
+  listingsCount: number
+  avgPrice: number
+}
+
+export const trendingLocations: TrendingLocation[] = [
+  {
+    id: 'tokyo',
+    name: 'Tokyo, Japan',
+    image: '/assets/trending/tokyo.jpg',
+    listingsCount: 342,
+    avgPrice: 2200,
+  },
+  {
+    id: 'bali',
+    name: 'Bali, Indonesia',
+    image: '/assets/trending/bali.jpg',
+    listingsCount: 289,
+    avgPrice: 1250,
+  },
+  {
+    id: 'paris',
+    name: 'Paris, France',
+    image: '/assets/trending/paris.jpg',
+    listingsCount: 410,
+    avgPrice: 3000,
+  },
+  {
+    id: 'cape-town',
+    name: 'Cape Town, South Africa',
+    image: '/assets/trending/capetown.jpg',
+    listingsCount: 157,
+    avgPrice: 1400,
+  },
+  // …more locations
+]
+
+// data/virtualTours.ts
+export interface VirtualTour {
+  id: string
+  title: string
+  thumbnail: string
+  videoUrl: string
+}
+
+// components/VirtualTourCard.tsx
+interface Props {
+  tour: VirtualTour
+  onOpen: (videoUrl: string) => void  
+  loc: TrendingLocation;
+  listing: Listing;
+  testimonial: Testimonial;
+  agent: Agent
+}
+
+
+export const virtualTours: VirtualTour[] = [
+  {
+    id: 'tour1',
+    title: 'Eiffel Tower 360° Tour',
+    thumbnail: '/assets/tours/eiffel.jpg',
+    videoUrl: 'https://www.youtube.com/embed/Scxs7L0vhZ4',
+  },
+  {
+    id: 'tour2',
+    title: 'Santorini Cliffside Villa',
+    thumbnail: '/assets/tours/santorini-villa.jpg',
+    videoUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
+  },
+  {
+    id: 'tour3',
+    title: 'Amazon Rainforest Lodge',
+    thumbnail: '/assets/tours/amazon.jpg',
+    videoUrl: 'https://www.youtube.com/embed/5qap5aO4i9A',
+  },
+]
+
+// data/agents.ts
+export interface Agent {
+  id: string
+  name: string
+  photo: string
+  specialty: string
+  experience: number  // years
+}
+
+export const agents: Agent[] = [
+  {
+    id: 'a1',
+    name: 'Sophia Lin',
+    photo: '/assets/agents/sophia.jpg',
+    specialty: 'Cultural Tours',
+    experience: 8,
+  },
+  {
+    id: 'a2',
+    name: 'Liam Carter',
+    photo: '/assets/agents/liam.jpg',
+    specialty: 'Adventure Travel',
+    experience: 5,
+  },
+  {
+    id: 'a3',
+    name: 'Aria Patel',
+    photo: '/assets/agents/aria.jpg',
+    specialty: 'Luxury Escapes',
+    experience: 10,
+  },
+  {
+    id: 'a4',
+    name: 'Ethan Zhao',
+    photo: '/assets/agents/ethan.jpg',
+    specialty: 'Family Trips',
+    experience: 6,
+  },
+  // …more agents
+]
+// components/AgentCard.tsx
+
+
+// data/insights.ts
+
+export interface RegionCost {
+  id: string
+  region: string
+  avgCost: number
+  icon: string   // any icon name or image path
+}
+
+export interface BlogPost {
+  id: string
+  title: string
+  url: string
+  date: string
+}
+
+export const regionCosts: RegionCost[] = [
+  { id: 'r1', region: 'Europe',     avgCost: 2500, icon: '/assets/icons/europe.svg' },
+  { id: 'r2', region: 'Asia',       avgCost: 1800, icon: '/assets/icons/asia.svg' },
+  { id: 'r3', region: 'Americas',   avgCost: 2200, icon: '/assets/icons/americas.svg' },
+  { id: 'r4', region: 'Oceania',    avgCost: 3000, icon: '/assets/icons/oceania.svg' },
+]
+
+export const blogPosts: BlogPost[] = [
+  { id: 'b1', title: 'Top 10 Hidden Gems in Europe',         url: '/blog/europe-hidden-gems',    date: '2025-04-10' },
+  { id: 'b2', title: 'How to Pack Light for Any Trip',       url: '/blog/pack-light',            date: '2025-05-02' },
+  { id: 'b3', title: 'Family-Friendly Destinations 2025',    url: '/blog/family-destinations',   date: '2025-03-25' },
+]
+
+// data/testimonials.ts
+export interface Testimonial {
+  id: string
+  name: string
+  avatar: string
+  quote: string
+  role: string
+}
+
+export const testimonials: Testimonial[] = [
+  {
+    id: 't1',
+    name: 'Emily Carter',
+    avatar: '/assets/testimonials/emily.jpg',
+    quote:
+      'Booking my trip was a breeze! The virtual tours gave me confidence, and the experts answered all my questions.',
+    role: 'Solo Traveler',
+  },
+  {
+    id: 't2',
+    name: 'Michael Nguyen',
+    avatar: '/assets/testimonials/michael.jpg',
+    quote:
+      'Our family vacation was unforgettable. The featured tours and clear pricing options made planning stress-free.',
+    role: 'Family of 4',
+  },
+  {
+    id: 't3',
+    name: 'Sara Lee',
+    avatar: '/assets/testimonials/sara.jpg',
+    quote:
+      'I found hidden gems in Europe I never knew existed! The travel tips blog posts were pure gold.',
+    role: 'Couple Traveler',
+  },
+]
+
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
 `${src}?w=${width}&q=${quality || 75}`;
@@ -78,9 +326,20 @@ return ( <div className="space-y-20 font-sans">
   {/* Trending Locations */}
   <TrendingLocations />
 
+  <MeetAgents />
+
+  <MarketInsights />
+
   {/* Virtual Tours */}
   <VirtualTours />
-  {/* About Section */}
+  
+  <Testimonials />
+
+  <MobileAppPromo />
+
+  <NewsletterSignup />
+
+  {/* Chat Button */}
   
  </main>
 
@@ -210,8 +469,6 @@ return ( <div className="space-y-20 font-sans">
 
 
 // components/Hero.tsx
-
-
 function Hero() {
   const [destination, setDestination] = useState('')
   const [travelType, setTravelType] = useState(travelTypes[0])
@@ -307,65 +564,7 @@ function Hero() {
   )
 }
 
-
-// data/listings.ts
-export interface Listing {
-  id: string
-  title: string
-  thumbnail: string
-  price: number
-  beds: number
-  baths: number
-  area: number
-  badge?: 'New' | 'Hot' | 'Price Reduced'
-}
-
-export const listings: Listing[] = [
-  {
-    id: '1',
-    title: 'Tropical Bali Getaway',
-    thumbnail: '/assets/bali.jpg',
-    price: 1200,
-    beds: 1,
-    baths: 1,
-    area: 500,
-    badge: 'Hot',
-  },
-  {
-    id: '2',
-    title: 'Alpine Ski Retreat',
-    thumbnail: '/assets/alps.jpg',
-    price: 2500,
-    beds: 3,
-    baths: 2,
-    area: 1200,
-    badge: 'New',
-  },
-  {
-    id: '3',
-    title: 'Santorini Sunset Villa',
-    thumbnail: '/assets/santorini.jpg',
-    price: 3200,
-    beds: 2,
-    baths: 2,
-    area: 900,
-  },
-  {
-    id: '4',
-    title: 'Safari Lodge Adventure',
-    thumbnail: '/assets/safari.jpg',
-    price: 1800,
-    beds: 2,
-    baths: 2,
-    area: 1100,
-    badge: 'Price Reduced',
-  },
-  // …add as many as you like
-]
-
-
-
-
+{/* components/FilterBar.tsx */}
 function FilterBar() {
   const [open, setOpen] = useState(false)
   const [type, setType] = useState('')
@@ -389,7 +588,7 @@ function FilterBar() {
             onClick={() => setOpen(!open)}
             className="text-indigo-600 font-medium flex items-center gap-1"
           >
-            {open ? 'Hide' : 'Show'} <FaChevronDown className={`transform transition-transform ${open ? 'rotate-180' : ''}`} />
+            {open ? 'Hide' : 'Show'} <ChevronDownIcon className={`transform w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
@@ -464,66 +663,8 @@ function FilterBar() {
 
 // components/ListingCard.tsx
 
-
-interface Props {
-  item: Listing
-}
-
-function ListingCard({ item }: Props) {
-  return (
-    <motion.div
-      whileHover={{ y: -8, boxShadow: '0px 15px 25px rgba(0,0,0,0.15)' }}
-      transition={{ type: 'spring', stiffness: 300 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm"
-    >
-      <div className="relative h-48 w-full">
-        <Image
-          src={item.thumbnail}
-          alt={item.title}
-          layout="fill"
-          objectFit="cover"
-          className="transform hover:scale-105 transition duration-300"
-          placeholder="blur"
-          blurDataURL="/assets/blur-placeholder.png"
-        />
-        {item.badge && (
-          <span
-            className={`absolute top-3 left-3 px-3 py-1 text-sm font-semibold rounded-full ${
-              item.badge === 'New'
-                ? 'bg-green-500 text-white'
-                : item.badge === 'Hot'
-                ? 'bg-red-500 text-white'
-                : 'bg-yellow-400 text-gray-900'
-            }`}
-          >
-            {item.badge}
-          </span>
-        )}
-      </div>
-
-      <div className="p-4">
-        <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-        <p className="text-indigo-600 font-semibold mb-4">${item.price.toLocaleString()}</p>
-        <div className="flex text-gray-600 text-sm space-x-4 mb-4">
-          <span>{item.beds} beds</span>
-          <span>{item.baths} baths</span>
-          <span>{item.area} sq ft</span>
-        </div>
-        <button className="w-full bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700 transition">
-          View Details
-        </button>
-      </div>
-    </motion.div>
-  )
-}
-
 // components/ListingCard.tsx
-
-interface Props {
-  item: Listing
-}
-
-function ListingCard({ item }: Props) {
+function ListingCard({ listing }: any) {
   return (
     <motion.div
       whileHover={{ y: -8, boxShadow: '0px 15px 25px rgba(0,0,0,0.15)' }}
@@ -532,36 +673,36 @@ function ListingCard({ item }: Props) {
     >
       <div className="relative h-48 w-full">
         <Image
-          src={item.thumbnail}
-          alt={item.title}
+          src={listing.thumbnail}
+          alt={listing.title}
           layout="fill"
           objectFit="cover"
           className="transform hover:scale-105 transition duration-300"
           placeholder="blur"
           blurDataURL="/assets/blur-placeholder.png"
         />
-        {item.badge && (
+        {listing.badge && (
           <span
             className={`absolute top-3 left-3 px-3 py-1 text-sm font-semibold rounded-full ${
-              item.badge === 'New'
+              listing.badge === 'New'
                 ? 'bg-green-500 text-white'
-                : item.badge === 'Hot'
+                : listing.badge === 'Hot'
                 ? 'bg-red-500 text-white'
                 : 'bg-yellow-400 text-gray-900'
             }`}
           >
-            {item.badge}
+            {listing.badge}
           </span>
         )}
       </div>
 
       <div className="p-4">
-        <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-        <p className="text-indigo-600 font-semibold mb-4">${item.price.toLocaleString()}</p>
+        <h3 className="text-lg font-bold mb-2">{listing.title}</h3>
+        <p className="text-indigo-600 font-semibold mb-4">${listing.price.toLocaleString()}</p>
         <div className="flex text-gray-600 text-sm space-x-4 mb-4">
-          <span>{item.beds} beds</span>
-          <span>{item.baths} baths</span>
-          <span>{item.area} sq ft</span>
+          <span>{listing.beds} beds</span>
+          <span>{listing.baths} baths</span>
+          <span>{listing.area} sq ft</span>
         </div>
         <button className="w-full bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700 transition">
           View Details
@@ -579,62 +720,16 @@ function Listings() {
         Featured Trips & Tours
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {listings.map(item => (
-          <ListingCard key={item.id} item={item} />
+        {listings.map(listing => (
+          <ListingCard key={listing.id} listing={listing} />
         ))}
       </div>
     </section>
   )
 }
 
-// data/trendingLocations.ts
-export interface TrendingLocation {
-  id: string
-  name: string
-  image: string
-  listingsCount: number
-  avgPrice: number
-}
-
-export const trendingLocations: TrendingLocation[] = [
-  {
-    id: 'tokyo',
-    name: 'Tokyo, Japan',
-    image: '/assets/trending/tokyo.jpg',
-    listingsCount: 342,
-    avgPrice: 2200,
-  },
-  {
-    id: 'bali',
-    name: 'Bali, Indonesia',
-    image: '/assets/trending/bali.jpg',
-    listingsCount: 289,
-    avgPrice: 1250,
-  },
-  {
-    id: 'paris',
-    name: 'Paris, France',
-    image: '/assets/trending/paris.jpg',
-    listingsCount: 410,
-    avgPrice: 3000,
-  },
-  {
-    id: 'cape-town',
-    name: 'Cape Town, South Africa',
-    image: '/assets/trending/capetown.jpg',
-    listingsCount: 157,
-    avgPrice: 1400,
-  },
-  // …more locations
-]
-
-// components/TrendingCard.tsx
-
-interface Props {
-  loc: TrendingLocation
-}
-
-function TrendingCard({ loc }: Props) {
+{/* components/TrendingCard.tsx */}
+function TrendingCard({ loc }: any) {
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
@@ -694,44 +789,8 @@ function TrendingLocations() {
   )
 }
 
-// data/virtualTours.ts
-export interface VirtualTour {
-  id: string
-  title: string
-  thumbnail: string
-  videoUrl: string
-}
-
-export const virtualTours: VirtualTour[] = [
-  {
-    id: 'tour1',
-    title: 'Eiffel Tower 360° Tour',
-    thumbnail: '/assets/tours/eiffel.jpg',
-    videoUrl: 'https://www.youtube.com/embed/Scxs7L0vhZ4',
-  },
-  {
-    id: 'tour2',
-    title: 'Santorini Cliffside Villa',
-    thumbnail: '/assets/tours/santorini-villa.jpg',
-    videoUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
-  },
-  {
-    id: 'tour3',
-    title: 'Amazon Rainforest Lodge',
-    thumbnail: '/assets/tours/amazon.jpg',
-    videoUrl: 'https://www.youtube.com/embed/5qap5aO4i9A',
-  },
-]
-
-// components/VirtualTourCard.tsx
-
-
-interface Props {
-  tour: VirtualTour
-  onOpen: (videoUrl: string) => void
-}
-
-function VirtualTourCard({ tour, onOpen }: Props) {
+/* components/VirtualTourCard.tsx */
+function VirtualTourCard({ tour, onOpen }: any) {
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -816,51 +875,9 @@ function VirtualTours() {
     </section>
   )
 }
-// data/agents.ts
-export interface Agent {
-  id: string
-  name: string
-  photo: string
-  specialty: string
-  experience: number  // years
-}
 
-export const agents: Agent[] = [
-  {
-    id: 'a1',
-    name: 'Sophia Lin',
-    photo: '/assets/agents/sophia.jpg',
-    specialty: 'Cultural Tours',
-    experience: 8,
-  },
-  {
-    id: 'a2',
-    name: 'Liam Carter',
-    photo: '/assets/agents/liam.jpg',
-    specialty: 'Adventure Travel',
-    experience: 5,
-  },
-  {
-    id: 'a3',
-    name: 'Aria Patel',
-    photo: '/assets/agents/aria.jpg',
-    specialty: 'Luxury Escapes',
-    experience: 10,
-  },
-  {
-    id: 'a4',
-    name: 'Ethan Zhao',
-    photo: '/assets/agents/ethan.jpg',
-    specialty: 'Family Trips',
-    experience: 6,
-  },
-  // …more agents
-]
-// components/AgentCard.tsx
-
-interface Props { agent: Agent }
-
-function AgentCard({ agent }: Props) {
+{/* components/AgentCard.tsx */}
+function AgentCard({ agent }: any) {
   return (
     <motion.div
       whileHover={{ y: -6, boxShadow: '0px 10px 20px rgba(0,0,0,0.12)' }}
@@ -903,37 +920,7 @@ function MeetAgents() {
   )
 }
 
-// data/insights.ts
-
-export interface RegionCost {
-  id: string
-  region: string
-  avgCost: number
-  icon: string   // any icon name or image path
-}
-
-export interface BlogPost {
-  id: string
-  title: string
-  url: string
-  date: string
-}
-
-export const regionCosts: RegionCost[] = [
-  { id: 'r1', region: 'Europe',     avgCost: 2500, icon: '/assets/icons/europe.svg' },
-  { id: 'r2', region: 'Asia',       avgCost: 1800, icon: '/assets/icons/asia.svg' },
-  { id: 'r3', region: 'Americas',   avgCost: 2200, icon: '/assets/icons/americas.svg' },
-  { id: 'r4', region: 'Oceania',    avgCost: 3000, icon: '/assets/icons/oceania.svg' },
-]
-
-export const blogPosts: BlogPost[] = [
-  { id: 'b1', title: 'Top 10 Hidden Gems in Europe',         url: '/blog/europe-hidden-gems',    date: '2025-04-10' },
-  { id: 'b2', title: 'How to Pack Light for Any Trip',       url: '/blog/pack-light',            date: '2025-05-02' },
-  { id: 'b3', title: 'Family-Friendly Destinations 2025',    url: '/blog/family-destinations',   date: '2025-03-25' },
-]
-
 // components/MarketInsights.tsx
-
 function MarketInsights() {
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
@@ -1011,56 +998,14 @@ function MarketInsights() {
   )
 }
 
-// data/testimonials.ts
-export interface Testimonial {
-  id: string
-  name: string
-  avatar: string
-  quote: string
-  role: string
-}
-
-export const testimonials: Testimonial[] = [
-  {
-    id: 't1',
-    name: 'Emily Carter',
-    avatar: '/assets/testimonials/emily.jpg',
-    quote:
-      'Booking my trip was a breeze! The virtual tours gave me confidence, and the experts answered all my questions.',
-    role: 'Solo Traveler',
-  },
-  {
-    id: 't2',
-    name: 'Michael Nguyen',
-    avatar: '/assets/testimonials/michael.jpg',
-    quote:
-      'Our family vacation was unforgettable. The featured tours and clear pricing options made planning stress-free.',
-    role: 'Family of 4',
-  },
-  {
-    id: 't3',
-    name: 'Sara Lee',
-    avatar: '/assets/testimonials/sara.jpg',
-    quote:
-      'I found hidden gems in Europe I never knew existed! The travel tips blog posts were pure gold.',
-    role: 'Couple Traveler',
-  },
-]
-
 // components/TestimonialCard.tsx
-
-
-interface Props {
-  item: Testimonial
-}
-
-function TestimonialCard({ item }: Props) {
+function TestimonialCard({ testimonial }: any) {
   return (
     <div className="flex flex-col items-center text-center p-6 bg-white rounded-2xl shadow-sm max-w-md mx-auto">
       <div className="relative w-20 h-20 mb-4">
         <Image
-          src={item.avatar}
-          alt={item.name}
+          src={testimonial.avatar}
+          alt={testimonial.name}
           layout="fill"
           objectFit="cover"
           className="rounded-full"
@@ -1068,9 +1013,9 @@ function TestimonialCard({ item }: Props) {
           blurDataURL="/assets/blur-placeholder.png"
         />
       </div>
-      <p className="text-gray-800 italic mb-4">“{item.quote}”</p>
-      <h4 className="text-lg font-semibold">{item.name}</h4>
-      <p className="text-sm text-gray-500">{item.role}</p>
+      <p className="text-gray-800 italic mb-4">“{testimonial.quote}”</p>
+      <h4 className="text-lg font-semibold">{testimonial.name}</h4>
+      <p className="text-sm text-gray-500">{testimonial.role}</p>
     </div>
   )
 }
@@ -1113,7 +1058,7 @@ function Testimonials() {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.6 }}
           >
-            <TestimonialCard item={testimonials[current]} />
+            <TestimonialCard testimonial={testimonials[current]} />
           </motion.div>
         </AnimatePresence>
 
