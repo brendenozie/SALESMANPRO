@@ -5,8 +5,14 @@ import { z } from "zod";
 // Zod schemas
 const urlSchema = z.string().url();
 const geoSchema = z.object({ lat: z.number(), lng: z.number() });
-const socialLinkSchema = z.object({ channel: z.string(), url: z.string() });
+// const socialLinkSchema = z.object({ channel: z.string(), url: z.string() });
 const policySchema = z.object({ type: z.string(), title: z.string().optional(), content: z.string() });
+const socialLinkSchema = z.object({
+  channel: z
+    .enum(["TWITTER","FACEBOOK","INSTAGRAM" ])
+    .transform((s) => s.toUpperCase()),
+  url:     z.string() 
+});
 const faqSchema = z.object({ question: z.string(), answer: z.string(), order: z.number().optional() });
 const testimonialSchema = z.object({ author: z.string(), quote: z.string(), avatarUrl: urlSchema.optional(), rating: z.number().min(1).max(5).optional(), order: z.number().optional() });
 const slideSchema = z.object({ imageUrl: z.string(), headline: z.string(), subline: z.string().optional(), ctaText: z.string().optional(), ctaLink: z.string().optional(), order: z.number().optional() });
@@ -56,19 +62,19 @@ export async function GET(req: Request) {
   try {
     const stores = await prisma.company.findMany({
       where,
-      include: {
-        socialLinks: true,
-        policies: true,
-        faqs: true,
-        testimonials: true,
-        heroSlides: true,
-        promotions: true,
-        seo: true,
-        AnalyticsConfig: true,
-        PaymentSettings: true,
-        ShippingSettings: true,
-        StoreCategory: true
-      }
+      // include: {
+      //   // socialLinks: true,
+      //   policies: true,
+      //   faqs: true,
+      //   testimonials: true,
+      //   heroSlides: true,
+      //   promotions: true,
+      //   seo: true,
+      //   AnalyticsConfig: true,
+      //   PaymentSettings: true,
+      //   ShippingSettings: true,
+      //   StoreCategory: true
+      // }
     });
     return NextResponse.json(stores, { status: 200 });
   } catch (error: any) {

@@ -199,11 +199,16 @@ const steps: StepConfig[] = [
     }
 ];
 
-export default function CreateStoreForm({ availableCategories }: { availableCategories: CategoryOption[] }) {
+type Props = {
+  availableCategories: CategoryOption[];
+  initialData?: Partial<StoreForm> & { id: string };
+};
+
+export default function CreateStoreForm({ availableCategories, initialData }: Props) {
   const { data: session } = useSession();
   const router = useRouter();
 
-  const initialForm: StoreForm = {
+  const defaultForm: StoreForm = {
     name: '', slug: '', domain: '', tagline: '', description: '', category: 'E-commerce',
     logoUrl: 'https://logourl.com', bannerUrl: 'https://bannerurl.com', contactEmail: '', contactPhone: '', address: '',
     geoLocation: { lat: 0, lng: 0 }, openingHours: { mon: '', tue: '', wed: '', thu: '', fri: '', sat: '', sun: '' },
@@ -215,30 +220,46 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
     stats: [],
   };
 
-  const [form, setForm] = useState<StoreForm>(initialForm);
+  // const [form, setForm] = useState<StoreForm>(initialForm);
+  const [form, setForm] = useState<StoreForm>(
+    // `initialData` fields overwrite defaults
+    initialData
+      ? { ...defaultForm, ...initialData }
+      : defaultForm
+  );
+  
   const totalSteps = steps.length + 1;
   const [stepIndex, setStepIndex] = useState(0);
 
   // Auto-generate slug/domain from name
   useEffect(() => {
+    if (initialData) return;
     const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const domain = slug ? `${slug}.yourdomain.com` : '';
     setForm((prev) => ({ ...prev, slug, domain }));
-  }, [form.name]);
+  }, [form.name, initialData]);
 
   // Slug & domain generator
   useEffect(() => {
+    if (initialData) return;
     if (!form.name) return;
     const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     setForm(f => ({ ...f, slug, domain: `https://www.${slug}.ghuba.shop` }));
-  }, [form.name]);
+  }, [form.name, initialData]);
 
   // LocalStorage
   useEffect(() => {
-    const saved = localStorage.getItem('storeForm'); if (saved) setForm(JSON.parse(saved));
-  }, []);
-  useEffect(() => { localStorage.setItem('storeForm', JSON.stringify(form)); }, [form]);
+    if (initialData) return;            // ← skip in edit mode
+    const saved = localStorage.getItem('storeForm')
+    if (saved) setForm(JSON.parse(saved))
+  }, [initialData])
+  
 
+  useEffect(() => {
+    if (initialData) return;
+    localStorage.setItem('storeForm', JSON.stringify(form))
+  }, [form, initialData])
+  
   // Navigation guard
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
@@ -297,14 +318,39 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
   const next = () => setStepIndex(i => Math.min(i + 1, totalSteps - 1));
   const prev = () => setStepIndex(i => Math.max(i - 1, 0));
 
+  // const handleSubmit = async (e: FormEvent) => {
+  //   e.preventDefault(); if (!session?.user?.id) return;
+  //   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
+  //     method: 'POST', headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ ...form, userId: session.user.id })
+  //   });
+  //   if (res.ok) router.push('/stores');
+  // };
+
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault(); if (!session?.user?.id) return;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, userId: session.user.id })
+    e.preventDefault();
+    if (!session?.user?.id) return;
+  
+    const isEdit = Boolean(initialData?.id);
+    const url    = isEdit
+      ? `${process.env.NEXT_PUBLIC_API_URL}/stores/${initialData!.id}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/stores`;
+    const method = isEdit ? "PUT" : "POST";
+  
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, userId: session.user.id }),
     });
-    if (res.ok) router.push('/stores');
+  
+    if (res.ok) {
+      router.push("/stores");
+    } else {
+      console.error("Save failed", await res.text());
+      // show an error toast/message
+    }
   };
+  
 
   // Helper to render review info for each step
 //   const renderList = (items: any[], renderItem: (item: any, index: number) => React.ReactNode) =>

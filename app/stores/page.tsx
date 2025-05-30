@@ -46,7 +46,7 @@ export default function StoresPage() {
   const totalPages = Math.ceil(stores.length / pageSize);
   const paginated = stores.slice((page - 1) * pageSize, page * pageSize);
 
-  const handleEdit = (id: string) => router.push(`/stores/${id}`);
+  const handleEdit = (id: string) => router.push(`/stores/${id}/edit`);
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this store?')) return;
     await fetch(`/api/stores/${id}`, { method: 'DELETE' });
