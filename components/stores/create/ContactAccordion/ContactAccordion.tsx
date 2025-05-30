@@ -1,57 +1,69 @@
 import React, { useState, ChangeEvent } from 'react';
-import TimePicker from 'react-time-picker';
-
-import {
-  Cog6ToothIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from '@heroicons/react/24/outline';
+import { OpeningHours } from '../../../../types/typings';
 
 const weekdays = [
-  { key: 'mon', label: 'Mon' },
-  { key: 'tue', label: 'Tue' },
-  { key: 'wed', label: 'Wed' },
-  { key: 'thu', label: 'Thu' },
-  { key: 'fri', label: 'Fri' },
-  { key: 'sat', label: 'Sat' },
-  { key: 'sun', label: 'Sun' },
+  { key: 'mon', label: 'Monday' },
+  { key: 'tue', label: 'Tuesday' },
+  { key: 'wed', label: 'Wednesday' },
+  { key: 'thu', label: 'Thursday' },
+  { key: 'fri', label: 'Friday' },
+  { key: 'sat', label: 'Saturday' },
+  { key: 'sun', label: 'Sunday' },
 ];
+
+
+
+interface ContactAccordionProps {
+  openingHours: OpeningHours;
+  contactEmail: string;
+  contactPhone: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onToggleDay: (dayKey: string) => void; 
+}
 
 export default function ContactAccordion({
   openingHours,
   contactEmail,
   contactPhone,
   onChange,
-}:any) {
-  const [open, setOpen] = useState(true);
-  const [holidayDate, setHolidayDate] = useState(new Date());
+  onToggleDay,   
+}: ContactAccordionProps) {
+  const [expanded, setExpanded] = useState(true);
+
+  const toggleDay = (key: string) => {
+    onToggleDay(key);
+  };
+
+  // const toggleDay = (key: string) => {
+  //   const isClosed = !openingHours[key]?.open && !openingHours[key]?.close;
+  //   const value = isClosed
+  //     ? { open: '09:00', close: '17:00' }
+  //     : { open: '', close: '' };
+  //   onChange({
+  //     target: { name: `openingHours.${key}`, value },
+  //   } as any);
+  // };
 
   return (
-    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
-      {/* Header */}
-      <header
-        onClick={() => setOpen(prev => !prev)}
-        className="flex justify-between items-center px-6 py-4 cursor-pointer bg-gradient-to-r from-indigo-50 to-indigo-100"
+    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+      <button
+        onClick={() => setExpanded(x => !x)}
+        className="w-full flex justify-between items-center bg-indigo-100 px-6 py-4"
       >
-        <div className="flex items-center space-x-3">
-          <Cog6ToothIcon className="h-6 w-6 text-indigo-600" />
-          <h2 className="text-xl font-semibold text-gray-900">Contact & Opening Hours</h2>
-        </div>
-        <span className="flex items-center text-indigo-600">
-          {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+        <span className="text-lg font-medium text-indigo-700">
+          Contact & Opening Hours
         </span>
-      </header>
+        <span className="text-indigo-700 text-2xl">
+          {expanded ? '−' : '+'}
+        </span>
+      </button>
 
-      {/* Content */}
-      {open && (
-        <div className="px-6 py-6 space-y-8">
+      {expanded && (
+        <div className="px-6 py-8 space-y-8">
           {/* Contact Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <label className="block">
-              <span className="flex items-center text-sm font-medium text-gray-700">
-                <EnvelopeIcon className="h-5 w-5 mr-2 text-indigo-500" />
+              <span className="text-sm font-medium text-gray-700">
                 Email Address
               </span>
               <input
@@ -60,13 +72,12 @@ export default function ContactAccordion({
                 value={contactEmail}
                 onChange={onChange}
                 placeholder="you@domain.com"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 transition"
+                className="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
               />
             </label>
 
             <label className="block">
-              <span className="flex items-center text-sm font-medium text-gray-700">
-                <PhoneIcon className="h-5 w-5 mr-2 text-indigo-500" />
+              <span className="text-sm font-medium text-gray-700">
                 Phone Number
               </span>
               <input
@@ -75,40 +86,71 @@ export default function ContactAccordion({
                 value={contactPhone}
                 onChange={onChange}
                 placeholder="123-456-7890"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 transition"
+                className="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
               />
             </label>
           </div>
 
           {/* Opening Hours */}
-          <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-            <h3 className="text-lg font-medium text-indigo-700 mb-4">Opening Hours</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
-              {weekdays.map(({ key, label }) => (
-                <div key={key} className="flex flex-col items-center">
-                  <span className="text-xs font-semibold text-gray-600 mb-1">{label}</span>
-                  <TimePicker
-                    name={key}
-                    onChange={value => onChange({ target: { name: `openingHours.${key}`, value } })}
-                    value={openingHours[key] || ''}
-                    disableClock
-                    clearIcon={null}
-                    className="w-full text-sm text-center"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+            <h3 className="text-2xl font-semibold text-indigo-700 mb-6">
+              Opening Hours
+            </h3>
 
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => {/* optional submit handler */}}
-              className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
-            >
-              Save Changes
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {weekdays.map(({ key, label }) => {
+                const day = openingHours[key] || { open: '', close: '' };
+                const isClosed = !day.open && !day.close;
+                return (
+                  <div
+                    key={key}
+                    className="bg-white p-4 rounded-xl border border-indigo-200 flex flex-col items-center space-y-3"
+                  >
+                    {/* Day Label */}
+                    <span className="font-medium text-gray-600">{label}</span>
+
+                    {/* Open/Closed Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => toggleDay(key)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        isClosed
+                          ? 'bg-gray-200 text-gray-600'
+                          : 'bg-indigo-600 text-white'
+                      }`}
+                    >
+                      {isClosed ? 'Closed' : 'Open'}
+                    </button>
+
+                    {/* Time Inputs */}
+                    {!isClosed && (
+                      <div className="w-full flex flex-col space-y-2">
+                        <label className="flex flex-col text-xs text-gray-600">
+                          Open
+                          <input
+                            type="time"
+                            name={`openingHours.${key}.open`}
+                            value={day.open}
+                            onChange={onChange}
+                            className="mt-1 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                          />
+                        </label>
+                        <label className="flex flex-col text-xs text-gray-600">
+                          Close
+                          <input
+                            type="time"
+                            name={`openingHours.${key}.close`}
+                            value={day.close}
+                            onChange={onChange}
+                            className="mt-1 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

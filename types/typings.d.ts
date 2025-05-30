@@ -478,7 +478,12 @@ export type ISubscription = {
 
 interface CategoryOption { id: string; name: string; }
 interface GeoLocation { lat: number; lng: number; }
-interface OpeningHours { [key: string]: string; }
+type OpeningHours = Record<
+  string,
+  { open: string; close: string } | undefined
+>;
+type DayHours = { open: string; close: string };
+type OpeningHours = { [key: string]: DayHours };
 export interface SocialLink { channel: string; url: string; }
 export interface Policy { type: string; title?: string; content: string; }
 export interface FAQ { question: string; answer: string; order?: number; }
@@ -542,6 +547,7 @@ interface Handlers {
   onChangeSettings: (updated: Partial<StoreForm>) => void;
   onToggleCategory: (cat: CategoryOption) => void;
   onBulkToggleCategories: (ids: string[]) => void;
+  onToggleDay: (dayKey: string) => void; 
 }
 
 // Step configuration

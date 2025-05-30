@@ -63,7 +63,7 @@ const steps: StepConfig[] = [
       key: 'touchpoints',
       title: 'Customer Touchpoints',
       render: (f, h) => (
-        <ContactAccordion {...f} openingHours={f.openingHours} onChange={h.handleChange} />
+        <ContactAccordion {...f} openingHours={f.openingHours} onChange={h.handleChange} onToggleDay={h.onToggleDay}/>
       )
     },
     {
@@ -211,7 +211,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const defaultForm: StoreForm = {
     name: '', slug: '', domain: '', tagline: '', description: '', category: 'E-commerce',
     logoUrl: 'https://logourl.com', bannerUrl: 'https://bannerurl.com', contactEmail: '', contactPhone: '', address: '',
-    geoLocation: { lat: 0, lng: 0 }, openingHours: { mon: '', tue: '', wed: '', thu: '', fri: '', sat: '', sun: '' },
+    geoLocation: { lat: 0, lng: 0 }, openingHours: { mon: { open: '', close: '' }, tue: { open: '', close: '' }, wed: { open: '', close: '' }, thu: { open: '', close: '' }, fri: { open: '', close: '' }, sat: { open: '', close: '' }, sun: { open: '', close: '' } },
     socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [],
     themeSettings: {}, seo: {}, analyticsConfig: {}, paymentSettings: {}, shippingSettings: {},
     storeCategories: [],
@@ -284,6 +284,25 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     setForm(f => ({ ...f, [key]: (f[key] as any).filter((_: any, i: number) => i !== idx) }));
   };
 
+  const onToggleDay = (key: string) => {
+    setForm(f => {
+      const day = f.openingHours[key] || { open: '', close: '' };
+      const isClosed = !day.open && !day.close;
+      const updated = isClosed
+        ? { open: '09:00', close: '17:00' }
+        : { open: '', close: '' };
+  
+      return {
+        ...f,
+        openingHours: {
+          ...f.openingHours,
+          [key]: updated,
+        },
+      };
+    });
+  }
+  
+
   // Toggle a single CategoryOption
   const onToggleCategory = (cat: CategoryOption) => {
     setForm(f => {
@@ -313,19 +332,10 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     setForm(f => ({ ...f, ...updated }));
   };
 
-  const handlers: Handlers = { handleChange, onUpdateArray, onAddArray, onRemoveArray, onToggleCategory, setAddress, onChangeSettings, onBulkToggleCategories };
+  const handlers: Handlers = { handleChange, onUpdateArray, onAddArray, onRemoveArray, onToggleCategory, setAddress, onChangeSettings, onBulkToggleCategories, onToggleDay };
 
   const next = () => setStepIndex(i => Math.min(i + 1, totalSteps - 1));
   const prev = () => setStepIndex(i => Math.max(i - 1, 0));
-
-  // const handleSubmit = async (e: FormEvent) => {
-  //   e.preventDefault(); if (!session?.user?.id) return;
-  //   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stores`, {
-  //     method: 'POST', headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ ...form, userId: session.user.id })
-  //   });
-  //   if (res.ok) router.push('/stores');
-  // };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -353,39 +363,35 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   
 
   // Helper to render review info for each step
-//   const renderList = (items: any[], renderItem: (item: any, index: number) => React.ReactNode) =>
-//     items.length > 0 ? <ul className="list-disc list-inside space-y-1">{items.map(renderItem)}</ul> : <em className="text-gray-500">None</em>;
-  
-// import React from 'react';
 
-const ReviewSection = ({ title, children }:any) => (
-  <div className="bg-white shadow-sm rounded-lg p-4 space-y-2">
-    <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">{title}</h3>
-    <div>{children}</div>
-  </div>
-);
+  const ReviewSection = ({ title, children }:any) => (
+    <div className="bg-white shadow-sm rounded-lg p-4 space-y-2">
+      <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">{title}</h3>
+      <div>{children}</div>
+    </div>
+  );
 
-const EmptyState = ({ message }:any) => (
-  <em className="text-gray-400 italic">{message}</em>
-);
+  const EmptyState = ({ message }:any) => (
+    <em className="text-gray-400 italic">{message}</em>
+  );
 
-const renderList = (items:any, renderItem:any, emptyMessage = 'No items') => (
-  items && items.length > 0 ? (
-    <ul className="list-disc list-inside space-y-1">
-      {items.map(renderItem)}
-    </ul>
-  ) : (
-    <EmptyState message={emptyMessage} />
-  )
-);
+  const renderList = (items:any, renderItem:any, emptyMessage = 'No items') => (
+    items && items.length > 0 ? (
+      <ul className="list-disc list-inside space-y-1">
+        {items.map(renderItem)}
+      </ul>
+    ) : (
+      <EmptyState message={emptyMessage} />
+    )
+  );
 
-const renderJSON = (data:any, emptyMessage = 'No data') => (
-  data && Object.keys(data).length > 0 ? (
-    <pre className="bg-gray-50 text-xs p-3 rounded overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
-  ) : (
-    <EmptyState message={emptyMessage} />
-  )
-);
+  const renderJSON = (data:any, emptyMessage = 'No data') => (
+    data && Object.keys(data).length > 0 ? (
+      <pre className="bg-gray-50 text-xs p-3 rounded overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
+    ) : (
+      <EmptyState message={emptyMessage} />
+    )
+  );
 
 const renderReviewContent = (stepKey:any, form:any) => {
   switch (stepKey) {
@@ -462,77 +468,144 @@ const renderReviewContent = (stepKey:any, form:any) => {
         </ReviewSection>
       );
 
-    case 'social':
-      return (
-        <ReviewSection title="Social Links">
-          {renderList(form.socialLinks, ({link, i}:any) => (
-            <li key={i}><strong>{link && link.channel}:</strong> <a href={link && link.url} className="text-blue-600 hover:underline" target="_blank" rel="noreferrer">{link && link.url}</a></li>
-          ), 'No social links')}
-        </ReviewSection>
-      );
+      case 'social':
+        return (
+          <ReviewSection title="Social Links">
+            {
+              renderList(
+                form.socialLinks,
+                (link:any, i:any) => (
+                  <li key={i}>
+                    <strong>{link.channel}:</strong>{' '}
+                    <a
+                      href={link.url}
+                      className="text-blue-600 hover:underline"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {link.url}
+                    </a>
+                  </li>
+                ),
+                'No social links'
+              )
+              
+            }
+          </ReviewSection>
+        );
 
-    case 'content':
-      return (
-        <ReviewSection title="Policies & Content">
-          {renderList(form.policies, ({p, i}:any) => (<li key={i}><strong>{p && p.type}:</strong> {p && p.content}</li>), 'No policies')}
-        </ReviewSection>
-      );
-
-    case 'awards':
-      return (
-        <ReviewSection title="Awards">
-          {renderList(form.awards, ({a, i}:any) => <li key={i}>{a && a.name}</li>, 'No awards')}
-        </ReviewSection>
-      );
-
-    case 'metrics':
-      return (
-        <ReviewSection title="Metrics">
-          {renderList(form.metrics, ({m, i}:any) => <li key={i}><strong>{m && m.label}:</strong> {m && m.value}</li>, 'No metrics')}
-        </ReviewSection>
-      );
-
-    case 'stats':
-      return (
-        <ReviewSection title="Statistics">
-          {renderList(form.stats, ({s, i}:any) => <li key={i}><strong>{s && s.label}:</strong> {s && s.value}</li>, 'No statistics')}
-        </ReviewSection>
-      );
-
-    case 'faqs':
-      return (
-        <ReviewSection title="FAQs">
-          {form.faqs && form.faqs.length > 0 ? form.faqs.map(({f, i}:any) => (
-            <div key={i} className="space-y-1 text-sm">
-              <p className="font-semibold">Q: {f && f.question}</p>
-              <p className="ml-4">A: {f && f.answer}</p>
-            </div>
-          )) : <EmptyState message="No FAQs" />}
-        </ReviewSection>
-      );
-
-    case 'testimonials':
-      return (
-        <ReviewSection title="Testimonials">
-          {form.testimonials && form.testimonials.length > 0 ? form.testimonials.map(({t, i}:any) => (
-            <blockquote key={i} className="border-l-2 pl-4 italic text-gray-600">“{t && t.quote}” — {t && t.author}</blockquote>
-          )) : <EmptyState message="No testimonials" />}
-        </ReviewSection>
-      );
-
-    case 'marketing':
-      return (
-        <ReviewSection title="Hero Slides">
-          {renderList(form.heroSlides, ({s, i}:any) => <li key={i}>{s && s.headline || 'Untitled slide'}</li>, 'No slides')}
-        </ReviewSection>
-      );
-
-    case 'promotions':
-      return (
-        <ReviewSection title="Promotions">
-          {renderList(form.promotions, ({p, i}:any) => <li key={i}>{p && p.title}</li>, 'No promotions')}
-        </ReviewSection>
-      );
+      case 'content':
+        return (
+          <ReviewSection title="Policies & Content">
+            {renderList(
+              form.policies,
+              (policy:any, i:any) => (
+                <li key={i}>
+                  <strong>{policy.type}:</strong> {policy.content}
+                </li>
+              ),
+              'No policies'
+            )}
+          </ReviewSection>
+        );
+      
+      case 'awards':
+        return (
+          <ReviewSection title="Awards">
+            {renderList(
+              form.awards,
+              (award:any, i:any) => <li key={i}>{award.name}</li>,
+              'No awards'
+            )}
+          </ReviewSection>
+        );
+      
+      case 'metrics':
+        return (
+          <ReviewSection title="Metrics">
+            {renderList(
+              form.metrics,
+              (m:any, i:any) => (
+                <li key={i}>
+                  <strong>{m.label}:</strong> {m.value}
+                </li>
+              ),
+              'No metrics'
+            )}
+          </ReviewSection>
+        );
+      
+      case 'stats':
+        return (
+          <ReviewSection title="Statistics">
+            {renderList(
+              form.stats,
+              (s:any, i:any) => (
+                <li key={i}>
+                  <strong>{s.label}:</strong> {s.value}
+                </li>
+              ),
+              'No statistics'
+            )}
+          </ReviewSection>
+        );
+      
+      case 'faqs':
+        return (
+          <ReviewSection title="FAQs">
+            {form.faqs && form.faqs.length > 0 ? (
+              form.faqs.map((faq:any, i:any) => (
+                <div key={i} className="space-y-1 text-sm">
+                  <p className="font-semibold">Q: {faq.question}</p>
+                  <p className="ml-4">A: {faq.answer}</p>
+                </div>
+              ))
+            ) : (
+              <EmptyState message="No FAQs" />
+            )}
+          </ReviewSection>
+        );
+      
+      case 'testimonials':
+        return (
+          <ReviewSection title="Testimonials">
+            {form.testimonials && form.testimonials.length > 0 ? (
+              form.testimonials.map((t:any, i:any) => (
+                <blockquote
+                  key={i}
+                  className="border-l-2 pl-4 italic text-gray-600"
+                >
+                  “{t.quote}” — {t.author}
+                </blockquote>
+              ))
+            ) : (
+              <EmptyState message="No testimonials" />
+            )}
+          </ReviewSection>
+        );
+      
+      case 'marketing':
+        return (
+          <ReviewSection title="Hero Slides">
+            {renderList(
+              form.heroSlides,
+              (slide:any, i:any) => <li key={i}>{slide.headline || 'Untitled slide'}</li>,
+              'No slides'
+            )}
+          </ReviewSection>
+        );
+      
+      case 'promotions':
+        return (
+          <ReviewSection title="Promotions">
+            {renderList(
+              form.promotions,
+              (promo:any, i:any) => <li key={i}>{promo.title}</li>,
+              'No promotions'
+            )}
+          </ReviewSection>
+        );
+      
 
     case 'seo':
       return (
