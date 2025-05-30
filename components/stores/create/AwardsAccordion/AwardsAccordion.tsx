@@ -95,7 +95,7 @@ export const AwardsAccordion: React.FC<Props> = ({ awards, onAdd, onUpdate, onRe
               <span>Add Award</span>
             </button>
             <span className="text-sm text-gray-600 italic">
-            🏆 Tip: Add icons from a CDN like <code className="bg-gray-100 px-1 rounded">https://img.icons8.com</code> to visually represent awards.
+            🏆 Tip: Add icons from a CDN like <code className="bg-gray-100 px-1 rounded">https://icons8.com/icons</code> to visually represent awards.
             </span>
           </div>
         </div>

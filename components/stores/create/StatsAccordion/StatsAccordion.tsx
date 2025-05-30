@@ -143,7 +143,7 @@ export const StatsAccordion: React.FC<StatsAccordionProps> = ({ stats, onAdd, on
           {/* Footer Tip */}
           <p className="text-sm text-gray-500 text-center">
             📊 Tip: Use icons from{' '}
-            <a href="https://img.icons8.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline">
+            <a href="https://icons8.com/icons" target="_blank" rel="noreferrer" className="text-emerald-600 underline">
               Icons8
             </a>{' '}
             for richer visuals.

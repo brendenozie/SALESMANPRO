@@ -227,7 +227,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       ? { ...defaultForm, ...initialData }
       : defaultForm
   );
-  
+
   const totalSteps = steps.length + 1;
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -387,7 +387,7 @@ const renderJSON = (data:any, emptyMessage = 'No data') => (
   )
 );
 
-const renderReviewContent = ({stepKey, form}:any) => {
+const renderReviewContent = (stepKey:any, form:any) => {
   switch (stepKey) {
     case 'basic':
       return (
@@ -466,7 +466,7 @@ const renderReviewContent = ({stepKey, form}:any) => {
       return (
         <ReviewSection title="Social Links">
           {renderList(form.socialLinks, ({link, i}:any) => (
-            <li key={i}><strong>{link.channel}:</strong> <a href={link.url} className="text-blue-600 hover:underline" target="_blank" rel="noreferrer">{link.url}</a></li>
+            <li key={i}><strong>{link && link.channel}:</strong> <a href={link && link.url} className="text-blue-600 hover:underline" target="_blank" rel="noreferrer">{link && link.url}</a></li>
           ), 'No social links')}
         </ReviewSection>
       );
@@ -474,7 +474,7 @@ const renderReviewContent = ({stepKey, form}:any) => {
     case 'content':
       return (
         <ReviewSection title="Policies & Content">
-          {renderList(form.policies, ({p, i}:any) => (<li key={i}><strong>{p.type}:</strong> {p.content}</li>), 'No policies')}
+          {renderList(form.policies, ({p, i}:any) => (<li key={i}><strong>{p && p.type}:</strong> {p && p.content}</li>), 'No policies')}
         </ReviewSection>
       );
 
@@ -593,7 +593,7 @@ const StepContent = stepIndex < steps.length
           <span className="text-xs text-indigo-500">Edit ➔</span>
         </h3>
         <div className="text-gray-700">
-          {renderReviewContent(s.key)}
+          {renderReviewContent(s.key, form)}
         </div>
       </div>
     ))}
