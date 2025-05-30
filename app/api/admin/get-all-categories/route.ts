@@ -26,14 +26,18 @@ export async function GET( req : Request ) {
       let skip = currentPage >0  ? currentPage *20 : 0;
       
       const results = await prisma.$transaction([
-        prisma.productCategory.count({
-          skip : skip,
-          take: 20,
-        }),
-        prisma.productCategory.findMany({
-          skip : skip,
-          take: 20,
-        }),
+        prisma.productCategory.count(
+        //   {
+        //   skip : skip,
+        //   take: 20,
+        // }
+      ),
+        prisma.productCategory.findMany(
+        //   {
+        //   skip : skip,
+        //   take: 20,
+        // }
+      ),
       ]);
   
       return NextResponse.json({InfoResponse:{count: results[0] ?? 0,

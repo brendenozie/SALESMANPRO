@@ -42,6 +42,7 @@ const Header = () => {
   if (path.startsWith('/clients')) return null;
   if (path.startsWith('/site')) return null;
   if (path.startsWith('/shop/profile')) return null;
+  if (path.startsWith('/dashboards')) return null;
   
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">

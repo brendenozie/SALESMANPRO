@@ -11,6 +11,7 @@ const Footer = () => {
   if (path.startsWith('/clients')) return null;  
   if (path.startsWith('/site')) return null;
   if (path.startsWith('/shop/profile')) return null;
+  if (path.startsWith('/dashboards')) return null;
 
   return (
     <footer className="bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100 dark:from-black dark:via-gray-900 dark:to-black py-20 text-gray-900 dark:text-white">
