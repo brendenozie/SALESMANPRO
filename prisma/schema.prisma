@@ -130,22 +130,6 @@ model ProductCategory {
   StoreCategory      StoreCategory[]
 }
 
-// model Subcategory {
-//   id     String   @id @default(auto()) @map("_id") @db.ObjectId
-//   name   String
-//   image  String?
-//   status String
-//   brand  String[]
-//   tags   String[]
-// }
-
-// model UsersCategory {
-//   id     String @id @default(auto()) @map("_id") @db.ObjectId
-//   name   String
-//   status String
-//   users  User[]
-// }
-
 /// Associates a Company with a ProductCategory,
 /// plus any store-specific settings.
 model StoreCategory {
