@@ -538,9 +538,10 @@ interface Handlers {
   onUpdateArray: <T>(key: keyof StoreForm, idx: number, field: keyof T, value: any) => void;
   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
-  onToggleCategory: (cat: CategoryOption) => void;
   setAddress: (address: string, geo: GeoLocation) => void;
   onChangeSettings: (updated: Partial<StoreForm>) => void;
+  onToggleCategory: (cat: CategoryOption) => void;
+  onBulkToggleCategories: (ids: string[]) => void;
 }
 
 // Step configuration

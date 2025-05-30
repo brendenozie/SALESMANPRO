@@ -41,8 +41,9 @@ const steps: StepConfig[] = [
       render: (f, h, cats) => (
         <CategoryAccordion
           availableCategories={cats}
-          selectedCategories={f.storeCategories}
-          onToggleCategory={h.onToggleCategory}
+          selectedCategories={f.storeCategories}          // CategoryOption[]
+          onToggleCategory={h.onToggleCategory}           // CategoryOption => void
+          onBulkToggle={h.onBulkToggleCategories}         // string[] => void
         />
       )
     },
@@ -262,13 +263,26 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
     setForm(f => ({ ...f, [key]: (f[key] as any).filter((_: any, i: number) => i !== idx) }));
   };
 
+  // Toggle a single CategoryOption
   const onToggleCategory = (cat: CategoryOption) => {
-    setForm(f => ({ ...f,
-      storeCategories: f.storeCategories.some(c => c.id === cat.id)
+    setForm(f => {
+      const exists = f.storeCategories.some(c => c.id === cat.id);
+      const updated = exists
         ? f.storeCategories.filter(c => c.id !== cat.id)
-        : [...f.storeCategories, cat]
-    }));
+        : [...f.storeCategories, cat];
+      return { ...f, storeCategories: updated };
+    });
   };
+
+  // Bulk‐toggle by ID array: convert IDs → full CategoryOption objects
+  const onBulkToggleCategories = (ids: string[]) => {
+    setForm(f => {
+      // find matching CategoryOption objects in our available list
+      const chosen = availableCategories.filter(c => ids.includes(c.id));
+      return { ...f, storeCategories: chosen };
+    });
+  };
+
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm(f => ({ ...f, address, geoLocation }));
@@ -278,7 +292,7 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
     setForm(f => ({ ...f, ...updated }));
   };
 
-  const handlers: Handlers = { handleChange, onUpdateArray, onAddArray, onRemoveArray, onToggleCategory, setAddress, onChangeSettings };
+  const handlers: Handlers = { handleChange, onUpdateArray, onAddArray, onRemoveArray, onToggleCategory, setAddress, onChangeSettings, onBulkToggleCategories };
 
   const next = () => setStepIndex(i => Math.min(i + 1, totalSteps - 1));
   const prev = () => setStepIndex(i => Math.max(i - 1, 0));
