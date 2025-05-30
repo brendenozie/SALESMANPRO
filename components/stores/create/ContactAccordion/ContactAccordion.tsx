@@ -34,16 +34,6 @@ export default function ContactAccordion({
     onToggleDay(key);
   };
 
-  // const toggleDay = (key: string) => {
-  //   const isClosed = !openingHours[key]?.open && !openingHours[key]?.close;
-  //   const value = isClosed
-  //     ? { open: '09:00', close: '17:00' }
-  //     : { open: '', close: '' };
-  //   onChange({
-  //     target: { name: `openingHours.${key}`, value },
-  //   } as any);
-  // };
-
   return (
     <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
       <button

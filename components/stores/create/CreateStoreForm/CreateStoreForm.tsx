@@ -268,9 +268,29 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   }, []);
 
   // Handlers
-  const handleChange = (e: ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>) => {
-    const { name, value } = e.target; setForm(f => ({ ...f, [name]: value }));
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+  
+    if (name.startsWith("openingHours.")) {
+      // name is like "openingHours.mon.open" or "openingHours.tue.close"
+      const [, dayKey, field] = name.split("."); 
+      setForm((f : any) => ({
+        ...f,
+        openingHours: {
+          ...f.openingHours,
+          [dayKey]: {
+            ...f.openingHours[dayKey],
+            [field]: value,
+          },
+        },
+      }));
+    } else {
+      // everything else stays the same
+      setForm(f => ({ ...f, [name]: value }));
+    }
   };
+  
 
   const onUpdateArray = <T,>(key: keyof StoreForm, idx: number, field: keyof T, value: any) => {
     setForm(f => { const arr = [...(f[key] as any)]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, [key]: arr }; });
@@ -445,13 +465,28 @@ const renderReviewContent = (stepKey:any, form:any) => {
               <strong>Opening Hours:</strong>
               {Object.keys(form.openingHours || {}).length > 0 ? (
                 <ul className="list-disc list-inside ml-4 mt-1">
-                  {Object.entries(form.openingHours).map(([day, hrs]) => (
-                    <li key={day}><span className="font-medium">{day.charAt(0).toUpperCase() + day.slice(1)}:</span> {`${hrs || "Closed"}`}</li>
-
-                  ))}
+                  {Object.entries(form.openingHours).map(([day, hrs]) => {
+                    const { open, close } = hrs as { open: string; close: string };
+                    const display =
+                      open && close
+                        ? `${open} – ${close}`
+                        : 'Closed';
+                    // Capitalize day label (Monday, Tuesday, etc.)
+                    const label =
+                      day.charAt(0).toUpperCase() + day.slice(1);
+                    return (
+                      <li key={day}>
+                        <span className="font-medium">{label}:</span>{' '}
+                        {display}
+                      </li>
+                    );
+                  })}
                 </ul>
-              ) : <EmptyState message="Not set" />}
+              ) : (
+                <EmptyState message="Not set" />
+              )}
             </div>
+
           </div>
         </ReviewSection>
       );
