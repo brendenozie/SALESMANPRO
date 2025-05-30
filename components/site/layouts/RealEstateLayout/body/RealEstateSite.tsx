@@ -278,36 +278,7 @@ function QuickSearch() {
   );
 }
 
-/*
-Featured Listings Section Redesign
 
-Design Decisions:
-
-1. Section Styling & Typography:
-   • Container: max-w-7xl, centered, padded with px-6, py-16.
-   • Heading: text-4xl sm:text-5xl, font-extrabold, text-gray-900 dark:text-gray-100, mb-8.
-
-2. Grid Layout:
-   • Responsive: grid-cols-1 on mobile, 2-col sm, 3-col lg, gap-8.
-
-3. Card UI & Imagery:
-   • Card: bg-white dark:bg-gray-800, rounded-3xl, shadow-xl, overflow-hidden, focus-ring.
-   • Image: h-64 aspect-video, object-cover, transition scale on hover.
-   • Price & Badge: price in text-emerald-600, badge uses bg-amber-500 for high contrast.
-
-4. Details & CTA:
-   • Text: gray-700 dark:text-gray-300 for address and specs, spaced with space-y-1.
-   • Button: full-width, gradient bg (emerald→teal), rounded-xl, uppercase font-medium, hover scale.
-
-5. Micro-interactions & Animation:
-   • Framer Motion: cards fade in on scroll (y-axis) and lift on hover (y:-8, shadow intensify).
-   • Button: scale on hover/tap.
-
-6. Accessibility:
-   • role="button" & tabIndex="0" on card for keyboard.
-   • focus-visible outline ring-2 ring-amber-500.
-   • aria-labels on clickable elements.
-*/
 
 function FeaturedListings({ listings, storeSlug }:any) {
   return (
@@ -377,39 +348,7 @@ function FeaturedListings({ listings, storeSlug }:any) {
   );
 }
 
-  /*
-Trending Locations Section Redesign
 
-Design Decisions:
-
-1. Section Styling:
-   • Background: bg-gray-50 / dark:bg-gray-900 with py-16 px-6 for breathing room.
-   • Heading: text-4xl sm:text-5xl font-extrabold text-gray-900 / dark:text-gray-100 centered mb-8.
-
-2. Carousel Layout:
-   • Uses horizontal scroll with snap alignment.
-   • Flex container with space-x-6 pb-4 overflow-x-auto snap-x snap-mandatory.
-   • Cards: snap-center to snap each card into view.
-
-3. Card UI & Imagery:
-   • Card: min-w-[220px] sm:min-w-[260px], rounded-3xl, overflow-hidden, shadow-lg.
-   • Image: h-48 sm:h-56 w-full object-cover, transition-scale on hover.
-   • Overlay: gradient-to-t from-black/60 to-transparent for text legibility.
-
-4. Content & Badge:
-   • Title: text-xl font-semibold text-white, mb-1.
-   • Subtext: text-sm text-gray-200.
-   • Badge: absolute top-4 left-4 bg-emerald-500 text-white text-xs uppercase px-3 py-1 rounded-full.
-
-5. Micro-interactions & Animation:
-   • Framer Motion: cards slide-in with opacity transition while in view.
-   • Hover: card elevates (translateY -5px) and image scales (1.05).
-
-6. Accessibility:
-   • role="group" and tabIndex="0" on each card for keyboard.
-   • focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500.
-   • Alt text for images.
-*/
 
 function TrendingLocations({ locations, storeSlug }:any) {
   return (
@@ -461,29 +400,7 @@ function TrendingLocations({ locations, storeSlug }:any) {
   );
 }
 
-    /*
-Categories Section Redesign
 
-Design Decisions:
-1. Typography & Layout:
-   • Section Title: text-4xl (sm:text-5xl) font-extrabold, centered with generous bottom margin.
-   • Grid: 2-col mobile, 3-col md, 4-col lg, with consistent gap-6 and px-6.
-
-2. Card Styling & Imagery:
-   • Cards: rounded-2xl, overflow-hidden, shadow-lg, bg-white dark:bg-gray-800.
-   • Image: aspect-video, object-cover, hover-scale effect.
-   • Overlay: gradient from transparent to rgba(0,0,0,0.6) with smooth fade-in on hover.
-   • Title Badge: centered flex, uppercase, tracking-wide, bg-emerald-600 with padding, rounded-lg.
-
-3. Micro-interactions & Animation:
-   • Framer Motion: card scales on hover and slight lift animation on in-view.
-   • Use whileInView={{ opacity:1, y:0 }} initial={{ opacity:0, y:20 }} transition per card.
-
-4. Accessibility & Responsiveness:
-   • Link is semantic and focus-visible ring-2 ring-amber-500.
-   • Alt text for images.
-   • Mobile-friendly touch area.
-*/
 
 function CategoriesSection({ categories }:any) {
   return (
@@ -530,31 +447,6 @@ function CategoriesSection({ categories }:any) {
     </section>
   );
 }
-
-
-/*
-Listings Section Redesign
-
-Design Decisions:
-
-1. Typography & Layout:
-   • Section Title: text-4xl sm:text-5xl font-extrabold, centered with mb-12.
-   • Grid: 1-col mobile, 2-col md, 3-col lg with gap-8 and responsive px-6.
-
-2. Card Design & Imagery:
-   • Cards: white/dark backgrounds, rounded-3xl, overflow-hidden, shadow-xl.
-   • Image: aspect-video (h-72), object-cover with smooth zoom on hover container.
-   • Details: padded container with title and price, using emerald for price.
-
-3. Micro-interactions & Animation:
-   • Framer Motion: lift and shadow intensify on hover with spring transition.
-   • Cards animate into view with fade-in and slight upward motion.
-
-4. Accessibility & Responsiveness:
-   • Entire card is clickable via onClick in motion.div with role="button" and tabIndex="0" for keyboard.
-   • Focus-visible outline ring-2 ring-amber-500.
-   • Alt text provided for images.
-*/
 
 function ListingsSection({ products, storeSlug }:any) {
   const router = useRouter();
@@ -606,32 +498,6 @@ function ListingsSection({ products, storeSlug }:any) {
   );
 }
 
-/*
-Newsletter Signup Section Redesign
-
-Design Decisions:
-
-1. Section Styling & Typography:
-   • Background: bg-gray-50 / dark:bg-gray-900 for consistency.
-   • Container: max-w-3xl centered with px-6 py-20.
-   • Heading: text-4xl sm:text-5xl font-extrabold, text-gray-900 / dark:text-gray-100, mb-4.
-   • Description: text-lg text-gray-700 / dark:text-gray-300, mb-8.
-
-2. Form Layout & Inputs:
-   • Flex layout on md+: input and button inline, stack on mobile.
-   • Input: full-width, rounded-xl, bg-white / dark:bg-gray-800, border-2 border-gray-200 focus:ring-2 focus:ring-amber-500.
-   • Button: gradient bg from emerald-500 to teal-400, uppercase font-semibold, rounded-xl, hover and tap animations.
-
-3. Micro-interactions & Animation:
-   • Framer Motion: section content fades in on scroll (opacity + y-axis).
-   • Input & Button: hover scale for button, focus-visible outlines.
-
-4. Accessibility:
-   • aria-label on input and button.
-   • Semantic <section>, <h2>, <p>, <form>.
-   • Keyboard-focus friendly with focus-visible utilities.
-*/
-
 function NewsletterSection({ handleNewsletter }:any) {
   return (
     <motion.section
@@ -675,34 +541,7 @@ function NewsletterSection({ handleNewsletter }:any) {
   );
 }
 
-/*
-Agents Section Redesign
 
-Design Decisions:
-
-1. Section Styling & Typography:
-   • Background: bg-gray-50 / dark:bg-gray-900, py-20 for vertical rhythm.
-   • Container: max-w-7xl mx-auto px-6 for consistent layout.
-   • Heading: text-4xl sm:text-5xl font-extrabold, text-gray-900 / dark:text-gray-100, centered mb-12.
-
-2. Grid Layout:
-   • Responsive grid: 1-col on mobile, 2-col md, 3-col lg with gap-8.
-   • Centered card alignment.
-
-3. Card UI & Imagery:
-   • Card: bg-white / dark:bg-gray-800, rounded-3xl, shadow-xl, p-6, focus-ring.
-   • Portrait: rounded-full frame with ring-2 ring-amber-500 focus-ring, h-32 w-32.
-   • Details: agent name, role in emerald-600, rating badge.
-
-4. Micro-interactions & Animation:
-   • Framer Motion: entry fade-in and slight lift on hover (scale 1.03).
-   • Rating badge pulse animation for emphasis.
-
-5. Accessibility:
-   • role="group" and tabIndex="0" on cards for keyboard navigation.
-   • aria-label on interactive cards.
-   • Alt text for images.
-*/
 
 function AgentsSection({ agents, storeSlug }:any) {
   return (
@@ -759,39 +598,7 @@ function AgentsSection({ agents, storeSlug }:any) {
   );
 }
 
-/*
-Blog Section Redesign
 
-Design Decisions:
-
-1. Section Styling & Typography:
-   • Background: bg-gray-50 / dark:bg-gray-900, py-20 for consistent spacing.
-   • Container: max-w-7xl mx-auto px-6.
-   • Heading: text-4xl sm:text-5xl font-extrabold text-gray-900 / dark:text-gray-100, centered mb-12.
-
-2. Grid Layout:
-   • Responsive grid: 1-col on mobile, 2-col sm, 3-col lg with gap-8.
-
-3. Card UI & Imagery:
-   • Card: bg-white / dark:bg-gray-800, rounded-3xl, shadow-xl, overflow-hidden, focus-ring.
-   • Featured Image: if available, displayed atop card with h-48, object-cover and hover-scale.
-   • Content: padded container with title, excerpt, date, and author avatar.
-
-4. Content Elements:
-   • Title: text-2xl font-semibold text-gray-900 / dark:text-gray-100, mb-2.
-   • Excerpt: text-gray-700 / dark:text-gray-300, text-base mb-4.
-   • Meta: flex items-center text-sm text-gray-500 / dark:text-gray-400 with author image and publish date.
-   • CTA Button: inline gradient bg-button, uppercase text-sm, rounded-full, hover-scale.
-
-5. Micro-interactions & Animation:
-   • Framer Motion: card fades-in and lifts on hover (scale 1.03, shadow intensify).
-   • Image: subtle zoom on hover.
-
-6. Accessibility:
-   • role="article" and tabIndex="0" on cards. aria-label on read more button.
-   • focus-visible:ring for keyboard.
-   • Alt text for images.
-*/
 
 function BlogSection({ posts, storeSlug }:any) {
   return (
@@ -873,33 +680,6 @@ function BlogSection({ posts, storeSlug }:any) {
   );
 }
 
-/*
-Why Choose Us Section Redesign
-
-Design Decisions:
-
-1. Section Styling & Typography:
-   • Background: bg-gray-50 / dark:bg-gray-900 for consistency.
-   • Container: max-w-7xl mx-auto px-6 py-20 text-center.
-   • Heading: text-4xl sm:text-5xl font-extrabold text-gray-900 / dark:text-gray-100 mb-12.
-
-2. Metrics Grid:
-   • Responsive: grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12.
-   • Cards: bg-white / dark:bg-gray-800 rounded-3xl p-6 shadow-lg focus-ring.
-   • Icons: display metric-specific icon above value (optional).
-   • Values: animated count-up using Framer Motion’s useAnimation, large text-5xl font-extrabold in emerald-600.
-   • Labels: text-lg font-medium text-gray-700 / dark:text-gray-300.
-
-3. Awards Display:
-   • Flex grid: wrap, justify-center with gap-8.
-   • Award logos: grayscale by default, hover to full color, size 16.
-   • Caption: text-sm text-gray-600 / dark:text-gray-400 mt-2.
-
-4. Accessibility & Animation:
-   • Semantic <section>, ARIA roles for metrics group.
-   • Focus-visible rings on metric cards.
-   • Framer Motion: fade-in & upward motion on metrics and hover slight lift.
-*/
 
 
 function WhyChooseUs({ metrics, awards }:any) {
@@ -982,35 +762,6 @@ function WhyChooseUs({ metrics, awards }:any) {
   );
 }
 
-/*
-Testimonials Section Redesign
-
-Design Decisions:
-
-1. Section Styling & Typography:
-   • Background: bg-gray-50 / dark:bg-gray-900 for consistency.
-   • Container: max-w-4xl mx-auto px-6 py-20 text-center.
-   • Heading: text-4xl sm:text-5xl font-extrabold text-gray-900 / dark:text-gray-100 mb-12.
-
-2. Carousel Implementation:
-   • Horizontal carousel with snap-x and drag via Framer Motion’s drag.
-   • Each testimonial card snaps into center focus.
-
-3. Card UI & Content:
-   • Card: bg-white / dark:bg-gray-800 rounded-3xl p-8 shadow-xl, focus-ring.
-   • Quote: italic text-lg text-gray-700 / dark:text-gray-300 leading-relaxed.
-   • Author: block mt-6 text-base font-semibold text-gray-900 / dark:text-gray-100.
-   • Avatar: circular avatar above quote if available.
-
-4. Micro-interactions & Animation:
-   • Framer Motion: cards fade-in and slide from sides on initial load.
-   • Drag on X-axis with momentum and snap to cards.
-   • Hover: slight scale-up (1.02) on testimonials.
-
-5. Accessibility:
-   • role="region" and aria-label="Testimonials carousel".
-   • Each card role="group" and tabIndex="0".
-*/
 
 function TestimonialsSection({ testimonials }:any) {
   const carouselRef = useRef(null);
@@ -1067,30 +818,7 @@ function TestimonialsSection({ testimonials }:any) {
   );
 }
 
-/*
-FAQ Section Redesign
 
-Design Decisions:
-
-1. Section Styling & Typography:
-   • Background: bg-gray-50 / dark:bg-gray-900, py-20 for vertical rhythm.
-   • Container: max-w-3xl mx-auto px-6.
-   • Heading: text-4xl sm:text-5xl font-extrabold text-gray-900 / dark:text-gray-100, centered mb-10.
-
-2. Accordion Layout:
-   • Custom accordion using <details> with styled summary and content.
-   • Cards: bg-white / dark:bg-gray-800, rounded-3xl, shadow-lg, p-6, focus-visible.
-   • Summary: flex justify-between items-center, text-xl font-semibold, hover:text-emerald-600.
-   • Icon indicator: chevron rotates on open via Framer Motion.
-
-3. Animation & Interaction:
-   • Framer Motion: details fade-in on scroll and content slide-down on toggle.
-   • Chevron icon rotates 180° when expanded.
-
-4. Accessibility:
-   • role="region" aria-labelledby linking summary IDs.
-   • Keyboard navigable with focus-visible:ring-2 ring-amber-500.
-*/
 
 function FAQSection({ faqs }: any) {
   return (

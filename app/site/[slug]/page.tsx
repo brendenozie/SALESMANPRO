@@ -41,12 +41,6 @@ export default function StorePage() {
   const type = (store.category ?? 'default').toLowerCase();
 
   switch (type) {
-      case 'services':
-      case 'service provider':
-        return <ServiceSite 
-            // store={store}
-            // slug={store.slug}
-        />
 
       case 'e-commerce':
       case 'ecommerce':
@@ -55,6 +49,13 @@ export default function StorePage() {
             slug={store.slug}
         />
       
+      case 'services':
+      case 'service provider':
+        return <ServiceSite 
+              // store={store}
+              // slug={store.slug}
+          />
+
       case 'bookings':
       case 'booking & appointments':
         return <BookingsSite 
@@ -145,7 +146,7 @@ export default function StorePage() {
                 // store={store}
                 // slug={store.slug}
                 />
-
+// Review stopped at finance
       case 'finance':
       case 'finance & legal':
         return <FinanceSite 
