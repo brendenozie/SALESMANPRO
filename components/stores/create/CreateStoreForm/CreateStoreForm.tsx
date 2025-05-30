@@ -481,21 +481,21 @@ const renderReviewContent = (stepKey:any, form:any) => {
     case 'awards':
       return (
         <ReviewSection title="Awards">
-          {renderList(form.awards, ({a, i}:any) => <li key={i}>{a.name}</li>, 'No awards')}
+          {renderList(form.awards, ({a, i}:any) => <li key={i}>{a && a.name}</li>, 'No awards')}
         </ReviewSection>
       );
 
     case 'metrics':
       return (
         <ReviewSection title="Metrics">
-          {renderList(form.metrics, ({m, i}:any) => <li key={i}><strong>{m.label}:</strong> {m.value}</li>, 'No metrics')}
+          {renderList(form.metrics, ({m, i}:any) => <li key={i}><strong>{m && m.label}:</strong> {m && m.value}</li>, 'No metrics')}
         </ReviewSection>
       );
 
     case 'stats':
       return (
         <ReviewSection title="Statistics">
-          {renderList(form.stats, ({s, i}:any) => <li key={i}><strong>{s.label}:</strong> {s.value}</li>, 'No statistics')}
+          {renderList(form.stats, ({s, i}:any) => <li key={i}><strong>{s && s.label}:</strong> {s && s.value}</li>, 'No statistics')}
         </ReviewSection>
       );
 
@@ -504,8 +504,8 @@ const renderReviewContent = (stepKey:any, form:any) => {
         <ReviewSection title="FAQs">
           {form.faqs && form.faqs.length > 0 ? form.faqs.map(({f, i}:any) => (
             <div key={i} className="space-y-1 text-sm">
-              <p className="font-semibold">Q: {f.question}</p>
-              <p className="ml-4">A: {f.answer}</p>
+              <p className="font-semibold">Q: {f && f.question}</p>
+              <p className="ml-4">A: {f && f.answer}</p>
             </div>
           )) : <EmptyState message="No FAQs" />}
         </ReviewSection>
@@ -515,7 +515,7 @@ const renderReviewContent = (stepKey:any, form:any) => {
       return (
         <ReviewSection title="Testimonials">
           {form.testimonials && form.testimonials.length > 0 ? form.testimonials.map(({t, i}:any) => (
-            <blockquote key={i} className="border-l-2 pl-4 italic text-gray-600">“{t.quote}” — {t.author}</blockquote>
+            <blockquote key={i} className="border-l-2 pl-4 italic text-gray-600">“{t && t.quote}” — {t && t.author}</blockquote>
           )) : <EmptyState message="No testimonials" />}
         </ReviewSection>
       );
@@ -523,14 +523,14 @@ const renderReviewContent = (stepKey:any, form:any) => {
     case 'marketing':
       return (
         <ReviewSection title="Hero Slides">
-          {renderList(form.heroSlides, ({s, i}:any) => <li key={i}>{s.headline || 'Untitled slide'}</li>, 'No slides')}
+          {renderList(form.heroSlides, ({s, i}:any) => <li key={i}>{s && s.headline || 'Untitled slide'}</li>, 'No slides')}
         </ReviewSection>
       );
 
     case 'promotions':
       return (
         <ReviewSection title="Promotions">
-          {renderList(form.promotions, ({p, i}:any) => <li key={i}>{p.title}</li>, 'No promotions')}
+          {renderList(form.promotions, ({p, i}:any) => <li key={i}>{p && p.title}</li>, 'No promotions')}
         </ReviewSection>
       );
 

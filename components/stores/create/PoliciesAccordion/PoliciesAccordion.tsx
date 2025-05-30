@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import {
   ClipboardDocumentListIcon,
   ChevronDownIcon,
@@ -12,6 +12,12 @@ export interface Policy {
   content: string;
 }
 
+const POLICY = [
+  "SHIPPING",
+  "RETURNS",
+  "PRIVACY",
+  "TERMS"
+];
 export interface PoliciesAccordionProps {
   policies: Policy[];
   onUpdatePolicy: (index: number, field: keyof Policy, value: string) => void;
@@ -27,6 +33,10 @@ export default function PoliciesAccordion({
 }: PoliciesAccordionProps) {
   const [open, setOpen] = useState(true);
   const isValid = policies.every(p => p.type.trim() && p.content.trim());
+  
+    useEffect(() => {
+      if (policies.length === 0) onAddPolicy();
+    }, [policies, onAddPolicy]);
 
   return (
     <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -57,18 +67,17 @@ export default function PoliciesAccordion({
             >
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Policy Type
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Refund Policy"
+                  {/* Policy */}
+                  <select
                     value={policy.type}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      onUpdatePolicy(idx, 'type', e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 transition"
-                  />
+                    onChange={(e) => onUpdatePolicy(idx, 'type', e.target.value)}
+                    className="block flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
+                  >
+                    <option disabled hidden value="">Select policy</option>
+                      {POLICY.map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                  </select>
                 </div>
                 <button
                   type="button"

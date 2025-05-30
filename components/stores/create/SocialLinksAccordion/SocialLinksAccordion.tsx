@@ -14,7 +14,7 @@ export interface SocialLinksAccordionProps {
 }
 
 const PLATFORMS = [
-  'Facebook', 'Twitter', 'Instagram', 'LinkedIn', 'YouTube', 'TikTok'
+  'FACEBOOK', 'TWITTER', 'INSTAGRAM', 'LINKEDIN', 'YOUTUBE', 'TIKTOK'
 ];
 
 export default function SocialLinksAccordion({
