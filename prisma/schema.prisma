@@ -130,21 +130,21 @@ model ProductCategory {
   StoreCategory      StoreCategory[]
 }
 
-model Subcategory {
-  id     String   @id @default(auto()) @map("_id") @db.ObjectId
-  name   String
-  image  String?
-  status String
-  brand  String[]
-  tags   String[]
-}
+// model Subcategory {
+//   id     String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name   String
+//   image  String?
+//   status String
+//   brand  String[]
+//   tags   String[]
+// }
 
-model UsersCategory {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  name   String
-  status String
-  users  User[]
-}
+// model UsersCategory {
+//   id     String @id @default(auto()) @map("_id") @db.ObjectId
+//   name   String
+//   status String
+//   users  User[]
+// }
 
 /// Associates a Company with a ProductCategory,
 /// plus any store-specific settings.
@@ -164,6 +164,7 @@ model StoreCategory {
   // createdAt DateTime @default(now())
   // updatedAt DateTime @updatedAt
 
+  // @@id([companyId, categoryId])
   @@unique([companyId, categoryId]) // Use a unique constraint instead
   @@index([companyId, sortOrder]) // speed up ordering queries
 }
@@ -212,9 +213,10 @@ model Company {
   commissions     Commission[]
   commissionsRate CommissionRate[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  sEOId     String?  @db.ObjectId
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  sEOId     String?   @db.ObjectId
 
   PageSection        PageSection[]
   BlogPost           BlogPost[]
@@ -223,21 +225,34 @@ model Company {
   AnalyticsConfig    AnalyticsConfig[]
   PaymentSettings    PaymentSettings[]
   MarketplaceListing MarketplaceListing[]
+
+  awards   Json? // e.g. [{ name: String, iconUrl: String }]
+  metrics  Json?
+  stats    Json?
+  AppPromo AppPromo[]
+}
+
+enum CategoryStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
 }
 
 model SocialLink {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
-  channel   String // e.g. "twitter", "instagram"
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company       @relation(fields: [companyId], references: [id])
+  companyId String        @db.ObjectId
+  // channel   String // e.g. "twitter", "instagram"
+  channel   SocialChannel
   url       String
 }
 
 model Policy {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
-  type      String // e.g. "shipping", "returns", "privacy"
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company    @relation(fields: [companyId], references: [id])
+  companyId String     @db.ObjectId
+  // type      String // e.g. "shipping", "returns", "privacy"
+  type      PolicyType
   title     String?
   content   String
 }
@@ -335,6 +350,46 @@ enum SectionType {
   TestimonialCarousel
   BlogPreview
   CustomHtml
+  About
+  Services
+  Awards
+  HealthTips
+  Features
+  HowItWorks
+  Pricing
+  CTA
+  Metrics
+  Stats
+  // …add more as needed
+}
+
+enum SocialChannel {
+  TWITTER
+  INSTAGRAM
+  FACEBOOK
+  LINKEDIN
+}
+
+enum PolicyType {
+  SHIPPING
+  RETURNS
+  PRIVACY
+  TERMS
+}
+
+model Locations {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+}
+
+model AppPromo {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String?  @db.ObjectId
+  company     Company? @relation(fields: [companyId], references: [id])
+  headline    String
+  subheading  String
+  buttons     Json // e.g. [{ label: "Download", href: "...", icon: "apple" }]
+  screenshots String[] // array of image URLs
 }
 
 model Product {
@@ -610,8 +665,8 @@ model User {
   updatedAt             DateTime                @updatedAt
   accounts              Account[]
   sessions              Session[]
-  usersCategory         UsersCategory?          @relation(fields: [usersCategoryId], references: [id])
-  usersCategoryId       String?                 @db.ObjectId
+  // usersCategory         UsersCategory?          @relation(fields: [usersCategoryId], references: [id])
+  // usersCategoryId       String?                 @db.ObjectId
   tasks                 Task[]
   auditLogs             AuditLog[]
   requests              Request[]

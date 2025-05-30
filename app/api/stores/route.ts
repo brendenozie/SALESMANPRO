@@ -104,8 +104,22 @@ export async function POST(req: Request) {
         openingHours: data.openingHours,
         themeSettings: data.themeSettings,
         user: { connect: { id: data.userId } },
-        socialLinks: data.socialLinks ? { create: data.socialLinks } : undefined,
-        policies: data.policies ? { create: data.policies } : undefined,
+        socialLinks: data.socialLinks
+          ? {
+              create: data.socialLinks.map((link: any) => ({
+                ...link,
+                channel: link.channel as any // Cast to enum type; replace 'any' with 'SocialChannel' if imported
+              }))
+            }
+          : undefined,
+        policies: data.policies
+          ? {
+              create: data.policies.map((policy: any) => ({
+                ...policy,
+                type: policy.type as any // Replace 'any' with 'PolicyType' if you have imported the enum
+              }))
+            }
+          : undefined,
         faqs: data.faqs ? { create: data.faqs } : undefined,
         testimonials: data.testimonials ? { create: data.testimonials } : undefined,
         heroSlides: data.heroSlides ? { create: data.heroSlides } : undefined,

@@ -475,3 +475,77 @@ export type ISubscription = {
   price: number;
   duration: string; // e.g., "1 Month", "1 Year"
 };
+
+interface CategoryOption { id: string; name: string; }
+interface GeoLocation { lat: number; lng: number; }
+interface OpeningHours { [key: string]: string; }
+export interface SocialLink { channel: string; url: string; }
+export interface Policy { type: string; title?: string; content: string; }
+export interface FAQ { question: string; answer: string; order?: number; }
+export interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number; order?: number; }
+export interface HeroSlide { imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; }
+export interface Promotion { title: string; description: string; startsAt?: string; endsAt?: string; bannerUrl?: string; order?: number; }
+export interface Award {
+  name: string;
+  iconUrl: string;
+  order?: number;
+}
+export interface Metric {
+  label: string;
+  value: number;
+  iconUrl?: string;
+}
+export interface Stat {
+  label: string;
+  value: string | number;
+  iconUrl?: string;
+}
+
+type StoreForm = {
+  name: string;
+  slug: string;
+  domain: string;
+  tagline: string;
+  description: string;
+  category: string;
+  logoUrl: string;
+  bannerUrl: string;
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+  geoLocation: GeoLocation;
+  openingHours: OpeningHours;
+  socialLinks: SocialLink[];
+  policies: Policy[];
+  faqs: FAQ[];
+  testimonials: Testimonial[];
+  heroSlides: HeroSlide[];
+  promotions: Promotion[];
+  awards: Award[];
+  metrics: Metric[];
+  stats: Stat[];
+  themeSettings: Record<string, any>;
+  seo: Record<string, any>;
+  analyticsConfig: Record<string, any>;
+  paymentSettings: Record<string, any>;
+  shippingSettings: Record<string, any>;
+  storeCategories: CategoryOption[];
+};
+
+// Handlers signature
+interface Handlers {
+  handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onUpdateArray: <T>(key: keyof StoreForm, idx: number, field: keyof T, value: any) => void;
+  onAddArray: <T>(key: keyof StoreForm, item: T) => void;
+  onRemoveArray: (key: keyof StoreForm, idx: number) => void;
+  onToggleCategory: (cat: CategoryOption) => void;
+  setAddress: (address: string, geo: GeoLocation) => void;
+  onChangeSettings: (updated: Partial<StoreForm>) => void;
+}
+
+// Step configuration
+interface StepConfig {
+  key: string;
+  title: string;
+  render: (form: StoreForm, handlers: Handlers, availableCategories: CategoryOption[]) => React.ReactNode;
+}

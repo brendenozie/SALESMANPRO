@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useEffect } from 'react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export interface Promotion {
@@ -24,6 +24,12 @@ export default function PromotionsAccordion({
   onRemovePromotion,
 }: PromotionsAccordionProps) {
   const allFilled = promotions.every(promo => promo.title.trim() && promo.description.trim());
+  // Ensure there's at least one form ready on initial render
+  useEffect(() => {
+    if (promotions.length === 0) {
+      onAddPromotion();
+    }
+  }, [promotions, onAddPromotion]);
 
   return (
     <div className="max-w-3xl mx-auto overflow-hidden">

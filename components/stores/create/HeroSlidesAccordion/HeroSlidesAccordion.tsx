@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useEffect } from 'react';
 import {
   PlusIcon,
   CheckIcon,
@@ -31,6 +31,12 @@ export default function HeroSlidesAccordion({
   onImageUpload,
 }: HeroSlidesAccordionProps) {
   const allFilled = slides.every((s) => s.imageUrl && s.headline);
+  // Ensure there's at least one form ready on initial render
+    useEffect(() => {
+      if (slides.length === 0) {
+        onAddSlide();
+      }
+    }, [slides, onAddSlide]);
 
   return (
     <div className="max-w-4xl mx-auto rounded-xl shadow-lg overflow-hidden border border-gray-200 bg-white">
