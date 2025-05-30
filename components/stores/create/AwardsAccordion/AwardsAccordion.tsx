@@ -1,79 +1,105 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Award } from '../../../../types/typings';
-import { ItemCard } from '@/components/ItemCard ';
-import { TrophyIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { TrophyIcon, PlusCircleIcon, TrashIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   awards: Award[];
   onAdd: () => void;
-  onUpdate: (i: number, field: keyof Award, v: any) => void;
-  onRemove: (i: number) => void;
+  onUpdate: (index: number, field: keyof Award, value: any) => void;
+  onRemove: (index: number) => void;
 }
 
-const isAwardFilled = (award: Award) => award.name.trim() !== '' && award.iconUrl.trim() !== '';
+const isFilled = (award: Award) => award.name.trim() && award.iconUrl.trim();
 
 export const AwardsAccordion: React.FC<Props> = ({ awards, onAdd, onUpdate, onRemove }) => {
-  const canAdd = awards.length === 0 || isAwardFilled(awards[awards.length - 1]);
-  const isValid = awards.every(a => a.name.trim() && a.iconUrl.trim());
-  
-  // Ensure there's at least one form ready on initial render
-    useEffect(() => {
-      if (awards.length === 0) {
-        onAdd();
-      }
-    }, [awards, onAdd]);
+  const [open, setOpen] = useState(true);
+  const canAdd = awards.length === 0 || isFilled(awards[awards.length - 1]);
+
+  useEffect(() => { if (!awards.length) onAdd(); }, [awards, onAdd]);
 
   return (
-    <div className="space-y-4">
+    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-800">
-          <TrophyIcon className="h-6 w-6 text-yellow-500" />
-          Awards
-        </h2>
-        <button
-          type="button"
-          onClick={onAdd}
-          disabled={!isValid && canAdd}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Add Award
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {awards.map((award, i) => (
-          <ItemCard key={i} onRemove={() => onRemove(i)}>
-            <label className="block text-sm font-medium">Name</label>
-            <input
-              type="text"
-              className="w-full mt-1 border rounded p-2"
-              placeholder="Award name"
-              value={award.name}
-              onChange={e => onUpdate(i, 'name', e.target.value)}
-            />
+      <button
+        type="button"
+        onClick={() => setOpen(prev => !prev)}
+        className="w-full flex justify-between items-center px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-300 text-white"
+      >
+        <div className="flex items-center space-x-3">
+          <TrophyIcon className="h-6 w-6" />
+          <h3 className="text-lg font-semibold">Awards</h3>
+        </div>
+        <span className="flex items-center">
+          {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+        </span>
+      </button>
 
-            <label className="block text-sm font-medium mt-3">Icon URL</label>
-            <input
-              type="text"
-              className="w-full mt-1 border rounded p-2"
-              placeholder="https://…"
-              value={award.iconUrl}
-              onChange={e => onUpdate(i, 'iconUrl', e.target.value)}
-            />
+      {/* Content */}
+      {open && (
+        <div className="px-6 py-8 space-y-6">
+          {/* Awards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {awards.map((award, idx) => (
+              <div key={idx} className="bg-yellow-50 rounded-lg border border-yellow-200 p-5 shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-md font-medium text-yellow-800">Award {idx + 1}</h4>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(idx)}
+                    className="text-red-500 hover:text-red-600 focus:outline-none"
+                    aria-label="Remove award"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                </div>
 
-            {award.iconUrl && (
-              <img
-                src={award.iconUrl}
-                alt="award icon"
-                className="h-12 w-12 object-contain mt-3 rounded"
-              />
-            )}
-          </ItemCard>
-        ))}
-      </div>
-    </div>
+                <div className="space-y-4">
+                  {/* Name */}
+                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Best Seller 2023"
+                    value={award.name}
+                    onChange={e => onUpdate(idx, 'name', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 transition"
+                  />
+
+                  {/* Icon URL */}
+                  <label className="block text-sm font-medium text-gray-700">Icon URL</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="text"
+                      placeholder="https://cdn.example.com/icon.png"
+                      value={award.iconUrl}
+                      onChange={e => onUpdate(idx, 'iconUrl', e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 transition"
+                    />
+                    {award.iconUrl && (
+                      <img src={award.iconUrl} alt="icon preview" className="h-12 w-12 object-contain rounded" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between items-center">
+            <button
+              type="button"
+              onClick={onAdd}
+              disabled={!canAdd}
+              className="flex items-center space-x-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition disabled:opacity-50"
+            >
+              <PlusCircleIcon className="h-5 w-5" />
+              <span>Add Award</span>
+            </button>
+            <span className="text-sm text-gray-600 italic">
+            🏆 Tip: Add icons from a CDN like <code className="bg-gray-100 px-1 rounded">https://img.icons8.com</code> to visually represent awards.
+            </span>
+          </div>
+        </div>
+      )}
+    </section>
   );
 };

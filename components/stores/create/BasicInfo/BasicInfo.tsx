@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { InformationCircleIcon } from '@heroicons/react/24/solid';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 export interface BasicInfoProps {
   name: string;
@@ -44,58 +44,103 @@ export default function BasicInfo({
   handleChange,
 }: BasicInfoProps) {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10 bg-white dark:bg-gray-900 shadow-xl rounded-2xl border border-gray-200 dark:border-gray-800">
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Basic Info</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <section className="max-w-4xl mx-auto p-8 bg-white rounded-2xl shadow-lg">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Basic Information</h1>
+        <p className="mt-1 text-gray-600">Tell us about your store to get started.</p>
+      </header>
 
-        {/* Form Field Reusable Block */}
-        {[
-          { label: 'Name', name: 'name', value: name, placeholder: 'My Awesome App', type: 'text', tooltip: 'Friendly, readable name displayed in headings.' },
-          { label: 'Slug', name: 'slug', value: slug, placeholder: 'my-awesome-app', type: 'text', tooltip: 'URL-friendly identifier, lowercase, no spaces.' },
-          { label: 'Tagline', name: 'tagline', value: tagline, placeholder: 'Empower Your Workflow', type: 'text', tooltip: 'A brief, catchy description (2–3 words).' },
-          { label: 'Domain', name: 'domain', value: domain, placeholder: 'app.example.com', type: 'text', tooltip: 'Your custom domain or subdomain.' },
-        ].map(({ label, name, value, placeholder, type, tooltip }) => (
-          <div key={name} className="flex flex-col">
-            <label htmlFor={name} className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
-              {label}
-              <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-pointer" title={tooltip} />
-            </label>
-            <input
-              id={name}
-              name={name}
-              type={type}
-              value={value}
-              onChange={handleChange}
-              placeholder={placeholder}
-              className="mt-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Name */}
+        <div className="flex flex-col">
+          <label htmlFor="name" className="flex items-center text-sm font-semibold text-gray-700">
+            Store Name
+            <InformationCircleIcon className="ml-1 h-5 w-5 text-gray-400" title="Your brand’s public name" />
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            value={name}
+            onChange={handleChange}
+            placeholder="My Awesome Store"
+            className="mt-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          />
+        </div>
 
-        {/* Category Select */}
-        <div className="sm:col-span-2 flex flex-col">
-          <label htmlFor="category" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+        {/* Tagline */}
+        <div className="flex flex-col">
+          <label htmlFor="tagline" className="flex items-center text-sm font-semibold text-gray-700">
+            Tagline
+            <InformationCircleIcon className="ml-1 h-5 w-5 text-gray-400" title="Short, catchy tagline (2–3 words)" />
+          </label>
+          <input
+            id="tagline"
+            name="tagline"
+            type="text"
+            value={tagline}
+            onChange={handleChange}
+            placeholder="Empower Your Journey"
+            className="mt-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          />
+        </div>
+
+        {/* Category */}
+        <div className="flex flex-col">
+          <label htmlFor="category" className="flex items-center text-sm font-semibold text-gray-700">
             Category
-            <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-pointer" title="Select a category for your app." />
+            <InformationCircleIcon className="ml-1 h-5 w-5 text-gray-400" title="Choose your store category" />
           </label>
           <select
             id="category"
             name="category"
             value={category}
             onChange={handleChange}
-            className="mt-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="mt-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
           >
-            {SITE_CATEGORIES.map((cat) => (
+            {SITE_CATEGORIES.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
         </div>
 
-        {/* Description */}
-        <div className="sm:col-span-2 flex flex-col">
-          <label htmlFor="description" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+        {/* Slug (read-only) */}
+        <div className="flex flex-col">
+          <label htmlFor="slug" className="flex items-center text-sm font-semibold text-gray-700">
+            Slug
+            <InformationCircleIcon className="ml-1 h-5 w-5 text-gray-400" title="Auto-generated URL identifier" />
+          </label>
+          <input
+            id="slug"
+            name="slug"
+            type="text"
+            value={slug}
+            readOnly
+            className="mt-2 p-3 border border-gray-200 bg-gray-100 rounded-xl text-gray-600 cursor-not-allowed"
+          />
+        </div>
+
+        {/* Domain (read-only) */}
+        <div className="flex flex-col">
+          <label htmlFor="domain" className="flex items-center text-sm font-semibold text-gray-700">
+            Domain
+            <InformationCircleIcon className="ml-1 h-5 w-5 text-gray-400" title="Your store’s web address" />
+          </label>
+          <input
+            id="domain"
+            name="domain"
+            type="text"
+            value={domain}
+            readOnly
+            className="mt-2 p-3 border border-gray-200 bg-gray-100 rounded-xl text-gray-600 cursor-not-allowed"
+          />
+        </div>
+
+        {/* Description (full width) */}
+        <div className="md:col-span-2 flex flex-col">
+          <label htmlFor="description" className="flex items-center text-sm font-semibold text-gray-700">
             Description
-            <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-pointer" title="Short description (1–2 sentences)." />
+            <InformationCircleIcon className="ml-1 h-5 w-5 text-gray-400" title="Short description (1–2 sentences)" />
           </label>
           <textarea
             id="description"
@@ -103,11 +148,11 @@ export default function BasicInfo({
             rows={4}
             value={description}
             onChange={handleChange}
-            placeholder="Write a short description or tagline..."
-            className="mt-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Describe your store’s mission, products, or services..."
+            className="mt-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
           />
         </div>
       </div>
-    </div>
+    </section>
   );
 }

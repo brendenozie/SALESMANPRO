@@ -1,37 +1,22 @@
 import React, { useState, ChangeEvent } from 'react';
+import TimePicker from 'react-time-picker';
+
 import {
-  InboxIcon,
+  Cog6ToothIcon,
+  EnvelopeIcon,
+  PhoneIcon,
   ChevronDownIcon,
   ChevronUpIcon,
 } from '@heroicons/react/24/outline';
-import { PhoneIcon } from '@heroicons/react/24/solid';
-import { motion, AnimatePresence } from 'framer-motion';
 
-export interface OpeningHours {
-  mon?: string;
-  tue?: string;
-  wed?: string;
-  thu?: string;
-  fri?: string;
-  sat?: string;
-  sun?: string;
-}
-
-export interface ContactAccordionProps {
-  openingHours: OpeningHours;
-  contactEmail: string;
-  contactPhone: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-}
-
-const days: { label: keyof OpeningHours; display: string }[] = [
-  { label: 'mon', display: 'Monday' },
-  { label: 'tue', display: 'Tuesday' },
-  { label: 'wed', display: 'Wednesday' },
-  { label: 'thu', display: 'Thursday' },
-  { label: 'fri', display: 'Friday' },
-  { label: 'sat', display: 'Saturday' },
-  { label: 'sun', display: 'Sunday' },
+const weekdays = [
+  { key: 'mon', label: 'Mon' },
+  { key: 'tue', label: 'Tue' },
+  { key: 'wed', label: 'Wed' },
+  { key: 'thu', label: 'Thu' },
+  { key: 'fri', label: 'Fri' },
+  { key: 'sat', label: 'Sat' },
+  { key: 'sun', label: 'Sun' },
 ];
 
 export default function ContactAccordion({
@@ -39,113 +24,94 @@ export default function ContactAccordion({
   contactEmail,
   contactPhone,
   onChange,
-}: ContactAccordionProps) {
-  const [isOpen, setIsOpen] = useState(true);
+}:any) {
+  const [open, setOpen] = useState(true);
+  const [holidayDate, setHolidayDate] = useState(new Date());
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      {/* Accordion Header */}
-      <div
-        onClick={() => setIsOpen(prev => !prev)}
-        className="flex justify-between items-center p-5 bg-white/60 backdrop-blur border border-gray-200 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all"
-        role="button"
-        aria-expanded={isOpen}
+    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
+      {/* Header */}
+      <header
+        onClick={() => setOpen(prev => !prev)}
+        className="flex justify-between items-center px-6 py-4 cursor-pointer bg-gradient-to-r from-indigo-50 to-indigo-100"
       >
-        <div className="flex items-center gap-3">
-          <PhoneIcon className="h-6 w-6 text-indigo-600" />
-          <span className="text-xl font-semibold text-gray-900">
-            Contact Details
-          </span>
+        <div className="flex items-center space-x-3">
+          <Cog6ToothIcon className="h-6 w-6 text-indigo-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Contact & Opening Hours</h2>
         </div>
-        {isOpen ? (
-          <ChevronUpIcon className="h-5 w-5 text-gray-500" />
-        ) : (
-          <ChevronDownIcon className="h-5 w-5 text-gray-500" />
-        )}
-      </div>
+        <span className="flex items-center text-indigo-600">
+          {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+        </span>
+      </header>
 
-      {/* Accordion Content */}
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            key="content"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden mt-6"
-          >
-            <div className="space-y-8">
+      {/* Content */}
+      {open && (
+        <div className="px-6 py-6 space-y-8">
+          {/* Contact Info */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <label className="block">
+              <span className="flex items-center text-sm font-medium text-gray-700">
+                <EnvelopeIcon className="h-5 w-5 mr-2 text-indigo-500" />
+                Email Address
+              </span>
+              <input
+                type="email"
+                name="contactEmail"
+                value={contactEmail}
+                onChange={onChange}
+                placeholder="you@domain.com"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 transition"
+              />
+            </label>
 
-              {/* Email Input */}
-              <div className="flex flex-col">
-                <label htmlFor="contactEmail" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <InboxIcon className="h-5 w-5 text-indigo-500" />
-                  Contact Email
-                </label>
-                <input
-                  id="contactEmail"
-                  type="email"
-                  name="contactEmail"
-                  placeholder="you@example.com"
-                  required
-                  value={contactEmail}
-                  onChange={onChange}
-                  className="mt-2 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  This is the email users will use to reach you.
-                </p>
-              </div>
+            <label className="block">
+              <span className="flex items-center text-sm font-medium text-gray-700">
+                <PhoneIcon className="h-5 w-5 mr-2 text-indigo-500" />
+                Phone Number
+              </span>
+              <input
+                type="tel"
+                name="contactPhone"
+                value={contactPhone}
+                onChange={onChange}
+                placeholder="123-456-7890"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 transition"
+              />
+            </label>
+          </div>
 
-              {/* Phone Input */}
-              <div className="flex flex-col">
-                <label htmlFor="contactPhone" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <PhoneIcon className="h-5 w-5 text-indigo-500" />
-                  Contact Phone
-                </label>
-                <input
-                  id="contactPhone"
-                  type="tel"
-                  name="contactPhone"
-                  placeholder="0700 000 000"
-                  required
-                  value={contactPhone}
-                  onChange={onChange}
-                  className="mt-2 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  This is the phone number users will use to reach you.
-                </p>
-              </div>
-
-              {/* Opening Hours */}
-              <fieldset className="bg-white/60 backdrop-blur p-6 rounded-xl border border-gray-200 shadow-sm">
-                <legend className="text-lg font-semibold text-gray-800 mb-4">
-                  Opening Hours
-                </legend>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {days.map(({ label, display }) => (
-                    <div key={label} className="flex flex-col">
-                      <label htmlFor={label} className="text-sm text-gray-600 font-medium">
-                        {display}
-                      </label>
-                      <input
-                        id={label}
-                        type="time"
-                        name={`openingHours.${label}`}
-                        value={openingHours[label] || ''}
-                        onChange={onChange}
-                        className="mt-2 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                      />
-                    </div>
-                  ))}
+          {/* Opening Hours */}
+          <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+            <h3 className="text-lg font-medium text-indigo-700 mb-4">Opening Hours</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+              {weekdays.map(({ key, label }) => (
+                <div key={key} className="flex flex-col items-center">
+                  <span className="text-xs font-semibold text-gray-600 mb-1">{label}</span>
+                  <TimePicker
+                    name={key}
+                    onChange={value => onChange({ target: { name: `openingHours.${key}`, value } })}
+                    value={openingHours[key] || ''}
+                    disableClock
+                    clearIcon={null}
+                    className="w-full text-sm text-center"
+                  />
                 </div>
-              </fieldset>
+              ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => {/* optional submit handler */}}
+              className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

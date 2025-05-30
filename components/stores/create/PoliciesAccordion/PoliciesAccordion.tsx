@@ -1,8 +1,10 @@
-import React, { ChangeEvent } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import {
-  PlusIcon,
+  ClipboardDocumentListIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusCircleIcon,
   TrashIcon,
-  ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 
 export interface Policy {
@@ -23,84 +25,101 @@ export default function PoliciesAccordion({
   onAddPolicy,
   onRemovePolicy,
 }: PoliciesAccordionProps) {
-  const isValid = policies.every((policy) => policy.type && policy.content);
-
-  const visiblePolicies = policies.length > 0 ? policies : [{ type: '', content: '' }];
+  const [open, setOpen] = useState(true);
+  const isValid = policies.every(p => p.type.trim() && p.content.trim());
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      {/* Header Button */}
-      <div className="w-full flex justify-between items-center px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-md">
-        <span className="flex items-center gap-2">
-          <ClipboardDocumentIcon className="h-5 w-5" />
-          Store Policies
-        </span>
-        <span className="text-lg">{policies.length > 1 ? '✅' : <PlusIcon className="h-5 w-5" />}</span>
-      </div>
+    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+      {/* Accordion Header */}
+      <button
+        type="button"
+        className="w-full flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
+        onClick={() => setOpen(prev => !prev)}
+      >
+        <div className="flex items-center space-x-3">
+          <ClipboardDocumentListIcon className="h-6 w-6" />
+          <h2 className="text-lg font-semibold">Store Policies</h2>
+        </div>
+        {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+      </button>
 
-      {/* Policies List */}
-      <div className="mt-6 space-y-6">
-        {visiblePolicies.map((policy, idx) => (
-          <div
-            key={idx}
-            className="bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm hover:shadow-md transition"
-          >
-            <input
-              placeholder="Policy Type (e.g. Refund Policy)"
-              value={policy.type}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                onUpdatePolicy(idx, 'type', e.target.value)
-              }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <textarea
-              placeholder="Policy Content"
-              value={policy.content}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                onUpdatePolicy(idx, 'content', e.target.value)
-              }
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            {idx !== 0 && (
-              <div className="flex justify-end">
+      {/* Accordion Content */}
+      {open && (
+        <div className="px-6 py-8 space-y-6">
+          {policies.length === 0 && (
+            <p className="text-center text-gray-500 italic">No policies defined yet.</p>
+          )}
+
+          {policies.map((policy, idx) => (
+            <div
+              key={idx}
+              className="bg-gray-50 rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Policy Type
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Refund Policy"
+                    value={policy.type}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      onUpdatePolicy(idx, 'type', e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 transition"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => onRemovePolicy(idx)}
-                  className="text-red-500 hover:text-red-600 font-medium flex items-center gap-1 transition"
+                  className="text-red-500 hover:text-red-600 focus:outline-none self-start"
+                  aria-label="Remove policy"
                 >
-                  <TrashIcon className="h-5 w-5" />
-                  Remove
+                  <TrashIcon className="h-6 w-6" />
                 </button>
               </div>
-            )}
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Policy Content
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="Describe your policy details here..."
+                  value={policy.content}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                    onUpdatePolicy(idx, 'content', e.target.value)
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-400 transition"
+                />
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={onAddPolicy}
+            disabled={!isValid}
+            className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition disabled:opacity-50"
+          >
+            <PlusCircleIcon className="h-6 w-6" />
+            <span>Add Policy</span>
+          </button>
+
+          <div className="pt-4 text-sm text-gray-600 space-y-1">
+            <p className="italic">Provide clear terms to build customer trust.</p>
+            <p>
+              Common examples:{' '}
+              {['Refund Policy', 'Shipping Policy', 'Privacy Policy'].map(ex => (
+                <code key={ex} className="bg-gray-100 px-1 mx-1 rounded">
+                  {ex}
+                </code>
+              ))}
+            </p>
           </div>
-        ))}
-
-        {/* Add Another Policy Button */}
-        <button
-          type="button"
-          onClick={onAddPolicy}
-          disabled={!isValid}
-          className="w-full flex items-center justify-center gap-2 mt-4 px-4 py-2 border border-indigo-500 text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition disabled:opacity-50"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Add Another Policy
-        </button>
-
-        {/* Example Guidance */}
-        <div className="mt-4 text-sm text-gray-600 space-y-1">
-          <p>Specify store policies to inform your customers clearly.</p>
-          <p>
-            Examples:{" "}
-            {['Refund Policy', 'Shipping Policy', 'Privacy Policy'].map((example) => (
-              <code key={example} className="bg-gray-100 px-1 mx-0.5 rounded">
-                {example}
-              </code>
-            ))}
-          </p>
         </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }

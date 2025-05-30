@@ -1,127 +1,155 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { Stat } from '../../../../types/typings';
-import { TrashIcon, PlusIcon, ClipboardIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import {
+  ClipboardIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from '@heroicons/react/24/outline';
 
-interface Props {
+type Stat = {
+  label: string;
+  value: string | number;
+  iconUrl?: string;
+};
+
+type StatsAccordionProps = {
   stats: Stat[];
   onAdd: () => void;
-  onUpdate: (index: number, field: keyof Stat, value: any) => void;
-  onRemove: (index: number) => void;
-}
+  onUpdate: (idx: number, field: keyof Stat, value: string) => void;
+  onRemove: (idx: number) => void;
+};
 
-export const StatsAccordion: React.FC<Props> = ({ stats, onAdd, onUpdate, onRemove }) => {
-  // Ensure there's at least one form ready on initial render
+export const StatsAccordion: React.FC<StatsAccordionProps> = ({ stats, onAdd, onUpdate, onRemove }) => {
+  const [open, setOpen] = useState(true);
+
+  // Ensure at least one stat exists
   useEffect(() => {
-    if (stats.length === 0) {
-      onAdd();
-    }
+    if (stats.length === 0) onAdd();
   }, [stats, onAdd]);
 
-  // Disable "Add" unless all stats are filled (label and value)
-  const canAddNew = stats.every(stat => stat.label.trim() && stat.value.toString().trim());
+  const canAdd = stats.every(s => s.label.trim() && s.value.toString().trim());
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold flex items-center gap-2 text-gray-800">
-          <ClipboardIcon className="h-6 w-6 text-emerald-500" />
-          Stats
-        </h2>
-        <button
-          type="button"
-          onClick={onAdd}
-          disabled={!canAddNew}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Add Stat
-        </button>
-      </div>
+    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
+      {/* Accordion Header */}
+      <button
+        type="button"
+        onClick={() => setOpen(prev => !prev)}
+        className="w-full flex justify-between items-center px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white"
+      >
+        <div className="flex items-center space-x-3">
+          <ClipboardIcon className="h-6 w-6" />
+          <h2 className="text-lg font-semibold">Business Stats</h2>
+        </div>
+        {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+      </button>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {stats.map((stat, i) => (
-          <div
-            key={i}
-            className="relative p-4 bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition"
-          >
-            {/* Remove Button */}
+      {open && (
+        <div className="px-6 py-8 space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {stats.map((stat, idx) => (
+              <div
+                key={idx}
+                className="relative bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-lg transition"
+              >
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={() => onRemove(idx)}
+                  disabled={stats.length === 1}
+                  className="absolute top-3 right-3 text-red-500 hover:text-red-700 focus:outline-none disabled:opacity-40"
+                  title="Remove stat"
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+
+                {/* Label */}
+                <div className="mb-4">
+                  <label htmlFor={`stat-label-${idx}`} className="block text-sm font-medium text-gray-700">
+                    Label
+                  </label>
+                  <input
+                    id={`stat-label-${idx}`}
+                    type="text"
+                    placeholder="e.g. Founded"
+                    value={stat.label}
+                    onChange={e => onUpdate(idx, 'label', e.target.value)}
+                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 transition"
+                  />
+                </div>
+
+                {/* Value */}
+                <div className="mb-4">
+                  <label htmlFor={`stat-value-${idx}`} className="block text-sm font-medium text-gray-700">
+                    Value
+                  </label>
+                  <input
+                    id={`stat-value-${idx}`}
+                    type="text"
+                    placeholder="e.g. 2019"
+                    value={stat.value}
+                    onChange={e => onUpdate(idx, 'value', e.target.value)}
+                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 transition"
+                  />
+                </div>
+
+                {/* Icon URL */}
+                <div className="mb-4">
+                  <label htmlFor={`stat-icon-${idx}`} className="block text-sm font-medium text-gray-700">
+                    Icon URL
+                  </label>
+                  <input
+                    id={`stat-icon-${idx}`}
+                    type="text"
+                    placeholder="https://..."
+                    value={stat.iconUrl || ''}
+                    onChange={e => onUpdate(idx, 'iconUrl', e.target.value)}
+                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 transition"
+                  />
+                </div>
+
+                {/* Preview */}
+                {stat.iconUrl && (
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={stat.iconUrl}
+                      alt={`${stat.label} icon`}
+                      className="h-10 w-10 object-contain rounded border border-gray-300"
+                    />
+                    <span className="text-sm text-gray-500">Preview</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Add Stat */}
+          <div className="flex justify-end">
             <button
               type="button"
-              onClick={() => onRemove(i)}
-              className="absolute top-3 right-3 text-red-500 hover:text-red-700"
-              title="Remove stat"
-              disabled={stats.length === 1} // Prevent removing last one
+              onClick={onAdd}
+              disabled={!canAdd}
+              className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none disabled:opacity-50 transition"
             >
-              <TrashIcon className="h-5 w-5" />
+              <PlusCircleIcon className="h-5 w-5" />
+              Add Stat
             </button>
-
-            {/* Label */}
-            <div className="mb-4">
-              <label htmlFor={`label-${i}`} className="block text-sm font-medium text-gray-700">
-                Label
-              </label>
-              <input
-                id={`label-${i}`}
-                type="text"
-                placeholder="e.g. Founded"
-                value={stat.label}
-                onChange={(e) => onUpdate(i, 'label', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition"
-              />
-            </div>
-
-            {/* Value */}
-            <div className="mb-4">
-              <label htmlFor={`value-${i}`} className="block text-sm font-medium text-gray-700">
-                Value
-              </label>
-              <input
-                id={`value-${i}`}
-                type="text"
-                placeholder="e.g. 2019"
-                value={stat.value as string}
-                onChange={(e) => onUpdate(i, 'value', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition"
-              />
-            </div>
-
-            {/* Icon URL */}
-            <div className="mb-4">
-              <label htmlFor={`icon-${i}`} className="block text-sm font-medium text-gray-700">
-                Icon URL
-              </label>
-              <input
-                id={`icon-${i}`}
-                type="text"
-                placeholder="https://..."
-                value={stat.iconUrl ?? ''}
-                onChange={(e) => onUpdate(i, 'iconUrl', e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition"
-              />
-            </div>
-
-            {/* Preview */}
-            {stat.iconUrl && (
-              <div className="mt-2">
-                <img
-                  src={stat.iconUrl}
-                  alt={`${stat.label} icon`}
-                  className="h-10 w-10 object-contain rounded border border-gray-200"
-                />
-              </div>
-            )}
           </div>
-        ))}
-      </div>
 
-      {/* Helper Text */}
-      <div className="text-sm text-gray-600 mt-4">
-        Start by entering at least one stat. You can only add another once all existing fields are filled.
-      </div>
-    </div>
+          {/* Footer Tip */}
+          <p className="text-sm text-gray-500 text-center">
+            📊 Tip: Use icons from{' '}
+            <a href="https://img.icons8.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline">
+              Icons8
+            </a>{' '}
+            for richer visuals.
+          </p>
+        </div>
+      )}
+    </section>
   );
 };

@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 
 // Accordion components
 import BasicInfo from '../BasicInfo/BasicInfo';
-import CategoryAccordion, { CategoryOption } from '../CategoryAccordion/CategoryAccordion';
+import CategoryAccordion from '../CategoryAccordion/CategoryAccordion';
 import BannerLogoAccordion from '../BannerLogoAccordion/BannerLogoAccordion';
 import ContactAccordion from '../ContactAccordion/ContactAccordion';
 import LocationAccordion from '../LocationAccordion/LocationAccordion';
@@ -24,7 +24,7 @@ import ShippingAccordion from '../ShippingAccordion/ShippingAccordion';
 import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
 import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
-import { StoreForm, Handlers, StepConfig, GeoLocation } from '../../../../types/typings';
+import { StoreForm, Handlers, StepConfig, GeoLocation, CategoryOption } from '../../../../types/typings';
 
 // Interfaces
 const steps: StepConfig[] = [
@@ -306,19 +306,252 @@ export default function CreateStoreForm({ availableCategories }: { availableCate
     if (res.ok) router.push('/stores');
   };
 
+  // Helper to render review info for each step
+//   const renderList = (items: any[], renderItem: (item: any, index: number) => React.ReactNode) =>
+//     items.length > 0 ? <ul className="list-disc list-inside space-y-1">{items.map(renderItem)}</ul> : <em className="text-gray-500">None</em>;
+  
+// import React from 'react';
+
+const ReviewSection = ({ title, children }:any) => (
+  <div className="bg-white shadow-sm rounded-lg p-4 space-y-2">
+    <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">{title}</h3>
+    <div>{children}</div>
+  </div>
+);
+
+const EmptyState = ({ message }:any) => (
+  <em className="text-gray-400 italic">{message}</em>
+);
+
+const renderList = (items:any, renderItem:any, emptyMessage = 'No items') => (
+  items && items.length > 0 ? (
+    <ul className="list-disc list-inside space-y-1">
+      {items.map(renderItem)}
+    </ul>
+  ) : (
+    <EmptyState message={emptyMessage} />
+  )
+);
+
+const renderJSON = (data:any, emptyMessage = 'No data') => (
+  data && Object.keys(data).length > 0 ? (
+    <pre className="bg-gray-50 text-xs p-3 rounded overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
+  ) : (
+    <EmptyState message={emptyMessage} />
+  )
+);
+
+const renderReviewContent = ({stepKey, form}:any) => {
+  switch (stepKey) {
+    case 'basic':
+      return (
+        <ReviewSection title="Basic Info">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div><strong>Name:</strong> {form.name || <EmptyState message="Not set" />}</div>
+            <div><strong>Slug:</strong> {form.slug || <EmptyState message="Not set" />}</div>
+            <div><strong>Domain:</strong> {form.domain || <EmptyState message="Not set" />}</div>
+            <div><strong>Tagline:</strong> {form.tagline || <EmptyState message="Not set" />}</div>
+            <div className="sm:col-span-2"><strong>Description:</strong> {form.description || <EmptyState message="Not set" />}</div>
+          </div>
+        </ReviewSection>
+      );
+
+    case 'categories':
+      return (
+        <ReviewSection title="Categories">
+          {renderList(form.storeCategories, (cat:any) => <li key={cat.id}>{cat.name}</li>, 'No categories')}
+        </ReviewSection>
+      );
+
+    case 'branding':
+      return (
+        <ReviewSection title="Branding">
+          <div className="flex flex-wrap gap-6 text-sm">
+            <div className="flex-shrink-0">
+              <p className="font-medium mb-1">Logo</p>
+              {form.logoUrl ? (
+                <img src={form.logoUrl} alt="Logo" className="h-16 w-16 object-cover rounded-md shadow" />
+              ) : <EmptyState message="Not uploaded" />}
+            </div>
+            <div className="flex-shrink-0">
+              <p className="font-medium mb-1">Banner</p>
+              {form.bannerUrl ? (
+                <img src={form.bannerUrl} alt="Banner" className="h-16 w-32 object-cover rounded-md shadow" />
+              ) : <EmptyState message="Not uploaded" />}
+            </div>
+          </div>
+        </ReviewSection>
+      );
+
+    case 'touchpoints':
+      return (
+        <ReviewSection title="Contact & Hours">
+          <div className="space-y-2 text-sm">
+            <div><strong>Email:</strong> {form.contactEmail || <EmptyState message="Not set" />}</div>
+            <div><strong>Phone:</strong> {form.contactPhone || <EmptyState message="Not set" />}</div>
+            <div>
+              <strong>Opening Hours:</strong>
+              {Object.keys(form.openingHours || {}).length > 0 ? (
+                <ul className="list-disc list-inside ml-4 mt-1">
+                  {Object.entries(form.openingHours).map(([day, hrs]) => (
+                    <li key={day}><span className="font-medium">{day.charAt(0).toUpperCase() + day.slice(1)}:</span> {`${hrs || "Closed"}`}</li>
+
+                  ))}
+                </ul>
+              ) : <EmptyState message="Not set" />}
+            </div>
+          </div>
+        </ReviewSection>
+      );
+
+    case 'location':
+      return (
+        <ReviewSection title="Location">
+          <div className="space-y-1 text-sm">
+            <div><strong>Address:</strong> {form.address || <EmptyState message="Not set" />}</div>
+            {form.geoLocation ? (
+              <div><strong>Coordinates:</strong> {form.geoLocation.lat}, {form.geoLocation.lng}</div>
+            ) : null}
+          </div>
+        </ReviewSection>
+      );
+
+    case 'social':
+      return (
+        <ReviewSection title="Social Links">
+          {renderList(form.socialLinks, ({link, i}:any) => (
+            <li key={i}><strong>{link.channel}:</strong> <a href={link.url} className="text-blue-600 hover:underline" target="_blank" rel="noreferrer">{link.url}</a></li>
+          ), 'No social links')}
+        </ReviewSection>
+      );
+
+    case 'content':
+      return (
+        <ReviewSection title="Policies & Content">
+          {renderList(form.policies, ({p, i}:any) => (<li key={i}><strong>{p.type}:</strong> {p.content}</li>), 'No policies')}
+        </ReviewSection>
+      );
+
+    case 'awards':
+      return (
+        <ReviewSection title="Awards">
+          {renderList(form.awards, ({a, i}:any) => <li key={i}>{a.name}</li>, 'No awards')}
+        </ReviewSection>
+      );
+
+    case 'metrics':
+      return (
+        <ReviewSection title="Metrics">
+          {renderList(form.metrics, ({m, i}:any) => <li key={i}><strong>{m.label}:</strong> {m.value}</li>, 'No metrics')}
+        </ReviewSection>
+      );
+
+    case 'stats':
+      return (
+        <ReviewSection title="Statistics">
+          {renderList(form.stats, ({s, i}:any) => <li key={i}><strong>{s.label}:</strong> {s.value}</li>, 'No statistics')}
+        </ReviewSection>
+      );
+
+    case 'faqs':
+      return (
+        <ReviewSection title="FAQs">
+          {form.faqs && form.faqs.length > 0 ? form.faqs.map(({f, i}:any) => (
+            <div key={i} className="space-y-1 text-sm">
+              <p className="font-semibold">Q: {f.question}</p>
+              <p className="ml-4">A: {f.answer}</p>
+            </div>
+          )) : <EmptyState message="No FAQs" />}
+        </ReviewSection>
+      );
+
+    case 'testimonials':
+      return (
+        <ReviewSection title="Testimonials">
+          {form.testimonials && form.testimonials.length > 0 ? form.testimonials.map(({t, i}:any) => (
+            <blockquote key={i} className="border-l-2 pl-4 italic text-gray-600">“{t.quote}” — {t.author}</blockquote>
+          )) : <EmptyState message="No testimonials" />}
+        </ReviewSection>
+      );
+
+    case 'marketing':
+      return (
+        <ReviewSection title="Hero Slides">
+          {renderList(form.heroSlides, ({s, i}:any) => <li key={i}>{s.headline || 'Untitled slide'}</li>, 'No slides')}
+        </ReviewSection>
+      );
+
+    case 'promotions':
+      return (
+        <ReviewSection title="Promotions">
+          {renderList(form.promotions, ({p, i}:any) => <li key={i}>{p.title}</li>, 'No promotions')}
+        </ReviewSection>
+      );
+
+    case 'seo':
+      return (
+        <ReviewSection title="SEO Settings">
+          {renderJSON(form.seo, 'No SEO settings')}
+        </ReviewSection>
+      );
+
+    case 'theme':
+      return (
+        <ReviewSection title="Theme Settings">
+          {renderJSON(form.themeSettings, 'No theme settings')}
+        </ReviewSection>
+      );
+
+    case 'analytics':
+      return (
+        <ReviewSection title="Analytics Config">
+          {renderJSON(form.analyticsConfig, 'No analytics config')}
+        </ReviewSection>
+      );
+
+    case 'payment':
+      return (
+        <ReviewSection title="Payment Settings">
+          {renderJSON(form.paymentSettings, 'No payment settings')}
+        </ReviewSection>
+      );
+
+    case 'shipping':
+      return (
+        <ReviewSection title="Shipping Settings">
+          {renderJSON(form.shippingSettings, 'No shipping settings')}
+        </ReviewSection>
+      );
+
+    default:
+      return <p className="text-sm text-gray-500">No data available for this section.</p>;
+  }
+};
+
+
+
 // Render step or review
 const StepContent = stepIndex < steps.length
 ? steps[stepIndex].render(form, handlers, availableCategories)
 : (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-semibold">Review Your Store</h2>
-      {steps.map((s, i) => (
-        <div key={s.key} className="p-4 border rounded hover:bg-gray-50 cursor-pointer" onClick={() => setStepIndex(i)}>
-          <h3 className="font-medium">{s.title}</h3>
-          <p className="text-sm text-gray-600">Click to edit</p>
+  <div className="space-y-6">
+    <h2 className="text-2xl font-semibold">Review Your Store</h2>
+    {steps.map((s, i) => (
+      <div
+        key={s.key}
+        className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+        onClick={() => setStepIndex(i)}
+      >
+        <h3 className="font-medium mb-2 flex justify-between items-center">
+          <span>{s.title}</span>
+          <span className="text-xs text-indigo-500">Edit ➔</span>
+        </h3>
+        <div className="text-gray-700">
+          {renderReviewContent(s.key)}
         </div>
-      ))}
-    </div>
+      </div>
+    ))}
+  </div>
   );
 
   return <form onSubmit={handleSubmit} className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
