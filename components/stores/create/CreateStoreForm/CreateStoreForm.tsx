@@ -291,7 +291,6 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     }
   };
   
-
   const onUpdateArray = <T,>(key: keyof StoreForm, idx: number, field: keyof T, value: any) => {
     setForm(f => { const arr = [...(f[key] as any)]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, [key]: arr }; });
   };
@@ -322,7 +321,6 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     });
   }
   
-
   // Toggle a single CategoryOption
   const onToggleCategory = (cat: CategoryOption) => {
     setForm(f => {
@@ -708,7 +706,7 @@ const StepContent = stepIndex < steps.length
   </div>
   );
 
-  return <form onSubmit={handleSubmit} className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
+  return <div className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
   {/* Sidebar */}
   <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
     <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
@@ -791,5 +789,5 @@ const StepContent = stepIndex < steps.length
       )}
     </div>
   </main>
-</form>;
+</div>;
 }

@@ -134,6 +134,9 @@ export async function POST(req: Request) {
         AnalyticsConfig: data.analyticsConfig ? { create: data.analyticsConfig } : undefined,
         PaymentSettings: data.paymentSettings ? { create: data.paymentSettings } : undefined,
         ShippingSettings: data.shippingSettings ? { create: data.shippingSettings } : undefined,
+        awards:  data.awards ,
+        metrics: data.metrics ,
+        stats:   data.stats ,
         StoreCategory: data.storeCategories ? { create: data.storeCategories.map((sc:any) => ({ category: { connect: { id: sc.id } }, displayName: sc.displayName, sortOrder: sc.sortOrder, visible: sc.visible })) } : undefined
       }
     });

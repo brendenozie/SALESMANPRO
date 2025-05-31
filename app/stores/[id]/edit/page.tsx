@@ -13,24 +13,17 @@ export default async function EditStorePage({ params }: { params: { id: string }
   // fetch the store, include the same relations your GET API does
   const store = await prisma.company.findUnique({
     where: { id },
-    include: {
-      heroSlides: true,
-      promotions: true,
-      faqs: true,
-      socialLinks: true,
-      policies: true,
-      testimonials: true,
-      seo: true,
-      AnalyticsConfig: true,
-      PaymentSettings: true,
-      ShippingSettings: true,
-      StoreCategory: true,
-    },
+
   });
+
+  // const store = await getCompanyForEdit(id);
+
   if (!store) {
     // redirect or show 404
     redirect("/stores");
   }
+
+  console.log(store);
 
   // fetch categories as before
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop/categories`, { cache: "no-store" });
@@ -128,4 +121,48 @@ export default async function EditStorePage({ params }: { params: { id: string }
       initialData={storeFormData}
     />
   );
+}
+
+export async function getCompanyForEdit(companyId: string) {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    include: {
+      // 1) The “flat” JSON fields you stored directly on Company:
+      awards: true,
+      metrics: true,
+      stats: true,
+
+      // 2) One‐to‐many relations on Company:
+      socialLinks: true,            // pulls [{ id, channel, url, … }]
+      policies: true,               // pulls [{ id, type, content, … }]
+      faqs: true,                   // pulls [{ id, question, answer, order, … }]
+      testimonials: true,           // pulls [{ id, author, quote, avatarUrl, rating, order }]
+      heroSlides: true,             // pulls [{ id, imageUrl, headline, subline, ctaText, ctaLink, order }]
+      promotions: true,             // pulls [{ id, code, title, description, startsAt, endsAt, bannerUrl }]
+      seo: true,                    // pulls the single SEO record (relation)
+      analyticsConfig: true,        // pulls the single AnalyticsConfig record
+      paymentSettings: true,        // pulls the single PaymentSettings record
+      shippingSettings: true,       // pulls the single ShippingSettings record
+
+      // 3) The “junction table” that connects Company to ProductCategory (i.e. StoreCategory),
+      //    including any overrides at the store level. Here we include StoreCategory → ProductCategory:
+      StoreCategory: {
+        include: {
+          category: true   // inner ProductCategory (so you get category.name, category.slug, etc.)
+        }
+      }
+    }
+  });
+
+  if (!company) return null;
+
+  //
+  // Prisma will return JavaScript Date objects for any DateTime fields (e.g. startsAt, endsAt, createdAt).
+  // When you send them into a Next.js “use client” component as props, Next.js will automatically
+  // serialize them for you (unless you're in pages‐dir getServerSideProps, in which case you might want
+  // to call .toISOString() on each Date). If you run into a serialization error, you can explicitly
+  // transform those Date objects to strings before returning.
+  //
+
+  return company;
 }

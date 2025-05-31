@@ -114,9 +114,9 @@ const {
           bannerUrl: p.bannerUrl
         })) || []
       },
-      awards: data.awards ? { set: JSON.stringify(data.awards) } : undefined,
-      metrics: data.metrics ? { set: JSON.stringify(data.metrics) } : undefined,
-      stats:   data.stats   ? { set: JSON.stringify(data.stats)   } : undefined,
+      awards:  awards ,
+      metrics:  metrics ,
+      stats:   stats ,
     }
   });
 
