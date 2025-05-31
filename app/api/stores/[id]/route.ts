@@ -81,42 +81,61 @@ export async function PUT(
       name, slug, domain, tagline, description, category,
       logoUrl, bannerUrl, contactEmail, contactPhone, address,
       geoLocation, openingHours, themeSettings, currency, locale,
-
-      socialLinks: {
-        deleteMany: {},
-        create: socialLinks || []
-      },
-      policies: {
-        deleteMany: {},
-        create: policies?.map((p: { type: string; content: string }) => ({ type: p.type, content: p.content })) || []
-      },
-      faqs: {
-        deleteMany: {},
-        create: faqs?.map((f: { question: any; answer: any; }) => ({ question: f.question, answer: f.answer })) || []
-      },
-      testimonials: {
-        deleteMany: {},
-        create: testimonials?.map((t: { author: any; quote: any; rating: any; }) => ({ author: t.author, quote: t.quote, rating: t.rating })) || []
-      },
-      heroSlides: {
-        deleteMany: {},
-        create: heroSlides?.map((h: { imageUrl: any; headline: any; subline: any; ctaText: any; ctaLink: any; }) => ({
-          imageUrl: h.imageUrl, headline: h.headline,
-          subline: h.subline, ctaText: h.ctaText, ctaLink: h.ctaLink
-        })) || []
-      },
-      promotions: {
-        deleteMany: {},
-        create: promotions?.map((p: { title: any; description: any; startsAt: string | number | Date; endsAt: string | number | Date; bannerUrl: any; }) => ({
-          title: p.title, description: p.description,
-          startsAt: p.startsAt ? new Date(p.startsAt) : null,
-          endsAt:   p.endsAt   ? new Date(p.endsAt)   : null,
-          bannerUrl: p.bannerUrl
-        })) || []
-      },
       awards:  awards ,
       metrics:  metrics ,
       stats:   stats ,
+      socialLinks: {
+        deleteMany: {},
+        create: (socialLinks || []).map(({ id, companyId, ...rest }: { id?: string; companyId?: string; [key: string]: any }) => rest)
+      },
+      
+      policies: {
+        deleteMany: {},
+        create: (policies || []).map(({ id, companyId, ...p }: any) => ({
+          type: p.type,
+          content: p.content
+        }))
+      },
+      
+      faqs: {
+        deleteMany: {},
+        create: (faqs || []).map(({ id, companyId, ...f }: any) => ({
+          question: f.question,
+          answer: f.answer
+        }))
+      },
+      
+      testimonials: {
+        deleteMany: {},
+        create: (testimonials || []).map(({ id, companyId, ...t }: any) => ({
+          author: t.author,
+          quote: t.quote,
+          rating: t.rating
+        }))
+      },
+      
+      heroSlides: {
+        deleteMany: {},
+        create: (heroSlides || []).map(({ id, companyId, ...h }: any) => ({
+          imageUrl: h.imageUrl,
+          headline: h.headline,
+          subline: h.subline,
+          ctaText: h.ctaText,
+          ctaLink: h.ctaLink
+        }))
+      },
+      
+      promotions: {
+        deleteMany: {},
+        create: (promotions || []).map(({ id, companyId, ...p }: any) => ({
+          title: p.title,
+          description: p.description,
+          startsAt: p.startsAt ? new Date(p.startsAt) : null,
+          endsAt: p.endsAt ? new Date(p.endsAt) : null,
+          bannerUrl: p.bannerUrl
+        }))
+      },
+      
 
 
 
