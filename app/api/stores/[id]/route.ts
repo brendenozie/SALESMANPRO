@@ -42,37 +42,37 @@ export async function PUT(
 
   const data = await req.json();
   // in your PUT handler, after `const data = await req.json();`
-const {
-  name,
-  slug,
-  domain,
-  tagline,
-  description,
-  category,
-  logoUrl,
-  bannerUrl,
-  contactEmail,
-  contactPhone,
-  address,
-  geoLocation,
-  openingHours,
-  socialLinks,
-  policies,
-  faqs,
-  testimonials,
-  heroSlides,
-  promotions,
-  themeSettings,
-  seo,                   // this is a relation, handle below
-  paymentSettings,       // relation
-  shippingSettings,      // relation
-  storeCategories,       // relation
-  awards,
-  metrics,
-  stats,
-  currency,
-  locale,
-} = data;
+  const {
+    name,
+    slug,
+    domain,
+    tagline,
+    description,
+    category,
+    logoUrl,
+    bannerUrl,
+    contactEmail,
+    contactPhone,
+    address,
+    geoLocation,
+    openingHours,
+    socialLinks,
+    policies,
+    faqs,
+    testimonials,
+    heroSlides,
+    promotions,
+    themeSettings,
+    seo,                   // this is a relation, handle below
+    paymentSettings,       // relation
+    shippingSettings,      // relation
+    storeCategories,       // relation
+    awards,
+    metrics,
+    stats,
+    currency,
+    locale,
+  } = data;
 
 
   const updated = await prisma.company.update({

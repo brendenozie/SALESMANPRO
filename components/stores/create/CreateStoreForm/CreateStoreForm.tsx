@@ -228,7 +228,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       : defaultForm
   );
 
-  const totalSteps = steps.length + 1;
+  const totalSteps = steps.length + 2;
   const [stepIndex, setStepIndex] = useState(0);
 
   // Auto-generate slug/domain from name

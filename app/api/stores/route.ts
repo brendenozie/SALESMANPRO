@@ -22,6 +22,9 @@ const analyticsSchema = z.object({ googleTag: z.string().optional(), facebookTag
 const paymentSchema = z.object({ stripeKey: z.string().optional(), paypalKey: z.string().optional() });
 const shippingSchema = z.object({ carrierName: z.string().optional(), trackingUrl: urlSchema.optional() });
 const storeCategorySchema = z.object({ id: z.string(), displayName: z.string().optional(), sortOrder: z.number().optional(), visible: z.boolean().optional() });
+const awardsSchema = z.object({ name: z.string(), iconUrl: z.string() });
+const metricsSchema =  z.object({ label: z.string(), value: z.string(), iconUrl: z.string().optional() }); 
+const statsSchema = z.object({ label: z.string(), value: z.string(), iconUrl: z.string().optional() }); 
 
 const storeSchema = z.object({
   name: z.string().min(1),
@@ -49,7 +52,10 @@ const storeSchema = z.object({
   paymentSettings: paymentSchema.optional(),
   shippingSettings: shippingSchema.optional(),
   storeCategories: z.array(storeCategorySchema).optional(),
-  userId: z.string().min(1)
+  userId: z.string().min(1),
+  awards:  z.array(awardsSchema).optional(),
+  metrics: z.array(metricsSchema).optional(),
+  stats:   z.array(statsSchema).optional(),
 });
 
 // GET /api/stores?ownerId=
