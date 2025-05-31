@@ -11,12 +11,12 @@ export const dynamic = "force-dynamic";
 export default async function EditStorePage({ params }: { params: { id: string } }) {
   const id = params.id;
   // fetch the store, include the same relations your GET API does
-  const store = await prisma.company.findUnique({
-    where: { id },
+  // const store = await prisma.company.findUnique({
+  //   where: { id },
 
-  });
+  // });
 
-  // const store = await getCompanyForEdit(id);
+  const store = await getCompanyForEdit(id);
 
   if (!store) {
     // redirect or show 404
@@ -128,9 +128,9 @@ export async function getCompanyForEdit(companyId: string) {
     where: { id: companyId },
     include: {
       // 1) The “flat” JSON fields you stored directly on Company:
-      awards: true,
-      metrics: true,
-      stats: true,
+      // awards: true,
+      // metrics: true,
+      // stats: true,
 
       // 2) One‐to‐many relations on Company:
       socialLinks: true,            // pulls [{ id, channel, url, … }]
@@ -140,9 +140,9 @@ export async function getCompanyForEdit(companyId: string) {
       heroSlides: true,             // pulls [{ id, imageUrl, headline, subline, ctaText, ctaLink, order }]
       promotions: true,             // pulls [{ id, code, title, description, startsAt, endsAt, bannerUrl }]
       seo: true,                    // pulls the single SEO record (relation)
-      analyticsConfig: true,        // pulls the single AnalyticsConfig record
-      paymentSettings: true,        // pulls the single PaymentSettings record
-      shippingSettings: true,       // pulls the single ShippingSettings record
+      AnalyticsConfig: true,        // pulls the single AnalyticsConfig record
+      PaymentSettings: true,        // pulls the single PaymentSettings record
+      ShippingSettings: true,       // pulls the single ShippingSettings record
 
       // 3) The “junction table” that connects Company to ProductCategory (i.e. StoreCategory),
       //    including any overrides at the store level. Here we include StoreCategory → ProductCategory:
