@@ -117,6 +117,32 @@ export async function PUT(
       awards:  awards ,
       metrics:  metrics ,
       stats:   stats ,
+
+
+
+        // socialLinks: data.socialLinks
+        //   ? {
+        //       create: data.socialLinks.map((link: any) => ({
+        //         ...link,
+        //         channel: link.channel as any // Cast to enum type; replace 'any' with 'SocialChannel' if imported
+        //       }))
+        //     }
+        //   : undefined,
+        // policies: data.policies
+        //   ? {
+        //       create: data.policies.map((policy: any) => ({
+        //         ...policy,
+        //         type: policy.type as any // Replace 'any' with 'PolicyType' if you have imported the enum
+        //       }))
+        //     }
+        //   : undefined,
+        
+        seo: data.seo ? { create: data.seo } : undefined,
+        AnalyticsConfig: data.analyticsConfig ? { create: data.analyticsConfig } : undefined,
+        PaymentSettings: data.paymentSettings ? { create: data.paymentSettings } : undefined,
+        ShippingSettings: data.shippingSettings ? { create: data.shippingSettings } : undefined,
+        StoreCategory: data.storeCategories ? { create: data.storeCategories.map((sc:any) => ({ category: { connect: { id: sc.id } }, displayName: sc.displayName, sortOrder: sc.sortOrder, visible: sc.visible })) } : undefined
+      
     }
   });
 
