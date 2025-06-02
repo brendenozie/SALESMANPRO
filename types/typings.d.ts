@@ -90,7 +90,30 @@ export interface IUser {
   // role: string;
 }
 
-interface CategoryOption { id: string; name: string; }
+// interface CategoryOption { id: string; name: string; }
+type StoreCategoryEntry = {
+  id: string;           // parent ProductCategory.id
+  name: string;         // parent name
+  items: SubObj[];      // zero or more subcategory objects
+  displayName?: string; // (optional override)
+  icon?: string;        // (optional override)
+  sortOrder?: number;
+  visible?: boolean;
+};
+
+export type SubObj = {
+  id:        string;
+  name:      string;
+  slug:      string;
+  sortOrder?: number;
+  visible?:   boolean;
+};
+
+export type ParentCategory = {
+  id:            string;
+  name:          string;
+  children:      SubObj[];    // full list of sub‐objects under this parent
+};
 
 interface GeoLocation { lat: number; lng: number; }
 
@@ -162,7 +185,8 @@ type StoreForm = {
   analyticsConfig: Record<string, any>;
   paymentSettings: Record<string, any>;
   shippingSettings: Record<string, any>;
-  storeCategories: CategoryOption[];
+  // storeCategories: CategoryOption[];
+  storeCategories: StoreCategoryEntry[];
 };
 
 // Handlers signature
@@ -173,9 +197,13 @@ interface Handlers {
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
   setAddress: (address: string, geo: GeoLocation) => void;
   onChangeSettings: (updated: Partial<StoreForm>) => void;
-  onToggleCategory: (cat: CategoryOption) => void;
+  
   onBulkToggleCategories: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void; 
+  onToggleParent: (cat: ParentCategory) => void;
+
+  onToggleSub: (parentId: string, sub: SubObj) => void;
+  onToggleDay: (dayKey: string) => void;
 }
 
 // Step configuration

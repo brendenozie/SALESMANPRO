@@ -299,17 +299,30 @@ export async function PUT(
       : { delete: true },
 
     // ── junction table for categories (delete existing & recreate) ──
+    // StoreCategory: storeCategories
+    //   ? {
+    //       deleteMany: {},
+    //       create: (storeCategories || []).map((sc: any) => ({
+    //         category: { connect: { id: sc.id } },
+    //         displayName: sc.displayName,
+    //         sortOrder: sc.sortOrder,
+    //         visible: sc.visible,
+    //       })),
+    //     }
+    //   : { deleteMany: {} },
     StoreCategory: storeCategories
-      ? {
-          deleteMany: {},
-          create: (storeCategories || []).map((sc: any) => ({
-            category: { connect: { id: sc.id } },
-            displayName: sc.displayName,
-            sortOrder: sc.sortOrder,
-            visible: sc.visible,
-          })),
-        }
-      : { deleteMany: {} },
+  ? {
+      deleteMany: {},
+      create: (storeCategories || []).map((sc: any) => ({
+        category:   { connect: { id: sc.id } },
+        displayName: sc.displayName,
+        icon:        sc.icon,
+        sortOrder:   sc.sortOrder ?? 0,
+        visible:     sc.visible ?? true,
+        items:       sc.items  // <-- sc.items must be an array of subcategory objects
+      })),
+    }
+  : { deleteMany: {} },
 
 
       // ── ONE‐TO‐ONE: AnalyticsConfig ──

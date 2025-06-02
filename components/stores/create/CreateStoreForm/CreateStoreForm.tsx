@@ -24,7 +24,7 @@ import ShippingAccordion from '../ShippingAccordion/ShippingAccordion';
 import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
 import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
-import { StoreForm, Handlers, StepConfig, GeoLocation, CategoryOption } from '../../../../types/typings';
+import { StoreForm, Handlers, StepConfig, GeoLocation, StoreCategoryEntry, ParentCategory, SubObj } from '../../../../types/typings';
 
 // Interfaces
 const steps: StepConfig[] = [
@@ -39,12 +39,21 @@ const steps: StepConfig[] = [
       key: 'categories',
       title: 'Categories',
       render: (f, h, cats) => (
+        // <CategoryAccordion
+        //   availableCategories={cats}
+        //   selectedCategories={f.storeCategories}          // CategoryOption[]
+        //   onToggleCategory={h.onToggleCategory}           // CategoryOption => void
+        //   onBulkToggle={h.onBulkToggleCategories}         // string[] => void
+        // />
         <CategoryAccordion
           availableCategories={cats}
-          selectedCategories={f.storeCategories}          // CategoryOption[]
-          onToggleCategory={h.onToggleCategory}           // CategoryOption => void
-          onBulkToggle={h.onBulkToggleCategories}         // string[] => void
+          selectedCategories={f.storeCategories}
+          onToggleParent={h.onToggleParent}
+          onToggleSub={h.onToggleSub}       // see note below
+          onBulkToggle={h.onBulkToggleCategories}
+          onApply={() => console.log(f.storeCategories)}
         />
+
       )
     },
     {
@@ -200,7 +209,7 @@ const steps: StepConfig[] = [
 ];
 
 type Props = {
-  availableCategories: CategoryOption[];
+  availableCategories: ParentCategory[];
   initialData?: Partial<StoreForm> & { id: string };
 };
 
@@ -323,24 +332,158 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   }
   
   // Toggle a single CategoryOption
-  const onToggleCategory = (cat: CategoryOption) => {
-    setForm(f => {
-      const exists = f.storeCategories.some(c => c.id === cat.id);
-      const updated = exists
-        ? f.storeCategories.filter(c => c.id !== cat.id)
-        : [...f.storeCategories, cat];
-      return { ...f, storeCategories: updated };
-    });
-  };
+  // const onToggleCategory = (cat: CategoryOption) => {
+  //   setForm(f => {
+  //     const exists = f.storeCategories.some(c => c.id === cat.id);
+  //     const updated = exists
+  //       ? f.storeCategories.filter(c => c.id !== cat.id)
+  //       : [...f.storeCategories, cat];
+  //     return { ...f, storeCategories: updated };
+  //   });
+  // };
+
+  // 2) Implement onToggleParent:
+const onToggleParent = (parent: ParentCategory) => {
+  setForm(prev => {
+    // Find if this parent is already in form.storeCategories
+    const existingIndex = prev.storeCategories.findIndex(
+      sc => sc.id === parent.id
+    );
+
+    if (existingIndex !== -1) {
+      // Parent is already selected → remove it entirely
+      const updated = prev.storeCategories.filter(
+        sc => sc.id !== parent.id
+      );
+      return { ...prev, storeCategories: updated };
+    } else {
+      // Parent is not selected → add it, with items = all of its children
+      // Build a new StoreCategoryEntry:
+      const newEntry: StoreCategoryEntry = {
+        id:    parent.id,
+        name:  parent.name,
+        // “Fully select” the parent by including all of its sub‐objects:
+        items: parent.children && parent.children.map(child => ({
+          id:        child.id,
+          name:      child.name,
+          slug:      child.slug,
+          sortOrder: child.sortOrder ?? 0,
+          visible:   child.visible  ?? true
+        }))
+      };
+
+      return {
+        ...prev,
+        storeCategories: [...prev.storeCategories, newEntry]
+      };
+    }
+  });
+};
+
+const onToggleSub = (parentId: string, sub: SubObj) => {
+  setForm(prev => {
+    // Find existing parent entry
+    const parentEntry = prev.storeCategories.find(sc => sc.id === parentId);
+    if (!parentEntry) {
+      // If parent isn’t in storeCategories, add it with this single sub
+      return {
+        ...prev,
+        storeCategories: [
+          ...prev.storeCategories,
+          {
+            id:    parentId,
+            name:  (availableCategories.find(cat => cat.id === parentId)?.name ?? ''),
+            items: [{ ...sub, sortOrder: sub.sortOrder ?? 0, visible: sub.visible ?? true }]
+          }
+        ]
+      };
+    } else {
+      // Parent already selected: toggle this sub inside its items array
+      const alreadyHasSub = parentEntry.items.some(item => item.id === sub.id);
+      const newItems = alreadyHasSub
+        ? parentEntry.items.filter(item => item.id !== sub.id)
+        : [...parentEntry.items, { ...sub, sortOrder: sub.sortOrder ?? 0, visible: sub.visible ?? true }];
+
+      // If newItems becomes empty, remove the entire parent entry:
+      if (newItems.length === 0) {
+        return {
+          ...prev,
+          storeCategories: prev.storeCategories.filter(sc => sc.id !== parentId)
+        };
+      }
+
+      // Otherwise, update the items array only:
+      return {
+        ...prev,
+        storeCategories: prev.storeCategories.map(sc =>
+          sc.id === parentId
+            ? { ...sc, items: newItems }
+            : sc
+        )
+      };
+    }
+  });
+};
+
 
   // Bulk‐toggle by ID array: convert IDs → full CategoryOption objects
+  // const onBulkToggleCategories = (ids: string[]) => {
+  //   setForm(f => {
+  //     // find matching CategoryOption objects in our available list
+  //     const chosen = availableCategories.filter(c => ids.includes(c.id));
+  //     return { ...f, storeCategories: chosen };
+  //   });
+  // };
+
   const onBulkToggleCategories = (ids: string[]) => {
-    setForm(f => {
-      // find matching CategoryOption objects in our available list
-      const chosen = availableCategories.filter(c => ids.includes(c.id));
-      return { ...f, storeCategories: chosen };
+    setForm(prev => {
+      const newStoreCategories: StoreForm["storeCategories"] = [];
+  
+      for (const parent of availableCategories) {
+        // 1) If the parent’s ID is in the “ids” array, include all its children:
+        if (ids.includes(parent.id)) {
+          newStoreCategories.push({
+            id:    parent.id,
+            name:  parent.name,
+            items: parent.children.map(child => ({
+              id:        child.id,
+              name:      child.name,
+              slug:      child.slug,
+              sortOrder: child.sortOrder ?? 0,
+              visible:   child.visible ?? true,
+            })),
+          });
+          continue;
+        }
+  
+        // 2) Otherwise, check if any of its children’ IDs are in “ids”:
+        const matchingChildren = parent.children.filter(child =>
+          ids.includes(child.id)
+        );
+  
+        if (matchingChildren.length > 0) {
+          newStoreCategories.push({
+            id:    parent.id,
+            name:  parent.name,
+            items: matchingChildren.map(child => ({
+              id:        child.id,
+              name:      child.name,
+              slug:      child.slug,
+              sortOrder: child.sortOrder ?? 0,
+              visible:   child.visible ?? true,
+            })),
+          });
+        }
+        // 3) If neither parent nor any child matched, don’t add this parent at all.
+      }
+  
+      return {
+        ...prev,
+        storeCategories: newStoreCategories,
+      };
     });
   };
+  
 
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
@@ -351,7 +494,11 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     setForm(f => ({ ...f, ...updated }));
   };
 
-  const handlers: Handlers = { handleChange, onUpdateArray, onAddArray, onRemoveArray, onToggleCategory, setAddress, onChangeSettings, onBulkToggleCategories, onToggleDay };
+  const handlers: Handlers = {
+    handleChange, onUpdateArray, onAddArray, onRemoveArray, setAddress, onChangeSettings, onBulkToggleCategories, onToggleDay,
+    onToggleParent,
+    onToggleSub,
+  };
 
   const next = () => setStepIndex(i => Math.min(i + 1, totalSteps - 1));
   const prev = () => setStepIndex(i => Math.max(i - 1, 0));
