@@ -30,6 +30,8 @@ export default async function EditStorePage({ params }: { params: { id: string }
     },
   });
 
+  console.log(store);
+
   if (!store) {
     redirect("/stores");
   }

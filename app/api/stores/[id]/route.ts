@@ -168,17 +168,17 @@ export async function PUT(
       seo: seo
         ? {
             upsert: {
-              where: { companyId: params.id },
+              where: { id: params.id },
               create: {
                 title: seo.title,
                 description: seo.description,
-                canonicalUrl: seo.canonicalUrl,
+                keywords: seo.keywords,
                 // …any other SEO columns…
               },
               update: {
                 title: seo.title,
                 description: seo.description,
-                canonicalUrl: seo.canonicalUrl,
+                keywords: seo.keywords,
                 // …any other SEO columns…
               },
             },
@@ -192,14 +192,13 @@ export async function PUT(
               {
                 where: { id: analyticsConfig.id },
                 update: {
-                  trackingId: analyticsConfig.trackingId,
-                  enableHeatmaps: analyticsConfig.enableHeatmaps,
+                  googleTag: analyticsConfig.googleTag,
+                  facebookTag: analyticsConfig.facebookTag,
                   // …any other analytics columns…
                 },
                 create: {
-                  companyId: params.id,
-                  trackingId: analyticsConfig.trackingId,
-                  enableHeatmaps: analyticsConfig.enableHeatmaps,
+                  googleTag: analyticsConfig.googleTag,
+                  facebookTag: analyticsConfig.facebookTag,
                   // …any other analytics columns…
                 },
               },
@@ -210,47 +209,50 @@ export async function PUT(
       // ── PaymentSettings (upsert or delete) ──
       PaymentSettings: paymentSettings
         ? {
-            upsert: [
-              {
-                where: { id: paymentSettings.id },
-                update: {
-                  provider: paymentSettings.provider,
-                  apiKey: paymentSettings.apiKey,
-                  currency: paymentSettings.currency,
-                  // …any other payment columns…
-                },
-                create: {
-                  companyId: params.id,
-                  provider: paymentSettings.provider,
-                  apiKey: paymentSettings.apiKey,
-                  currency: paymentSettings.currency,
-                  // …any other payment columns…
-                },
+            upsert: {
+              where: { id: paymentSettings.id },
+              update: {
+                mpesaShortcode: paymentSettings.provider,
+                mpesaConsumerKey: paymentSettings.apiKey,
+                mpesaConsumerSecret: paymentSettings.provider,
+                mpesaCallbackUrl: paymentSettings.apiKey,
+                // …any other payment columns…
               },
-            ],
+              create: {
+                mpesaShortcode: paymentSettings.provider,
+                mpesaConsumerKey: paymentSettings.apiKey,
+                mpesaConsumerSecret: paymentSettings.provider,
+                mpesaCallbackUrl: paymentSettings.apiKey,
+                // …any other payment columns…
+              },
+            },
           }
         : { deleteMany: {} },
 
       // ── ShippingSettings (upsert or delete) ──
       ShippingSettings: shippingSettings
         ? {
-            upsert: {
-              where: { companyId: params.id },
-              create: {
-                provider: shippingSettings.provider,
-                flatRate: shippingSettings.flatRate,
-                freeShippingThreshold: shippingSettings.freeShippingThreshold,
-                // …any other shipping columns…
+            upsert: [
+              {
+                where: { id: shippingSettings.id },
+                create: {
+                  carrierName: shippingSettings.carrierName,
+                  regions: shippingSettings.regions,
+                  enablePickup: shippingSettings.enablePickup,
+                  pickupInstructions: shippingSettings.pickupInstructions
+                  // …any other shipping columns…
+                },
+                update: {
+                  carrierName: shippingSettings.carrierName,
+                  regions: shippingSettings.regions,
+                  enablePickup: shippingSettings.enablePickup,
+                  pickupInstructions: shippingSettings.pickupInstructions
+                  // …any other shipping columns…
+                },
               },
-              update: {
-                provider: shippingSettings.provider,
-                flatRate: shippingSettings.flatRate,
-                freeShippingThreshold: shippingSettings.freeShippingThreshold,
-                // …any other shipping columns…
-              },
-            },
+            ],
           }
-        : { delete: true },
+        : { deleteMany: {} },
 
       // ── junction table for categories (delete existing & recreate) ──
       StoreCategory: storeCategories
