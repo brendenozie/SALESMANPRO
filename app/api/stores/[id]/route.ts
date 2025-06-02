@@ -50,11 +50,11 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify that the user actually owns this store:
-  const existing = await prisma.company.findFirst({
+  // Verify that the store belongs to the current user
+  const existingStore = await prisma.company.findFirst({
     where: { id: params.id, userId: session.user.id },
   });
-  if (!existing) {
+  if (!existingStore) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -95,7 +95,7 @@ export async function PUT(
   const updated = await prisma.company.update({
     where: { id: params.id },
     data: {
-      // ── top‐level fields ──
+      // ── Top‐level Company fields ──
       name,
       slug,
       domain,
@@ -116,7 +116,7 @@ export async function PUT(
       metrics,
       stats,
 
-      // ── array relations (wipe & re‐create) ──
+      // ── Array relations: wipe & re‐create ──
       socialLinks: {
         deleteMany: {},
         create: (socialLinks || []).map(({ id, companyId, ...rest }: any) => rest),
@@ -164,16 +164,19 @@ export async function PUT(
         })),
       },
 
-      // ── ONE-TO-ONE: SEO (upsert or delete) ──
+      // ── ONE‐TO‐ONE: SEO ──
+      // The “where” here must point to the SEO row’s own unique field.
       seo: seo
         ? {
             upsert: {
-              where: { id: params.id },
+              where: { id: seo.id }, // use the actual SEO row’s ID
               create: {
                 title: seo.title,
                 description: seo.description,
+                // If your SEO table has a “keywords” field of type JSON or String[], you can insert it directly:
                 keywords: seo.keywords,
                 // …any other SEO columns…
+                // company: { connect: { id: params.id } },
               },
               update: {
                 title: seo.title,
@@ -183,94 +186,215 @@ export async function PUT(
               },
             },
           }
-        : { delete: true },
+        : {
+            // If the client removed the SEO payload, delete the existing SEO row entirely
+            delete: true,
+          },
 
-      // ── AnalyticsConfig (upsert or delete) ──
-      AnalyticsConfig: analyticsConfig
-        ? {
-            upsert: [
-              {
-                where: { id: analyticsConfig.id },
-                update: {
-                  googleTag: analyticsConfig.googleTag,
-                  facebookTag: analyticsConfig.facebookTag,
-                  // …any other analytics columns…
-                },
-                create: {
-                  googleTag: analyticsConfig.googleTag,
-                  facebookTag: analyticsConfig.facebookTag,
-                  // …any other analytics columns…
-                },
-              },
-            ],
-          }
-        : { deleteMany: {} },
+          // ── ONE-TO-ONE: SEO (upsert or delete) ──
+      // seo: seo
+      // ? {
+      //     upsert: {
+      //       where: { id: params.id },
+      //       create: {
+      //         title: seo.title,
+      //         description: seo.description,
+      //         keywords: seo.keywords,
+      //         // …any other SEO columns…
+      //       },
+      //       update: {
+      //         title: seo.title,
+      //         description: seo.description,
+      //         keywords: seo.keywords,
+      //         // …any other SEO columns…
+      //       },
+      //     },
+      //   }
+      // : { delete: true },
 
-      // ── PaymentSettings (upsert or delete) ──
-      PaymentSettings: paymentSettings
-        ? {
-            upsert: {
-              where: { id: paymentSettings.id },
+    // ── AnalyticsConfig (upsert or delete) ──
+    AnalyticsConfig: analyticsConfig
+      ? {
+          upsert: [
+            {
+              where: { id: analyticsConfig.id },
               update: {
-                mpesaShortcode: paymentSettings.provider,
-                mpesaConsumerKey: paymentSettings.apiKey,
-                mpesaConsumerSecret: paymentSettings.provider,
-                mpesaCallbackUrl: paymentSettings.apiKey,
-                // …any other payment columns…
+                googleTag: analyticsConfig.googleTag,
+                facebookTag: analyticsConfig.facebookTag,
+                // …any other analytics columns…
               },
               create: {
-                mpesaShortcode: paymentSettings.provider,
-                mpesaConsumerKey: paymentSettings.apiKey,
-                mpesaConsumerSecret: paymentSettings.provider,
-                mpesaCallbackUrl: paymentSettings.apiKey,
-                // …any other payment columns…
+                googleTag: analyticsConfig.googleTag,
+                facebookTag: analyticsConfig.facebookTag,
+                // …any other analytics columns…
               },
             },
-          }
-        : { deleteMany: {} },
+          ],
+        }
+      : { deleteMany: {} },
 
-      // ── ShippingSettings (upsert or delete) ──
-      ShippingSettings: shippingSettings
-        ? {
-            upsert: [
-              {
-                where: { id: shippingSettings.id },
-                create: {
-                  carrierName: shippingSettings.carrierName,
-                  regions: shippingSettings.regions,
-                  enablePickup: shippingSettings.enablePickup,
-                  pickupInstructions: shippingSettings.pickupInstructions
-                  // …any other shipping columns…
-                },
-                update: {
-                  carrierName: shippingSettings.carrierName,
-                  regions: shippingSettings.regions,
-                  enablePickup: shippingSettings.enablePickup,
-                  pickupInstructions: shippingSettings.pickupInstructions
-                  // …any other shipping columns…
-                },
+    // ── PaymentSettings (upsert or delete) ──
+    PaymentSettings: paymentSettings
+      ? {
+          upsert: {
+            where: { id: paymentSettings.id },
+            update: {
+              mpesaShortcode: paymentSettings.provider,
+              mpesaConsumerKey: paymentSettings.apiKey,
+              mpesaConsumerSecret: paymentSettings.provider,
+              mpesaCallbackUrl: paymentSettings.apiKey,
+              // …any other payment columns…
+            },
+            create: {
+              mpesaShortcode: paymentSettings.provider,
+              mpesaConsumerKey: paymentSettings.apiKey,
+              mpesaConsumerSecret: paymentSettings.provider,
+              mpesaCallbackUrl: paymentSettings.apiKey,
+              // …any other payment columns…
+            },
+          },
+        }
+      : { deleteMany: {} },
+
+    // ── ShippingSettings (upsert or delete) ──
+    ShippingSettings: shippingSettings
+      ? {
+          upsert: [
+            {
+              where: { id: shippingSettings.id },
+              create: {
+                carrierName: shippingSettings.carrierName,
+                regions: shippingSettings.regions,
+                enablePickup: shippingSettings.enablePickup,
+                pickupInstructions: shippingSettings.pickupInstructions
+                // …any other shipping columns…
               },
-            ],
-          }
-        : { deleteMany: {} },
+              update: {
+                carrierName: shippingSettings.carrierName,
+                regions: shippingSettings.regions,
+                enablePickup: shippingSettings.enablePickup,
+                pickupInstructions: shippingSettings.pickupInstructions
+                // …any other shipping columns…
+              },
+            },
+          ],
+        }
+      : { deleteMany: {} },
 
-      // ── junction table for categories (delete existing & recreate) ──
-      StoreCategory: storeCategories
-        ? {
-            deleteMany: {},
-            create: (storeCategories || []).map((sc: any) => ({
-              category: { connect: { id: sc.id } },
-              displayName: sc.displayName,
-              sortOrder: sc.sortOrder,
-              visible: sc.visible,
-            })),
-          }
-        : { deleteMany: {} },
+    // ── junction table for categories (delete existing & recreate) ──
+    StoreCategory: storeCategories
+      ? {
+          deleteMany: {},
+          create: (storeCategories || []).map((sc: any) => ({
+            category: { connect: { id: sc.id } },
+            displayName: sc.displayName,
+            sortOrder: sc.sortOrder,
+            visible: sc.visible,
+          })),
+        }
+      : { deleteMany: {} },
+
+
+      // ── ONE‐TO‐ONE: AnalyticsConfig ──
+      // AnalyticsConfig: analyticsConfig
+      //   ? {
+      //       upsert: {
+      //         where: { id: analyticsConfig.id }, // use the AnalyticsConfig row’s ID
+      //         create: {
+      //           googleTag: analyticsConfig.googleTag,
+      //           facebookTag: analyticsConfig.facebookTag,
+      //           // …other AnalyticsConfig columns…
+      //           // company: { connect: { id: params.id } },
+      //         },
+      //         update: {
+      //           googleTag: analyticsConfig.googleTag,
+      //           facebookTag: analyticsConfig.facebookTag,
+      //           // …other AnalyticsConfig columns…
+      //         },
+      //       },
+      //     }
+      //   : {
+      //       delete: true,
+      //     },
+
+      // // ── ONE‐TO‐ONE: PaymentSettings ──
+      // PaymentSettings: paymentSettings
+      //   ? {
+      //       upsert: {
+      //         where: { id: paymentSettings.id }, // use the PaymentSettings row’s ID
+      //         create: {
+      //           mpesaShortcode: paymentSettings.mpesaShortcode,
+      //           mpesaConsumerKey: paymentSettings.mpesaConsumerKey,
+      //           mpesaConsumerSecret: paymentSettings.mpesaConsumerSecret,
+      //           mpesaCallbackUrl: paymentSettings.mpesaCallbackUrl,
+      //           // …any other PaymentSettings columns…
+      //           // company: { connect: { id: params.id } },
+      //         },
+      //         update: {
+      //           mpesaShortcode: paymentSettings.mpesaShortcode,
+      //           mpesaConsumerKey: paymentSettings.mpesaConsumerKey,
+      //           mpesaConsumerSecret: paymentSettings.mpesaConsumerSecret,
+      //           mpesaCallbackUrl: paymentSettings.mpesaCallbackUrl,
+      //           // …any other PaymentSettings columns…
+      //         },
+      //       },
+      //     }
+      //   : {
+      //       delete: true,
+      //     },
+
+      // // ── ONE‐TO‐ONE: ShippingSettings ──
+      // ShippingSettings: shippingSettings
+      //   ? {
+      //       upsert: {
+      //         where: { id: shippingSettings.id }, // use the ShippingSettings row’s ID
+      //         create: {
+      //           carrierName: shippingSettings.carrierName,
+      //           trackingUrl: shippingSettings.trackingUrl,
+      //           regions: shippingSettings.regions,
+      //           enablePickup: shippingSettings.enablePickup,
+      //           pickupInstructions: shippingSettings.pickupInstructions,
+      //           // …any other ShippingSettings columns…
+      //           // company: { connect: { id: params.id } },
+      //         },
+      //         update: {
+      //           carrierName: shippingSettings.carrierName,
+      //           trackingUrl: shippingSettings.trackingUrl,
+      //           regions: shippingSettings.regions,
+      //           enablePickup: shippingSettings.enablePickup,
+      //           pickupInstructions: shippingSettings.pickupInstructions,
+      //           // …any other ShippingSettings columns…
+      //         },
+      //       },
+      //     }
+      //   : {
+      //       delete: true,
+      //     },
+
+      // // ── Junction table: StoreCategory ──
+      // // We “deleteMany” all existing category‐rows, then re‐create them from the payload.
+      // StoreCategory: storeCategories
+      //   ? {
+      //       deleteMany: {},
+      //       create: (storeCategories || []).map((sc: any) => ({
+      //         // The front end sent sc.id (the ProductCategory ID) and sc.name.
+      //         // We’ll use “sc.name” as the “displayName” in the join table,
+      //         // and provide defaults for “sortOrder” + “visible” (which the user didn’t actually edit).
+      //         category: { connect: { id: sc.id } },
+      //         displayName: sc.name ?? "",     // use “name” as “displayName”
+      //         sortOrder: 0,                   // default to 0; adjust if you have a UI to reorder
+      //         visible: true,                  // default to “true”; adjust if you let the user toggle visibility
+      //       })),
+      //     }
+      //   : {
+      //       deleteMany: {},
+      //     },
     },
   });
 
   return NextResponse.json(updated);
 }
+
 
 export async function DELETE(
   req: NextRequest,
