@@ -182,8 +182,7 @@ model Company {
   // analytics     AnalyticsConfig?  @relation(fields: [analyticsConfigId], references: [id])
   // payment       PaymentSettings?  @relation(fields: [paymentSettingsId], references: [id])
 
-  shippingSettingsId String?         @db.ObjectId
-  StoreCategory      StoreCategory[]
+  StoreCategory StoreCategory[]
 
   // existing relations
   user            User?            @relation(fields: [userId], references: [id])
@@ -202,13 +201,24 @@ model Company {
   deletedAt DateTime?
   sEOId     String?   @db.ObjectId
 
-  PageSection        PageSection[]
-  BlogPost           BlogPost[]
-  Collection         Collection[]
-  ShippingSettings   ShippingSettings[]
-  AnalyticsConfig    AnalyticsConfig[]
-  PaymentSettings    PaymentSettings[]
+  PageSection PageSection[]
+  BlogPost    BlogPost[]
+  Collection  Collection[]
+
+  // ShippingSettings   ShippingSettings[]
+  // AnalyticsConfig    AnalyticsConfig[]
+  // PaymentSettings    PaymentSettings[]
+
   MarketplaceListing MarketplaceListing[]
+
+  analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
+  analyticsConfigId String?          @db.ObjectId
+
+  paymentSettings   PaymentSettings? @relation(fields: [paymentSettingsId], references: [id])
+  paymentSettingsId String?          @db.ObjectId
+
+  shippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
+  shippingSettingsId String?           @db.ObjectId
 
   awards   Json? // e.g. [{ name: String, iconUrl: String }]
   metrics  Json?
@@ -286,34 +296,31 @@ model Promotion {
 }
 
 model AnalyticsConfig {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   googleTag   String?
   facebookTag String?
-  company     Company @relation(fields: [companyId], references: [id])
-  companyId   String  @db.ObjectId
+  Company     Company[]
 }
 
 model PaymentSettings {
-  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
   stripeKey           String?
   paypalKey           String?
   mpesaShortcode      String?
   mpesaConsumerKey    String?
   mpesaConsumerSecret String?
   mpesaCallbackUrl    String?
-  company             Company @relation(fields: [companyId], references: [id])
-  companyId           String  @db.ObjectId
+  Company             Company[]
 }
 
 model ShippingSettings {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
   carrierName        String?
   trackingUrl        String?
   regions            Json?
   enablePickup       Boolean?
   pickupInstructions String?
-  company            Company  @relation(fields: [companyId], references: [id])
-  companyId          String   @db.ObjectId
+  Company            Company[]
 }
 
 model PageSection {

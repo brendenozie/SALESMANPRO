@@ -23,9 +23,9 @@ export async function GET(
       heroSlides: true,
       promotions: true,
       seo: true,
-      AnalyticsConfig: true,
-      PaymentSettings: true,
-      ShippingSettings: true,
+      analyticsConfig: true,
+      paymentSettings: true,
+      shippingSettings: true,
       StoreCategory: {
         include: {
           category: true,
@@ -164,6 +164,7 @@ export async function PUT(
         })),
       },
 
+      
       // ── ONE‐TO‐ONE: SEO ──
       // The “where” here must point to the SEO row’s own unique field.
       seo: seo
@@ -212,74 +213,90 @@ export async function PUT(
       //   }
       // : { delete: true },
 
+      analyticsConfig: analyticsConfig
+  ? {
+      upsert: {
+        where: { id: analyticsConfig.id },
+        create: {
+          googleTag: analyticsConfig.googleTag,
+          facebookTag: analyticsConfig.facebookTag,
+        },
+        update: {
+          googleTag: analyticsConfig.googleTag,
+          facebookTag: analyticsConfig.facebookTag,
+        },
+      },
+    }
+  : { delete: true },
+
+
     // ── AnalyticsConfig (upsert or delete) ──
-    AnalyticsConfig: analyticsConfig
-      ? {
-          upsert: [
-            {
-              where: { id: analyticsConfig.id },
-              update: {
-                googleTag: analyticsConfig.googleTag,
-                facebookTag: analyticsConfig.facebookTag,
-                // …any other analytics columns…
-              },
-              create: {
-                googleTag: analyticsConfig.googleTag,
-                facebookTag: analyticsConfig.facebookTag,
-                // …any other analytics columns…
-              },
-            },
-          ],
-        }
-      : { deleteMany: {} },
+    // AnalyticsConfig: analyticsConfig
+    //   ? {
+    //       upsert: [
+    //         {
+    //           where: { id: analyticsConfig.id },
+    //           update: {
+    //             googleTag: analyticsConfig.googleTag,
+    //             facebookTag: analyticsConfig.facebookTag,
+    //             // …any other analytics columns…
+    //           },
+    //           create: {
+    //             googleTag: analyticsConfig.googleTag,
+    //             facebookTag: analyticsConfig.facebookTag,
+    //             // …any other analytics columns…
+    //           },
+    //         },
+    //       ],
+    //     }
+    //   : { deleteMany: {} },
 
     // ── PaymentSettings (upsert or delete) ──
-    PaymentSettings: paymentSettings
+    paymentSettings: paymentSettings
       ? {
           upsert: {
             where: { id: paymentSettings.id },
             update: {
-              mpesaShortcode: paymentSettings.provider,
-              mpesaConsumerKey: paymentSettings.apiKey,
-              mpesaConsumerSecret: paymentSettings.provider,
-              mpesaCallbackUrl: paymentSettings.apiKey,
+              mpesaShortcode: paymentSettings.mpesaShortcode,
+              mpesaConsumerKey: paymentSettings.mpesaConsumerKey,
+              mpesaConsumerSecret: paymentSettings.mpesaConsumerSecret,
+              mpesaCallbackUrl: paymentSettings.mpesaCallbackUrl,
               // …any other payment columns…
             },
             create: {
-              mpesaShortcode: paymentSettings.provider,
-              mpesaConsumerKey: paymentSettings.apiKey,
-              mpesaConsumerSecret: paymentSettings.provider,
-              mpesaCallbackUrl: paymentSettings.apiKey,
+              mpesaShortcode: paymentSettings.mpesaShortcode,
+              mpesaConsumerKey: paymentSettings.mpesaConsumerKey,
+              mpesaConsumerSecret: paymentSettings.mpesaConsumerSecret,
+              mpesaCallbackUrl: paymentSettings.mpesaCallbackUrl,
               // …any other payment columns…
             },
           },
         }
-      : { deleteMany: {} },
+      : { delete: true },
 
     // ── ShippingSettings (upsert or delete) ──
-    ShippingSettings: shippingSettings
+    shippingSettings: shippingSettings
       ? {
-          upsert: [
-            {
-              where: { id: shippingSettings.id },
-              create: {
-                carrierName: shippingSettings.carrierName,
-                regions: shippingSettings.regions,
-                enablePickup: shippingSettings.enablePickup,
-                pickupInstructions: shippingSettings.pickupInstructions
-                // …any other shipping columns…
-              },
-              update: {
-                carrierName: shippingSettings.carrierName,
-                regions: shippingSettings.regions,
-                enablePickup: shippingSettings.enablePickup,
-                pickupInstructions: shippingSettings.pickupInstructions
-                // …any other shipping columns…
-              },
+          upsert: {
+            update: {
+              carrierName: shippingSettings.carrierName,
+              regions: shippingSettings.regions,
+              enablePickup: shippingSettings.enablePickup,
+              trackingUrl:shippingSettings.trackingUrl,
+              pickupInstructions: shippingSettings.pickupInstructions
+              // …any other shipping columns…
             },
-          ],
+            create: {
+              carrierName: shippingSettings.carrierName,
+              regions: shippingSettings.regions,
+              enablePickup: shippingSettings.enablePickup,
+              trackingUrl:shippingSettings.trackingUrl,
+              pickupInstructions: shippingSettings.pickupInstructions
+              // …any other shipping columns…
+            },
+          },
         }
-      : { deleteMany: {} },
+      : { delete: true },
 
     // ── junction table for categories (delete existing & recreate) ──
     StoreCategory: storeCategories
