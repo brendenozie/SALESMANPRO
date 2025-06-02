@@ -181,3 +181,23 @@
 .animate-fill {
   animation: fill 1s ease-out forwards;
 }
+
+/* ===== collapsible.css ===== */
+
+/* Base state: closed (no height visible) */
+.collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+/* When .open is applied, allow content to expand */
+.collapsible.open {
+  max-height: 1000px;
+  /* sufficiently large to contain all child elements */
+}
+
+/* Explicit closed state (for toggling back) */
+.collapsible.closed {
+  max-height: 0;
+}

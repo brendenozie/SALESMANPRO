@@ -39,19 +39,20 @@ const steps: StepConfig[] = [
       key: 'categories',
       title: 'Categories',
       render: (f, h, cats) => (
-        // <CategoryAccordion
-        //   availableCategories={cats}
-        //   selectedCategories={f.storeCategories}          // CategoryOption[]
-        //   onToggleCategory={h.onToggleCategory}           // CategoryOption => void
-        //   onBulkToggle={h.onBulkToggleCategories}         // string[] => void
-        // />
         <CategoryAccordion
           availableCategories={cats}
           selectedCategories={f.storeCategories}
           onToggleParent={h.onToggleParent}
           onToggleSub={h.onToggleSub}       // see note below
-          onBulkToggle={h.onBulkToggleCategories}
+          onBulkToggle={h.onBulkToggle}
           onApply={() => console.log(f.storeCategories)}
+
+      //     availableCategories={categories}
+      // selectedCategories={selectedCategories}
+      // onToggleParent={handleToggleParent}
+      // onToggleSub={handleToggleSub}
+      // onBulkToggle={handleBulkToggle}
+      // onApply={handleApply}
         />
 
       )
@@ -343,149 +344,167 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   // };
 
   // 2) Implement onToggleParent:
+
+// 1) onToggleParent: add or remove a parent (selects/deselects ALL sub‐items)
 const onToggleParent = (parent: ParentCategory) => {
-  setForm(prev => {
-    // Find if this parent is already in form.storeCategories
+  setForm((prev) => {
+    // Find if this parent is already in storeCategories
     const existingIndex = prev.storeCategories.findIndex(
       sc => sc.id === parent.id
     );
 
     if (existingIndex !== -1) {
-      // Parent is already selected → remove it entirely
+      // → Parent is already selected; remove it entirely
       const updated = prev.storeCategories.filter(
         sc => sc.id !== parent.id
       );
       return { ...prev, storeCategories: updated };
     } else {
-      // Parent is not selected → add it, with items = all of its children
-      // Build a new StoreCategoryEntry:
+      // → Parent is not selected; add it, with items = all of its children
       const newEntry: StoreCategoryEntry = {
-        id:    parent.id,
-        name:  parent.name,
-        // “Fully select” the parent by including all of its sub‐objects:
+        id:   parent.id,
+        name: parent.name,
         items: parent.children && parent.children.map(child => ({
           id:        child.id,
           name:      child.name,
           slug:      child.slug,
           sortOrder: child.sortOrder ?? 0,
-          visible:   child.visible  ?? true
-        }))
+          visible:   child.visible ?? true,
+        })),
       };
 
       return {
         ...prev,
-        storeCategories: [...prev.storeCategories, newEntry]
+        storeCategories: [...prev.storeCategories, newEntry],
       };
     }
   });
 };
 
+// 2) onToggleSub: add or remove a single sub‐item under a given parent
 const onToggleSub = (parentId: string, sub: SubObj) => {
-  setForm(prev => {
-    // Find existing parent entry
-    const parentEntry = prev.storeCategories.find(sc => sc.id === parentId);
+  setForm((prev) => {
+    // Find the parent entry (if it exists)
+    const parentEntry = prev.storeCategories.find(
+      sc => sc.id === parentId
+    );
+
     if (!parentEntry) {
-      // If parent isn’t in storeCategories, add it with this single sub
+      // Parent isn't selected yet → add it with this one sub only
+      const parentName =
+        availableCategories.find(cat => cat.id === parentId)?.name ?? "";
+
       return {
         ...prev,
         storeCategories: [
           ...prev.storeCategories,
           {
             id:    parentId,
-            name:  (availableCategories.find(cat => cat.id === parentId)?.name ?? ''),
-            items: [{ ...sub, sortOrder: sub.sortOrder ?? 0, visible: sub.visible ?? true }]
-          }
-        ]
+            name:  parentName,
+            items: [{
+              id:        sub.id,
+              name:      sub.name,
+              slug:      sub.slug,
+              sortOrder: sub.sortOrder ?? 0,
+              visible:   sub.visible ?? true,
+            }],
+          },
+        ],
       };
     } else {
-      // Parent already selected: toggle this sub inside its items array
-      const alreadyHasSub = parentEntry.items.some(item => item.id === sub.id);
+      // Parent is already in storeCategories → toggle this sub
+      const alreadyHasSub = parentEntry.items.some(
+        item => item.id === sub.id
+      );
+
       const newItems = alreadyHasSub
         ? parentEntry.items.filter(item => item.id !== sub.id)
-        : [...parentEntry.items, { ...sub, sortOrder: sub.sortOrder ?? 0, visible: sub.visible ?? true }];
+        : [
+            ...parentEntry.items,
+            {
+              id:        sub.id,
+              name:      sub.name,
+              slug:      sub.slug,
+              sortOrder: sub.sortOrder ?? 0,
+              visible:   sub.visible ?? true,
+            },
+          ];
 
-      // If newItems becomes empty, remove the entire parent entry:
+      // If toggling off the last sub, remove the entire parent entry
       if (newItems.length === 0) {
         return {
           ...prev,
-          storeCategories: prev.storeCategories.filter(sc => sc.id !== parentId)
+          storeCategories: prev.storeCategories.filter(
+            sc => sc.id !== parentId
+          ),
         };
       }
 
-      // Otherwise, update the items array only:
+      // Otherwise, update the parent’s items array
       return {
         ...prev,
         storeCategories: prev.storeCategories.map(sc =>
           sc.id === parentId
             ? { ...sc, items: newItems }
             : sc
-        )
+        ),
       };
     }
   });
 };
 
+// 3) onBulkToggleCategories (rename to onBulkToggle for consistency with the refactored CategoryTree):
+//    Given an array of ids (some parent IDs, some child IDs), build storeCategories accordingly.
+const onBulkToggle = (ids: string[]) => {
+  setForm((prev) => {
+    const newStoreCategories: StoreCategoryEntry[] = [];
 
-  // Bulk‐toggle by ID array: convert IDs → full CategoryOption objects
-  // const onBulkToggleCategories = (ids: string[]) => {
-  //   setForm(f => {
-  //     // find matching CategoryOption objects in our available list
-  //     const chosen = availableCategories.filter(c => ids.includes(c.id));
-  //     return { ...f, storeCategories: chosen };
-  //   });
-  // };
-
-  const onBulkToggleCategories = (ids: string[]) => {
-    setForm(prev => {
-      const newStoreCategories: StoreForm["storeCategories"] = [];
-  
-      for (const parent of availableCategories) {
-        // 1) If the parent’s ID is in the “ids” array, include all its children:
-        if (ids.includes(parent.id)) {
-          newStoreCategories.push({
-            id:    parent.id,
-            name:  parent.name,
-            items: parent.children.map(child => ({
-              id:        child.id,
-              name:      child.name,
-              slug:      child.slug,
-              sortOrder: child.sortOrder ?? 0,
-              visible:   child.visible ?? true,
-            })),
-          });
-          continue;
-        }
-  
-        // 2) Otherwise, check if any of its children’ IDs are in “ids”:
-        const matchingChildren = parent.children.filter(child =>
-          ids.includes(child.id)
-        );
-  
-        if (matchingChildren.length > 0) {
-          newStoreCategories.push({
-            id:    parent.id,
-            name:  parent.name,
-            items: matchingChildren.map(child => ({
-              id:        child.id,
-              name:      child.name,
-              slug:      child.slug,
-              sortOrder: child.sortOrder ?? 0,
-              visible:   child.visible ?? true,
-            })),
-          });
-        }
-        // 3) If neither parent nor any child matched, don’t add this parent at all.
+    for (const parent of availableCategories) {
+      // 1) If this parent’s ID is explicitly in `ids`, select all its children
+      if (ids.includes(parent.id)) {
+        newStoreCategories.push({
+          id:    parent.id,
+          name:  parent.name,
+          items: parent.children.map(child => ({
+            id:        child.id,
+            name:      child.name,
+            slug:      child.slug,
+            sortOrder: child.sortOrder ?? 0,
+            visible:   child.visible ?? true,
+          })),
+        });
+        continue;
       }
-  
-      return {
-        ...prev,
-        storeCategories: newStoreCategories,
-      };
-    });
-  };
-  
 
+      // 2) Otherwise, check if any of its children are in `ids`
+      const matchingChildren = parent.children.filter(child =>
+        ids.includes(child.id)
+      );
 
+      if (matchingChildren.length > 0) {
+        newStoreCategories.push({
+          id:    parent.id,
+          name:  parent.name,
+          items: matchingChildren.map(child => ({
+            id:        child.id,
+            name:      child.name,
+            slug:      child.slug,
+            sortOrder: child.sortOrder ?? 0,
+            visible:   child.visible ?? true,
+          })),
+        });
+      }
+
+      // 3) If neither parent nor any child matched, we skip this parent
+    }
+
+    return {
+      ...prev,
+      storeCategories: newStoreCategories,
+    };
+  });
+};
+  
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm(f => ({ ...f, address, geoLocation }));
   };
@@ -495,7 +514,7 @@ const onToggleSub = (parentId: string, sub: SubObj) => {
   };
 
   const handlers: Handlers = {
-    handleChange, onUpdateArray, onAddArray, onRemoveArray, setAddress, onChangeSettings, onBulkToggleCategories, onToggleDay,
+    handleChange, onUpdateArray, onAddArray, onRemoveArray, setAddress, onChangeSettings, onBulkToggle, onToggleDay,
     onToggleParent,
     onToggleSub,
   };
@@ -855,87 +874,87 @@ const StepContent = stepIndex < steps.length
   );
 
   return <div className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
-  {/* Sidebar */}
-  <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
-    <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
-    <nav className="flex flex-col gap-2 overflow-y-auto">
-      {steps.map((s, i) => (
-        <button
-          key={s.key}
-          type="button"
-          className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
-            i === stepIndex ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
-          }`}
-          onClick={() => setStepIndex(i)}
-        >
-          <span className="w-6 h-6 bg-indigo-200 text-indigo-700 rounded-full text-xs flex items-center justify-center">
-            {i + 1}
-          </span>
-          {s.title}
-        </button>
-      ))}
-      <button
-        type="button"
-        className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
-          stepIndex === steps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
-        }`}
-        onClick={() => setStepIndex(steps.length)}
-      >
-        <span className="w-6 h-6 bg-green-200 text-green-700 rounded-full text-xs flex items-center justify-center">
-          ✔
-        </span>
-        Review
-      </button>
-    </nav>
-  </aside>
+          {/* Sidebar */}
+          <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
+            <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
+            <nav className="flex flex-col gap-2 overflow-y-auto">
+              {steps.map((s, i) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+                    i === stepIndex ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                  onClick={() => setStepIndex(i)}
+                >
+                  <span className="w-6 h-6 bg-indigo-200 text-indigo-700 rounded-full text-xs flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  {s.title}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+                  stepIndex === steps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
+                }`}
+                onClick={() => setStepIndex(steps.length)}
+              >
+                <span className="w-6 h-6 bg-green-200 text-green-700 rounded-full text-xs flex items-center justify-center">
+                  ✔
+                </span>
+                Review
+              </button>
+            </nav>
+          </aside>
 
-  {/* Main content */}
-  <main className="flex-1 flex flex-col px-4 sm:px-8 py-8 max-h-screen">
-    {/* Step progress */}
-    <div className="mb-6">
-      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-indigo-600 rounded-full transition-all duration-300"
-          style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
-        />
-      </div>
-      <div className="flex justify-between mt-2 text-sm text-gray-500">
-        <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
-        <span>{stepIndex < steps.length ? steps[stepIndex].title : 'Review & Submit'}</span>
-      </div>
-    </div>
+          {/* Main content */}
+          <main className="flex-1 flex flex-col px-4 sm:px-8 py-8 max-h-screen">
+            {/* Step progress */}
+            <div className="mb-6">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                  style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-sm text-gray-500">
+                <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
+                <span>{stepIndex < steps.length ? steps[stepIndex].title : 'Review & Submit'}</span>
+              </div>
+            </div>
 
-    {/* Dynamic step content */}
-    <div className="flex-1 max-h-screen overflow-auto">{StepContent}</div>
+            {/* Dynamic step content */}
+            <div className="flex-1 max-h-screen overflow-auto">{StepContent}</div>
 
-    {/* Navigation buttons */}
-    <div className="mt-8 flex justify-between items-center border-t pt-4">
-      <button
-        type="button"
-        disabled={stepIndex === 0}
-        onClick={prev}
-        className="px-5 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-      >
-        ← Back
-      </button>
+            {/* Navigation buttons */}
+            <div className="mt-8 flex justify-between items-center border-t pt-4">
+              <button
+                type="button"
+                disabled={stepIndex === 0}
+                onClick={prev}
+                className="px-5 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+              >
+                ← Back
+              </button>
 
-      {stepIndex < steps.length ? (
-        <button
-          type="button"
-          onClick={next}
-          className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-        >
-          Next →
-        </button>
-      ) : (
-        <button
-          onClick={handleSubmit}
-          className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
-        >
-          Submit Store
-        </button>
-      )}
-    </div>
-  </main>
-</div>;
+              {stepIndex < steps.length ? (
+                <button
+                  type="button"
+                  onClick={next}
+                  className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+                >
+                  Next →
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+                >
+                  Submit Store
+                </button>
+              )}
+            </div>
+          </main>
+        </div>;
 }

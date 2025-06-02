@@ -198,7 +198,7 @@ interface Handlers {
   setAddress: (address: string, geo: GeoLocation) => void;
   onChangeSettings: (updated: Partial<StoreForm>) => void;
   
-  onBulkToggleCategories: (ids: string[]) => void;
+  onBulkToggle: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void; 
   onToggleParent: (cat: ParentCategory) => void;
 
