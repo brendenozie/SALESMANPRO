@@ -315,7 +315,7 @@ export async function PUT(
       deleteMany: {},
       create: (storeCategories || []).map((sc: any) => ({
         category:   { connect: { id: sc.id } },
-        displayName: sc.displayName,
+        displayName: sc.name,
         icon:        sc.icon,
         sortOrder:   sc.sortOrder ?? 0,
         visible:     sc.visible ?? true,
