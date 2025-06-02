@@ -3,6 +3,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import CreateStoreForm from "../../../../components/stores/create/CreateStoreForm/CreateStoreForm";
 import prisma from "../../../../server/db/prismadb";
+import { StoreForm } from "../../../../types/typings";
 
 export const dynamic = "force-dynamic";
 
@@ -41,19 +42,19 @@ export default async function EditStorePage({ params }: { params: { id: string }
     const { categories } = await res.json();
     const availableCategories = categories.map((c: any) => ({ id: c.id, name: c.name }));
 
-  const storeFormData = {
-    id: store.id,
+  const storeFormData : StoreForm = {
+    id: store.id ?? "",
     name: store.name ?? "",
     slug: store.slug ?? "",
-    domain: store.domain ?? undefined,
-    tagline: store.tagline ?? undefined,
-    description: store.description ?? undefined,
+    domain: store.domain ?? "",
+    tagline: store.tagline ?? "",
+    description: store.description ?? "",
     category: store.category ?? undefined,
-    logoUrl: store.logoUrl ?? undefined,
-    bannerUrl: store.bannerUrl ?? undefined,
+    logoUrl: store.logoUrl ?? "",
+    bannerUrl: store.bannerUrl ?? "",
     contactEmail: store.contactEmail ?? undefined,
-    contactPhone: store.contactPhone ?? undefined,
-    address: store.address ?? undefined,
+    contactPhone: store.contactPhone ?? "",
+    address: store.address ?? "",
     geoLocation:
       store.geoLocation && typeof store.geoLocation === "string"
         ? JSON.parse(store.geoLocation)
@@ -118,45 +119,50 @@ export default async function EditStorePage({ params }: { params: { id: string }
           id: store.seo.id,
           title: store.seo.title,
           description: store.seo.description,
-          canonicalUrl: store.seo.canonicalUrl,
+          keywords: store.seo.keywords,
           // …etc
         }
-      : undefined,
+      : {},
 
-    analyticsConfig: store.AnalyticsConfig
+    analyticsConfig: Array.isArray(store.AnalyticsConfig) && store.AnalyticsConfig.length > 0
       ? {
-          id: store.AnalyticsConfig.id,
-          trackingId: store.AnalyticsConfig.trackingId,
-          enableHeatmaps: store.AnalyticsConfig.enableHeatmaps,
-          // …etc
+          id: store.AnalyticsConfig[0].id,
+          googleTag: store.AnalyticsConfig[0].googleTag,
+          facebookTag: store.AnalyticsConfig[0].facebookTag,
+          companyId: store.AnalyticsConfig[0].companyId,
+          // Add other fields as needed
         }
-      : undefined,
+      : {},
 
-    paymentSettings: store.PaymentSettings
+    paymentSettings: Array.isArray(store.PaymentSettings) && store.PaymentSettings.length > 0
       ? {
-          id: store.PaymentSettings.id,
-          provider: store.PaymentSettings.provider,
-          apiKey: store.PaymentSettings.apiKey,
-          currency: store.PaymentSettings.currency,
+          id: store.PaymentSettings[0].id,
+          mpesaShortcode: store.PaymentSettings[0].mpesaShortcode,
+          mpesaConsumerKey: store.PaymentSettings[0].mpesaConsumerKey,
+          mpesaConsumerSecret: store.PaymentSettings[0].mpesaConsumerSecret,
+          mpesaCallbackUrl: store.PaymentSettings[0].mpesaCallbackUrl,
+          companyId: store.PaymentSettings[0].companyId,
           // …etc
         }
-      : undefined,
+      : {},
 
-    shippingSettings: store.ShippingSettings
+    shippingSettings: Array.isArray(store.ShippingSettings) && store.ShippingSettings.length > 0
       ? {
-          id: store.ShippingSettings.id,
-          provider: store.ShippingSettings.provider,
-          flatRate: store.ShippingSettings.flatRate,
-          freeShippingThreshold: store.ShippingSettings.freeShippingThreshold,
-          // …etc
+          id: store.ShippingSettings[0].id,
+          carrierName: store.ShippingSettings[0].carrierName,
+          regions: store.ShippingSettings[0].regions,
+          enablePickup: store.ShippingSettings[0].enablePickup,
+          pickupInstructions: store.ShippingSettings[0].pickupInstructions,
+          companyId: store.ShippingSettings[0].companyId,
+          
         }
-      : undefined,
+      : {},
 
     // JUNCTION TABLE: pull out exactly (categoryId, displayName, sortOrder, visible)
     storeCategories: store.StoreCategory.map((sc: any) => ({
       // `sc` looks like { id, companyId, categoryId, displayName, sortOrder, visible, category: { id, name, slug } }
       id: sc.categoryId,
-      displayName: sc.displayName ?? "",
+      name: sc.name ?? "",
       sortOrder: sc.sortOrder ?? 0,
       visible: sc.visible ?? true,
     })),

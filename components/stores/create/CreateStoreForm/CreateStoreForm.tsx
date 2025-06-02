@@ -209,6 +209,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const router = useRouter();
 
   const defaultForm: StoreForm = {
+    id:"",
     name: '', slug: '', domain: '', tagline: '', description: '', category: 'E-commerce',
     logoUrl: 'https://logourl.com', bannerUrl: 'https://bannerurl.com', contactEmail: '', contactPhone: '', address: '',
     geoLocation: { lat: 0, lng: 0 }, openingHours: { mon: { open: '', close: '' }, tue: { open: '', close: '' }, wed: { open: '', close: '' }, thu: { open: '', close: '' }, fri: { open: '', close: '' }, sat: { open: '', close: '' }, sun: { open: '', close: '' } },

@@ -110,18 +110,23 @@ export interface Policy { type: string; title?: string; content: string; }
 export interface FAQ { question: string; answer: string; order?: number; }
 
 export interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number; order?: number; }
+
 export interface HeroSlide { imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; }
+
 export interface Promotion { title: string; description: string; startsAt?: string; endsAt?: string; bannerUrl?: string; order?: number; }
+
 export interface Award {
   name: string;
   iconUrl: string;
   order?: number;
 }
+
 export interface Metric {
   label: string;
   value: number;
   iconUrl?: string;
 }
+
 export interface Stat {
   label: string;
   value: string | number;
@@ -129,6 +134,7 @@ export interface Stat {
 }
 
 type StoreForm = {
+  id:string;
   name: string;
   slug: string;
   domain: string;
