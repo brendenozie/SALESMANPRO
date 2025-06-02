@@ -10,30 +10,30 @@ import {
 } from "@heroicons/react/24/outline";
 
 export type SubObj = {
-  id: string;
+  id:   string;
   name: string;
   slug: string;
 };
 
 export type ParentCategory = {
-  id: string;
-  name: string;
+  id:       string;
+  name:     string;
   children: SubObj[];
 };
 
 type SelectedCategory = {
-  id: string;
-  name: string;
+  id:    string;
+  name:  string;
   items: SubObj[];
 };
 
 type Props = {
   availableCategories: ParentCategory[];
-  selectedCategories: SelectedCategory[];
-  onToggleParent: (cat: ParentCategory) => void;
-  onToggleSub: (parentId: string, sub: SubObj) => void;
-  onBulkToggle: (ids: string[]) => void;
-  onApply: () => void;
+  selectedCategories:  SelectedCategory[];
+  onToggleParent:      (cat: ParentCategory) => void;
+  onToggleSub:         (parentId: string, sub: SubObj) => void;
+  onBulkToggle:        (ids: string[]) => void;
+  onApply:             () => void;
 };
 
 export default function CategoryTree({
@@ -44,7 +44,7 @@ export default function CategoryTree({
   onBulkToggle,
   onApply,
 }: Props) {
-  const [search, setSearch] = useState("");
+  const [search,   setSearch]   = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -60,7 +60,8 @@ export default function CategoryTree({
       }))
       .filter(
         (cat) =>
-          cat.name.toLowerCase().includes(q) || cat.children.length > 0
+          cat.name.toLowerCase().includes(q) ||
+        cat.children && cat.children.length > 0
       );
   }, [search, availableCategories]);
 
@@ -155,7 +156,7 @@ export default function CategoryTree({
           {filtered.length === 0 ? (
             <div className="text-center text-gray-500 py-10 animate-fadeIn">
               <MagnifyingGlassIcon className="mx-auto w-12 h-12 mb-3 text-gray-300" />
-              <p className="text-lg">No categories match “{search}”.</p>
+              <p className="text-lg">No categories match “{search}.”</p>
               <button
                 onClick={() => setSearch("")}
                 className="mt-4 text-indigo-600 hover:underline focus:outline-none"
@@ -169,13 +170,26 @@ export default function CategoryTree({
                 const parentEntry = selectedCategories.find(
                   (s) => s.id === cat.id
                 );
-                const selectedCount = (parentEntry?.items && parentEntry?.items.length) ?? 0;
-                const hasChildren = cat.children && cat.children.length > 0;
+                const selectedCount =
+                  (parentEntry?.items && parentEntry?.items.length) ?? 0;
+                const hasChildren =
+                  Array.isArray(cat.children) && cat.children.length > 0;
                 const allSelected =
                   hasChildren && selectedCount === cat.children.length;
                 const partial =
-                  selectedCount > 0 && selectedCount < cat.children.length;
+                  selectedCount > 0 &&
+                  selectedCount < cat.children.length;
                 const isOpen = expanded.has(cat.id);
+
+                // Always toggle expand when the checkbox is clicked
+                const handleParentCheckboxClick = (
+                  e: React.MouseEvent
+                ) => {
+                  e.stopPropagation();
+                  onToggleParent(cat);
+                  // → Force expand right away
+                  toggleExpand(cat.id);
+                };
 
                 return (
                   <li
@@ -186,7 +200,9 @@ export default function CategoryTree({
                     <div
                       className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-indigo-50 transition"
                       onClick={() =>
-                        hasChildren ? toggleExpand(cat.id) : onToggleParent(cat)
+                        hasChildren
+                          ? toggleExpand(cat.id)
+                          : onToggleParent(cat)
                       }
                     >
                       <div className="flex items-center space-x-3">
@@ -196,16 +212,15 @@ export default function CategoryTree({
                           ref={(el) =>
                             el && (el.indeterminate = partial)
                           }
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleParent(cat);
-                          }}
+                          onClick={handleParentCheckboxClick}
                           className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                           aria-label={`Select parent category ${cat.name}`}
                         />
                         <span
                           className={`font-medium ${
-                            allSelected ? "text-indigo-600" : "text-gray-800"
+                            allSelected
+                              ? "text-indigo-600"
+                              : "text-gray-800"
                           }`}
                         >
                           {highlightMatch(cat.name)}
@@ -234,40 +249,40 @@ export default function CategoryTree({
                     </div>
 
                     {/* CHILD ROWS (Indented) */}
-                    {hasChildren && (
-                      <div
-                        className={`collapsible ${
-                          isOpen ? "open" : "closed"
-                        } bg-gray-50`}
-                      >
-                        <div className="pl-6 pr-4 pb-4">
-                          {cat.children.map((child) => {
-                            const isSel = parentEntry?.items.some(
-                              (item) => item.id === child.id
-                            );
-                            return (
-                              <label
-                                key={child.id}
-                                className="flex items-center py-2 space-x-2 hover:bg-gray-100 rounded-lg px-4 transition cursor-pointer"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isSel}
-                                  onChange={() =>
-                                    onToggleSub(cat.id, child)
-                                  }
-                                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                                  aria-label={`Select subcategory ${child.name}`}
-                                />
-                                <span className="ml-1 text-sm text-gray-700">
-                                  {highlightMatch(child.name)}
-                                </span>
-                              </label>
-                            );
-                          })}
-                        </div>
+                    <div
+                      className={`overflow-hidden transition-[max-height] duration-300 ${
+                        isOpen
+                          ? "max-h-[600px]"
+                          : "max-h-0"
+                      } bg-gray-50`}
+                    >
+                      <div className="pl-6 pr-4 pb-4">
+                        {cat.children && cat.children.map((child) => {
+                          const isSel = parentEntry?.items.some(
+                            (item) => item.id === child.id
+                          );
+                          return (
+                            <label
+                              key={child.id}
+                              className="flex items-center py-2 space-x-2 hover:bg-gray-100 rounded-lg px-4 transition cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSel}
+                                onChange={() =>
+                                  onToggleSub(cat.id, child)
+                                }
+                                className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                aria-label={`Select subcategory ${child.name}`}
+                              />
+                              <span className="ml-1 text-sm text-gray-700">
+                                {highlightMatch(child.name)}
+                              </span>
+                            </label>
+                          );
+                        })}
                       </div>
-                    )}
+                    </div>
                   </li>
                 );
               })}

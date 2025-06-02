@@ -47,14 +47,15 @@ export default async function EditStorePage({
 
   // ── Fetch “availableCategories” from your external API ──
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/shop/categories`,
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
     { cache: "no-store" }
   );
-  const { categories } = await res.json();
-  const availableCategories = categories.map((c: any) => ({
-    id: c.id,
-    name: c.name,
-  }));
+  
+  const  data  = await res.json();
+  
+  const availableCategories = data.results;
+
+  console.log(availableCategories);
 
   // ── Map the Prisma object into your StoreForm shape ──
   const storeFormData: StoreForm = {
@@ -181,6 +182,11 @@ export default async function EditStorePage({
       id: sc.categoryId,
       name: sc.displayName ?? sc.category.name,
       icon: sc.icon ?? undefined,
+      items: Array.isArray(sc.items)
+        ? sc.items
+        : typeof sc.items === "string"
+        ? JSON.parse(sc.items)
+        : [],
       sortOrder: sc.sortOrder,
       visible: sc.visible,
     })),

@@ -115,6 +115,18 @@ export type ParentCategory = {
   children:      SubObj[];    // full list of sub‐objects under this parent
 };
 
+type RawCategory = {
+  id:         string;
+  name:       string;
+  subcategories: Array<{
+    id:   string;
+    name: string;
+    slug: string;
+    // …other fields like icon, image, etc., but NOT needed by the tree
+  }>;
+  // …plus whatever other fields your API returns
+};
+
 interface GeoLocation { lat: number; lng: number; }
 
 type OpeningHours = Record<
