@@ -24,7 +24,7 @@ import ShippingAccordion from '../ShippingAccordion/ShippingAccordion';
 import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
 import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
-import { StoreForm, Handlers, StepConfig, GeoLocation, StoreCategoryEntry, RawCategory, SubObj, ParentCategory } from '../../../../types/typings';
+import { StoreForm, Handlers, StepConfig, GeoLocation, StoreCategoryEntry, RawCategory, SubObj, ParentCategory, SelectedCategory } from '../../../../types/typings';
 
 // Interfaces
 const steps: StepConfig[] = [
@@ -348,282 +348,315 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
   // 2) Implement onToggleParent:
 
-// 1) onToggleParent: add or remove a parent (selects/deselects ALL sub‐items)
-// const onToggleParent = (parent: ParentCategory) => {
-//   setForm((prev) => {
-//     // Find if this parent is already in storeCategories
-//     const existingIndex = prev.storeCategories.findIndex(
-//       sc => sc.id === parent.id
-//     );
+  // 1) onToggleParent: add or remove a parent (selects/deselects ALL sub‐items)
+  // const onToggleParent = (parent: ParentCategory) => {
+  //   setForm((prev) => {
+  //     // Find if this parent is already in storeCategories
+  //     const existingIndex = prev.storeCategories.findIndex(
+  //       sc => sc.id === parent.id
+  //     );
 
-//     if (existingIndex !== -1) {
-//       // → Parent is already selected; remove it entirely
-//       const updated = prev.storeCategories.filter(
-//         sc => sc.id !== parent.id
-//       );
-//       return { ...prev, storeCategories: updated };
-//     } else {
-//       // → Parent is not selected; add it, with items = all of its children
-//       const newEntry: StoreCategoryEntry = {
-//         id:   parent.id,
-//         name: parent.name,
-//         items: parent.children && parent.children.map(child => ({
-//           id:        child.id,
-//           name:      child.name,
-//           slug:      child.slug,
-//           sortOrder: child.sortOrder ?? 0,
-//           visible:   child.visible ?? true,
-//         })),
-//       };
+  //     if (existingIndex !== -1) {
+  //       // → Parent is already selected; remove it entirely
+  //       const updated = prev.storeCategories.filter(
+  //         sc => sc.id !== parent.id
+  //       );
+  //       return { ...prev, storeCategories: updated };
+  //     } else {
+  //       // → Parent is not selected; add it, with items = all of its children
+  //       const newEntry: StoreCategoryEntry = {
+  //         id:   parent.id,
+  //         name: parent.name,
+  //         items: parent.children && parent.children.map(child => ({
+  //           id:        child.id,
+  //           name:      child.name,
+  //           slug:      child.slug,
+  //           sortOrder: child.sortOrder ?? 0,
+  //           visible:   child.visible ?? true,
+  //         })),
+  //       };
 
-//       return {
-//         ...prev,
-//         storeCategories: [...prev.storeCategories, newEntry],
-//       };
-//     }
-//   });
-// };
+  //       return {
+  //         ...prev,
+  //         storeCategories: [...prev.storeCategories, newEntry],
+  //       };
+  //     }
+  //   });
+  // };
 
-// // 2) onToggleSub: add or remove a single sub‐item under a given parent
-// const onToggleSub = (parentId: string, sub: SubObj) => {
-//   setForm((prev) => {
-//     // Find the parent entry (if it exists)
-//     const parentEntry = prev.storeCategories.find(
-//       sc => sc.id === parentId
-//     );
+  // // 2) onToggleSub: add or remove a single sub‐item under a given parent
+  // const onToggleSub = (parentId: string, sub: SubObj) => {
+  //   setForm((prev) => {
+  //     // Find the parent entry (if it exists)
+  //     const parentEntry = prev.storeCategories.find(
+  //       sc => sc.id === parentId
+  //     );
 
-//     if (!parentEntry) {
-//       // Parent isn't selected yet → add it with this one sub only
-//       const parentName =
-//         availableCategories.find(cat => cat.id === parentId)?.name ?? "";
+  //     if (!parentEntry) {
+  //       // Parent isn't selected yet → add it with this one sub only
+  //       const parentName =
+  //         availableCategories.find(cat => cat.id === parentId)?.name ?? "";
 
-//       return {
-//         ...prev,
-//         storeCategories: [
-//           ...prev.storeCategories,
-//           {
-//             id:    parentId,
-//             name:  parentName,
-//             items: [{
-//               id:        sub.id,
-//               name:      sub.name,
-//               slug:      sub.slug,
-//               sortOrder: sub.sortOrder ?? 0,
-//               visible:   sub.visible ?? true,
-//             }],
-//           },
-//         ],
-//       };
-//     } else {
-//       // Parent is already in storeCategories → toggle this sub
-//       const alreadyHasSub = parentEntry.items.some(
-//         item => item.id === sub.id
-//       );
+  //       return {
+  //         ...prev,
+  //         storeCategories: [
+  //           ...prev.storeCategories,
+  //           {
+  //             id:    parentId,
+  //             name:  parentName,
+  //             items: [{
+  //               id:        sub.id,
+  //               name:      sub.name,
+  //               slug:      sub.slug,
+  //               sortOrder: sub.sortOrder ?? 0,
+  //               visible:   sub.visible ?? true,
+  //             }],
+  //           },
+  //         ],
+  //       };
+  //     } else {
+  //       // Parent is already in storeCategories → toggle this sub
+  //       const alreadyHasSub = parentEntry.items.some(
+  //         item => item.id === sub.id
+  //       );
 
-//       const newItems = alreadyHasSub
-//         ? parentEntry.items.filter(item => item.id !== sub.id)
-//         : [
-//             ...parentEntry.items,
-//             {
-//               id:        sub.id,
-//               name:      sub.name,
-//               slug:      sub.slug,
-//               sortOrder: sub.sortOrder ?? 0,
-//               visible:   sub.visible ?? true,
-//             },
-//           ];
+  //       const newItems = alreadyHasSub
+  //         ? parentEntry.items.filter(item => item.id !== sub.id)
+  //         : [
+  //             ...parentEntry.items,
+  //             {
+  //               id:        sub.id,
+  //               name:      sub.name,
+  //               slug:      sub.slug,
+  //               sortOrder: sub.sortOrder ?? 0,
+  //               visible:   sub.visible ?? true,
+  //             },
+  //           ];
 
-//       // If toggling off the last sub, remove the entire parent entry
-//       if (newItems.length === 0) {
-//         return {
-//           ...prev,
-//           storeCategories: prev.storeCategories.filter(
-//             sc => sc.id !== parentId
-//           ),
-//         };
-//       }
+  //       // If toggling off the last sub, remove the entire parent entry
+  //       if (newItems.length === 0) {
+  //         return {
+  //           ...prev,
+  //           storeCategories: prev.storeCategories.filter(
+  //             sc => sc.id !== parentId
+  //           ),
+  //         };
+  //       }
 
-//       // Otherwise, update the parent’s items array
-//       return {
-//         ...prev,
-//         storeCategories: prev.storeCategories.map(sc =>
-//           sc.id === parentId
-//             ? { ...sc, items: newItems }
-//             : sc
-//         ),
-//       };
-//     }
-//   });
-// };
+  //       // Otherwise, update the parent’s items array
+  //       return {
+  //         ...prev,
+  //         storeCategories: prev.storeCategories.map(sc =>
+  //           sc.id === parentId
+  //             ? { ...sc, items: newItems }
+  //             : sc
+  //         ),
+  //       };
+  //     }
+  //   });
+  // };
 
-// // 3) onBulkToggleCategories (rename to onBulkToggle for consistency with the refactored CategoryTree):
-// //    Given an array of ids (some parent IDs, some child IDs), build storeCategories accordingly.
-// const onBulkToggle = (ids: string[]) => {
-//   setForm((prev) => {
-//     const newStoreCategories: StoreCategoryEntry[] = [];
+  // // 3) onBulkToggleCategories (rename to onBulkToggle for consistency with the refactored CategoryTree):
+  // //    Given an array of ids (some parent IDs, some child IDs), build storeCategories accordingly.
+  // const onBulkToggle = (ids: string[]) => {
+  //   setForm((prev) => {
+  //     const newStoreCategories: StoreCategoryEntry[] = [];
 
-//     for (const parent of availableCategories) {
-//       // 1) If this parent’s ID is explicitly in `ids`, select all its children
-//       if (ids.includes(parent.id)) {
-//         newStoreCategories.push({
-//           id:    parent.id,
-//           name:  parent.name,
-//           items: parent.children.map(child => ({
-//             id:        child.id,
-//             name:      child.name,
-//             slug:      child.slug,
-//             sortOrder: child.sortOrder ?? 0,
-//             visible:   child.visible ?? true,
-//           })),
-//         });
-//         continue;
-//       }
+  //     for (const parent of availableCategories) {
+  //       // 1) If this parent’s ID is explicitly in `ids`, select all its children
+  //       if (ids.includes(parent.id)) {
+  //         newStoreCategories.push({
+  //           id:    parent.id,
+  //           name:  parent.name,
+  //           items: parent.children.map(child => ({
+  //             id:        child.id,
+  //             name:      child.name,
+  //             slug:      child.slug,
+  //             sortOrder: child.sortOrder ?? 0,
+  //             visible:   child.visible ?? true,
+  //           })),
+  //         });
+  //         continue;
+  //       }
 
-//       // 2) Otherwise, check if any of its children are in `ids`
-//       const matchingChildren = parent.children.filter(child =>
-//         ids.includes(child.id)
-//       );
+  //       // 2) Otherwise, check if any of its children are in `ids`
+  //       const matchingChildren = parent.children.filter(child =>
+  //         ids.includes(child.id)
+  //       );
 
-//       if (matchingChildren.length > 0) {
-//         newStoreCategories.push({
-//           id:    parent.id,
-//           name:  parent.name,
-//           items: matchingChildren.map(child => ({
-//             id:        child.id,
-//             name:      child.name,
-//             slug:      child.slug,
-//             sortOrder: child.sortOrder ?? 0,
-//             visible:   child.visible ?? true,
-//           })),
-//         });
-//       }
+  //       if (matchingChildren.length > 0) {
+  //         newStoreCategories.push({
+  //           id:    parent.id,
+  //           name:  parent.name,
+  //           items: matchingChildren.map(child => ({
+  //             id:        child.id,
+  //             name:      child.name,
+  //             slug:      child.slug,
+  //             sortOrder: child.sortOrder ?? 0,
+  //             visible:   child.visible ?? true,
+  //           })),
+  //         });
+  //       }
 
-//       // 3) If neither parent nor any child matched, we skip this parent
-//     }
+  //       // 3) If neither parent nor any child matched, we skip this parent
+  //     }
 
-//     return {
-//       ...prev,
-//       storeCategories: newStoreCategories,
-//     };
-//   });
-// };
-  
-// 4) Handlers for toggling parent/sub/bulk:
-const onToggleParent = (parent: ParentCategory) => {
-  setForm(prev => {
-    const existingIndex = prev.storeCategories.findIndex(
-      sc => sc.id === parent.id
-    );
-    if (existingIndex !== -1) {
-      // Remove entire parent
-      return {
-        ...prev,
-        storeCategories: prev.storeCategories.filter(
-          sc => sc.id !== parent.id
-        ),
-      };
-    } else {
-      // Add it with all its children
-      const newEntry = {
-        id:    parent.id,
-        name:  parent.name,
-        items: parent.children.map(child => ({
+  //     return {
+  //       ...prev,
+  //       storeCategories: newStoreCategories,
+  //     };
+  //   });
+  // };
+    
+  // 4) Handlers for toggling parent/sub/bulk:
+  // …inside your parent component…
+
+  // Assume:
+  //   mappedCategories: ParentCategory[] (same as availableCategories)
+  //   form: { storeCategories: SelectedCategory[] }
+  //   setForm: React.Dispatch<…>
+
+  // 1) onToggleParent
+  const onToggleParent = (parent: ParentCategory) => {
+    setForm((prev) => {
+      const existingIndex = prev.storeCategories.findIndex(
+        (sc) => sc.id === parent.id
+      );
+
+      // A) Parent not currently selected → add ALL children
+      if (existingIndex === -1) {
+        return {
+          ...prev,
+          storeCategories: [
+            ...prev.storeCategories,
+            {
+              id:    parent.id,
+              name:  parent.name,
+              items: parent.children.map((child) => ({
+                id:   child.id,
+                name: child.name,
+                slug: child.slug,
+              })),
+            },
+          ],
+        };
+      }
+
+      const existingEntry = prev.storeCategories[existingIndex];
+      const currentlySelectedCount = existingEntry.items.length;
+      const totalChildrenCount = parent.children.length;
+
+      // B) Parent is “partial” (some but not all) → select all
+      if (currentlySelectedCount < totalChildrenCount) {
+        const allItems = parent.children.map((child) => ({
           id:   child.id,
           name: child.name,
           slug: child.slug,
-        })),
-      };
-      return {
-        ...prev,
-        storeCategories: [...prev.storeCategories, newEntry],
-      };
-    }
-  });
-};
+        }));
+        const updated = prev.storeCategories.map((sc) =>
+          sc.id === parent.id ? { ...sc, items: allItems } : sc
+        );
+        return { ...prev, storeCategories: updated };
+      }
 
-const onToggleSub = (parentId: string, sub: SubObj) => {
-  setForm(prev => {
-    const parentEntry = prev.storeCategories.find(sc => sc.id === parentId);
-    if (!parentEntry) {
-      // Parent isn't in the list yet → add it with this single sub:
-      const parentName =
-        mappedCategories.find(cat => cat.id === parentId)?.name ?? "";
-      return {
-        ...prev,
-        storeCategories: [
-          ...prev.storeCategories,
-          {
-            id:    parentId,
-            name:  parentName,
-            items: [sub],
-          },
-        ],
-      };
-    } else {
-      // Toggle that sub inside items[]
-      const alreadyHas = parentEntry.items.some(item => item.id === sub.id);
+      // C) Parent was fully selected → remove it completely
+      const filtered = prev.storeCategories.filter((sc) => sc.id !== parent.id);
+      return { ...prev, storeCategories: filtered };
+    });
+  };
+
+  // 2) onToggleSub
+  const onToggleSub = (parentId: string, sub: SubObj) => {
+    setForm((prev) => {
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+
+      if (!parentEntry) {
+        // Parent not in storeCategories → add it with one sub
+        const parentName =
+          mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
+
+        return {
+          ...prev,
+          storeCategories: [
+            ...prev.storeCategories,
+            { id: parentId, name: parentName, items: [sub] },
+          ],
+        };
+      }
+
+      // Parent already exists → toggle “sub” inside items[]
+      const alreadyHas = parentEntry.items.some((item) => item.id === sub.id);
       const newItems = alreadyHas
-        ? parentEntry.items.filter(item => item.id !== sub.id)
+        ? parentEntry.items.filter((item) => item.id !== sub.id)
         : [...parentEntry.items, sub];
 
-      // If no sub remains after removal, drop the parent entirely:
       if (newItems.length === 0) {
+        // Last child was removed → drop entire parent
         return {
           ...prev,
           storeCategories: prev.storeCategories.filter(
-            sc => sc.id !== parentId
+            (sc) => sc.id !== parentId
           ),
         };
       }
 
-      // Otherwise, just update that parent’s items
-      return {
-        ...prev,
-        storeCategories: prev.storeCategories.map(sc =>
-          sc.id === parentId ? { ...sc, items: newItems } : sc
-        ),
-      };
-    }
-  });
-};
-
-const onBulkToggle = (ids: string[]) => {
-  setForm(prev => {
-    const newStoreCategories: StoreForm["storeCategories"] = [];
-
-    for (const parent of mappedCategories) {
-      if (ids.includes(parent.id)) {
-        // If parentId is in ids, select all children
-        newStoreCategories.push({
-          id:    parent.id,
-          name:  parent.name,
-          items: parent.children.map(child => ({ ...child })),
-        });
-        continue;
-      }
-
-      // Otherwise, pick only the children whose IDs appear in ids
-      const matchingKids = parent.children.filter(child =>
-        ids.includes(child.id)
+      // Otherwise, just update this parent’s items
+      const updated = prev.storeCategories.map((sc) =>
+        sc.id === parentId ? { ...sc, items: newItems } : sc
       );
-      if (matchingKids.length > 0) {
-        newStoreCategories.push({
+      return { ...prev, storeCategories: updated };
+    });
+  };
+
+  // 3) onBulkToggle
+  const onBulkToggle = (ids: string[]) => {
+    setForm((prev) => {
+      // If ids is empty → clear everything
+      if (ids.length === 0) {
+        return { ...prev, storeCategories: [] };
+      }
+
+      // Build a set of only “child IDs,” ignoring any parent IDs
+      const childIdSet = new Set<string>();
+      for (const id of ids) {
+        // Skip if this id matches a parent
+        const isParent = mappedCategories.some((p) => p.id === id);
+        if (!isParent) {
+          childIdSet.add(id);
+        }
+      }
+
+      // Now group those child IDs by parent
+      const nextStoreCategories: SelectedCategory[] = [];
+      for (const parent of mappedCategories) {
+        // Which of this parent’s children appear in childIdSet?
+        const matchedKids = parent.children.filter((child) =>
+          childIdSet.has(child.id)
+        );
+        if (matchedKids.length === 0) {
+          // None of this parent’s children selected → skip
+          continue;
+        }
+
+        // If ALL children are selected (matchedKids.length === parent.children.length)
+        // then we consider this a “full” select. Otherwise it’s “partial.”
+        const allKidsSelected =
+          matchedKids.length === parent.children.length;
+
+        const itemsToUse = allKidsSelected
+          ? parent.children.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
+          : matchedKids.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
+
+        nextStoreCategories.push({
           id:    parent.id,
           name:  parent.name,
-          items: matchingKids.map(child => ({ ...child })),
+          items: itemsToUse,
         });
       }
-    }
 
-    return {
-      ...prev,
-      storeCategories: newStoreCategories,
-    };
-  });
-};
-
-
-
+      return { ...prev, storeCategories: nextStoreCategories };
+    });
+  };
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm(f => ({ ...f, address, geoLocation }));

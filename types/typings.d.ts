@@ -101,6 +101,12 @@ type StoreCategoryEntry = {
   visible?: boolean;
 };
 
+type SelectedCategory = {
+  id:    string;
+  name:  string;
+  items: SubObj[];
+};
+
 export type SubObj = {
   id:        string;
   name:      string;
