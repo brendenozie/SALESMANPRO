@@ -9,16 +9,12 @@ interface DirectoryLayoutProps {
   children: ReactNode;
 }
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
 export default function DirectoryHeaderLayout({ params, children }: DirectoryLayoutProps) {
   const { storeFormData } = params;
   return (
     <>
       <Header/>
-      {/* Child Content */}
-      <section className="container">{children}</section>
+        <section className="container">{children}</section>
       <Footer storeFormData={storeFormData} />
     </>
   );
