@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface MarketplaceLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function MarketplaceHeaderLayout({ params, children }: MarketplaceLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
   const [featured, setFeatured] = useState<any[]>([]);
@@ -24,20 +24,20 @@ export default function MarketplaceHeaderLayout({ params, children }: Marketplac
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
   useEffect(() => {
-    setCategories(store.StoreCategory.slice(0, 6));
-    setFeatured(store.products.slice(0, 8));
-    setPromotions(store.promotions.slice(0, 4));
-    setTestimonials(store.testimonials.slice(0, 3));
-  }, [store]);
+    setCategories(storeFormData.StoreCategory.slice(0, 6));
+    setFeatured(storeFormData.products.slice(0, 8));
+    setPromotions(storeFormData.promotions.slice(0, 4));
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+  }, [storeFormData]);
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
 
       {/* Child Content (Category/Product Pages) */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

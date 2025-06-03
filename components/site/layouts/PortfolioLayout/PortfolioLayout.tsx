@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface PortfolioLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function PortfolioHeaderLayout({ params, children }: PortfolioLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [projects, setProjects] = useState<any[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
@@ -24,17 +24,17 @@ export default function PortfolioHeaderLayout({ params, children }: PortfolioLay
 
   useEffect(() => {
     // Use products as projects
-    setProjects(store.products.slice(0, 6));
-    setTestimonials(store.testimonials.slice(0, 3));
-    setFaqs(store.faqs.slice(0, 3));
-  }, [store]);
+    setProjects(storeFormData.products.slice(0, 6));
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+    setFaqs(storeFormData.faqs.slice(0, 3));
+  }, [storeFormData]);
 
   return (
     <>
       <Header
-        name={`${store.name}`}
-        logoUrl={store.logoUrl}
-        primaryColor={store.primaryColor} 
+        name={`${storeFormData.name}`}
+        logoUrl={storeFormData.logoUrl}
+        primaryColor={storeFormData.primaryColor} 
         links={[
           { label: "Home", href: "/" },
           { label: "Projects", href: "#projects" },
@@ -46,7 +46,7 @@ export default function PortfolioHeaderLayout({ params, children }: PortfolioLay
       {/* Main Content Area */}
       <section className="container">{children}</section>
       
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

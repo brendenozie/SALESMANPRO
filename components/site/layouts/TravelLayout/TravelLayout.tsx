@@ -9,7 +9,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface TravelLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -17,7 +17,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function TravelLayout({ params, children }: TravelLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
 
   const [categories, setCategories] = useState<any[]>([]);
@@ -26,23 +26,23 @@ export default function TravelLayout({ params, children }: TravelLayoutProps) {
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setCategories(store.StoreCategory.slice(0, 6));
-    setFeatured(store.products.slice(0, 6));
-    setTestimonials(store.testimonials.slice(0, 3));
-    setFaqs(store.faqs.slice(0, 3));
-  }, [store]);
+    setCategories(storeFormData.StoreCategory.slice(0, 6));
+    setFeatured(storeFormData.products.slice(0, 6));
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+    setFaqs(storeFormData.faqs.slice(0, 3));
+  }, [storeFormData]);
 
-  const navigateTo = (path: string) => router.push(`/${store.slug}/${path}`);
+  const navigateTo = (path: string) => router.push(`/${storeFormData.slug}/${path}`);
 
   return (
     <>
       {/* Sticky Transparent Header */}
-      <Header store={store}/>
+      <Header storeFormData={storeFormData}/>
 
       {/* Content */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

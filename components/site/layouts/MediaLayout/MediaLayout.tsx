@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface MediaLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function MediaHeaderLayout({ params, children }: MediaLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -24,20 +24,20 @@ export default function MediaHeaderLayout({ params, children }: MediaLayoutProps
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setFeaturedArticles(store.products.slice(0, 4)); // using products as articles
-    setCategories(store.StoreCategory);
-    setLatestVideos(store.heroSlides.slice(0, 4));
-    setFaqs(store.faqs.slice(0, 3));
-  }, [store]);
+    setFeaturedArticles(storeFormData.products.slice(0, 4)); // using products as articles
+    setCategories(storeFormData.StoreCategory);
+    setLatestVideos(storeFormData.heroSlides.slice(0, 4));
+    setFaqs(storeFormData.faqs.slice(0, 3));
+  }, [storeFormData]);
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
 
       {/* Content Area */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

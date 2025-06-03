@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface HealthcareLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function HealthcareHeaderLayout({ params, children }: HealthcareLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [services, setServices] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
@@ -24,20 +24,20 @@ export default function HealthcareHeaderLayout({ params, children }: HealthcareL
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setServices(store.products.slice(0, 6));
-    setDoctors(store.StoreCategory.slice(0, 4));
-    setTestimonials(store.testimonials.slice(0, 3));
-    setFaqs(store.faqs.slice(0, 4));
-  }, [store]);
+    setServices(storeFormData.products.slice(0, 6));
+    setDoctors(storeFormData.StoreCategory.slice(0, 4));
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+    setFaqs(storeFormData.faqs.slice(0, 4));
+  }, [storeFormData]);
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
 
       {/* Child Content */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

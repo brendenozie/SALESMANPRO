@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface ServicesLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function ServicesHeaderLayout({ params, children }: ServicesLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
 
   const [categories, setCategories] = useState<any[]>([]);
@@ -25,14 +25,14 @@ export default function ServicesHeaderLayout({ params, children }: ServicesLayou
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setCategories(store.StoreCategory.slice(0, 6));
-    setFeaturedServices(store.products.slice(0, 6));
-    setTestimonials(store.testimonials.slice(0, 3));
-    setFaqs(store.faqs.slice(0, 3));
-  }, [store]);
+    setCategories(storeFormData.StoreCategory.slice(0, 6));
+    setFeaturedServices(storeFormData.products.slice(0, 6));
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+    setFaqs(storeFormData.faqs.slice(0, 3));
+  }, [storeFormData]);
 
   const handleInquiry = (serviceId: string) => {
-    router.push(`/${store.slug}/service/${serviceId}`);
+    router.push(`/${storeFormData.slug}/service/${serviceId}`);
   };
 
   const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -40,12 +40,12 @@ export default function ServicesHeaderLayout({ params, children }: ServicesLayou
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
 
       {/* Main Content Area */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

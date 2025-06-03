@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface EventsLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function EventsHeaderLayout({ params, children }: EventsLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [upcoming, setUpcoming] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -25,20 +25,20 @@ export default function EventsHeaderLayout({ params, children }: EventsLayoutPro
 
   useEffect(() => {
     // Using products as events for demo
-    setUpcoming(store.products.slice(0, 6));
-    setCategories(store.StoreCategory.slice(0, 4));
-    setTestimonials(store.testimonials.slice(0, 3));
-    setFaqs(store.faqs.slice(0, 3));
-  }, [store]);
+    setUpcoming(storeFormData.products.slice(0, 6));
+    setCategories(storeFormData.StoreCategory.slice(0, 4));
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+    setFaqs(storeFormData.faqs.slice(0, 3));
+  }, [storeFormData]);
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
 
       {/* Child Content / Event Details */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

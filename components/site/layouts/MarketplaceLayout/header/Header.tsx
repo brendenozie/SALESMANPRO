@@ -16,14 +16,14 @@ import {
 import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
 
-interface HeaderProps { store: any; }
+interface HeaderProps { storeFormData: any; }
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality||75}`;
 
-export default function Header({ store }: HeaderProps) {
+export default function Header({ storeFormData }: HeaderProps) {
   const { cart } = useStateContext();
   const router = useRouter();
-  const primary = store?.themeSettings?.primaryColor || "#6366f1";
-  const secondary = store?.themeSettings?.secondaryColor || "#ec4899";
+  const primary = storeFormData?.themeSettings?.primaryColor || "#6366f1";
+  const secondary = storeFormData?.themeSettings?.secondaryColor || "#ec4899";
 
   const [hasScrolled, setHasScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -49,9 +49,9 @@ export default function Header({ store }: HeaderProps) {
             className="flex items-center cursor-pointer"
             onClick={()=>router.push("/")}
           >
-            <Image src={store.logoUrl || "/logo.svg"} loader={loader} width={40} height={40} alt="Logo" />
+            <Image src={storeFormData.logoUrl || "/logo.svg"} loader={loader} width={40} height={40} alt="Logo" />
             <span style={{ color: primary }} className="ml-2 text-2xl font-extrabold">
-              {store.name}
+              {storeFormData.name}
             </span>
           </motion.div>
         </div>

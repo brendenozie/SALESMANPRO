@@ -16,7 +16,7 @@ import {
 // } from "react-icons/fa";
 
 interface FooterProps {
-  store: {
+  storeFormData: {
     name: string;
     slug: string;
     themeSettings?: {
@@ -29,8 +29,8 @@ interface FooterProps {
   };
 }
 
-const Footer: React.FC<FooterProps> = ({ store }) => {
-  const primary = store.themeSettings?.primaryColor || "#4f46e5";
+const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
+  const primary = storeFormData.themeSettings?.primaryColor || "#4f46e5";
 
   const socialLinks = [
     { icon: <PhoneIcon />, href: "#" },
@@ -45,7 +45,7 @@ const Footer: React.FC<FooterProps> = ({ store }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Logo and About */}
           <div>
-            <h2 className="text-2xl font-bold mb-4">{store.name}</h2>
+            <h2 className="text-2xl font-bold mb-4">{storeFormData.name}</h2>
             <p className="text-sm text-black/80">
               Your trusted platform for innovative digital solutions.
             </p>
@@ -67,10 +67,10 @@ const Footer: React.FC<FooterProps> = ({ store }) => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-black/80 text-sm">
-              <li><Link href={`/${store.slug}#services`}>Services</Link></li>
-              <li><Link href={`/${store.slug}#featured`}>Featured</Link></li>
-              <li><Link href={`/${store.slug}#testimonials`}>Testimonials</Link></li>
-              <li><Link href={`/${store.slug}/contact`}>Contact Us</Link></li>
+              <li><Link href={`/${storeFormData.slug}#services`}>Services</Link></li>
+              <li><Link href={`/${storeFormData.slug}#featured`}>Featured</Link></li>
+              <li><Link href={`/${storeFormData.slug}#testimonials`}>Testimonials</Link></li>
+              <li><Link href={`/${storeFormData.slug}/contact`}>Contact Us</Link></li>
             </ul>
           </div>
 
@@ -78,22 +78,22 @@ const Footer: React.FC<FooterProps> = ({ store }) => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
             <ul className="space-y-3 text-sm text-black/80">
-              {store.address && (
+              {storeFormData.address && (
                 <li className="flex items-start">
                   <MapPinIcon className="w-5 h-5 mr-2 mt-1" />
-                  <span>{store.address}</span>
+                  <span>{storeFormData.address}</span>
                 </li>
               )}
-              {store.contactEmail && (
+              {storeFormData.contactEmail && (
                 <li className="flex items-center">
                   <EnvelopeIcon className="w-5 h-5 mr-2" />
-                  <a href={`mailto:${store.contactEmail}`}>{store.contactEmail}</a>
+                  <a href={`mailto:${storeFormData.contactEmail}`}>{storeFormData.contactEmail}</a>
                 </li>
               )}
-              {store.contactPhone && (
+              {storeFormData.contactPhone && (
                 <li className="flex items-center">
                   <PhoneIcon className="w-5 h-5 mr-2" />
-                  <a href={`tel:${store.contactPhone}`}>{store.contactPhone}</a>
+                  <a href={`tel:${storeFormData.contactPhone}`}>{storeFormData.contactPhone}</a>
                 </li>
               )}
             </ul>
@@ -102,7 +102,7 @@ const Footer: React.FC<FooterProps> = ({ store }) => {
 
         {/* Divider */}
         <div className="border-t border-white/20 mt-12 pt-6 text-sm text-center text-black/50">
-          © {new Date().getFullYear()} {store.name}. All rights reserved.
+          © {new Date().getFullYear()} {storeFormData.name}. All rights reserved.
         </div>
       </div>
     </footer>

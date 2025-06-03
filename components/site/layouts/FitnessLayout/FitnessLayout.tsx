@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface FitnessLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function FitnessHeaderLayout({ params, children }: FitnessLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [classes, setClasses] = useState<any[]>([]);
   const [trainers, setTrainers] = useState<any[]>([]);
@@ -25,11 +25,11 @@ export default function FitnessHeaderLayout({ params, children }: FitnessLayoutP
 
   useEffect(() => {
     // Use products for classes, categories for trainers
-    setClasses(store.products.slice(0, 6));
-    setTrainers(store.StoreCategory.slice(0, 4));
-    setTestimonials(store.testimonials.slice(0, 3));
-    setFaqs(store.faqs.slice(0, 4));
-  }, [store]);
+    setClasses(storeFormData.products.slice(0, 6));
+    setTrainers(storeFormData.StoreCategory.slice(0, 4));
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+    setFaqs(storeFormData.faqs.slice(0, 4));
+  }, [storeFormData]);
 
   return (
     <>
@@ -38,7 +38,7 @@ export default function FitnessHeaderLayout({ params, children }: FitnessLayoutP
       {/* Child Content */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

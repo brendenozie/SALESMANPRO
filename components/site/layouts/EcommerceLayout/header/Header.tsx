@@ -12,56 +12,23 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
-
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  themeSettings: any;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
+import { StoreForm } from "../../../../../types/typings";
 
 interface HeaderProps {
-  store: Store;
+  storeFormData: StoreForm;
 }
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const Header: React.FC<HeaderProps> = ({ store }) => {
+const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   const { cart } = useStateContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const router = useRouter();
 
-  const primary = store?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
-  const secondary = store?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
+  const primary = storeFormData?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
+  const secondary = storeFormData?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm transition-shadow">
@@ -71,19 +38,19 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
         style={{ backgroundColor: `${primary}1A`, color: primary }}
       >
         <div className="flex items-center space-x-6">
-          {store.contactEmail && (
-            <a href={`mailto:${store.contactEmail}`} className="flex text-sm items-center uppercase hover:underline">
-              📧 <span className="ml-1">{store.contactEmail}</span>
+          {storeFormData.contactEmail && (
+            <a href={`mailto:${storeFormData.contactEmail}`} className="flex text-sm items-center uppercase hover:underline">
+              📧 <span className="ml-1">{storeFormData.contactEmail}</span>
             </a>
           )}
-          {store.contactPhone && (
-            <a href={`tel:${store.contactPhone}`} className="flex items-center hover:underline">
-              📞 <span className="ml-1">{store.contactPhone}</span>
+          {storeFormData.contactPhone && (
+            <a href={`tel:${storeFormData.contactPhone}`} className="flex items-center hover:underline">
+              📞 <span className="ml-1">{storeFormData.contactPhone}</span>
             </a>
           )}
         </div>
         <div className="flex space-x-4">
-          {store.socialLinks.map((s) => (
+          {storeFormData.socialLinks.map((s) => (
             <a
               key={s.channel}
               href={s.url}
@@ -104,25 +71,25 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center space-x-4">
-            <Link href={`/site/${store.slug}`} className="flex items-center space-x-2">
-              {store.logoUrl ? (
+            <Link href={`/site/${storeFormData.slug}`} className="flex items-center space-x-2">
+              {storeFormData.logoUrl ? (
                 <Image
-                  src={store.logoUrl}
-                  alt={store.name}
+                  src={storeFormData.logoUrl}
+                  alt={storeFormData.name}
                   width={120}
                   height={40}
                   className="object-contain"
                   loader={loader}
                 />
               ) : (
-                <span className="text-xl font-bold text-gray-800 dark:text-white">{store.name}</span>
+                <span className="text-xl font-bold text-gray-800 dark:text-white">{storeFormData.name}</span>
               )}
             </Link>
             <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
               {["Home", "Shop", "Categories"].map((label) => (
                 <Link
                   key={label}
-                  href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" :  label.toLowerCase() === "shop" ? "products" : label.toLowerCase()}`}
+                  href={`/site/${storeFormData.slug}/${label.toLowerCase() === "home" ? "" :  label.toLowerCase() === "shop" ? "products" : label.toLowerCase()}`}
                   className="hover:underline"
                   style={{ color: "#444" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -150,10 +117,10 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
 
           {/* Icons */}
           <div className="flex items-center space-x-4">
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/profile`);}} className="text-gray-600 dark:text-gray-200">
+            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${storeFormData.slug}/profile`);}} className="text-gray-600 dark:text-gray-200">
               <UserIcon className="h-6 w-6" />
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/checkout`);}} className="relative text-gray-600 dark:text-gray-200">
+            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${storeFormData.slug}/checkout`);}} className="relative text-gray-600 dark:text-gray-200">
               <ShoppingBagIcon className="h-6 w-6" />
               {cart.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ">
@@ -183,7 +150,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             {["Home", "Shop", "Categories"].map((label) => (
               <Link
                 key={label}
-                href={`/site/${store.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase() === "shop" ? "products" : label.toLowerCase() }`}
+                href={`/site/${storeFormData.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase() === "shop" ? "products" : label.toLowerCase() }`}
                 className="block hover:underline"
                 style={{ color: "#444" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = primary)}

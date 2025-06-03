@@ -14,18 +14,18 @@ import {
 const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality||75}`;
 
 
-export default function HealthcareHeader({store}:any) {
+export default function HealthcareHeader({storeFormData}:any) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   
   const links = [
-    { label: 'Home', href: `/${store.slug}` },
-    { label: 'Services', href: `/${store.slug}/services` },
-    { label: 'Doctors', href: `/${store.slug}/doctors` },
-    { label: 'Testimonials', href: `/${store.slug}/testimonials` },
-    { label: 'FAQs', href: `/${store.slug}/faqs` },
-    { label: 'Contact', href: `/${store.slug}/contact` },
+    { label: 'Home', href: `/${storeFormData.slug}` },
+    { label: 'Services', href: `/${storeFormData.slug}/services` },
+    { label: 'Doctors', href: `/${storeFormData.slug}/doctors` },
+    { label: 'Testimonials', href: `/${storeFormData.slug}/testimonials` },
+    { label: 'FAQs', href: `/${storeFormData.slug}/faqs` },
+    { label: 'Contact', href: `/${storeFormData.slug}/contact` },
   ];
 
   return (
@@ -37,12 +37,12 @@ export default function HealthcareHeader({store}:any) {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          onClick={() => router.push(`/${store.slug}`)}
+          onClick={() => router.push(`/${storeFormData.slug}`)}
         >
-          {store.logoUrl ? (
+          {storeFormData.logoUrl ? (
             <Image
-              src={store.logoUrl}
-              alt={store.name}
+              src={storeFormData.logoUrl}
+              alt={storeFormData.name}
               width={120}
               height={40}
               loader={loader}
@@ -50,7 +50,7 @@ export default function HealthcareHeader({store}:any) {
             />
           ) : (
             <span className="text-2xl font-extrabold text-teal-700 dark:text-teal-300">
-              {store.name}
+              {storeFormData.name}
             </span>
           )}
         </motion.div>
@@ -70,7 +70,7 @@ export default function HealthcareHeader({store}:any) {
         <div className="hidden lg:flex items-center space-x-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
-            onClick={() => router.push(`/${store.slug}/book`)}
+            onClick={() => router.push(`/${storeFormData.slug}/book`)}
             className="flex items-center bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-full shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             aria-label="Book Appointment"
           >
@@ -80,7 +80,7 @@ export default function HealthcareHeader({store}:any) {
 
           <motion.button
             whileHover={{ scale: 1.05 }}
-            onClick={() => router.push(`/${store.slug}/services`)}
+            onClick={() => router.push(`/${storeFormData.slug}/services`)}
             className="flex items-center border border-teal-600 text-teal-600 font-medium px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             aria-label="View Services"
           >
@@ -115,7 +115,7 @@ export default function HealthcareHeader({store}:any) {
                 </Link>
               ))}
               <button
-                onClick={() => { setOpen(false); router.push(`/${store.slug}/book`); }}
+                onClick={() => { setOpen(false); router.push(`/${storeFormData.slug}/book`); }}
                 className="mt-2 flex items-center bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-full shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                 aria-label="Book Appointment"
               >
@@ -123,7 +123,7 @@ export default function HealthcareHeader({store}:any) {
                 Book Appointment
               </button>
               <button
-                onClick={() => { setOpen(false); router.push(`/${store.slug}/services`); }}
+                onClick={() => { setOpen(false); router.push(`/${storeFormData.slug}/services`); }}
                 className="mt-2 flex items-center border border-teal-600 text-teal-600 font-medium px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                 aria-label="View Services"
               >

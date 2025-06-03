@@ -50,12 +50,12 @@ import { useRouter } from "next/navigation";
 
 const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function Header({ store }:any) {
+export default function Header({ storeFormData }:any) {
   const { cart } = useStateContext();
   const [mobileMenu, setMobileMenu] = useState(false);
   const router = useRouter();
-  const primary = store.themeSettings.primaryColor || "#10B981"; // emerald-500
-  const secondary = store.themeSettings.secondaryColor || "#F59E0B"; // amber-500
+  const primary = storeFormData.themeSettings.primaryColor || "#10B981"; // emerald-500
+  const secondary = storeFormData.themeSettings.secondaryColor || "#F59E0B"; // amber-500
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md">
@@ -64,19 +64,19 @@ export default function Header({ store }:any) {
         className="hidden md:flex justify-between items-center px-6 py-2 text-sm bg-emerald-50 dark:bg-gray-800"
       >
         <div className="flex items-center space-x-4 text-gray-700 dark:text-gray-300">
-          {store.contactPhone && (
-            <a href={`tel:${store.contactPhone}`} className="flex items-center space-x-1 hover:text-emerald-600 transition">
-              📞<span>{store.contactPhone}</span>
+          {storeFormData.contactPhone && (
+            <a href={`tel:${storeFormData.contactPhone}`} className="flex items-center space-x-1 hover:text-emerald-600 transition">
+              📞<span>{storeFormData.contactPhone}</span>
             </a>
           )}
-          {store.contactEmail && (
-            <a href={`mailto:${store.contactEmail}`} className="flex items-center space-x-1 hover:text-emerald-600 transition">
-              📧<span>{store.contactEmail}</span>
+          {storeFormData.contactEmail && (
+            <a href={`mailto:${storeFormData.contactEmail}`} className="flex items-center space-x-1 hover:text-emerald-600 transition">
+              📧<span>{storeFormData.contactEmail}</span>
             </a>
           )}
         </div>
         <div className="flex space-x-4">
-          {store.socialLinks.map((link:any) => (
+          {storeFormData.socialLinks.map((link:any) => (
             <Link key={link.channel} href={link.url} target="_blank">
               <span className="capitalize text-gray-700 dark:text-gray-300 hover:text-emerald-600 transition">
                 {link.channel}
@@ -94,9 +94,9 @@ export default function Header({ store }:any) {
           transition={{ duration: 0.6 }}
           className="flex items-center space-x-4"
         >
-          <Link href={`/site/${store.slug}`}>
+          <Link href={`/site/${storeFormData.slug}`}>
             <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400" style={{ textShadow: '1px 1px rgba(0,0,0,0.1)' }}>
-              {store.name}
+              {storeFormData.name}
             </span>
           </Link>
         </motion.div>
@@ -110,7 +110,7 @@ export default function Header({ store }:any) {
               className="relative"
             >
               <Link
-                href={`/site/${store.slug}/${label.toLowerCase() === 'home' ? '' : label.toLowerCase()}`}
+                href={`/site/${storeFormData.slug}/${label.toLowerCase() === 'home' ? '' : label.toLowerCase()}`}
                 className="text-gray-700 dark:text-gray-200 uppercase tracking-wide font-medium"
               >
                 {label}
@@ -135,14 +135,14 @@ export default function Header({ store }:any) {
 
         {/* Icons & Mobile Toggle */}
         <div className="flex items-center space-x-4">
-          <motion.button whileHover={{ scale: 1.1 }} aria-label="Profile" onClick={() => router.push(`/site/${store.slug}/profile`)}>
+          <motion.button whileHover={{ scale: 1.1 }} aria-label="Profile" onClick={() => router.push(`/site/${storeFormData.slug}/profile`)}>
             <UserCircleIcon className="w-6 h-6 text-gray-700 dark:text-gray-200" />
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.1 }}
             className="relative"
             aria-label="Cart"
-            onClick={() => router.push(`/site/${store.slug}/checkout`)}
+            onClick={() => router.push(`/site/${storeFormData.slug}/checkout`)}
           >
             <ShoppingBagIcon className="w-6 h-6 text-gray-700 dark:text-gray-200" />
             {cart.length > 0 && (
@@ -177,7 +177,7 @@ export default function Header({ store }:any) {
               {['Home','Listings','About','Contact'].map(label => (
                 <Link
                   key={label}
-                  href={`/site/${store.slug}/${label.toLowerCase() === 'home' ? '' : label.toLowerCase()}`}
+                  href={`/site/${storeFormData.slug}/${label.toLowerCase() === 'home' ? '' : label.toLowerCase()}`}
                   className="text-gray-700 dark:text-gray-200 uppercase font-medium hover:text-emerald-600 transition"
                 >{label}</Link>
               ))}

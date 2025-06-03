@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import prisma from '../../../server/db/prismadb';
 import { ReactNode } from 'react';
-import { StoreContextProvider, Store } from '../../../contexts/StoreContext';
+import { StoreContextProvider,} from '../../../contexts/StoreContext';
 
 // Layout imports
 import ServicesLayout from '@/components/site/layouts/ServicesLayout/ServicesLayout';
@@ -24,6 +24,7 @@ import TravelLayout from '@/components/site/layouts/TravelLayout/TravelLayout';
 import RestaurantLayout from '@/components/site/layouts/RestaurantLayout/RestaurantLayout';
 import AutomotiveLayout from '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout';
 import SaaSLayout from '@/components/site/layouts/SaaSLayout/SaaSLayout';
+import { StoreForm } from '../../../types/typings';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,6 +79,19 @@ export default async function StoreLayout({
   const raw = await prisma.company.findUnique({
     where: { slug: params.slug },
     include: {
+      socialLinks: true,
+      policies: true,
+      faqs: true,
+      testimonials: true,
+      heroSlides: true,
+      promotions: true,
+      seo: true,
+
+      // Now singular, not array:
+      analyticsConfig: true,
+      paymentSettings: true,
+      shippingSettings: true,
+
       MarketplaceListing: {
         take: 8,
         select: { id: true, title: true, finalPrice: true, images: true },
@@ -90,103 +104,176 @@ export default async function StoreLayout({
           },
         },
       },
-      socialLinks: true,
-      policies: true,
-      faqs: true,
-      testimonials: true,
-      heroSlides: true,
-      promotions: true,
     },
   });
 
+  console.log(raw);
+
   if (!raw) return notFound();
 
-  const store: Store = {
-    id: raw.id,
-    name: raw.name,
-    slug: raw.slug,
-    description: raw.description ?? undefined,
-    category: raw.category,
-    logoUrl: raw.logoUrl ?? undefined,
-    bannerUrl: raw.bannerUrl ?? undefined,
-    contactEmail: raw.contactEmail,
-    contactPhone: raw.contactPhone ?? undefined,
-    address: raw.address ?? undefined,
-    themeSettings: raw.themeSettings,
-    StoreCategory: raw.StoreCategory.map((sc) => ({
-      id: sc.category.id,
-      name: sc.displayName || sc.category.name,
-      imageUrl: sc.category.image ?? '/placeholder.png',
-      slug: sc.category.slug,
-      icon: sc.icon ?? sc.category.icon ?? undefined,
-    })),
-    socialLinks: raw.socialLinks.map((s) => ({
-      channel: s.channel,
-      url: s.url,
-    })),
-    policies: raw.policies.map((p) => ({
-      type: p.type,
-      title: p.title ?? undefined,
-      content: p.content,
-    })),
-    faqs: raw.faqs.map((f) => ({
-      question: f.question,
-      answer: f.answer,
-    })),
-    testimonials: raw.testimonials.map((t) => ({
-      author: t.author,
-      quote: t.quote,
-      avatarUrl: t.avatarUrl ?? undefined,
-      rating: t.rating ?? undefined,
-    })),
-    heroSlides: raw.heroSlides.map((b) => ({
-      imageUrl: b.imageUrl,
-      headline: b.headline ?? undefined,
-      subline: b.subline ?? undefined,
-      ctaText: b.ctaText ?? undefined,
-      ctaLink: b.ctaLink ?? undefined,
-    })),
-    promotions: raw.promotions.map((p) => ({
-      code: p.code ?? undefined,
-      title: p.title,
-      description: p.description ?? undefined,
-      startsAt: p.startsAt?.toISOString(),
-      endsAt: p.endsAt?.toISOString(),
-      bannerUrl: p.bannerUrl ?? undefined,
-    })),
-    products: raw.MarketplaceListing.map((p) => ({
-      id: p.id,
-      name: p.title,
-      price: p.finalPrice ?? 0,
-      imageUrl:
-        Array.isArray(p.images) &&
-        typeof p.images[0] === 'object' &&
-        p.images[0] !== null &&
-        'url' in p.images[0] &&
-        typeof (p.images[0] as any).url === 'string'
-          ? (p.images[0] as any).url
-          : '/placeholder.png',
-    })),
-  };
+  // ── Map the Prisma object into your StoreForm shape ──
+    const storeFormData: StoreForm = {
+      id: raw.id,
+      name: raw.name,
+      slug: raw.slug,
+      domain: raw.domain ?? "",
+      tagline: raw.tagline ?? "",
+      description: raw.description ?? "",
+      category: raw.category,
+      logoUrl: raw.logoUrl ?? "",
+      bannerUrl: raw.bannerUrl ?? "",
+      contactEmail: raw.contactEmail ?? "",
+      contactPhone: raw.contactPhone ?? "",
+      address: raw.address ?? "",
+      geoLocation:
+        typeof raw.geoLocation === "string"
+          ? JSON.parse(raw.geoLocation)
+          : raw.geoLocation,
+  
+      openingHours:
+        typeof raw.openingHours === "string"
+          ? JSON.parse(raw.openingHours)
+          : raw.openingHours,
+  
+      socialLinks: raw.socialLinks.map((s) => ({
+        id: s.id,
+        channel: s.channel,
+        url: s.url,
+      })),
+  
+      policies: raw.policies.map((p) => ({
+        id: p.id,
+        type: p.type,
+        title: p.title ?? undefined,
+        content: p.content,
+      })),
+  
+      faqs: raw.faqs.map((f) => ({
+        id: f.id,
+        question: f.question,
+        answer: f.answer,
+        order: f.order,
+      })),
+  
+      testimonials: raw.testimonials.map((t) => ({
+        id: t.id,
+        author: t.author,
+        quote: t.quote,
+        rating: t.rating ?? undefined,
+        avatarUrl: t.avatarUrl ?? undefined,
+        order: t.order,
+      })),
+  
+      heroSlides: raw.heroSlides.map((h) => ({
+        id: h.id,
+        imageUrl: h.imageUrl,
+        headline: h.headline ?? "",
+        subline: h.subline ?? "",
+        ctaText: h.ctaText ?? "",
+        ctaLink: h.ctaLink ?? "",
+        order: h.order,
+      })),
+  
+      promotions: raw.promotions.map((p) => ({
+        id: p.id,
+        code: p.code ?? undefined,
+        title: p.title,
+        description: p.description ?? "",
+        startsAt: p.startsAt?.toISOString() ?? undefined,
+        endsAt: p.endsAt?.toISOString() ?? undefined,
+        bannerUrl: p.bannerUrl ?? "",
+      })),
+  
+      // ── ONE‐TO‐ONE: seo (always object for Record<string, any>) ──
+      seo: raw.seo
+        ? {
+            id: raw.seo.id,
+            title: raw.seo.title,
+            description: raw.seo.description,
+            keywords: raw.seo.keywords,
+          }
+        : {},
+  
+      // ── ONE‐TO‐ONE: analyticsConfig (or undefined) ──
+      analyticsConfig: raw.analyticsConfig
+        ? {
+            id: raw.analyticsConfig.id,
+            googleTag: raw.analyticsConfig.googleTag ?? "",
+            facebookTag: raw.analyticsConfig.facebookTag ?? "",
+            // companyId: store.analyticsConfig.companyId,
+          }
+        : {},
+  
+      // ── ONE‐TO‐ONE: paymentSettings (or undefined) ──
+      paymentSettings: raw.paymentSettings
+        ? {
+            id: raw.paymentSettings.id,
+            stripeKey: raw.paymentSettings.stripeKey ?? "",
+            paypalKey: raw.paymentSettings.paypalKey ?? "",
+            mpesaShortcode: raw.paymentSettings.mpesaShortcode ?? "",
+            mpesaConsumerKey: raw.paymentSettings.mpesaConsumerKey ?? "",
+            mpesaConsumerSecret: raw.paymentSettings.mpesaConsumerSecret ?? "",
+            mpesaCallbackUrl: raw.paymentSettings.mpesaCallbackUrl ?? "",
+            // companyId: store.paymentSettings.companyId,
+          }
+        : {},
+  
+      // ── ONE‐TO‐ONE: shippingSettings (or undefined) ──
+      shippingSettings: raw.shippingSettings
+        ? {
+            id: raw.shippingSettings.id,
+            carrierName: raw.shippingSettings.carrierName ?? "",
+            trackingUrl: raw.shippingSettings.trackingUrl ?? "",
+            regions: raw.shippingSettings.regions ?? [],
+            enablePickup: raw.shippingSettings.enablePickup ?? false,
+            pickupInstructions: raw.shippingSettings.pickupInstructions ?? "",
+            // companyId: store.shippingSettings.companyId,
+          }
+        : {},
+  
+      // ── JUNCTION TABLE: StoreCategory[] ──
+      storeCategories: raw.StoreCategory.map((sc) => ({
+        id: sc.categoryId,
+        name: sc.displayName ?? sc.category.name,
+        icon: sc.icon ?? undefined,
+        items: Array.isArray(sc.items)
+          ? sc.items
+          : typeof sc.items === "string"
+          ? JSON.parse(sc.items)
+          : [],
+        sortOrder: sc.sortOrder,
+        visible: sc.visible,
+      })),
+  
+      awards: Array.isArray(raw.awards) ? raw.awards : typeof raw.awards === "string" ? JSON.parse(raw.awards) : undefined,
+      metrics: Array.isArray(raw.metrics) ? raw.metrics : typeof raw.metrics === "string" ? JSON.parse(raw.metrics) : undefined,
+      stats: Array.isArray(raw.stats) ? raw.stats : typeof raw.stats === "string" ? JSON.parse(raw.stats) : undefined,
+      
+      themeSettings:
+        typeof raw.themeSettings === "string"
+          ? JSON.parse(raw.themeSettings)
+          : raw.themeSettings ?? undefined,
+    };
 
-  const type = (store?.category ?? 'default').toLowerCase();
+  const type = (storeFormData?.category ?? 'default').toLowerCase();
 
-  const renderWithLayout = (LayoutComponent: React.ComponentType<{ params: { store: Store }; children: ReactNode }>) => (
-    <StoreContextProvider initialStore={store}>
+  const renderWithLayout = (LayoutComponent: React.ComponentType<{ params: { storeFormData: StoreForm }; children: ReactNode }>) => (
+    <StoreContextProvider initialStore={storeFormData}>
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-        <LayoutComponent params={{ store }}>{children}</LayoutComponent>
+        <LayoutComponent params={{ storeFormData }}>{children}</LayoutComponent>
       </div>
     </StoreContextProvider>
   );
 
   switch (type) {
-    case 'services':
-    case 'service provider':
-      return renderWithLayout(ServicesLayout);
 
     case 'e-commerce':
     case 'ecommerce':
       return renderWithLayout(EcommerceLayout);
+
+    case 'services':
+    case 'service provider':
+      return renderWithLayout(ServicesLayout);
 
     case 'bookings':
     case 'booking & appointments':

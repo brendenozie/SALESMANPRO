@@ -12,49 +12,16 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
-
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  themeSettings: any;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
+import { StoreForm } from "../../../../../types/typings";
 
 interface HeaderProps {
-  store: Store;
+  storeFormData: StoreForm;
 }
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const Header: React.FC<HeaderProps> = ({ store }:any) => {
+const Header: React.FC<HeaderProps> = ({ storeFormData }:any) => {
   const { cart } = useStateContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
@@ -66,11 +33,11 @@ const Header: React.FC<HeaderProps> = ({ store }:any) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href={`/site/${store.slug}`} className="flex items-center">
-              {store.logoUrl ? (
+            <Link href={`/site/${storeFormData.slug}`} className="flex items-center">
+              {storeFormData.logoUrl ? (
                 <Image
-                  src={store.logoUrl}
-                  alt={store.name}
+                  src={storeFormData.logoUrl}
+                  alt={storeFormData.name}
                   width={120}
                   height={40}
                   className="object-contain"
@@ -79,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ store }:any) => {
                 />
               ) : (
                 <span className="text-2xl font-bold text-white">
-                  {store.name}
+                  {storeFormData.name}
                 </span>
               )}
             </Link>
@@ -93,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({ store }:any) => {
                   className="text-white font-medium hover:text-blue-400 transition"
                 >
                   <Link
-                    href={`/site/${store.slug}/${label === "Home" ? "" : label.toLowerCase()}`}
+                    href={`/site/${storeFormData.slug}/${label === "Home" ? "" : label.toLowerCase()}`}
                     scroll={false}
                   >
                     {label}
@@ -116,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({ store }:any) => {
             <div className="flex items-center space-x-4">
               <motion.button
                 whileHover={{ scale: 1.1 }}
-                onClick={() => router.push(`/site/${store.slug}/profile`)}
+                onClick={() => router.push(`/site/${storeFormData.slug}/profile`)}
                 className="text-white"
               >
                 <UserIcon className="h-6 w-6" />
@@ -124,7 +91,7 @@ const Header: React.FC<HeaderProps> = ({ store }:any) => {
 
               <motion.button
                 whileHover={{ scale: 1.1 }}
-                onClick={() => router.push(`/site/${store.slug}/checkout`)}
+                onClick={() => router.push(`/site/${storeFormData.slug}/checkout`)}
                 className="relative text-white"
               >
                 <ShoppingBagIcon className="h-6 w-6" />
@@ -162,7 +129,7 @@ const Header: React.FC<HeaderProps> = ({ store }:any) => {
               {["Home", "Shop", "Categories"].map((label) => (
                 <Link
                   key={label}
-                  href={`/site/${store.slug}/${label === "Home" ? "" : label.toLowerCase()}`}
+                  href={`/site/${storeFormData.slug}/${label === "Home" ? "" : label.toLowerCase()}`}
                   className="text-white font-medium hover:text-blue-400 transition"
                 >
                   {label}

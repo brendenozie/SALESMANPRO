@@ -23,28 +23,28 @@ interface Store {
 }
 
 interface HeaderProps {
-  store: Store;
+  storeFormData: Store;
 }
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const Header: React.FC<HeaderProps> = ({ store }) => {
+const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   const { cart } = useStateContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
-  const primary = store.themeSettings?.primaryColor || "#f97316";
-  const secondary = store.themeSettings?.secondaryColor || "#3b82f6";
+  const primary = storeFormData.themeSettings?.primaryColor || "#f97316";
+  const secondary = storeFormData.themeSettings?.secondaryColor || "#3b82f6";
 
   return (
     <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-xl border-b border-gray-200 py-4 shadow-md transition-all">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push("/")}>
-          {store.logoUrl ? (
-            <Image src={store.logoUrl} alt="Logo" width={40} height={40} className="rounded-full" loader={loader}/>
+          {storeFormData.logoUrl ? (
+            <Image src={storeFormData.logoUrl} alt="Logo" width={40} height={40} className="rounded-full" loader={loader}/>
           ) : (
             <span className="text-2xl font-extrabold text-gray-800">Insightful</span>
           )}

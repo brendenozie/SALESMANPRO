@@ -38,12 +38,12 @@ interface Store {
 }
 
 interface FooterProps {
-  store: Store;
+  storeFormData: Store;
 }
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
-const Footer :React.FC<FooterProps> = ({ store }) => {
+const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
   return (
     <footer className="bg-gray-900 text-white py-10 px-6 text-center">
     <p className="text-lg">123 Culinary Street, Flavor Town</p>

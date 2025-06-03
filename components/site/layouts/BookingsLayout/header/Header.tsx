@@ -5,17 +5,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface HeaderProps {
-  store: {
+  storeFormData: {
     name: string;
     themeSettings?: { primaryColor?: string; secondaryColor?: string };
   };
 }
 
-const Header: React.FC<HeaderProps> = ({ store }) => {
+const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const primary = store?.themeSettings?.primaryColor || "#10b981"; // teal
-  const secondary = store?.themeSettings?.secondaryColor || "#6366f1"; // indigo
+  const primary = storeFormData?.themeSettings?.primaryColor || "#10b981"; // teal
+  const secondary = storeFormData?.themeSettings?.secondaryColor || "#6366f1"; // indigo
 
   const navItems = [
     { id: "services", label: "Services" },
@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
               style={{ backgroundImage: `linear-gradient(45deg, ${primary}, ${secondary})` }}
               whileHover={{ scale: 1.05 }}
             >
-              {store.name}
+              {storeFormData.name}
             </motion.span>
           </Link>
 
@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
                 style={{ color: primary }}
                 whileTap={{ scale: 0.95 }}
               >
-                {store.name}
+                {storeFormData.name}
               </motion.span>
               <button onClick={() => setIsOpen(false)}>
                 <XMarkIcon className="h-6 w-6 text-gray-600" />

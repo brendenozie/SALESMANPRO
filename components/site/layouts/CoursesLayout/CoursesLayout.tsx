@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface CoursesLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,26 +16,26 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function CoursesHeaderLayout({ params, children }: CoursesLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [featuredCourses, setFeaturedCourses] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setFeaturedCourses(store.products.slice(0, 6));
-    setCategories(store.StoreCategory);
-    setFaqs(store.faqs.slice(0, 4));
-  }, [store]);
+    setFeaturedCourses(storeFormData.products.slice(0, 6));
+    setCategories(storeFormData.StoreCategory);
+    setFaqs(storeFormData.faqs.slice(0, 4));
+  }, [storeFormData]);
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
 
       {/* Child Content (Course Details) */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

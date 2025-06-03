@@ -16,13 +16,13 @@ import { useRouter } from "next/navigation";
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function EnhancedHeader({ store }:any) {
+export default function EnhancedHeader({ storeFormData }:any) {
   const { cart } = useStateContext();
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const primary = store?.themeSettings?.primaryColor || "#6366F1"; // indigo
-  const secondary = store?.themeSettings?.secondaryColor || "#10B981"; // emerald
+  const primary = storeFormData?.themeSettings?.primaryColor || "#6366F1"; // indigo
+  const secondary = storeFormData?.themeSettings?.secondaryColor || "#10B981"; // emerald
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md">
@@ -46,11 +46,11 @@ export default function EnhancedHeader({ store }:any) {
         <div className="flex items-center justify-between h-20">
           {/* Logo & Menu */}
           <div className="flex items-center space-x-8">
-            <Link href={`/site/${store.slug}`} className="flex items-center">
-              {store.logoUrl ? (
+            <Link href={`/site/${storeFormData.slug}`} className="flex items-center">
+              {storeFormData.logoUrl ? (
                 <Image
-                  src={store.logoUrl}
-                  alt={store.name}
+                  src={storeFormData.logoUrl}
+                  alt={storeFormData.name}
                   width={140}
                   height={48}
                   className="object-contain"
@@ -59,7 +59,7 @@ export default function EnhancedHeader({ store }:any) {
                 />
               ) : (
                 <span className="text-2xl font-extrabold text-gray-800 dark:text-white">
-                  {store.name}
+                  {storeFormData.name}
                 </span>
               )}
             </Link>
@@ -77,7 +77,7 @@ export default function EnhancedHeader({ store }:any) {
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
                   <Link
-                    href={`/site/${store.slug}/${item.href}`}
+                    href={`/site/${storeFormData.slug}/${item.href}`}
                     className="text-gray-700 dark:text-gray-200 font-medium hover:text-indigo-600 dark:hover:text-emerald-400 transition-colors"
                   >
                     {item.label}
@@ -100,7 +100,7 @@ export default function EnhancedHeader({ store }:any) {
 
             <motion.button
               whileHover={{ scale: 1.1 }}
-              onClick={() => router.push(`/site/${store.slug}/profile`)}
+              onClick={() => router.push(`/site/${storeFormData.slug}/profile`)}
               className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
               aria-label="Profile"
             >
@@ -109,7 +109,7 @@ export default function EnhancedHeader({ store }:any) {
 
             <motion.button
               whileHover={{ scale: 1.1 }}
-              onClick={() => router.push(`/site/${store.slug}/checkout`)}
+              onClick={() => router.push(`/site/${storeFormData.slug}/checkout`)}
               className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
               aria-label="Cart"
             >
@@ -153,7 +153,7 @@ export default function EnhancedHeader({ store }:any) {
             ].map((item) => (
               <Link
                 key={item.label}
-                href={`/site/${store.slug}/${item.href}`}
+                href={`/site/${storeFormData.slug}/${item.href}`}
                 className="block text-gray-700 dark:text-gray-200 py-2 font-medium hover:text-indigo-600 dark:hover:text-emerald-400 transition-colors"
               >
                 {item.label}

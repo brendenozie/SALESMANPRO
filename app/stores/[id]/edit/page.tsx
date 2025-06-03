@@ -37,9 +37,6 @@ export default async function EditStorePage({
     },
   });
 
-
-  console.log(store);
-
   if (!store) {
     // If not found, redirect out
     redirect("/stores");

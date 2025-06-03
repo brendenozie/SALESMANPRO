@@ -8,7 +8,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
 interface NonProfitLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function NonProfitHeaderLayout({ params, children }: NonProfitLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   const router = useRouter();
   const [programs, setPrograms] = useState<any[]>([]);
   const [stats, setStats] = useState<any[]>([]);
@@ -24,24 +24,24 @@ export default function NonProfitHeaderLayout({ params, children }: NonProfitLay
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setPrograms(store.products.slice(0, 4)); // use products for programs
+    setPrograms(storeFormData.products.slice(0, 4)); // use products for programs
     setStats([
       { label: "Projects Completed", value: 120 },
       { label: "Volunteers", value: 350 },
       { label: "Communities Helped", value: 45 },
     ]);
-    setTestimonials(store.testimonials.slice(0, 3));
-    setFaqs(store.faqs.slice(0, 3));
-  }, [store]);
+    setTestimonials(storeFormData.testimonials.slice(0, 3));
+    setFaqs(storeFormData.faqs.slice(0, 3));
+  }, [storeFormData]);
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
 
       {/* Child Content */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }

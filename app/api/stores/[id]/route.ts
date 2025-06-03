@@ -92,7 +92,10 @@ export async function PUT(
     currency,
     locale,
   } = data;
-
+  console.log("▶ about to create StoreCategory for:", storeCategories);
+  storeCategories.forEach((sc: any, i: number) => {
+    console.log(`  → index ${i}: sc.id =`, sc.id);
+  });
   const updated = await prisma.company.update({
     where: { id: params.id },
     data: {
@@ -264,13 +267,6 @@ export async function PUT(
             sortOrder:   sc.sortOrder ?? 0,
             visible:     sc.visible   ?? true,
             items:       sc.items as Prisma.JsonValue,
-        // category:   { connect: { id: sc.id } },
-        // displayName: sc.name,
-        // icon:        sc.icon,
-        // sortOrder:   sc.sortOrder ?? 0,
-        // visible:     sc.visible ?? true,
-        //items:       sc.items  // <-- sc.items must be an array of subcategory objects
-        // items: sc.items as Prisma.JsonValue,
       })),
     }
   : { deleteMany: {} },

@@ -16,16 +16,16 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 interface HeaderProps {
-  store: any;
+  storeFormData: any;
 }
 
-const Header: React.FC<HeaderProps> = ({ store }) => {
+const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   const { cart } = useStateContext();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const primary = store.themeSettings?.primaryColor || "#f97316";
+  const primary = storeFormData.themeSettings?.primaryColor || "#f97316";
 
   const sections = [
     { id: "hero", label: "Home" },
@@ -54,18 +54,18 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
         <div className="container mx-auto px-6 flex items-center justify-between h-20">
           {/* Logo */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-            <Link href={`/${store.slug}`} className="flex items-center space-x-2">
-              {store.logoUrl ? (
+            <Link href={`/${storeFormData.slug}`} className="flex items-center space-x-2">
+              {storeFormData.logoUrl ? (
                 <Image
-                  src={store.logoUrl}
+                  src={storeFormData.logoUrl}
                   loader={loader}
-                  alt={store.name}
+                  alt={storeFormData.name}
                   width={120}
                   height={40}
                   className="object-contain"
                 />
               ) : (
-                <span className="text-2xl font-bold text-gray-900">{store.name}</span>
+                <span className="text-2xl font-bold text-gray-900">{storeFormData.name}</span>
               )}
             </Link>
           </motion.div>

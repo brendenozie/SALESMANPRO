@@ -8,7 +8,7 @@ import Footer from "./footer/Footer";
 import Link from "next/link";
 
 interface RealEstateLayoutProps {
-  params: { store: any };
+  params: { storeFormData: any };
   children: ReactNode;
 }
 
@@ -16,16 +16,16 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function RealEstateHeaderLayout({ params, children }: RealEstateLayoutProps) {
-  const { store } = params;
+  const { storeFormData } = params;
   
 
   return (
     <>
-      <Header store={store} />
+      <Header storeFormData={storeFormData} />
       {/* Main Content Area */}
       <section className="container">{children}</section>
 
-      <Footer store={store} />
+      <Footer storeFormData={storeFormData} />
     </>
   );
 }
