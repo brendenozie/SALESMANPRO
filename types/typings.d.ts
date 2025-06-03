@@ -203,9 +203,31 @@ type StoreForm = {
   analyticsConfig: Record<string, any>;
   paymentSettings: Record<string, any>;
   shippingSettings: Record<string, any>;
-  // storeCategories: CategoryOption[];
+  marketplaceListings: MarketplaceListingForm[];
   storeCategories: StoreCategoryEntry[];
 };
+
+// types/typings.ts
+
+export interface MarketplaceListingForm {
+  id: string;
+  title: string;
+  description?: string;
+  finalPrice: number;
+  images: string[];         // JSON[] in Prisma
+  isAvailable: boolean;
+  isFeatured: boolean;
+  // (…any other fields you plan to render on the frontend…)
+  product?: {
+    id: string;
+    name: string;
+    description?: string;
+    brand?: string;
+    color?: string[];
+    size?: string[];
+    // etc.
+  };
+}
 
 // Handlers signature
 interface Handlers {

@@ -946,8 +946,9 @@ model MarketplaceListing {
   location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
   amenities String[]
 
-  bedrooms Json? // Updated to support multiple bedroom types
-  studios  Json? // Updated to support multiple bedroom types
+  bedrooms    Json? // Updated to support multiple bedroom types
+  studios     Json? // Updated to support multiple bedroom types
+  showOnGhuba Boolean? @default(true)
 
   status         ListingStatus    @default(ACTIVE)
   OrderItem      OrderItem[]

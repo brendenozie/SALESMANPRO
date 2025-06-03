@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useStore } from '../../../contexts/StoreContext';
+import { useStore, useStoreContext } from '../../../contexts/StoreContext';
 import AutomotiveSite from '@/components/site/layouts/AutomotiveLayout/body/AutomotiveSite';
 import BookingsSite from '@/components/site/layouts/BookingsLayout/body/BookingsSite';
 import CoursesSite from '@/components/site/layouts/CoursesLayout/body/CoursesSite';
@@ -23,13 +23,11 @@ import PortfolioSite from '@/components/site/layouts/PortfolioLayout/body/Portfo
 import ServiceSite from '@/components/site/layouts/ServicesLayout/body/ServiceSite';
 import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaaSSite';
 
-// Import your site components
-
-
 export default function StorePage() {
-  const store = useStore();
+  const { storeFormData} = useStoreContext();
 
-  if (!store) {
+
+  if (!storeFormData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-xl">Store not found</p>
@@ -38,154 +36,151 @@ export default function StorePage() {
   }
 
   // Normalize category
-  const type = (store.category ?? 'default').toLowerCase();
+  const type = (storeFormData.category ?? 'default').toLowerCase();
 
   switch (type) {
 
       case 'e-commerce':
       case 'ecommerce':
         return <EcommerceSite
-            store={store}
-            slug={store.slug}
-        />
+                  storeFormData={storeFormData}
+                  slug={storeFormData.slug}
+                />
       
       case 'services':
       case 'service provider':
-        return <ServiceSite 
-              // store={store}
-              // slug={store.slug}
-          />
+        return <ServiceSite children={undefined} />
 
       case 'bookings':
       case 'booking & appointments':
         return <BookingsSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
   
       case 'real estate':
         return <RealEstateSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
   
       case 'portfolio':
       case 'portfolio & personal branding':
         return <PortfolioSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
   
       case 'restaurant':
       case 'restaurant & food delivery':
         return <RestaurantSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
   
       case 'blog':
       case 'blog & content':
         return <BlogSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'directory':
       case 'directory & listings':
         return <DirectorySite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
               
       case 'educational':
       case 'educational & online courses':
       case 'courses':
         return <CoursesSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'nonprofit':
       case 'nonprofit & community':
         return <NonProfitSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'event':
       case 'event & ticketing':
         return <EventsSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'healthcare':
       case 'healthcare & clinics':
         return <HealthCareSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'saas':
       case 'saas & web apps':
         return <SaaSSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'automotive':
       case 'automotive':
         return <AutomotiveSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'media':
       case 'media & entertainment':
         return <MediaSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 // Review stopped at finance
       case 'finance':
       case 'finance & legal':
         return <FinanceSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'travel':
       case 'travel & tourism':
         return <TravelSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
 
       case 'fitness':
       case 'fitness & wellness':
         return <FitnessSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
   
       case 'marketplace':
       case 'marketplace':
         return <MarketplaceSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
   
       case 'other':
       case 'Other':
         return <DefaultSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
   
       default:
         return <DefaultSite 
-                // store={store}
-                // slug={store.slug}
+                // storeFormData={storeFormData}
+                // slug={storeFormData.slug}
                 />
     }
 

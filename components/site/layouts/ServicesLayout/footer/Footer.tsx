@@ -19,6 +19,7 @@ interface FooterProps {
   storeFormData: {
     name: string;
     slug: string;
+    tagline:string;
     themeSettings?: {
       primaryColor?: string;
       secondaryColor?: string;
@@ -47,7 +48,7 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
           <div>
             <h2 className="text-2xl font-bold mb-4">{storeFormData.name}</h2>
             <p className="text-sm text-black/80">
-              Your trusted platform for innovative digital solutions.
+              {storeFormData.tagline || "Your trusted platform for innovative digital solutions."}
             </p>
             <div className="flex mt-4 space-x-4">
               {socialLinks.map((social, idx) => (

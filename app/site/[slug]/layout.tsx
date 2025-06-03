@@ -93,9 +93,28 @@ export default async function StoreLayout({
       shippingSettings: true,
 
       MarketplaceListing: {
-        take: 8,
-        select: { id: true, title: true, finalPrice: true, images: true },
+        take: 12,
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          finalPrice: true,
+          images: true,
+          isAvailable: true,
+          isFeatured: true,
+          product: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              brand: true,
+              color: true,
+              size: true,
+            },
+          },
+        },
       },
+      
       StoreCategory: {
         orderBy: { sortOrder: 'asc' },
         include: {
@@ -243,6 +262,28 @@ export default async function StoreLayout({
           : [],
         sortOrder: sc.sortOrder,
         visible: sc.visible,
+      })),
+
+      marketplaceListings: raw.MarketplaceListing.map((m) => ({
+        id: m.id,
+        title: m.title,
+        description: m.description ?? '',
+        finalPrice: m.finalPrice ?? 0,
+        images: Array.isArray(m.images)
+          ? m.images.filter((img): img is string => typeof img === 'string' && img !== null)
+          : [],
+        isAvailable: m.isAvailable,
+        isFeatured: m.isFeatured,
+        product: m.product
+          ? {
+              id: m.product.id,
+              name: m.product.name,
+              description: m.product.description ?? '',
+              brand: m.product.brand ?? undefined,
+              color: Array.isArray(m.product.color) ? m.product.color.filter((c): c is string => typeof c === 'string' && c !== null) : [],
+              size: Array.isArray(m.product.size) ? m.product.size.filter((s): s is string => typeof s === 'string' && s !== null) : [],
+            }
+          : undefined,
       })),
   
       awards: Array.isArray(raw.awards) ? raw.awards : typeof raw.awards === "string" ? JSON.parse(raw.awards) : undefined,
