@@ -21,11 +21,11 @@ export default function RealEstateHeaderLayout({ params, children }: RealEstateL
 
   return (
     <>
-      <Header storeFormData={storeFormData} />
+      <Header/>
       {/* Main Content Area */}
       <section className="container">{children}</section>
 
-      <Footer storeFormData={storeFormData} />
+      <Footer/>
     </>
   );
 }

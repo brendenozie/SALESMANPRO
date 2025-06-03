@@ -5,214 +5,268 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { HeartIcon, ClipboardDocumentListIcon, CogIcon, BellIcon, Bars2Icon } from '@heroicons/react/24/outline';
+import {
+  HeartIcon,
+  ClipboardDocumentListIcon,
+  CogIcon,
+  BellIcon,
+  Bars2Icon,
+  MapPinIcon,
+  CurrencyDollarIcon,
+  MagnifyingGlassIcon,
+  ChevronDownIcon,
+} from "@heroicons/react/24/outline";
 
 // Sample data
 const store = {
-name: "WellSpring Clinic",
-slug: "wellspring",
-description: "Your health, our priority. Comprehensive care with a personal touch.",
-bannerUrl: "/images/healthcare-hero.jpg",
-services: [
-{ id: "s1", name: "General Checkup", imageUrl: "/services/checkup.jpg", slug: "general-checkup" },
-{ id: "s2", name: "Pediatric Care", imageUrl: "/services/pediatric.jpg", slug: "pediatric-care" },
-{ id: "s3", name: "Dental Services", imageUrl: "/services/dental.jpg", slug: "dental-services" },
-],
-doctors: [
-{ id: "d1", name: "Dr. Sarah Lee", subtitle: "General Physician", imageUrl: "/doctors/sarah.jpg" },
-{ id: "d2", name: "Dr. Mark Chen", subtitle: "Pediatrician", imageUrl: "/doctors/mark.jpg" },
-{ id: "d3", name: "Dr. Aisha Patel", subtitle: "Dentist", imageUrl: "/doctors/aisha.jpg" },
-{ id: "d4", name: "Dr. James Kim", subtitle: "Cardiologist", imageUrl: "/doctors/james.jpg" },
-],
-testimonials: [
-{ quote: "Exceptional care and friendly staff!", author: "Emily R." },
-{ quote: "My family feels safe here.", author: "John D." },
-],
-faqs: [
-{ question: "Do you accept insurance?", answer: "Yes, we work with most major providers." },
-{ question: "Can I book appointments online?", answer: "Absolutely, use our online booking portal." },
-],
+  name: "WellSpring Clinic",
+  slug: "wellspring",
+  description:
+    "Your health, our priority. Comprehensive care with a personal touch.",
+  bannerUrl: "/images/healthcare-hero.jpg",
+  aboutImageUrl: "/images/clinic-interior.jpg",
+  aboutText:
+    "At WellSpring Clinic, we combine advanced medical technology with compassionate care. Our dedicated team of specialists is here to support your health journey, offering personalized treatment plans and wellness advice tailored to your needs.",
+  services: [
+    {
+      id: "s1",
+      name: "General Checkup",
+      imageUrl: "/services/checkup.jpg",
+      slug: "general-checkup",
+    },
+    {
+      id: "s2",
+      name: "Pediatric Care",
+      imageUrl: "/services/pediatric.jpg",
+      slug: "pediatric-care",
+    },
+    {
+      id: "s3",
+      name: "Dental Services",
+      imageUrl: "/services/dental.jpg",
+      slug: "dental-services",
+    },
+  ],
+  doctors: [
+    {
+      id: "d1",
+      name: "Dr. Sarah Lee",
+      subtitle: "General Physician",
+      imageUrl: "/doctors/sarah.jpg",
+    },
+    {
+      id: "d2",
+      name: "Dr. Mark Chen",
+      subtitle: "Pediatrician",
+      imageUrl: "/doctors/mark.jpg",
+    },
+    {
+      id: "d3",
+      name: "Dr. Aisha Patel",
+      subtitle: "Dentist",
+      imageUrl: "/doctors/aisha.jpg",
+    },
+    {
+      id: "d4",
+      name: "Dr. James Kim",
+      subtitle: "Cardiologist",
+      imageUrl: "/doctors/james.jpg",
+    },
+  ],
+  testimonials: [
+    { quote: "Exceptional care and friendly staff!", author: "Emily R." },
+    { quote: "My family feels safe here.", author: "John D." },
+  ],
+  faqs: [
+    {
+      question: "Do you accept insurance?",
+      answer: "Yes, we work with most major providers.",
+    },
+    {
+      question: "Can I book appointments online?",
+      answer: "Absolutely, use our online booking portal.",
+    },
+  ],
 };
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-`${src}?w=${width}&q=${quality || 75}`;
+  `${src}?w=${width}&q=${quality || 75}`;
 
 export default function HealthCareSite() {
-const router = useRouter();
-const [services, setServices] = useState<any[]>([]);
-const [doctors, setDoctors] = useState<any[]>([]);
-const [testimonials, setTestimonials] = useState<any[]>([]);
-const [faqs, setFaqs] = useState<any[]>([]);
+  const router = useRouter();
+  const [services, setServices] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [faqs, setFaqs] = useState<any[]>([]);
 
-useEffect(() => {
-setServices(store.services);
-setDoctors(store.doctors);
-setTestimonials(store.testimonials);
-setFaqs(store.faqs);
-}, []);
+  useEffect(() => {
+    setServices(store.services);
+    setDoctors(store.doctors);
+    setTestimonials(store.testimonials);
+    setFaqs(store.faqs);
+  }, []);
 
-return ( <div className="space-y-24 font-sans">
- {/* Hero Section  */}
- <HealthcareHero store={store} />
+  return (
+    <div className="space-y-24 font-sans">
+      {/* Hero Section  */}
+      <HealthcareHero store={store} />
 
-   {/* About Section */}
-   <AboutSection store={store} />
+      {/* About Section */}
+      <AboutSection store={store} />
 
-  {/* CTA Section */}
-  <CTASection store={store} />
+      {/* CTA Section */}
+      <CTASection store={store} />
 
-  {/* Services Section */}
-  <MedicalServicesSection services={services} storeSlug={store.slug} />
+      {/* Services Section */}
+      <MedicalServicesSection services={services} storeSlug={store.slug} />
 
-  {/* Health Tips Section */}
-  {/* import { Apple, Dumbbell, Brain } from "lucide-react"; // Replace with your preferred icons */}
-  <section className="py-20 bg-gray-50">
-    <div className="container mx-auto px-6 max-w-5xl">
-      <motion.h2
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-4xl font-bold text-center mb-6 text-gray-800"
-      >
-        Health Tips & Resources
-      </motion.h2>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
-        className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto"
-      >
-        Stay informed with practical tips and trusted health insights for you and your loved ones.
-      </motion.p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {[
-          {
-            title: "Healthy Eating",
-            description: "Discover balanced diets and nutrition tips to fuel your body.",
-            icon: <CogIcon className="w-10 h-10 text-teal-600" />,
-          },
-          {
-            title: "Exercise Tips",
-            description: "Incorporate practical workouts to match your lifestyle and goals.",
-            icon: <BellIcon className="w-10 h-10 text-teal-600" />,
-          },
-          {
-            title: "Mental Wellness",
-            description: "Support your emotional well-being with expert-backed strategies.",
-            icon: <Bars2Icon className="w-10 h-10 text-teal-600" />,
-          },
-        ].map((tip, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ scale: 1.03 }}
-            initial={{ opacity: 0, y: 20 }}
+      {/* Health Tips Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6 max-w-5xl">
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 * i }}
-            className="bg-white rounded-2xl shadow-lg p-6 text-center"
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-bold text-center mb-6 text-gray-800"
           >
-            <div className="flex justify-center mb-4">{tip.icon}</div>
-            <h3 className="text-xl font-semibold text-teal-700 mb-2">{tip.title}</h3>
-            <p className="text-gray-600">{tip.description}</p>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
+            Health Tips & Resources
+          </motion.h2>
 
-  {/* Doctors Section */}
-  <DoctorsSection doctors={doctors} />
-  
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto"
+          >
+            Stay informed with practical tips and trusted health insights for you and your loved ones.
+          </motion.p>
 
-  {/* Call to Action Banner */}
-  <CTASection store={store} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Healthy Eating",
+                description: "Discover balanced diets and nutrition tips to fuel your body.",
+                icon: <CogIcon className="w-10 h-10 text-teal-600" />,
+              },
+              {
+                title: "Exercise Tips",
+                description: "Incorporate practical workouts to match your lifestyle and goals.",
+                icon: <BellIcon className="w-10 h-10 text-teal-600" />,
+              },
+              {
+                title: "Mental Wellness",
+                description: "Support your emotional well-being with expert-backed strategies.",
+                icon: <Bars2Icon className="w-10 h-10 text-teal-600" />,
+              },
+            ].map((tip, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.03 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 * i }}
+                className="bg-white rounded-2xl shadow-lg p-6 text-center"
+              >
+                <div className="flex justify-center mb-4">{tip.icon}</div>
+                <h3 className="text-xl font-semibold text-teal-700 mb-2">{tip.title}</h3>
+                <p className="text-gray-600">{tip.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-  {/* Patient Testimonials */}
-  <section className="py-20 bg-gray-50">
-    <div className="container mx-auto px-6">
-      <motion.h2
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-4xl font-bold text-center mb-14 text-gray-800"
-      >
-        What Our Patients Say
-      </motion.h2>
+      {/* Doctors Section */}
+      <DoctorsSection doctors={doctors} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {testimonials.map((t, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 30 }}
+      {/* Call to Action Banner */}
+      <CTASection store={store} />
+
+      {/* Patient Testimonials */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <motion.h2
+            initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.2, duration: 0.6 }}
-            className="bg-white rounded-2xl shadow-lg p-6 relative overflow-hidden"
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-bold text-center mb-14 text-gray-800"
           >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xl">
-                {t.author[0]}
-              </div>
-              <div className="text-left">
-                <p className="font-semibold text-gray-900">{t.author}</p>
-                <p className="text-sm text-gray-500">Verified Patient</p>
-              </div>
-            </div>
+            What Our Patients Say
+          </motion.h2>
 
-            <p className="italic text-gray-700 text-md leading-relaxed">
-              “{t.quote}”
-            </p>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.2, duration: 0.6 }}
+                className="bg-white rounded-2xl shadow-lg p-6 relative overflow-hidden"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xl">
+                    {t.author[0]}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900">{t.author}</p>
+                    <p className="text-sm text-gray-500">Verified Patient</p>
+                  </div>
+                </div>
 
-  {/* Health FAQs */}
-  <section className="py-20 bg-white">
-    <div className="container mx-auto px-6 max-w-4xl">
-      <motion.h2
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-4xl font-bold text-center mb-12 text-gray-800"
-      >
-        Frequently Asked Questions
-      </motion.h2>
+                <p className="italic text-gray-700 text-md leading-relaxed">“{t.quote}”</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <div className="space-y-6">
-        {faqs.map((q, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
+      {/* Health FAQs */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-6 max-w-4xl">
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 * i, duration: 0.4 }}
-            className="bg-gray-50 rounded-2xl shadow-md overflow-hidden"
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-bold text-center mb-12 text-gray-800"
           >
-            <details className="group p-6 cursor-pointer">
-              <summary className="flex items-center justify-between text-lg font-semibold text-teal-700">
-                {q.question}
-                <svg
-                  className="w-5 h-5 text-teal-500 transform group-open:rotate-180 transition-transform duration-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </summary>
-              <p className="mt-4 text-gray-700 leading-relaxed">{q.answer}</p>
-            </details>
-          </motion.div>
-        ))}
-      </div>
+            Frequently Asked Questions
+          </motion.h2>
+
+          <div className="space-y-6">
+            {faqs.map((q, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 * i, duration: 0.4 }}
+                className="bg-gray-50 rounded-2xl shadow-md overflow-hidden"
+              >
+                <details className="group p-6 cursor-pointer">
+                  <summary className="flex items-center justify-between text-lg font-semibold text-teal-700">
+                    {q.question}
+                    <svg
+                      className="w-5 h-5 text-teal-500 transform group-open:rotate-180 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </summary>
+                  <p className="mt-4 text-gray-700 leading-relaxed">{q.answer}</p>
+                </details>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
-  </section>
-
-</div>
-
-
-);
+  );
 }
 
 /*
@@ -248,9 +302,7 @@ Design Decisions:
    • Color contrast compliant with WCAG AA.
 */
 
-
-
-function HealthcareHero({ store }:any) {
+function HealthcareHero({ store }: any) {
   const router = useRouter();
 
   return (
@@ -340,7 +392,7 @@ Design Decisions:
 
 2. Grid & Cards:
    • Responsive grid: 1-col on mobile, 2-col sm, 3-col lg with gap-8.
-   • Card: bg-white / dark:bg-gray-800, rounded-3xl, shadow-xl, overflow-hidden, focus-visible.
+   • Card: bg-white / dark:bg-gray-800, rounded-3xl, shadow-xl, overflow-hidden, focus-visible ring.
    • Image container: h-56 md:h-64 w-full, overflow-hidden, with image zoom on hover.
    • Content: p-6 text-center; service title and CTA link.
 
@@ -357,12 +409,12 @@ Design Decisions:
    • Alt text for images and aria-label on links.
 */
 
-function MedicalServicesSection({ services, storeSlug }:any) {
+function MedicalServicesSection({ services, storeSlug }: any) {
   const router = useRouter();
-  
+
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
@@ -379,7 +431,7 @@ function MedicalServicesSection({ services, storeSlug }:any) {
         </motion.h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((svc:any, idx:any) => (
+          {services.map((svc: any, idx: any) => (
             <motion.div
               key={svc.id}
               role="button"
@@ -390,9 +442,12 @@ function MedicalServicesSection({ services, storeSlug }:any) {
               whileInView="visible"
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: idx * 0.2 }}
-              whileHover={{ scale: 1.03, boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}
+              whileHover={{ scale: 1.03, boxShadow: "0 12px 24px rgba(0,0,0,0.12)" }}
               onClick={() => router.push(`/${storeSlug}/service/${svc.slug}`)}
-              onKeyDown={e => { if (e.key === 'Enter') router.push(`/${storeSlug}/service/${svc.slug}`); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") router.push(`/${storeSlug}/service/${svc.slug}`);
+              }}
+              aria-label={`Learn more about ${svc.name}`}
             >
               <div className="relative h-56 md:h-64 w-full overflow-hidden">
                 <Image
@@ -411,8 +466,11 @@ function MedicalServicesSection({ services, storeSlug }:any) {
                 <motion.a
                   whileHover={{ scale: 1.05 }}
                   className="inline-flex items-center justify-center bg-gradient-to-r from-teal-500 to-blue-600 text-white font-medium px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/${storeSlug}/service/${svc.slug}`);
+                  }}
                   aria-label={`Learn more about ${svc.name}`}
-                  onClick={e => { e.stopPropagation(); router.push(`/${storeSlug}/service/${svc.slug}`); }}
                 >
                   Learn More
                 </motion.a>
@@ -452,12 +510,12 @@ Design Decisions:
    • Alt text on images and aria-label on cards.
 */
 
+function DoctorsSection({ doctors }: any) {
+  const router = useRouter();
 
-function DoctorsSection({ doctors }:any) {
-  
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
@@ -474,7 +532,7 @@ function DoctorsSection({ doctors }:any) {
         </motion.h2>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {doctors.map((doc:any, idx:any) => (
+          {doctors.map((doc: any, idx: any) => (
             <motion.div
               key={doc.id}
               role="button"
@@ -485,7 +543,11 @@ function DoctorsSection({ doctors }:any) {
               whileInView="visible"
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: idx * 0.2 }}
-              whileHover={{ y: -5, boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}
+              whileHover={{ y: -5, boxShadow: "0 12px 24px rgba(0,0,0,0.12)" }}
+              onClick={() => router.push(`/${store.slug}/doctor/${doc.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") router.push(`/${store.slug}/doctor/${doc.id}`);
+              }}
               aria-label={`View profile of Dr. ${doc.name}`}
             >
               <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-emerald-500 mb-4">
@@ -511,7 +573,6 @@ function DoctorsSection({ doctors }:any) {
   );
 }
 
-
 /*
 About & CTA Sections for Healthcare Site
 
@@ -520,7 +581,7 @@ Design Decisions (consistent with Hero & Services):
 1. AboutSection:
    • Background: bg-white / dark:bg-gray-900 for content clarity.
    • Container: max-w-5xl centered with px-6 py-20.
-   • Layout: 2-column on md; image + text with reverse on alternate breakpoints for visual interest.
+   • Layout: 2-column on md breakpoints.
    • Typography: subtitle badge, heading text-4xl sm:text-5xl font-extrabold, paragraph text-lg text-gray-700/dark:text-gray-300.
    • Image: rounded-2xl, shadow-lg, object-cover, aspect-video.
    • Animations: Framer Motion fade+slide for both image and text with stagger.
@@ -534,10 +595,13 @@ Design Decisions (consistent with Hero & Services):
    • Accessibility: semantic elements, aria-labels, focus-visible rings.
 */
 
-const fadeIn = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 // AboutSection: highlights practice mission
- function AboutSection({ store }:any) {
+function AboutSection({ store }: any) {
   return (
     <section className="bg-white dark:bg-gray-900 py-20">
       <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -573,9 +637,7 @@ const fadeIn = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
           <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-4">
             Compassionate Care, Expert Team
           </h2>
-          <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-            {store.aboutText}
-          </p>
+          <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">{store.aboutText}</p>
         </motion.div>
       </div>
     </section>
@@ -583,7 +645,7 @@ const fadeIn = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 }
 
 // CTASection: prompts appointment booking or service browse
-function CTASection({ store }:any) {
+function CTASection({ store }: any) {
   const router = useRouter();
   return (
     <section className="relative min-h-[40vh] bg-gradient-to-r from-teal-600 to-blue-500 flex items-center justify-center">

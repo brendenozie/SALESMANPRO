@@ -16,29 +16,13 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function EventsHeaderLayout({ params, children }: EventsLayoutProps) {
-  const { storeFormData } = params;
-  const router = useRouter();
-  const [upcoming, setUpcoming] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<any[]>([]);
-
-  useEffect(() => {
-    // Using products as events for demo
-    setUpcoming(storeFormData.products.slice(0, 6));
-    setCategories(storeFormData.StoreCategory.slice(0, 4));
-    setTestimonials(storeFormData.testimonials.slice(0, 3));
-    setFaqs(storeFormData.faqs.slice(0, 3));
-  }, [storeFormData]);
-
+  
   return (
     <>
-      <Header storeFormData={storeFormData} />
-
+      <Header />
       {/* Child Content / Event Details */}
       <section className="container">{children}</section>
-
-      <Footer storeFormData={storeFormData} />
+      <Footer  />
     </>
   );
 }

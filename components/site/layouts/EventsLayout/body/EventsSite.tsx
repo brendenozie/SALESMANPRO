@@ -1,122 +1,136 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+"use client";
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import ArrowRightIcon from "@heroicons/react/24/outline/ArrowRightIcon";
-import { BellIcon, CalendarIcon, CheckCircleIcon, ChevronDownIcon, FaceSmileIcon, MagnifyingGlassIcon, MapPinIcon, TagIcon, TicketIcon } from "@heroicons/react/24/outline";
-import banner from "../../../../../assets/homebanner.png";
+import {
+  ArrowRightIcon,
+  BellIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  FaceSmileIcon,
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  TagIcon,
+  TicketIcon,
+} from "@heroicons/react/24/outline";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
 
-// Sample data
-const store = {
-name: "VibrantEvents",
-slug: "vibrantevents",
-description: "Join the most exciting events around you.",
-bannerUrl: "/images/events-hero.jpg",
-categories: [
-{ id: 1, name: "Music", slug: "music", icon: "/icons/music.svg" },
-{ id: 2, name: "Art", slug: "art", icon: "/icons/art.svg" },
-{ id: 3, name: "Tech", slug: "tech", icon: "/icons/tech.svg" },
-{ id: 4, name: "Wellness", slug: "wellness", icon: "/icons/wellness.svg" },
-],
-upcoming: [
-{ id: "e1", name: "Summer Beats Festival", date: "2025-06-15", subtitle: "Live music under the stars.", imageUrl: "/events/beatfest.jpg", slug: "summer-beats" },
-{ id: "e2", name: "Art & Wine Night", date: "2025-07-05", subtitle: "Sip and create masterpieces.", imageUrl: "/events/artwine.jpg", slug: "art-wine" },
-{ id: "e3", name: "Tech Innovators Summit", date: "2025-08-20", subtitle: "Where ideas meet reality.", imageUrl: "/events/techsummit.jpg", slug: "tech-summit" },
-],
-testimonials: [
-{ quote: "Best event experience ever!", author: "Alex P." },
-{ quote: "Unforgettable memories.", author: "Jamie L." },
-],
-faqs: [
-{ question: "Can I get a refund?", answer: "Full refunds available up to 48 hours before the event." },
-{ question: "Are events kid-friendly?", answer: "Family-friendly sections available in select events." },
-],
-};
+//----------------------------------------------
+// Image loader (same as elsewhere)
+//----------------------------------------------
+const loader = ({
+  src,
+  width,
+  quality,
+}: {
+  src: string;
+  width: number;
+  quality?: number;
+}) => `${src}?w=${width}&q=${quality || 75}`;
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-`${src}?w=${width}&q=${quality || 75}`;
-
+//----------------------------------------------
+// EventsSite component, using StoreContext
+//----------------------------------------------
 export default function EventsSite() {
   const router = useRouter();
-  const [categories, setCategories] = useState<any[]>([]);
-  const [upcoming, setUpcoming] = useState<any[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<any[]>([]);
+  const { storeFormData } = useStoreContext();
+  const {
+    name,
+    slug,
+    description,
+    bannerUrl,
+    storeCategories: categories,
+    marketplaceListings: upcoming,
+    testimonials,
+    faqs,
+  } = storeFormData;
 
-  useEffect(() => {
-  setCategories(store.categories);
-  setUpcoming(store.upcoming);
-  setTestimonials(store.testimonials);
-  setFaqs(store.faqs);
-  }, []);
+  return (
+    <div className="font-sans">
+      {/* Hero */}
+      <HeroComponent name={name} bannerUrl={bannerUrl} />
 
-  return (  <div className="font-sans">
+      {/* About */}
+      <AboutSection description={description} />
 
-    {/* Hero Section */}
-    <HeroComponent />
+      {/* Features */}
+      <FeaturesSection />
 
-    {/* About Section */}
-    <AboutSection />
+      {/* How It Works */}
+      <HowItWorksSection />
 
-    <FeaturesSection />
+      {/* Live Events */}
+      <LiveEventsSection upcoming={upcoming} slug={slug} />
 
-    <HowItWorksSection />
+      {/* Testimonials */}
+      <TestimonialsSection testimonials={testimonials} />
 
-    <LiveEventsSection />
+      {/* Pricing (for event organizers) */}
+      <PricingSection />
 
-    <TestimonialsSection />
+      {/* FAQ */}
+      <FAQSection faqs={faqs} />
 
-    <PricingSection />
-
-    <FAQSection />
-
-     {/* Call To Action  */}
-    <section className="bg-indigo-600 text-white py-16 text-center relative">
-      <h3 className="text-3xl md:text-4xl font-bold mb-4">Host With Us</h3>
-      <p className="text-lg mb-6">Planning an event? Let us help you make it extraordinary.</p>
-      <Link href="/host" className="bg-white text-indigo-600 px-6 py-3 rounded-full font-semibold hover:bg-indigo-100 transition">
-        Get Started
-      </Link>
-    </section>
-
-  </div>
-  
-);
-
+      {/* Call To Action */}
+      <section className="bg-indigo-600 text-white py-16 text-center relative">
+        <h3 className="text-3xl md:text-4xl font-bold mb-4">Host With Us</h3>
+        <p className="text-lg mb-6">
+          Planning an event? Let us help you make it extraordinary.
+        </p>
+        <Link
+          href={`/${slug}/host`}
+          className="bg-white text-indigo-600 px-6 py-3 rounded-full font-semibold hover:bg-indigo-100 transition"
+        >
+          Get Started
+        </Link>
+      </section>
+    </div>
+  );
 }
 
-function HeroComponent() {
+function HeroComponent({
+  name,
+  bannerUrl,
+}: {
+  name: string;
+  bannerUrl: string;
+}) {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 text-white py-20 px-4 sm:px-10 min-h-screen flex items-center justify-center
-      before:absolute before:inset-0 before:bg-gradient-to-br before:from-indigo-600/20 before:to-purple-700/20 before:blur-3xl before:z-0">
+    <section
+      className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 text-white py-20 px-4 sm:px-10 min-h-screen flex items-center justify-center before:absolute before:inset-0 before:bg-gradient-to-br before:from-indigo-600/20 before:to-purple-700/20 before:blur-3xl before:z-0"
+    >
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        {/* Left Content */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight mb-6">
-            Welcome to <span className="text-yellow-300">Your Future</span>
+            Welcome to <span className="text-yellow-300">{name}</span>
           </h1>
           <p className="text-lg sm:text-xl mb-8 text-white/90">
-            Discover the tools you need to level up your life and business. Intuitive, powerful, and beautifully designed for your success.
+            Discover the most exciting events around you. Browse, book, and
+            enjoy!
           </p>
           <div className="flex gap-4 flex-wrap">
-            <button  className="bg-yellow-400 text-black hover:bg-yellow-300 font-semibold py-3 px-6 rounded-full shadow-lg transition duration-300">
-              Get Started
+            <button className="bg-yellow-400 text-black hover:bg-yellow-300 font-semibold py-3 px-6 rounded-full shadow-lg transition duration-300">
+              Browse Events
             </button>
-            <button 
+            <button
               className="border-white text-white hover:bg-white hover:text-indigo-700 font-semibold py-3 px-6 rounded-full shadow-lg transition duration-300"
-              onClick={() => window.open("https://example.com/learn-more", "_blank")}
+              onClick={() =>
+                window.open("https://example.com/learn-more", "_blank")
+              }
             >
               Learn More <ArrowRightIcon className="ml-2 h-4 w-4" />
             </button>
           </div>
         </motion.div>
 
-        {/* Right Image */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -125,29 +139,27 @@ function HeroComponent() {
         >
           <Image
             priority
-            src={`${banner.src}`}
+            src={bannerUrl}
             loader={loader}
             width={600}
             height={400}
             alt="Hero"
-            className="w-full max-w-md mx-auto md:mx-0 animate-float drop-shadow-xl"
+            className="w-full max-w-md mx-auto md:mx-0 drop-shadow-xl"
           />
         </motion.div>
       </div>
 
-      {/* Floating Decorative Element */}
+      {/* Decorative Blurs */}
       <div className="absolute -top-10 -left-10 w-72 h-72 bg-pink-500/20 rounded-full filter blur-3xl z-0"></div>
       <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-yellow-400/10 rounded-full filter blur-2xl z-0"></div>
     </section>
   );
 }
 
-
-function AboutSection() {
+function AboutSection({ description }: { description?: string }) {
   return (
     <section className="bg-white dark:bg-gray-900 py-20 px-4 sm:px-10">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        {/* Left Image */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -155,13 +167,12 @@ function AboutSection() {
           viewport={{ once: true }}
         >
           <img
-            src="/images/about-us.png"
-            alt="About"
+            src="/images/events-about.jpg"
+            alt="About Us"
             className="w-full rounded-3xl shadow-lg"
           />
         </motion.div>
 
-        {/* Right Text */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -172,17 +183,21 @@ function AboutSection() {
             Who <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">We Are</span>
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-            We're a passionate team dedicated to building modern digital solutions that are fast, elegant, and efficient. With a focus on user experience and performance, we empower individuals and businesses to unlock their full potential.
+            {description ||
+              "We’re dedicated to bringing you the best events—music, art, tech, and wellness. Explore, connect, and celebrate with us."}
           </p>
           <ul className="space-y-3 text-gray-700 dark:text-gray-200">
             <li className="flex items-start">
-              <span className="mr-3 text-indigo-500">✔</span> Innovative and user-focused approach
+              <span className="mr-3 text-indigo-500">✔</span> Curated
+              experiences in every category
             </li>
             <li className="flex items-start">
-              <span className="mr-3 text-indigo-500">✔</span> Driven by quality and results
+              <span className="mr-3 text-indigo-500">✔</span> Trusted ticketing
+              and secure payments
             </li>
             <li className="flex items-start">
-              <span className="mr-3 text-indigo-500">✔</span> Global reach with a local touch
+              <span className="mr-3 text-indigo-500">✔</span> 24/7 support and
+              reminders
             </li>
           </ul>
         </motion.div>
@@ -195,22 +210,26 @@ const features = [
   {
     icon: <CalendarIcon className="w-8 h-8 text-indigo-600" />,
     title: "Easy Event Booking",
-    description: "Find and reserve your spot at events in just a few clicks. No hassle, no confusion.",
+    description:
+      "Find and reserve your spot at events in just a few clicks.",
   },
   {
     icon: <MapPinIcon className="w-8 h-8 text-indigo-600" />,
     title: "Local & Global Listings",
-    description: "Browse events near you or explore happenings around the world—instantly.",
+    description:
+      "Browse events near you or explore happenings around the world instantly.",
   },
   {
     icon: <TicketIcon className="w-8 h-8 text-indigo-600" />,
     title: "Secure Ticketing",
-    description: "Buy, store, and scan your tickets with confidence using our secure platform.",
+    description:
+      "Buy, store, and scan your tickets with confidence on our secure platform.",
   },
   {
     icon: <BellIcon className="w-8 h-8 text-indigo-600" />,
     title: "Real-Time Reminders",
-    description: "Get notified before events start so you never miss out on the action.",
+    description:
+      "Get notified before events start so you never miss out on the action.",
   },
 ];
 
@@ -227,7 +246,8 @@ function FeaturesSection() {
           Why Choose Our Platform?
         </motion.h2>
         <p className="text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto">
-          Whether you're an attendee or an organizer, we’ve built tools to make your events smooth, exciting, and unforgettable.
+          Whether you're an attendee or an organizer, we’ve built tools to make
+          your events smooth, exciting, and unforgettable.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
@@ -259,7 +279,7 @@ const steps = [
     icon: <MagnifyingGlassIcon className="w-8 h-8 text-purple-600" />,
     title: "Find Events",
     description:
-      "Browse trending, upcoming, and local events tailored to your interests. Filter by category, date, or location.",
+      "Browse trending, upcoming, and local events tailored to your interests.",
   },
   {
     icon: <CalendarIcon className="w-8 h-8 text-purple-600" />,
@@ -288,7 +308,8 @@ function HowItWorksSection() {
           How It Works
         </motion.h2>
         <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
-          Getting started is easy. Whether you're here to discover or organize, we’ve got you covered in three simple steps.
+          Getting started is easy. Whether you're here to discover or organize,
+          we’ve got you covered in three simple steps.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-left">
@@ -315,31 +336,21 @@ function HowItWorksSection() {
   );
 }
 
-const events = [
-  {
-    title: "Nairobi Tech Festival 2025",
-    date: "June 15, 2025",
-    location: "KICC, Nairobi",
-    image:
-      "https://images.unsplash.com/photo-1587825140708-dfaf72ae4d90?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    title: "Afrobeats Music Carnival",
-    date: "July 3, 2025",
-    location: "Uhuru Gardens, Nairobi",
-    image:
-      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    title: "Creative Design Expo",
-    date: "August 22, 2025",
-    location: "Sarit Expo Centre, Nairobi",
-    image:
-      "https://images.unsplash.com/photo-1585128792020-9662878b4ad2?auto=format&fit=crop&w=800&q=80",
-  },
-];
-
-function LiveEventsSection() {
+function LiveEventsSection({
+  upcoming,
+  slug,
+}: {
+  upcoming: Array<{
+    id: string;
+    title?: string;
+    name?: string;
+    date?: string;
+    location?: string;
+    image?: string;
+    subtitle?: string;
+  }>;
+  slug: string;
+}) {
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-20 px-4 sm:px-10">
       <div className="max-w-7xl mx-auto">
@@ -353,31 +364,40 @@ function LiveEventsSection() {
         </motion.h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          {events.map((event, index) => (
+          {upcoming.map((event, index) => (
             <motion.div
-              key={index}
+              key={event.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
             >
               <img
-                src={event.image}
-                alt={event.title}
+                src={event.image || "/images/placeholder-event.jpg"}
+                alt={event.name || event.title}
                 className="h-52 w-full object-cover"
               />
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                  {event.title}
+                  {event.name || event.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  📅 {event.date}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  📍 {event.location}
+                {event.date && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <CalendarIcon className="inline w-4 h-4 mr-1" />
+                    {event.date}
+                  </p>
+                )}
+                {event.location && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    <MapPinIcon className="inline w-4 h-4 mr-1" />
+                    {event.location}
+                  </p>
+                )}
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  {event.subtitle}
                 </p>
                 <a
-                  href="#"
+                  href={`/${slug}/event/${event.id}`}
                   className="inline-block mt-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
                 >
                   View Event
@@ -391,34 +411,11 @@ function LiveEventsSection() {
   );
 }
 
-const testimonials = [
-  {
-    name: "Linda Mwangi",
-    role: "Event Organizer",
-    quote:
-      "The platform made it so easy to manage my event. From ticketing to attendee check-ins, everything was seamless!",
-    image:
-      "https://randomuser.me/api/portraits/women/68.jpg",
-  },
-  {
-    name: "Brian Otieno",
-    role: "Attendee",
-    quote:
-      "I discovered amazing local events I wouldn't have found otherwise. Booking was fast and simple!",
-    image:
-      "https://randomuser.me/api/portraits/men/75.jpg",
-  },
-  {
-    name: "Amina Said",
-    role: "Sponsor Partner",
-    quote:
-      "We reached thousands of new customers through sponsored events. The exposure and analytics were impressive.",
-    image:
-      "https://randomuser.me/api/portraits/women/43.jpg",
-  },
-];
-
-function TestimonialsSection() {
+function TestimonialsSection({
+  testimonials,
+}: {
+  testimonials: Array<{ quote: string; author: string }>;
+}) {
   return (
     <section className="bg-white dark:bg-gray-950 py-20 px-4 sm:px-10">
       <div className="max-w-6xl mx-auto text-center">
@@ -431,10 +428,10 @@ function TestimonialsSection() {
           What People Are Saying
         </motion.h2>
         <p className="text-gray-600 dark:text-gray-300 mb-12 max-w-xl mx-auto">
-          Real stories from organizers, attendees, and partners who’ve used our platform to create memorable experiences.
+          Real stories from attendees and organizers who’ve used our platform to create memorable experiences.
         </p>
 
-        <div className="grid gap-10 md:grid-cols-3 text-left">
+        <div className="grid gap-10 md:grid-cols-2 text-left">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
@@ -447,21 +444,9 @@ function TestimonialsSection() {
               <p className="text-gray-700 dark:text-gray-300 italic mb-4">
                 “{testimonial.quote}”
               </p>
-              <div className="flex items-center gap-4 mt-6">
-                <img
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-purple-500"
-                />
-                <div>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {testimonial.name}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {testimonial.role}
-                  </p>
-                </div>
-              </div>
+              <footer className="mt-4 text-right font-semibold text-gray-900 dark:text-white">
+                — {testimonial.author}
+              </footer>
             </motion.div>
           ))}
         </div>
@@ -523,7 +508,8 @@ function PricingSection() {
           Flexible Plans for Every Organizer
         </motion.h2>
         <p className="text-gray-600 dark:text-gray-300 mb-14 max-w-2xl mx-auto">
-          Whether you're just starting out or managing major festivals, our pricing is built to scale with you.
+          Whether you're just starting out or managing major festivals, our
+          pricing is built to scale with you.
         </p>
 
         <div className="grid gap-10 md:grid-cols-3">
@@ -568,34 +554,14 @@ function PricingSection() {
   );
 }
 
+function FAQSection({
+  faqs,
+}: {
+  faqs: Array<{ question: string; answer: string }>;
+}) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-const faqs = [
-  {
-    question: "How do I create an event?",
-    answer:
-      "Sign up as an organizer, click on 'Create Event', and fill in your event details. Once published, attendees can start registering instantly.",
-  },
-  {
-    question: "Is there a free plan for event hosting?",
-    answer:
-      "Yes! Our Starter plan lets you host 1 free event per month with up to 100 RSVPs. Upgrade any time for more features.",
-  },
-  {
-    question: "Can I customize my event page?",
-    answer:
-      "Absolutely! You can add custom images, descriptions, ticket types, and even use your brand colors with the Pro plan.",
-  },
-  {
-    question: "How are payments handled?",
-    answer:
-      "We support secure payments via Stripe and M-Pesa. Funds are transferred to your account after ticket sales are processed.",
-  },
-];
-
-function FAQSection() {
-  const [openIndex, setOpenIndex] = useState(null);
-
-  const toggle = (index:any) => {
+  const toggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 

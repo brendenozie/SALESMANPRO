@@ -1,18 +1,26 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import banner from "../../../../../assets/homebanner.png"
-import { MapPinIcon, CurrencyDollarIcon, MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import {
+  MapPinIcon,
+  CurrencyDollarIcon,
+  MagnifyingGlassIcon,
+  ChevronDownIcon,
+  HomeIcon,
+  MapIcon,
+  TagIcon,
+} from "@heroicons/react/24/outline";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
 
-// Sample store data (ideally fetched via API)
-// Sample store data
 const store = {
   name: "UrbanNest Realty",
   slug: "urbannest",
   description: "Find your perfect home with ease and style.",
-  bannerUrl: banner.src,
+  // bannerUrl: banner.src,
   StoreCategory: [
     { id: 1, name: "Apartments", slug: "apartments", imageUrl: "/categories/apartment.jpg" },
     { id: 2, name: "Villas", slug: "villas", imageUrl: "/categories/villa.jpg" },
@@ -77,37 +85,69 @@ const store = {
     {"id": 3, "title": "How to Stage Your Home", "link": "#"}
   ],
   };
-  
-const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
 
+// Reusable loader
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+
+//──────────────────────────────────────────────────────────────────────────────
+// Main RealEstateSite Component
+//──────────────────────────────────────────────────────────────────────────────
 export default function RealEstateSite() {
   const router = useRouter();
+  const { storeFormData } = useStoreContext();
+  const {
+    name,
+    slug,
+    description,
+    bannerUrl,
+    storeCategories: categories,
+    marketplaceListings,
+    // agents:store.agents,
+    metrics,
+    awards,
+    testimonials,
+    faqs,
+    // locations:store.locations,
+    // blogPosts:store.blogPosts,
+  } = storeFormData;
+
+  // Search form state
   const [location, setLocation] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [showNewsletter, setShowNewsletter] = useState(true);
 
   useEffect(() => {
-    // initialize if fetching from server
+    // Placeholder for fetching or additional setup
   }, []);
 
-  const handleSearch = () => alert(`Searching in ${location} between KES ${minPrice} and KES ${maxPrice}`);
-  const handleNewsletter = (e:any) => { e.preventDefault(); setShowNewsletter(false); /* send email */ };
+  const handleSearch = () =>
+    alert(`Searching in ${location} between KES ${minPrice} and KES ${maxPrice}`);
 
+  const handleNewsletter = (e: any) => {
+    e.preventDefault();
+    setShowNewsletter(false);
+    // Submit logic here
+  };
 
   return (
-    <div className=" font-sans text-gray-800">
+    <div className="font-sans text-gray-800">
       {/* Sticky Contact Agent Button */}
       <a
-        href="https://wa.me/254712345678?text=Hi%20UrbanNest%20Realty,%20I%27d%20like%20to%20inquire%20about%20a%20listing"
+        href={`https://wa.me/254712345678?text=Hi%20${encodeURIComponent(
+          name
+        )},%20I'd%20like%20to%20inquire%20about%20a%20listing`}
         target="_blank"
         className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-xl z-50"
+        aria-label="Chat on WhatsApp"
       >
         <img src="/icons/whatsapp.svg" alt="Chat" className="h-6 w-6" />
       </a>
 
       {/* Hero Section */}
       <HeroSection
+        name={name}
+        bannerUrl={bannerUrl}
         location={location}
         minPrice={minPrice}
         maxPrice={maxPrice}
@@ -117,50 +157,65 @@ export default function RealEstateSite() {
         handleSearch={handleSearch}
       />
 
-      <CategoriesSection categories={store.StoreCategory} />
+      {/* Property Types */}
+      <CategoriesSection categories={categories} slug={slug} />
 
-      <FeaturedListings listings={store.featuredListings} storeSlug={store.slug} />
+      {/* Featured Listings */}
+      <FeaturedListings listings={marketplaceListings} slug={slug} />
 
-      <TrendingLocations locations={store.locations} storeSlug={store.slug} />
+      {/* Trending Locations */}
+      <TrendingLocations locations={store.locations} slug={slug} />
 
-      <ListingsSection products={store.products} storeSlug={store.slug} />
+      {/* All Listings */}
+      <ListingsSection products={marketplaceListings} slug={slug} />
 
-        {/* Newsletter Signup */}
-        {showNewsletter && (
-          <NewsletterSection handleNewsletter={handleNewsletter} />
-        )}
-        
-        <BlogSection posts={store.blogPosts} storeSlug={store.slug} />
-      
-        {/* Our Agents */}
-        <AgentsSection agents={store.agents} />
+      {/* Newsletter Signup */}
+      {showNewsletter && <NewsletterSection handleNewsletter={handleNewsletter} />}
 
-        {/* Metrics & Awards */}
-        <WhyChooseUs metrics={store.metrics} awards={store.awards} />
-        
+      {/* Blog Posts */}
+      <BlogSection posts={store.blogPosts} slug={slug} />
+
+      {/* Agents */}
+      <AgentsSection agents={store.agents} slug={slug} />
+
+      {/* Metrics & Awards */}
+      <WhyChooseUs metrics={metrics} awards={awards} />
+
       {/* Testimonials Carousel */}
-      <TestimonialsSection testimonials={store.testimonials} />
-      
-      {/* FAQs */}
-      <FAQSection faqs={store.faqs} />
+      <TestimonialsSection testimonials={testimonials} />
 
+      {/* FAQ Section */}
+      <FAQSection faqs={faqs} />
     </div>
   );
 }
 
+//──────────────────────────────────────────────────────────────────────────────
+// HeroSection
+//──────────────────────────────────────────────────────────────────────────────
 const variants = {
   fadeInUp: { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } },
   fadeIn: { hidden: { opacity: 0 }, visible: { opacity: 1 } },
 };
 
-function HeroSection({ location, minPrice, maxPrice, setLocation, setMinPrice, setMaxPrice, handleSearch }:any) {
+function HeroSection({
+  name,
+  bannerUrl,
+  location,
+  minPrice,
+  maxPrice,
+  setLocation,
+  setMinPrice,
+  setMaxPrice,
+  handleSearch,
+}: any) {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-900">
-      {/* Background Image + Gradient Overlay */}
+      {/* Background */}
       <div className="absolute inset-0">
         <Image
-          src={store.bannerUrl || "/images/realestate-hero.jpg"}
-          alt="Decorative illustration" // decorative, so empty alt if purely decorative
+          src={bannerUrl || "/images/realestate-hero.jpg"}
+          alt=""
           layout="fill"
           objectFit="cover"
           className="opacity-60 dark:opacity-30"
@@ -170,9 +225,8 @@ function HeroSection({ location, minPrice, maxPrice, setLocation, setMinPrice, s
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-700 dark:to-teal-900" />
       </div>
 
-      {/* Content Container */}
+      {/* Content */}
       <div className="relative z-10 max-w-4xl text-center px-4 sm:px-6 lg:px-8">
-        {/* Main Heading */}
         <motion.h1
           className="text-5xl md:text-7xl font-extrabold leading-tight text-gray-900 dark:text-white drop-shadow-lg"
           variants={variants.fadeInUp}
@@ -182,8 +236,6 @@ function HeroSection({ location, minPrice, maxPrice, setLocation, setMinPrice, s
         >
           Find Your Perfect Stay
         </motion.h1>
-
-        {/* Subtitle */}
         <motion.p
           className="mt-4 text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
           variants={variants.fadeInUp}
@@ -194,9 +246,11 @@ function HeroSection({ location, minPrice, maxPrice, setLocation, setMinPrice, s
           Search properties by location and price range to discover the ideal place to call home.
         </motion.p>
 
-        {/* Search Form */}
         <motion.form
-          onSubmit={e => { e.preventDefault(); handleSearch(); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSearch();
+          }}
           className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-80 backdrop-blur-2xl rounded-2xl p-6 shadow-xl"
           variants={variants.fadeIn}
           initial="hidden"
@@ -206,38 +260,47 @@ function HeroSection({ location, minPrice, maxPrice, setLocation, setMinPrice, s
         >
           {/* Location Input */}
           <label className="relative flex items-center">
-            <MapPinIcon className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3" aria-hidden="true" />
+            <MapPinIcon
+              className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3"
+              aria-hidden="true"
+            />
             <input
               type="text"
               placeholder="Location"
               value={location}
-              onChange={e => setLocation(e.target.value)}
+              onChange={(e) => setLocation(e.target.value)}
               aria-label="Location"
               className="w-full pl-10 pr-4 py-2 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 transition transform focus:scale-105"
             />
           </label>
 
-          {/* Min Price Input */}
+          {/* Min Price */}
           <label className="relative flex items-center">
-            <CurrencyDollarIcon className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3" aria-hidden="true" />
+            <CurrencyDollarIcon
+              className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3"
+              aria-hidden="true"
+            />
             <input
               type="number"
               placeholder="Min Price"
               value={minPrice}
-              onChange={e => setMinPrice(e.target.value)}
+              onChange={(e) => setMinPrice(e.target.value)}
               aria-label="Minimum price"
               className="w-full pl-10 pr-4 py-2 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 transition transform focus:scale-105"
             />
           </label>
 
-          {/* Max Price Input */}
+          {/* Max Price */}
           <label className="relative flex items-center">
-            <CurrencyDollarIcon className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3" aria-hidden="true" />
+            <CurrencyDollarIcon
+              className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3"
+              aria-hidden="true"
+            />
             <input
               type="number"
               placeholder="Max Price"
               value={maxPrice}
-              onChange={e => setMaxPrice(e.target.value)}
+              onChange={(e) => setMaxPrice(e.target.value)}
               aria-label="Maximum price"
               className="w-full pl-10 pr-4 py-2 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 transition transform focus:scale-105"
             />
@@ -260,149 +323,10 @@ function HeroSection({ location, minPrice, maxPrice, setLocation, setMinPrice, s
   );
 }
 
-
-function QuickSearch() {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-      className="sticky top-0 bg-white dark:bg-gray-800 p-4 shadow-md z-20">
-      <div className="flex flex-wrap gap-4 items-center justify-center">
-        {/* Toggle, inputs, sliders - placeholders */}
-        <button className="px-3 py-1 bg-blue-600 text-white rounded-full">Buy</button>
-        <button
-          className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full">Rent</button>
-        <input placeholder="Location" className="p-2 border rounded-lg flex-1 min-w-[150px] focus:ring-2" />
-        <input type="number" placeholder="Min Price" className="p-2 border rounded-lg w-[120px]" />
-        <input type="number" placeholder="Max Price" className="p-2 border rounded-lg w-[120px]" />
-      </div>
-    </motion.div>
-  );
-}
-
-
-
-function FeaturedListings({ listings, storeSlug }:any) {
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-16">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-8">
-          Featured Listings
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {listings.map((item:any) => (
-            <motion.div
-              key={item.id}
-              role="button"
-              tabIndex={0}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -8, boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}
-              transition={{ type: 'spring', stiffness: 250 }}
-              onClick={() => window.location.href = `/site/${storeSlug}/property/${item.id}`}
-              className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            >
-              <div className="relative h-64 w-full overflow-hidden">
-                <Image
-                  src={item.image}
-                  alt={item.address}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transform transition-transform duration-500 hover:scale-110"
-                  loader={loader}
-                />
-                {item.badge && (
-                  <span className="absolute top-4 right-4 bg-amber-500 text-white text-xs font-semibold uppercase px-3 py-1 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-
-              <div className="p-6 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-emerald-600">
-                    KES {item.price.toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 font-medium">
-                  {item.address}
-                </p>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  {item.beds} beds • {item.baths} baths • {item.sqft.toLocaleString()} sqft
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => { e.stopPropagation(); window.location.href = `/site/${storeSlug}/property/${item.id}`; }}
-                  className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white font-medium py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                  aria-label={`View details for ${item.address}`}
-                >
-                  View Details
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-
-function TrendingLocations({ locations, storeSlug }:any) {
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-16 px-6">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-8">
-          Trending Locations
-        </h2>
-        <div className="flex space-x-6 overflow-x-auto pb-4 snap-x snap-mandatory">
-          {locations.map((loc:any) => (
-            <motion.div
-              key={loc.id}
-              role="group"
-              tabIndex={0}
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -5 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-              className="snap-center min-w-[220px] sm:min-w-[260px] relative rounded-3xl overflow-hidden shadow-lg bg-black/5 dark:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              onClick={() => window.location.href = `/site/${storeSlug}/location/${loc.id}`}
-            >
-              <div className="relative h-48 sm:h-56 w-full overflow-hidden">
-                <Image
-                  src={loc.image}
-                  alt={loc.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transform transition-transform duration-500 group-hover:scale-105"
-                  loader={loader}
-                />
-                <span className="absolute top-4 left-4 bg-emerald-500 text-white text-xs uppercase px-3 py-1 rounded-full">
-                  {loc.listings} Listings
-                </span>
-              </div>
-              <div className="absolute bottom-4 left-4 right-4 bg-gradient-to-t from-black/70 to-transparent p-4">
-                <h3 className="text-xl font-semibold text-white mb-1">
-                  {loc.name}
-                </h3>
-                <p className="text-sm text-gray-200">
-                  Avg KES {loc.avgPrice.toLocaleString()}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-
-function CategoriesSection({ categories }:any) {
+//──────────────────────────────────────────────────────────────────────────────
+// CategoriesSection
+//──────────────────────────────────────────────────────────────────────────────
+function CategoriesSection({ categories, slug }: any) {
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-6">
@@ -411,8 +335,8 @@ function CategoriesSection({ categories }:any) {
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories.map((cat:any) => (
-            <Link key={cat.id} href={`/site/${cat.slug}`}>
+          {categories.map((cat: any) => (
+            <Link key={cat.id} href={`/site/${slug}/category/${cat.slug}`}>
               <motion.a
                 className="block relative rounded-2xl overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                 whileHover={{ scale: 1.05 }}
@@ -448,7 +372,131 @@ function CategoriesSection({ categories }:any) {
   );
 }
 
-function ListingsSection({ products, storeSlug }:any) {
+//──────────────────────────────────────────────────────────────────────────────
+// FeaturedListings
+//──────────────────────────────────────────────────────────────────────────────
+function FeaturedListings({ listings, slug }: any) {
+  return (
+    <section className="bg-gray-50 dark:bg-gray-900 py-16">
+      <div className="max-w-7xl mx-auto px-6">
+        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-8">
+          Featured Listings
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {listings.map((item: any) => (
+            <motion.div
+              key={item.id}
+              role="button"
+              tabIndex={0}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8, boxShadow: "0 12px 24px rgba(0,0,0,0.12)" }}
+              transition={{ type: "spring", stiffness: 250 }}
+              onClick={() => (window.location.href = `/site/${slug}/property/${item.id}`)}
+              className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            >
+              <div className="relative h-64 w-full overflow-hidden">
+                <Image
+                  src={item.image}
+                  alt={item.address}
+                  layout="fill"
+                  objectFit="cover"
+                  className="transform transition-transform duration-500 hover:scale-110"
+                  loader={loader}
+                />
+                {item.badge && (
+                  <span className="absolute top-4 right-4 bg-amber-500 text-white text-xs font-semibold uppercase px-3 py-1 rounded-full">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+
+              <div className="p-6 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-2xl font-bold text-emerald-600">
+                    KES {item.price.toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 font-medium">{item.address}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  {item.beds} beds • {item.baths} baths • {item.sqft.toLocaleString()} sqft
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/site/${slug}/property/${item.id}`;
+                  }}
+                  className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white font-medium py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                  aria-label={`View details for ${item.address}`}
+                >
+                  View Details
+                </motion.button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+//──────────────────────────────────────────────────────────────────────────────
+// TrendingLocations
+//──────────────────────────────────────────────────────────────────────────────
+function TrendingLocations({ locations, slug }: any) {
+  return (
+    <section className="bg-gray-50 dark:bg-gray-900 py-16 px-6">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-8">
+          Trending Locations
+        </h2>
+        <div className="flex space-x-6 overflow-x-auto pb-4 snap-x snap-mandatory">
+          {locations.map((loc: any) => (
+            <motion.div
+              key={loc.id}
+              role="group"
+              tabIndex={0}
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -5 }}
+              transition={{ type: "spring", stiffness: 200 }}
+              onClick={() => (window.location.href = `/site/${slug}/location/${loc.id}`)}
+              className="snap-center min-w-[220px] sm:min-w-[260px] relative rounded-3xl overflow-hidden shadow-lg bg-black/5 dark:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            >
+              <div className="relative h-48 sm:h-56 w-full overflow-hidden">
+                <Image
+                  src={loc.image}
+                  alt={loc.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="transform transition-transform duration-500 group-hover:scale-105"
+                  loader={loader}
+                />
+                <span className="absolute top-4 left-4 bg-emerald-500 text-white text-xs uppercase px-3 py-1 rounded-full">
+                  {loc.listings} Listings
+                </span>
+              </div>
+              <div className="absolute bottom-4 left-4 right-4 bg-gradient-to-t from-black/70 to-transparent p-4">
+                <h3 className="text-xl font-semibold text-white mb-1">{loc.name}</h3>
+                <p className="text-sm text-gray-200">Avg KES {loc.avgPrice.toLocaleString()}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+//──────────────────────────────────────────────────────────────────────────────
+// ListingsSection
+//──────────────────────────────────────────────────────────────────────────────
+function ListingsSection({ products, slug }: any) {
   const router = useRouter();
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900">
@@ -458,17 +506,17 @@ function ListingsSection({ products, storeSlug }:any) {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((prop:any) => (
+          {products.map((prop: any) => (
             <motion.div
               key={prop.id}
               role="button"
               tabIndex={0}
-              onClick={() => router.push(`/site/${storeSlug}/property/${prop.id}`)}
+              onClick={() => router.push(`/site/${slug}/property/${prop.id}`)}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              whileHover={{ y: -10, boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              whileHover={{ y: -10, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+              transition={{ type: "spring", stiffness: 200 }}
               className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 shadow-md hover:shadow-xl"
             >
               <div className="relative h-72 w-full overflow-hidden">
@@ -478,7 +526,7 @@ function ListingsSection({ products, storeSlug }:any) {
                   layout="fill"
                   objectFit="cover"
                   className="transform transition-transform duration-500 hover:scale-110"
-                  loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
+                  loader={loader}
                 />
               </div>
 
@@ -498,7 +546,10 @@ function ListingsSection({ products, storeSlug }:any) {
   );
 }
 
-function NewsletterSection({ handleNewsletter }:any) {
+//──────────────────────────────────────────────────────────────────────────────
+// NewsletterSection
+//──────────────────────────────────────────────────────────────────────────────
+function NewsletterSection({ handleNewsletter }: any) {
   return (
     <motion.section
       className="bg-gray-50 dark:bg-gray-900 py-20"
@@ -541,9 +592,10 @@ function NewsletterSection({ handleNewsletter }:any) {
   );
 }
 
-
-
-function AgentsSection({ agents, storeSlug }:any) {
+//──────────────────────────────────────────────────────────────────────────────
+// AgentsSection
+//──────────────────────────────────────────────────────────────────────────────
+function AgentsSection({ agents, slug }: any) {
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-20">
       <div className="max-w-7xl mx-auto px-6">
@@ -552,7 +604,7 @@ function AgentsSection({ agents, storeSlug }:any) {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {agents.map((agent:any) => (
+          {agents.map((agent: any) => (
             <motion.div
               key={agent.id}
               role="group"
@@ -562,8 +614,8 @@ function AgentsSection({ agents, storeSlug }:any) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               whileHover={{ scale: 1.03 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-              onClick={() => window.location.href = `/site/${storeSlug}/agent/${agent.id}`}
+              transition={{ type: "spring", stiffness: 200 }}
+              onClick={() => (window.location.href = `/site/${slug}/agent/${agent.id}`)}
               className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-6 text-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             >
               <div className="mx-auto mb-4 relative w-32 h-32 rounded-full overflow-hidden ring-2 ring-amber-500">
@@ -598,9 +650,10 @@ function AgentsSection({ agents, storeSlug }:any) {
   );
 }
 
-
-
-function BlogSection({ posts, storeSlug }:any) {
+//──────────────────────────────────────────────────────────────────────────────
+// BlogSection
+//──────────────────────────────────────────────────────────────────────────────
+function BlogSection({ posts, slug }: any) {
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-20">
       <div className="max-w-7xl mx-auto px-6">
@@ -609,7 +662,7 @@ function BlogSection({ posts, storeSlug }:any) {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post:any) => (
+          {posts.map((post: any) => (
             <motion.article
               key={post.id}
               role="article"
@@ -617,8 +670,8 @@ function BlogSection({ posts, storeSlug }:any) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              whileHover={{ scale: 1.03, boxShadow: '0 12px 24px rgba(0,0,0,0.12)' }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              whileHover={{ scale: 1.03, boxShadow: "0 12px 24px rgba(0,0,0,0.12)" }}
+              transition={{ type: "spring", stiffness: 200 }}
               className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
             >
               {post.imageUrl && (
@@ -658,10 +711,14 @@ function BlogSection({ posts, storeSlug }:any) {
                       />
                     )}
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(post.publishedAt).toLocaleDateString('en-KE', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {new Date(post.publishedAt).toLocaleDateString("en-KE", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </span>
                   </div>
-                  <Link href={`/site/${storeSlug}/blog/${post.slug}`}>
+                  <Link href={`/site/${slug}/blog/${post.slug}`}>
                     <motion.a
                       whileHover={{ scale: 1.05 }}
                       className="text-sm font-semibold bg-gradient-to-r from-emerald-500 to-teal-400 text-white uppercase px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
@@ -680,13 +737,18 @@ function BlogSection({ posts, storeSlug }:any) {
   );
 }
 
-
-
-function WhyChooseUs({ metrics, awards }:any) {
+//──────────────────────────────────────────────────────────────────────────────
+// WhyChooseUs
+//──────────────────────────────────────────────────────────────────────────────
+function WhyChooseUs({ metrics, awards }: any) {
   const controls = useAnimation();
 
   useEffect(() => {
-    controls.start(i => ({ y: 0, opacity: 1, transition: { delay: i * 0.2, duration: 0.6 } }));
+    controls.start((i: number) => ({
+      y: 0,
+      opacity: 1,
+      transition: { delay: i * 0.2, duration: 0.6 },
+    }));
   }, [controls]);
 
   return (
@@ -697,8 +759,12 @@ function WhyChooseUs({ metrics, awards }:any) {
         </h2>
 
         {/* Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12" role="group" aria-label="Company metrics">
-          {metrics.map((m:any, idx:any) => (
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12"
+          role="group"
+          aria-label="Company metrics"
+        >
+          {metrics && metrics.map((m: any, idx: number) => (
             <motion.div
               key={m.id}
               custom={idx}
@@ -735,8 +801,12 @@ function WhyChooseUs({ metrics, awards }:any) {
         </div>
 
         {/* Awards */}
-        <div className="flex flex-wrap justify-center gap-8" role="group" aria-label="Awards and recognitions">
-          {awards.map((a:any) => (
+        <div
+          className="flex flex-wrap justify-center gap-8"
+          role="group"
+          aria-label="Awards and recognitions"
+        >
+          {awards && awards.map((a: any) => (
             <motion.div
               key={a.id}
               whileHover={{ y: -4 }}
@@ -748,12 +818,10 @@ function WhyChooseUs({ metrics, awards }:any) {
                   alt={a.name}
                   layout="fill"
                   objectFit="contain"
-                  loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality||75}`}
+                  loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
                 />
               </div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                {a.name}
-              </p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{a.name}</p>
             </motion.div>
           ))}
         </div>
@@ -762,9 +830,11 @@ function WhyChooseUs({ metrics, awards }:any) {
   );
 }
 
-
-function TestimonialsSection({ testimonials }:any) {
-  const carouselRef = useRef(null);
+//──────────────────────────────────────────────────────────────────────────────
+// TestimonialsSection
+//──────────────────────────────────────────────────────────────────────────────
+function TestimonialsSection({ testimonials }: any) {
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-20">
@@ -782,7 +852,7 @@ function TestimonialsSection({ testimonials }:any) {
           role="region"
           aria-label="Testimonials carousel"
         >
-          {testimonials.map((t:any, idx:any) => (
+          {testimonials.map((t: any, idx: number) => (
             <motion.div
               key={t.author + idx}
               role="group"
@@ -818,9 +888,16 @@ function TestimonialsSection({ testimonials }:any) {
   );
 }
 
-
-
+//──────────────────────────────────────────────────────────────────────────────
+// FAQSection
+//──────────────────────────────────────────────────────────────────────────────
 function FAQSection({ faqs }: any) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const toggle = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-20">
       <div className="max-w-3xl mx-auto px-6">
@@ -828,7 +905,7 @@ function FAQSection({ faqs }: any) {
           FAQs
         </h2>
         <div className="space-y-4">
-          {faqs.map((q: any, idx: any) => (
+          {faqs.map((q: any, idx: number) => (
             <motion.details
               key={q.question}
               initial={{ opacity: 0, y: 10 }}
@@ -841,28 +918,30 @@ function FAQSection({ faqs }: any) {
                 className="flex justify-between items-center cursor-pointer px-6 py-4 text-xl font-semibold text-gray-900 dark:text-gray-100 hover:text-emerald-600 transition"
                 aria-controls={`faq-content-${idx}`}
                 id={`faq-summary-${idx}`}
+                onClick={() => toggle(idx)}
               >
                 {q.question}
                 <motion.span
                   className="ml-2"
-                  initial={{ rotate: 0 }}
-                  animate={{ rotate: (document.getElementById(`faq-summary-${idx}`)?.closest('details')?.hasAttribute('open') ? 180 : 0) }}
+                  animate={{
+                    rotate: openIndex === idx ? 180 : 0,
+                  }}
                   transition={{ duration: 0.3 }}
                 >
                   <ChevronDownIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </motion.span>
               </summary>
-              <motion.div
-                id={`faq-content-${idx}`}
-                className="px-6 pb-6 text-gray-700 dark:text-gray-300"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-              >
-                <p className="mt-2">
-                  {q.answer}
-                </p>
-              </motion.div>
+              {openIndex === idx && (
+                <motion.div
+                  id={`faq-content-${idx}`}
+                  className="px-6 pb-6 text-gray-700 dark:text-gray-300"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                >
+                  <p className="mt-2">{q.answer}</p>
+                </motion.div>
+              )}
             </motion.details>
           ))}
         </div>

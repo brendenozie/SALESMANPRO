@@ -1,100 +1,179 @@
-import React from 'react';
-import {FaceSmileIcon } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+"use client";
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
+import React from "react";
+import Link from "next/link";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
+import {
+  MegaphoneIcon,
+  PhoneIcon,
+  HomeIcon,
+  BuildingStorefrontIcon,
+  BuildingOfficeIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  // themeSettings
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
+export default function Footer() {
+  const { storeFormData } = useStoreContext();
+  const {
+    name,
+    slug,
+    contactEmail,
+    contactPhone,
+    socialLinks,
+    themeSettings,
+  } = storeFormData;
 
-interface FooterProps {
-  storeFormData: Store;
-}
+  const primary = themeSettings?.primaryColor || "#10B981"; // emerald-500
+  const secondary = themeSettings?.secondaryColor || "#F59E0B"; // amber-500
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-b border-gray-700 pb-12">
-
-        {/* About Us */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">About Us</h3>
-          <p className="text-sm leading-relaxed text-gray-400">
-          {storeFormData.description || "Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day."}
+    <footer className="bg-gray-900 text-gray-200">
+      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* ── About & Logo ── */}
+        <div className="space-y-4">
+          <Link href={`/${slug}`} className="inline-flex items-center space-x-2">
+            <span
+              className="text-2xl font-extrabold text-white"
+              style={{ textShadow: "1px 1px rgba(0,0,0,0.2)" }}
+            >
+              {name}
+            </span>
+          </Link>
+          <p className="text-sm text-gray-400">
+            Delivering exceptional properties and personalized service to help you find your dream home.
           </p>
+          <div className="flex space-x-4 mt-4">
+            {socialLinks.map((s) => (
+              <a
+                key={s.channel}
+                href={s.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                style={{ color: primary }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
+              >
+                {s.channel.charAt(0).toUpperCase() + s.channel.slice(1)}
+              </a>
+            ))}
+          </div>
         </div>
 
-        {/* Quick Links */}
+        {/* ── Quick Links ── */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/about`} className="hover:text-white transition-colors">About</a></li>
-            <li><a href={`/site/${storeFormData.slug}/contact`} className="hover:text-white transition-colors">Contact</a></li>
-            <li><a href={`/site/${storeFormData.slug}/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href={`/site/${storeFormData.slug}/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
+          <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
+          <ul className="space-y-3">
+            <li>
+              <Link
+                href={`/${slug}`}
+                className="flex items-center text-gray-400 hover:text-white transition-colors"
+              >
+                <HomeIcon className="h-5 w-5 mr-2" />
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${slug}/listings`}
+                className="flex items-center text-gray-400 hover:text-white transition-colors"
+              >
+                <BuildingOfficeIcon className="h-5 w-5 mr-2" />
+                Listings
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${slug}/about`}
+                className="flex items-center text-gray-400 hover:text-white transition-colors"
+              >
+                <InformationCircleIcon className="h-5 w-5 mr-2" />
+                About
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${slug}/contact`}
+                className="flex items-center text-gray-400 hover:text-white transition-colors"
+              >
+                <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
+                Contact
+              </Link>
+            </li>
           </ul>
         </div>
 
-        {/* Customer Care */}
+        {/* ── Contact Info ── */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Customer Care</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/help`} className="hover:text-white transition-colors">Help Center</a></li>
-            <li><a href={`/site/${storeFormData.slug}/returns`} className="hover:text-white transition-colors">Returns</a></li>
-            <li><a href={`/site/${storeFormData.slug}/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
-            <li><a href={`/site/${storeFormData.slug}/track`} className="hover:text-white transition-colors">Track Order</a></li>
+          <h3 className="text-lg font-semibold mb-4 text-white">Get in Touch</h3>
+          <ul className="space-y-4 text-gray-400">
+            {contactEmail && (
+              <li className="flex items-center">
+                <MegaphoneIcon className="h-5 w-5 mr-2" />
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {contactEmail}
+                </a>
+              </li>
+            )}
+            {contactPhone && (
+              <li className="flex items-center">
+                <PhoneIcon className="h-5 w-5 mr-2" />
+                <a
+                  href={`tel:${contactPhone}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {contactPhone}
+                </a>
+              </li>
+            )}
           </ul>
         </div>
 
-        {/* Follow Us */}
+        {/* ── Address / Newsletter ── */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Follow Us</h3>
-          <div className="flex space-x-4">
-          {/* {storeFormData.socialLinks.map((s) => (
-            <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
-              <FaceSmileIcon className="h-5 w-5" />
-            </motion.a>
-          ))} */}
+          <h3 className="text-lg font-semibold mb-4 text-white">Newsletter</h3>
+          <p className="text-sm text-gray-400 mb-4">
+            Sign up to receive updates on new listings and market insights.
+          </p>
+          <form className="flex flex-col space-y-3">
+            <input
+              type="email"
+              placeholder="Your email"
+              className="px-4 py-2 rounded-md bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center px-4 py-2 bg-amber-500 text-gray-900 font-semibold rounded-md hover:bg-amber-600 transition-colors"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* ── Bottom Bar ── */}
+      <div className="border-t border-gray-700 py-6">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+          <p>© {new Date().getFullYear()} {name}. All rights reserved.</p>
+          <div className="flex space-x-4 mt-4 md:mt-0">
+            <Link
+              href={`/${slug}/privacy`}
+              className="hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href={`/${slug}/terms`}
+              className="hover:text-white transition-colors"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
-
-      <div className="mt-8 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} {storeFormData.name}. All rights reserved.
-      </div>
     </footer>
   );
-};
-
-export default Footer;
+}
