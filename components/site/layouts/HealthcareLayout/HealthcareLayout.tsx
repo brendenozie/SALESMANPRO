@@ -18,10 +18,7 @@ export default function HealthcareHeaderLayout({
   return (
     <>
       <Header />
-
-      {/* Main Content */}
       <main className="container">{children}</main>
-
       <Footer />
     </>
   );
