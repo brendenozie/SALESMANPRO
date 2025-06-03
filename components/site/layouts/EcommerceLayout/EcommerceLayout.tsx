@@ -11,9 +11,6 @@ interface EcommerceHeaderLayoutProps {
   children: ReactNode;
 }
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
 const EcommerceHeaderLayout: React.FC<EcommerceHeaderLayoutProps> = (
   {
     params,
@@ -24,19 +21,11 @@ const EcommerceHeaderLayout: React.FC<EcommerceHeaderLayoutProps> = (
   }
 ) => {
 
-  const { cart } = useStateContext();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const router = useRouter();
-
-  const primary = params.storeFormData?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
-  const secondary = params.storeFormData?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
-
   return (
     <>
-      <Header storeFormData={params.storeFormData} />
+      <Header/>
         {children}
-      <Footer storeFormData={params.storeFormData} />
+      <Footer/>
     </>
   );
 };

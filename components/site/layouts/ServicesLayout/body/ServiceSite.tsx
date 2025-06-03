@@ -26,7 +26,7 @@ const loader = ({
  * your Prisma → StoreForm data (i.e. exactly what you passed as `initialStore` in
  * `StoreLayout`).
  */
-export default function ServiceSite({ children }: { children: React.ReactNode }) {
+export default function ServiceSite() {
   const router = useRouter();
   const { storeFormData } = useStoreContext();
   // storeFormData should be the same shape you constructed in StoreLayout
@@ -225,9 +225,6 @@ export default function ServiceSite({ children }: { children: React.ReactNode })
               </details>
             ))}
           </div>
-
-          {/* Render any nested `<ServiceSite>` children (e.g. contact form) */}
-          <div className="container mx-auto px-6 mt-12">{children}</div>
         </section>
       )}
     </>

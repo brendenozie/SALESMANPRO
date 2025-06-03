@@ -1,78 +1,54 @@
-import React,{ useState, useEffect, useRef } from 'react';
+// File: components/HeroSlider.tsx
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import homeBanner from '../../assets/asset3.png'
-import Image from "next/image";
-
-
-
+import homeBanner from '../../assets/asset3.png';
+import Image from 'next/image';
+import { useStoreContext } from '../../contexts/StoreContext';
 
 // Loader for next/image
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
+const HeroSlider: React.FC = () => {
+  const { storeFormData } = useStoreContext();
+  const { heroSlides } = storeFormData;
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  themeSettings: any;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
-
-interface HeroSliderProps {
-  store: Store;
-}
-
-const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % store.heroSlides.length);
-    }, 5000);
+    if (heroSlides.length > 0) {
+      timeoutRef.current = setTimeout(() => {
+        setCurrent((prev) => (prev + 1) % heroSlides.length);
+      }, 5000);
+    }
     return () => clearTimeout(timeoutRef.current);
-  }, [current]);
+  }, [current, heroSlides.length]);
 
   const goTo = (idx: number) => {
     clearTimeout(timeoutRef.current);
     setCurrent(idx);
   };
 
-  const prev = () => goTo((current - 1 + store.heroSlides.length) % store.heroSlides.length);
-  const next = () => goTo((current + 1) % store.heroSlides.length);
+  const prev = () => {
+    if (heroSlides.length > 0) {
+      goTo((current - 1 + heroSlides.length) % heroSlides.length);
+    }
+  };
+  const next = () => {
+    if (heroSlides.length > 0) {
+      goTo((current + 1) % heroSlides.length);
+    }
+  };
 
   return (
     <section className="relative h-screen overflow-hidden">
       <AnimatePresence>
-        {store.heroSlides.map((slide, i) =>
+        {heroSlides.map((slide:any, i:any) =>
           i === current ? (
             <motion.div
               key={i}
@@ -84,7 +60,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
             >
               <Image
                 src={slide.imageUrl ?? homeBanner.src}
-                alt={slide.headline ?? "banner image"}
+                alt={slide.headline ?? 'banner image'}
                 fill
                 className="object-cover"
                 loader={loader}
@@ -106,15 +82,17 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
                 >
                   {slide.headline}
                 </motion.h2>
-                <motion.a
-                  href={slide.ctaLink}
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                  className="inline-block bg-orange-600 hover:bg-orange-700 px-6 py-2 rounded-lg text-white font-medium"
-                >
-                  {slide.ctaText}
-                </motion.a>
+                {slide.ctaLink && slide.ctaText && (
+                  <motion.a
+                    href={slide.ctaLink}
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="inline-block bg-orange-600 hover:bg-orange-700 px-6 py-2 rounded-lg text-white font-medium"
+                  >
+                    {slide.ctaText}
+                  </motion.a>
+                )}
               </div>
             </motion.div>
           ) : null
@@ -139,12 +117,12 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
 
       {/* Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2">
-        {store.heroSlides.map((_, idx) => (
+        {heroSlides.map((_:any, idx:any) => (
           <button
             key={idx}
             onClick={() => goTo(idx)}
             className={`w-3 h-3 rounded-full transition ${
-              idx === current ? "bg-white" : "bg-white/40"
+              idx === current ? 'bg-white' : 'bg-white/40'
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           />
@@ -152,6 +130,6 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ store }) => {
       </div>
     </section>
   );
-}
+};
 
 export default HeroSlider;

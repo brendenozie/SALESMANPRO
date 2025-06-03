@@ -42,21 +42,15 @@ export default function StorePage() {
 
       case 'e-commerce':
       case 'ecommerce':
-        return <EcommerceSite
-                  storeFormData={storeFormData}
-                  slug={storeFormData.slug}
-                />
+        return <EcommerceSite/>
       
       case 'services':
       case 'service provider':
-        return <ServiceSite children={undefined} />
+        return <ServiceSite/>
 
       case 'bookings':
       case 'booking & appointments':
-        return <BookingsSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <BookingsSite />
   
       case 'real estate':
         return <RealEstateSite 
