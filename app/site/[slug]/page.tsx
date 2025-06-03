@@ -74,10 +74,7 @@ export default function StorePage() {
       case 'educational':
       case 'educational & online courses':
       case 'courses':
-        return <CoursesSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <CoursesSite />
 
       case 'nonprofit':
       case 'nonprofit & community':
