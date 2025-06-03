@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import banner from "../../../../../assets/homebanner.png";
+// File: components/site/layouts/BlogLayout/BlogSite.tsx
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useStoreContext } from '../../../../../contexts/StoreContext';
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -11,24 +14,60 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 // Dummy posts (replace with real API data)
 const samplePosts = [
-  { id: "p1", title: "5 Ways to Boost Your Productivity", excerpt: "Tactical tips backed by science to maximize focus.", image: "/posts/productivity.jpg" },
-  { id: "p2", title: "Design Thinking in Action", excerpt: "A deep dive into creative problem solving techniques.", image: "/posts/design.jpg" },
-  { id: "p3", title: "Mastering Mindfulness", excerpt: "Simple practices to calm your mind and increase awareness.", image: "/posts/mindfulness.jpg" },
-  { id: "p4", title: "The Art of Storytelling", excerpt: "Craft compelling narratives that resonate.", image: "/posts/storytelling.jpg" },
-  { id: "p5", title: "Building Resilience", excerpt: "Strategies to bounce back stronger.", image: "/posts/resilience.jpg" },
-  { id: "p6", title: "Leadership Essentials", excerpt: "Key attributes of impactful leaders.", image: "/posts/leadership.jpg" },
+  {
+    id: 'p1',
+    title: '5 Ways to Boost Your Productivity',
+    excerpt: 'Tactical tips backed by science to maximize focus.',
+    image: '/posts/productivity.jpg',
+  },
+  {
+    id: 'p2',
+    title: 'Design Thinking in Action',
+    excerpt: 'A deep dive into creative problem solving techniques.',
+    image: '/posts/design.jpg',
+  },
+  {
+    id: 'p3',
+    title: 'Mastering Mindfulness',
+    excerpt: 'Simple practices to calm your mind and increase awareness.',
+    image: '/posts/mindfulness.jpg',
+  },
+  {
+    id: 'p4',
+    title: 'The Art of Storytelling',
+    excerpt: 'Craft compelling narratives that resonate.',
+    image: '/posts/storytelling.jpg',
+  },
+  {
+    id: 'p5',
+    title: 'Building Resilience',
+    excerpt: 'Strategies to bounce back stronger.',
+    image: '/posts/resilience.jpg',
+  },
+  {
+    id: 'p6',
+    title: 'Leadership Essentials',
+    excerpt: 'Key attributes of impactful leaders.',
+    image: '/posts/leadership.jpg',
+  },
 ];
 
 export default function BlogSite() {
   const router = useRouter();
+  const { storeFormData } = useStoreContext();
+  const { name, bannerUrl } = storeFormData;
+
   const [posts, setPosts] = useState(samplePosts);
 
-  // Fetch real posts logic here
+  // If you fetch real posts, do so here and update `posts`
+  useEffect(() => {
+    setPosts(samplePosts);
+  }, []);
 
   return (
     <div className="font-sans text-gray-900">
       {/* Hero Section */}
-      <BlogHero />
+      <BlogHero siteName={name} bannerUrl={bannerUrl} />
 
       {/* Main Content */}
       <BlogInsights posts={posts} loader={loader} />
@@ -54,40 +93,45 @@ export default function BlogSite() {
           </form>
         </motion.div>
       </section>
-
     </div>
   );
 }
 
+interface BlogHeroProps {
+  siteName: string;
+  bannerUrl?: string;
+}
 
-const BlogHero = () => {
+const BlogHero: React.FC<BlogHeroProps> = ({ siteName, bannerUrl }) => {
   const router = useRouter();
 
   return (
     <section className="relative h-[90vh] overflow-hidden">
       {/* Background Image */}
-      <div className="absolute inset-0">
-        <Image
-          src={banner.src}
-          alt="Hero"
-          loader={loader}
-          fill
-          className="object-cover brightness-[0.6]"
-          priority
-        />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
-      </div>
+      {bannerUrl && (
+        <div className="absolute inset-0">
+          <Image
+            src={bannerUrl}
+            alt="Hero"
+            loader={loader}
+            fill
+            className="object-cover brightness-[0.6]"
+            priority
+          />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+        </div>
+      )}
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
         <motion.h1
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           className="text-white text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight"
         >
-          Unleash Your Potential
+          {siteName}
         </motion.h1>
 
         <motion.p
@@ -100,7 +144,7 @@ const BlogHero = () => {
         </motion.p>
 
         <motion.button
-          onClick={() => router.push("/blog")}
+          onClick={() => router.push('/blog')}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.9 }}
@@ -113,9 +157,12 @@ const BlogHero = () => {
   );
 };
 
+interface BlogInsightsProps {
+  posts: Array<{ id: string; title: string; excerpt: string; image: string }>;
+  loader: (_: any) => string;
+}
 
-
-const BlogInsights = ({ posts, loader }: { posts: any; loader: any }) => {
+const BlogInsights: React.FC<BlogInsightsProps> = ({ posts, loader }) => {
   const router = useRouter();
 
   return (
@@ -150,7 +197,7 @@ const BlogInsights = ({ posts, loader }: { posts: any; loader: any }) => {
         </motion.h3>
 
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post:any) => (
+          {posts.map((post) => (
             <motion.article
               key={post.id}
               whileHover={{ scale: 1.05, boxShadow: '0 20px 30px rgba(0,0,0,0.1)' }}
@@ -159,22 +206,22 @@ const BlogInsights = ({ posts, loader }: { posts: any; loader: any }) => {
               onClick={() => router.push(`/blog/${post.id}`)}
             >
               <div className="relative h-64">
-                <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" loader={loader}/>
+                <Image src={post.image} alt={post.title} fill className="object-cover" loader={loader} />
               </div>
               <div className="p-6">
                 <h4 className="text-xl font-semibold mb-2 text-gray-800">{post.title}</h4>
                 <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                <Link href={`/blog/${post.id}`} className="text-indigo-600 font-medium hover:underline transition-all">
-                  Read More → 
+                <Link
+                  href={`/blog/${post.id}`}
+                  className="text-indigo-600 font-medium hover:underline transition-all"
+                >
+                  Read More →
                 </Link>
               </div>
             </motion.article>
           ))}
-
-          
         </div>
       </section>
     </>
   );
 };
-

@@ -26,22 +26,11 @@ const BlogLayout: React.FC<BlogLayoutProps> = (
   }
 ) => {
 
-  const { cart } = useStateContext();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const router = useRouter();
-
-  const primary = params.storeFormData?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
-  const secondary = params.storeFormData?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
-
   return (
     <>
-      <Header storeFormData={params.storeFormData} />      
-
-      {/* Child Content (post detail) */}
+      <Header/>      
       <section className="container">{children} </section>
-
-      <Footer storeFormData={params.storeFormData} />
+      <Footer />
     </>
   );
 };

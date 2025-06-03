@@ -50,41 +50,26 @@ export default function StorePage() {
 
       case 'bookings':
       case 'booking & appointments':
-        return <BookingsSite />
+        return <BookingsSite/>
   
       case 'real estate':
-        return <RealEstateSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <RealEstateSite/>
   
       case 'portfolio':
       case 'portfolio & personal branding':
-        return <PortfolioSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <PortfolioSite/>
   
       case 'restaurant':
       case 'restaurant & food delivery':
-        return <RestaurantSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <RestaurantSite/>
   
       case 'blog':
       case 'blog & content':
-        return <BlogSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <BlogSite/>
 
       case 'directory':
       case 'directory & listings':
-        return <DirectorySite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <DirectorySite/>
               
       case 'educational':
       case 'educational & online courses':
