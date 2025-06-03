@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb";
 import { getAuthSession } from "../../../../lib/auth";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -257,15 +258,26 @@ export async function PUT(
   ? {
       deleteMany: {},
       create: (storeCategories || []).map((sc: any) => ({
-        category:   { connect: { id: sc.id } },
-        displayName: sc.name,
-        icon:        sc.icon,
-        sortOrder:   sc.sortOrder ?? 0,
-        visible:     sc.visible ?? true,
-        items:       sc.items  // <-- sc.items must be an array of subcategory objects
+        category:    { connect: { id: sc.id } },
+            displayName: sc.name,
+            icon:        sc.icon    ?? null,
+            sortOrder:   sc.sortOrder ?? 0,
+            visible:     sc.visible   ?? true,
+            items:       sc.items as Prisma.JsonValue,
+        // category:   { connect: { id: sc.id } },
+        // displayName: sc.name,
+        // icon:        sc.icon,
+        // sortOrder:   sc.sortOrder ?? 0,
+        // visible:     sc.visible ?? true,
+        //items:       sc.items  // <-- sc.items must be an array of subcategory objects
+        // items: sc.items as Prisma.JsonValue,
       })),
     }
   : { deleteMany: {} },
+    },
+    // ── HERE is the key change ──
+    include: {
+      StoreCategory: true, // ← ask Prisma to also return the nested StoreCategory rows
     },
   });
 

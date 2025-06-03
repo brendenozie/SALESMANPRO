@@ -211,6 +211,8 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const { data: session } = useSession();
   const router = useRouter();
 
+  console.log(initialData);
+
   const defaultForm: StoreForm = {
     id:"",
     name: '', slug: '', domain: '', tagline: '', description: '', category: 'E-commerce',
