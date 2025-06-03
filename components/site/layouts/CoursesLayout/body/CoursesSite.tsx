@@ -172,7 +172,7 @@ const CourseCard = ({
   slug: string;
 }) => {
   // We’ll use `course.product?.name` if available, otherwise fallback to `course.title`.
-  const displayName = course.product?.name ?? course.title;
+  const displayName = course.title;
   const shortDescription = course.description?.substring(0, 60) + "...";
 
   // For routing, we’ll use `course.id` as slug. If you have a real `course.slug` field, swap it here.
