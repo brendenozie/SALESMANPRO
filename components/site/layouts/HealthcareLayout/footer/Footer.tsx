@@ -1,57 +1,58 @@
-import React from 'react';
-import {FaceSmileIcon } from '@heroicons/react/24/solid';
+// File: components/site/Footer.tsx
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '../../../../../contexts/StoreContext';
+// import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube } from 'react-icons/fa';
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
 
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  // themeSettings
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
+const getIcon = (channel: string) => {
+  switch (channel.toLowerCase()) {
+    case 'facebook':
+      return <PhoneIcon className="h-5 w-5" />;
+    case 'twitter':
+      return <PhoneIcon className="h-5 w-5" />;
+    case 'instagram':
+      return <PhoneIcon className="h-5 w-5" />;
+    case 'linkedin':
+      return <PhoneIcon className="h-5 w-5" />;
+    case 'youtube':
+      return <PhoneIcon className="h-5 w-5" />;
+    default:
+      return <EnvelopeIcon className="h-5 w-5" />;
+  }
+};
 
-interface FooterProps {
-  storeFormData: Store;
-}
+export default function Footer() {
+  const { storeFormData } = useStoreContext();
+  const {
+    name,
+    slug,
+    contactEmail,
+    contactPhone,
+    socialLinks,
+    faqs,
+  } = storeFormData;
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+  const [email, setEmail] = useState('');
 
-const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert(`Subscribed: ${email}`);
+    setEmail('');
+  };
+
   return (
     <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-b border-gray-700 pb-12">
-
-        {/* About Us */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-b border-gray-700 pb-12">
+        {/* About Section */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">About Us</h3>
+          <h3 className="text-xl font-semibold text-white mb-4">About {name}</h3>
           <p className="text-sm leading-relaxed text-gray-400">
-          {storeFormData.description || "Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day."}
+            {`WellSpring Clinic offers top-tier healthcare services, personalized treatment plans, and compassionate care. Our dedicated team of specialists is here to support your health journey.`}
           </p>
         </div>
 
@@ -59,42 +60,111 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/about`} className="hover:text-white transition-colors">About</a></li>
-            <li><a href={`/site/${storeFormData.slug}/contact`} className="hover:text-white transition-colors">Contact</a></li>
-            <li><a href={`/site/${storeFormData.slug}/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href={`/site/${storeFormData.slug}/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
+            <li>
+              <Link href={`/${slug}`} className="hover:text-white transition-colors">Home
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${slug}/services`} className="hover:text-white transition-colors">Services
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${slug}/doctors`} className="hover:text-white transition-colors">Doctors
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${slug}/about`}  className="hover:text-white transition-colors">About Us
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${slug}/contact`} className="hover:text-white transition-colors">Contact
+              </Link>
+            </li>
           </ul>
         </div>
 
-        {/* Customer Care */}
+        {/* Contact & FAQs */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Customer Care</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/help`} className="hover:text-white transition-colors">Help Center</a></li>
-            <li><a href={`/site/${storeFormData.slug}/returns`} className="hover:text-white transition-colors">Returns</a></li>
-            <li><a href={`/site/${storeFormData.slug}/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
-            <li><a href={`/site/${storeFormData.slug}/track`} className="hover:text-white transition-colors">Track Order</a></li>
+          <h3 className="text-xl font-semibold text-white mb-4">Contact Us</h3>
+          <ul className="space-y-3 text-sm">
+            {contactEmail && (
+              <li className="flex items-center space-x-2">
+                <EnvelopeIcon className="h-5 w-5 text-teal-400" />
+                <a href={`mailto:${contactEmail}`} className="hover:text-white transition-colors">
+                  {contactEmail}
+                </a>
+              </li>
+            )}
+            {contactPhone && (
+              <li className="flex items-center space-x-2">
+                <PhoneIcon className="h-5 w-5 text-teal-400" />
+                <a href={`tel:${contactPhone}`} className="hover:text-white transition-colors">
+                  {contactPhone}
+                </a>
+              </li>
+            )}
           </ul>
+
+          {faqs.length > 0 && (
+            <>
+              <h3 className="text-xl font-semibold text-white mt-8 mb-4">FAQs</h3>
+              <ul className="space-y-2 text-sm">
+                {faqs.slice(0, 3).map((q: any, idx: number) => (
+                  <li key={idx}>
+                    <Link href={`/${slug}/faqs`} className="hover:text-white transition-colors">{q.question}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
 
-        {/* Follow Us */}
+        {/* Newsletter & Social */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Follow Us</h3>
-          <div className="flex space-x-4">
-          {/* {storeFormData.socialLinks.map((s) => (
-            <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
-              <FaceSmileIcon className="h-5 w-5" />
-            </motion.a>
-          ))} */}
-          </div>
+          <h3 className="text-xl font-semibold text-white mb-4">Newsletter</h3>
+          <form onSubmit={handleSubscribe} className="flex flex-col space-y-4">
+            <input
+              type="email"
+              placeholder="Your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full bg-gray-800 text-gray-200 placeholder-gray-500 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+            />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              className="inline-flex items-center justify-center bg-teal-500 hover:bg-teal-600 px-6 py-2 rounded-lg text-white font-semibold shadow-lg transition"
+            >
+              Subscribe
+            </motion.button>
+          </form>
+
+          {socialLinks.length > 0 && (
+            <>
+              <h3 className="text-xl font-semibold text-white mt-8 mb-4">Follow Us</h3>
+              <div className="flex space-x-4">
+                {socialLinks.map((s, idx) => (
+                  <motion.a
+                    key={idx}
+                    whileHover={{ scale: 1.1 }}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-gray-800 hover:bg-gray-700 p-2 rounded-full text-gray-400 hover:text-white transition"
+                  >
+                    {getIcon(s.channel)}
+                  </motion.a>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       <div className="mt-8 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} {storeFormData.name}. All rights reserved.
+        &copy; {new Date().getFullYear()} {name}. All rights reserved.
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}
