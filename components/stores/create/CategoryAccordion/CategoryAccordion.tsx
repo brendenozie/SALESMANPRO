@@ -112,11 +112,16 @@ function SubCategoryRow({
   highlightMatch: (text: string) => React.ReactNode;
 }) {
   return (
-    <label className="flex items-center py-2 space-x-3 hover:bg-gray-100 rounded-lg px-4 transition cursor-pointer">
+    <label 
+    className="flex items-center py-2 space-x-3 hover:bg-gray-100 rounded-lg px-4 transition cursor-pointer"
+    onClick={(e) => e.stopPropagation()}>
       <input
         type="checkbox"
         checked={isSelected}
-        onChange={onToggle}
+        onChange={(e) =>{
+          e.stopPropagation();
+          onToggle();
+        }}
         className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
         aria-label={`Select subcategory ${child.name}`}
       />

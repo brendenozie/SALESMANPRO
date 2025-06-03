@@ -55,8 +55,6 @@ export default async function EditStorePage({
   
   const availableCategories = data.results;
 
-  console.log(availableCategories);
-
   // ── Map the Prisma object into your StoreForm shape ──
   const storeFormData: StoreForm = {
     id: store.id,

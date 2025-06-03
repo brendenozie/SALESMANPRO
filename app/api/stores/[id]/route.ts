@@ -191,66 +191,22 @@ export async function PUT(
             // If the client removed the SEO payload, delete the existing SEO row entirely
             delete: true,
           },
-
-          // ── ONE-TO-ONE: SEO (upsert or delete) ──
-      // seo: seo
-      // ? {
-      //     upsert: {
-      //       where: { id: params.id },
-      //       create: {
-      //         title: seo.title,
-      //         description: seo.description,
-      //         keywords: seo.keywords,
-      //         // …any other SEO columns…
-      //       },
-      //       update: {
-      //         title: seo.title,
-      //         description: seo.description,
-      //         keywords: seo.keywords,
-      //         // …any other SEO columns…
-      //       },
-      //     },
-      //   }
-      // : { delete: true },
-
+          
       analyticsConfig: analyticsConfig
-  ? {
-      upsert: {
-        where: { id: analyticsConfig.id },
-        create: {
-          googleTag: analyticsConfig.googleTag,
-          facebookTag: analyticsConfig.facebookTag,
-        },
-        update: {
-          googleTag: analyticsConfig.googleTag,
-          facebookTag: analyticsConfig.facebookTag,
-        },
-      },
-    }
-  : { delete: true },
-
-
-    // ── AnalyticsConfig (upsert or delete) ──
-    // AnalyticsConfig: analyticsConfig
-    //   ? {
-    //       upsert: [
-    //         {
-    //           where: { id: analyticsConfig.id },
-    //           update: {
-    //             googleTag: analyticsConfig.googleTag,
-    //             facebookTag: analyticsConfig.facebookTag,
-    //             // …any other analytics columns…
-    //           },
-    //           create: {
-    //             googleTag: analyticsConfig.googleTag,
-    //             facebookTag: analyticsConfig.facebookTag,
-    //             // …any other analytics columns…
-    //           },
-    //         },
-    //       ],
-    //     }
-    //   : { deleteMany: {} },
-
+        ? {
+            upsert: {
+              where: { id: analyticsConfig.id },
+              create: {
+                googleTag: analyticsConfig.googleTag,
+                facebookTag: analyticsConfig.facebookTag,
+              },
+              update: {
+                googleTag: analyticsConfig.googleTag,
+                facebookTag: analyticsConfig.facebookTag,
+              },
+            },
+          }
+        : { delete: true },
     // ── PaymentSettings (upsert or delete) ──
     paymentSettings: paymentSettings
       ? {
@@ -297,19 +253,6 @@ export async function PUT(
           },
         }
       : { delete: true },
-
-    // ── junction table for categories (delete existing & recreate) ──
-    // StoreCategory: storeCategories
-    //   ? {
-    //       deleteMany: {},
-    //       create: (storeCategories || []).map((sc: any) => ({
-    //         category: { connect: { id: sc.id } },
-    //         displayName: sc.displayName,
-    //         sortOrder: sc.sortOrder,
-    //         visible: sc.visible,
-    //       })),
-    //     }
-    //   : { deleteMany: {} },
     StoreCategory: storeCategories
   ? {
       deleteMany: {},
@@ -323,102 +266,6 @@ export async function PUT(
       })),
     }
   : { deleteMany: {} },
-
-
-      // ── ONE‐TO‐ONE: AnalyticsConfig ──
-      // AnalyticsConfig: analyticsConfig
-      //   ? {
-      //       upsert: {
-      //         where: { id: analyticsConfig.id }, // use the AnalyticsConfig row’s ID
-      //         create: {
-      //           googleTag: analyticsConfig.googleTag,
-      //           facebookTag: analyticsConfig.facebookTag,
-      //           // …other AnalyticsConfig columns…
-      //           // company: { connect: { id: params.id } },
-      //         },
-      //         update: {
-      //           googleTag: analyticsConfig.googleTag,
-      //           facebookTag: analyticsConfig.facebookTag,
-      //           // …other AnalyticsConfig columns…
-      //         },
-      //       },
-      //     }
-      //   : {
-      //       delete: true,
-      //     },
-
-      // // ── ONE‐TO‐ONE: PaymentSettings ──
-      // PaymentSettings: paymentSettings
-      //   ? {
-      //       upsert: {
-      //         where: { id: paymentSettings.id }, // use the PaymentSettings row’s ID
-      //         create: {
-      //           mpesaShortcode: paymentSettings.mpesaShortcode,
-      //           mpesaConsumerKey: paymentSettings.mpesaConsumerKey,
-      //           mpesaConsumerSecret: paymentSettings.mpesaConsumerSecret,
-      //           mpesaCallbackUrl: paymentSettings.mpesaCallbackUrl,
-      //           // …any other PaymentSettings columns…
-      //           // company: { connect: { id: params.id } },
-      //         },
-      //         update: {
-      //           mpesaShortcode: paymentSettings.mpesaShortcode,
-      //           mpesaConsumerKey: paymentSettings.mpesaConsumerKey,
-      //           mpesaConsumerSecret: paymentSettings.mpesaConsumerSecret,
-      //           mpesaCallbackUrl: paymentSettings.mpesaCallbackUrl,
-      //           // …any other PaymentSettings columns…
-      //         },
-      //       },
-      //     }
-      //   : {
-      //       delete: true,
-      //     },
-
-      // // ── ONE‐TO‐ONE: ShippingSettings ──
-      // ShippingSettings: shippingSettings
-      //   ? {
-      //       upsert: {
-      //         where: { id: shippingSettings.id }, // use the ShippingSettings row’s ID
-      //         create: {
-      //           carrierName: shippingSettings.carrierName,
-      //           trackingUrl: shippingSettings.trackingUrl,
-      //           regions: shippingSettings.regions,
-      //           enablePickup: shippingSettings.enablePickup,
-      //           pickupInstructions: shippingSettings.pickupInstructions,
-      //           // …any other ShippingSettings columns…
-      //           // company: { connect: { id: params.id } },
-      //         },
-      //         update: {
-      //           carrierName: shippingSettings.carrierName,
-      //           trackingUrl: shippingSettings.trackingUrl,
-      //           regions: shippingSettings.regions,
-      //           enablePickup: shippingSettings.enablePickup,
-      //           pickupInstructions: shippingSettings.pickupInstructions,
-      //           // …any other ShippingSettings columns…
-      //         },
-      //       },
-      //     }
-      //   : {
-      //       delete: true,
-      //     },
-
-      // // ── Junction table: StoreCategory ──
-      // // We “deleteMany” all existing category‐rows, then re‐create them from the payload.
-      // StoreCategory: storeCategories
-      //   ? {
-      //       deleteMany: {},
-      //       create: (storeCategories || []).map((sc: any) => ({
-      //         // The front end sent sc.id (the ProductCategory ID) and sc.name.
-      //         // We’ll use “sc.name” as the “displayName” in the join table,
-      //         // and provide defaults for “sortOrder” + “visible” (which the user didn’t actually edit).
-      //         category: { connect: { id: sc.id } },
-      //         displayName: sc.name ?? "",     // use “name” as “displayName”
-      //         sortOrder: 0,                   // default to 0; adjust if you have a UI to reorder
-      //         visible: true,                  // default to “true”; adjust if you let the user toggle visibility
-      //       })),
-      //     }
-      //   : {
-      //       deleteMany: {},
-      //     },
     },
   });
 
