@@ -238,8 +238,8 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const mappedCategories: ParentCategory[] = availableCategories.map(cat => ({
     id:   cat.id,
     name: cat.name,
-    children: cat.subcategories.map(sub => ({
-      id:   sub.id,
+    children: cat.subcategories.map((sub,index) => ({
+      id:   `${sub.name.slice(0,2)+index}`,
       name: sub.name,
       slug: sub.slug,
     })),
