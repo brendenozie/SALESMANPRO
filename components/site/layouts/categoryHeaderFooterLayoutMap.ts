@@ -28,12 +28,12 @@ import SaaSLayout from '@/components/site/layouts/SaaSLayout/SaaSLayout';
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
 
-type LayoutComponent = React.ComponentType<{
+type LayoutHeaderFooterComponent = React.ComponentType<{
   params: { storeFormData: StoreForm };
   children: ReactNode;
 }>;
 
-const categoryLayoutMap: Record<string, LayoutComponent> = {
+const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent> = {
     'ecommerce': EcommerceLayout,
     'e‐commerce': EcommerceLayout,
     'services': ServicesLayout,
@@ -77,4 +77,4 @@ const categoryLayoutMap: Record<string, LayoutComponent> = {
   
 };
 
-export default categoryLayoutMap;
+export default categoryHeaderFooterLayoutMap;

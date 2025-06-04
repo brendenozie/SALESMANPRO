@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
 import prisma from '../../../server/db/prismadb';
 import { StoreContextProvider,} from '../../../contexts/StoreContext';
-import categoryLayoutMap from '@/components/site/layouts/categoryLayoutMap';
+import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
 import { transformCompanyToStoreForm } from '../../../utils/transformPrismaToStoreForm';
 
 export const dynamic = 'force-dynamic';
@@ -158,8 +158,9 @@ export default async function StoreLayout({
   const storeFormData = transformCompanyToStoreForm(raw);
 
   // Normalize the category string (lowercase + trim)
-  const rawCategory = storeFormData.category?.trim().toLowerCase() ?? 'default';
-  const LayoutComponent = categoryLayoutMap[rawCategory] ?? categoryLayoutMap['default'];
+  // const rawCategory = storeFormData.category?.trim().toLowerCase() ?? 'default';
+  const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
+  const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
 
   return (
     <StoreContextProvider initialStore={storeFormData}>
@@ -171,4 +172,12 @@ export default async function StoreLayout({
       </div>
     </StoreContextProvider>
   );
+}
+
+function normalizeHeaderFooterCategory(raw:string) {
+  return raw
+    .trim()              // remove leading/trailing spaces
+    .toLowerCase()
+    .replace(/[^a-z0-9& ]/g, '') // strip out unexpected characters (except “&” or space)
+    .replace(/\s+/g, ' ')        // collapse multiple spaces to one
 }
