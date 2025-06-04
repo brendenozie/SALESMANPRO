@@ -3,10 +3,9 @@ import React from "react";
 interface ProductDetailsProps {
   formData: any;
   setFormData: (val: any) => void;
-  categories: any[];
-  filteredSubCategories: any[];
-  filteredBrands: any[];
-  handleInputChange: (e: any) => void;
+  filteredSubCategories: string[]; // array of subcategory names
+  filteredBrands: string[];        // array of brand names
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
@@ -16,49 +15,77 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   filteredBrands,
   handleInputChange,
 }) => {
-  const subCat = formData.subCategory;
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Derive which “mode” we’re in, based on subCategory name
+  const subCat: string = formData.subCategory || "";
 
+  const isService = [
+    "Cleaning",
+    "Plumbing",
+    "Electrical",
+    "Landscaping",
+    "Catering",
+    "Transportation",
+    "IT Services",
+    "Beauty Services",
+    "Tutoring",
+    "Event Planning",
+  ].includes(subCat);
+
+  const isDigital = [
+    "Software Licenses",
+    "E-books",
+    "Online Courses",
+    "Streaming Subscriptions",
+    "Mobile App Credits",
+  ].includes(subCat);
+
+  const isTravel = [
+    "Flight Tickets",
+    "Hotel Bookings",
+    "Tour Packages",
+    "Event Tickets",
+    "Travel Insurance",
+  ].includes(subCat);
+
+  const isPhysical = !isService && !isDigital && !isTravel;
+
+  // Determine the header label based on category name
   const headerLabel = (() => {
-    if (formData.category?.name === "Books") return "Book Details";
-
-    if (["Clothing", "Fashion"].includes(formData.category?.name)) return "Clothing Details";
-
-    if (formData.category?.name === "Home Appliances") return "Appliance Details";
-
-    if (["Beauty Products", "Skincare", "Haircare"].includes(formData.category?.name)) return "Beauty Product Details";
-
+    const cat = formData.category?.name || "";
+    if (cat === "Books") return "Book Details";
+    if (["Clothing", "Fashion"].includes(cat)) return "Clothing Details";
+    if (cat === "Home Appliances") return "Appliance Details";
+    if (["Beauty Products", "Skincare", "Haircare"].includes(cat))
+      return "Beauty Product Details";
     return "Product Details";
   })();
 
-  const primaryLabel = formData.category?.name === "Books" ? "Book Title" : "Product Title";
+  // The primary “title” field label changes for Books vs. others
+  const primaryLabel =
+    formData.category?.name === "Books" ? "Book Title" : "Product Title";
 
-  // Determine type of subcategory to show special fields
-  const isService =
-    ["Cleaning", "Plumbing", "Electrical", "Landscaping", "Catering", "Transportation", "IT Services", "Beauty Services", "Tutoring", "Event Planning"].includes(
-      subCat
-    );
-  const isDigital =
-    ["Software Licenses", "E-books", "Online Courses", "Streaming Subscriptions", "Mobile App Credits"].includes(
-      subCat
-    );
-  const isTravel =
-    ["Flight Tickets", "Hotel Bookings", "Tour Packages", "Event Tickets", "Travel Insurance"].includes(
-      subCat
-    );
-  const isPhysicalGood = !isService && !isDigital && !isTravel;
+  // A single onChange handler for inputs and textareas
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    // If the target is a checkbox, we’d cast e.target.checked instead of value
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  // A consistent set of Tailwind classes for all inputs
+  const inputClasses =
+    "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500";
 
   return (
-    <div className="space-y-4">
-      
-      <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
+    <div className="mx-auto p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
+      {/* ── Header ── */}
+      <h2 className="text-2xl font-bold text-gray-800">{headerLabel}</h2>
 
-      <h3 className="text-xl font-bold text-gray-800">{headerLabel}</h3>
-
-      <div>        
-        <label className="block text-gray-500 text-sm transition-all">
+      {/* ── 1. Primary Title / Name ── */}
+      <section className="space-y-2">
+        <label className="block text-gray-600 font-medium">
           {isService
             ? "Service Title"
             : isDigital
@@ -70,7 +97,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         <input
           type="text"
           name="name"
-          className="peer w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           placeholder={
             isService
               ? "e.g. House Cleaning"
@@ -80,215 +106,317 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               ? "e.g. Nairobi to Paris Return Ticket"
               : "e.g. Wireless Headphones"
           }
-          value={formData.name || formData.title}
+          className={inputClasses}
+          value={formData.name || formData.title || ""}
           onChange={handleChange}
         />
-      </div>
+      </section>
 
-      <div>
-        <label className="block text-gray-700 font-medium mb-1">Description</label>
+      {/* ── 2. Description ── */}
+      <section className="space-y-2">
+        <label className="block text-gray-600 font-medium">Description</label>
         <textarea
           name="description"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-24"
-          placeholder="Enter a brief description"
+          placeholder="Enter a brief description (max 500 characters)"
           maxLength={500}
-          value={formData.description}
+          className={`${inputClasses} h-28 resize-none`}
+          value={formData.description || ""}
           onChange={handleChange}
         />
-        <p className="text-sm text-gray-500 mt-1">{formData.description?.length}/500 characters</p>
-      </div>
+        <p className="text-sm text-gray-500">
+          {(formData.description || "").length}/500 characters
+        </p>
+      </section>
 
+      {/* ── 3. Category-Specific Subfields ── */}
+
+      {/* ─── Books ─── */}
       {formData.category?.name === "Books" && (
-        <div className="space-y-4">
-          <input type="text" name="author" placeholder="Author" value={formData.author} onChange={handleChange} className="input-field" />
-          <input type="text" name="publisher" placeholder="Publisher" value={formData.publisher} onChange={handleChange} className="input-field" />
-          <input type="text" name="isbn" placeholder="ISBN" value={formData.isbn} onChange={handleChange} className="input-field" />
-        </div>
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Book Metadata</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Author</label>
+              <input
+                type="text"
+                name="author"
+                placeholder="e.g. Chimamanda Ngozi Adichie"
+                className={inputClasses}
+                value={formData.author || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Publisher</label>
+              <input
+                type="text"
+                name="publisher"
+                placeholder="e.g. Penguin Random House"
+                className={inputClasses}
+                value={formData.publisher || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">ISBN</label>
+              <input
+                type="text"
+                name="isbn"
+                placeholder="e.g. 978-0143126560"
+                className={inputClasses}
+                value={formData.isbn || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </section>
       )}
 
+      {/* ─── Clothing / Fashion ─── */}
       {["Clothing", "Fashion"].includes(formData.category?.name) && (
-        <div className="space-y-4">
-          <input
-            type="text"
-            name="fabricComposition"
-            placeholder="Fabric Composition (e.g., 100% Cotton)"
-            value={formData.fabricComposition}
-            onChange={handleChange}
-            className="input-field"
-          />
-          <textarea
-            name="careInstructions"
-            placeholder="Care Instructions (e.g., Machine wash cold)"
-            value={formData.careInstructions}
-            onChange={handleChange}
-            className="input-field"
-          />
-        </div>
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Clothing Details</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">
+                Fabric Composition
+              </label>
+              <input
+                type="text"
+                name="fabricComposition"
+                placeholder="e.g. 100% Cotton"
+                className={inputClasses}
+                value={formData.fabricComposition || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Care Instructions</label>
+              <textarea
+                name="careInstructions"
+                placeholder="e.g. Machine wash cold"
+                className={`${inputClasses} h-20 resize-none`}
+                value={formData.careInstructions || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </section>
       )}
+
+      {/* ─── Home Appliances ─── */}
       {formData.category?.name === "Home Appliances" && (
-        <div className="space-y-4">
-          <input
-            type="text"
-            name="energyRating"
-            placeholder="Energy Rating (e.g., A++)"
-            value={formData.energyRating}
-            onChange={handleChange}
-            className="input-field"
-          />
-          <input
-            type="text"
-            name="warrantyPeriod"
-            placeholder="Warranty Period (e.g., 2 years)"
-            value={formData.warrantyPeriod}
-            onChange={handleChange}
-            className="input-field"
-          />
-          <input
-            type="text"
-            name="dimensions"
-            placeholder="Dimensions (LxWxH)"
-            value={formData.dimensions}
-            onChange={handleChange}
-            className="input-field"
-          />
-        </div>
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Appliance Details</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Energy Rating</label>
+              <input
+                type="text"
+                name="energyRating"
+                placeholder="e.g. A++"
+                className={inputClasses}
+                value={formData.energyRating || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Warranty Period</label>
+              <input
+                type="text"
+                name="warrantyPeriod"
+                placeholder="e.g. 2 years"
+                className={inputClasses}
+                value={formData.warrantyPeriod || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Dimensions (L×W×H)</label>
+              <input
+                type="text"
+                name="dimensions"
+                placeholder="e.g. 30×20×15 cm"
+                className={inputClasses}
+                value={formData.dimensions || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </section>
       )}
-      {["Beauty Products", "Skincare", "Haircare"].includes(formData.category?.name) && (
-        <div className="space-y-4">
-          <input
-            type="text"
-            name="ingredients"
-            placeholder="Ingredients"
-            value={formData.ingredients}
-            onChange={handleChange}
-            className="input-field"
-          />
-          <textarea
-            name="usageInstructions"
-            placeholder="Usage Instructions"
-            value={formData.usageInstructions}
-            onChange={handleChange}
-            className="input-field"
-          />
-          <input
-            type="date"
-            name="expirationDate"
-            placeholder="Expiration Date"
-            value={formData.expirationDate}
-            onChange={handleChange}
-            className="input-field"
-          />
-        </div>
-      )}
-      
 
-      {/* Conditional: Service-specific fields */}
+      {/* ─── Beauty / Skincare / Haircare ─── */}
+      {["Beauty Products", "Skincare", "Haircare"].includes(
+        formData.category?.name
+      ) && (
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Beauty Product Details</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Ingredients</label>
+              <input
+                type="text"
+                name="ingredients"
+                placeholder="e.g. Aqua, Glycerin, Vitamin E"
+                className={inputClasses}
+                value={formData.ingredients || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Usage Instructions</label>
+              <textarea
+                name="usageInstructions"
+                placeholder="e.g. Apply twice daily"
+                className={`${inputClasses} h-20 resize-none`}
+                value={formData.usageInstructions || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Expiration Date</label>
+              <input
+                type="date"
+                name="expirationDate"
+                className={inputClasses}
+                value={formData.expirationDate || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── 4. Service-Specific Fields ── */}
       {isService && (
-        <>
-          <div>
-            <label className="block text-sm font-medium">Availability (e.g. Mon–Fri)</label>
-            <input
-              name="serviceSchedule"
-              type="text"
-              value={formData.serviceSchedule || ""}
-              onChange={(e) => setFormData({ ...formData, serviceSchedule: e.target.value })}
-              placeholder="e.g. Mon–Fri, 9am–5pm"
-              className="mt-1 block w-full border-gray-300 rounded-md"
-            />
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Service Details</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">
+                Availability (e.g. Mon–Fri, 9am–5pm)
+              </label>
+              <input
+                type="text"
+                name="serviceSchedule"
+                placeholder="e.g. Mon–Fri, 9am–5pm"
+                className={inputClasses}
+                value={formData.serviceSchedule || ""}
+                onChange={handleChange}
+              />
+            </div>
           </div>
-        </>
+        </section>
       )}
 
-      {/* Conditional: Digital Good-specific fields */}
+      {/* ── 5. Digital Good–Specific Fields ── */}
       {isDigital && (
-        <>
-          <div>
-            <label className="block text-sm font-medium">Digital Delivery URL</label>
-            <input
-              name="digitalUrl"
-              type="text"
-              value={formData.digitalUrl || ""}
-              onChange={(e) => setFormData({ ...formData, digitalUrl: e.target.value })}
-              placeholder="e.g. https://download.example.com/your-file"
-              className="mt-1 block w-full border-gray-300 rounded-md"
-            />
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Digital Product Details</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Delivery URL</label>
+              <input
+                type="url"
+                name="digitalUrl"
+                placeholder="e.g. https://download.example.com/your-file"
+                className={inputClasses}
+                value={formData.digitalUrl || ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                id="autoDeliver"
+                name="autoDeliver"
+                type="checkbox"
+                checked={formData.autoDeliver || false}
+                onChange={(e) =>
+                  setFormData({ ...formData, autoDeliver: e.target.checked })
+                }
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+              />
+              <label htmlFor="autoDeliver" className="text-gray-600 text-sm">
+                Auto‐deliver upon purchase
+              </label>
+            </div>
           </div>
-          <div className="flex items-center">
-            <input
-              id="autoDeliver"
-              name="autoDeliver"
-              type="checkbox"
-              checked={formData.autoDeliver || false}
-              onChange={(e) => setFormData({ ...formData, autoDeliver: e.target.checked })}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-            />
-            <label htmlFor="autoDeliver" className="ml-2 block text-sm">
-              Auto‐deliver upon purchase
-            </label>
-          </div>
-        </>
+        </section>
       )}
 
-      {/* Conditional: Travel-specific fields */}
+      {/* ── 6. Travel-Specific Fields ── */}
       {isTravel && (
-        <>
-          <div>
-            <label className="block text-sm font-medium">
-              {subCat === "Flight Tickets" ? "Seat Class" : subCat === "Hotel Bookings" ? "Room Type" : "Package Details"}
-            </label>
-            <input
-              name="travelDetail"
-              type="text"
-              value={formData.travelDetail || ""}
-              onChange={(e) => setFormData({ ...formData, travelDetail: e.target.value })}
-              placeholder={
-                subCat === "Flight Tickets"
-                  ? "e.g. Economy"
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Travel Details</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">
+                {subCat === "Flight Tickets"
+                  ? "Seat Class"
                   : subCat === "Hotel Bookings"
-                  ? "e.g. Deluxe Suite"
-                  : "e.g. 5-day Safari Tour"
-              }
-              className="mt-1 block w-full border-gray-300 rounded-md"
-            />
+                  ? "Room Type"
+                  : "Package Details"}
+              </label>
+              <input
+                type="text"
+                name="travelDetail"
+                placeholder={
+                  subCat === "Flight Tickets"
+                    ? "e.g. Economy"
+                    : subCat === "Hotel Bookings"
+                    ? "e.g. Deluxe Suite"
+                    : "e.g. 5-day Safari Tour"
+                }
+                className={inputClasses}
+                value={formData.travelDetail || ""}
+                onChange={handleChange}
+              />
+            </div>
           </div>
-        </>
+        </section>
       )}
 
-      {/* Conditional: Physical goods-specific fields */}
-      {isPhysicalGood && (
-        <>
-          <div>
-            <label className="block text-sm font-medium">Model / SKU</label>
-            <input
-              name="model"
-              type="text"
-              value={formData.model}
-              onChange={handleInputChange}
-              placeholder="e.g. HX-200"
-              className="mt-1 block w-full border-gray-300 rounded-md"
-            />
-          </div>          
-        </>
+      {/* ── 7. Physical Goods Fields ── */}
+      {isPhysical && (
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-700">Product Specifications</h3>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-gray-600 text-sm">Model / SKU</label>
+              <input
+                type="text"
+                name="model"
+                placeholder="e.g. HX-200"
+                className={inputClasses}
+                value={formData.model || ""}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* Common: Tags (comma‐separated) */}
-      <div>
-        <label className="block text-sm font-medium">Tags (comma‐separated)</label>
+      {/* ── 8. Tags (Common Field) ── */}
+      <section className="space-y-2">
+        <label className="block text-gray-600 font-medium">Tags (comma‐separated)</label>
         <input
-          name="tags"
           type="text"
-          value={formData.tags.join(", ")}
-          onChange={(e) =>
-            setFormData({ ...formData, tags: e.target.value.split(",").map((t) => t.trim()) })
-          }
+          name="tags"
           placeholder="e.g. new, sale, popular"
-          className="mt-1 block w-full border-gray-300 rounded-md"
+          className={inputClasses}
+          value={Array.isArray(formData.tags) ? formData.tags.join(", ") : ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              tags: e.target.value
+                .split(",")
+                .map((t: string) => t.trim())
+                .filter((t: string) => t.length),
+            })
+          }
         />
-      </div>
-
-
-    </div>
-
+      </section>
     </div>
   );
 };

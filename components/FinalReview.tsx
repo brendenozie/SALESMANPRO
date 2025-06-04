@@ -1,155 +1,260 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import Modal from "./Modal";
-import { useDropzone, Accept } from "react-dropzone";
-import { debounce } from "lodash";
+import React from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowUpCircleIcon,
-  PhotoIcon,
   TagIcon,
+  HomeIcon,
+  BuildingOfficeIcon,
   CurrencyDollarIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckIcon,
   CheckCircleIcon,
-  MapPinIcon
+  MapPinIcon,
+  PhoneIcon,
+  BookOpenIcon,
+  ShoppingBagIcon,
+  SparklesIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUpTrayIcon,
-  CameraIcon,
-  ListBulletIcon,
-  PhoneIcon
-} from "@heroicons/react/24/solid";
+
+const SectionCard: React.FC<{
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+}> = ({ icon: Icon, title, children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+  >
+    <div className="flex items-center mb-4">
+      <Icon className="w-6 h-6 text-blue-500 mr-2" />
+      <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+    </div>
+    <div className="space-y-2 text-gray-700">{children}</div>
+  </motion.div>
+);
+
+const KeyValue: React.FC<{ label: string; value: React.ReactNode }> = ({
+  label,
+  value,
+}) => (
+  <div className="flex justify-between">
+    <span className="font-medium">{label}:</span>
+    <span className="text-gray-800">{value}</span>
+  </div>
+);
 
 const FinalReview = ({ formData }: any) => {
+  // Helper to format N/A if missing or empty
+  const displayValue = (val: any) =>
+    val !== undefined && val !== "" ? val : "N/A";
+
   return (
-    <div className="p-6 bg-white rounded-2xl shadow-xl space-y-6 border border-gray-200">
-      <h2 className="text-xl font-bold text-gray-800">Final Review</h2>
-      <p className="text-sm text-gray-600">Double-check all details before submitting.</p>
-      
-      <div className="space-y-4">
-        {/* Basic Information */}
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-semibold mb-2">Basic Information</h3>
-          <p><strong>Title:</strong> {formData.name || formData.title || "N/A"}</p>
-          <p><strong>Description:</strong> {formData.description || "N/A"}</p>
-          <p><strong>Category:</strong> {formData.category?.name || "N/A"}</p>
-          <p><strong>Status:</strong> {formData.status || "N/A"}</p>
-        <p><strong>Option:</strong> {formData.option || "N/A"}</p>
-      </div>
-          
-      {formData.studios.length > 0 && (
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-semibold mb-2">Studios</h3>
-          <ul className="list-disc pl-5">
-            {formData.studios.map((unit: any, index: number) => (
-              <li key={index} className="text-gray-700">{unit.type} - {unit.size} sq m - Ksh {unit.price}</li>
-            ))}
-          </ul>
-        </div>
-      )} 
-      
-      {formData.bedrooms.length > 0 && (
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-semibold mb-2">Bedrooms</h3>
-          <ul className="list-disc pl-5">
-            {formData.bedrooms.map((unit: any, index: number) => (
-              <li key={index} className="text-gray-700">{unit.type} - {unit.size} sq m - Ksh {unit.price}</li>
-            ))}
-          </ul>
-        </div>
-      )}      
-      
-      {formData.amenities.length > 0 && (
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-semibold mb-2">Amenities</h3>
-          <ul className="list-disc pl-5">
-            {formData.amenities.map((amenity: string, index: number) => (
-              <li key={index} className="text-gray-700">{amenity}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="text-center space-y-2"
+        >
+          <h2 className="text-3xl font-bold text-gray-800">Final Review</h2>
+          <p className="text-gray-600">
+            Double-check all details before submitting your listing.
+          </p>
+        </motion.div>
 
-        {/* Pricing Information */}
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-semibold mb-2">Pricing Information</h3>
-          <p><strong>Cost Price:</strong> {formData.costPrice || formData.buyingPrice || "N/A"}</p>
-          <p><strong>Selling Price:</strong> {formData.salesPrice || formData.sellingPrice || formData.buyingPrice || "N/A"}</p>
-          <p><strong>Discount (%):</strong> {formData.discount || "0"}</p>
-          <p><strong>Final Price:</strong> {formData.finalPrice || "N/A"}</p>
-          <p><strong>Profit Margin (%):</strong> {formData.profitMargin || "N/A"}</p>
-        </div>
+        {/* Grid of Sections */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Information */}
+          <SectionCard icon={TagIcon} title="Basic Information">
+            <KeyValue label="Title" value={displayValue(formData.name || formData.title)} />
+            <KeyValue label="Description" value={displayValue(formData.description)} />
+            <KeyValue
+              label="Category"
+              value={displayValue(formData.category?.name)}
+            />
+            <KeyValue label="Status" value={displayValue(formData.status)} />
+            <KeyValue label="Option" value={displayValue(formData.option)} />
+          </SectionCard>
 
-        {/* Availability & Feature Toggles */}
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-semibold mb-2">Availability & Features</h3>
-          <p><strong>Availability:</strong> {formData.isAvailable ? "In Stock" : "Out of Stock"}</p>
-          <p><strong>Featured:</strong> {formData.isFeatured ? "Yes" : "No"}</p>
-          <p><strong>New Arrival:</strong> {formData.isNewArrival ? "Yes" : "No"}</p>
-          <p><strong>On Offer:</strong> {formData.isOnOffer ? "Yes" : "No"}</p>
-          <p><strong>On Discount:</strong> {formData.isDiscounted ? "Yes" : "No"}</p>
-          <p><strong>On Flash Sale:</strong> {formData.isFlashDeal ? "Yes" : "No"}</p>
-        </div>
+          {/* Studios & Bedrooms */}
+          {(formData.studios?.length > 0 || formData.bedrooms?.length > 0) && (
+            <SectionCard icon={HomeIcon} title="Unit Types">
+              {formData.studios?.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-1">Studios</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800">
+                    {formData.studios.map((unit: any, idx: number) => (
+                      <li key={idx}>
+                        {unit.type} - {unit.size} sq m - Ksh {unit.price}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {formData.bedrooms?.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-1">Bedrooms</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800">
+                    {formData.bedrooms.map((unit: any, idx: number) => (
+                      <li key={idx}>
+                        {unit.type} - {unit.size} sq m - Ksh {unit.price}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </SectionCard>
+          )}
 
-        {/* Category-Specific Details */}
-        {formData.category?.name === "Books" && (
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h3 className="font-semibold mb-2">Book Details</h3>
-            <p><strong>Author:</strong> {formData.author || "N/A"}</p>
-            <p><strong>Publisher:</strong> {formData.publisher || "N/A"}</p>
-            <p><strong>ISBN:</strong> {formData.isbn || "N/A"}</p>
-          </div>
-        )}
+          {/* Amenities */}
+          {formData.amenities?.length > 0 && (
+            <SectionCard icon={SparklesIcon} title="Amenities">
+              <ul className="flex flex-wrap gap-2">
+                {formData.amenities.map((amenity: string, idx: number) => (
+                  <li
+                    key={idx}
+                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                  >
+                    {amenity}
+                  </li>
+                ))}
+              </ul>
+            </SectionCard>
+          )}
 
-        {["Clothing", "Fashion"].includes(formData.category?.name) && (
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h3 className="font-semibold mb-2">Clothing Details</h3>
-            <p><strong>Fabric Composition:</strong> {formData.fabricComposition || "N/A"}</p>
-            <p><strong>Care Instructions:</strong> {formData.careInstructions || "N/A"}</p>
-          </div>
-        )}
+          {/* Pricing Information */}
+          <SectionCard icon={CurrencyDollarIcon} title="Pricing Information">
+            <KeyValue
+              label="Cost Price"
+              value={displayValue(formData.costPrice || formData.buyingPrice)}
+            />
+            <KeyValue
+              label="Selling Price"
+              value={displayValue(
+                formData.salesPrice || formData.sellingPrice || formData.buyingPrice
+              )}
+            />
+            <KeyValue label="Discount (%)" value={displayValue(formData.discount)} />
+            <KeyValue label="Final Price" value={displayValue(formData.finalPrice)} />
+            <KeyValue
+              label="Profit Margin (%)"
+              value={displayValue(formData.profitMargin)}
+            />
+          </SectionCard>
 
-        {formData.category?.name === "Home Appliances" && (
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h3 className="font-semibold mb-2">Home Appliance Details</h3>
-            <p><strong>Energy Rating:</strong> {formData.energyRating || "N/A"}</p>
-            <p><strong>Warranty Period:</strong> {formData.warrantyPeriod || "N/A"}</p>
-            <p><strong>Dimensions:</strong> {formData.dimensions || "N/A"}</p>
-          </div>
-        )}
+          {/* Availability & Features */}
+          <SectionCard icon={CheckCircleIcon} title="Availability & Features">
+            <KeyValue
+              label="Availability"
+              value={formData.isAvailable ? "In Stock" : "Out of Stock"}
+            />
+            <KeyValue
+              label="Featured"
+              value={formData.isFeatured ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="New Arrival"
+              value={formData.isNewArrival ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="On Offer"
+              value={formData.isOnOffer ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="On Discount"
+              value={formData.isDiscounted ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="Flash Deal"
+              value={formData.isFlashDeal ? "Yes" : "No"}
+            />
+          </SectionCard>
 
-        {["Beauty Products", "Skincare", "Haircare"].includes(formData.category?.name) && (
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h3 className="font-semibold mb-2">Beauty Product Details</h3>
-            <p><strong>Ingredients:</strong> {formData.ingredients || "N/A"}</p>
-            <p><strong>Usage Instructions:</strong> {formData.usageInstructions || "N/A"}</p>
-            <p><strong>Expiration Date:</strong> {formData.expirationDate || "N/A"}</p>
-          </div>
-        )}
+          {/* Category-Specific Details */}
+          {formData.category?.name === "Books" && (
+            <SectionCard icon={BookOpenIcon} title="Book Details">
+              <KeyValue label="Author" value={displayValue(formData.author)} />
+              <KeyValue label="Publisher" value={displayValue(formData.publisher)} />
+              <KeyValue label="ISBN" value={displayValue(formData.isbn)} />
+            </SectionCard>
+          )}
 
-        {/* Vehicle Details (if applicable) */}
-        {["Automotive", "Cars", "Car Accessories", "Tools", "Hardware"].includes(formData.category?.name) && (
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h3 className="font-semibold mb-2">Vehicle Details</h3>
-            <p><strong>Make:</strong> {formData.make || "N/A"}</p>
-            <p><strong>Model:</strong> {formData.model || "N/A"}</p>
-            <p><strong>Year:</strong> {formData.year || "N/A"}</p>
-            <p><strong>Trim:</strong> {formData.trim || "N/A"}</p>
-            <p><strong>Type:</strong> {formData.type || "N/A"}</p>
-            <p><strong>Mileage:</strong> {formData.mileage || "N/A"}</p>
-            <p><strong>Condition:</strong> {formData.condition || "N/A"}</p>
-          </div>
-        )}
+          {["Clothing", "Fashion"].includes(formData.category?.name) && (
+            <SectionCard icon={ShoppingBagIcon} title="Clothing Details">
+              <KeyValue
+                label="Fabric Composition"
+                value={displayValue(formData.fabricComposition)}
+              />
+              <KeyValue
+                label="Care Instructions"
+                value={displayValue(formData.careInstructions)}
+              />
+            </SectionCard>
+          )}
 
-        {/* Contact & Location */}
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h3 className="font-semibold mb-2">Contact & Location</h3>
-          <p><strong>Location:</strong> {formData.location || "N/A"}</p>
-          <p><strong>Contact Number:</strong> {formData.contact || "N/A"}</p>
+          {formData.category?.name === "Home Appliances" && (
+            <SectionCard icon={WrenchScrewdriverIcon} title="Appliance Details">
+              <KeyValue
+                label="Energy Rating"
+                value={displayValue(formData.energyRating)}
+              />
+              <KeyValue
+                label="Warranty Period"
+                value={displayValue(formData.warrantyPeriod)}
+              />
+              <KeyValue label="Dimensions" value={displayValue(formData.dimensions)} />
+            </SectionCard>
+          )}
+
+          {["Beauty Products", "Skincare", "Haircare"].includes(
+            formData.category?.name
+          ) && (
+            <SectionCard icon={SparklesIcon} title="Beauty Product Details">
+              <KeyValue
+                label="Ingredients"
+                value={displayValue(formData.ingredients)}
+              />
+              <KeyValue
+                label="Usage Instructions"
+                value={displayValue(formData.usageInstructions)}
+              />
+              <KeyValue
+                label="Expiration Date"
+                value={displayValue(formData.expirationDate)}
+              />
+            </SectionCard>
+          )}
+
+          {["Automotive", "Cars", "Car Accessories", "Tools", "Hardware"].includes(
+            formData.category?.name
+          ) && (
+            <SectionCard icon={WrenchScrewdriverIcon} title="Vehicle Details">
+              <KeyValue label="Make" value={displayValue(formData.make)} />
+              <KeyValue label="Model" value={displayValue(formData.model)} />
+              <KeyValue label="Year" value={displayValue(formData.year)} />
+              <KeyValue label="Trim" value={displayValue(formData.trim)} />
+              <KeyValue label="Type" value={displayValue(formData.type)} />
+              <KeyValue
+                label="Mileage"
+                value={displayValue(formData.mileage)}
+              />
+              <KeyValue
+                label="Condition"
+                value={displayValue(formData.condition)}
+              />
+            </SectionCard>
+          )}
+
+          {/* Contact & Location */}
+          <SectionCard icon={MapPinIcon} title="Contact & Location">
+            <KeyValue label="Location" value={displayValue(formData.location)} />
+            <KeyValue
+              label="Contact Number"
+              value={displayValue(formData.contact)}
+            />
+          </SectionCard>
         </div>
       </div>
     </div>

@@ -1,195 +1,235 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import Modal from "./Modal";
-import { useDropzone, Accept } from "react-dropzone";
-import { debounce } from "lodash";
+import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import {
-  ArrowUpCircleIcon,
-  PhotoIcon,
-  TagIcon,
-  CurrencyDollarIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckIcon,
-  CheckCircleIcon,
-  MapPinIcon
-} from "@heroicons/react/24/outline";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUpTrayIcon,
-  CameraIcon,
-  ListBulletIcon,
-  PhoneIcon,
-  PlusCircleIcon
-} from "@heroicons/react/24/solid";
+import { PlusCircleIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-const VehicleAmenitiesStep = ({ formData, setFormData }: any) => {
+interface AmenityItem {
+  name: string;
+  value: string;
+  icon: string;
+}
+
+interface AmenityCategory {
+  category: string;
+  items: AmenityItem[];
+}
+
+interface VehicleAmenitiesStepProps {
+  formData: { vehicleAmenities: string[] };
+  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+}
+
+const VEHICLE_AMENITIES: AmenityCategory[] = [
+  {
+    category: "Comfort & Interior",
+    items: [
+      { name: "Air Conditioning", value: "ac", icon: "🌬" },
+      { name: "Leather Seats", value: "leather_seats", icon: "🛋" },
+      { name: "Heated Seats", value: "heated_seats", icon: "🔥" },
+      { name: "Sunroof / Moonroof", value: "sunroof", icon: "🌞" },
+      { name: "Ambient Lighting", value: "ambient_lighting", icon: "💡" },
+      { name: "Cruise Control", value: "cruise_control", icon: "🛣" },
+    ],
+  },
+  {
+    category: "Entertainment & Connectivity",
+    items: [
+      { name: "Bluetooth Audio", value: "bluetooth", icon: "📱" },
+      { name: "Apple CarPlay / Android Auto", value: "carplay_android", icon: "🎧" },
+      { name: "USB Charging Ports", value: "usb_ports", icon: "🔌" },
+      { name: "Rear Entertainment System", value: "rear_entertainment", icon: "📺" },
+      { name: "Navigation / GPS", value: "gps", icon: "🧭" },
+    ],
+  },
+  {
+    category: "Safety & Driver Assistance",
+    items: [
+      { name: "Reverse Camera", value: "reverse_camera", icon: "🎥" },
+      { name: "Parking Sensors", value: "parking_sensors", icon: "📡" },
+      { name: "Blind Spot Monitor", value: "blind_spot", icon: "👁️" },
+      { name: "Adaptive Cruise Control", value: "adaptive_cruise", icon: "⚙️" },
+      { name: "Lane Assist", value: "lane_assist", icon: "🛣️" },
+      { name: "Emergency Braking", value: "emergency_braking", icon: "🛑" },
+    ],
+  },
+  {
+    category: "Exterior & Utility",
+    items: [
+      { name: "Alloy Wheels", value: "alloy_wheels", icon: "🛞" },
+      { name: "Roof Rack", value: "roof_rack", icon: "🧳" },
+      { name: "Tow Hitch", value: "tow_hitch", icon: "⚓" },
+      { name: "Tinted Windows", value: "tinted_windows", icon: "🪟" },
+      { name: "Running Boards", value: "running_boards", icon: "🪜" },
+    ],
+  },
+  {
+    category: "Performance & Tech",
+    items: [
+      { name: "All-Wheel Drive", value: "awd", icon: "🔧" },
+      { name: "Keyless Entry", value: "keyless_entry", icon: "🔑" },
+      { name: "Remote Start", value: "remote_start", icon: "📲" },
+      { name: "EV Charging Port", value: "ev_port", icon: "⚡" },
+      { name: "Sport/Eco Mode", value: "drive_modes", icon: "🏎️" },
+    ],
+  },
+];
+
+const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
+  formData,
+  setFormData,
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
 
-  const vehicleAmenities = [
-    {
-      category: "Comfort & Interior",
-      items: [
-        { name: "Air Conditioning", value: "ac", icon: "🌬" },
-        { name: "Leather Seats", value: "leather_seats", icon: "🛋" },
-        { name: "Heated Seats", value: "heated_seats", icon: "🔥" },
-        { name: "Sunroof / Moonroof", value: "sunroof", icon: "🌞" },
-        { name: "Ambient Lighting", value: "ambient_lighting", icon: "💡" },
-        { name: "Cruise Control", value: "cruise_control", icon: "🛣" },
-      ],
-    },
-    {
-      category: "Entertainment & Connectivity",
-      items: [
-        { name: "Bluetooth Audio", value: "bluetooth", icon: "📱" },
-        { name: "Apple CarPlay / Android Auto", value: "carplay_android", icon: "🎧" },
-        { name: "USB Charging Ports", value: "usb_ports", icon: "🔌" },
-        { name: "Rear Entertainment System", value: "rear_entertainment", icon: "📺" },
-        { name: "Navigation / GPS", value: "gps", icon: "🧭" },
-      ],
-    },
-    {
-      category: "Safety & Driver Assistance",
-      items: [
-        { name: "Reverse Camera", value: "reverse_camera", icon: "🎥" },
-        { name: "Parking Sensors", value: "parking_sensors", icon: "📡" },
-        { name: "Blind Spot Monitor", value: "blind_spot", icon: "👁️" },
-        { name: "Adaptive Cruise Control", value: "adaptive_cruise", icon: "⚙️" },
-        { name: "Lane Assist", value: "lane_assist", icon: "🛣️" },
-        { name: "Emergency Braking", value: "emergency_braking", icon: "🛑" },
-      ],
-    },
-    {
-      category: "Exterior & Utility",
-      items: [
-        { name: "Alloy Wheels", value: "alloy_wheels", icon: "🛞" },
-        { name: "Roof Rack", value: "roof_rack", icon: "🧳" },
-        { name: "Tow Hitch", value: "tow_hitch", icon: "⚓" },
-        { name: "Tinted Windows", value: "tinted_windows", icon: "🪟" },
-        { name: "Running Boards", value: "running_boards", icon: "🪜" },
-      ],
-    },
-    {
-      category: "Performance & Tech",
-      items: [
-        { name: "All-Wheel Drive", value: "awd", icon: "🔧" },
-        { name: "Keyless Entry", value: "keyless_entry", icon: "🔑" },
-        { name: "Remote Start", value: "remote_start", icon: "📲" },
-        { name: "EV Charging Port", value: "ev_port", icon: "⚡" },
-        { name: "Sport/Eco Mode", value: "drive_modes", icon: "🏎️" },
-      ],
-    },
-  ];
+  // Filter categories/items by search term
+  const filteredCategories = useMemo(() => {
+    if (!searchTerm.trim()) return VEHICLE_AMENITIES;
+    return VEHICLE_AMENITIES.map((cat) => ({
+      ...cat,
+      items: cat.items.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    })).filter((cat) => cat.items.length > 0);
+  }, [searchTerm]);
 
-  const filteredCategories = vehicleAmenities.map((category) => ({
-    ...category,
-    items: category.items.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-  }));
-
-  const toggleAmenity = (value: string) => {
-    const updated = formData.vehicleAmenities?.includes(value)
-      ? formData.vehicleAmenities.filter((item: string) => item !== value)
-      : [...(formData.vehicleAmenities || []), value];
-
-    setFormData((prev: any) => ({
-      ...prev,
-      vehicleAmenities: updated,
-    }));
-  };
-
-  const addCustomAmenity = () => {
-    if (customAmenity.trim() !== "") {
-      setFormData((prev: any) => ({
-        ...prev,
-        vehicleAmenities: [...(prev.vehicleAmenities || []), customAmenity.trim()],
-      }));
-      setCustomAmenity("");
-    }
-  };
-
-  const predefined = new Set(
-    vehicleAmenities.flatMap((cat) => cat.items.map((i) => i.value))
+  // Toggle a predefined or custom amenity
+  const toggleAmenity = useCallback(
+    (value: string) => {
+      const current: string[] = formData.vehicleAmenities || [];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      setFormData({ ...formData, vehicleAmenities: updated });
+    },
+    [formData, setFormData]
   );
-  const customItems =
-    formData.vehicleAmenities?.filter((item: string) => !predefined.has(item)) || [];
+
+  // Add a new custom amenity (if non-empty and not duplicate)
+  const addCustomAmenity = () => {
+    const trimmed = customAmenity.trim();
+    if (!trimmed) return;
+    if ((formData.vehicleAmenities || []).includes(trimmed)) {
+      setCustomAmenity("");
+      return;
+    }
+    setFormData({
+      ...formData,
+      vehicleAmenities: [...(formData.vehicleAmenities || []), trimmed],
+    });
+    setCustomAmenity("");
+  };
+
+  // Separate predefined vs. custom
+  const predefinedSet = useMemo(
+    () =>
+      new Set(
+        VEHICLE_AMENITIES.flatMap((cat) => cat.items.map((item) => item.value))
+      ),
+    []
+  );
+  const customItems = (formData.vehicleAmenities || []).filter(
+    (a: string) => !predefinedSet.has(a)
+  );
 
   return (
-    <div className="p-6 space-y-6">
-      <h3 className="text-xl font-bold text-gray-800">Select Vehicle Amenities</h3>
-
-      <input
-        type="text"
-        placeholder="Search vehicle features..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full p-2 border rounded-lg shadow-sm focus:ring focus:ring-blue-300"
-      />
-
-      <div className="space-y-6">
-        {filteredCategories.map(
-          (category) =>
-            category.items.length > 0 && (
-              <div key={category.category}>
-                <h4 className="text-lg font-semibold text-gray-700">{category.category}</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                  {category.items.map((item) => (
-                    <button
-                      key={item.value}
-                      onClick={() => toggleAmenity(item.value)}
-                      className={`flex items-center justify-center p-4 border rounded-lg shadow-sm transition-all ${
-                        formData.vehicleAmenities?.includes(item.value)
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-800 hover:bg-blue-100"
-                      }`}
-                    >
-                      <span className="text-lg">{item.icon}</span>
-                      <span className="ml-2">{item.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )
-        )}
+    <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Select Vehicle Features
+        </h2>
+        <p className="text-gray-500 mt-1">
+          Choose from common vehicle amenities, or add your own custom feature.
+        </p>
       </div>
 
+      {/* Search Bar */}
+      <div className="relative">
+        <MagnifyingGlassIcon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search features..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* Predefined Categories */}
+      <div className="space-y-6">
+        {filteredCategories.map((category) => (
+          <div key={category.category} className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-700">
+              {category.category}
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {category.items.map((item) => {
+                const selected =
+                  formData.vehicleAmenities?.includes(item.value);
+                return (
+                  <motion.button
+                    key={item.value}
+                    type="button"
+                    onClick={() => toggleAmenity(item.value)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex items-center space-x-2 p-3 border rounded-lg transition-all focus:outline-none focus:ring-2 ${
+                      selected
+                        ? "bg-blue-500 text-white border-blue-500 shadow-md"
+                        : "bg-gray-100 text-gray-800 border-gray-200 hover:bg-blue-50"
+                    }`}
+                  >
+                    <span className="text-xl">{item.icon}</span>
+                    <span>{item.name}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Custom Features */}
       {customItems.length > 0 && (
-        <div>
-          <h4 className="text-lg font-semibold text-gray-700 mt-4">Custom Features</h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-gray-700 mt-4">
+            Custom Features
+          </h3>
+          <div className="flex flex-wrap gap-3">
             {customItems.map((item: string) => (
-              <button
+              <motion.div
                 key={item}
-                onClick={() => toggleAmenity(item)}
-                className="flex items-center justify-center p-4 border rounded-lg shadow-sm bg-green-200 text-green-800"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full shadow-sm space-x-2"
               >
-                <span className="ml-2">{item}</span>
-              </button>
+                <span>{item}</span>
+                <button onClick={() => toggleAmenity(item)}>
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </motion.div>
             ))}
           </div>
         </div>
       )}
 
+      {/* Add Custom Feature */}
       <div className="flex items-center space-x-3">
         <input
           type="text"
-          placeholder="Add Custom Feature"
+          placeholder="Add custom feature"
           value={customAmenity}
           onChange={(e) => setCustomAmenity(e.target.value)}
-          className="input-field"
+          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           onClick={addCustomAmenity}
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center"
+          className="inline-flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow"
         >
-          <PlusCircleIcon className="h-5 w-5 mr-1" /> Add
+          <PlusCircleIcon className="w-5 h-5" />
+          <span>Add</span>
         </button>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,237 +1,248 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import Modal from "./Modal";
-import { useDropzone, Accept } from "react-dropzone";
-import { debounce } from "lodash";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import {
-  ArrowUpCircleIcon,
-  PhotoIcon,
-  TagIcon,
-  CurrencyDollarIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckIcon,
-  CheckCircleIcon,
-  MapPinIcon
-} from "@heroicons/react/24/outline";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUpTrayIcon,
-  CameraIcon,
-  ListBulletIcon,
-  PhoneIcon,
-  PlusCircleIcon,
-} from "@heroicons/react/24/solid";
+import { PlusCircleIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-//step 13: Amenities
-const AmenitiesStep = ({ formData, setFormData }: any) => {
+interface AmenityItem {
+  name: string;
+  value: string;
+  icon: string;
+}
+
+interface AmenityCategory {
+  category: string;
+  items: AmenityItem[];
+}
+
+interface AmenitiesStepProps {
+  formData: { amenities: string[] };
+  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+}
+
+const AMENITIES_CATEGORIES: AmenityCategory[] = [
+  {
+    category: "General",
+    items: [
+      { name: "Air Conditioning", value: "air_conditioning", icon: "🌡" },
+      { name: "Heating", value: "heating", icon: "🔥" },
+      { name: "Backup Generator", value: "backup_generator", icon: "🔌" },
+      { name: "Elevator", value: "elevator", icon: "🏗" },
+      { name: "Ceiling Fans", value: "ceiling_fans", icon: "🌬" },
+      { name: "Private Entrance", value: "private_entrance", icon: "🚪" },
+      { name: "Housekeeping Service", value: "housekeeping", icon: "🧹" },
+    ],
+  },
+  {
+    category: "Security & Tech",
+    items: [
+      { name: "Smart Locks", value: "smart_locks", icon: "🔐" },
+      { name: "24/7 Security", value: "security", icon: "🚨" },
+      { name: "CCTV Surveillance", value: "cctv", icon: "🎥" },
+      { name: "Fire Alarm System", value: "fire_alarm", icon: "⏰" },
+      { name: "High-Speed WiFi", value: "wifi", icon: "📶" },
+      { name: "Smart Home System", value: "smart_home", icon: "📺" },
+    ],
+  },
+  {
+    category: "Fitness & Recreation",
+    items: [
+      { name: "Swimming Pool", value: "pool", icon: "🏊" },
+      { name: "Gym/Fitness Center", value: "gym", icon: "🏋️" },
+      { name: "Tennis Court", value: "tennis_court", icon: "🎾" },
+      { name: "Game Room", value: "game_room", icon: "🎯" },
+      { name: "Basketball Court", value: "basketball_court", icon: "🏀" },
+      { name: "Golf Course Access", value: "golf_course", icon: "⛳" },
+    ],
+  },
+  {
+    category: "Outdoor",
+    items: [
+      { name: "Garden", value: "garden", icon: "🌳" },
+      { name: "BBQ Area", value: "bbq_area", icon: "🍖" },
+      { name: "Rooftop Lounge", value: "rooftop", icon: "🏕" },
+      { name: "Balcony/Terrace", value: "balcony", icon: "🌅" },
+      { name: "Outdoor Fireplace", value: "outdoor_fireplace", icon: "🔥" },
+    ],
+  },
+  {
+    category: "Parking & Transportation",
+    items: [
+      { name: "Private Parking", value: "private_parking", icon: "🚗" },
+      { name: "Valet Parking", value: "valet_parking", icon: "🚙" },
+      { name: "Bike Storage", value: "bike_storage", icon: "🚲" },
+      { name: "EV Charging Station", value: "ev_charger", icon: "🔌" },
+      { name: "Near Public Transport", value: "public_transport", icon: "🚏" },
+    ],
+  },
+  {
+    category: "Family-Friendly",
+    items: [
+      { name: "Children’s Play Area", value: "play_area", icon: "🎠" },
+      { name: "On-Site Daycare", value: "daycare", icon: "👩‍⚕️" },
+      { name: "Nearby Schools", value: "nearby_schools", icon: "🏫" },
+    ],
+  },
+  {
+    category: "Business & Workspaces",
+    items: [
+      { name: "Co-Working Space", value: "coworking_space", icon: "🏢" },
+      { name: "Business Center", value: "business_center", icon: "🖥" },
+      { name: "Conference Room", value: "conference_room", icon: "🎤" },
+    ],
+  },
+  {
+    category: "Pet-Friendly",
+    items: [
+      { name: "Pet-Friendly Property", value: "pet_friendly", icon: "🐕" },
+      { name: "Dog Park Access", value: "dog_park", icon: "🦴" },
+    ],
+  },
+  {
+    category: "Kitchen & Dining",
+    items: [
+      { name: "Fully Equipped Kitchen", value: "kitchen", icon: "🍽" },
+      { name: "In-Unit Laundry", value: "laundry", icon: "🧺" },
+      { name: "Wine Cellar", value: "wine_cellar", icon: "🥂" },
+    ],
+  },
+];
+
+const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
 
-  const amenitiesCategories = [
-    {
-        category: "General",
-        items: [
-            { name: "Air Conditioning", value: "air_conditioning", icon: "🌡" },
-            { name: "Heating", value: "heating", icon: "🔥" },
-            { name: "Backup Generator", value: "backup_generator", icon: "🔌" },
-            { name: "Elevator", value: "elevator", icon: "🏗" },
-            { name: "Ceiling Fans", value: "ceiling_fans", icon: "🌬" },
-            { name: "Private Entrance", value: "private_entrance", icon: "🚪" },
-            { name: "Housekeeping Service", value: "housekeeping", icon: "🧹" },
-        ],
-    },
-    {
-        category: "Security & Tech",
-        items: [
-            { name: "Smart Locks", value: "smart_locks", icon: "🔐" },
-            { name: "24/7 Security", value: "security", icon: "🚨" },
-            { name: "CCTV Surveillance", value: "cctv", icon: "🎥" },
-            { name: "Fire Alarm System", value: "fire_alarm", icon: "⏰" },
-            { name: "High-Speed WiFi", value: "wifi", icon: "📶" },
-            { name: "Smart Home System", value: "smart_home", icon: "📺" },
-        ],
-    },
-    {
-        category: "Fitness & Recreation",
-        items: [
-            { name: "Swimming Pool", value: "pool", icon: "🏊" },
-            { name: "Gym/Fitness Center", value: "gym", icon: "🏋️" },
-            { name: "Tennis Court", value: "tennis_court", icon: "🎾" },
-            { name: "Game Room", value: "game_room", icon: "🎯" },
-            { name: "Basketball Court", value: "basketball_court", icon: "🏀" },
-            { name: "Golf Course Access", value: "golf_course", icon: "⛳" },
-        ],
-    },
-    {
-        category: "Outdoor",
-        items: [
-            { name: "Garden", value: "garden", icon: "🌳" },
-            { name: "BBQ Area", value: "bbq_area", icon: "🍖" },
-            { name: "Rooftop Lounge", value: "rooftop", icon: "🏕" },
-            { name: "Balcony/Terrace", value: "balcony", icon: "🌅" },
-            { name: "Outdoor Fireplace", value: "outdoor_fireplace", icon: "🔥" },
-        ],
-    },
-    {
-        category: "Parking & Transportation",
-        items: [
-            { name: "Private Parking", value: "private_parking", icon: "🚗" },
-            { name: "Valet Parking", value: "valet_parking", icon: "🚙" },
-            { name: "Bike Storage", value: "bike_storage", icon: "🚲" },
-            { name: "EV Charging Station", value: "ev_charger", icon: "🔌" },
-            { name: "Near Public Transport", value: "public_transport", icon: "🚏" },
-        ],
-    },
-    {
-        category: "Family-Friendly",
-        items: [
-            { name: "Children’s Play Area", value: "play_area", icon: "🎠" },
-            { name: "On-Site Daycare", value: "daycare", icon: "👩‍⚕️" },
-            { name: "Nearby Schools", value: "nearby_schools", icon: "🏫" },
-        ],
-    },
-    {
-        category: "Business & Workspaces",
-        items: [
-            { name: "Co-Working Space", value: "coworking_space", icon: "🏢" },
-            { name: "Business Center", value: "business_center", icon: "🖥" },
-            { name: "Conference Room", value: "conference_room", icon: "🎤" },
-        ],
-    },
-    {
-        category: "Pet-Friendly",
-        items: [
-            { name: "Pet-Friendly Property", value: "pet_friendly", icon: "🐕" },
-            { name: "Dog Park Access", value: "dog_park", icon: "🦴" },
-        ],
-    },
-    {
-        category: "Kitchen & Dining",
-        items: [
-            { name: "Fully Equipped Kitchen", value: "kitchen", icon: "🍽" },
-            { name: "In-Unit Laundry", value: "laundry", icon: "🏠" },
-            { name: "Wine Cellar", value: "wine_cellar", icon: "🥂" },
-        ],
-    },
-];
- // Filtered amenities based on search
-  const filteredCategories = amenitiesCategories.map((category) => ({
-    ...category,
-    items: category.items.filter((amenity) =>
-      amenity.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-  }));
+  // Filter categories/items by search term
+  const filteredCategories = useMemo(() => {
+    if (!searchTerm.trim()) return AMENITIES_CATEGORIES;
+    return AMENITIES_CATEGORIES.map((cat) => ({
+      ...cat,
+      items: cat.items.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    })).filter((cat) => cat.items.length > 0);
+  }, [searchTerm]);
 
+  // Toggle a predefined or custom amenity
   const toggleAmenity = (value: string) => {
-    const updatedAmenities = formData.amenities.includes(value)
-      ? formData.amenities.filter((item: string) => item !== value)
-      : [...formData.amenities, value];
-
-    setFormData((prev: any) => ({ ...prev, amenities: updatedAmenities }));
+    const current: string[] = formData.amenities || [];
+    const updated = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    setFormData({ ...formData, amenities: updated });
   };
 
+  // Add a new custom amenity (if non-empty and not duplicate)
   const addCustomAmenity = () => {
-    if (customAmenity.trim() !== "") {
-      setFormData((prev: any) => ({
-        ...prev,
-        amenities: [...prev.amenities, customAmenity.trim()],
-      }));
+    const trimmed = customAmenity.trim();
+    if (!trimmed) return;
+    if ((formData.amenities || []).includes(trimmed)) {
       setCustomAmenity("");
+      return;
     }
+    setFormData({ ...formData, amenities: [...(formData.amenities || []), trimmed] });
+    setCustomAmenity("");
   };
 
-  // Extract predefined amenity values
-const predefinedAmenities = new Set(
-  amenitiesCategories.flatMap((category) => category.items.map((item) => item.value))
-);
-
-// Find custom amenities
-const customAmenities = formData.amenities.filter((amenity: string) => !predefinedAmenities.has(amenity));
-
+  // Separate predefined vs custom
+  const predefinedSet = new Set(
+    AMENITIES_CATEGORIES.flatMap((cat) => cat.items.map((item) => item.value))
+  );
+  const customAmenities = (formData.amenities || []).filter(
+    (a: string) => !predefinedSet.has(a)
+  );
 
   return (
-    <div className="p-6 space-y-6">
-      <h3 className="text-xl font-bold text-gray-800">Select Property Amenities</h3>
-
-      {/* Search Bar */}
-      <input
-        type="text"
-        placeholder="Search amenities..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full p-2 border rounded-lg shadow-sm focus:ring focus:ring-blue-300"
-      />
-
-      {/* Amenity Categories */}
-      <div className="space-y-6">
-        {filteredCategories.map(
-          (category) =>
-            category.items.length > 0 && (
-              <div key={category.category}>
-                <h4 className="text-lg font-semibold text-gray-700">{category.category}</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                  {category.items.map((amenity) => (
-                    <button
-                      key={amenity.value}
-                      onClick={() => toggleAmenity(amenity.value)}
-                      className={`flex items-center justify-center p-4 border rounded-lg shadow-sm transition-all 
-                        ${
-                          formData.amenities.includes(amenity.value)
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-100 text-gray-800 hover:bg-blue-100"
-                        }`}
-                    >
-                      <span className="text-lg">{amenity.icon}</span>
-                      <span className="ml-2">{amenity.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )
-        )}
+    <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">Select Property Amenities</h2>
+        <p className="text-gray-500 mt-1">
+          Choose from common amenities or add your own custom ones.
+        </p>
       </div>
 
-      {/* Custom Amenities (Added by the User) */}
-        {customAmenities.length > 0 && (
-          <div>
-            <h4 className="text-lg font-semibold text-gray-700 mt-4">Custom Amenities</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-              {customAmenities.map((amenity: string) => (
-                <button
-                  key={amenity}
-                  onClick={() => toggleAmenity(amenity)}
-                  className="flex items-center justify-center p-4 border rounded-lg shadow-sm bg-green-200 text-green-800"
-                >
-                  <span className="ml-2">{amenity}</span>
-                </button>
-              ))}
+      {/* Search Bar */}
+      <div className="relative">
+        <MagnifyingGlassIcon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search amenities..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* Predefined Amenity Categories */}
+      <div className="space-y-6">
+        {filteredCategories.map((category) => (
+          <div key={category.category} className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-700">{category.category}</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {category.items.map((amenity) => {
+                const selected = (formData.amenities || []).includes(amenity.value);
+                return (
+                  <motion.button
+                    key={amenity.value}
+                    type="button"
+                    onClick={() => toggleAmenity(amenity.value)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`flex items-center space-x-2 p-3 border rounded-lg transition-all focus:outline-none focus:ring-2 ${
+                      selected
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-gray-100 text-gray-800 border-gray-200 hover:bg-blue-50"
+                    }`}
+                  >
+                    <span className="text-xl">{amenity.icon}</span>
+                    <span>{amenity.name}</span>
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
-        )}
-      
-      {/* Custom Amenity */}
+        ))}
+      </div>
+
+      {/* Custom Amenities Section */}
+      {customAmenities.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-gray-700">Custom Amenities</h3>
+          <div className="flex flex-wrap gap-3">
+            {customAmenities.map((amenity: string) => (
+              <motion.div
+                key={amenity}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full shadow-sm space-x-2"
+              >
+                <span>{amenity}</span>
+                <button onClick={() => toggleAmenity(amenity)}>
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Add Custom Amenity Input */}
       <div className="flex items-center space-x-3">
         <input
           type="text"
-          placeholder="Add Custom Amenity"
+          placeholder="Add custom amenity"
           value={customAmenity}
           onChange={(e) => setCustomAmenity(e.target.value)}
-          className="input-field"
+          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           onClick={addCustomAmenity}
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center"
+          className="inline-flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow"
         >
-          <PlusCircleIcon className="h-5 w-5 mr-1" /> Add Amenity
+          <PlusCircleIcon className="w-5 h-5" />
+          <span>Add</span>
         </button>
       </div>
-
-    </div>
+    </section>
   );
-
-}
+};
 
 export default AmenitiesStep;
