@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import Modal from "./Modal";
-import { useDropzone, Accept } from "react-dropzone";
-import { debounce } from "lodash";
 import { motion } from "framer-motion";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+
 import CategoryPicker from "./CategoryPicker";
 import Stepper from "./Stepper";
 import ProductDetails from "./ProductDetails";
@@ -40,27 +39,28 @@ const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   11: FinalReview,
   12: ContactLocation,
   13: AmenitiesStep,
-  14: VehicleAmenitiesStep
+  14: VehicleAmenitiesStep,
 };
 
 const STEP_LABELS: Record<number, string> = {
   1: "Category",
-  2: "Product Details",
-  3: "General Details",
-  4: "Engine Performance",
+  2: "Details",
+  3: "General Info",
+  4: "Engine Specs",
   5: "Ownership Pricing",
   7: "Pricing",
   8: "Images",
-  9: "Product Variants",
+  9: "Variants",
   10: "Availability",
-  11: "Final Review",
-  12: "Contact Location",
+  11: "Review",
+  12: "Location / Contact",
   13: "Property Amenities",
-  14: "Vehicle Amenities"
+  14: "Vehicle Amenities",
 };
 
 // ------------------- 
 // CATEGORY_STEPS  
+// (Already includes all categories and subcategories.)
 // -------------------
 const CATEGORY_STEPS: Record<string, number[]> = {
   // — Standard “store” items —
@@ -123,7 +123,6 @@ const CATEGORY_STEPS: Record<string, number[]> = {
   // — Property listings flow —
   "Real Estate":         [1,3,7,8,10,12,13,11],
   "Property":            [1,3,7,8,10,12,13,11],
-  // All of Property’s subcategories (names must match exactly):
   "Houses":              [1,3,7,8,10,12,13,11],
   "Land":                [1,3,7,8,10,12,13,11],
   "Commercial":          [1,3,7,8,10,12,13,11],
@@ -147,7 +146,7 @@ const CATEGORY_STEPS: Record<string, number[]> = {
   "Tools":               [1,3,4,5,7,8,10,12,14,11],
   "Hardware":            [1,3,4,5,7,8,10,12,14,11],
 
-  // — New “Services” flow (same as standard store items) —
+  // — Services flow —
   "Services":            [1,2,7,8,9,10,12,11],
   "Cleaning":            [1,2,7,8,9,10,12,11],
   "Plumbing":            [1,2,7,8,9,10,12,11],
@@ -162,80 +161,98 @@ const CATEGORY_STEPS: Record<string, number[]> = {
 
   // — Arts & Crafts flow —
   "Arts & Crafts":       [1,2,7,8,9,10,12,11],
-  "Painting Supplies":    [1,2,7,8,9,10,12,11],
-  "Knitting & Sewing":    [1,2,7,8,9,10,12,11],
-  "DIY Kits":             [1,2,7,8,9,10,12,11],
-  "Scrapbooking":         [1,2,7,8,9,10,12,11],
-  "Art Prints":           [1,2,7,8,9,10,12,11],
+  "Painting Supplies":   [1,2,7,8,9,10,12,11],
+  "Knitting & Sewing":   [1,2,7,8,9,10,12,11],
+  "DIY Kits":            [1,2,7,8,9,10,12,11],
+  "Scrapbooking":        [1,2,7,8,9,10,12,11],
+  "Art Prints":          [1,2,7,8,9,10,12,11],
 
   // — Travel & Experiences flow —
-  "Travel & Experiences": [1,2,7,8,9,10,12,11],
-  "Flight Tickets":       [1,2,7,8,9,10,12,11],
-  "Hotel Bookings":       [1,2,7,8,9,10,12,11],
-  "Tour Packages":        [1,2,7,8,9,10,12,11],
-  "Event Tickets":        [1,2,7,8,9,10,12,11],
-  "Travel Insurance":     [1,2,7,8,9,10,12,11],
+  "Travel & Experiences":[1,2,7,8,9,10,12,11],
+  "Flight Tickets":      [1,2,7,8,9,10,12,11],
+  "Hotel Bookings":      [1,2,7,8,9,10,12,11],
+  "Tour Packages":       [1,2,7,8,9,10,12,11],
+  "Event Tickets":       [1,2,7,8,9,10,12,11],
+  "Travel Insurance":    [1,2,7,8,9,10,12,11],
 
-  // — Digital Goods & Subscriptions flow (same as standard store items) —
-  "Digital Goods & Subscriptions":   [1,2,7,8,9,10,12,11],
-  "Software Licenses":                [1,2,7,8,9,10,12,11],
-  "E-books":                          [1,2,7,8,9,10,12,11],
-  "Online Courses":                   [1,2,7,8,9,10,12,11],
-  "Streaming Subscriptions":          [1,2,7,8,9,10,12,11],
-  "Mobile App Credits":               [1,2,7,8,9,10,12,11],
-  
+  // — Digital Goods & Subscriptions flow —
+  "Digital Goods & Subscriptions":[1,2,7,8,9,10,12,11],
+  "Software Licenses":   [1,2,7,8,9,10,12,11],
+  "E-books":             [1,2,7,8,9,10,12,11],
+  "Online Courses":      [1,2,7,8,9,10,12,11],
+  "Streaming Subscriptions":[1,2,7,8,9,10,12,11],
+  "Mobile App Credits":  [1,2,7,8,9,10,12,11],
 };
-
 
 // -------------------
 // MAIN MODAL COMPONENT
 // -------------------
 
-const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, product, companyId, categories }: any) => {
+interface AddProductModalProps {
+  showRequestProductModal: boolean;
+  setShowRequestProductModal: (b: boolean) => void;
+  product: any | null;
+  companyId: string;
+  categories: any[]; // array of category objects including subcategories
+}
 
+const AddProductModal: React.FC<AddProductModalProps> = ({
+  showRequestProductModal,
+  setShowRequestProductModal,
+  product,
+  companyId,
+  categories,
+}) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-  console.log(product);
-
+  // Step state
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+
+  // Form data state
+  const [formData, setFormData] = useState<any>({
     id: product?.id || "",
     name: product?.name || "",
     description: product?.description || "",
     productCategoryId: product?.productCategoryId || "",
 
+    // Generic fields:
     model: product?.model || "",
     color: product?.color || [],
     size: product?.size || [],
     weight: product?.weight || "",
-
     condition: product?.condition || "",
-    dimension:  product?.dimension || "",
-    material:  product?.material || "",
+    dimension: product?.dimension || "",
+    material: product?.material || "",
     images: product?.images || [],
 
+    // Flags:
     isAvailable: product?.isAvailable || false,
     isOnOffer: product?.isOnOffer || false,
     isFlashDeal: product?.isFlashDeal || false,
     isNewArrival: product?.isNewArrival || false,
     isDiscounted: product?.isDiscounted || false,
     isFeatured: product?.isFeatured || false,
-    
+
+    // Pricing:
     quantity: product?.companyStock || 1,
     costPrice: product?.costPrice || "",
     salesPrice: product?.salesPrice || 0,
     discount: product?.discount || 0,
     finalPrice: product?.finalPrice || 0,
     profitMargin: product?.profitMargin || 0,
+
+    // Category / subcategory / brand / tags
     category: product?.productCategory || { subcategories: [], allBrands: [] },
     subCategory: product?.subCategory || "",
     brand: product?.brand || "",
     tags: product?.tags || [],
 
+    // Commission / company
     commissionRate: product?.commissionRate || 0,
-    commissionType: product?.commissionType || 'COST', // Default to "Percentage"
+    commissionType: product?.commissionType || "COST",
     companyId: product?.companyId || `${companyId}`,
-    // Vehicle-specific keys
+
+    // Vehicle-specific:
     make: product?.make || "",
     trim: product?.trim || "",
     type: product?.type || "",
@@ -244,95 +261,110 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     engineSize: product?.engineSize || "",
     transmission: product?.transmission || "",
     drivetrain: product?.drivetrain || "",
-    
     vin: product?.vin || "",
     logbookStatus: product?.logbookStatus || "Available",
     serviceHistory: product?.serviceHistory || "Full",
-    
+
     negotiable: product?.negotiable || false,
     financingAvailable: product?.financingAvailable || false,
     tradeIn: product?.tradeIn || false,
     features: product?.features || [],
+
     location: product?.location || "",
     contact: product?.contact || "",
     video: product?.video || null,
-    // Extra fields for Books:
+
+    // Books:
     author: product?.author || "",
     publisher: product?.publisher || "",
     isbn: product?.isbn || "",
-    // Extra fields for Clothing/Fashion:
+
+    // Clothing/Fashion:
     fabricComposition: product?.fabricComposition || "",
     careInstructions: product?.careInstructions || "",
-    // Extra fields for Home Appliances:
+
+    // Home Appliances:
     energyRating: product?.energyRating || "",
     warrantyPeriod: product?.warrantyPeriod || "",
     dimensions: product?.dimensions || "",
-    // Extra fields for Beauty Products:
+
+    // Beauty Products:
     ingredients: product?.ingredients || "",
     usageInstructions: product?.usageInstructions || "",
     expirationDate: product?.expirationDate || "",
 
+    // Deals:
     startDealDate: product?.startDealDate,
     endDealDate: product?.endDealDate,
 
+    // Options / amenities / featured:
     option: product?.option || [],
     amenities: product?.amenities || [],
     featured: product?.featured || false,
 
+    // Property-specific:
     bedrooms: product?.bedrooms || [],
     studios: product?.studios || [],
     bathrooms: product?.bathrooms || "",
     area: product?.area || "",
   });
 
+  // Determine which steps to show based on category
   const stepsForCategory: number[] = useMemo(() => {
-    return CATEGORY_STEPS[formData.category?.name] || [];
+    return CATEGORY_STEPS[formData.category?.name] || [1];
   }, [formData.category]);
 
-  const currentDynamicStep = stepsForCategory[step - 1];
-  const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
+  const currentDynamicStep = stepsForCategory[step - 1] || 1;
+  const FormComponent = FORM_COMPONENTS[currentDynamicStep];
 
+  // Images state
   const [newImages, setNewImages] = useState<File[]>([]);
-
-  const [images, setImages] = useState(
+  const [images, setImages] = useState<any[]>(
     product?.images?.map((img: any, index: number) => ({ ...img, index })) || []
   );
   const [loading, setLoading] = useState(false);
 
+  // Subcategories and brands filtered from selected category
   const filteredSubCategories = useMemo(() => {
     if (!formData.category) return [];
-    return formData.category.subcategories;
+    return formData.category.subcategories || [];
   }, [formData.category]);
 
   const filteredBrands = useMemo(() => {
     if (!formData.category) return [];
-    return formData.category.allBrands;
+    return formData.category.allBrands || [];
   }, [formData.category]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  // Generic input change handler
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, type, value, checked } = e.target as HTMLInputElement;
 
-    setFormData((prev) => {
-      let newValue = ["discount", "buyingPrice", "sellingPrice"].includes(name)
-        ? parseFloat(value) || 0
-        : value;
+    setFormData((prev: any) => {
+      let updatedData = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
 
-      let updatedData = { ...prev, [name]: type === "checkbox" ? checked : value, };
-
-      if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
-        const buyingPrice = parseFloat(updatedData.costPrice) || 0;
-        const sellingPrice = parseFloat(updatedData.salesPrice) || 0;
-        const discount = parseFloat(updatedData.discount) || 0;
-        updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
-        updatedData.profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
+      // If pricing fields change, recalc finalPrice & profitMargin
+      if (["costPrice", "salesPrice", "discount"].includes(name)) {
+        const cost = parseFloat(updatedData.costPrice) || 0;
+        const sales = parseFloat(updatedData.salesPrice) || 0;
+        const disc = parseFloat(updatedData.discount) || 0;
+        updatedData.finalPrice = +(
+          sales -
+          (sales * disc) / 100
+        ).toFixed(2);
+        updatedData.profitMargin = cost > 0 ? +(((sales - cost) / cost) * 100).toFixed(1) : 0;
       }
 
       return updatedData;
     });
   };
 
- // Function to attempt an upload with retries
-  async function uploadWithRetry(file : any, retries = 3) {
+  // Upload logic (unchanged)
+  async function uploadWithRetry(file: any, retries = 3) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         return await uploadFile(file, "image");
@@ -345,99 +377,71 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
     }
   }
 
-  // Function to upload files to the backend or external storage
   const uploadFile = async (file: File, type: string) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
-
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
+    const data = new FormData();
+    data.append("file", file);
+    data.append("type", type);
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: data,
     });
-
-    const data = await res.json();
-    return data.url; // URL to the uploaded file
+    const json = await res.json();
+    return json.url;
   };
 
-const handleCreateListing = async () => {
-
-  if (window.confirm("Are you sure you want to create this listing?")) {
-    // Filter out already uploaded image URLs
-
-    // Ensure orderedImages remains a list of objects
-    // Log initial state of images and newImages
-    console.log("Initial Images:", images);
-    console.log("New Images:", newImages.map((file) => file.name));
-    
-    // Declare updatedImages outside the block so it's accessible later
+  // Final submission
+  const handleCreateListing = async () => {
+    if (!window.confirm("Are you sure you want to create this listing?")) return;
     let updatedImages = images;
 
     if (newImages.length > 0) {
-      // Create an array of new images with unique IDs and their original index
-      const newImagesWithIds = newImages.map((file, index) => ({
-        id: crypto.randomUUID(), // unique identifier for reliable matching
+      const newImgsWithId = newImages.map((file, idx) => ({
+        id: crypto.randomUUID(),
         file,
-        index, // track the original index order
+        index: idx,
       }));
 
-      console.log("New Images with IDs:", newImagesWithIds);
-
-      // Upload images with a retry mechanism
       const uploadedUrls = await Promise.all(
-        newImagesWithIds.map(async ({ id, file, index }) => {
-          const uploadedUrl = await uploadWithRetry(file);
-          return uploadedUrl ? { id, url: uploadedUrl, index } : null;
+        newImgsWithId.map(async ({ id, file, index }) => {
+          const url = await uploadWithRetry(file);
+          return url ? { id, url, index } : null;
         })
       );
 
-      // Filter out successful uploads
-      const successfulUploads = uploadedUrls.filter(Boolean);
-
-      // Determine which images failed to upload
-      const failedImages = newImagesWithIds.filter(
-        ({ id }) => !successfulUploads.some((img) => img && img.id === id)
+      const success = uploadedUrls.filter((u) => !!u) as any[];
+      const failed = newImgsWithId.filter(
+        ({ id }) => !success.some((u) => u.id === id)
       );
 
-      if (failedImages.length > 0) {
+      if (failed.length > 0) {
         setLoading(false);
         alert(
-          `The following images failed to upload: ${failedImages
-            .map((f) => f.file.name)
-            .join(", ")}`
+          `The following images failed: ${failed.map((f) => f.file.name).join(", ")}`
         );
         return;
       }
 
-      // Update images while preserving the original index order
-      updatedImages = images.map((img:any, index:any) => {
-        // Find the upload result matching this index
-        const matchedUpload = successfulUploads.find(
-          (upload:any) => upload.index === index
-        );
-        return matchedUpload ? { ...img, url: matchedUpload.url } : img;
+      // Replace placeholder images with actual URLs
+      updatedImages = images.map((img: any, idx: number) => {
+        const match = success.find((u) => u.index === idx);
+        return match ? { ...img, url: match.url } : img;
       });
 
-      console.log("Updated Images after upload:", updatedImages);
-      
-      // Use the locally updated images array to construct the final payload later
       setImages(updatedImages);
       setNewImages([]);
     }
 
-    // Build a listing object conforming to the updated MarketplaceListing model
-    const listing = {
-      id: formData.id, // If updating; otherwise backend auto-generates
-      sellerType: "ADMIN", // Or "CONSUMER", as appropriate
+    // Build final listing object
+    const listing: any = {
+      id: formData.id,
+      sellerType: "ADMIN",
       name: formData.name,
       description: formData.description,
       quantity: formData.quantity,
-      // image: images || [], // Use the first uploaded image
-      // image: images.filter((img:any) => img.url.startsWith("https://")),
-      image:[],
-      productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
+      image: [], // on front end you could push updatedImages.map(i => i.url)
+      productCategoryId: formData.category?.id || "",
       category: formData.category?.name || "",
-      subCategory:formData.subCategory,
+      subCategory: formData.subCategory,
       tags: formData.tags || [],
       brand: formData.brand,
       model: formData.model,
@@ -447,8 +451,9 @@ const handleCreateListing = async () => {
       condition: formData.condition,
       dimension: formData.dimension,
       commissionRate: formData.commissionRate || 0,
-      commissionType: formData.commissionType || 'COST', // Default to "Percentage"
-      companyId: formData.companyId || `${companyId}`,
+      commissionType: formData.commissionType || "COST",
+      companyId: formData.companyId,
+
       material: Array.isArray(formData.material)
         ? formData.material
         : formData.material
@@ -468,66 +473,90 @@ const handleCreateListing = async () => {
 
       startDealDate: formData.startDealDate,
       endDealDate: formData.endDealDate,
-      // Category-specific fields for Books
+
+      // category-specific
       author: formData.author || "",
       publisher: formData.publisher || "",
       isbn: formData.isbn || "",
-      // Category-specific fields for Clothing/Fashion
       fabricComposition: formData.fabricComposition || "",
       careInstructions: formData.careInstructions || "",
-      // Category-specific fields for Home Appliances
       energyRating: formData.energyRating || "",
       warrantyPeriod: formData.warrantyPeriod || "",
       applianceDimensions: formData.dimensions || "",
-      // Category-specific fields for Beauty Products
       ingredients: formData.ingredients || "",
       usageInstructions: formData.usageInstructions || "",
       expirationDate: formData.expirationDate
         ? new Date(formData.expirationDate)
         : null,
-        
+
       location: formData.location || "",
       contact: formData.contact || "",
       option: formData.option || [],
       amenities: formData.amenities || [],
-      
+
       bedrooms: formData.bedrooms || [],
       studios: formData.studios || [],
       bathrooms: formData.bathrooms || "",
       area: formData.area || "",
+
+      make: formData.make || "",
+      trim: formData.trim || "",
+      type: formData.type || "",
+      mileage: formData.mileage || "",
+      engineType: formData.engineType || "",
+      engineSize: formData.engineSize || "",
+      transmission: formData.transmission || "",
+      drivetrain: formData.drivetrain || "",
+      vin: formData.vin || "",
+      logbookStatus: formData.logbookStatus || "",
+      serviceHistory: formData.serviceHistory || "",
+      negotiable: formData.negotiable || false,
+      financingAvailable: formData.financingAvailable || false,
+      tradeIn: formData.tradeIn || false,
+      features: formData.features || [],
+      video: formData.video || null,
     };
 
     try {
-      const response = await fetch(`${apiUrl}/admin/post-product`, {
+      const resp = await fetch(`${apiUrl}/admin/post-product`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(listing)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(listing),
       });
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Listing created:", data);
-        alert("Marketplace listing created successfully.");
+      if (resp.ok) {
+        const json = await resp.json();
+        alert("Listing created successfully.");
         setShowRequestProductModal(false);
         setImages([]);
         setNewImages([]);
       } else {
-        console.error("Error creating listing:", response.statusText);
+        console.error("Error:", resp.statusText);
         alert("Error creating listing. Please try again.");
       }
-    } catch (error) {
-      console.error("Error creating listing:", error);
+    } catch (err) {
+      console.error(err);
       alert("Error creating listing. Please try again.");
     }
-  }
-};
+  };
 
   return (
-    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+    <Modal
+      isOpen={showRequestProductModal}
+      onClose={() => setShowRequestProductModal(false)}
+    >
       <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] flex flex-col">
-        <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-grow overflow-y-auto">
-          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          className="flex-grow overflow-y-auto"
+        >
+          <Stepper
+            step={step}
+            stepsForCategory={stepsForCategory}
+            STEP_LABELS={STEP_LABELS}
+          />
           <div className="overflow-y-auto flex-grow p-4">
             {FormComponent ? (
               <FormComponent
@@ -539,6 +568,8 @@ const handleCreateListing = async () => {
                 filteredSubCategories={filteredSubCategories}
                 filteredBrands={filteredBrands}
                 handleInputChange={handleInputChange}
+                newImages={newImages}
+                setNewImages={setNewImages}
               />
             ) : (
               <p>No form available for this step.</p>
@@ -547,16 +578,25 @@ const handleCreateListing = async () => {
         </motion.div>
         <div className="flex justify-between pt-4 border-t">
           {step > 1 && (
-            <button className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step - 1)}>
+            <button
+              className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center"
+              onClick={() => setStep(step - 1)}
+            >
               <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
             </button>
           )}
           {step < stepsForCategory.length ? (
-            <button className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step + 1)}>
+            <button
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center"
+              onClick={() => setStep(step + 1)}
+            >
               Next <ArrowRightIcon className="h-5 w-5 ml-1" />
             </button>
           ) : (
-            <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
+            <button
+              className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
+              onClick={handleCreateListing}
+            >
               Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
             </button>
           )}
