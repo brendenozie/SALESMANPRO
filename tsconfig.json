@@ -24,14 +24,13 @@
       "./node_modules/@types"
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
+      "@/*": ["./*"],
       "@/components/*": ["components/*"],
       "@/data/*": ["data/*"],
       "@/layouts/*": ["layouts/*"],
       "@/css/*": ["css/*"],
-    },
+    },    
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -48,6 +47,5 @@
   ],
   "exclude": [
     "node_modules"
-  ]
-  // "baseUrl": "."//enable absolute imports
+  ],
 }

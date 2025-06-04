@@ -1,256 +1,65 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+// app/admin/categories-manager/page.tsx
 
-export default function CategoryManager() {
-  const [selected, setSelected] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
-  const [subSelected, setSubSelected] = useState<any>(null);
-  const [subForm, setSubForm] = useState<any>({});
-  const [categories, setCategories] = useState<any>([]);
+import React from "react";
+import CategoryManagerClient from "./CategoryManagerClient";
 
-  const onSave = (cat:any) => setCategories(cat);
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-  useEffect(() => {
-    if (selected) {
-      setFormData({
-        name: selected.name || '',
-        slug: selected.slug || '',
-        description: selected.description || '',
-        seoTitle: selected.seoTitle || '',
-        seoDescription: selected.seoDescription || '',
-        metaKeywords: (selected.metaKeywords || []).join(', '),
-        sortOrder: selected.sortOrder || 0,
-        visible: selected.visible || false,
-        isFeatured: selected.isFeatured || false,
-        showInHomepage: selected.showInHomepage || false,
-        attributes: JSON.stringify(selected.attributes || {}, null, 2)
-      });
-      setSubSelected(null);
-      setSubForm({});
+// Define your Category and Subcategory shapes (adjust fields if your API differs)
+export type Subcategory = {
+  _id: { $oid: string };
+  name: string;
+  slug: string;
+  sortOrder: number;
+  visible: boolean;
+};
+
+export type Category = {
+  _id: { $oid: string };
+  name: string;
+  slug: string;
+  description?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  metaKeywords?: string[];
+  sortOrder?: number;
+  visible?: boolean;
+  isFeatured?: boolean;
+  showInHomepage?: boolean;
+  attributes?: Record<string, any>;
+  subcategories: Subcategory[];
+};
+
+interface PageProps {
+  // No dynamic route params here; adjust if you move under [slug].
+}
+
+/**
+ * Server Component: fetches all categories (including their subcategories)
+ * and passes them down to the client component.
+ */
+export default async function CategoryManagerPage(_: PageProps) {
+  let categoriesData: Category[] = [];
+
+  try {
+    const res = await fetch(`${apiUrl}/admin/get-categories`, {
+      cache: "no-store", // SSR on every request
+    });
+
+    if (res.ok) {
+      // Assuming API responds with { categories: Category[] }
+      const json = (await res.json()) as { categories: Category[] };
+      categoriesData = json.categories;
+    } else {
+      console.error(
+        "[CategoryManagerPage] Failed to fetch categories →",
+        res.status,
+        res.statusText
+      );
     }
-  }, [selected]);
+  } catch (err: any) {
+    console.error("[CategoryManagerPage] Error fetching categories →", err.message);
+  }
 
-  useEffect(() => {
-    if (subSelected) {
-      setSubForm({
-        name: subSelected.name || '',
-        slug: subSelected.slug || '',
-        sortOrder: subSelected.sortOrder || 0,
-        visible: subSelected.visible || false
-      });
-    }
-  }, [subSelected]);
-
-  const handleSelect = (cat:any) => setSelected(cat);
-
-  const handleChange = (e:any) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev:any) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-  };
-
-  const handleSubmit = (e:any) => {
-    e.preventDefault();
-    const updated = {
-      ...selected,
-      ...formData,
-      metaKeywords: formData.metaKeywords.split(',').map((k:any) => k.trim()),
-      sortOrder: Number(formData.sortOrder),
-      attributes: JSON.parse(formData.attributes || '{}')
-    };
-    onSave && onSave(updated);
-    setSelected(updated);
-  };
-
-  const handleSubSelect = (sub:any) => setSubSelected(sub);
-
-  const handleSubChange = (e:any) => {
-    const { name, value, type, checked } = e.target;
-    setSubForm((prev:any) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-  };
-
-  const handleSubSave = (e:any) => {
-    e.preventDefault();
-    const updatedSub = {
-      ...subSelected,
-      ...subForm,
-      sortOrder: Number(subForm.sortOrder)
-    };
-    const updatedSubs = selected.subcategories.map((sub:any) =>
-      sub._id.$oid === updatedSub._id.$oid ? updatedSub : sub
-    );
-    const updatedCat = { ...selected, subcategories: updatedSubs };
-    onSave && onSave(updatedCat);
-    setSelected(updatedCat);
-    setSubSelected(updatedSub);
-  };
-
-  const handleAddSub = () => {
-    const newSub = {
-      _id: { $oid: Date.now().toString() },
-      name: 'New Subcategory',
-      slug: '',
-      sortOrder: selected.subcategories.length,
-      visible: true
-    };
-    const updatedCat = { ...selected, subcategories: [...selected.subcategories, newSub] };
-    onSave && onSave(updatedCat);
-    setSelected(updatedCat);
-    setSubSelected(newSub);
-  };
-
-  return (
-    <div className="grid grid-cols-4 h-full gap-4">
-      <aside className="col-span-1 p-4 border-r overflow-y-auto">
-        <h2 className="text-2xl font-semibold mb-4">Categories</h2>
-        <ul>
-          {categories.map((cat:any) => (
-            <li key={cat._id.$oid} className="mb-1">
-              <button
-                onClick={() => handleSelect(cat)}
-                className={`w-full text-left px-3 py-2 rounded ${
-                  selected?._id.$oid === cat._id.$oid
-                    ? 'bg-gray-200 font-medium'
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                {cat.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </aside>
-
-      <main className="col-span-3 p-6 overflow-y-auto">
-        {selected ? (
-          <>
-            <div className="shadow-lg p-6 bg-white rounded mb-6">
-              <h2 className="text-2xl font-semibold mb-6">Edit Category: {selected.name}</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium">Name</label>
-                    <input name="name" value={formData.name} onChange={handleChange} className="w-full border rounded p-2" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium">Slug</label>
-                    <input name="slug" value={formData.slug} onChange={handleChange} className="w-full border rounded p-2" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium">Description</label>
-                  <textarea name="description" value={formData.description} onChange={handleChange} className="w-full border rounded p-2" rows={2} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium">SEO Title</label>
-                  <input name="seoTitle" value={formData.seoTitle} onChange={handleChange} className="w-full border rounded p-2" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium">SEO Description</label>
-                  <textarea name="seoDescription" value={formData.seoDescription} onChange={handleChange} className="w-full border rounded p-2" rows={2} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium">Meta Keywords (comma-separated)</label>
-                  <input name="metaKeywords" value={formData.metaKeywords} onChange={handleChange} className="w-full border rounded p-2" />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium">Sort Order</label>
-                    <input type="number" name="sortOrder" value={formData.sortOrder} onChange={handleChange} className="w-full border rounded p-2" />
-                  </div>
-                  <label className="flex items-center gap-2 mt-6">
-                    <input type="checkbox" name="visible" checked={formData.visible} onChange={handleChange} />
-                    <span className="text-sm">Visible</span>
-                  </label>
-                  <label className="flex items-center gap-2 mt-6">
-                    <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} />
-                    <span className="text-sm">Featured</span>
-                  </label>
-                </div>
-
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" name="showInHomepage" checked={formData.showInHomepage} onChange={handleChange} />
-                  <span className="text-sm">Show on Homepage</span>
-                </label>
-
-                <div>
-                  <label className="block text-sm font-medium">Custom Attributes (JSON)</label>
-                  <textarea name="attributes" value={formData.attributes} onChange={handleChange} className="w-full border rounded p-2" rows={4} />
-                </div>
-
-                <div className="pt-4">
-                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Category</button>
-                </div>
-              </form>
-            </div>
-
-            <div className="shadow-lg p-6 bg-white rounded">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">Subcategories</h3>
-                <button onClick={handleAddSub} className="bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">Add New</button>
-              </div>
-
-              <ul className="mb-4">
-                {selected.subcategories.map((sub:any) => (
-                  <li key={sub._id.$oid} className="mb-1">
-                    <button
-                      onClick={() => handleSubSelect(sub)}
-                      className={`w-full text-left px-3 py-2 rounded ${
-                        subSelected?._id.$oid === sub._id.$oid
-                          ? 'bg-gray-200 font-medium'
-                          : 'hover:bg-gray-100'
-                      }`}
-                    >
-                      {sub.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-
-              {subSelected ? (
-                <form onSubmit={handleSubSave} className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium">Name</label>
-                      <input name="name" value={subForm.name} onChange={handleSubChange} className="w-full border rounded p-2" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium">Slug</label>
-                      <input name="slug" value={subForm.slug} onChange={handleSubChange} className="w-full border rounded p-2" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium">Sort Order</label>
-                      <input type="number" name="sortOrder" value={subForm.sortOrder} onChange={handleSubChange} className="w-full border rounded p-2" />
-                    </div>
-                    <label className="flex items-center gap-2 mt-6">
-                      <input type="checkbox" name="visible" checked={subForm.visible} onChange={handleSubChange} />
-                      <span className="text-sm">Visible</span>
-                    </label>
-                  </div>
-
-                  <div>
-                    <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Save Subcategory</button>
-                  </div>
-                </form>
-              ) : (
-                <div className="text-gray-500">Select a subcategory to edit, or click "Add New".</div>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="flex h-full items-center justify-center text-gray-500">
-            Select a category to view and edit its details.
-          </div>
-        )}
-      </main>
-    </div>
-  );
+  return <CategoryManagerClient initialCategories={categoriesData} />;
 }
