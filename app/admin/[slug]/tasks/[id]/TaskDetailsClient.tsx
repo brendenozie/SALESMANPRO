@@ -1,6 +1,7 @@
-import { useRouter } from "next/router";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-// import dayjs from "dayjs";
 import Link from "next/link";
 
 type Task = {
@@ -15,24 +16,37 @@ type Task = {
 
 type Props = {
   task: Task;
-  onUpdateStatus: (id: string, newStatus: Task["status"]) => void;
-  onDeleteTask: (id: string) => void;
 };
 
-const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
+const TaskDetailsClient = ({ task }: Props) => {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(task.status);
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value as Task["status"];
-    setSelectedStatus(newStatus);
-    onUpdateStatus(task.id, newStatus);
+  const onUpdateStatus = async (id: string, newStatus: Task["status"]) => {
+    await fetch(`/api/update-task-status`, {
+      method: "POST",
+      body: JSON.stringify({ id, status: newStatus }),
+    });
   };
 
-  const handleDelete = () => {
+  const onDeleteTask = async (id: string) => {
+    const res = await fetch(`/api/delete-task`, {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+    });
+    return res.ok;
+  };
+
+  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value as Task["status"];
+    setSelectedStatus(newStatus);
+    await onUpdateStatus(task.id, newStatus);
+  };
+
+  const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this task?")) {
-      onDeleteTask(task.id);
-      router.push("/dashboard"); // Redirect after deletion {dayjs(task.dueDate).format("MMMM DD, YYYY")}
+      const ok = await onDeleteTask(task.id);
+      if (ok) router.push("/dashboard");
     }
   };
 
@@ -45,9 +59,7 @@ const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
           </div>
           <div className="ml-6">
             <h1 className="text-3xl font-bold text-gray-800">{task.taskName}</h1>
-            <p className="text-sm text-gray-500">
-              Due: 0:00:00 at {task.dueTime}
-            </p>
+            <p className="text-sm text-gray-500">Due: {task.dueTime}</p>
           </div>
         </div>
 
@@ -87,24 +99,4 @@ const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
   );
 };
 
-export default TaskDetails;
-
-export const getServerSideProps = async (context: any) => {
-  const { id } = context.params;
-
-  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-  const task = await fetch(`${url}/admin/get-tasks/${id}`)
-    .then((res) => res.json())
-    .catch(() => null);
-
-  if (!task) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      task,
-    },
-  };
-};
+export default TaskDetailsClient;
