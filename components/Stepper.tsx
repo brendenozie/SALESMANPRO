@@ -1,28 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import Modal from "./Modal";
-import { useDropzone, Accept } from "react-dropzone";
-import { debounce } from "lodash";
+import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowUpCircleIcon,
-  PhotoIcon,
-  TagIcon,
-  CurrencyDollarIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckIcon,
-  CheckCircleIcon,
-  MapPinIcon
-} from "@heroicons/react/24/outline";
-import {
-  ArrowUpOnSquareIcon,
-  ArrowUpTrayIcon,
-  CameraIcon,
-  ListBulletIcon,
-  PhoneIcon
-} from "@heroicons/react/24/solid";
+  CheckCircleIcon} from "@heroicons/react/24/outline";
 
 // -------------------
 // STEP PER COMPONENT
