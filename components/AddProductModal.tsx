@@ -122,16 +122,68 @@ const CATEGORY_STEPS: Record<string, number[]> = {
 
   // — Property listings flow —
   "Real Estate":         [1,3,7,8,10,12,13,11],
+  "Property":            [1,3,7,8,10,12,13,11],
+  // All of Property’s subcategories (names must match exactly):
   "Houses":              [1,3,7,8,10,12,13,11],
-  "Apartments":          [1,3,7,8,10,12,13,11],
   "Land":                [1,3,7,8,10,12,13,11],
+  "Commercial":          [1,3,7,8,10,12,13,11],
+  "Apartments":          [1,3,7,8,10,12,13,11],
+  "Vacation Rentals":    [1,3,7,8,10,12,13,11],
+  "Warehouses":          [1,3,7,8,10,12,13,11],
+  "Gated Communities":   [1,3,7,8,10,12,13,11],
+  "Offices":             [1,3,7,8,10,12,13,11],
+  "Serviced Apartments": [1,3,7,8,10,12,13,11],
+  "Hostels":             [1,3,7,8,10,12,13,11],
+  "Shared Housing":      [1,3,7,8,10,12,13,11],
+  "Shops":               [1,3,7,8,10,12,13,11],
+  "Farms":               [1,3,7,8,10,12,13,11],
+  "Hotels":              [1,3,7,8,10,12,13,11],
+  "Event Spaces":        [1,3,7,8,10,12,13,11],
 
   // — Automotive & tools flow —
   "Automotive":          [1,3,4,5,7,8,10,12,14,11],
   "Cars":                [1,3,4,5,7,8,10,12,14,11],
   "Car Accessories":     [1,3,4,5,7,8,10,12,14,11],
   "Tools":               [1,3,4,5,7,8,10,12,14,11],
-  "Hardware":            [1,3,4,5,7,8,10,12,14,11]
+  "Hardware":            [1,3,4,5,7,8,10,12,14,11],
+
+  // — New “Services” flow (same as standard store items) —
+  "Services":            [1,2,7,8,9,10,12,11],
+  "Cleaning":            [1,2,7,8,9,10,12,11],
+  "Plumbing":            [1,2,7,8,9,10,12,11],
+  "Electrical":          [1,2,7,8,9,10,12,11],
+  "Landscaping":         [1,2,7,8,9,10,12,11],
+  "Catering":            [1,2,7,8,9,10,12,11],
+  "Transportation":      [1,2,7,8,9,10,12,11],
+  "IT Services":         [1,2,7,8,9,10,12,11],
+  "Beauty Services":     [1,2,7,8,9,10,12,11],
+  "Tutoring":            [1,2,7,8,9,10,12,11],
+  "Event Planning":      [1,2,7,8,9,10,12,11],
+
+  // — Arts & Crafts flow —
+  "Arts & Crafts":       [1,2,7,8,9,10,12,11],
+  "Painting Supplies":    [1,2,7,8,9,10,12,11],
+  "Knitting & Sewing":    [1,2,7,8,9,10,12,11],
+  "DIY Kits":             [1,2,7,8,9,10,12,11],
+  "Scrapbooking":         [1,2,7,8,9,10,12,11],
+  "Art Prints":           [1,2,7,8,9,10,12,11],
+
+  // — Travel & Experiences flow —
+  "Travel & Experiences": [1,2,7,8,9,10,12,11],
+  "Flight Tickets":       [1,2,7,8,9,10,12,11],
+  "Hotel Bookings":       [1,2,7,8,9,10,12,11],
+  "Tour Packages":        [1,2,7,8,9,10,12,11],
+  "Event Tickets":        [1,2,7,8,9,10,12,11],
+  "Travel Insurance":     [1,2,7,8,9,10,12,11],
+
+  // — Digital Goods & Subscriptions flow (same as standard store items) —
+  "Digital Goods & Subscriptions":   [1,2,7,8,9,10,12,11],
+  "Software Licenses":                [1,2,7,8,9,10,12,11],
+  "E-books":                          [1,2,7,8,9,10,12,11],
+  "Online Courses":                   [1,2,7,8,9,10,12,11],
+  "Streaming Subscriptions":          [1,2,7,8,9,10,12,11],
+  "Mobile App Credits":               [1,2,7,8,9,10,12,11],
+  
 };
 
 
@@ -143,92 +195,94 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
+  console.log(product);
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    id: product?.product?.id || "",
-    name: product?.product?.name || "",
-    description: product?.product?.description || "",
-    productCategoryId: product?.product?.productCategoryId || "",
+    id: product?.id || "",
+    name: product?.name || "",
+    description: product?.description || "",
+    productCategoryId: product?.productCategoryId || "",
 
-    model: product?.product?.model || "",
-    color: product?.product?.color || [],
-    size: product?.product?.size || [],
-    weight: product?.product?.weight || "",
+    model: product?.model || "",
+    color: product?.color || [],
+    size: product?.size || [],
+    weight: product?.weight || "",
 
-    condition: product?.product?.condition || "",
-    dimension:  product?.product?.dimension || "",
-    material:  product?.product?.material || "",
-    images: product?.product?.images || [],
+    condition: product?.condition || "",
+    dimension:  product?.dimension || "",
+    material:  product?.material || "",
+    images: product?.images || [],
 
-    isAvailable: product?.product?.isAvailable || false,
-    isOnOffer: product?.product?.isOnOffer || false,
-    isFlashDeal: product?.product?.isFlashDeal || false,
-    isNewArrival: product?.product?.isNewArrival || false,
-    isDiscounted: product?.product?.isDiscounted || false,
-    isFeatured: product?.product?.isFeatured || false,
+    isAvailable: product?.isAvailable || false,
+    isOnOffer: product?.isOnOffer || false,
+    isFlashDeal: product?.isFlashDeal || false,
+    isNewArrival: product?.isNewArrival || false,
+    isDiscounted: product?.isDiscounted || false,
+    isFeatured: product?.isFeatured || false,
     
-    quantity: product?.product?.companyStock || 1,
-    costPrice: product?.product?.costPrice || "",
-    salesPrice: product?.product?.salesPrice || 0,
-    discount: product?.product?.discount || 0,
-    finalPrice: product?.product?.finalPrice || 0,
-    profitMargin: product?.product?.profitMargin || 0,
-    category: product?.product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategory: product?.product?.subCategory || "",
-    brand: product?.product?.brand || "",
-    tags: product?.product?.tags || [],
+    quantity: product?.companyStock || 1,
+    costPrice: product?.costPrice || "",
+    salesPrice: product?.salesPrice || 0,
+    discount: product?.discount || 0,
+    finalPrice: product?.finalPrice || 0,
+    profitMargin: product?.profitMargin || 0,
+    category: product?.productCategory || { subcategories: [], allBrands: [] },
+    subCategory: product?.subCategory || "",
+    brand: product?.brand || "",
+    tags: product?.tags || [],
 
-    commissionRate: product?.product?.commissionRate || 0,
-    commissionType: product?.product?.commissionType || 'COST', // Default to "Percentage"
-    companyId: product?.product?.companyId || `${companyId}`,
+    commissionRate: product?.commissionRate || 0,
+    commissionType: product?.commissionType || 'COST', // Default to "Percentage"
+    companyId: product?.companyId || `${companyId}`,
     // Vehicle-specific keys
-    make: product?.product?.make || "",
-    trim: product?.product?.trim || "",
-    type: product?.product?.type || "",
-    mileage: product?.product?.mileage || "",
-    engineType: product?.product?.engineType || "",
-    engineSize: product?.product?.engineSize || "",
-    transmission: product?.product?.transmission || "",
-    drivetrain: product?.product?.drivetrain || "",
+    make: product?.make || "",
+    trim: product?.trim || "",
+    type: product?.type || "",
+    mileage: product?.mileage || "",
+    engineType: product?.engineType || "",
+    engineSize: product?.engineSize || "",
+    transmission: product?.transmission || "",
+    drivetrain: product?.drivetrain || "",
     
-    vin: product?.product?.vin || "",
-    logbookStatus: product?.product?.logbookStatus || "Available",
-    serviceHistory: product?.product?.serviceHistory || "Full",
+    vin: product?.vin || "",
+    logbookStatus: product?.logbookStatus || "Available",
+    serviceHistory: product?.serviceHistory || "Full",
     
-    negotiable: product?.product?.negotiable || false,
-    financingAvailable: product?.product?.financingAvailable || false,
-    tradeIn: product?.product?.tradeIn || false,
-    features: product?.product?.features || [],
-    location: product?.product?.location || "",
-    contact: product?.product?.contact || "",
-    video: product?.product?.video || null,
+    negotiable: product?.negotiable || false,
+    financingAvailable: product?.financingAvailable || false,
+    tradeIn: product?.tradeIn || false,
+    features: product?.features || [],
+    location: product?.location || "",
+    contact: product?.contact || "",
+    video: product?.video || null,
     // Extra fields for Books:
-    author: product?.product?.author || "",
-    publisher: product?.product?.publisher || "",
-    isbn: product?.product?.isbn || "",
+    author: product?.author || "",
+    publisher: product?.publisher || "",
+    isbn: product?.isbn || "",
     // Extra fields for Clothing/Fashion:
-    fabricComposition: product?.product?.fabricComposition || "",
-    careInstructions: product?.product?.careInstructions || "",
+    fabricComposition: product?.fabricComposition || "",
+    careInstructions: product?.careInstructions || "",
     // Extra fields for Home Appliances:
-    energyRating: product?.product?.energyRating || "",
-    warrantyPeriod: product?.product?.warrantyPeriod || "",
-    dimensions: product?.product?.dimensions || "",
+    energyRating: product?.energyRating || "",
+    warrantyPeriod: product?.warrantyPeriod || "",
+    dimensions: product?.dimensions || "",
     // Extra fields for Beauty Products:
-    ingredients: product?.product?.ingredients || "",
-    usageInstructions: product?.product?.usageInstructions || "",
-    expirationDate: product?.product?.expirationDate || "",
+    ingredients: product?.ingredients || "",
+    usageInstructions: product?.usageInstructions || "",
+    expirationDate: product?.expirationDate || "",
 
-    startDealDate: product?.product?.startDealDate,
-    endDealDate: product?.product?.endDealDate,
+    startDealDate: product?.startDealDate,
+    endDealDate: product?.endDealDate,
 
-    option: product?.product?.option || [],
-    amenities: product?.product?.amenities || [],
-    featured: product?.product?.featured || false,
+    option: product?.option || [],
+    amenities: product?.amenities || [],
+    featured: product?.featured || false,
 
-    bedrooms: product?.product?.bedrooms || [],
-    studios: product?.product?.studios || [],
-    bathrooms: product?.product?.bathrooms || "",
-    area: product?.product?.area || "",
+    bedrooms: product?.bedrooms || [],
+    studios: product?.studios || [],
+    bathrooms: product?.bathrooms || "",
+    area: product?.area || "",
   });
 
   const stepsForCategory: number[] = useMemo(() => {
@@ -241,7 +295,7 @@ const AddProductModal = ({ showRequestProductModal, setShowRequestProductModal, 
   const [newImages, setNewImages] = useState<File[]>([]);
 
   const [images, setImages] = useState(
-    product?.product?.images?.map((img: any, index: number) => ({ ...img, index })) || []
+    product?.images?.map((img: any, index: number) => ({ ...img, index })) || []
   );
   const [loading, setLoading] = useState(false);
 
@@ -374,7 +428,7 @@ const handleCreateListing = async () => {
     // Build a listing object conforming to the updated MarketplaceListing model
     const listing = {
       id: formData.id, // If updating; otherwise backend auto-generates
-      sellerType: "COMPANY", // Or "CONSUMER", as appropriate
+      sellerType: "ADMIN", // Or "CONSUMER", as appropriate
       name: formData.name,
       description: formData.description,
       quantity: formData.quantity,

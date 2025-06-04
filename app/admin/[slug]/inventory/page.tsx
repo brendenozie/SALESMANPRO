@@ -61,7 +61,7 @@ export default async function AdminInventoryPage({ params }: Props) {
   try {
     // Fetch all products for this company
     const productsRes = await fetch(
-      `${apiUrl}/admin/getAllProducts?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (productsRes.ok) {
@@ -84,7 +84,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     // Fetch all agents for this company
     const agentsRes = await fetch(
-      `${apiUrl}/admin/getAllAgents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (agentsRes.ok) {

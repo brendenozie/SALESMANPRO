@@ -3,7 +3,7 @@ import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 import { OrderStatus } from "@prisma/client";
 
-export default async function GET( req : Request ) {
+export async function GET( req : Request ) {
 
   // const { page = 1, limit = 5, status = 'all', search = '', companyId = '' } = req.query;
   const { searchParams } = new URL(req.url);
@@ -14,7 +14,7 @@ export default async function GET( req : Request ) {
   const page = parseInt(searchParams.get("offset") || "0", 10);
   const status = searchParams.get("status") || "0";
   const search = searchParams.get("offset") || "0";
-  const companyId = searchParams.get("search") || "0";
+  const companyId = searchParams.get("companyId") || "";
 
   if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
     return NextResponse.json(
@@ -54,39 +54,41 @@ export default async function GET( req : Request ) {
         },
       });
 
-      const formattedProducts = products.map((product) => {
-        const inventoryId = product.inventoryItems.map((item) => item.id);
+      console.log(products);
 
-        // Calculate company stock
-        const companyStock = product.inventoryItems.reduce((sum, item) => sum + item.quantity, 0);
+      // const formattedProducts = products.map((product) => {
+      //   const inventoryId = product.inventoryItems.map((item) => item.id);
 
-        // Calculate agent stock
-        const agentStock = product.inventoryItems.reduce((sum, item) => {
-          const agentStockSum = item.AgentInventory.reduce((agentSum, agentItem) => agentSum + agentItem.quantity, 0);
-          return sum + agentStockSum;
-        }, 0);
+      //   // Calculate company stock
+      //   const companyStock = product.inventoryItems.reduce((sum, item) => sum + item.quantity, 0);
 
-        // Extract commission details
-        const commissionRate = product.CommissionRate?.commissionRate || 0;
-        const commissionType = product.CommissionRate?.commissionType || "COST";
+      //   // Calculate agent stock
+      //   const agentStock = product.inventoryItems.reduce((sum, item) => {
+      //     const agentStockSum = item.AgentInventory.reduce((agentSum, agentItem) => agentSum + agentItem.quantity, 0);
+      //     return sum + agentStockSum;
+      //   }, 0);
 
-        return {
-          id: product.id,
-          name: product.name,
-          companyId: product.companyId,
-          inventoryId: inventoryId,
-          category: product.productCategory?.name || "Uncategorized",
-          companyStock,
-          agentStock,
-          costPrice: product.costPrice,
-          salesPrice: product.salesPrice,
-          commissionRate,
-          commissionType,
-          product
-        };
-      });
+      //   // Extract commission details
+      //   const commissionRate = product.CommissionRate?.commissionRate || 0;
+      //   const commissionType = product.CommissionRate?.commissionType || "COST";
 
-      return NextResponse.json(formattedProducts);
+      //   return {
+      //     id: product.id,
+      //     name: product.name,
+      //     companyId: product.companyId,
+      //     inventoryId: inventoryId,
+      //     category: product.productCategory?.name || "Uncategorized",
+      //     companyStock,
+      //     agentStock,
+      //     costPrice: product.costPrice,
+      //     salesPrice: product.salesPrice,
+      //     commissionRate,
+      //     commissionType,
+      //     product
+      //   };
+      // });
+
+      return NextResponse.json(products);
     } catch (error) {
       console.error(error);
       return NextResponse.json({ message: "Internal server error" });

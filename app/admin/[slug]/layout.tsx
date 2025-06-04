@@ -20,9 +20,6 @@ export default async function StoreLayout({
                   {children}
                 </div>
           </div>
-          {/* <Suspense fallback={<>Loading...</>}>
-              <AddExerciseSchedule exercisesData={props.exercisesData} session={props.session} />
-          </Suspense> */}
       </AdminLayout >
   );
 }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-export default async function GET( req : Request ) {
+export async function GET( req : Request ) {
 
   if (req.method === "GET") {
     try {
@@ -29,12 +29,12 @@ export default async function GET( req : Request ) {
         // })),
       }));
 
-      return res.status(200).json(formattedAgents);
+      return NextResponse.json(formattedAgents,{status:200});
     } catch (error) {
       console.error(error);
-      return NextResponse.json({ message: "Internal server error" });
+      return NextResponse.json({ message: "Internal server error" },{status:400});
     }
   } else {
-    return NextResponse.json({ message: "Method not allowed" });
+    return NextResponse.json({ message: "Method not allowed" },{status:400});
   }
 }
