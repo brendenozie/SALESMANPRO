@@ -1,57 +1,33 @@
-import React from 'react';
-import {FaceSmileIcon } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+"use client";
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
+import React from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
+import {
+  FaceSmileIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+} from "@heroicons/react/24/solid";
 
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  // themeSettings
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
+export default function EnhancedMediaFooter() {
+  const { storeFormData } = useStoreContext();
+  const year = new Date().getFullYear();
 
-interface FooterProps {
-  storeFormData: Store;
-}
+  const primary = storeFormData.themeSettings?.primaryColor || "#2563EB";
+  const secondary = storeFormData.themeSettings?.secondaryColor || "#9333EA";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-b border-gray-700 pb-12">
-
-        {/* About Us */}
+    <footer className="bg-gray-900 text-gray-300">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-t border-gray-700">
+        {/* About */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">About Us</h3>
-          <p className="text-sm leading-relaxed text-gray-400">
-          {storeFormData.description || "Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day."}
+          <h3 className="text-xl font-semibold text-white mb-4">
+            About {storeFormData.name}
+          </h3>
+          <p className="text-sm leading-relaxed">
+            {storeFormData.description ||
+              "Your hub for inspiring stories, videos, and insights—stay connected and informed with us."}
           </p>
         </div>
 
@@ -59,42 +35,122 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/about`} className="hover:text-white transition-colors">About</a></li>
-            <li><a href={`/site/${storeFormData.slug}/contact`} className="hover:text-white transition-colors">Contact</a></li>
-            <li><a href={`/site/${storeFormData.slug}/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href={`/site/${storeFormData.slug}/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
+            <li>
+              <Link
+                href={`/${storeFormData.slug}`}
+                className="hover:text-white transition-colors"
+              >
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${storeFormData.slug}/articles`}
+                className="hover:text-white transition-colors"
+              >
+                Articles
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${storeFormData.slug}/videos`}
+                className="hover:text-white transition-colors"
+              >
+                Videos
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${storeFormData.slug}/categories`}
+                className="hover:text-white transition-colors"
+              >
+                Categories
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${storeFormData.slug}/about`}
+                className="hover:text-white transition-colors"
+              >
+                About Us
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${storeFormData.slug}/contact`}
+                className="hover:text-white transition-colors"
+              >
+                Contact
+              </Link>
+            </li>
           </ul>
         </div>
 
-        {/* Customer Care */}
+        {/* Categories */}
         <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Customer Care</h3>
+          <h3 className="text-xl font-semibold text-white mb-4">Categories</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/help`} className="hover:text-white transition-colors">Help Center</a></li>
-            <li><a href={`/site/${storeFormData.slug}/returns`} className="hover:text-white transition-colors">Returns</a></li>
-            <li><a href={`/site/${storeFormData.slug}/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
-            <li><a href={`/site/${storeFormData.slug}/track`} className="hover:text-white transition-colors">Track Order</a></li>
+            {storeFormData.storeCategories?.map((cat) => (
+              <li key={cat.id}>
+                <Link
+                  href={`/${storeFormData.slug}/category/${cat.id}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {cat.name}
+                </Link>
+              </li>
+            )) || <li className="text-gray-500">No categories available</li>}
           </ul>
         </div>
 
-        {/* Follow Us */}
+        {/* Contact & Social */}
         <div>
+          <h3 className="text-xl font-semibold text-white mb-4">Get in Touch</h3>
+          {storeFormData.contactEmail && (
+            <div className="flex items-center mb-2 text-sm">
+              <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-2" />
+              <a
+                href={`mailto:${storeFormData.contactEmail}`}
+                className="hover:text-white transition-colors"
+              >
+                {storeFormData.contactEmail}
+              </a>
+            </div>
+          )}
+          {storeFormData.contactPhone && (
+            <div className="flex items-center mb-4 text-sm">
+              <PhoneIcon className="h-5 w-5 text-gray-400 mr-2" />
+              <a
+                href={`tel:${storeFormData.contactPhone}`}
+                className="hover:text-white transition-colors"
+              >
+                {storeFormData.contactPhone}
+              </a>
+            </div>
+          )}
+
           <h3 className="text-xl font-semibold text-white mb-4">Follow Us</h3>
           <div className="flex space-x-4">
-          {/* {storeFormData.socialLinks.map((s) => (
-            <motion.a whileHover={{ scale: 1.1 }} href="#" className="text-gray-400 hover:text-white bg-gray-800 p-2 rounded-full">
-              <FaceSmileIcon className="h-5 w-5" />
-            </motion.a>
-          ))} */}
+            {storeFormData.socialLinks?.map((s) => (
+              <motion.a
+                key={s.channel}
+                href={s.url}
+                target="_blank"
+                rel="noreferrer"
+                whileHover={{ scale: 1.1 }}
+                className="p-2 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors"
+                aria-label={s.channel}
+              >
+                <FaceSmileIcon className="h-5 w-5 text-gray-400" />
+              </motion.a>
+            )) || <span className="text-gray-500">No social links</span>}
           </div>
         </div>
       </div>
 
-      <div className="mt-8 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} {storeFormData.name}. All rights reserved.
+      <div className="mt-8 border-t border-gray-700 pt-6 text-center text-sm text-gray-500">
+        &copy; {year} {storeFormData.name}. All rights reserved.
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

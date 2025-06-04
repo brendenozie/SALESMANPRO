@@ -12,31 +12,16 @@ interface FinanceLayoutProps {
   children: ReactNode;
 }
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
 export default function FinanceHeaderLayout({ params, children }: FinanceLayoutProps) {
-  const { storeFormData } = params;
-  const router = useRouter();
-  const [services, setServices] = useState<any[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<any[]>([]);
-
-  useEffect(() => {
-    // Simulate financial services and FAQs
-    setServices(storeFormData.products.slice(0, 6));
-    setTestimonials(storeFormData.testimonials.slice(0, 3));
-    setFaqs(storeFormData.faqs.slice(0, 4));
-  }, [storeFormData]);
 
   return (
     <>
-      <Header storeFormData={storeFormData} />
+      <Header />
 
       {/* Child Content */}
       <section className="container">{children}</section>
 
-      <Footer storeFormData={storeFormData} />
+      <Footer/>
     </>
   );
 }

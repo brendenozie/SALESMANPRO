@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useContext } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PlayIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/solid";
 import { InboxIcon } from "@heroicons/react/24/outline";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
 
-
-// Sample Data
 const store = {
   name: "Pulse Media",
   slug: "pulse-media",
@@ -38,63 +42,81 @@ const store = {
   ],
 };
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+/**
+ * Dynamic loader for Next/Image
+ */
+const loader = ({
+  src,
+  width,
+  quality,
+}: {
+  src: string;
+  width: number;
+  quality?: number;
+}) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function MediaSite() {
   const router = useRouter();
+  const { storeFormData } = useStoreContext();
+
   const [categories, setCategories] = useState<any[]>([]);
   const [featured, setFeatured] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
   const [faqs, setFaqs] = useState<any[]>([]);
 
+  // When storeFormData changes, populate local arrays
   useEffect(() => {
-    setCategories(store.categories);
-    setFeatured(store.featuredArticles);
-    setVideos(store.latestVideos);
-    setFaqs(store.faqs);
-  }, []);
+    if (!storeFormData) return;
+    setCategories(storeFormData.storeCategories ?? []);
+    setFeatured(store.featuredArticles ?? []);//storeFormData.featuredArticles
+    setVideos(store.latestVideos ?? []);//storeFormData.latestVideos
+    setFaqs(storeFormData.faqs ?? []);
+  }, [storeFormData]);
+
+  if (!storeFormData) {
+    // You might show a loading state or return null until context is ready
+    return <div>Loading…</div>;
+  }
 
   return (
     <div className="space-y-20 font-sans">
       {/* Hero */}
       <MediaHeroSection
-        store={store}
+        store={storeFormData}
         loader={loader}
-        onPlay={(slide: any) => router.push(`/${store.slug}/video/${slide.slug}`)}
+        onPlay={(slide: any) =>
+          router.push(`/${storeFormData.slug}/video/${slide.slug}`)
+        }
       />
 
       {/* Top Picks Carousel */}
       <TopPicksCarousel
-        picks={[
-          { id: "p1", title: "Top Story of the Week", description: "An in-depth look at the biggest news story.", imageUrl: "/images/top-pick1.jpg", ctaLink: "/article/top-story" },
-          { id: "p2", title: "Must-Watch Documentary", description: "Exploring the impact of climate change.", imageUrl: "/images/top-pick2.jpg", ctaLink: "/video/documentary" },
-          { id: "p3", title: "Tech Innovations 2025", description: "The latest breakthroughs in technology.", imageUrl: "/images/top-pick3.jpg", ctaLink: "/article/tech-innovations" },
-        ]}
+        picks={
+          // storeFormData.topPicks ??
+          [] /* You can replace this with a real field on storeFormData */
+        }
         loader={loader}
       />
-      
+
       {/* Categories */}
-      <EnhancedCategoriesSection categories={store.categories} loader={loader} />
+      <EnhancedCategoriesSection
+        categories={categories}
+        loader={loader}
+        slug={storeFormData.slug}
+      />
 
       {/* Latest Releases */}
       <LatestReleasesSection
-        releases={[
-          { id: "r1", title: "Breaking News", imageUrl: "/images/release1.jpg", releaseDate: "2025-01-01", ctaLink: "/news/breaking" },
-          { id: "r2", title: "New Podcast Episode", imageUrl: "/images/release2.jpg", releaseDate: "2025-01-02", ctaLink: "/podcast/episode1" },
-          { id: "r3", title: "Feature Article", imageUrl: "/images/release3.jpg", releaseDate: "2025-01-03", ctaLink: "/article/feature" },
-        ]}
+        releases={
+          // storeFormData.latestReleases ?? 
+          [] /* replace if field differs */}
         loader={loader}
-        onPlay={(item:any) => router.push(item.ctaLink)}
+        onPlay={(item: any) => router.push(item.ctaLink)}
       />
 
       {/* Testimonials */}
       <TestimonialsSlider
-        testimonials={[
-          { avatarUrl: "/images/avatar1.jpg", quote: "Amazing service!", author: "John Doe" },
-          { avatarUrl: "/images/avatar2.jpg", quote: "I love this platform!", author: "Jane Smith" },
-          { avatarUrl: "/images/avatar3.jpg", quote: "Highly recommend to everyone.", author: "Alice Johnson" },
-        ]}
+        testimonials={storeFormData.testimonials ?? []}
         loader={loader}
       />
 
@@ -105,20 +127,32 @@ export default function MediaSite() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-4xl font-bold text-center mb-8 text-gray-800"
-          >Featured Articles</motion.h2>
+          >
+            Featured Articles
+          </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {featured.map((art) => (
               <motion.div
                 key={art.id}
                 whileHover={{ scale: 1.03 }}
                 className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer"
-                onClick={() => router.push(`/${store.slug}/article/${art.slug}`)}
+                onClick={() =>
+                  router.push(`/${storeFormData.slug}/article/${art.slug}`)
+                }
               >
                 <div className="relative h-64">
-                  <Image src={art.imageUrl} alt={art.name} fill className="object-cover" loader={loader} />
+                  <Image
+                    src={art.imageUrl}
+                    alt={art.name}
+                    fill
+                    className="object-cover"
+                    loader={loader}
+                  />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">{art.name}</h3>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                    {art.name}
+                  </h3>
                   <p className="text-gray-600">{art.subtitle}</p>
                 </div>
               </motion.div>
@@ -134,7 +168,9 @@ export default function MediaSite() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-4xl font-bold text-center mb-8 text-gray-800"
-          >Latest Videos</motion.h2>
+          >
+            Latest Videos
+          </motion.h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {videos.map((vid) => (
               <motion.div
@@ -143,10 +179,16 @@ export default function MediaSite() {
                 className="relative pb-[56.25%] bg-black rounded-xl overflow-hidden cursor-pointer"
                 onClick={() => router.push(vid.ctaLink)}
               >
-                <Image src={vid.imageUrl} alt="Video" fill className="object-cover absolute inset-0" loader={loader} />
+                <Image
+                  src={vid.imageUrl}
+                  alt="Video"
+                  fill
+                  className="object-cover absolute inset-0"
+                  loader={loader}
+                />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="bg-white bg-opacity-80 p-3 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <PlayIcon className="h-8 w-8 text-red-600" />
                   </div>
                 </div>
               </motion.div>
@@ -155,6 +197,7 @@ export default function MediaSite() {
         </div>
       </section>
 
+      {/* Newsletter Signup */}
       <NewsletterSignup />
 
       {/* FAQs */}
@@ -164,7 +207,9 @@ export default function MediaSite() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-4xl font-bold text-center mb-10 text-gray-800"
-          >FAQs</motion.h2>
+          >
+            FAQs
+          </motion.h2>
           <div className="space-y-4">
             {faqs.map((q, i) => (
               <motion.details
@@ -174,7 +219,9 @@ export default function MediaSite() {
                 transition={{ delay: 0.3 + i * 0.1 }}
                 className="bg-white p-6 rounded-2xl shadow-xl cursor-pointer"
               >
-                <summary className="font-semibold text-gray-800">{q.question}</summary>
+                <summary className="font-semibold text-gray-800">
+                  {q.question}
+                </summary>
                 <p className="mt-2 text-gray-600">{q.answer}</p>
               </motion.details>
             ))}
@@ -185,9 +232,11 @@ export default function MediaSite() {
   );
 }
 
-
-function MediaHeroSection({ store, loader, onPlay }:any) {
-  const slide = store.heroSlides[0];
+/**  
+ *  Hero Section pulls directly from storeFormData.heroSlides  
+ */
+function MediaHeroSection({ store, loader, onPlay }: any) {
+  const slide = (store.heroSlides && store.heroSlides[0]) || {};
 
   return (
     <section
@@ -195,35 +244,22 @@ function MediaHeroSection({ store, loader, onPlay }:any) {
       role="region"
       aria-label="Featured Content Hero"
     >
-      {/* Background Video/Image Layer */}
-      {slide.videoUrl ? (
-        <motion.video
-          src={slide.videoUrl}
-          autoPlay
-          muted
-          loop
-          className="absolute inset-0 object-cover w-full h-full brightness-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-        />
-      ) : (
-        <Image
-          src={slide.imageUrl}
-          alt={slide.headline}
-          fill
-          className="absolute inset-0 object-cover w-full h-full brightness-50"
-          loader={loader}
-          priority
-        />
-      )}
+      {/* Background Image (no videoUrl field assumed) */}
+      <Image
+        src={slide.imageUrl}
+        alt={slide.headline}
+        fill
+        className="absolute inset-0 object-cover w-full h-full brightness-50"
+        loader={loader}
+        priority
+      />
 
       {/* Overlay Content */}
       <motion.div
         className="relative z-10 text-center px-6 md:px-12 max-w-3xl space-y-6"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, ease: 'easeOut' }}
+        transition={{ duration: 1, ease: "easeOut" }}
       >
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold drop-shadow-xl">
           {slide.headline}
@@ -232,11 +268,11 @@ function MediaHeroSection({ store, loader, onPlay }:any) {
           {slide.subline}
         </p>
 
-        {/* Play Trailer Button */}
+        {/* Play Trailer Button (assuming video slug exists on slide) */}
         <motion.button
           onClick={() => onPlay(slide)}
           whileHover={{ scale: 1.05 }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          transition={{ type: "spring", stiffness: 300 }}
           className="inline-flex items-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-full shadow-xl hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400"
           aria-label="Play Trailer"
         >
@@ -259,12 +295,18 @@ function MediaHeroSection({ store, loader, onPlay }:any) {
   );
 }
 
-function TopPicksCarousel({ picks, loader }:any) {
+/**
+ *  Top Picks Carousel  
+ *  (If your storeFormData contains a “topPicks” field, map that here instead of the hard-coded array.)
+ */
+function TopPicksCarousel({ picks, loader }: any) {
   const [current, setCurrent] = React.useState(0);
   const length = picks.length;
 
-  const prevSlide = () => setCurrent((current - 1 + length) % length);
-  const nextSlide = () => setCurrent((current + 1) % length);
+  const prevSlide = () =>
+    setCurrent((current - 1 + length) % length);
+  const nextSlide = () =>
+    setCurrent((current + 1) % length);
 
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-800">
@@ -274,17 +316,16 @@ function TopPicksCarousel({ picks, loader }:any) {
         </h2>
 
         <div className="relative overflow-hidden">
-          {/* Slides */}
           <AnimatePresence initial={false}>
-            {picks.map((item :any, index :any) =>
-              index === current && (
+            {picks.map((item: any, index: any) =>
+              index === current ? (
                 <motion.div
                   key={item.id}
                   className="absolute inset-0 flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between"
                   initial={{ opacity: 0, x: 100 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -100 }}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
                 >
                   {/* Image */}
                   <div className="w-full md:w-1/2 h-64 md:h-96 relative">
@@ -307,9 +348,12 @@ function TopPicksCarousel({ picks, loader }:any) {
                       {item.description}
                     </p>
                     <motion.button
-                      onClick={() => window.location.href = item.ctaLink}
+                      onClick={() =>
+                        // router.push(item.ctaLink)
+                        {}
+                      }
                       whileHover={{ scale: 1.05 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                       className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-5 rounded-full shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400"
                       aria-label={`Watch ${item.title}`}
                     >
@@ -318,7 +362,7 @@ function TopPicksCarousel({ picks, loader }:any) {
                     </motion.button>
                   </div>
                 </motion.div>
-              )
+              ) : null
             )}
           </AnimatePresence>
 
@@ -343,7 +387,15 @@ function TopPicksCarousel({ picks, loader }:any) {
   );
 }
 
-function EnhancedCategoriesSection({ categories, loader }:any) {
+/**
+ *  Explore Categories    
+ *  Uses `storeFormData.categories`. We assume each category has an `image` property—add that field if needed.
+ */
+function EnhancedCategoriesSection({
+  categories,
+  loader,
+  slug,
+}: any) {
   return (
     <section className="py-16 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-6">
@@ -354,14 +406,21 @@ function EnhancedCategoriesSection({ categories, loader }:any) {
 
         {/* Categories Grid */}
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((cat:any) => (
+          {categories.map((cat: any) => (
             <motion.div
               key={cat.id}
               whileHover={{ scale: 1.03 }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 200 }}
               className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer"
-              onClick={() => window.location.href = `/site/${cat.slug}`}
+              onClick={() =>
+                // router.push(`/${slug}/category/${cat.slug}`)
+                {}
+              }
             >
+              {/**
+               *  We assume each category has an `imageUrl` field;
+               *  if your transformed data uses a different property name, swap it here.
+               */}
               <Image
                 src={cat.imageUrl}
                 alt={cat.name}
@@ -370,9 +429,7 @@ function EnhancedCategoriesSection({ categories, loader }:any) {
                 loader={loader}
                 priority
               />
-
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
               <div className="absolute bottom-4 left-4 flex items-center">
                 <span className="text-lg md:text-xl font-semibold text-white">
                   {cat.name}
@@ -387,7 +444,15 @@ function EnhancedCategoriesSection({ categories, loader }:any) {
   );
 }
 
-function LatestReleasesSection({ releases, loader, onPlay }:any) {
+/**
+ *  Latest Releases Section  
+ *  Uses `storeFormData.latestReleases`—add this field to your transform if it’s not named exactly that.
+ */
+function LatestReleasesSection({
+  releases,
+  loader,
+  onPlay,
+}: any) {
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-800">
       <div className="container mx-auto px-6">
@@ -398,12 +463,12 @@ function LatestReleasesSection({ releases, loader, onPlay }:any) {
 
         {/* Responsive Grid */}
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {releases.map((item:any) => (
+          {releases.map((item: any) => (
             <motion.div
               key={item.id}
               className="relative bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer"
               whileHover={{ scale: 1.02 }}
-              transition={{ type: 'spring', stiffness: 250 }}
+              transition={{ type: "spring", stiffness: 250 }}
             >
               {/* Thumbnail */}
               <div className="w-full h-56 relative">
@@ -446,7 +511,11 @@ function LatestReleasesSection({ releases, loader, onPlay }:any) {
   );
 }
 
-function TestimonialsSlider({ testimonials, loader }:any) {
+/**
+ *  Testimonials Slider  
+ *  Uses `storeFormData.testimonials`
+ */
+function TestimonialsSlider({ testimonials, loader }: any) {
   const [idx, setIdx] = React.useState(0);
   const len = testimonials.length;
 
@@ -462,25 +531,36 @@ function TestimonialsSlider({ testimonials, loader }:any) {
 
         <div className="relative max-w-3xl mx-auto">
           <AnimatePresence initial={false}>
-            {testimonials.map((t:any, i:any) =>
-              i === idx && (
+            {testimonials.map((t: any, i: any) =>
+              i === idx ? (
                 <motion.div
                   key={i}
                   className="bg-gray-50 dark:bg-gray-800 p-8 rounded-3xl shadow-lg text-center"
                   initial={{ opacity: 0, x: 100 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -100 }}
-                  transition={{ duration: 0.6, ease: 'easeInOut' }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
                 >
                   {t.avatarUrl && (
                     <div className="mx-auto w-20 h-20 rounded-full overflow-hidden mb-4">
-                      <Image src={t.avatarUrl} alt={t.author} width={80} height={80} className="object-cover" loader={loader} />
+                      <Image
+                        src={t.avatarUrl}
+                        alt={t.author}
+                        width={80}
+                        height={80}
+                        className="object-cover"
+                        loader={loader}
+                      />
                     </div>
                   )}
-                  <p className="italic text-gray-700 dark:text-gray-200 mb-4">“{t.quote}”</p>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100 block">— {t.author}</span>
+                  <p className="italic text-gray-700 dark:text-gray-200 mb-4">
+                    “{t.quote}”
+                  </p>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 block">
+                    — {t.author}
+                  </span>
                 </motion.div>
-              )
+              ) : null
             )}
           </AnimatePresence>
 
@@ -505,13 +585,17 @@ function TestimonialsSlider({ testimonials, loader }:any) {
   );
 }
 
+/**  
+ *  Newsletter Signup  
+ *  Unchanged except for use of Tailwind class names
+ */
 function NewsletterSignup() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e:any) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
-    // Integrate with API or service
+    // Integrate with your subscription API…
     setSubmitted(true);
   };
 
@@ -545,7 +629,10 @@ function NewsletterSignup() {
             Thank you for subscribing!
           </motion.div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
             <div className="relative w-full sm:w-auto flex-1">
               <InboxIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-indigo-200" />
               <input
@@ -560,7 +647,7 @@ function NewsletterSignup() {
             <motion.button
               type="submit"
               whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring', stiffness: 300 }}
+              transition={{ type: "spring", stiffness: 300 }}
               className="inline-flex items-center gap-2 bg-white text-indigo-600 font-semibold py-3 px-6 rounded-full shadow-lg hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
             >
               Subscribe

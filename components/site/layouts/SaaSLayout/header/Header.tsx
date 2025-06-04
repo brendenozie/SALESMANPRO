@@ -1,167 +1,166 @@
-"use client";
+'use client';
+
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import {
-  MagnifyingGlassIcon,
-  ShoppingBagIcon,
-  Bars3Icon,
-  XMarkIcon,
-  UserIcon,
-} from "@heroicons/react/24/outline";
-import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Bars3BottomLeftIcon,
+  XMarkIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/react/24/outline";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({
+  src,
+  width,
+  quality,
+}: {
+  src: string;
+  width: number;
+  quality?: number;
+}) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function EnhancedHeader({ storeFormData }:any) {
-  const { cart } = useStateContext();
-  const [open, setOpen] = useState(false);
+export default function SaasHeader() {
+  const { storeFormData } = useStoreContext();
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const primary = storeFormData?.themeSettings?.primaryColor || "#6366F1"; // indigo
-  const secondary = storeFormData?.themeSettings?.secondaryColor || "#10B981"; // emerald
+  const primary = storeFormData.themeSettings?.primaryColor || "#4F46E5";
+  const secondary = storeFormData.themeSettings?.secondaryColor || "#3B82F6";
+
+  const navItems = [
+    { label: "Home", href: `/${storeFormData.slug}` },
+    { label: "Features", href: `/${storeFormData.slug}#features` },
+    { label: "Pricing", href: `/${storeFormData.slug}#pricing` },
+    { label: "Docs", href: `/${storeFormData.slug}/docs` },
+    { label: "About", href: `/${storeFormData.slug}/about` },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md">
-      {/* Top Promo Bar */}
-      <motion.div
-        className="flex justify-center items-center bg-gradient-to-r from-indigo-500 to-emerald-500 text-white text-sm py-1 px-6"
-        initial={{ y: -30 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <p className="flex items-center space-x-2">
-          <span>🚀 New Features Live!</span>
-          <Link href="#features" className="underline font-semibold">
-            Learn More
-          </Link>
-        </p>
-      </motion.div>
-
-      {/* Main Nav */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo & Menu */}
-          <div className="flex items-center space-x-8">
-            <Link href={`/site/${storeFormData.slug}`} className="flex items-center">
-              {storeFormData.logoUrl ? (
-                <Image
-                  src={storeFormData.logoUrl}
-                  alt={storeFormData.name}
-                  width={140}
-                  height={48}
-                  className="object-contain"
-                  priority
-                  loader={loader}
-                />
-              ) : (
-                <span className="text-2xl font-extrabold text-gray-800 dark:text-white">
-                  {storeFormData.name}
-                </span>
-              )}
-            </Link>
-
-            <nav className="hidden lg:flex space-x-6">
-              {[
-                { label: "Home", href: "" },
-                { label: "Products", href: "products" },
-                { label: "Categories", href: "categories" },
-                { label: "About", href: "about" },
-              ].map((item) => (
-                <motion.div
-                  key={item.label}
-                  whileHover={{ y: -2 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                >
-                  <Link
-                    href={`/site/${storeFormData.slug}/${item.href}`}
-                    className="text-gray-700 dark:text-gray-200 font-medium hover:text-indigo-600 dark:hover:text-emerald-400 transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-          </div>
-
-          {/* Search & Icons */}
-          <div className="flex items-center space-x-4">
-            <div className="relative hidden md:block">
-              <input
-                type="search"
-                placeholder="Search..."
-                className="pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              onClick={() => router.push(`/site/${storeFormData.slug}/profile`)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Profile"
+    <header className={`sticky top-0 z-50 bg-white/50 backdrop-blur-md border-b border-gray-200`}>
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        {/* Logo + Title */}
+        <Link href={`/${storeFormData.slug}`} className="flex items-center space-x-2 cursor-pointer">
+          {storeFormData.logoUrl ? (
+            <Image
+              src={storeFormData.logoUrl}
+              alt={storeFormData.name}
+              width={40}
+              height={40}
+              loader={loader}
+              className="rounded-full"
+            />
+          ) : (
+            <span
+              className="text-2xl font-bold"
+              style={{
+                backgroundImage: `linear-gradient(45deg, ${primary}, ${secondary})`,
+                WebkitBackgroundClip: "text",
+                color: "transparent",
+              }}
             >
-              <UserIcon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
-            </motion.button>
+              {storeFormData.name}
+            </span>
+          )}
+        </Link>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              onClick={() => router.push(`/site/${storeFormData.slug}/checkout`)}
-              className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Cart"
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center space-x-8">
+          {navItems.map((item) => (
+            <motion.div
+              key={item.label}
+              whileHover={{ scale: 1.05 }}
+              className="relative"
             >
-              <ShoppingBagIcon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
-              {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cart.length}
-                </span>
-              )}
-            </motion.button>
-
-            <button
-              className="lg:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
-              onClick={() => setOpen(!open)}
-              aria-label="Toggle menu"
-            >
-              {open ? (
-                <XMarkIcon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
-              ) : (
-                <Bars3Icon className="h-6 w-6 text-gray-600 dark:text-gray-200" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {open && (
-        <motion.div
-          className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700"
-          initial={{ height: 0 }}
-          animate={{ height: 'auto' }}
-          transition={{ duration: 0.3 }}
-        >
-          <nav className="flex flex-col px-4 py-4 space-y-2">
-            {[
-              { label: "Home", href: "" },
-              { label: "Products", href: "products" },
-              { label: "Categories", href: "categories" },
-              { label: "About", href: "about" },
-            ].map((item) => (
               <Link
-                key={item.label}
-                href={`/site/${storeFormData.slug}/${item.href}`}
-                className="block text-gray-700 dark:text-gray-200 py-2 font-medium hover:text-indigo-600 dark:hover:text-emerald-400 transition-colors"
+                href={item.href}
+                className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
               >
                 {item.label}
               </Link>
-            ))}
-          </nav>
-        </motion.div>
-      )}
+              <motion.span
+                className="absolute left-0 bottom-[-4px] h-0.5 bg-gradient-to-r"
+                style={{ backgroundImage: `linear-gradient(45deg, ${primary}, ${secondary})` }}
+                initial={{ width: 0 }}
+                whileHover={{ width: "100%" }}
+                transition={{ duration: 0.3 }}
+              />
+            </motion.div>
+          ))}
+
+          <motion.button
+            onClick={() => router.push(`/${storeFormData.slug}/signup`)}
+            whileHover={{ scale: 1.05 }}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:shadow-xl transition"
+          >
+            <ArrowRightOnRectangleIcon className="h-5 w-5" /> Get Started
+          </motion.button>
+        </nav>
+
+        {/* Mobile Toggle */}
+        <button
+          className="md:hidden text-gray-700"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Open menu"
+        >
+          <Bars3BottomLeftIcon className="h-7 w-7" />
+        </button>
+      </div>
+
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.aside
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-y-0 right-0 z-50 w-3/4 bg-white shadow-lg p-6 flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-8">
+              <span
+                className="text-xl font-bold"
+                style={{
+                  backgroundImage: `linear-gradient(45deg, ${primary}, ${secondary})`,
+                  WebkitBackgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {storeFormData.name}
+              </span>
+              <button onClick={() => setMobileMenuOpen(false)}>
+                <XMarkIcon className="h-6 w-6 text-gray-600" />
+              </button>
+            </div>
+
+            <nav className="flex flex-col space-y-6 text-lg">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="hover:text-indigo-600 transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              <motion.button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push(`/${storeFormData.slug}/signup`);
+                }}
+                whileHover={{ scale: 1.05 }}
+                className="mt-8 inline-flex items-center gap-2 justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:shadow-xl transition"
+              >
+                <ArrowRightOnRectangleIcon className="h-5 w-5" /> Get Started
+              </motion.button>
+            </nav>
+          </motion.aside>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

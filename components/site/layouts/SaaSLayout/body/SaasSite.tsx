@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from "react";
+// File: components/site/SaasSite.tsx
+'use client';
+
+import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon, ChevronDownIcon, CheckCircleIcon, StarIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowRightIcon,
+  ChevronDownIcon,
+  CheckCircleIcon,
+  StarIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
 
-// Sample data
 const store = {
   name: "CloudCraft SaaS",
   slug: "cloudcraft",
@@ -33,22 +43,36 @@ const store = {
   ],
 };
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({
+  src,
+  width,
+  quality,
+}: {
+  src: string;
+  width: number;
+  quality?: number;
+}) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function SaasSite() {
   const router = useRouter();
-  const [features, setFeatures] = useState(store.features);
-  const [plans, setPlans] = useState(store.plans);
-  const [testimonials, setTestimonials] = useState(store.testimonials);
-  const [faqs, setFaqs] = useState(store.faqs);
+  const { storeFormData } = useStoreContext();
 
-  const handleSignup = () => router.push(`/${store.slug}/signup`);
+  // Pull arrays directly from storeFormData
+  const features = store.features;
+  const plans = store.plans;
+  const testimonials = storeFormData.testimonials;
+  const faqs = storeFormData.faqs;
+
+  const handleSignup = () => router.push(`/${storeFormData.slug}/signup`);
 
   return (
     <div className="space-y-24 font-sans">
       {/* Hero */}
-      <EnhancedHeroSection store={store} loader={loader} handleSignup={handleSignup} />
+      <EnhancedHeroSection
+        store={storeFormData}
+        loader={loader}
+        handleSignup={handleSignup}
+      />
 
       {/* Features */}
       <FeaturesSection features={features} />
@@ -61,12 +85,19 @@ export default function SaasSite() {
 
       {/* FAQs */}
       <EnhancedFAQsSection faqs={faqs} />
-      
     </div>
   );
 }
 
-function EnhancedHeroSection({ store, loader, handleSignup }:any) {
+function EnhancedHeroSection({
+  store,
+  loader,
+  handleSignup,
+}: {
+  store: any;
+  loader: any;
+  handleSignup: () => void;
+}) {
   return (
     <section
       className="relative flex flex-col justify-center items-center h-screen overflow-hidden bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
@@ -78,11 +109,11 @@ function EnhancedHeroSection({ store, loader, handleSignup }:any) {
         className="absolute inset-0"
         initial={{ scale: 1 }}
         animate={{ scale: 1.05 }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
       >
         <Image
           src={store.bannerUrl}
-          alt="Store banner background"
+          alt={`${store.name} banner`}
           fill
           className="object-cover opacity-10 blur-lg brightness-75"
           loader={loader}
@@ -99,14 +130,14 @@ function EnhancedHeroSection({ store, loader, handleSignup }:any) {
           transition={{ delay: 0.2, duration: 0.6 }}
           className="text-sm md:text-base uppercase tracking-widest text-white/70"
         >
-          Your Trusted Marketplace
+          {store.tagline ?? "Your Trusted Marketplace"}
         </motion.p>
 
         {/* Headline */}
         <motion.h1
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
+          transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
           className="font-extrabold text-4xl md:text-7xl leading-tight drop-shadow-lg"
         >
           {store.name}
@@ -167,7 +198,7 @@ function EnhancedHeroSection({ store, loader, handleSignup }:any) {
   );
 }
 
-function FeaturesSection({ features }:any) {
+function FeaturesSection({ features }: { features: any[] }) {
   return (
     <section className="py-20 bg-gray-100 dark:bg-gray-900">
       <div className="container mx-auto px-6">
@@ -176,19 +207,19 @@ function FeaturesSection({ features }:any) {
           className="text-4xl md:text-5xl font-extrabold text-center text-gray-800 dark:text-gray-100 mb-16"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
           Key Features
         </motion.h2>
 
         {/* Features Grid */}
         <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f:any, i:any) => (
+          {features.map((f, i) => (
             <motion.div
               key={i}
               className="relative p-8 bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow cursor-pointer flex flex-col items-start"
               whileHover={{ translateY: -5 }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 200 }}
             >
               {/* Icon Badge */}
               <div className="absolute -top-6 left-6 bg-indigo-600 dark:bg-indigo-500 p-3 rounded-full shadow-md">
@@ -202,26 +233,6 @@ function FeaturesSection({ features }:any) {
               <p className="mt-2 text-gray-600 dark:text-gray-300 flex-1">
                 {f.description}
               </p>
-
-              {/* Learn More Link */}
-              <motion.a
-                href={f.link}
-                className="mt-4 inline-flex items-center text-indigo-600 dark:text-indigo-400 font-medium"
-                whileHover={{ x: 5 }}
-                transition={{ type: 'tween', duration: 0.2 }}
-              >
-                Learn More
-                <svg
-                  className="h-5 w-5 ml-1"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </motion.a>
             </motion.div>
           ))}
         </div>
@@ -230,7 +241,13 @@ function FeaturesSection({ features }:any) {
   );
 }
 
-function EnhancedPricingSection({ plans, handleSignup }:any) {
+function EnhancedPricingSection({
+  plans,
+  handleSignup,
+}: {
+  plans: any[];
+  handleSignup: (planId: string) => void;
+}) {
   return (
     <section className="py-20 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-6">
@@ -239,21 +256,25 @@ function EnhancedPricingSection({ plans, handleSignup }:any) {
           className="text-4xl md:text-5xl font-extrabold text-center text-gray-800 dark:text-gray-100 mb-16"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
           Pricing Plans
         </motion.h2>
 
         {/* Plans Grid */}
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan:any, i:any) => {
+          {plans.map((plan, i) => {
             const isPopular = plan.popular;
             return (
               <motion.div
                 key={i}
-                className={`relative flex flex-col p-8 bg-gray-50 dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow cursor-pointer ${isPopular ? 'border-2 border-indigo-500 dark:border-indigo-400' : ''}`}
+                className={`relative flex flex-col p-8 bg-gray-50 dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow cursor-pointer ${
+                  isPopular
+                    ? "border-2 border-indigo-500 dark:border-indigo-400"
+                    : ""
+                }`}
                 whileHover={{ translateY: -5 }}
-                transition={{ type: 'spring', stiffness: 200 }}
+                transition={{ type: "spring", stiffness: 200 }}
               >
                 {/* Popular Badge */}
                 {isPopular && (
@@ -269,12 +290,14 @@ function EnhancedPricingSection({ plans, handleSignup }:any) {
                 </h3>
                 <p className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6">
                   {plan.price}
-                  <span className="text-lg font-medium text-gray-600 dark:text-gray-400">/mo</span>
+                  <span className="text-lg font-medium text-gray-600 dark:text-gray-400">
+                    /mo
+                  </span>
                 </p>
 
                 {/* Perks List */}
                 <ul className="flex-1 space-y-4 mb-6">
-                  {plan.perks.map((perk:any, idx:any) => (
+                  {plan.perks.map((perk: string, idx: number) => (
                     <li key={idx} className="flex items-start">
                       <span className="mt-1 text-indigo-600 dark:text-indigo-400 mr-3">
                         ✓
@@ -288,7 +311,7 @@ function EnhancedPricingSection({ plans, handleSignup }:any) {
 
                 {/* Call to Action */}
                 <motion.button
-                  onClick={() => handleSignup(plan.id)}
+                  onClick={() => handleSignup(plan.name)}
                   className="mt-auto inline-flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
@@ -304,7 +327,7 @@ function EnhancedPricingSection({ plans, handleSignup }:any) {
   );
 }
 
-function EnhancedTestimonialsSection({ testimonials }:any) {
+function EnhancedTestimonialsSection({ testimonials }: { testimonials: any[] }) {
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-6 text-center">
@@ -313,25 +336,31 @@ function EnhancedTestimonialsSection({ testimonials }:any) {
           className="text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-gray-100 mb-16"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
         >
           What Our Users Say
         </motion.h2>
 
         {/* Testimonials Grid */}
         <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((t:any, i:any) => (
+          {testimonials.map((t, i) => (
             <motion.div
               key={i}
               className="relative bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow flex flex-col items-center text-center"
               whileHover={{ scale: 1.03 }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 200 }}
               style={{ perspective: 1000 }}
             >
-              {/* Avatar */}
+              {/* Avatar (if provided) */}
               {t.avatarUrl && (
                 <div className="w-20 h-20 rounded-full overflow-hidden mb-4 ring-4 ring-indigo-500 dark:ring-indigo-400">
-                  <Image src={t.avatarUrl} alt={t.author} width={80} height={80} className="object-cover" />
+                  <Image
+                    src={t.avatarUrl}
+                    alt={t.author}
+                    width={80}
+                    height={80}
+                    className="object-cover"
+                  />
                 </div>
               )}
 
@@ -351,7 +380,11 @@ function EnhancedTestimonialsSection({ testimonials }:any) {
                   {Array.from({ length: 5 }).map((_, idx) => (
                     <StarIcon
                       key={idx}
-                      className={`h-5 w-5 ${idx < t.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                      className={`h-5 w-5 ${
+                        idx < t.rating
+                          ? "text-yellow-400"
+                          : "text-gray-300 dark:text-gray-600"
+                      }`}
                     />
                   ))}
                 </div>
@@ -364,7 +397,7 @@ function EnhancedTestimonialsSection({ testimonials }:any) {
   );
 }
 
-function EnhancedFAQsSection({ faqs }:any) {
+function EnhancedFAQsSection({ faqs }: { faqs: any[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
@@ -379,14 +412,14 @@ function EnhancedFAQsSection({ faqs }:any) {
           className="text-4xl md:text-5xl font-extrabold text-center text-gray-800 dark:text-gray-100 mb-12"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
           FAQs
         </motion.h2>
 
         {/* Accordion List */}
         <div className="space-y-4">
-          {faqs.map((q:any, i:any) => {
+          {faqs.map((q, i) => {
             const isOpen = openIndex === i;
             return (
               <div
@@ -418,9 +451,9 @@ function EnhancedFAQsSection({ faqs }:any) {
                     <motion.div
                       key="content"
                       initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
+                      animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: 'easeInOut' }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
                       className="px-6 pb-6 bg-white dark:bg-gray-900"
                     >
                       <p className="text-gray-700 dark:text-gray-300">
