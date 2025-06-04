@@ -13,8 +13,6 @@ import {
   Tooltip,
 } from "chart.js";
 import { format, parseISO } from "date-fns";
-import UserNav from "@/components/UserNav";
-import AdminLayout from "@/components/AdminLayout";
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip);
 
@@ -100,9 +98,6 @@ const SalesSummaryClient: React.FC<ClientProps> = ({ initialSales }) => {
   };
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col min-h-screen bg-gray-900 text-white">
-        <UserNav />
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-4xl font-bold text-center mb-6 text-indigo-400">
             Sales Summary
@@ -149,8 +144,6 @@ const SalesSummaryClient: React.FC<ClientProps> = ({ initialSales }) => {
             <Line data={lineChartData} options={lineChartOptions} />
           </div>
         </div>
-      </div>
-    </AdminLayout>
   );
 };
 

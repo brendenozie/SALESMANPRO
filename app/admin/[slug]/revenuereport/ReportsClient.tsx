@@ -7,7 +7,6 @@ import dynamic from "next/dynamic";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import AdminLayout from "@/components/AdminLayout";
 import { ApexOptions } from "apexcharts";
 
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -141,11 +140,9 @@ const ReportsClient: React.FC = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <p className="text-xl font-semibold">Loading reports...</p>
         </div>
-      </AdminLayout>
     );
   }
 
@@ -181,7 +178,6 @@ const ReportsClient: React.FC = () => {
   };
 
   return (
-    <AdminLayout>
       <div className="p-6 bg-gray-50 min-h-screen">
         <h1 className="text-3xl font-bold mb-6 text-center">Admin Reports</h1>
 
@@ -258,7 +254,6 @@ const ReportsClient: React.FC = () => {
           <p className="text-2xl font-semibold">${totalRevenue.toFixed(2)}</p>
         </div>
       </div>
-    </AdminLayout>
   );
 };
 

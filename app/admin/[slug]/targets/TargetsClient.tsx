@@ -15,8 +15,6 @@ import {
 } from "chart.js";
 import { format, parseISO } from "date-fns";
 import { CheckCircleIcon, ExclamationCircleIcon, XCircleIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
-import UserNav from "@/components/UserNav";
-import AdminLayout from "@/components/AdminLayout";
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -104,9 +102,6 @@ const TargetsClient: React.FC = () => {
   }
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col min-h-screen w-full bg-gray-50">
-        <UserNav />
         <div className="container mx-auto p-4">
           <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Sales Targets</h1>
 
@@ -184,8 +179,6 @@ const TargetsClient: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </AdminLayout>
   );
 };
 

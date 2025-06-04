@@ -13,9 +13,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import UserNav from "@/components/UserNav";
-import UserLayout from "@/components/UserLayout";
-import AdminLayout from "@/components/AdminLayout";
 import { format, parseISO } from "date-fns";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -114,139 +111,134 @@ export default function ClientsClient({ initialClients }: ClientProps) {
   );
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col min-h-screen w-full bg-gradient-to-tr from-gray-800 via-gray-900 to-black text-white">
-        <UserNav />
-        <main className="flex-grow container mx-auto px-6 py-8">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-5xl font-extrabold text-center text-indigo-400 mb-10 drop-shadow-lg">
-              Clients Overview
-            </h1>
+      <main className="flex-grow container mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-5xl font-extrabold text-center text-indigo-400 mb-10 drop-shadow-lg">
+            Clients Overview
+          </h1>
 
-            {/* Search Bar */}
-            <div className="flex justify-center mb-8">
-              <input
-                type="text"
-                placeholder="Search clients by name..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
+          {/* Search Bar */}
+          <div className="flex justify-center mb-8">
+            <input
+              type="text"
+              placeholder="Search clients by name..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-md"
+              aria-label="Search clients"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
                   setCurrentPage(1);
                 }}
-                className="w-full max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-md"
-                aria-label="Search clients"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => {
-                    setSearchTerm("");
-                    setCurrentPage(1);
-                  }}
-                  className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
-                  aria-label="Clear search"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Summary Section */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              <SummaryCard
-                title="Total Clients"
-                value={initialClients.length}
-                bgColor="bg-indigo-500"
-              />
-              <SummaryCard
-                title="New Clients"
-                value={newClients.length}
-                bgColor="bg-green-500"
-              />
-              <SummaryCard
-                title="Active Clients"
-                value={activeClients.length}
-                bgColor="bg-blue-500"
-              />
-              <SummaryCard
-                title="Total Sales"
-                value={`$${totalSales.toFixed(2)}`}
-                bgColor="bg-yellow-500"
-              />
-            </div>
-
-            {/* Chart Section */}
-            <section className="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col mb-10">
-              <h2 className="text-xl font-semibold text-gray-100 mb-4">
-                Customer Growth
-              </h2>
-              <div className="flex-grow">
-                <div className="chart-container" style={{ height: "300px" }}>
-                  <Bar
-                    data={chartData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: { position: "top" },
-                      },
-                      scales: {
-                        x: { grid: { display: false }, ticks: { color: "#ddd" } },
-                        y: { grid: { color: "#444" }, ticks: { color: "#ddd" } },
-                      },
-                    }}
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* Clients List Section */}
-            <section className="mb-10">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-indigo-400">Clients List</h2>
-                <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow hover:bg-indigo-600">
-                  Add Client
-                </button>
-              </div>
-
-              {paginatedClients.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="text-lg text-gray-400">
-                    No clients match your search.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {paginatedClients.map((client) => (
-                    <ClientCard
-                      key={client.id}
-                      client={client}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Pagination */}
-              <div className="flex justify-center mt-6 space-x-4">
-                <PaginationButton
-                  label="Previous"
-                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  disabled={currentPage === 1}
-                />
-                <PaginationButton
-                  label="Next"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(p + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                />
-              </div>
-            </section>
+                className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
+                aria-label="Clear search"
+              >
+                Clear
+              </button>
+            )}
           </div>
-        </main>
-      </div>
-    </AdminLayout>
+
+          {/* Summary Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <SummaryCard
+              title="Total Clients"
+              value={initialClients.length}
+              bgColor="bg-indigo-500"
+            />
+            <SummaryCard
+              title="New Clients"
+              value={newClients.length}
+              bgColor="bg-green-500"
+            />
+            <SummaryCard
+              title="Active Clients"
+              value={activeClients.length}
+              bgColor="bg-blue-500"
+            />
+            <SummaryCard
+              title="Total Sales"
+              value={`$${totalSales.toFixed(2)}`}
+              bgColor="bg-yellow-500"
+            />
+          </div>
+
+          {/* Chart Section */}
+          <section className="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col mb-10">
+            <h2 className="text-xl font-semibold text-gray-100 mb-4">
+              Customer Growth
+            </h2>
+            <div className="flex-grow">
+              <div className="chart-container" style={{ height: "300px" }}>
+                <Bar
+                  data={chartData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: "top" },
+                    },
+                    scales: {
+                      x: { grid: { display: false }, ticks: { color: "#ddd" } },
+                      y: { grid: { color: "#444" }, ticks: { color: "#ddd" } },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Clients List Section */}
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-indigo-400">Clients List</h2>
+              <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow hover:bg-indigo-600">
+                Add Client
+              </button>
+            </div>
+
+            {paginatedClients.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-lg text-gray-400">
+                  No clients match your search.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {paginatedClients.map((client) => (
+                  <ClientCard
+                    key={client.id}
+                    client={client}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            <div className="flex justify-center mt-6 space-x-4">
+              <PaginationButton
+                label="Previous"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+              />
+              <PaginationButton
+                label="Next"
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              />
+            </div>
+          </section>
+        </div>
+      </main>
   );
 }
 

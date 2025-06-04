@@ -13,8 +13,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import UserNav from "@/components/UserNav";
-import AdminLayout from "@/components/AdminLayout";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -94,134 +92,129 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData }) => {
   };
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col min-h-screen w-full bg-gradient-to-tr from-gray-800 via-gray-900 to-black text-white">
-        <UserNav />
-        <main className="flex-grow container mx-auto px-6 py-8">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-5xl font-extrabold text-center text-indigo-400 mb-10 drop-shadow-lg">
-              Agents Overview
-            </h1>
+      <main className="flex-grow container mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-5xl font-extrabold text-center text-indigo-400 mb-10 drop-shadow-lg">
+            Agents Overview
+          </h1>
 
-            {/* Search Bar */}
-            <div className="flex justify-center mb-8">
-              <input
-                type="text"
-                placeholder="Search agents by name..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
+          {/* Search Bar */}
+          <div className="flex justify-center mb-8">
+            <input
+              type="text"
+              placeholder="Search agents by name..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-md"
+              aria-label="Search agents"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
                   setCurrentPage(1);
                 }}
-                className="w-full max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-md"
-                aria-label="Search agents"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => {
-                    setSearchTerm("");
-                    setCurrentPage(1);
-                  }}
-                  className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
-                  aria-label="Clear search"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Summary Section */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              <SummaryCard
-                title="Total Agents"
-                value={agentsData.length}
-                bgColor="bg-indigo-500"
-              />
-              <SummaryCard
-                title="Total Sales"
-                value={`$${totalSales.toFixed(2)}`}
-                bgColor="bg-green-500"
-              />
-              <SummaryCard
-                title="Total Commissions"
-                value={`$${totalCommissions.toFixed(2)}`}
-                bgColor="bg-yellow-500"
-              />
-            </div>
-
-            {/* Chart Section */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col mb-10">
-              <h2 className="text-xl font-semibold text-gray-100 mb-4">
-                Sales &amp; Commissions
-              </h2>
-              <div className="chart-container" style={{ height: "300px" }}>
-                <Bar
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { position: "top" as const },
-                    },
-                    scales: {
-                      x: { grid: { display: false }, ticks: { color: "#ddd" } },
-                      y: { grid: { color: "#444" }, ticks: { color: "#ddd" } },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Agents List */}
-            <section>
-              {paginatedAgents.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="text-lg text-gray-400">
-                    No agents match your search.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {paginatedAgents.map((agent) => (
-                    <AgentCard
-                      key={agent.id}
-                      agent={agent}
-                      onEdit={(id) => alert(`Editing agent with ID ${id}`)}
-                      onDelete={(id) => alert(`Deleting agent with ID ${id}`)}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex justify-center space-x-4 mt-8">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-4 py-2 bg-gray-700 rounded-lg text-white disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <span className="px-4 py-2 bg-gray-800 text-white rounded-lg">
-                  {`Page ${currentPage} of ${totalPages}`}
-                </span>
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  className="px-4 py-2 bg-gray-700 rounded-lg text-white disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
+                className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
+                aria-label="Clear search"
+              >
+                Clear
+              </button>
             )}
           </div>
-        </main>
-      </div>
-    </AdminLayout>
+
+          {/* Summary Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <SummaryCard
+              title="Total Agents"
+              value={agentsData.length}
+              bgColor="bg-indigo-500"
+            />
+            <SummaryCard
+              title="Total Sales"
+              value={`$${totalSales.toFixed(2)}`}
+              bgColor="bg-green-500"
+            />
+            <SummaryCard
+              title="Total Commissions"
+              value={`$${totalCommissions.toFixed(2)}`}
+              bgColor="bg-yellow-500"
+            />
+          </div>
+
+          {/* Chart Section */}
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col mb-10">
+            <h2 className="text-xl font-semibold text-gray-100 mb-4">
+              Sales &amp; Commissions
+            </h2>
+            <div className="chart-container" style={{ height: "300px" }}>
+              <Bar
+                data={chartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { position: "top" as const },
+                  },
+                  scales: {
+                    x: { grid: { display: false }, ticks: { color: "#ddd" } },
+                    y: { grid: { color: "#444" }, ticks: { color: "#ddd" } },
+                  },
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Agents List */}
+          <section>
+            {paginatedAgents.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-lg text-gray-400">
+                  No agents match your search.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {paginatedAgents.map((agent) => (
+                  <AgentCard
+                    key={agent.id}
+                    agent={agent}
+                    onEdit={(id) => alert(`Editing agent with ID ${id}`)}
+                    onDelete={(id) => alert(`Deleting agent with ID ${id}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center space-x-4 mt-8">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="px-4 py-2 bg-gray-700 rounded-lg text-white disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 bg-gray-800 text-white rounded-lg">
+                {`Page ${currentPage} of ${totalPages}`}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="px-4 py-2 bg-gray-700 rounded-lg text-white disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
   );
 };
 

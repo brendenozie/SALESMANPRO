@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
 
-const getOrdersByStatus = async (req: NextApiRequest, res: NextApiResponse) => {
+const getOrdersByStatus = async (req: Request) => {
   const { startDate, endDate } = req.query;
   const { searchParams } = new URL(req.url);
 
