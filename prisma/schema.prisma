@@ -168,6 +168,7 @@ model Company {
   heroSlides        Banner[] // relational banners/slides
   contactEmail      String
   contactPhone      String?
+  site              String?          @default("default")
   address           String?
   geoLocation       Json? // { lat: number, lng: number }
   openingHours      Json? // { mon: "9–5", tue: "...", … }
