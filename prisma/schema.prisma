@@ -73,16 +73,14 @@ model Notification {
   read      Boolean  @default(false)
 }
 
-// model Category {
-//   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-//   name          String
-//   icon          String?
-//   image         String?
-//   status        String
-//   allBrands     String[]
-//   tags          String[]
-//   subcategories Json // Store subcategories as a JSON array
-// }
+model CompanyCategory {
+  id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  icon    String?
+  image   String?
+  status  String
+  Company Company[]
+}
 
 // Category model with self-relations for hierarchy (categories & subcategories)
 model ProductCategory {
@@ -157,28 +155,30 @@ model StoreCategory {
 }
 
 model Company {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  slug         String        @unique
-  tagline      String? // short marketing line
-  description  String?
-  category     String
-  logoUrl      String?
-  bannerUrl    String?
-  heroSlides   Banner[] // relational banners/slides
-  contactEmail String
-  contactPhone String?
-  address      String?
-  geoLocation  Json? // { lat: number, lng: number }
-  openingHours Json? // { mon: "9–5", tue: "...", … }
-  domain       String?       @unique
-  currency     String        @default("KES")
-  locale       String        @default("en-US")
-  socialLinks  SocialLink[] // structured social profiles
-  policies     Policy[] // structured, editable policies
-  faqs         FAQ[] // common questions
-  testimonials Testimonial[] // customer quotes
-  promotions   Promotion[] // site-wide deals
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  slug              String           @unique
+  tagline           String? // short marketing line
+  description       String?
+  companyCategoryId String?          @db.ObjectId
+  companyCategory   CompanyCategory? @relation(fields: [companyCategoryId], references: [id])
+  category          String
+  logoUrl           String?
+  bannerUrl         String?
+  heroSlides        Banner[] // relational banners/slides
+  contactEmail      String
+  contactPhone      String?
+  address           String?
+  geoLocation       Json? // { lat: number, lng: number }
+  openingHours      Json? // { mon: "9–5", tue: "...", … }
+  domain            String?          @unique
+  currency          String           @default("KES")
+  locale            String           @default("en-US")
+  socialLinks       SocialLink[] // structured social profiles
+  policies          Policy[] // structured, editable policies
+  faqs              FAQ[] // common questions
+  testimonials      Testimonial[] // customer quotes
+  promotions        Promotion[] // site-wide deals
 
   themeSettings Json? // colors, fonts, layout toggles
   seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
