@@ -78,86 +78,50 @@ export default function StorePage() {
 
       case 'nonprofit':
       case 'nonprofit & community':
-        return <NonProfitSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <NonProfitSite/>
 
       case 'event':
       case 'event & ticketing':
-        return <EventsSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <EventsSite/>
 
       case 'healthcare':
       case 'healthcare & clinics':
-        return <HealthCareSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <HealthCareSite/>
 
       case 'saas':
       case 'saas & web apps':
-        return <SaaSSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <SaaSSite/>
 
       case 'automotive':
       case 'automotive':
-        return <AutomotiveSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <AutomotiveSite/>
 
       case 'media':
       case 'media & entertainment':
-        return <MediaSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
-// Review stopped at finance
+        return <MediaSite/>
+        
       case 'finance':
       case 'finance & legal':
-        return <FinanceSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <FinanceSite  />
 
       case 'travel':
       case 'travel & tourism':
-        return <TravelSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <TravelSite />
 
       case 'fitness':
       case 'fitness & wellness':
-        return <FitnessSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <FitnessSite/>
   
       case 'marketplace':
       case 'marketplace':
-        return <MarketplaceSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <MarketplaceSite/>
   
       case 'other':
       case 'Other':
-        return <DefaultSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <DefaultSite />
   
       default:
-        return <DefaultSite 
-                // storeFormData={storeFormData}
-                // slug={storeFormData.slug}
-                />
+        return <DefaultSite/>
     }
 
 }

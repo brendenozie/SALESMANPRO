@@ -15,11 +15,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
 
 interface HeaderProps { storeFormData: any; }
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality||75}`;
 
-export default function Header({ storeFormData }: HeaderProps) {
+export default function Header() {
+  const { storeFormData } = useStoreContext();
+  
   const { cart } = useStateContext();
   const router = useRouter();
   const primary = storeFormData?.themeSettings?.primaryColor || "#6366f1";
