@@ -31,6 +31,23 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
     <section className="p-6 bg-white rounded-2xl shadow-lg space-y-8 border border-gray-200">
       <h3 className="text-2xl font-bold text-gray-800">Product Variants</h3>
 
+      {/* Only show color/size if subcategory is Clothing/Fashion or similar */}
+      {/* {["Clothing", "Shoes", "Watches", "Jewelry", "Beauty Products", "Skincare", "Haircare", "Sports Equipment", "Fashion"].includes(
+            formData.subCategory
+          ) && (
+            <div>
+              <label className="block text-sm font-medium">Color (comma‐separated)</label>
+              <input
+                name="color"
+                type="text"
+                value={formData.color}
+                onChange={handleInputChange}
+                placeholder="e.g. Red, Blue, Green"
+                className="mt-1 block w-full border-gray-300 rounded-md"
+              />
+            </div>
+          )} */}
+
       {(Object.keys(VARIANT_OPTIONS) as Array<keyof typeof VARIANT_OPTIONS>).map(category => (
         <div key={category} className="space-y-3">
           <div className="flex items-center justify-between">
@@ -67,6 +84,57 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
           </div>
         </div>
       ))}
+      <div className="space-y-4">
+      <p className="text-sm text-gray-500">
+        (Add different variants for this product, e.g. sizes, colors, or plans.)
+      </p>
+      <button
+        onClick={() => {
+          const next = [...(formData.variants || []), { name: "", extraPrice: 0 }];
+          setFormData({ ...formData, variants: next });
+        }}
+        className="bg-blue-600 text-white px-3 py-1 rounded-md"
+      >
+        + Add Variant
+      </button>
+      {formData.variants?.map((v: any, idx: number) => (
+        <div key={idx} className="flex items-center space-x-2">
+          <input
+            name={`variantName-${idx}`}
+            type="text"
+            value={v.name}
+            onChange={(e) => {
+              const updated = [...formData.variants];
+              // updated[idx].name = e.target.value;
+              setFormData({ ...formData, variants: updated });
+            }}
+            placeholder="Variant name"
+            className="border-gray-300 rounded-md p-1 flex-1"
+          />
+          <input
+            name={`variantPrice-${idx}`}
+            type="number"
+            value={v.extraPrice}
+            onChange={(e) => {
+              const updated = [...formData.variants];
+              // updated[idx].extraPrice = parseFloat(e.target.value);
+              setFormData({ ...formData, variants: updated });
+            }}
+            placeholder="Extra price"
+            className="border-gray-300 rounded-md p-1 w-24"
+          />
+          <button
+            onClick={() => {
+              const updated = formData.variants.filter((_: any, i: number) => i !== idx);
+              setFormData({ ...formData, variants: updated });
+            }}
+            className="text-red-600"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+      </div>
     </section>
   );
 };

@@ -77,6 +77,39 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
           />
           <span className="text-sm text-gray-700">Price Negotiable</span>
         </label>
+        <div>
+        <label className="block text-sm font-medium">Financing Available</label>
+        <input
+          name="financingAvailable"
+          type="checkbox"
+          checked={formData.financingAvailable}
+          onChange={handleChange}
+          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Trade‐in Accepted</label>
+        <input
+          name="tradeIn"
+          type="checkbox"
+          checked={formData.tradeIn}
+          onChange={handleChange}
+          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Service History</label>
+        <select
+          name="serviceHistory"
+          value={formData.serviceHistory}
+          onChange={handleChange}
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        >
+          <option value="Full">Full</option>
+          <option value="Partial">Partial</option>
+          <option value="None">None</option>
+        </select>
+      </div>
       </div>
     </section>
   );

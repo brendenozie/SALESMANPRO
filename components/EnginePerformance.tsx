@@ -31,6 +31,44 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, setForm
           value={formData.engineSize ?? ''}
           onChange={handleChange}
         />
+         <div>
+        <label className="block text-sm font-medium">Transmission</label>
+        <select
+          name="transmission"
+          value={formData.transmission}
+          onChange={handleChange}
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        >
+          <option value="">— Select transmission —</option>
+          <option value="Automatic">Automatic</option>
+          <option value="Manual">Manual</option>
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Drivetrain</label>
+        <select
+          name="drivetrain"
+          value={formData.drivetrain}
+          onChange={handleChange}
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        >
+          <option value="">— Select drivetrain —</option>
+          <option value="FWD">FWD</option>
+          <option value="RWD">RWD</option>
+          <option value="AWD">AWD</option>
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Mileage (km)</label>
+        <input
+          name="mileage"
+          type="number"
+          value={formData.mileage}
+          onChange={handleChange}
+          placeholder="e.g. 50000"
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        />
+      </div>
         <InputField
           label="Transmission"
           name="transmission"

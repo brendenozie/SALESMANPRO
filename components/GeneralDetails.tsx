@@ -98,7 +98,66 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
           </select>
         </div>
       </div>
-
+      <div>
+        <label className="block text-sm font-medium">Description / Specs</label>
+        <textarea
+          name="longDescription"
+          rows={5}
+          value={formData.longDescription}
+          // onChange={handleChange}
+          placeholder="Provide detailed description or specifications"
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium">Condition</label>
+          <select
+            name="condition"
+            value={formData.condition}
+            onChange={handleChange}
+            className="mt-1 block w-full border-gray-300 rounded-md"
+          >
+            <option value="">— Select condition —</option>
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+            <option value="Refurbished">Refurbished</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Material</label>
+          <input
+            name="material"
+            type="text"
+            value={formData.material}
+            onChange={handleChange}
+            placeholder="e.g. Aluminum, Leather"
+            className="mt-1 block w-full border-gray-300 rounded-md"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Weight (kg)</label>
+        <input
+          name="weight"
+          type="number"
+          value={formData.weight}
+          onChange={handleChange}
+          placeholder="e.g. 1.5"
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Dimensions (L×W×H)</label>
+        <input
+          name="dimensions"
+          type="text"
+          value={formData.dimensions}
+          onChange={handleChange}
+          placeholder="e.g. 10×5×2 cm"
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        />
+      </div>
       <CommissionSection formData={formData} onChange={handleChange} />
     </section>
   );

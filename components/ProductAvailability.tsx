@@ -77,6 +77,41 @@ const ProductAvailability = ({ formData, setFormData }: any) => {
           </div>
         ))}
       </div>
+      <div>
+        <label className="block text-sm font-medium">Availability</label>
+        <select
+          name="isAvailable"
+          value={String(formData.isAvailable)}
+          onChange={(e) =>
+            setFormData({ ...formData, isAvailable: e.target.value === "true" })
+          }
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        >
+          <option value="true">Available</option>
+          <option value="false">Unavailable</option>
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Quantity</label>
+        <input
+          name="quantity"
+          type="number"
+          value={formData.quantity}
+          // onChange={handleInputChange}
+          placeholder="e.g. 100"
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Restock Date (if out of stock)</label>
+        <input
+          name="restockDate"
+          type="date"
+          value={formData.restockDate || ""}
+          onChange={(e) => setFormData({ ...formData, restockDate: e.target.value })}
+          className="mt-1 block w-full border-gray-300 rounded-md"
+        />
+      </div>
     </div>
   );
 };

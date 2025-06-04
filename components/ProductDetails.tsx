@@ -232,28 +232,6 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       {/* Conditional: Travel-specific fields */}
       {isTravel && (
         <>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium">Start Date</label>
-              <input
-                name="startDate"
-                type="date"
-                value={formData.startDate || ""}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                className="mt-1 block w-full border-gray-300 rounded-md"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">End Date / Return</label>
-              <input
-                name="endDate"
-                type="date"
-                value={formData.endDate || ""}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="mt-1 block w-full border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
           <div>
             <label className="block text-sm font-medium">
               {subCat === "Flight Tickets" ? "Seat Class" : subCat === "Hotel Bookings" ? "Room Type" : "Package Details"}
@@ -289,23 +267,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               placeholder="e.g. HX-200"
               className="mt-1 block w-full border-gray-300 rounded-md"
             />
-          </div>
-          {/* Only show color/size if subcategory is Clothing/Fashion or similar */}
-          {["Clothing", "Shoes", "Watches", "Jewelry", "Beauty Products", "Skincare", "Haircare", "Sports Equipment", "Fashion"].includes(
-            formData.subCategory
-          ) && (
-            <div>
-              <label className="block text-sm font-medium">Color (comma‐separated)</label>
-              <input
-                name="color"
-                type="text"
-                value={formData.color}
-                onChange={handleInputChange}
-                placeholder="e.g. Red, Blue, Green"
-                className="mt-1 block w-full border-gray-300 rounded-md"
-              />
-            </div>
-          )}
+          </div>          
         </>
       )}
 
