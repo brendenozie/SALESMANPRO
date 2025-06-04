@@ -186,6 +186,7 @@ export default function AdminInventoryClient({
             setShowRequestProductModal={setShowAddProductModal}
             companyId={companyId}
             categories={categoriesData}
+            product={null}
           />
         )}
 

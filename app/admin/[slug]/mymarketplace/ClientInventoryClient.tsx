@@ -28,12 +28,21 @@ type MarketplaceProduct = {
   sellingPrice: number;
 };
 
+type Category = {
+  id: string;
+  name: string;
+  image: string;
+  tags: string[];
+  status: string;
+};
+
 interface ClientProps {
   companyId: string;
-  productsData: MarketplaceProduct[];
+  productsData: MarketplaceProduct[];  
+  categoriesData: Category[];
 }
 
-export default function ClientInventoryClient({ companyId, productsData }: ClientProps) {
+export default function ClientInventoryClient({ companyId, categoriesData, productsData }: ClientProps) {
   // State for modal visibility + selected product
   const [showRemoveProductModal, setShowRemoveProductModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -50,9 +59,9 @@ export default function ClientInventoryClient({ companyId, productsData }: Clien
             <h2 className="text-3xl font-semibold text-gray-800 mb-8">Products</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productsData.map((product) => (
+              {productsData.map((product,index) => (
                 <div
-                  key={product._id}
+                  key={index}//{product._id}
                   className="bg-gray-100 border border-gray-200 rounded-xl p-6 transition transform hover:scale-105 shadow-md hover:shadow-xl duration-300"
                 >
                   <h3 className="text-2xl font-bold text-gray-800 mb-3 hover:text-blue-600 transition-colors">
@@ -120,6 +129,7 @@ export default function ClientInventoryClient({ companyId, productsData }: Clien
               sellerId={""}       // ← pass real sellerId if needed
               sellerType={""}     // ← pass real sellerType if needed
               marketListItem={selectedProduct}
+              categories={categoriesData}
             />
           )}
 
