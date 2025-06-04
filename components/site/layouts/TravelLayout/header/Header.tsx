@@ -1,202 +1,212 @@
-"use client"
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  MagnifyingGlassCircleIcon,
-  ShoppingBagIcon,
   Bars3BottomLeftIcon,
   XMarkIcon,
-  UserIcon,
+  MagnifyingGlassIcon,
+  UserCircleIcon,
+  ChatBubbleLeftEllipsisIcon,
 } from "@heroicons/react/24/outline";
-import { useStateContext } from "../../../../../contexts/ContextProvider";
 import { useRouter } from "next/navigation";
+import { useStoreContext } from "../../../../../contexts/StoreContext";
 
-// Type definitions
-interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
-interface Category { id: string; name: string; imageUrl: string; }
-interface StoreCategoryUI { id: string; name: string; imageUrl: string; slug: string; icon?: string }
-interface SocialLink { channel: string; url: string }
-interface Policy { type: string; title?: string; content: string }
-interface FAQ { question: string; answer: string }
-interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number }
-interface Banner { imageUrl: string; headline?: string; subline?: string; ctaText?: string; ctaLink?: string }
-interface Promotion { code?: string; title: string; description?: string; startsAt?: string; endsAt?: string; bannerUrl?: string }
-interface Product { id: string; name: string; price: number; imageUrl: string; slug?: string }
-
-interface Store {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  logoUrl?: string;
-  bannerUrl?: string;
-  contactEmail: string;
-  contactPhone?: string;
-  address?: string;
-  themeSettings: any;
-  StoreCategory: StoreCategoryUI[];
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: Banner[];
-  promotions: Promotion[];
-  products: Product[];
-}
-
-interface HeaderProps {
-  storeFormData: Store;
-}
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
-  const { cart } = useStateContext();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+export default function Header() {
   const router = useRouter();
+  const { storeFormData } = useStoreContext();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const primary = storeFormData?.themeSettings?.primaryColor || "#f97316";    // fallback: orange
-  const secondary = storeFormData?.themeSettings?.secondaryColor || "#3b82f6"; // fallback: blue
+  // Fallback colors if not provided
+  const primaryColor = storeFormData.themeSettings?.primaryColor || "#ffffff";
+  const accentColor = storeFormData.themeSettings?.secondaryColor || "#10B981";
+
+  const navItems = [
+    { label: "Home", href: `/${storeFormData.slug}` },
+    { label: "Destinations", href: `/${storeFormData.slug}/destinations` },
+    { label: "Tours", href: `/${storeFormData.slug}/tours` },
+    { label: "About", href: `/${storeFormData.slug}/about` },
+    { label: "Contact", href: `/${storeFormData.slug}/contact` },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm transition-shadow">
-      {/* Top Info Bar */}
-      <div
-        className="hidden md:flex justify-between items-center px-6 py-2 text-sm font-medium"
-        style={{ backgroundColor: `${primary}1A`, color: primary }}
-      >
-        <div className="flex items-center space-x-6">
-          {storeFormData.contactEmail && (
-            <a href={`mailto:${storeFormData.contactEmail}`} className="flex text-sm items-center uppercase hover:underline">
-              📧 <span className="ml-1">{storeFormData.contactEmail}</span>
-            </a>
-          )}
-          {storeFormData.contactPhone && (
-            <a href={`tel:${storeFormData.contactPhone}`} className="flex items-center hover:underline">
-              📞 <span className="ml-1">{storeFormData.contactPhone}</span>
-            </a>
-          )}
-        </div>
-        <div className="flex space-x-4">
-          {storeFormData.socialLinks.map((s) => (
-            <a
-              key={s.channel}
-              href={s.url}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: primary }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
-              className="capitalize transition-colors"
-            >
-              {s.channel}
-            </a>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <div className="flex items-center space-x-4">
-            <Link href={`/site/${storeFormData.slug}`} className="flex items-center space-x-2">
+    <header className="fixed inset-x-0 top-0 z-50">
+      {/* Transparent bar over banner */}
+      <div className="bg-black bg-opacity-40 backdrop-blur-sm text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo / Site Name */}
+            <div className="flex items-center">
               {storeFormData.logoUrl ? (
-                <Image
-                  src={storeFormData.logoUrl}
-                  alt={storeFormData.name}
-                  width={120}
-                  height={40}
-                  className="object-contain"
-                  loader={loader}
-                />
+                <Link href={`/${storeFormData.slug}`}>
+                  <Image
+                    src={storeFormData.logoUrl}
+                    alt={storeFormData.name}
+                    width={120}
+                    height={40}
+                    loader={loader}
+                    className="object-contain cursor-pointer"
+                  />
+                </Link>
               ) : (
-                <span className="text-xl font-bold text-gray-800 dark:text-white">{storeFormData.name}</span>
+                <Link href={`/${storeFormData.slug}`}>
+                  <span className="text-2xl font-extrabold cursor-pointer">
+                    {storeFormData.name}
+                  </span>
+                </Link>
               )}
-            </Link>
-            <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
-              {["Home", "Shop", "Categories"].map((label) => (
+            </div>
+
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex space-x-8">
+              {navItems.map((item) => (
                 <Link
-                  key={label}
-                  href={`/site/${storeFormData.slug}/${label.toLowerCase() === "home" ? "" :  label.toLowerCase() === "shop" ? "products" : label.toLowerCase()}`}
-                  className="hover:underline"
-                  style={{ color: "#444" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+                  key={item.label}
+                  href={item.href}
+                  className="relative px-1 text-base font-medium hover:text-green-200 transition"
                 >
-                  {label}
+                  {item.label}
+                  <motion.span
+                    layoutId="underline"
+                    className="absolute left-0 -bottom-1 h-0.5 bg-green-200 w-0"
+                    whileHover={{ width: "100%" }}
+                    transition={{ duration: 0.3 }}
+                  />
                 </Link>
               ))}
             </nav>
-          </div>
 
-          {/* Search */}
-          <div className="flex-1 mx-6 hidden lg:block">
-            <div className="relative">
-              <input
-                type="search"
-                placeholder="Search products..."
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm rounded-full py-2 px-4 pl-10 shadow-sm focus:outline-none"
-                onFocus={(e) => (e.currentTarget.style.boxShadow = `0 0 0 2px ${primary}`)}
-                onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-              />
-              <MagnifyingGlassCircleIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            {/* Search, Profile, Chat Icons */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <button
+                onClick={() => router.push(`/${storeFormData.slug}/search`)}
+                aria-label="Search"
+                className="p-1 rounded-full hover:bg-white/20 transition"
+              >
+                <MagnifyingGlassIcon className="h-6 w-6" />
+              </button>
+              <button
+                onClick={() => router.push(`/${storeFormData.slug}/profile`)}
+                aria-label="Profile"
+                className="p-1 rounded-full hover:bg-white/20 transition"
+              >
+                <UserCircleIcon className="h-6 w-6" />
+              </button>
+              <button
+                onClick={() => router.push(`/${storeFormData.slug}/chat`)}
+                aria-label="Chat"
+                className="p-1 rounded-full hover:bg-white/20 transition"
+              >
+                <ChatBubbleLeftEllipsisIcon className="h-6 w-6" />
+              </button>
             </div>
-          </div>
 
-          {/* Icons */}
-          <div className="flex items-center space-x-4">
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${storeFormData.slug}/profile`);}} className="text-gray-600 dark:text-gray-200">
-              <UserIcon className="h-6 w-6" />
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${storeFormData.slug}/checkout`);}} className="relative text-gray-600 dark:text-gray-200">
-              <ShoppingBagIcon className="h-6 w-6" />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center ">
-                  {cart.length}
-                </span>
-              )}
-            </motion.button>
-            <button
-              className="lg:hidden text-gray-600 dark:text-gray-200"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3BottomLeftIcon className="h-6 w-6" />
-              )}
-            </button>
+            {/* Mobile menu button */}
+            <div className="flex lg:hidden">
+              <button
+                onClick={() => setMobileOpen((o) => !o)}
+                aria-label="Toggle menu"
+                className="p-1 rounded-md hover:bg-white/20 transition"
+              >
+                {mobileOpen ? (
+                  <XMarkIcon className="h-6 w-6" />
+                ) : (
+                  <Bars3BottomLeftIcon className="h-6 w-6" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shadow-md">
-          <div className="space-y-3">
-            {["Home", "Shop", "Categories"].map((label) => (
-              <Link
-                key={label}
-                href={`/site/${storeFormData.slug}/${label.toLowerCase() === "home" ? "" : label.toLowerCase() === "shop" ? "products" : label.toLowerCase() }`}
-                className="block hover:underline"
-                style={{ color: "#444" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-y-0 left-0 w-64 bg-black bg-opacity-90 backdrop-blur-md text-white shadow-lg z-50"
+          >
+            <div className="px-4 py-6">
+              <div className="flex items-center justify-between mb-8">
+                {storeFormData.logoUrl ? (
+                  <Image
+                    src={storeFormData.logoUrl}
+                    alt={storeFormData.name}
+                    width={100}
+                    height={32}
+                    loader={loader}
+                    className="object-contain"
+                  />
+                ) : (
+                  <span className="text-xl font-bold">{storeFormData.name}</span>
+                )}
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  aria-label="Close menu"
+                  className="p-1 hover:bg-white/20 rounded-md transition"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <nav className="flex flex-col space-y-4">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="text-lg font-medium hover:text-green-200 transition"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="mt-8 border-t border-white/20 pt-6 space-y-4">
+                <button
+                  onClick={() => {
+                    router.push(`/${storeFormData.slug}/search`);
+                    setMobileOpen(false);
+                  }}
+                  className="flex items-center space-x-2 hover:text-green-200 transition"
+                >
+                  <MagnifyingGlassIcon className="h-5 w-5" />
+                  <span>Search</span>
+                </button>
+                <button
+                  onClick={() => {
+                    router.push(`/${storeFormData.slug}/profile`);
+                    setMobileOpen(false);
+                  }}
+                  className="flex items-center space-x-2 hover:text-green-200 transition"
+                >
+                  <UserCircleIcon className="h-5 w-5" />
+                  <span>Profile</span>
+                </button>
+                <button
+                  onClick={() => {
+                    router.push(`/${storeFormData.slug}/chat`);
+                    setMobileOpen(false);
+                  }}
+                  className="flex items-center space-x-2 hover:text-green-200 transition"
+                >
+                  <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
+                  <span>Chat</span>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
-};
-
-export default Header;
+}

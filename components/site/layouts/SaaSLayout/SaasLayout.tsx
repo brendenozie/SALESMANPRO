@@ -16,7 +16,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function SaaSLayout({ params, children }: SaaSLayoutProps) {
-  const { storeFormData } = params;
+  
   return (
     <>
       <Header/>

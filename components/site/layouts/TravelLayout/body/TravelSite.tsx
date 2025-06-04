@@ -1,365 +1,383 @@
-import React, { useState, useEffect, useRef } from "react";
+"use client";
+
+import React, { useState, useEffect, useRef, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarDaysIcon, ChevronDownIcon, UserGroupIcon } from "@heroicons/react/24/outline";
+import {
+  CalendarDaysIcon,
+  ChevronDownIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
+
+import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { StoreForm } from "../../../../../types/typings";
 
 // Sample store & travel data
 const store = {
-name: "Wanderlust Travels",
-slug: "wanderlust-travels",
-description: "Discover breathtaking destinations and immersive experiences worldwide.",
-bannerUrl: "/images/travel-hero.jpg",
-categories: [
-{ id: 1, name: "Beaches", icon: "/icons/beach.svg" },
-{ id: 2, name: "Mountains", icon: "/icons/mountain.svg" },
-{ id: 3, name: "Cities", icon: "/icons/city.svg" },
-{ id: 4, name: "Adventure", icon: "/icons/adventure.svg" },
-{ id: 5, name: "Cruises", icon: "/icons/cruise.svg" },
-{ id: 6, name: "Wellness", icon: "/icons/wellness.svg" },
-],
-featured: [
-{ id: "d1", name: "Maldives Getaway", subtitle: "Crystal clear waters & private villas", imageUrl: "/destinations/maldives.jpg" },
-{ id: "d2", name: "Swiss Alps Escape", subtitle: "Snow-capped peaks & cozy chalets", imageUrl: "/destinations/alps.jpg" },
-{ id: "d3", name: "Tokyo Explorer", subtitle: "Vibrant city life & cultural wonders", imageUrl: "/destinations/tokyo.jpg" },
-],
-testimonials: [
-{ quote: "An unforgettable journey!", author: "Alex P." },
-{ quote: "Perfectly curated experiences.", author: "Maria S." },
-{ quote: "Wanderlust made my dream trip come true.", author: "Javier L." },
-],
-faqs: [
-{ question: "Do you offer customizable itineraries?", answer: "Yes, tailor every detail to your preferences." },
-{ question: "What is your cancellation policy?", answer: "Full refund up to 14 days before departure." },
-{ question: "Are group discounts available?", answer: "Yes, for parties of 5 or more travelers." },
-],
-};
-
-
-const travelTypes = ['Adventure', 'Relaxation', 'Cultural', 'Family'];
-const regions = ['Europe', 'Asia', 'South America', 'Africa', 'Oceania'];
-
-// data/listings.ts
-export interface Listing {
-  id: string
-  title: string
-  thumbnail: string
-  price: number
-  beds: number
-  baths: number
-  area: number
-  badge?: 'New' | 'Hot' | 'Price Reduced'
-}
-
-export const listings: Listing[] = [
-  {
-    id: '1',
-    title: 'Tropical Bali Getaway',
-    thumbnail: '/assets/bali.jpg',
-    price: 1200,
-    beds: 1,
-    baths: 1,
-    area: 500,
-    badge: 'Hot',
-  },
-  {
-    id: '2',
-    title: 'Alpine Ski Retreat',
-    thumbnail: '/assets/alps.jpg',
-    price: 2500,
-    beds: 3,
-    baths: 2,
-    area: 1200,
-    badge: 'New',
-  },
-  {
-    id: '3',
-    title: 'Santorini Sunset Villa',
-    thumbnail: '/assets/santorini.jpg',
-    price: 3200,
-    beds: 2,
-    baths: 2,
-    area: 900,
-  },
-  {
-    id: '4',
-    title: 'Safari Lodge Adventure',
-    thumbnail: '/assets/safari.jpg',
-    price: 1800,
-    beds: 2,
-    baths: 2,
-    area: 1100,
-    badge: 'Price Reduced',
-  },
-  // …add as many as you like
-]
-
-
-
-// data/trendingLocations.ts
-export interface TrendingLocation {
-  id: string
-  name: string
-  image: string
-  listingsCount: number
-  avgPrice: number
-}
-
-export const trendingLocations: TrendingLocation[] = [
-  {
-    id: 'tokyo',
-    name: 'Tokyo, Japan',
-    image: '/assets/trending/tokyo.jpg',
-    listingsCount: 342,
-    avgPrice: 2200,
-  },
-  {
-    id: 'bali',
-    name: 'Bali, Indonesia',
-    image: '/assets/trending/bali.jpg',
-    listingsCount: 289,
-    avgPrice: 1250,
-  },
-  {
-    id: 'paris',
-    name: 'Paris, France',
-    image: '/assets/trending/paris.jpg',
-    listingsCount: 410,
-    avgPrice: 3000,
-  },
-  {
-    id: 'cape-town',
-    name: 'Cape Town, South Africa',
-    image: '/assets/trending/capetown.jpg',
-    listingsCount: 157,
-    avgPrice: 1400,
-  },
-  // …more locations
-]
-
-// data/virtualTours.ts
-export interface VirtualTour {
-  id: string
-  title: string
-  thumbnail: string
-  videoUrl: string
-}
-
-// components/VirtualTourCard.tsx
-interface Props {
-  tour: VirtualTour
-  onOpen: (videoUrl: string) => void  
-  loc: TrendingLocation;
-  listing: Listing;
-  testimonial: Testimonial;
-  agent: Agent
-}
-
-
-export const virtualTours: VirtualTour[] = [
-  {
-    id: 'tour1',
-    title: 'Eiffel Tower 360° Tour',
-    thumbnail: '/assets/tours/eiffel.jpg',
-    videoUrl: 'https://www.youtube.com/embed/Scxs7L0vhZ4',
-  },
-  {
-    id: 'tour2',
-    title: 'Santorini Cliffside Villa',
-    thumbnail: '/assets/tours/santorini-villa.jpg',
-    videoUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
-  },
-  {
-    id: 'tour3',
-    title: 'Amazon Rainforest Lodge',
-    thumbnail: '/assets/tours/amazon.jpg',
-    videoUrl: 'https://www.youtube.com/embed/5qap5aO4i9A',
-  },
-]
-
-// data/agents.ts
-export interface Agent {
-  id: string
-  name: string
-  photo: string
-  specialty: string
-  experience: number  // years
-}
-
-export const agents: Agent[] = [
-  {
-    id: 'a1',
-    name: 'Sophia Lin',
-    photo: '/assets/agents/sophia.jpg',
-    specialty: 'Cultural Tours',
-    experience: 8,
-  },
-  {
-    id: 'a2',
-    name: 'Liam Carter',
-    photo: '/assets/agents/liam.jpg',
-    specialty: 'Adventure Travel',
-    experience: 5,
-  },
-  {
-    id: 'a3',
-    name: 'Aria Patel',
-    photo: '/assets/agents/aria.jpg',
-    specialty: 'Luxury Escapes',
-    experience: 10,
-  },
-  {
-    id: 'a4',
-    name: 'Ethan Zhao',
-    photo: '/assets/agents/ethan.jpg',
-    specialty: 'Family Trips',
-    experience: 6,
-  },
-  // …more agents
-]
-// components/AgentCard.tsx
-
-
-// data/insights.ts
-
-export interface RegionCost {
-  id: string
-  region: string
-  avgCost: number
-  icon: string   // any icon name or image path
-}
-
-export interface BlogPost {
-  id: string
-  title: string
-  url: string
-  date: string
-}
-
-export const regionCosts: RegionCost[] = [
-  { id: 'r1', region: 'Europe',     avgCost: 2500, icon: '/assets/icons/europe.svg' },
-  { id: 'r2', region: 'Asia',       avgCost: 1800, icon: '/assets/icons/asia.svg' },
-  { id: 'r3', region: 'Americas',   avgCost: 2200, icon: '/assets/icons/americas.svg' },
-  { id: 'r4', region: 'Oceania',    avgCost: 3000, icon: '/assets/icons/oceania.svg' },
-]
-
-export const blogPosts: BlogPost[] = [
-  { id: 'b1', title: 'Top 10 Hidden Gems in Europe',         url: '/blog/europe-hidden-gems',    date: '2025-04-10' },
-  { id: 'b2', title: 'How to Pack Light for Any Trip',       url: '/blog/pack-light',            date: '2025-05-02' },
-  { id: 'b3', title: 'Family-Friendly Destinations 2025',    url: '/blog/family-destinations',   date: '2025-03-25' },
-]
-
-// data/testimonials.ts
-export interface Testimonial {
-  id: string
-  name: string
-  avatar: string
-  quote: string
-  role: string
-}
-
-export const testimonials: Testimonial[] = [
-  {
-    id: 't1',
-    name: 'Emily Carter',
-    avatar: '/assets/testimonials/emily.jpg',
-    quote:
-      'Booking my trip was a breeze! The virtual tours gave me confidence, and the experts answered all my questions.',
-    role: 'Solo Traveler',
-  },
-  {
-    id: 't2',
-    name: 'Michael Nguyen',
-    avatar: '/assets/testimonials/michael.jpg',
-    quote:
-      'Our family vacation was unforgettable. The featured tours and clear pricing options made planning stress-free.',
-    role: 'Family of 4',
-  },
-  {
-    id: 't3',
-    name: 'Sara Lee',
-    avatar: '/assets/testimonials/sara.jpg',
-    quote:
-      'I found hidden gems in Europe I never knew existed! The travel tips blog posts were pure gold.',
-    role: 'Couple Traveler',
-  },
-]
-
-
+  name: "Wanderlust Travels",
+  slug: "wanderlust-travels",
+  description: "Discover breathtaking destinations and immersive experiences worldwide.",
+  bannerUrl: "/images/travel-hero.jpg",
+  categories: [
+  { id: 1, name: "Beaches", icon: "/icons/beach.svg" },
+  { id: 2, name: "Mountains", icon: "/icons/mountain.svg" },
+  { id: 3, name: "Cities", icon: "/icons/city.svg" },
+  { id: 4, name: "Adventure", icon: "/icons/adventure.svg" },
+  { id: 5, name: "Cruises", icon: "/icons/cruise.svg" },
+  { id: 6, name: "Wellness", icon: "/icons/wellness.svg" },
+  ],
+  featured: [
+  { id: "d1", name: "Maldives Getaway", subtitle: "Crystal clear waters & private villas", imageUrl: "/destinations/maldives.jpg" },
+  { id: "d2", name: "Swiss Alps Escape", subtitle: "Snow-capped peaks & cozy chalets", imageUrl: "/destinations/alps.jpg" },
+  { id: "d3", name: "Tokyo Explorer", subtitle: "Vibrant city life & cultural wonders", imageUrl: "/destinations/tokyo.jpg" },
+  ],
+  testimonials: [
+  { quote: "An unforgettable journey!", author: "Alex P." },
+  { quote: "Perfectly curated experiences.", author: "Maria S." },
+  { quote: "Wanderlust made my dream trip come true.", author: "Javier L." },
+  ],
+  faqs: [
+  { question: "Do you offer customizable itineraries?", answer: "Yes, tailor every detail to your preferences." },
+  { question: "What is your cancellation policy?", answer: "Full refund up to 14 days before departure." },
+  { question: "Are group discounts available?", answer: "Yes, for parties of 5 or more travelers." },
+  ],
+  };
+  
+  
+  const travelTypes = ['Adventure', 'Relaxation', 'Cultural', 'Family'];
+  const regions = ['Europe', 'Asia', 'South America', 'Africa', 'Oceania'];
+  
+  // data/listings.ts
+  export interface Listing {
+    id: string
+    title: string
+    thumbnail: string
+    price: number
+    beds: number
+    baths: number
+    area: number
+    badge?: 'New' | 'Hot' | 'Price Reduced'
+  }
+  
+  export const listings: Listing[] = [
+    {
+      id: '1',
+      title: 'Tropical Bali Getaway',
+      thumbnail: '/assets/bali.jpg',
+      price: 1200,
+      beds: 1,
+      baths: 1,
+      area: 500,
+      badge: 'Hot',
+    },
+    {
+      id: '2',
+      title: 'Alpine Ski Retreat',
+      thumbnail: '/assets/alps.jpg',
+      price: 2500,
+      beds: 3,
+      baths: 2,
+      area: 1200,
+      badge: 'New',
+    },
+    {
+      id: '3',
+      title: 'Santorini Sunset Villa',
+      thumbnail: '/assets/santorini.jpg',
+      price: 3200,
+      beds: 2,
+      baths: 2,
+      area: 900,
+    },
+    {
+      id: '4',
+      title: 'Safari Lodge Adventure',
+      thumbnail: '/assets/safari.jpg',
+      price: 1800,
+      beds: 2,
+      baths: 2,
+      area: 1100,
+      badge: 'Price Reduced',
+    },
+    // …add as many as you like
+  ]
+  
+  
+  
+  // data/trendingLocations.ts
+  export interface TrendingLocation {
+    id: string
+    name: string
+    image: string
+    listingsCount: number
+    avgPrice: number
+  }
+  
+  export const trendingLocations: TrendingLocation[] = [
+    {
+      id: 'tokyo',
+      name: 'Tokyo, Japan',
+      image: '/assets/trending/tokyo.jpg',
+      listingsCount: 342,
+      avgPrice: 2200,
+    },
+    {
+      id: 'bali',
+      name: 'Bali, Indonesia',
+      image: '/assets/trending/bali.jpg',
+      listingsCount: 289,
+      avgPrice: 1250,
+    },
+    {
+      id: 'paris',
+      name: 'Paris, France',
+      image: '/assets/trending/paris.jpg',
+      listingsCount: 410,
+      avgPrice: 3000,
+    },
+    {
+      id: 'cape-town',
+      name: 'Cape Town, South Africa',
+      image: '/assets/trending/capetown.jpg',
+      listingsCount: 157,
+      avgPrice: 1400,
+    },
+    // …more locations
+  ]
+  
+  // data/virtualTours.ts
+  export interface VirtualTour {
+    id: string
+    title: string
+    thumbnail: string
+    videoUrl: string
+  }
+  
+  // components/VirtualTourCard.tsx
+  interface Props {
+    tour: VirtualTour
+    onOpen: (videoUrl: string) => void  
+    loc: TrendingLocation;
+    listing: Listing;
+    testimonial: Testimonial;
+    agent: Agent
+  }
+  
+  
+  export const virtualTours: VirtualTour[] = [
+    {
+      id: 'tour1',
+      title: 'Eiffel Tower 360° Tour',
+      thumbnail: '/assets/tours/eiffel.jpg',
+      videoUrl: 'https://www.youtube.com/embed/Scxs7L0vhZ4',
+    },
+    {
+      id: 'tour2',
+      title: 'Santorini Cliffside Villa',
+      thumbnail: '/assets/tours/santorini-villa.jpg',
+      videoUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
+    },
+    {
+      id: 'tour3',
+      title: 'Amazon Rainforest Lodge',
+      thumbnail: '/assets/tours/amazon.jpg',
+      videoUrl: 'https://www.youtube.com/embed/5qap5aO4i9A',
+    },
+  ]
+  
+  // data/agents.ts
+  export interface Agent {
+    id: string
+    name: string
+    photo: string
+    specialty: string
+    experience: number  // years
+  }
+  
+  export const agents: Agent[] = [
+    {
+      id: 'a1',
+      name: 'Sophia Lin',
+      photo: '/assets/agents/sophia.jpg',
+      specialty: 'Cultural Tours',
+      experience: 8,
+    },
+    {
+      id: 'a2',
+      name: 'Liam Carter',
+      photo: '/assets/agents/liam.jpg',
+      specialty: 'Adventure Travel',
+      experience: 5,
+    },
+    {
+      id: 'a3',
+      name: 'Aria Patel',
+      photo: '/assets/agents/aria.jpg',
+      specialty: 'Luxury Escapes',
+      experience: 10,
+    },
+    {
+      id: 'a4',
+      name: 'Ethan Zhao',
+      photo: '/assets/agents/ethan.jpg',
+      specialty: 'Family Trips',
+      experience: 6,
+    },
+    // …more agents
+  ]
+  // components/AgentCard.tsx
+  
+  
+  // data/insights.ts
+  
+  export interface RegionCost {
+    id: string
+    region: string
+    avgCost: number
+    icon: string   // any icon name or image path
+  }
+  
+  export interface BlogPost {
+    id: string
+    title: string
+    url: string
+    date: string
+  }
+  
+  export const regionCosts: RegionCost[] = [
+    { id: 'r1', region: 'Europe',     avgCost: 2500, icon: '/assets/icons/europe.svg' },
+    { id: 'r2', region: 'Asia',       avgCost: 1800, icon: '/assets/icons/asia.svg' },
+    { id: 'r3', region: 'Americas',   avgCost: 2200, icon: '/assets/icons/americas.svg' },
+    { id: 'r4', region: 'Oceania',    avgCost: 3000, icon: '/assets/icons/oceania.svg' },
+  ]
+  
+  export const blogPosts: BlogPost[] = [
+    { id: 'b1', title: 'Top 10 Hidden Gems in Europe',         url: '/blog/europe-hidden-gems',    date: '2025-04-10' },
+    { id: 'b2', title: 'How to Pack Light for Any Trip',       url: '/blog/pack-light',            date: '2025-05-02' },
+    { id: 'b3', title: 'Family-Friendly Destinations 2025',    url: '/blog/family-destinations',   date: '2025-03-25' },
+  ]
+  
+  // data/testimonials.ts
+  export interface Testimonial {
+    id: string
+    name: string
+    avatar: string
+    quote: string
+    role: string
+  }
+  
+  export const testimonials: Testimonial[] = [
+    {
+      id: 't1',
+      name: 'Emily Carter',
+      avatar: '/assets/testimonials/emily.jpg',
+      quote:
+        'Booking my trip was a breeze! The virtual tours gave me confidence, and the experts answered all my questions.',
+      role: 'Solo Traveler',
+    },
+    {
+      id: 't2',
+      name: 'Michael Nguyen',
+      avatar: '/assets/testimonials/michael.jpg',
+      quote:
+        'Our family vacation was unforgettable. The featured tours and clear pricing options made planning stress-free.',
+      role: 'Family of 4',
+    },
+    {
+      id: 't3',
+      name: 'Sara Lee',
+      avatar: '/assets/testimonials/sara.jpg',
+      quote:
+        'I found hidden gems in Europe I never knew existed! The travel tips blog posts were pure gold.',
+      role: 'Couple Traveler',
+    },
+  ]
+  
+  
+  
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-`${src}?w=${width}&q=${quality || 75}`;
+  `${src}?w=${width}&q=${quality || 75}`;
 
-export default function TravelSite() {
-const router = useRouter();
-const [categories, setCategories] = useState<any[]>([]);
-const [featured, setFeatured] = useState<any[]>([]);
-const [testimonials, setTestimonials] = useState<any[]>([]);
-const [faqs, setFaqs] = useState<any[]>([]);
-
-useEffect(() => {
-setCategories(store.categories);
-setFeatured(store.featured);
-setTestimonials(store.testimonials);
-setFaqs(store.faqs);
-}, []);
-
-return ( <div className="space-y-20 font-sans">
- {/* Hero Section  */}
- <Hero />
-
- <main className="space-y-16 px-4 lg:px-24">
-  {/* Filter Bar */}
-  <FilterBar />
-
-  {/* Listings Section */}
-  <section className="py-12 bg-gray-50">
-    <div className="container mx-auto px-6">
-      <Listings />
-    </div>
-  </section>
-
-  {/* Trending Locations */}
-  <TrendingLocations />
-
-  <MeetAgents />
-
-  <MarketInsights />
-
-  {/* Virtual Tours */}
-  <VirtualTours />
-  
-  <Testimonials />
-
-  <MobileAppPromo />
-
-  <NewsletterSignup />
-
-  {/* Chat Button */}
-  
- </main>
-
-
-  {/* Chat Button */}
-  <motion.div whileHover={{ scale: 1.2 }} className="fixed bottom-8 right-8">
-    <button className="bg-indigo-500 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-600 transition">
-      💬
-    </button>
-  </motion.div>
-  {/* <div className="container mx-auto">{children}</div>
-  <footer className="mt-12 text-center text-gray-600">All about services for {slug}</footer> */}
-</div>
-
-);
+interface TravelSiteProps {
+  params: { storeFormData: any };
 }
 
-// components/Hero.tsx
-function Hero() {
-  const [destination, setDestination] = useState('')
-  const [travelType, setTravelType] = useState(travelTypes[0])
-  const [date, setDate] = useState('')
-  const [guests, setGuests] = useState(2)
+// const travelTypes = ["Adventure", "Relaxation", "Cultural", "Family"];
+// const regions = ["Europe", "Asia", "South America", "Africa", "Oceania"];
+
+export default function TravelSite() {
+  const router = useRouter();
+  const { storeFormData } = useStoreContext();
+
+  const [categories, setCategories] = useState<any[]>([]);
+  const [featured, setFeatured] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [faqs, setFaqs] = useState<any[]>([]);
+
+  useEffect(() => {
+    setCategories(storeFormData.storeCategories || []);
+    setFeatured(storeFormData.marketplaceListings || []);
+    setTestimonials(storeFormData.testimonials || []);
+    setFaqs(storeFormData.faqs || []);
+  }, [storeFormData]);
+
+  return (
+    <div className="space-y-20 font-sans">
+      {/* Hero Section */}
+      <Hero storeFormData={storeFormData} />
+
+      <main className="space-y-16 px-4 lg:px-24">
+        {/* Filter Bar */}
+        <FilterBar />
+
+        {/* Listings Section */}
+        <section className="py-12 bg-gray-50">
+          <div className="container mx-auto px-6">
+            <Listings />
+          </div>
+        </section>
+
+        {/* Trending Locations */}
+        <TrendingLocations />
+
+        {/* Meet Agents */}
+        <MeetAgents />
+
+        {/* Market Insights */}
+        <MarketInsights />
+
+        {/* Virtual Tours */}
+        <VirtualTours />
+
+        {/* Testimonials */}
+        <Testimonials />
+
+        {/* Mobile App Promo */}
+        <MobileAppPromo />
+
+        {/* Newsletter Signup */}
+        <NewsletterSignup />
+
+        {/* Chat Button */}
+        <motion.div whileHover={{ scale: 1.2 }} className="fixed bottom-8 right-8">
+          <button className="bg-indigo-500 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-600 transition">
+            💬
+          </button>
+        </motion.div>
+      </main>
+    </div>
+  );
+}
+
+// Hero.tsx
+function Hero({ storeFormData }: { storeFormData : StoreForm}) {
+  const [destination, setDestination] = useState("");
+  const [travelType, setTravelType] = useState(travelTypes[0]);
+  const [date, setDate] = useState("");
+  const [guests, setGuests] = useState(2);
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
@@ -367,7 +385,9 @@ function Hero() {
       <video
         className="absolute inset-0 w-full h-full object-cover"
         src="/assets/hero-travel.mp4"
-        autoPlay muted loop
+        autoPlay
+        muted
+        loop
       />
       <div className="absolute inset-0 bg-black bg-opacity-50" />
 
@@ -378,7 +398,7 @@ function Hero() {
           transition={{ duration: 0.8 }}
           className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold max-w-3xl"
         >
-          Explore the World, One Journey at a Time
+          {storeFormData.name || "Explore the World, One Journey at a Time"}
         </motion.h1>
 
         <motion.div
@@ -392,7 +412,7 @@ function Hero() {
             <input
               type="text"
               value={destination}
-              onChange={e => setDestination(e.target.value)}
+              onChange={(e) => setDestination(e.target.value)}
               placeholder="Where to?"
               className="flex-1 rounded-xl border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
@@ -400,11 +420,11 @@ function Hero() {
             {/* Travel Type */}
             <select
               value={travelType}
-              onChange={e => setTravelType(e.target.value)}
+              onChange={(e) => setTravelType(e.target.value)}
               className="flex-1 rounded-xl border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
-              {travelTypes.map(t => (
-                <option key={t} value={t}>{t}</option>
+              {travelTypes.map((t) => (
+                <option key={t}>{t}</option>
               ))}
             </select>
 
@@ -414,20 +434,20 @@ function Hero() {
               <input
                 type="date"
                 value={date}
-                onChange={e => setDate(e.target.value)}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full rounded-xl border border-gray-300 px-10 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
 
             {/* Guests */}
             <div className="relative flex-1">
-              <UserGroupIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500  w-5 h-5" />
+              <UserGroupIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
               <input
                 type="number"
                 min={1}
                 max={10}
                 value={guests}
-                onChange={e => setGuests(Number(e.target.value))}
+                onChange={(e) => setGuests(Number(e.target.value))}
                 className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 placeholder="Guests"
               />
@@ -447,17 +467,17 @@ function Hero() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
-{/* components/FilterBar.tsx */}
+// FilterBar.tsx
 function FilterBar() {
-  const [open, setOpen] = useState(false)
-  const [type, setType] = useState('')
-  const [region, setRegion] = useState('')
-  const [price, setPrice] = useState(1500)
-  const [guests, setGuests] = useState(2)
-  const [date, setDate] = useState('')
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState("");
+  const [region, setRegion] = useState("");
+  const [price, setPrice] = useState(1500);
+  const [guests, setGuests] = useState(2);
+  const [date, setDate] = useState("");
 
   return (
     <motion.div
@@ -474,11 +494,16 @@ function FilterBar() {
             onClick={() => setOpen(!open)}
             className="text-indigo-600 font-medium flex items-center gap-1"
           >
-            {open ? 'Hide' : 'Show'} <ChevronDownIcon className={`transform w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} />
+            {open ? "Hide" : "Show"}{" "}
+            <ChevronDownIcon
+              className={`transform w-5 h-5 transition-transform ${
+                open ? "rotate-180" : ""
+              }`}
+            />
           </button>
         </div>
 
-        <div className={`mt-4 md:mt-0 ${open ? 'block' : 'hidden'} md:block`}>
+        <div className={`mt-4 md:mt-0 ${open ? "block" : "hidden"} md:block`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4">
             {/* Travel Type */}
             <select
@@ -544,15 +569,15 @@ function FilterBar() {
         </div>
       </div>
     </motion.div>
-  )
+  );
 }
 
-// components/ListingCard.tsx
+// ListingCard.tsx
 function ListingCard({ listing }: any) {
   return (
     <motion.div
-      whileHover={{ y: -8, boxShadow: '0px 15px 25px rgba(0,0,0,0.15)' }}
-      transition={{ type: 'spring', stiffness: 300 }}
+      whileHover={{ y: -8, boxShadow: "0px 15px 25px rgba(0,0,0,0.15)" }}
+      transition={{ type: "spring", stiffness: 300 }}
       className="bg-white rounded-2xl overflow-hidden shadow-sm"
     >
       <div className="relative h-48 w-full">
@@ -564,16 +589,16 @@ function ListingCard({ listing }: any) {
           className="transform hover:scale-105 transition duration-300"
           placeholder="blur"
           blurDataURL="/assets/blur-placeholder.png"
-          loader={loader} 
+          loader={loader}
         />
         {listing.badge && (
           <span
             className={`absolute top-3 left-3 px-3 py-1 text-sm font-semibold rounded-full ${
-              listing.badge === 'New'
-                ? 'bg-green-500 text-white'
-                : listing.badge === 'Hot'
-                ? 'bg-red-500 text-white'
-                : 'bg-yellow-400 text-gray-900'
+              listing.badge === "New"
+                ? "bg-green-500 text-white"
+                : listing.badge === "Hot"
+                ? "bg-red-500 text-white"
+                : "bg-yellow-400 text-gray-900"
             }`}
           >
             {listing.badge}
@@ -583,7 +608,9 @@ function ListingCard({ listing }: any) {
 
       <div className="p-4">
         <h3 className="text-lg font-bold mb-2">{listing.title}</h3>
-        <p className="text-indigo-600 font-semibold mb-4">${listing.price.toLocaleString()}</p>
+        <p className="text-indigo-600 font-semibold mb-4">
+          ${listing.price.toLocaleString()}
+        </p>
         <div className="flex text-gray-600 text-sm space-x-4 mb-4">
           <span>{listing.beds} beds</span>
           <span>{listing.baths} baths</span>
@@ -594,10 +621,10 @@ function ListingCard({ listing }: any) {
         </button>
       </div>
     </motion.div>
-  )
+  );
 }
 
-// components/Listings.tsx
+// Listings.tsx
 function Listings() {
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
@@ -605,20 +632,20 @@ function Listings() {
         Featured Trips & Tours
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {listings.map(listing => (
+        {listings.map((listing) => (
           <ListingCard key={listing.id} listing={listing} />
         ))}
       </div>
     </section>
-  )
+  );
 }
 
-{/* components/TrendingCard.tsx */}
+// TrendingCard.tsx
 function TrendingCard({ loc }: any) {
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
-      transition={{ type: 'spring', stiffness: 200 }}
+      transition={{ type: "spring", stiffness: 200 }}
       className="relative flex-shrink-0 w-64 h-80 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
     >
       <Image
@@ -629,13 +656,13 @@ function TrendingCard({ loc }: any) {
         className="transform transition-transform duration-300"
         placeholder="blur"
         blurDataURL="/assets/blur-placeholder.png"
-        loader={loader} 
+        loader={loader}
       />
       <div className="absolute inset-0 bg-black bg-opacity-30" />
       <div className="absolute bottom-4 left-4 text-white">
         <h3 className="text-lg font-semibold">{loc.name}</h3>
         <p className="text-sm">{loc.listingsCount}+ listings</p>
-        <p className="text-sm">Avg. $ {loc.avgPrice.toLocaleString()}</p>
+        <p className="text-sm">Avg. ${loc.avgPrice.toLocaleString()}</p>
       </div>
       <motion.div
         initial={{ opacity: 0 }}
@@ -646,10 +673,10 @@ function TrendingCard({ loc }: any) {
         View All
       </motion.div>
     </motion.div>
-  )
+  );
 }
 
-// components/TrendingLocations.tsx
+// TrendingLocations.tsx
 function TrendingLocations() {
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
@@ -667,20 +694,20 @@ function TrendingLocations() {
         transition={{ duration: 0.8 }}
         className="flex space-x-6 overflow-x-auto pb-4 hide-scrollbar"
       >
-        {trendingLocations.map(loc => (
+        {trendingLocations.map((loc) => (
           <TrendingCard key={loc.id} loc={loc} />
         ))}
       </motion.div>
     </section>
-  )
+  );
 }
 
-/* components/VirtualTourCard.tsx */
+// VirtualTourCard.tsx
 function VirtualTourCard({ tour, onOpen }: any) {
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      transition={{ type: 'spring', stiffness: 200 }}
+      transition={{ type: "spring", stiffness: 200 }}
       className="relative flex-shrink-0 w-64 h-40 rounded-2xl overflow-hidden shadow-lg cursor-pointer"
       onClick={() => onOpen(tour.videoUrl)}
     >
@@ -692,7 +719,7 @@ function VirtualTourCard({ tour, onOpen }: any) {
         className="transform hover:scale-105 transition duration-300"
         placeholder="blur"
         blurDataURL="/assets/blur-placeholder.png"
-        loader={loader} 
+        loader={loader}
       />
       <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
         <motion.span
@@ -707,12 +734,12 @@ function VirtualTourCard({ tour, onOpen }: any) {
         {tour.title}
       </div>
     </motion.div>
-  )
+  );
 }
 
-// components/VirtualTours.tsx
+// VirtualTours.tsx
 function VirtualTours() {
-  const [openUrl, setOpenUrl] = useState<string | null>(null)
+  const [openUrl, setOpenUrl] = useState<string | null>(null);
 
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
@@ -721,7 +748,7 @@ function VirtualTours() {
       </h2>
 
       <div className="flex space-x-6 overflow-x-auto pb-4 hide-scrollbar">
-        {virtualTours.map(t => (
+        {virtualTours.map((t) => (
           <VirtualTourCard key={t.id} tour={t} onOpen={setOpenUrl} />
         ))}
       </div>
@@ -761,15 +788,15 @@ function VirtualTours() {
         )}
       </AnimatePresence>
     </section>
-  )
+  );
 }
 
-{/* components/AgentCard.tsx */}
+// AgentCard.tsx
 function AgentCard({ agent }: any) {
   return (
     <motion.div
-      whileHover={{ y: -6, boxShadow: '0px 10px 20px rgba(0,0,0,0.12)' }}
-      transition={{ type: 'spring', stiffness: 250 }}
+      whileHover={{ y: -6, boxShadow: "0px 10px 20px rgba(0,0,0,0.12)" }}
+      transition={{ type: "spring", stiffness: 250 }}
       className="bg-white rounded-2xl overflow-hidden shadow-sm flex flex-col items-center text-center p-6"
     >
       <div className="relative w-24 h-24 mb-4">
@@ -781,7 +808,7 @@ function AgentCard({ agent }: any) {
           className="rounded-full"
           placeholder="blur"
           blurDataURL="/assets/blur-placeholder.png"
-          loader={loader} 
+          loader={loader}
         />
       </div>
       <h3 className="text-lg font-semibold">{agent.name}</h3>
@@ -791,10 +818,10 @@ function AgentCard({ agent }: any) {
         Schedule a Meeting
       </button>
     </motion.div>
-  )
+  );
 }
 
-// components/MeetAgents.tsx
+// MeetAgents.tsx
 function MeetAgents() {
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
@@ -802,15 +829,15 @@ function MeetAgents() {
         Meet Our Travel Experts
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {agents.map(agent => (
+        {agents.map((agent) => (
           <AgentCard key={agent.id} agent={agent} />
         ))}
       </div>
     </section>
-  )
+  );
 }
 
-// components/MarketInsights.tsx
+// MarketInsights.tsx
 function MarketInsights() {
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
@@ -827,19 +854,19 @@ function MarketInsights() {
           viewport={{ once: true }}
           transition={{ staggerChildren: 0.1 }}
         >
-          {regionCosts.map(rc => (
+          {regionCosts.map((rc) => (
             <motion.div
               key={rc.id}
               className="flex items-center bg-white rounded-2xl p-4 shadow-sm"
               whileHover={{ scale: 1.03 }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 200 }}
             >
               <div className="w-12 h-12 mr-4 relative">
                 <Image
                   src={rc.icon}
                   alt={rc.region}
                   layout="fill"
-                  loader={loader} 
+                  loader={loader}
                   objectFit="contain"
                 />
               </div>
@@ -863,33 +890,28 @@ function MarketInsights() {
         >
           <h3 className="text-xl font-semibold mb-4">Latest Travel Tips</h3>
           <ul className="space-y-3">
-            {blogPosts.map(bp => (
+            {blogPosts.map((bp) => (
               <li key={bp.id}>
-                <a
-                  href={bp.url}
-                  className="text-gray-700 hover:text-indigo-600 transition"
-                >
-                  {bp.title}
-                </a>
-                <p className="text-gray-500 text-sm">{new Date(bp.date).toLocaleDateString()}</p>
+                <Link href={bp.url} className="text-gray-700 hover:text-indigo-600 transition">{bp.title}
+                </Link>
+                <p className="text-gray-500 text-sm">
+                  {new Date(bp.date).toLocaleDateString()}
+                </p>
               </li>
             ))}
           </ul>
           <div className="mt-6">
-            <a
-              href="/blog"
-              className="inline-block text-indigo-600 hover:underline font-medium"
-            >
-              View All Posts →
-            </a>
+            <Link href="/blog" className="inline-block text-indigo-600 hover:underline font-medium">
+                View All Posts →
+            </Link>
           </div>
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
-// components/TestimonialCard.tsx
+// TestimonialCard.tsx
 function TestimonialCard({ testimonial }: any) {
   return (
     <div className="flex flex-col items-center text-center p-6 bg-white rounded-2xl shadow-sm max-w-md mx-auto">
@@ -901,40 +923,41 @@ function TestimonialCard({ testimonial }: any) {
           objectFit="cover"
           className="rounded-full"
           placeholder="blur"
-          loader={loader} 
           blurDataURL="/assets/blur-placeholder.png"
+          loader={loader}
         />
       </div>
       <p className="text-gray-800 italic mb-4">“{testimonial.quote}”</p>
       <h4 className="text-lg font-semibold">{testimonial.name}</h4>
       <p className="text-sm text-gray-500">{testimonial.role}</p>
     </div>
-  )
+  );
 }
 
-// components/Testimonials.tsx
+// Testimonials.tsx
 function Testimonials() {
-  const [current, setCurrent] = useState(0)
-  const timeoutRef = useRef<number | null>(null)
-  const delay = 5000
+  const [current, setCurrent] = useState(0);
+  const timeoutRef = useRef<number | null>(null);
+  const delay = 5000;
+  const items = store.testimonials;
 
   useEffect(() => {
     timeoutRef.current = window.setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % testimonials.length)
-    }, delay)
+      setCurrent((prev) => (prev + 1) % items.length);
+    }, delay);
     return () => {
-      if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-    }
-  }, [current])
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, [current, items.length]);
 
   const prev = () => {
-    if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-    setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length)
-  }
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    setCurrent((c) => (c - 1 + items.length) % items.length);
+  };
   const next = () => {
-    if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-    setCurrent((c) => (c + 1) % testimonials.length)
-  }
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    setCurrent((c) => (c + 1) % items.length);
+  };
 
   return (
     <section className="py-12 px-4 bg-gray-50">
@@ -944,13 +967,13 @@ function Testimonials() {
       <div className="relative max-w-xl mx-auto">
         <AnimatePresence initial={false}>
           <motion.div
-            key={testimonials[current].id}
+            key={`${items[current].author.slice(0,1)+current}`}
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.6 }}
           >
-            <TestimonialCard testimonial={testimonials[current]} />
+            <TestimonialCard testimonial={items[current]} />
           </motion.div>
         </AnimatePresence>
 
@@ -972,15 +995,15 @@ function Testimonials() {
 
         {/* Dots */}
         <div className="flex justify-center mt-6 space-x-2">
-          {testimonials.map((_, idx) => (
+          {items.map((_, idx) => (
             <button
               key={idx}
               onClick={() => {
-                if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-                setCurrent(idx)
+                if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+                setCurrent(idx);
               }}
               className={`w-3 h-3 rounded-full ${
-                idx === current ? 'bg-indigo-600' : 'bg-gray-300'
+                idx === current ? "bg-indigo-600" : "bg-gray-300"
               }`}
               aria-label={`Show testimonial ${idx + 1}`}
             />
@@ -988,10 +1011,10 @@ function Testimonials() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-// components/MobileAppPromo.tsx
+// MobileAppPromo.tsx
 function MobileAppPromo() {
   return (
     <section className="py-16 px-4 bg-white">
@@ -1017,16 +1040,16 @@ function MobileAppPromo() {
                 alt="Download on the App Store"
                 width={150}
                 height={50}
-                loader={loader} 
+                loader={loader}
               />
             </a>
             <a href="#" aria-label="Get it on Google Play">
               <Image
                 src="/assets/google-play-badge.png"
                 alt="Get it on Google Play"
-                loader={loader} 
                 width={150}
                 height={50}
+                loader={loader}
               />
             </a>
           </div>
@@ -1036,29 +1059,28 @@ function MobileAppPromo() {
         <div className="flex-1 flex justify-center lg:justify-end relative">
           <motion.div
             whileHover={{ scale: 1.05 }}
-            transition={{ type: 'spring', stiffness: 200 }}
+            transition={{ type: "spring", stiffness: 200 }}
             className="relative w-48 h-96 sm:w-56 sm:h-[36rem] lg:w-64 lg:h-[40rem]"
           >
             <Image
               src="/assets/device-mockup.png"
               alt="App on device"
               layout="fill"
-              loader={loader} 
+              loader={loader}
               objectFit="contain"
               placeholder="blur"
               blurDataURL="/assets/blur-placeholder.png"
             />
           </motion.div>
-          {/* You can duplicate/offset for multiple devices */}
         </div>
       </motion.div>
     </section>
-)
+  );
 }
 
-// components/NewsletterSignup.tsx
+// NewsletterSignup.tsx
 function NewsletterSignup() {
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState("");
 
   return (
     <section className="py-16 px-4 bg-indigo-50">
@@ -1077,10 +1099,10 @@ function NewsletterSignup() {
         </p>
         <form
           onSubmit={(e) => {
-            e.preventDefault()
+            e.preventDefault();
             // TODO: hook up subscription API
-            alert(`Subscribed: ${email}`)
-            setEmail('')
+            alert(`Subscribed: ${email}`);
+            setEmail("");
           }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
@@ -1105,5 +1127,5 @@ function NewsletterSignup() {
         </form>
       </motion.div>
     </section>
-  )
+  );
 }
