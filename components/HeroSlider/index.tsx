@@ -8,17 +8,18 @@ import homeBanner from '../../assets/asset3.png';
 import Image from 'next/image';
 import { useStoreContext } from '../../contexts/StoreContext';
 
-// Loader for next/image
+// Custom loader for next/image
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 const HeroSlider: React.FC = () => {
   const { storeFormData } = useStoreContext();
-  const { heroSlides } = storeFormData;
+  const { heroSlides } = storeFormData; // expect an array of { imageUrl, subline, headline, ctaText, ctaLink }
 
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
+  // Automatically advance every 5 seconds
   useEffect(() => {
     clearTimeout(timeoutRef.current);
     if (heroSlides.length > 0) {
@@ -29,11 +30,13 @@ const HeroSlider: React.FC = () => {
     return () => clearTimeout(timeoutRef.current);
   }, [current, heroSlides.length]);
 
+  // Navigate directly to a specific slide
   const goTo = (idx: number) => {
     clearTimeout(timeoutRef.current);
     setCurrent(idx);
   };
 
+  // Previous / Next helpers
   const prev = () => {
     if (heroSlides.length > 0) {
       goTo((current - 1 + heroSlides.length) % heroSlides.length);
@@ -46,9 +49,9 @@ const HeroSlider: React.FC = () => {
   };
 
   return (
-    <section className="relative h-screen overflow-hidden">
+    <section className="relative h-screen max-h-[800px] sm:h-[70vh] overflow-hidden">
       <AnimatePresence>
-        {heroSlides.map((slide:any, i:any) =>
+        {heroSlides.map((slide: any, i: number) =>
           i === current ? (
             <motion.div
               key={i}
@@ -56,39 +59,52 @@ const HeroSlider: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1 }}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full overflow-hidden"
             >
-              <Image
-                src={slide.imageUrl ?? homeBanner.src}
-                alt={slide.headline ?? 'banner image'}
-                fill
-                className="object-cover"
-                loader={loader}
-              />
-              <div className="absolute inset-0 bg-black/40 flex flex-col justify-center items-start px-6 md:px-16 text-white">
+              {/* Background image with slow zoom */}
+              <motion.div
+                initial={{ scale: 1.05 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 20, ease: 'linear' }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src={slide.imageUrl ?? homeBanner.src}
+                  alt={slide.headline ?? 'banner image'}
+                  fill
+                  className="object-cover"
+                  loader={loader}
+                  priority
+                />
+              </motion.div>
+
+              {/* Gradient overlay + text/content */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-center items-start px-6 md:px-16 text-white">
                 <motion.p
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-lg md:text-xl mb-2"
+                  className="text-sm md:text-base lg:text-lg mb-4 tracking-wide"
                 >
                   {slide.subline}
                 </motion.p>
+
                 <motion.h2
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-3xl md:text-5xl font-bold mb-4"
+                  className="text-2xl md:text-4xl lg:text-6xl font-extrabold mb-6 leading-tight"
                 >
                   {slide.headline}
                 </motion.h2>
+
                 {slide.ctaLink && slide.ctaText && (
                   <motion.a
                     href={slide.ctaLink}
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.7 }}
-                    className="inline-block bg-orange-600 hover:bg-orange-700 px-6 py-2 rounded-lg text-white font-medium"
+                    className="inline-block bg-orange-600 hover:bg-orange-700 hover:scale-105 transition-transform px-8 py-3 rounded-2xl text-white font-bold shadow-lg"
                   >
                     {slide.ctaText}
                   </motion.a>
@@ -99,30 +115,30 @@ const HeroSlider: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Controls */}
+      {/* Previous / Next Buttons */}
       <button
         onClick={prev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full text-white"
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 p-3 rounded-full text-white shadow-md transition"
         aria-label="Previous slide"
       >
-        <ArrowLeftIcon />
+        <ArrowLeftIcon className="h-6 w-6" />
       </button>
       <button
         onClick={next}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-2 rounded-full text-white"
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 p-3 rounded-full text-white shadow-md transition"
         aria-label="Next slide"
       >
-        <ArrowRightIcon />
+        <ArrowRightIcon className="h-6 w-6" />
       </button>
 
-      {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2">
-        {heroSlides.map((_:any, idx:any) => (
+      {/* Dots / Indicators */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-3">
+        {heroSlides.map((_, idx: number) => (
           <button
             key={idx}
             onClick={() => goTo(idx)}
-            className={`w-3 h-3 rounded-full transition ${
-              idx === current ? 'bg-white' : 'bg-white/40'
+            className={`w-4 h-4 rounded-full transition-all ring-offset-2 focus:ring-2 ${
+              idx === current ? 'bg-white' : 'bg-white/50'
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           />
