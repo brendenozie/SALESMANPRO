@@ -20,8 +20,8 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({
 }) => {
   // When costPrice, salesPrice, or discount changes, recalc finalPrice & profitMargin
   useEffect(() => {
-    const sellingPrice = parseFloat(formData.salesPrice || "0") || 0;
-    const buyingPrice = parseFloat(formData.costPrice || "0") || 0;
+    const sellingPrice = parseFloat(formData.salesPrice || formData.sellingPrice || "0") || 0;
+    const buyingPrice = parseFloat(formData.costPrice || formData.buyingPrice || "0") || 0;
     const discountValue = parseFloat(formData.discount || "0") || 0;
 
     // Calculate discounted price
@@ -69,7 +69,7 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({
                 type="number"
                 id="costPrice"
                 name="costPrice"
-                value={formData.costPrice || ""}
+                value={formData.costPrice || formData.buyingPrice || ""}
                 onChange={handleInputChange}
                 placeholder="0.00"
                 className="w-full pl-8 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -90,7 +90,7 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({
                 type="number"
                 id="salesPrice"
                 name="salesPrice"
-                value={formData.salesPrice || ""}
+                value={formData.salesPrice || formData.sellingPrice || ""}
                 onChange={handleInputChange}
                 placeholder="0.00"
                 className="w-full pl-8 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

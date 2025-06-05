@@ -126,8 +126,8 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
               showRequestProductModal={showAddToMarketModal}
               setShowRequestProductModal={setShowAddToMarketModal}
               product={selectedProduct}
-              sellerId={""}       // ← pass real sellerId if needed
-              sellerType={""}     // ← pass real sellerType if needed
+              sellerId={""}       
+              sellerType={""}     
               marketListItem={selectedProduct}
               categories={categoriesData}
             />

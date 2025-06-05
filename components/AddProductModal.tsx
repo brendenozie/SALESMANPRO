@@ -217,9 +217,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
     // Generic fields:
     model: product?.model || "",
+
     color: product?.color || [],
     size: product?.size || [],
     weight: product?.weight || "",
+
     condition: product?.condition || "",
     dimension: product?.dimension || "",
     material: product?.material || "",
@@ -307,6 +309,23 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     studios: product?.studios || [],
     bathrooms: product?.bathrooms || "",
     area: product?.area || "",
+
+    digitalUrl: product?.digitalUrl || "",
+    autoDeliver: !!product?.autoDeliver,
+
+    year: product?.year || "",
+
+    availabilityStart: product?.availabilityStart || "",
+    availabilityEnd: product?.availabilityEnd || "",
+
+    tax: product?.tax || 0,
+    shippingCost: product?.shippingCost || 0,
+
+    email: product?.email || "",
+    locationName: product?.locationName || "",
+    latitude: product?.latitude || null,
+    longitude: product?.longitude || null,
+
   });
 
   // Determine which steps to show based on category
