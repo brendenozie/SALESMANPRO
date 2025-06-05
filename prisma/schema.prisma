@@ -507,8 +507,8 @@ model Payment {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   user          User          @relation(fields: [userId], references: [id])
   userId        String        @db.ObjectId
-  // listing       Listing       @relation(fields: [listingId], references: [id])
-  // listingId     String        @db.ObjectId
+  order         CustomerOrder @relation(fields: [orderId], references: [id])
+  orderId       String        @db.ObjectId
   amount        Float
   status        PaymentStatus
   transactionId String        @unique
@@ -547,11 +547,10 @@ model Appointment {
   id        String            @id @default(auto()) @map("_id") @db.ObjectId
   user      User              @relation(fields: [userId], references: [id])
   userId    String            @db.ObjectId
-  // listing   Listing           @relation(fields: [listingId], references: [id])
-  // listingId String            @db.ObjectId
   date      DateTime
   status    AppointmentStatus
   createdAt DateTime          @default(now())
+  OrderItem OrderItem[]
 }
 
 model PropertyType {
@@ -1257,6 +1256,7 @@ model CustomerOrder {
   shippingMethod        String? // Shipping method (e.g., standard, express)
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
+  Payment               Payment[]
 }
 
 model OrderItem {
@@ -1267,6 +1267,8 @@ model OrderItem {
   marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
   price                Float
+  appointment          Appointment?       @relation(fields: [appointmentId], references: [id])
+  appointmentId        String?            @db.ObjectId
 }
 
 model Location {
