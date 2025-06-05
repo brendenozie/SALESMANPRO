@@ -47,7 +47,7 @@ function SelectedPill({
   onRemove: (parentId: string, sub: SubObj) => void;
 }) {
   return (
-    <div className="flex items-center space-x-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm transition-shadow hover:shadow-md">
+    <div className="flex items-center space-x-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-md text-sm transition-shadow hover:shadow-md">
       <span>{child.name}</span>
       <button
         onClick={() => onRemove(parentId, child)}
@@ -276,7 +276,7 @@ export default function CategoryTree({
     <div className="max-w-4xl mx-auto mt-6 border border-gray-100 rounded-lg shadow-sm bg-white">
       {/* ─── Selected Pills ──────────────────────────────────────────────────── */}
       {selectedCategories.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4 px-6 pt-6">
+        <div className="flex flex-row gap-2 mb-4 px-6 pt-6 overflow-x-auto">
           {selectedCategories.map((parent) =>
             parent.items.map((child) => (
               <SelectedPill
@@ -291,7 +291,7 @@ export default function CategoryTree({
       )}
 
       {/* ─── Sticky Header & Search ──────────────────────────────────────────── */}
-      <div className="sticky top-0 bg-white z-10 shadow-sm border-b">
+      <div className=" top-0 bg-white z-10 shadow-sm border-b">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-6 py-5">
           <div>
             <h3 className="text-2xl font-semibold text-gray-900">Select Categories</h3>
@@ -304,13 +304,13 @@ export default function CategoryTree({
           <div className="flex space-x-2 mt-4 md:mt-0">
             <button
               onClick={() => onBulkToggle(allFilteredIds)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm hover:bg-indigo-700 transition-shadow shadow-sm"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 transition-shadow shadow-sm"
             >
               Select All
             </button>
             <button
               onClick={() => onBulkToggle([])}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm hover:bg-gray-300 transition-shadow"
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm hover:bg-gray-300 transition-shadow"
             >
               Clear All
             </button>
@@ -322,7 +322,7 @@ export default function CategoryTree({
                 }
                 setExpanded(nextSet);
               }}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-shadow"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-shadow"
             >
               {expanded.size === 0 ? "Expand All" : "Collapse All"}
             </button>
@@ -336,7 +336,7 @@ export default function CategoryTree({
       </div>
 
       {/* ─── Category List ───────────────────────────────────────────────────── */}
-      <div className="max-h-[60vh] overflow-y-auto p-6 space-y-4">
+      <div className=" p-6 space-y-4">
         {filtered.length === 0 ? (
           <div className="text-center text-gray-500 py-16 animate-fadeIn">
             <MagnifyingGlassIcon className="mx-auto w-12 h-12 mb-3 text-gray-300" />
@@ -395,12 +395,12 @@ export default function CategoryTree({
 
       {/* ─── Footer: Apply Button ────────────────────────────────────────────── */}
       <div className="flex justify-end px-6 py-5 border-t bg-gray-50">
-        <button
+        {/* <button
           onClick={onApply}
           className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none transition-shadow shadow-sm"
         >
           Apply
-        </button>
+        </button> */}
       </div>
     </div>
   );

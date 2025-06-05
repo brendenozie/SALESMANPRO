@@ -6,15 +6,6 @@ import {
   PhotoIcon,
 } from "@heroicons/react/24/outline";
 
-export interface HeroSlide {
-  imageUrl: string;
-  headline: string;
-  subline?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  order?: number;
-}
-
 export interface HeroSlidesAccordionProps {
   slides: HeroSlide[];
   onUpdateSlide: (index: number, field: keyof HeroSlide, value: string) => void;

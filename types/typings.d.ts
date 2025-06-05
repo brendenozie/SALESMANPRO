@@ -231,19 +231,49 @@ export interface MarketplaceListingForm {
 
 // Handlers signature
 interface Handlers {
-  handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  onUpdateArray: <T>(key: keyof StoreForm, idx: number, field: keyof T, value: any) => void;
+  handleChange: (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => void;
+
+  onUpdateArray: <T>(
+    key: keyof StoreForm,
+    idx: number,
+    field: keyof T,
+    value: any
+  ) => void;
+
   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
+
   setAddress: (address: string, geo: GeoLocation) => void;
   onChangeSettings: (updated: Partial<StoreForm>) => void;
-  
-  onBulkToggle: (ids: string[]) => void;
-  onToggleDay: (dayKey: string) => void; 
-  onToggleParent: (cat: ParentCategory) => void;
 
-  onToggleSub: (parentId: string, sub: SubObj) => void;
+  onBulkToggle: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void;
+  onToggleParent: (cat: ParentCategory) => void;
+  onToggleSub: (parentId: string, sub: SubObj) => void;
+
+  onUpdateHeroSlide: (
+    index: number,
+    field: keyof HeroSlide,
+    value: string
+  ) => void;
+  onAddHeroSlide: () => void;
+  onRemoveHeroSlide: (index: number) => void;
+  onHeroImageUpload: (index: number, file: File) => void;
+
+  onUpdatePromotion: (
+    index: number,
+    field: keyof Promotion,
+    value: string
+  ) => void;
+  onAddPromotion: () => void;
+  onRemovePromotion: (index: number) => void;
+  onPromotionImageUpload: (index: number, file: File) => void;
+
+  // Media (logo/banner)
+  handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
+  handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
 }
 
 // Step configuration
@@ -258,4 +288,22 @@ interface BookItem {
   author: string;
   coverFile: File | null;      // raw File for upload
   coverPreview: string | null; // objectURL for preview
+}
+
+export interface Promotion {
+  title: string;
+  description: string;
+  startsAt?: string;
+  endsAt?: string;
+  bannerUrl?: string;
+  order?: number;
+}
+
+export interface HeroSlide {
+  imageUrl: string;
+  headline: string;
+  subline?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  order?: number;
 }

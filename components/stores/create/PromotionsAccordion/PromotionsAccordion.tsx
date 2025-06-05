@@ -1,20 +1,18 @@
 import React, { ChangeEvent, useEffect } from 'react';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import {
+  PlusIcon,
+  TrashIcon,
+  PhotoIcon,
+} from '@heroicons/react/24/outline';
 
-export interface Promotion {
-  title: string;
-  description: string;
-  startsAt?: string;
-  endsAt?: string;
-  bannerUrl?: string;
-  order?: number;
-}
+
 
 export interface PromotionsAccordionProps {
   promotions: Promotion[];
   onUpdatePromotion: (index: number, field: keyof Promotion, value: string) => void;
   onAddPromotion: () => void;
   onRemovePromotion: (index: number) => void;
+  onImageUpload: (index: number, file: File) => void;
 }
 
 export default function PromotionsAccordion({
@@ -22,9 +20,13 @@ export default function PromotionsAccordion({
   onUpdatePromotion,
   onAddPromotion,
   onRemovePromotion,
+  onImageUpload,
 }: PromotionsAccordionProps) {
-  const allFilled = promotions.every(promo => promo.title.trim() && promo.description.trim());
-  // Ensure there's at least one form ready on initial render
+  const allFilled = promotions.every(
+    (promo) => promo.title.trim() && promo.description.trim()
+  );
+
+  // Ensure at least one promotion exists on mount
   useEffect(() => {
     if (promotions.length === 0) {
       onAddPromotion();
@@ -55,14 +57,18 @@ export default function PromotionsAccordion({
               </div>
 
               <div className="space-y-3">
+                {/* Title */}
                 <input
                   placeholder="Title"
                   value={promo.title}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdatePromotion(idx, 'title', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    onUpdatePromotion(idx, 'title', e.target.value)
+                  }
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   required
                 />
 
+                {/* Description */}
                 <textarea
                   placeholder="Description"
                   value={promo.description}
@@ -74,6 +80,7 @@ export default function PromotionsAccordion({
                   required
                 />
 
+                {/* Start/End Dates */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     type="date"
@@ -91,12 +98,44 @@ export default function PromotionsAccordion({
                   />
                 </div>
 
-                <input
-                  placeholder="Banner Image URL (optional)"
-                  value={promo.bannerUrl || ''}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdatePromotion(idx, 'bannerUrl', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                />
+                {/* Banner Image Upload */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Banner Image (optional)
+                  </label>
+                  <div
+                    className="relative w-full h-48 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-indigo-400 transition"
+                    onClick={() => {
+                      const input = document.getElementById(`promotion-file-${idx}`);
+                      input?.click();
+                    }}
+                  >
+                    {promo.bannerUrl ? (
+                      <img
+                        src={promo.bannerUrl}
+                        alt={`Promotion ${idx + 1} Banner`}
+                        className="absolute inset-0 h-full w-full object-cover rounded-xl"
+                      />
+                    ) : (
+                      <div className="text-center flex flex-col items-center">
+                        <PhotoIcon className="h-8 w-8 text-gray-400 mb-1" />
+                        <span className="text-gray-500">Click to upload banner</span>
+                      </div>
+                    )}
+                    <input
+                      id={`promotion-file-${idx}`}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          onImageUpload(idx, file);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           ))}

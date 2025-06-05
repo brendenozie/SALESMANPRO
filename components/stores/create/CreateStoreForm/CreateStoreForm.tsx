@@ -24,7 +24,7 @@ import ShippingAccordion from '../ShippingAccordion/ShippingAccordion';
 import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
 import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
-import { StoreForm, Handlers, StepConfig, GeoLocation, StoreCategoryEntry, RawCategory, SubObj, ParentCategory, SelectedCategory } from '../../../../types/typings';
+import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory } from '../../../../types/typings';
 
 // Interfaces
 const steps: StepConfig[] = [
@@ -53,12 +53,12 @@ const steps: StepConfig[] = [
     {
       key: 'branding',
       title: 'Branding',
-      render: (f) => (
+      render: (f,h) => (
         <BannerLogoAccordion
           logoUrl={f.logoUrl}
           bannerUrl={f.bannerUrl}
-          onUpload={() => {}}
-          onRemove={() => {}}
+          onUpload={h.handleMediaUpload}
+          onRemove={h.handleMediaRemove}
         />
       )
     },
@@ -157,11 +157,18 @@ const steps: StepConfig[] = [
     {
       key: 'marketing', title: 'Hero Slides', render: (f, h) => (
         <HeroSlidesAccordion
+          // slides={f.heroSlides}
+          // onUpdateSlide={(i, field, v) => h.onUpdateArray('heroSlides', i, field, v)}
+          // onAddSlide={() => h.onAddArray('heroSlides', { imageUrl: '', headline: '' })}
+          // onRemoveSlide={(i) => h.onRemoveArray('heroSlides', i)}
+          // onImageUpload={(i, file) => {/*...*/}}
+
           slides={f.heroSlides}
-          onUpdateSlide={(i, field, v) => h.onUpdateArray('heroSlides', i, field, v)}
-          onAddSlide={() => h.onAddArray('heroSlides', { imageUrl: '', headline: '' })}
-          onRemoveSlide={(i) => h.onRemoveArray('heroSlides', i)}
-          onImageUpload={(i, file) => {/*...*/}}
+          onUpdateSlide={h.onUpdateHeroSlide}
+          onAddSlide={h.onAddHeroSlide}
+          onRemoveSlide={h.onRemoveHeroSlide}
+          onImageUpload={h.onHeroImageUpload}
+          
         />
       )
     },
@@ -169,9 +176,10 @@ const steps: StepConfig[] = [
       key: 'promotions', title: 'Promotions', render: (f, h) => (
         <PromotionsAccordion
           promotions={f.promotions}
-          onUpdatePromotion={(i, field, v) => h.onUpdateArray('promotions', i, field, v)}
-          onAddPromotion={() => h.onAddArray('promotions', { title: '', description: '' })}
-          onRemovePromotion={(i) => h.onRemoveArray('promotions', i)}
+          onUpdatePromotion={h.onUpdatePromotion}
+          onAddPromotion={h.onAddPromotion}
+          onRemovePromotion={h.onRemovePromotion}
+          onImageUpload={h.onPromotionImageUpload}
         />
       )
     },
@@ -224,6 +232,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     awards: [],
     metrics: [],
     stats: [],
+    marketplaceListings:[]
   };
 
   // const [form, setForm] = useState<StoreForm>(initialForm);
@@ -233,6 +242,194 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       ? { ...defaultForm, ...initialData }
       : defaultForm
   );
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 1) File state (logo, banner, hero slides, promotion slides)
+  // ─────────────────────────────────────────────────────────────────────
+
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+
+  // Track one File per hero slide. Initialize from existing heroSlides length
+  const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(
+    () => form.heroSlides.map(() => null)
+  );
+
+  // Track one File per promotion. Initialize from existing promotions length
+  const [promotionSlideFiles, setPromotionSlideFiles] = useState<
+    (File | null)[]
+  >(() => form.promotions.map(() => null));
+
+  // When initialData changes (edit mode), clear out these File states
+  useEffect(() => {
+    if (!initialData) return;
+    setLogoFile(null);
+    setBannerFile(null);
+    setHeroSlideFiles(initialData.heroSlides?.map(() => null) || []);
+    setPromotionSlideFiles(initialData.promotions?.map(() => null) || []);
+  }, [initialData]);
+
+  // Whenever form.heroSlides grows/shrinks, sync heroSlideFiles length
+  useEffect(() => {
+    if (form.heroSlides.length > heroSlideFiles.length) {
+      setHeroSlideFiles((prev) => [
+        ...prev,
+        ...Array(form.heroSlides.length - prev.length).fill(null),
+      ]);
+    }
+    if (form.heroSlides.length < heroSlideFiles.length) {
+      setHeroSlideFiles((prev) =>
+        prev.slice(0, form.heroSlides.length)
+      );
+    }
+  }, [form.heroSlides.length]);
+
+  // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
+  useEffect(() => {
+    if (form.promotions.length > promotionSlideFiles.length) {
+      setPromotionSlideFiles((prev) => [
+        ...prev,
+        ...Array(form.promotions.length - prev.length).fill(null),
+      ]);
+    }
+    if (form.promotions.length < promotionSlideFiles.length) {
+      setPromotionSlideFiles((prev) =>
+        prev.slice(0, form.promotions.length)
+      );
+    }
+  }, [form.promotions.length]);
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 2) Handlers for “Logo / Banner” Accordion
+  // ─────────────────────────────────────────────────────────────────────
+
+  const handleMediaUpload = (
+    field: "logoUrl" | "bannerUrl",
+    file: File
+  ) => {
+    if (field === "logoUrl") {
+      setLogoFile(file);
+    } else {
+      setBannerFile(file);
+    }
+    // Immediately generate a preview URL
+    const previewURL = URL.createObjectURL(file);
+    setForm((prev) => ({
+      ...prev,
+      [field]: previewURL,
+    }));
+  };
+
+  const handleMediaRemove = (field: "logoUrl" | "bannerUrl") => {
+    if (field === "logoUrl") {
+      setLogoFile(null);
+    } else {
+      setBannerFile(null);
+    }
+    setForm((prev) => ({
+      ...prev,
+      [field]: "",
+    }));
+  };
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 3) Handlers for “Hero Slides” Accordion
+  // ─────────────────────────────────────────────────────────────────────
+
+  const onAddHeroSlide = () => {
+    setForm((prev) => ({
+      ...prev,
+      heroSlides: [
+        ...prev.heroSlides,
+        { imageUrl: "", headline: "", subline: "", ctaText: "", ctaLink: "" },
+      ],
+    }));
+  };
+
+  const onRemoveHeroSlide = (idx: number) => {
+    setForm((prev) => ({
+      ...prev,
+      heroSlides: prev.heroSlides.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const onUpdateHeroSlide = (
+    index: number,
+    field: keyof HeroSlide,
+    value: string
+  ) => {
+    setForm((prev) => {
+      const slides = [...prev.heroSlides];
+      slides[index] = { ...slides[index], [field]: value };
+      return { ...prev, heroSlides: slides };
+    });
+  };
+
+  const onHeroImageUpload = (index: number, file: File) => {
+    setHeroSlideFiles((prev) => {
+      const copy = [...prev];
+      copy[index] = file;
+      return copy;
+    });
+    const previewURL = URL.createObjectURL(file);
+    setForm((prev) => {
+      const slides = [...prev.heroSlides];
+      slides[index] = { ...slides[index], imageUrl: previewURL };
+      return { ...prev, heroSlides: slides };
+    });
+  };
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 4) Handlers for “Promotions” Accordion
+  // ─────────────────────────────────────────────────────────────────────
+
+  const onAddPromotion = () => {
+    setForm((prev) => ({
+      ...prev,
+      promotions: [
+        ...prev.promotions,
+        { title: "", description: "", startsAt: "", endsAt: "", bannerUrl: "" },
+      ],
+    }));
+  };
+
+  const onRemovePromotion = (idx: number) => {
+    setForm((prev) => ({
+      ...prev,
+      promotions: prev.promotions.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const onUpdatePromotion = (
+    index: number,
+    field: keyof Promotion,
+    value: string
+  ) => {
+    setForm((prev) => {
+      const promos = [...prev.promotions];
+      promos[index] = { ...promos[index], [field]: value };
+      return { ...prev, promotions: promos };
+    });
+  };
+
+  const onPromotionImageUpload = (index: number, file: File) => {
+    setPromotionSlideFiles((prev) => {
+      const copy = [...prev];
+      copy[index] = file;
+      return copy;
+    });
+    const previewURL = URL.createObjectURL(file);
+    setForm((prev) => {
+      const promos = [...prev.promotions];
+      promos[index] = { ...promos[index], bannerUrl: previewURL };
+      return { ...prev, promotions: promos };
+    });
+  };
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 5) Generic form handlers (arrays, opening hours, etc.)
+  // ─────────────────────────────────────────────────────────────────────
+
 
   const totalSteps = steps.length + 2;
   const [stepIndex, setStepIndex] = useState(0);
@@ -492,6 +689,20 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     handleChange, onUpdateArray, onAddArray, onRemoveArray, setAddress, onChangeSettings, onBulkToggle, onToggleDay,
     onToggleParent,
     onToggleSub,
+
+     onUpdateHeroSlide,
+      onAddHeroSlide,
+      onRemoveHeroSlide,
+      onHeroImageUpload,
+    
+      onUpdatePromotion,
+      onAddPromotion,
+      onRemovePromotion,
+      onPromotionImageUpload,
+      
+      // Media (logo/banner)
+      handleMediaUpload,
+      handleMediaRemove,
   };
 
   const next = () => setStepIndex(i => Math.min(i + 1, totalSteps - 1));
@@ -500,29 +711,220 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!session?.user?.id) return;
-  
-    const isEdit = Boolean(initialData?.id);
-    const url    = isEdit
-      ? `${process.env.NEXT_PUBLIC_API_URL}/stores/${initialData!.id}`
-      : `${process.env.NEXT_PUBLIC_API_URL}/stores`;
-    const method = isEdit ? "PUT" : "POST";
-  
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, userId: session.user.id }),
+
+    // 1) Build a list of upload promises for each file that exists.
+    //    After each resolves, we’ll overwrite the corresponding form URL.
+    const uploadPromises: Promise<void>[] = [];
+
+    // 1.a) Logo
+    if (logoFile) {
+      const p = (async () => {
+        const fd = new FormData();
+        fd.append("type", "image");
+        fd.append("file", logoFile);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: fd,
+        });
+        if (!res.ok) {
+          throw new Error("Logo upload failed");
+        }
+        const { url } = await res.json();
+        setForm((prev) => ({ ...prev, logoUrl: url }));
+      })();
+      uploadPromises.push(p);
+    }
+
+    // 1.b) Banner
+    if (bannerFile) {
+      const p = (async () => {
+        const fd = new FormData();
+        fd.append("type", "image");
+        fd.append("file", bannerFile);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: fd,
+        });
+        if (!res.ok) {
+          throw new Error("Banner upload failed");
+        }
+        const { url } = await res.json();
+        setForm((prev) => ({ ...prev, bannerUrl: url }));
+      })();
+      uploadPromises.push(p);
+    }
+
+    // 1.c) Hero Slides
+    heroSlideFiles.forEach((file, idx) => {
+      if (file) {
+        const p = (async () => {
+          const fd = new FormData();
+          fd.append("type", "image");
+          fd.append("file", file);
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: fd,
+          });
+          if (!res.ok) {
+            throw new Error(`Slide ${idx + 1} upload failed`);
+          }
+          const { url } = await res.json();
+          // Overwrite that slide’s imageUrl with the S3 URL:
+          setForm((prev) => {
+            const slides = [...prev.heroSlides];
+            slides[idx] = { ...slides[idx], imageUrl: url };
+            return { ...prev, heroSlides: slides };
+          });
+        })();
+        uploadPromises.push(p);
+      }
     });
-  
-    if (res.ok) {
-      router.push("/stores");
-    } else {
-      console.error("Save failed", await res.text());
-      // show an error toast/message
+
+  // 2) Wait for ALL uploads to finish before POSTing the form
+  try {
+      await Promise.all(uploadPromises);
+      const isEdit = Boolean(initialData?.id);
+      const url    = isEdit
+        ? `${process.env.NEXT_PUBLIC_API_URL}/stores/${initialData!.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/stores`;
+      const method = isEdit ? "PUT" : "POST";
+    
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, userId: session.user.id }),
+      });
+    
+      if (res.ok) {
+        router.push("/stores");
+      } else {
+        console.error("Save failed", await res.text());
+        // show an error toast/message
+      }
+    } catch (err: any) {
+      console.error("Error uploading files or saving store:", err);
+      alert(`Error: ${err.message}`);
     }
   };
   
 
-  // Helper to render review info for each step
+ 
+
+ 
+
+
+
+// Render step or review
+const StepContent = stepIndex < steps.length
+? steps[stepIndex].render(form, handlers, mappedCategories)
+: (
+  <div className="space-y-6">
+    <h2 className="text-2xl font-semibold">Review Your Store</h2>
+    {steps.map((s, i) => (
+      <div
+        key={s.key}
+        className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+        onClick={() => setStepIndex(i)}
+      >
+        <h3 className="font-medium mb-2 flex justify-between items-center">
+          <span>{s.title}</span>
+          <span className="text-xs text-indigo-500">Edit ➔</span>
+        </h3>
+        <div className="text-gray-700">
+          {renderReviewContent(s.key, form)}
+        </div>
+      </div>
+    ))}
+  </div>
+  );
+
+  return <div className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
+          {/* Sidebar */}
+          <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
+            <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
+            <nav className="flex flex-col gap-2 overflow-y-auto">
+              {steps.map((s, i) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+                    i === stepIndex ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                  onClick={() => setStepIndex(i)}
+                >
+                  <span className="w-6 h-6 bg-indigo-200 text-indigo-700 rounded-full text-xs flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  {s.title}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+                  stepIndex === steps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
+                }`}
+                onClick={() => setStepIndex(steps.length)}
+              >
+                <span className="w-6 h-6 bg-green-200 text-green-700 rounded-full text-xs flex items-center justify-center">
+                  ✔
+                </span>
+                Review
+              </button>
+            </nav>
+          </aside>
+
+          {/* Main content */}
+          <main className="flex-1 flex flex-col px-4 sm:px-8 py-8 max-h-screen">
+            {/* Step progress */}
+            <div className="mb-6">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                  style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-sm text-gray-500">
+                <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
+                <span>{stepIndex < steps.length ? steps[stepIndex].title : 'Review & Submit'}</span>
+              </div>
+            </div>
+
+            {/* Dynamic step content */}
+            <div className="flex-1 max-h-screen overflow-auto">{StepContent}</div>
+
+            {/* Navigation buttons */}
+            <div className="mt-8 flex justify-between items-center border-t pt-4">
+              <button
+                type="button"
+                disabled={stepIndex === 0}
+                onClick={prev}
+                className="px-5 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+              >
+                ← Back
+              </button>
+
+              {stepIndex < steps.length ? (
+                <button
+                  type="button"
+                  onClick={next}
+                  className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+                >
+                  Next →
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+                >
+                  Submit Store
+                </button>
+              )}
+            </div>
+          </main>
+        </div>;
+}
+
+ // Helper to render review info for each step
 
   const ReviewSection = ({ title, children }:any) => (
     <div className="bg-white shadow-sm rounded-lg p-4 space-y-2">
@@ -535,7 +937,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     <em className="text-gray-400 italic">{message}</em>
   );
 
-  const renderList = (items:any, renderItem:any, emptyMessage = 'No items') => (
+ const renderList = (items:any, renderItem:any, emptyMessage = 'No items') => (
     items && items.length > 0 ? (
       <ul className="list-disc list-inside space-y-1">
         {items.map(renderItem)}
@@ -821,115 +1223,3 @@ const renderReviewContent = (stepKey:any, form:any) => {
       return <p className="text-sm text-gray-500">No data available for this section.</p>;
   }
 };
-
-
-
-// Render step or review
-const StepContent = stepIndex < steps.length
-? steps[stepIndex].render(form, handlers, mappedCategories)
-: (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-semibold">Review Your Store</h2>
-    {steps.map((s, i) => (
-      <div
-        key={s.key}
-        className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
-        onClick={() => setStepIndex(i)}
-      >
-        <h3 className="font-medium mb-2 flex justify-between items-center">
-          <span>{s.title}</span>
-          <span className="text-xs text-indigo-500">Edit ➔</span>
-        </h3>
-        <div className="text-gray-700">
-          {renderReviewContent(s.key, form)}
-        </div>
-      </div>
-    ))}
-  </div>
-  );
-
-  return <div className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
-          {/* Sidebar */}
-          <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
-            <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
-            <nav className="flex flex-col gap-2 overflow-y-auto">
-              {steps.map((s, i) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
-                    i === stepIndex ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                  onClick={() => setStepIndex(i)}
-                >
-                  <span className="w-6 h-6 bg-indigo-200 text-indigo-700 rounded-full text-xs flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  {s.title}
-                </button>
-              ))}
-              <button
-                type="button"
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
-                  stepIndex === steps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
-                }`}
-                onClick={() => setStepIndex(steps.length)}
-              >
-                <span className="w-6 h-6 bg-green-200 text-green-700 rounded-full text-xs flex items-center justify-center">
-                  ✔
-                </span>
-                Review
-              </button>
-            </nav>
-          </aside>
-
-          {/* Main content */}
-          <main className="flex-1 flex flex-col px-4 sm:px-8 py-8 max-h-screen">
-            {/* Step progress */}
-            <div className="mb-6">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
-                  style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between mt-2 text-sm text-gray-500">
-                <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
-                <span>{stepIndex < steps.length ? steps[stepIndex].title : 'Review & Submit'}</span>
-              </div>
-            </div>
-
-            {/* Dynamic step content */}
-            <div className="flex-1 max-h-screen overflow-auto">{StepContent}</div>
-
-            {/* Navigation buttons */}
-            <div className="mt-8 flex justify-between items-center border-t pt-4">
-              <button
-                type="button"
-                disabled={stepIndex === 0}
-                onClick={prev}
-                className="px-5 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-              >
-                ← Back
-              </button>
-
-              {stepIndex < steps.length ? (
-                <button
-                  type="button"
-                  onClick={next}
-                  className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-                >
-                  Next →
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
-                >
-                  Submit Store
-                </button>
-              )}
-            </div>
-          </main>
-        </div>;
-}
