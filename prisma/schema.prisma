@@ -449,8 +449,8 @@ model Product {
   location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
   amenities String[]
 
-  myLocation Location @relation(fields: [locationId], references: [id])
-  locationId String   @db.ObjectId
+  myLocation Location? @relation(fields: [locationId], references: [id])
+  locationId String?   @db.ObjectId
 
   // 15. Property-specific
   propertyType   PropertyType? @relation(fields: [propertyTypeId], references: [id])
@@ -462,6 +462,22 @@ model Product {
   studios   Json? // Updated to support multiple bedroom types
 
   serviceSchedule String?
+  // Marketplace-specific
+  delivery        Boolean  @default(false)
+  paymentOption   String   @default("AT SHOP")
+  showOnGhuba     Boolean? @default(true)
+  subCategoryName String?
+  make            String?
+  trim            String?
+  type            String?
+  mileage         String?
+  engineType      String?
+  engineSize      String?
+  transmission    String?
+  drivetrain      String?
+  vin             String?
+  logbookStatus   String?
+  serviceHistory  String?
 
   // 11. Digital-Goods-specific
   digitalUrl  String?
@@ -554,12 +570,13 @@ model Appointment {
 }
 
 model PropertyType {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String    @unique
-  description String?
-  products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String               @unique
+  description        String?
+  products           Product[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  MarketplaceListing MarketplaceListing[]
 }
 
 enum PaymentStatus {
@@ -953,23 +970,19 @@ model UserActivity {
 }
 
 model MarketplaceListing {
-  id                String          @id @default(auto()) @map("_id") @db.ObjectId
-  companyId         String?         @db.ObjectId
-  company           Company?        @relation(fields: [companyId], references: [id])
-  sellerId          String?         @db.ObjectId
-  sellerType        SellerType?
-  productId         String?         @db.ObjectId
-  product           Product?        @relation(fields: [productId], references: [id])
-  subCategoryName   String?
-  title             String          @default("New Name")
-  description       String?         @default("New Description")
-  quantity          Int
-  images            Json[]
-  video             String?
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  companyId  String?     @db.ObjectId
+  company    Company?    @relation(fields: [companyId], references: [id])
+  sellerId   String?     @db.ObjectId
+  sellerType SellerType?
+  productId  String?     @db.ObjectId
+  product    Product?    @relation(fields: [productId], references: [id])
+
   productCategoryId String          @db.ObjectId
   productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
   category          String?
   subCategory       Json
+  subCategoryName   String?
   tags              String[]
   brand             String?
   model             String?
@@ -979,27 +992,27 @@ model MarketplaceListing {
   condition         String?
   dimension         String?
   material          String[]
+  title             String          @default("New Name")
+  description       String?         @default("New Description")
+  quantity          Int
+  images            Json[]
+  video             String?
   profitMargin      Float?          @default(0)
 
-  // New fields for category-specific details:
-  author    String? // For Books
-  publisher String? // For Books
-  isbn      String? // For Books
+  // Category-specific fields
+  author              String?
+  publisher           String?
+  isbn                String?
+  fabricComposition   String?
+  careInstructions    String?
+  energyRating        String?
+  warrantyPeriod      String?
+  applianceDimensions String?
+  ingredients         String?
+  usageInstructions   String?
+  expirationDate      DateTime?
 
-  fabricComposition String? // For Clothing/Fashion
-  careInstructions  String? // For Clothing/Fashion
-
-  energyRating        String? // For Home Appliances
-  warrantyPeriod      String? // For Home Appliances
-  applianceDimensions String? // For Home Appliances – renamed to avoid conflict with 'dimension'
-
-  ingredients       String? // For Beauty Products
-  usageInstructions String? // For Beauty Products
-  expirationDate    DateTime? // For Beauty Products
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  // Deal flags
   discount     Int?    @default(0)
   isAvailable  Boolean @default(true)
   isOnOffer    Boolean @default(false)
@@ -1008,30 +1021,57 @@ model MarketplaceListing {
   isDiscounted Boolean @default(false)
   isFeatured   Boolean @default(false)
 
-  delivery      Boolean @default(false)
-  paymentOption String  @default("AT SHOP") //"Standard", "Express", "AT SHOP"
+  // Product type-specific
+  bathrooms       String?
+  area            String?
+  bedrooms        Json?
+  studios         Json?
+  propertyTypeId  String?       @db.ObjectId
+  propertyType    PropertyType? @relation(fields: [propertyTypeId], references: [id])
+  serviceSchedule String?
 
-  startDealDate DateTime?
-  endDealDate   DateTime?
-  buyingPrice   Float
-  sellingPrice  Float
-  finalPrice    Float?    @default(0) //Price inclusive discount
+  digitalUrl  String?
+  autoDeliver Boolean? @default(false)
 
-  contact   String?
-  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
-  amenities String[]
+  // Pricing
+  buyingPrice  Float
+  sellingPrice Float
+  finalPrice   Float? @default(0)
+  tax          Float? @default(0)
+  shippingCost Float? @default(0)
 
-  bedrooms    Json? // Updated to support multiple bedroom types
-  studios     Json? // Updated to support multiple bedroom types
-  showOnGhuba Boolean? @default(true)
+  // Scheduling
+  startDealDate     DateTime?
+  endDealDate       DateTime?
+  availabilityStart DateTime?
+  availabilityEnd   DateTime?
 
-  status         ListingStatus    @default(ACTIVE)
+  // Contact & Location
+  contact      String?
+  email        String?
+  contactName  String?
+  location     Json?
+  locationName String?
+  latitude     Float?
+  longitude    Float?
+  locationId   String?   @db.ObjectId
+  Location     Location? @relation(fields: [locationId], references: [id])
+  amenities    String[]
+
+  // Marketplace-specific
+  delivery      Boolean  @default(false)
+  paymentOption String   @default("AT SHOP")
+  showOnGhuba   Boolean? @default(true)
+
+  status    ListingStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Relations
   OrderItem      OrderItem[]
   UserActivity   UserActivity[]
   ProductMetrics ProductMetrics[]
   ProductReview  ProductReview[]
-  Location       Location?        @relation(fields: [locationId], references: [id])
-  locationId     String?          @db.ObjectId
 }
 
 model ProductMetrics {

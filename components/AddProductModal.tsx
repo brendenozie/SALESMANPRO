@@ -326,6 +326,15 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     latitude: product?.latitude || null,
     longitude: product?.longitude || null,
 
+    subCategoryName: product?.subCategoryName || "",
+    contactName:     product?.contactName || "",
+    
+    propertyTypeId:  product?.propertyTypeId || "",
+    serviceSchedule: product?.serviceSchedule || "",
+    
+    status:           product?.status || "ACTIVE",
+    collectionId:     product?.collectionId || "",
+
   });
 
   // Determine which steps to show based on category
@@ -452,89 +461,278 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
     // Build final listing object
     const listing: any = {
-      id: formData.id,
-      sellerType: "ADMIN",
-      name: formData.name,
-      description: formData.description,
-      quantity: formData.quantity,
-      image: [], // on front end you could push updatedImages.map(i => i.url)
-      productCategoryId: formData.category?.id || "",
-      category: formData.category?.name || "",
-      subCategory: formData.subCategory,
-      tags: formData.tags || [],
-      brand: formData.brand,
-      model: formData.model,
-      color: formData.color,
-      size: formData.size,
-      weight: formData.weight,
-      condition: formData.condition,
-      dimension: formData.dimension,
-      commissionRate: formData.commissionRate || 0,
-      commissionType: formData.commissionType || "COST",
-      companyId: formData.companyId,
-
-      material: Array.isArray(formData.material)
-        ? formData.material
-        : formData.material
-        ? [formData.material]
-        : [],
-      finalPrice: parseFloat(formData.finalPrice) || 0,
-      profitMargin: parseFloat(formData.profitMargin) || 0,
-      discount: formData.discount,
-      isAvailable: formData.isAvailable,
-      isOnOffer: formData.isOnOffer,
-      isFlashDeal: formData.isFlashDeal,
-      isNewArrival: formData.isNewArrival,
-      isDiscounted: formData.isDiscounted,
-      isFeatured: formData.isFeatured,
-      costPrice: parseFloat(formData.costPrice) || 0,
-      salesPrice: parseFloat(formData.salesPrice) || 0,
-
-      startDealDate: formData.startDealDate,
-      endDealDate: formData.endDealDate,
-
-      // category-specific
-      author: formData.author || "",
-      publisher: formData.publisher || "",
-      isbn: formData.isbn || "",
-      fabricComposition: formData.fabricComposition || "",
-      careInstructions: formData.careInstructions || "",
-      energyRating: formData.energyRating || "",
-      warrantyPeriod: formData.warrantyPeriod || "",
-      applianceDimensions: formData.dimensions || "",
-      ingredients: formData.ingredients || "",
-      usageInstructions: formData.usageInstructions || "",
-      expirationDate: formData.expirationDate
-        ? new Date(formData.expirationDate)
-        : null,
-
-      location: formData.location || "",
-      contact: formData.contact || "",
-      option: formData.option || [],
-      amenities: formData.amenities || [],
-
-      bedrooms: formData.bedrooms || [],
-      studios: formData.studios || [],
-      bathrooms: formData.bathrooms || "",
-      area: formData.area || "",
-
-      make: formData.make || "",
-      trim: formData.trim || "",
-      type: formData.type || "",
-      mileage: formData.mileage || "",
-      engineType: formData.engineType || "",
-      engineSize: formData.engineSize || "",
-      transmission: formData.transmission || "",
-      drivetrain: formData.drivetrain || "",
-      vin: formData.vin || "",
-      logbookStatus: formData.logbookStatus || "",
-      serviceHistory: formData.serviceHistory || "",
-      negotiable: formData.negotiable || false,
-      financingAvailable: formData.financingAvailable || false,
-      tradeIn: formData.tradeIn || false,
-      features: formData.features || [],
-      video: formData.video || null,
+      // — Required scalars / identifiers — 
+      id:                 formData.id,                         // String
+      name:               formData.name,                       // String
+      description:        formData.description,                // String?
+      companyId:          formData.companyId,                  // String? @db.ObjectId
+      sellerType:         "ADMIN",
+    
+      // — Category hierarchy — 
+      productCategoryId:  formData.category?.id || "",         // String? @db.ObjectId
+      category:           formData.category?.name || "",       // String?
+      subCategory:        formData.subCategory,                // Json?
+      subCategoryName:    formData.subCategoryName,            // String?
+    
+      // — Media — 
+      images:             images.map((i) => i.url),            // Json[]
+      video:              formData.video || null,              // String?
+    
+      // — Tagging & branding — 
+      tags:               formData.tags || [],                  // String[]
+      brand:              formData.brand,                       // String?
+      model:              formData.model,                       // String?
+    
+      // — Basic specs — 
+      color:              formData.color,                       // String[]
+      size:               formData.size,                        // String[]
+      weight:             formData.weight,                      // String?
+      condition:          formData.condition,                   // String?
+      dimension:          formData.dimension,                   // String?
+      material:           Array.isArray(formData.material)      // String[]
+                             ? formData.material
+                             : formData.material
+                               ? [formData.material]
+                               : [],
+    
+      // — Book-specific — 
+      author:             formData.author,                      // String?
+      publisher:          formData.publisher,                   // String?
+      isbn:               formData.isbn,                        // String?
+    
+      // — Clothing/Fashion — 
+      fabricComposition:  formData.fabricComposition,           // String?
+      careInstructions:   formData.careInstructions,            // String?
+    
+      // — Home Appliances — 
+      energyRating:       formData.energyRating,                // String?
+      warrantyPeriod:     formData.warrantyPeriod,              // String?
+      applianceDimensions: formData.applianceDimensions,        // String?
+    
+      // — Beauty Products — 
+      ingredients:        formData.ingredients,                 // String?
+      usageInstructions:  formData.usageInstructions,           // String?
+      expirationDate:     formData.expirationDate 
+                            ? new Date(formData.expirationDate)
+                            : null,                             // DateTime?
+    
+      // — Pricing & deals — 
+      costPrice:          parseFloat(formData.costPrice)  || 0, // Float
+      salesPrice:         parseFloat(formData.salesPrice) || 0, // Float
+      discount:           formData.discount,                    // Int?
+      finalPrice:         parseFloat(formData.finalPrice)  || 0, // Float?
+      profitMargin:       parseFloat(formData.profitMargin)|| 0, // Float?
+      startDealDate:      formData.startDealDate,               // DateTime?
+      endDealDate:        formData.endDealDate,                 // DateTime?
+    
+      // — General availability — 
+      availabilityStart:  formData.availabilityStart,           // DateTime?
+      availabilityEnd:    formData.availabilityEnd,             // DateTime?
+    
+      // — Location & contact — 
+      location:           formData.location,                    // Json?
+      locationId:         formData.locationId,                  // String? @db.ObjectId
+      locationName:       formData.locationName,                // String?
+      latitude:           formData.latitude,                    // Float?
+      longitude:          formData.longitude,                   // Float?
+      contact:            formData.contact || "",                // String?
+      contactName:        formData.contactName,                 // String?
+      email:              formData.email,                       // String?
+    
+      // — Amenities — 
+      amenities:          formData.amenities || [],              // String[]
+    
+      // — Property-specific — 
+      propertyTypeId:     formData.propertyTypeId,               // String? @db.ObjectId
+      bedrooms:           formData.bedrooms || [],               // Json?
+      studios:            formData.studios  || [],               // Json?
+      bathrooms:          formData.bathrooms,                    // String?
+      area:               formData.area,                         // String?
+      serviceSchedule:    formData.serviceSchedule,              // String?
+    
+      // — Vehicle-specific — 
+      make:               formData.make,                         // String?
+      trim:               formData.trim,                         // String?
+      type:               formData.type,                         // String?
+      mileage:            formData.mileage,                      // String?
+      engineType:         formData.engineType,                   // String?
+      engineSize:         formData.engineSize,                   // String?
+      transmission:       formData.transmission,                 // String?
+      drivetrain:         formData.drivetrain,                   // String?
+      vin:                formData.vin,                          // String?
+      logbookStatus:      formData.logbookStatus,                // String?
+      serviceHistory:     formData.serviceHistory,               // String?
+      negotiable:         formData.negotiable || false,          // Boolean?
+      financingAvailable: formData.financingAvailable || false,  // Boolean?
+      tradeIn:            formData.tradeIn || false,             // Boolean?
+    
+      // — Digital Goods — 
+      digitalUrl:         formData.digitalUrl,                    // String?
+      autoDeliver:        !!formData.autoDeliver,                // Boolean?
+    
+      // — Pricing breakdown — 
+      tax:                formData.tax      || 0,                // Float?
+      shippingCost:       formData.shippingCost || 0,            // Float?
+    
+      // — Feature flags — 
+      isAvailable:        formData.isAvailable  || false,        // Boolean
+      isOnOffer:          formData.isOnOffer    || false,        // Boolean
+      isFlashDeal:        formData.isFlashDeal  || false,        // Boolean
+      isNewArrival:       formData.isNewArrival || false,        // Boolean
+      isDiscounted:       formData.isDiscounted || false,        // Boolean
+      isFeatured:         formData.isFeatured   || false,        // Boolean
+    
+      // — Other marketplace fields — 
+      delivery:           formData.delivery     || false,         // Boolean
+      paymentOption:      formData.paymentOption || "AT SHOP",   // String
+      showOnGhuba:        formData.showOnGhuba,                   // Boolean?
+    
+      // — Optional: collection & status — 
+      collectionId:       formData.collectionId,                 // String?
+      status:             formData.status,                       // ListingStatus
+  
     };
+    
+    // const listing: any = {
+    //   // Basic identifiers
+    //   id:                 formData.id,
+    //   sellerType:         "ADMIN",
+    //   name:               formData.name,
+    //   description:        formData.description,
+    //   companyId:          formData.companyId,
+    
+    //   // Category/Hierarchy
+    //   productCategoryId:  formData.category?.id || "",
+    //   category:           formData.category?.name || "",
+    //   subCategory:        formData.subCategory,
+    //   subCategoryName:    formData.subCategoryName,       // ← (new!)
+    //   tags:               formData.tags || [],
+    
+    //   // Images / Video
+    //   images:             images.map((i) => i.url),       // ← send actual URLs
+    //   video:              formData.video || null,
+    
+    //   // Brand / Model / Specs
+    //   brand:              formData.brand,
+    //   model:              formData.model,
+    //   color:              formData.color,
+    //   size:               formData.size,
+    //   weight:             formData.weight,
+    //   condition:          formData.condition,
+    //   dimension:          formData.dimension,
+    //   material:           Array.isArray(formData.material)
+    //                          ? formData.material
+    //                          : formData.material
+    //                            ? [formData.material]
+    //                            : [],
+    
+    //   // Category‐specific attributes
+    //   author:             formData.author,                // Books
+    //   publisher:          formData.publisher,             // Books
+    //   isbn:               formData.isbn,                  // Books
+    //   fabricComposition:  formData.fabricComposition,     // Clothing
+    //   careInstructions:   formData.careInstructions,      // Clothing
+    //   energyRating:       formData.energyRating,          // Appliances
+    //   warrantyPeriod:     formData.warrantyPeriod,        // Appliances
+    //   applianceDimensions: formData.applianceDimensions,  // Appliances
+    //   ingredients:        formData.ingredients,           // Beauty
+    //   usageInstructions:  formData.usageInstructions,     // Beauty
+    //   expirationDate:     formData.expirationDate 
+    //                        ? new Date(formData.expirationDate)
+    //                        : null,                        // Beauty
+    
+    //   // Pricing / Margins / Discounts
+    //   costPrice:          parseFloat(formData.costPrice) || 0,
+    //   salesPrice:         parseFloat(formData.salesPrice) || 0,
+    //   discount:           formData.discount,
+    //   finalPrice:         parseFloat(formData.finalPrice) || 0,
+    //   profitMargin:       parseFloat(formData.profitMargin) || 0,
+    
+    //   // Deal scheduling
+    //   startDealDate:      formData.startDealDate,
+    //   endDealDate:        formData.endDealDate,
+    
+    //   // General “Availability”
+    //   availabilityStart:  formData.availabilityStart,      // ← (new!)
+    //   availabilityEnd:    formData.availabilityEnd,        // ← (new!)
+    
+    //   // Location/Contact
+    //   location:           formData.location,               // if you still want raw GeoJSON
+    //   locationId:         formData.locationId,             // ← (new, if you use the Location relation)
+    //   locationName:       formData.locationName,           // ← (new!)
+    //   latitude:           formData.latitude,               // ← (new!)
+    //   longitude:          formData.longitude,              // ← (new!)
+    //   contact:            formData.contact || "",          
+    //   contactName:        formData.contactName,            // ← (new!)
+    //   email:              formData.email,                  // ← (new!)
+    
+    //   // Amenities / Options
+    //   option:             formData.option || [],
+    //   amenities:          formData.amenities || [],
+    
+    //   // Property‐specific
+    //   propertyTypeId:     formData.propertyTypeId,         // ← (new!)
+    //   bedrooms:           formData.bedrooms || [],
+    //   studios:            formData.studios || [],
+    //   bathrooms:          formData.bathrooms,
+    //   area:               formData.area,
+    //   serviceSchedule:    formData.serviceSchedule,        // ← (new!)
+    
+    //   // Vehicle‐specific
+    //   make:               formData.make,
+    //   trim:               formData.trim,
+    //   type:               formData.type,
+    //   mileage:            formData.mileage,
+    //   engineType:         formData.engineType,
+    //   engineSize:         formData.engineSize,
+    //   transmission:       formData.transmission,
+    //   drivetrain:         formData.drivetrain,
+    //   vin:                formData.vin,
+    //   logbookStatus:      formData.logbookStatus,
+    //   serviceHistory:     formData.serviceHistory,
+    //   negotiable:         formData.negotiable || false,
+    //   financingAvailable: formData.financingAvailable || false,
+    //   tradeIn:            formData.tradeIn || false,
+    //   year:               formData.year,
+    
+    //   // Digital products
+    //   digitalUrl:         formData.digitalUrl,
+    //   autoDeliver:        !!formData.autoDeliver,
+    
+    //   // Pricing breakdown
+    //   tax:                formData.tax || 0,
+    //   shippingCost:       formData.shippingCost || 0,
+    
+    //   // Flags (all boolean feature flags)
+    //   isAvailable:        formData.isAvailable || false,
+    //   isOnOffer:          formData.isOnOffer || false,
+    //   isFlashDeal:        formData.isFlashDeal || false,
+    //   isNewArrival:       formData.isNewArrival || false,
+    //   isDiscounted:       formData.isDiscounted || false,
+    //   isFeatured:         formData.isFeatured || false,
+    
+    //   // Marketplace‐only fields
+    //   delivery:           formData.delivery || false,      // (already there)
+    //   paymentOption:      formData.paymentOption || "AT SHOP", // (already there)
+    //   showOnGhuba:        formData.showOnGhuba,            // (already there)
+    
+    //   // (Optional) If you want to attach to an existing “Collection”
+    //   collectionId:       formData.collectionId,           // ← (new, only if you use Collections)
+    
+    //   // (Optional) Only if you want to control status from UI
+    //   status:             formData.status,                 // ← (new, only if you let sellers pick it)
+    
+    //   quantity: formData.quantity,
+    
+    //   image: [], // on front end you could push updatedImages.map(i => i.url)
+      
+    //   commissionRate: formData.commissionRate || 0,
+    //   commissionType: formData.commissionType || "COST",
+            
+    //   features: formData.features || [],
+      
+    // };
+    
 
     try {
       const resp = await fetch(`${apiUrl}/admin/post-product`, {
