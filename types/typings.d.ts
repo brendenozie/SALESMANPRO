@@ -252,3 +252,10 @@ interface StepConfig {
   title: string;
   render: (form: StoreForm, handlers: Handlers, availableCategories: CategoryOption[]) => React.ReactNode;
 }
+
+interface BookItem {
+  title: string;
+  author: string;
+  coverFile: File | null;      // raw File for upload
+  coverPreview: string | null; // objectURL for preview
+}

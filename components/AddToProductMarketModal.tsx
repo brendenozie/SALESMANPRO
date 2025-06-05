@@ -423,7 +423,23 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
 
   const [images, setImages] = useState<string[]>([]);
+  const [videos, setVideos] = useState<string[]>([]);
+  // const [books, setBooks] = useState<String[]>([]);
   const [loading, setLoading] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+  const [videoFiles, setVideoFiles] = useState<File[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+
+  interface BookItem {
+    title?: string;
+    author?: string;
+    publisher?: string;
+    isbn?: string;
+    [key: string]: any;
+  }
+  const [books, setBooks] = useState<BookItem[]>([]);
 
   const filteredSubCategories = useMemo(() => {
     if (!formData.category) return [];
@@ -456,6 +472,78 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 const handleCreateListing = async () => {
   if (window.confirm("Are you sure you want to create this listing?")) {
     // Build a listing object conforming to the updated MarketplaceListing model
+
+     // 1) First, upload all images to S3 (in parallel).
+    //    We map each File in imageFiles → a fetch("/api/upload", …) promise.
+    const imageUploadPromises = imageFiles.map((file) => {
+      const formData = new FormData();
+      formData.append("type", "image");
+      formData.append("file", file);
+      return fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Image upload failed");
+          return res.json();
+        })
+        .then((json) => json.url as string);
+    });
+
+    // 2) Then, upload all videos to S3 (in parallel).
+    const videoUploadPromises = videoFiles.map((file) => {
+      const formData = new FormData();
+      formData.append("type", "video");
+      formData.append("file", file);
+      return fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Video upload failed");
+          return res.json();
+        })
+        .then((json) => json.url as string);
+    });
+
+    // 3) Upload all book covers (in parallel). If a BookItem.coverFile is null, we skip.
+    const bookCoverUploadPromises = books.map((book) => {
+      if (!book.coverFile) {
+        return Promise.resolve(null); // no cover was chosen
+      }
+      const fd = new FormData();
+      fd.append("type", "file"); // or "image" if you prefer putting covers under images/
+      fd.append("file", book.coverFile);
+      return fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Book cover upload failed");
+          return res.json();
+        })
+        .then((json) => json.url as string);
+    });
+
+    // 4) Await them all together:
+    const [
+      imageUrls,
+      videoUrls,
+      bookCoverUrls,
+    ] = await Promise.all([
+      Promise.all(imageUploadPromises),
+      Promise.all(videoUploadPromises),
+      Promise.all(bookCoverUploadPromises),
+    ]);
+
+    // 5) Build the final array of BookItems, replacing coverFile with coverUrl
+    const booksWithUrls = books.map((book, idx) => ({
+      title: book.title,
+      author: book.author,
+      coverUrl: bookCoverUrls[idx] || null,
+    }));
+
+
     const listing: any = {
       // — Identifiers & relations —
       id:                   formData.id,                           // String @id (for updates) or omit for create
@@ -464,6 +552,12 @@ const handleCreateListing = async () => {
       sellerId:             undefined,                              // Optional: if you know a specific sellerId
       productId:            formData.productId,                     // String? @db.ObjectId
       
+      images: imageUrls,                  // array of S3 URLs
+      video: videoUrls.length > 0
+        ? videoUrls[0]                     // or send an array, if your schema allows multiple
+        : null,
+      // — Books —
+      books: booksWithUrls, 
     
       // — Title & description —
       title:                formData.title,                         // String
@@ -471,8 +565,8 @@ const handleCreateListing = async () => {
     
       // — Inventory & media —
       quantity:             formData.quantity,                      // Int
-      images:               images || [],                           // Json[]
-      video:                formData.video || null,                 // String?
+      // images:               images || [],                           // Json[]
+      // video:                formData.video || null,                 // String?
     
       // — Category hierarchy & tagging —
       productCategoryId:    formData.category?.id    || "",         // String @db.ObjectId
@@ -651,7 +745,14 @@ const handleCreateListing = async () => {
         const data = await response.json();
         console.log("Listing created:", data);
         alert("Marketplace listing created successfully.");
+        
+        // 7) Close modal + clear all file states:
         setShowRequestProductModal(false);
+        setImageFiles([]);
+        setImagePreviews([]);
+        setVideoFiles([]);
+        setVideoPreviews([]);
+        setBooks([]);
       } else {
         console.error("Error creating listing:", response.statusText);
         alert("Error creating listing. Please try again.");
@@ -680,6 +781,18 @@ const handleCreateListing = async () => {
                 filteredSubCategories={filteredSubCategories}
                 filteredBrands={filteredBrands}
                 handleInputChange={handleInputChange}
+                
+                imageFiles={imageFiles}
+                setImageFiles={setImageFiles}
+                imagePreviews={imagePreviews}
+                setImagePreviews={setImagePreviews}
+                videoFiles={videoFiles}
+                setVideoFiles={setVideoFiles}
+                videoPreviews={videoPreviews}
+                setVideoPreviews={setVideoPreviews}
+                books={books}
+                setBooks={setBooks}
+
               />
             ) : (
               <p>No form available for this step.</p>

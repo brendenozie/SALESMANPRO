@@ -1,3 +1,4 @@
+// File: components/MediaUploader.tsx
 import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import { useDropzone, Accept } from "react-dropzone";
@@ -16,41 +17,57 @@ import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 interface BookItem {
   title: string;
   author: string;
-  coverUrl: string | null;
+  coverFile: File | null;         // raw File for the cover image
+  coverPreview: string | null;    // objectURL for the cover preview
+  bookFile: File | null;          // raw File for the actual PDF/EPUB/etc.
 }
 
 interface MediaUploaderProps {
-  images: string[];
-  setImages: React.Dispatch<React.SetStateAction<string[]>>;
-  videos: string[];
-  setVideos: React.Dispatch<React.SetStateAction<string[]>>;
+  // We now expect the parent to maintain raw File arrays (and preview URLs):
+  imageFiles: File[];
+  setImageFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  imagePreviews: string[];
+  setImagePreviews: React.Dispatch<React.SetStateAction<string[]>>;
+
+  videoFiles: File[];
+  setVideoFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  videoPreviews: string[];
+  setVideoPreviews: React.Dispatch<React.SetStateAction<string[]>>;
+
   books: BookItem[];
   setBooks: React.Dispatch<React.SetStateAction<BookItem[]>>;
+  
 }
 
 const MediaUploader: React.FC<MediaUploaderProps> = ({
-  images,
-  setImages,
-  videos,
-  setVideos,
+  imageFiles,
+  setImageFiles,
+  imagePreviews,
+  setImagePreviews,
+  videoFiles,
+  setVideoFiles,
+  videoPreviews,
+  setVideoPreviews,
   books,
   setBooks,
 }) => {
-  // Tab state: "images" | "videos" | "books"
+  // Tab state
   const [selectedTab, setSelectedTab] = useState<"images" | "videos" | "books">("images");
-
-  // Loading states for dropzones
-  const [loadingImages, setLoadingImages] = useState(false);
-  const [loadingVideos, setLoadingVideos] = useState(false);
 
   // Modal for adding a new book
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [newBookTitle, setNewBookTitle] = useState("");
   const [newBookAuthor, setNewBookAuthor] = useState("");
-  const [newBookCover, setNewBookCover] = useState<string | null>(null);
-  const [coverLoading, setCoverLoading] = useState(false);
 
-  // Dropzone for images
+  const [newBookCoverFile, setNewBookCoverFile] = useState<File | null>(null);
+  const [newBookCoverPreview, setNewBookCoverPreview] = useState<string | null>(null);
+
+  const [newBookFile, setNewBookFile] = useState<File | null>(null);
+
+
+  // ───────────────────────────────
+  // 1) Drop Images (no immediate upload)
+  // ───────────────────────────────
   const {
     getRootProps: getImageRootProps,
     getInputProps: getImageInputProps,
@@ -58,18 +75,20 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     accept: { "image/*": [] } as Accept,
     multiple: true,
     onDrop: (acceptedFiles) => {
-      setLoadingImages(true);
-      setTimeout(() => {
-        setImages((prev) => {
-          const newUrls = acceptedFiles.map((file) => URL.createObjectURL(file));
-          return Array.from(new Set([...prev, ...newUrls]));
-        });
-        setLoadingImages(false);
-      }, 800);
+      if (!acceptedFiles.length) return;
+
+      // 1. Append raw File objects to state
+      setImageFiles((prev) => [...prev, ...acceptedFiles]);
+
+      // 2. Generate object URLs for previews
+      const newPreviews = acceptedFiles.map((f) => URL.createObjectURL(f));
+      setImagePreviews((prev) => [...prev, ...newPreviews]);
     },
   });
 
-  // Dropzone for videos
+  // ───────────────────────────────
+  // 2) Drop Videos (no immediate upload)
+  // ───────────────────────────────
   const {
     getRootProps: getVideoRootProps,
     getInputProps: getVideoInputProps,
@@ -77,18 +96,20 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     accept: { "video/*": [] } as Accept,
     multiple: true,
     onDrop: (acceptedFiles) => {
-      setLoadingVideos(true);
-      setTimeout(() => {
-        setVideos((prev) => {
-          const newUrls = acceptedFiles.map((file) => URL.createObjectURL(file));
-          return Array.from(new Set([...prev, ...newUrls]));
-        });
-        setLoadingVideos(false);
-      }, 800);
+      if (!acceptedFiles.length) return;
+
+      // 1. Append raw File objects to state
+      setVideoFiles((prev) => [...prev, ...acceptedFiles]);
+
+      // 2. Generate object URLs for previews
+      const newPreviews = acceptedFiles.map((f) => URL.createObjectURL(f));
+      setVideoPreviews((prev) => [...prev, ...newPreviews]);
     },
   });
 
-  // Dropzone for book cover inside modal
+  // ───────────────────────────────
+  // 3) Drop Book Cover (inside modal)
+  // ───────────────────────────────
   const {
     getRootProps: getCoverRootProps,
     getInputProps: getCoverInputProps,
@@ -96,45 +117,161 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     accept: { "image/*": [] } as Accept,
     multiple: false,
     onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length === 0) return;
-      setCoverLoading(true);
+      if (!acceptedFiles.length) return;
       const file = acceptedFiles[0];
-      const url = URL.createObjectURL(file);
-      setTimeout(() => {
-        setNewBookCover(url);
-        setCoverLoading(false);
-      }, 500);
+
+      // 1. Keep raw File for later upload
+      setNewBookCoverFile(file);
+
+      // 2. Generate object URL for preview
+      const preview = URL.createObjectURL(file);
+      setNewBookCoverPreview(preview);
     },
   });
 
-  // Handler: Remove image
-  const removeImage = (idx: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== idx));
+  // ───────────────────────────────
+  // 4) Cleanup object URLs on unmount
+  // ───────────────────────────────
+  useEffect(() => {
+    return () => {
+      // Revoke all previews when unmounting
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+      videoPreviews.forEach((url) => URL.revokeObjectURL(url));
+      books.forEach((b) => {
+        if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
+      });
+      if (newBookCoverPreview) URL.revokeObjectURL(newBookCoverPreview);
+    };
+  }, [
+    imagePreviews,
+    videoPreviews,
+    books,
+    newBookCoverPreview,
+  ]);
+
+  // ───────────────────────────────
+  // (2) Simple <input type="file"> for Book File (PDF/EPUB/etc.)
+  // ───────────────────────────────
+  // You could also use `useDropzone` with accept: { "application/pdf": [], "application/epub+zip": [] }
+  // but for simplicity here, I’ll show a plain input that accepts any file:
+  const handleBookFileSelect: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      setNewBookFile(null);
+      return;
+    }
+    setNewBookFile(e.target.files[0]);
   };
 
-  // Handler: Remove video
-  const removeVideo = (idx: number) => {
-    setVideos((prev) => prev.filter((_, i) => i !== idx));
+   // ───────────────────────────────
+  // (3) Revoke object URLs on unmount to avoid memory leaks
+  // ───────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (newBookCoverPreview) {
+        URL.revokeObjectURL(newBookCoverPreview);
+      }
+      books.forEach((b) => {
+        if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
+      });
+    };
+  }, [books, newBookCoverPreview]);
+
+
+  // ───────────────────────────────
+  // (4) Handler to remove a BookItem
+  // ───────────────────────────────
+  const removeBookAt = (idx: number) => {
+    setBooks((prev) => {
+      const copy = [...prev];
+      if (copy[idx].coverPreview) {
+        URL.revokeObjectURL(copy[idx].coverPreview!);
+      }
+      copy.splice(idx, 1);
+      return copy;
+    });
   };
 
-  // Handler: Remove book
-  const removeBook = (idx: number) => {
-    setBooks((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  // Handler: Save new book from modal
+   // ───────────────────────────────
+  // (5) Save New Book (no upload here—just keep the File objects)
+  // ───────────────────────────────
   const saveNewBook = () => {
-    if (!newBookTitle.trim() || !newBookAuthor.trim()) return;
+    if (!newBookTitle.trim() || !newBookAuthor.trim()) {
+      return;
+    }
+
     setBooks((prev) => [
       ...prev,
-      { title: newBookTitle.trim(), author: newBookAuthor.trim(), coverUrl: newBookCover },
+      {
+        title: newBookTitle.trim(),
+        author: newBookAuthor.trim(),
+        coverFile: newBookCoverFile,
+        coverPreview: newBookCoverPreview,
+        bookFile: newBookFile,
+      },
     ]);
+
     // Reset modal state
     setNewBookTitle("");
     setNewBookAuthor("");
-    setNewBookCover(null);
+    setNewBookCoverFile(null);
+    setNewBookCoverPreview(null);
+    setNewBookFile(null);
     setIsBookModalOpen(false);
   };
+
+  // ───────────────────────────────
+  // 5) Handlers to remove items
+  // ───────────────────────────────
+  const removeImageAt = (idx: number) => {
+    // 1) Remove raw File
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx));
+    // 2) Revoke & remove preview URL
+    setImagePreviews((prev) => {
+      URL.revokeObjectURL(prev[idx]);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const removeVideoAt = (idx: number) => {
+    setVideoFiles((prev) => prev.filter((_, i) => i !== idx));
+    setVideoPreviews((prev) => {
+      URL.revokeObjectURL(prev[idx]);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  // const removeBookAt = (idx: number) => {
+  //   setBooks((prev) => {
+  //     const copy = [...prev];
+  //     if (copy[idx].coverPreview) URL.revokeObjectURL(copy[idx].coverPreview!);
+  //     copy.splice(idx, 1);
+  //     return copy;
+  //   });
+  // };
+
+  // ───────────────────────────────
+  // 6) Save new book from modal (no S3 yet)
+  // ───────────────────────────────
+  // const saveNewBook = () => {
+  //   if (!newBookTitle.trim() || !newBookAuthor.trim()) return;
+
+  //   setBooks((prev) => [
+  //     ...prev,
+  //     {
+  //       title: newBookTitle.trim(),
+  //       author: newBookAuthor.trim(),
+  //       coverFile: newBookCoverFile,
+  //       coverPreview: newBookCoverPreview,
+  //     },
+  //   ]);
+
+  //   // Clear modal state
+  //   setNewBookTitle("");
+  //   setNewBookAuthor("");
+  //   setNewBookCoverFile(null);
+  //   setNewBookCoverPreview(null);
+  //   setIsBookModalOpen(false);
+  // };
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-2xl border border-gray-200 space-y-6">
@@ -183,26 +320,16 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex flex-col items-center justify-center"
           >
             <input {...getImageInputProps()} />
-            {loadingImages ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1 }}
-              >
-                <ArrowUpTrayIcon className="w-10 h-10 text-gray-500 animate-pulse" />
-              </motion.div>
-            ) : (
-              <>
-                <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
-                <p className="text-gray-500">
-                  Drag & drop images here, or{" "}
-                  <span className="text-orange-500 font-semibold">click to upload</span>
-                </p>
-              </>
-            )}
+            <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
+            <p className="text-gray-500">
+              Drag & drop images here, or{" "}
+              <span className="text-orange-500 font-semibold">click to select</span>
+            </p>
           </div>
-          {images.length > 0 && (
+
+          {imagePreviews.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {images.map((img, idx) => (
+              {imagePreviews.map((url, idx) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -210,13 +337,13 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 >
                   <div className="relative group overflow-hidden rounded-lg shadow-lg">
                     <img
-                      src={img}
+                      src={url}
                       alt={`Preview ${idx}`}
                       className="h-24 w-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-105"
                     />
                     <button
                       className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
-                      onClick={() => removeImage(idx)}
+                      onClick={() => removeImageAt(idx)}
                     >
                       <XMarkIcon className="w-4 h-4" />
                     </button>
@@ -236,26 +363,16 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex flex-col items-center justify-center"
           >
             <input {...getVideoInputProps()} />
-            {loadingVideos ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1 }}
-              >
-                <ArrowUpTrayIcon className="w-10 h-10 text-gray-500 animate-pulse" />
-              </motion.div>
-            ) : (
-              <>
-                <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
-                <p className="text-gray-500">
-                  Drag & drop videos here, or{" "}
-                  <span className="text-orange-500 font-semibold">click to upload</span>
-                </p>
-              </>
-            )}
+            <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
+            <p className="text-gray-500">
+              Drag & drop videos here, or{" "}
+              <span className="text-orange-500 font-semibold">click to select</span>
+            </p>
           </div>
-          {videos.length > 0 && (
+
+          {videoPreviews.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {videos.map((vid, idx) => (
+              {videoPreviews.map((url, idx) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -263,13 +380,13 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 >
                   <div className="relative group rounded-lg shadow-lg overflow-hidden">
                     <video
-                      src={vid}
+                      src={url}
                       className="h-32 w-full object-cover rounded-lg"
                       controls
                     />
                     <button
                       className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
-                      onClick={() => removeVideo(idx)}
+                      onClick={() => removeVideoAt(idx)}
                     >
                       <XMarkIcon className="w-4 h-4" />
                     </button>
@@ -301,9 +418,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                   animate={{ opacity: 1, scale: 1 }}
                 >
                   <div className="relative bg-gray-50 rounded-lg shadow-lg overflow-hidden">
-                    {book.coverUrl ? (
+                    {book.coverPreview ? (
                       <img
-                        src={book.coverUrl}
+                        src={book.coverPreview}
                         alt={book.title}
                         className="h-32 w-full object-cover"
                       />
@@ -315,10 +432,15 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                     <div className="p-3">
                       <h4 className="text-gray-800 font-semibold">{book.title}</h4>
                       <p className="text-gray-600 text-sm">{book.author}</p>
+                      {book.bookFile && (
+                        <p className="text-gray-500 text-xs mt-1">
+                          {book.bookFile.name}
+                        </p>
+                      )}
                     </div>
                     <button
                       className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
-                      onClick={() => removeBook(idx)}
+                      onClick={() => removeBookAt(idx)}
                     >
                       <XMarkIcon className="w-4 h-4" />
                     </button>
@@ -338,11 +460,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           <div className="bg-white p-6 rounded-xl w-full max-w-md mx-auto">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Add New Book</h3>
             <div className="space-y-4">
+              {/* Title */}
               <div>
-                <label
-                  htmlFor="bookTitle"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="bookTitle" className="block text-sm font-medium text-gray-700">
                   Title
                 </label>
                 <input
@@ -354,11 +474,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                   className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+              {/* Author */}
               <div>
-                <label
-                  htmlFor="bookAuthor"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="bookAuthor" className="block text-sm font-medium text-gray-700">
                   Author
                 </label>
                 <input
@@ -370,6 +488,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                   className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+              {/* Cover Image Dropzone */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Cover Image (optional)
@@ -379,16 +498,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                   className="border-2 border-dashed border-gray-300 p-4 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex items-center justify-center"
                 >
                   <input {...getCoverInputProps()} />
-                  {coverLoading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 1 }}
-                    >
-                      <ArrowUpTrayIcon className="w-8 h-8 text-gray-500 animate-pulse" />
-                    </motion.div>
-                  ) : newBookCover ? (
+                  {newBookCoverPreview ? (
                     <img
-                      src={newBookCover}
+                      src={newBookCoverPreview}
                       alt="Cover Preview"
                       className="h-24 object-cover rounded-lg"
                     />
@@ -402,6 +514,22 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                     </div>
                   )}
                 </div>
+              </div>
+              {/* Book File Input */}
+              <div>
+                <label htmlFor="bookFile" className="block text-sm font-medium text-gray-700">
+                  Book File (PDF, EPUB, etc.)
+                </label>
+                <input
+                  type="file"
+                  id="bookFile"
+                  accept=".pdf,.epub,.mobi,.txt,.doc,.docx"
+                  onChange={handleBookFileSelect}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {newBookFile && (
+                  <p className="text-gray-500 text-sm mt-1">{newBookFile.name}</p>
+                )}
               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-4">
@@ -422,6 +550,35 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           </div>
         </Modal>
       )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
+      
     </div>
   );
 };
