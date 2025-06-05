@@ -5,6 +5,7 @@ import {
   TrashIcon,
   PhotoIcon,
 } from "@heroicons/react/24/outline";
+import { HeroSlide } from '@/types/typings';
 
 export interface HeroSlidesAccordionProps {
   slides: HeroSlide[];

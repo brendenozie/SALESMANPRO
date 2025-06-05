@@ -4,6 +4,7 @@ import {
   TrashIcon,
   PhotoIcon,
 } from '@heroicons/react/24/outline';
+import { Promotion } from '@/types/typings';
 
 
 
