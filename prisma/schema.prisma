@@ -183,8 +183,6 @@ model Company {
 
   themeSettings Json? // colors, fonts, layout toggles
   seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
-  // analytics     AnalyticsConfig?  @relation(fields: [analyticsConfigId], references: [id])
-  // payment       PaymentSettings?  @relation(fields: [paymentSettingsId], references: [id])
 
   StoreCategory StoreCategory[]
 
@@ -208,10 +206,6 @@ model Company {
   PageSection PageSection[]
   BlogPost    BlogPost[]
   Collection  Collection[]
-
-  // ShippingSettings   ShippingSettings[]
-  // AnalyticsConfig    AnalyticsConfig[]
-  // PaymentSettings    PaymentSettings[]
 
   MarketplaceListing MarketplaceListing[]
 
@@ -240,7 +234,6 @@ model SocialLink {
   id        String        @id @default(auto()) @map("_id") @db.ObjectId
   company   Company       @relation(fields: [companyId], references: [id])
   companyId String        @db.ObjectId
-  // channel   String // e.g. "twitter", "instagram"
   channel   SocialChannel
   url       String
 }
@@ -249,7 +242,6 @@ model Policy {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
   company   Company    @relation(fields: [companyId], references: [id])
   companyId String     @db.ObjectId
-  // type      String // e.g. "shipping", "returns", "privacy"
   type      PolicyType
   title     String?
   content   String
@@ -457,8 +449,43 @@ model Product {
   location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
   amenities String[]
 
-  bedrooms Json? // Updated to support multiple bedroom types
-  studios  Json? // Updated to support multiple bedroom types
+  myLocation Location @relation(fields: [locationId], references: [id])
+  locationId String   @db.ObjectId
+
+  // 15. Property-specific
+  propertyType   PropertyType? @relation(fields: [propertyTypeId], references: [id])
+  propertyTypeId String?       @db.ObjectId
+
+  bathrooms String?
+  area      String?
+  bedrooms  Json? // Updated to support multiple bedroom types
+  studios   Json? // Updated to support multiple bedroom types
+
+  serviceSchedule String?
+
+  // 11. Digital-Goods-specific
+  digitalUrl  String?
+  autoDeliver Boolean? @default(false)
+
+  // 3. Vehicle Flags
+  negotiable         Boolean? @default(false)
+  financingAvailable Boolean? @default(false)
+  tradeIn            Boolean? @default(false)
+
+  // 5. Pricing Breakdown
+  tax          Float? @default(0)
+  shippingCost Float? @default(0)
+
+  // 6. Availability Scheduling
+  availabilityStart DateTime?
+  availabilityEnd   DateTime?
+
+  // 7. Structured Location / Contact
+  email        String?
+  locationName String?
+  latitude     Float?
+  longitude    Float?
+  contactName  String?
 
   status         ListingStatus    @default(ACTIVE)
   Collection     Collection?      @relation(fields: [collectionId], references: [id])
@@ -474,6 +501,18 @@ model Product {
   @@index([isFeatured])
   @@index([createdAt])
   @@index([status])
+}
+
+model Payment {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  userId        String        @db.ObjectId
+  // listing       Listing       @relation(fields: [listingId], references: [id])
+  // listingId     String        @db.ObjectId
+  amount        Float
+  status        PaymentStatus
+  transactionId String        @unique
+  createdAt     DateTime      @default(now())
 }
 
 model BlogPost {
@@ -495,6 +534,40 @@ enum PostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+}
+
+model Appointment {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  user      User              @relation(fields: [userId], references: [id])
+  userId    String            @db.ObjectId
+  // listing   Listing           @relation(fields: [listingId], references: [id])
+  // listingId String            @db.ObjectId
+  date      DateTime
+  status    AppointmentStatus
+  createdAt DateTime          @default(now())
+}
+
+model PropertyType {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
 
 model Blog {
@@ -684,6 +757,8 @@ model User {
   Question              Question[]
   RecentlyViewed        RecentlyViewed[]
   Wishlist              Wishlist[]
+  Payment               Payment[]
+  Appointment           Appointment[]
 }
 
 enum Status {
@@ -956,6 +1031,8 @@ model MarketplaceListing {
   UserActivity   UserActivity[]
   ProductMetrics ProductMetrics[]
   ProductReview  ProductReview[]
+  Location       Location?        @relation(fields: [locationId], references: [id])
+  locationId     String?          @db.ObjectId
 }
 
 model ProductMetrics {
@@ -1193,12 +1270,19 @@ model OrderItem {
 }
 
 model Location {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  latitude    Float
-  longitude   Float
-  address     String
-  description String
-  userId      String? @unique // Link to the user (optional)
+  id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  latitude       Float
+  longitude      Float
+  address        String
+  description    String
+  userId         String?              @unique // Link to the user (optional).ObjectId
+  name           String?
+  displayName    String?
+  country        String?
+  state          String?
+  city           String?
+  products       Product[]
+  marketListings MarketplaceListing[]
 }
 
 enum OrderStatus {

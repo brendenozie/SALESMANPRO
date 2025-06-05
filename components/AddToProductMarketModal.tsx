@@ -334,7 +334,7 @@ const handleCreateListing = async () => {
     };
 
     try {
-      const response = await fetch(`${apiUrl}/admin/addToMarketList`, {
+      const response = await fetch(`${apiUrl}/admin/post-market-list`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
