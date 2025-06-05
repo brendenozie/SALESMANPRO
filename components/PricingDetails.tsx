@@ -31,6 +31,7 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({
 
     setFormData({
       ...formData,
+      sellingPrice:sellingPrice,
       finalPrice: discountedPrice,
       profitMargin: margin,
     });

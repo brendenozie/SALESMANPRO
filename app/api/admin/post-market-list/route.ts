@@ -320,7 +320,8 @@ export async function POST(req: Request) {
       const existingListing = await tx.marketplaceListing.findFirst({
         where: {
           companyId,
-          productId: id ? id : productId,
+          productId:  productId,
+          id: id 
         },
       });
 

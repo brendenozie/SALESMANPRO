@@ -245,7 +245,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     // commissionRate:      marketListItem?.commissionRate        || product?.product?.commissionRate   || 0,
     // commissionType:      marketListItem?.commissionType        || product?.product?.commissionType   || "COST",
   
-    companyId:           product?.product?.companyId          || `${companyId}`,
+    companyId:           marketListItem?.companyId  || product?.product?.companyId          || `${companyId}`,
     sellerType: product?.product?.sellerType || `ADMIN`,
   
     // Vehicle-specific:
@@ -460,9 +460,10 @@ const handleCreateListing = async () => {
       // — Identifiers & relations —
       id:                   formData.id,                           // String @id (for updates) or omit for create
       sellerType:           formData.sellerType || "ADMIN",         // SellerType enum
-      companyId:            companyId,                              // String? @db.ObjectId
+      companyId:            formData.companyId,                              // String? @db.ObjectId
       sellerId:             undefined,                              // Optional: if you know a specific sellerId
       productId:            formData.productId,                     // String? @db.ObjectId
+      
     
       // — Title & description —
       title:                formData.title,                         // String

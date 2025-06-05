@@ -219,9 +219,9 @@ const CategoryPicker: React.FC<Props> = ({
         <section>
           <h3 className="text-lg font-semibold text-gray-700 mb-2">2. Choose a Subcategory</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {filteredSubCategories.map((sub) => (
+            {filteredSubCategories.map((sub,index) => (
               <button
-                key={sub.id}
+                key={`${sub.name.slice(0,1)+ index}`}
                 onClick={() => handleSelection("subCategory", sub)}
                 aria-pressed={selection.subCategory?.id === sub.id}
                 className={`

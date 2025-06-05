@@ -1054,9 +1054,8 @@ model MarketplaceListing {
   locationName String?
   latitude     Float?
   longitude    Float?
-  locationId   String?   @db.ObjectId
-  Location     Location? @relation(fields: [locationId], references: [id])
-  amenities    String[]
+
+  amenities String[]
 
   // Marketplace-specific
   delivery      Boolean  @default(false)
@@ -1072,6 +1071,41 @@ model MarketplaceListing {
   UserActivity   UserActivity[]
   ProductMetrics ProductMetrics[]
   ProductReview  ProductReview[]
+
+  //product 
+  myLocation Location? @relation(fields: [locationId], references: [id])
+  locationId String?   @db.ObjectId
+
+  make           String?
+  trim           String?
+  type           String?
+  mileage        String?
+  engineType     String?
+  engineSize     String?
+  transmission   String?
+  drivetrain     String?
+  vin            String?
+  logbookStatus  String?
+  serviceHistory String?
+
+  // 3. Vehicle Flags
+  negotiable         Boolean? @default(false)
+  financingAvailable Boolean? @default(false)
+  tradeIn            Boolean? @default(false)
+
+  Collection     Collection?      @relation(fields: [collectionId], references: [id])
+  collectionId   String?          @db.ObjectId
+  CollectionItem CollectionItem[]
+  Review         Review[]
+  Question       Question[]
+  RecentlyViewed RecentlyViewed[]
+  WishlistItem   WishlistItem[]
+
+  @@index([title])
+  @@index([finalPrice])
+  @@index([isFeatured])
+  @@index([createdAt])
+  @@index([status])
 }
 
 model ProductMetrics {
@@ -1359,58 +1393,67 @@ model Banners {
 }
 
 model Collection {
-  id             String           @id @default(auto()) @map("_id") @db.ObjectId
-  company        Company          @relation(fields: [companyId], references: [id])
-  companyId      String           @db.ObjectId
-  name           String
-  slug           String           @unique
-  description    String?
-  image          String?
-  products       Product[]
-  order          Int              @default(0)
-  CollectionItem CollectionItem[]
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  company            Company              @relation(fields: [companyId], references: [id])
+  companyId          String               @db.ObjectId
+  name               String
+  slug               String               @unique
+  description        String?
+  image              String?
+  products           Product[]
+  order              Int                  @default(0)
+  CollectionItem     CollectionItem[]
+  MarketplaceListing MarketplaceListing[]
 }
 
 model CollectionItem {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  collection   Collection @relation(fields: [collectionId], references: [id])
-  collectionId String     @db.ObjectId
-  product      Product    @relation(fields: [productId], references: [id])
-  productId    String     @db.ObjectId
-  sortOrder    Int        @default(0)
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  collection           Collection          @relation(fields: [collectionId], references: [id])
+  collectionId         String              @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  sortOrder            Int                 @default(0)
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
 }
 
 model Review {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String   @db.ObjectId
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    String?  @db.ObjectId
-  rating    Int // 1–5
-  title     String?
-  body      String
-  photos    String[] // URLs
-  createdAt DateTime @default(now())
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  user                 User?               @relation(fields: [userId], references: [id])
+  userId               String?             @db.ObjectId
+  rating               Int // 1–5
+  title                String?
+  body                 String
+  photos               String[] // URLs
+  createdAt            DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
 }
 
 model Question {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String   @db.ObjectId
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    String?  @db.ObjectId
-  question  String
-  answer    String?
-  createdAt DateTime @default(now())
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  user                 User?               @relation(fields: [userId], references: [id])
+  userId               String?             @db.ObjectId
+  question             String
+  answer               String?
+  createdAt            DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
 }
 
 model RecentlyViewed {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String   @db.ObjectId
-  viewedAt  DateTime @default(now())
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  user                 User                @relation(fields: [userId], references: [id])
+  userId               String              @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  viewedAt             DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
 }
 
 model Wishlist {
@@ -1423,10 +1466,12 @@ model Wishlist {
 }
 
 model WishlistItem {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  wishlist   Wishlist @relation(fields: [wishlistId], references: [id])
-  wishlistId String   @db.ObjectId
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  String   @db.ObjectId
-  addedAt    DateTime @default(now())
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  wishlist             Wishlist            @relation(fields: [wishlistId], references: [id])
+  wishlistId           String              @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  addedAt              DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
 }

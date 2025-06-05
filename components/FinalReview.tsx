@@ -249,7 +249,7 @@ const FinalReview = ({ formData }: any) => {
 
           {/* Contact & Location */}
           <SectionCard icon={MapPinIcon} title="Contact & Location">
-            <KeyValue label="Location" value={displayValue(formData.location)} />
+            {/* <KeyValue label="Location" value={displayValue(formData.location)} /> */}
             <KeyValue
               label="Contact Number"
               value={displayValue(formData.contact)}
