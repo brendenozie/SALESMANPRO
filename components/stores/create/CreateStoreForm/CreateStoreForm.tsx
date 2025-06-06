@@ -572,6 +572,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         const allItems = parent.children.map((child) => ({
           id:   child.id,
           name: child.name,
+          // icon: child.icon,
           slug: child.slug,
         }));
         const updated = prev.storeCategories.map((sc) =>
@@ -714,12 +715,15 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!session?.user?.id) return;
-
-    // 1) Build a list of upload promises for each file that exists.
-    //    After each resolves, we’ll overwrite the corresponding form URL.
+  
+    // 1) Prepare a local copy of form data (so we can mutate it without
+    //    worrying about React batching or stale closures).
+    const payload = { ...form };
+  
+    // 2) Build upload promises, but write each returned URL into `payload`
     const uploadPromises: Promise<void>[] = [];
-
-    // 1.a) Logo
+  
+    // 2.a) Logo
     if (logoFile) {
       const p = (async () => {
         const fd = new FormData();
@@ -733,12 +737,15 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
           throw new Error("Logo upload failed");
         }
         const { url } = await res.json();
-        setForm((prev) => ({ ...prev, logoUrl: url }));
+        // 2.a.i) Write it into our local payload
+        payload.logoUrl = url;
+        // 2.a.ii) Also update React state so the UI immediately reflects it
+        setForm(prev => ({ ...prev, logoUrl: url }));
       })();
       uploadPromises.push(p);
     }
-
-    // 1.b) Banner
+  
+    // 2.b) Banner
     if (bannerFile) {
       const p = (async () => {
         const fd = new FormData();
@@ -752,12 +759,13 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
           throw new Error("Banner upload failed");
         }
         const { url } = await res.json();
-        setForm((prev) => ({ ...prev, bannerUrl: url }));
+        payload.bannerUrl = url;
+        setForm(prev => ({ ...prev, bannerUrl: url }));
       })();
       uploadPromises.push(p);
     }
-
-    // 1.c) Hero Slides
+  
+    // 2.c) Hero Slides
     heroSlideFiles.forEach((file, idx) => {
       if (file) {
         const p = (async () => {
@@ -772,8 +780,18 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
             throw new Error(`Slide ${idx + 1} upload failed`);
           }
           const { url } = await res.json();
-          // Overwrite that slide’s imageUrl with the S3 URL:
-          setForm((prev) => {
+          // 2.c.i) Mutate local payload.heroSlides
+          if (!payload.heroSlides) payload.heroSlides = [];
+          // ensure there’s a slot for this index
+          while (payload.heroSlides.length <= idx) {
+            payload.heroSlides.push({...payload.heroSlides[idx], imageUrl: "" });
+          }
+          payload.heroSlides[idx] = {
+            ...payload.heroSlides[idx],
+            imageUrl: url,
+          };
+          // 2.c.ii) Mirror into state so UI updates
+          setForm(prev => {
             const slides = [...prev.heroSlides];
             slides[idx] = { ...slides[idx], imageUrl: url };
             return { ...prev, heroSlides: slides };
@@ -782,22 +800,65 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         uploadPromises.push(p);
       }
     });
-
-  // 2) Wait for ALL uploads to finish before POSTing the form
-  try {
+  
+    // 3.c) Hero Slides
+    promotionSlideFiles.forEach((file, idx) => {
+      if (file) {
+        const p = (async () => {
+          const fd = new FormData();
+          fd.append("type", "image");
+          fd.append("file", file);
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: fd,
+          });
+          if (!res.ok) {
+            throw new Error(`Promotions Slide ${idx + 1} upload failed`);
+          }
+          const { url } = await res.json();
+          // 2.c.i) Mutate local payload.heroSlides
+          if (!payload.promotions) payload.promotions = [];
+          // ensure there’s a slot for this index
+          while (payload.promotions.length <= idx) {
+            payload.promotions.push({ ...payload.promotions[idx], bannerUrl: "" });
+          }
+          payload.promotions[idx] = {
+            ...payload.promotions[idx],
+            bannerUrl: url,
+          };
+          // 2.c.ii) Mirror into state so UI updates
+          setForm(prev => {
+            const slides = [...prev.promotions];
+            slides[idx] = { ...slides[idx], bannerUrl: url };
+            return { ...prev, promotions: slides };
+          });
+        })();
+        uploadPromises.push(p);
+      }
+    });
+  
+    // 4) Wait for all uploads to finish
+    try {
       await Promise.all(uploadPromises);
+  
       const isEdit = Boolean(initialData?.id);
-      const url    = isEdit
+      const apiUrl = isEdit
         ? `${process.env.NEXT_PUBLIC_API_URL}/stores/${initialData!.id}`
         : `${process.env.NEXT_PUBLIC_API_URL}/stores`;
       const method = isEdit ? "PUT" : "POST";
-    
-      const res = await fetch(url, {
+  
+      // 4) Now payload contains the correct URLs (not the stale form)
+      const toSend = {
+        ...payload,
+        userId: session.user.id,
+      };
+  
+      const res = await fetch(apiUrl, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, userId: session.user.id }),
+        body: JSON.stringify(toSend),
       });
-    
+  
       if (res.ok) {
         router.push("/stores");
       } else {
@@ -810,13 +871,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     }
   };
   
-
- 
-
- 
-
-
-
+  
 // Render step or review
 const StepContent = stepIndex < steps.length
 ? steps[stepIndex].render(form, handlers, mappedCategories)
