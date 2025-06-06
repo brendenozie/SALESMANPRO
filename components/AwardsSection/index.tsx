@@ -9,6 +9,7 @@ import Section from '../site/Section/Section';
 
 interface Award {
   imageUrl?: string;
+  icon?: string;
   url?: string;
   name?: string;
 }
@@ -45,7 +46,7 @@ export default function AwardsSection({ awards }: AwardsSectionProps) {
             src = award;
             altText = `Award ${idx + 1}`;
           } else {
-            src = award.imageUrl ?? award.url ?? '';
+            src = award.imageUrl ?? award.url ?? award.icon ?? '';
             altText = award.name ?? `Award ${idx + 1}`;
           }
 

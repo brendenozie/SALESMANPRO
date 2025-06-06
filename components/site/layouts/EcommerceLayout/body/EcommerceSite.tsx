@@ -6,9 +6,7 @@ import HeroSlider from '@/components/HeroSlider';
 import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import Section from '@/components/site/Section/Section';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
-import { motion } from 'framer-motion';
 import PromotionsSection from '@/components/PromotionsSection';
 import MetricsSection from '@/components/MetricsSection';
 import AwardsSection from '@/components/AwardsSection';
@@ -56,17 +54,20 @@ export default function EcommerceSite() {
 
       {/* Category banners */}
       <CategoryBanners />
-      
-      <ProductGrid title={"trending"} />
-
-      <PromotionsSection promotions={promotions}/>
 
       {/* Trending Products */}
+      <ProductGrid title={"trending"} />
+
+      {/* Promotions Products */}
+      <PromotionsSection promotions={promotions}/>
+
+      {/* Metrics  */}
       <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support}/>
 
       {/* Top Selling */}
       <ProductGrid title="Top Selling" /> 
 
+      {/* Awards */}
       <AwardsSection awards={awards}/>
 
       {/* All Products */}
