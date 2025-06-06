@@ -116,7 +116,7 @@ export default function HeroSlider() {
 
   return (
     <section className="relative mt-16 py-16 bg-gray-50">
-      <div className="container mx-auto py-8 px-4 md:px-8 lg:px-16">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16">
         <AnimatePresence initial={false} custom={direction}>
           {heroSlides.map((slide, idx) =>
             idx === current ? (
@@ -134,7 +134,7 @@ export default function HeroSlider() {
                 onDragEnd={handleDragEnd}
               >
                 {/* ========= LEFT PANEL: TEXT CONTENT ========= */}
-                <div className="w-full md:w-1/2 px-6 py-12 md:px-12 lg:px-20 flex flex-col justify-center relative">
+                <div className="w-full md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex flex-col justify-center relative">
                   {/* Semi-opaque “glass” panel behind text for contrast */}
                   <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-3xl"></div>
                   <div className="relative space-y-6">
@@ -203,18 +203,6 @@ export default function HeroSlider() {
             ) : null
           )}
         </AnimatePresence>
-
-        {/* ========= PROGRESS BAR ========= */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-200">
-          <div
-            ref={progressRef}
-            className="h-full bg-gradient-to-r"
-            style={{
-              backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})`,
-              width: '0%',
-            }}
-          />
-        </div>
 
         {/* ========= PREV / NEXT BUTTONS ========= */}
         <button
