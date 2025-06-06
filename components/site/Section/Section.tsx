@@ -23,22 +23,23 @@ export default function Section({
 }: SectionProps) {
   const { storeFormData } = useStoreContext();
   const { themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings.primaryColor || '#f97316';
-  const secondary = themeSettings.secondaryColor || '#3b82f6';
+  const primary = themeSettings.primaryColor || '#10B981';
+  const secondary = themeSettings.secondaryColor || '#3B82F6';
 
   const bgClass = clsx({
-    'bg-gray-50 dark:bg-gray-900': background === 'light',
+    'bg-gray-50': background === 'light',
     'bg-gray-900 text-white': background === 'dark',
     '': background === 'none',
   });
 
-  // Inline CSS for gradient text and underline
+  // Gradient text style for the heading
   const gradientTextStyle = {
     background: `linear-gradient(90deg, ${primary}, ${secondary})`,
     WebkitBackgroundClip: 'text' as const,
     WebkitTextFillColor: 'transparent' as const,
   };
 
+  // Gradient underline style
   const gradientUnderlineStyle = {
     background: `linear-gradient(90deg, ${primary}, ${secondary})`,
   };
@@ -46,10 +47,15 @@ export default function Section({
   const containerPadding = 'px-4 sm:px-6 lg:px-8';
 
   return (
-    <section className={clsx('py-16', bgClass)}>
+    <section className={clsx('relative py-16 overflow-hidden', bgClass)}>
+      {/* Optional: a subtle radial accent behind the title */}
+      {title && (
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 mt-[-64px] w-72 h-72 bg-gradient-to-br from-[rgba(255,255,255,0.1)] to-transparent rounded-full blur-3xl pointer-events-none" />
+      )}
+
       <div className={clsx('max-w-7xl mx-auto', containerPadding)}>
         {title && (
-          <>
+          <div className="relative mb-12 text-center">
             {/* Animated Gradient Title */}
             <motion.h2
               initial="hidden"
@@ -57,7 +63,7 @@ export default function Section({
               viewport={{ once: true, amount: 0.3 }}
               variants={titleVariants}
               style={gradientTextStyle}
-              className="text-3xl sm:text-4xl font-extrabold mb-4"
+              className="inline-block text-3xl sm:text-4xl md:text-5xl font-extrabold"
             >
               {title}
             </motion.h2>
@@ -68,13 +74,13 @@ export default function Section({
               whileInView={{ scaleX: 1 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="h-1 rounded mb-8 origin-left"
+              className="h-1 w-28 mx-auto mt-2 rounded origin-left"
               style={gradientUnderlineStyle}
             />
-          </>
+          </div>
         )}
 
-        {/* Content Wrapper: animate children into view */}
+        {/* Animate children into view */}
         <motion.div
           initial="hidden"
           whileInView="visible"

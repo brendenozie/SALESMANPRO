@@ -155,7 +155,7 @@ export interface FAQ { question: string; answer: string; order?: number; }
 
 export interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number; order?: number; }
 
-export interface HeroSlide { imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; }
+export interface HeroSlide { productImageUrl?:string; imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; }
 
 export interface Promotion { title: string; description: string; startsAt?: string; 
                               endsAt?: string; bannerUrl?: string; order?: number;  ctaText?: string; ctaLink?: string; }

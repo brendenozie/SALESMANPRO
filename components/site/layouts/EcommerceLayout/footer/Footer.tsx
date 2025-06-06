@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
 import { FaceFrownIcon } from '@heroicons/react/24/outline';
 
-
 export default function Footer() {
   const { storeFormData } = useStoreContext();
   const {
@@ -19,31 +18,34 @@ export default function Footer() {
     themeSettings = {},
   } = storeFormData || {};
 
-  const primary = themeSettings.primaryColor || '#f97316';
-  const secondary = themeSettings.secondaryColor || '#3b82f6';
+  const primary = themeSettings.primaryColor || '#10B981';
+  const secondary = themeSettings.secondaryColor || '#3B82F6';
 
-  // Map common social channels to icons
+  // Map common social channels to icons (placeholder icons here)
   const iconMapper: Record<string, React.ReactNode> = {
-    facebook: <FaceFrownIcon className='w-5 h-5' />,
-    twitter: <FaceFrownIcon className='w-5 h-5'  />,
-    instagram: <FaceFrownIcon className='w-5 h-5'  />,
-    linkedin: <FaceFrownIcon className='w-5 h-5'  />,
-    youtube: <FaceFrownIcon className='w-5 h-5'  />,
+    facebook: <FaceFrownIcon className="w-5 h-5" />,
+    twitter: <FaceFrownIcon className="w-5 h-5" />,
+    instagram: <FaceFrownIcon className="w-5 h-5" />,
+    linkedin: <FaceFrownIcon className="w-5 h-5" />,
+    youtube: <FaceFrownIcon className="w-5 h-5" />,
   };
 
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-12">
+    <footer className="relative bg-gray-900 text-gray-300 pt-12 overflow-hidden">
+      {/* Subtle Radial Accent */}
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-16 w-80 h-80 bg-gradient-to-br from-[rgba(255,255,255,0.05)] to-transparent rounded-full blur-3xl pointer-events-none" />
+
       {/* Gradient Accent Bar */}
       <div
-        className="h-1 w-full"
+        className="h-1 w-full mb-8"
         style={{
           background: `linear-gradient(90deg, ${primary}, ${secondary})`,
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 py-12 border-b border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
         {/* About Us */}
-        <div>
+        <div className="relative">
           <h3
             className="text-xl font-extrabold mb-4"
             style={{
@@ -181,7 +183,7 @@ export default function Footer() {
           <div className="flex space-x-4">
             {socialLinks.map((s, idx) => {
               const channel = s.channel.toLowerCase();
-              const icon = iconMapper[channel] || <FaceFrownIcon className='w-5 h-5'  />;
+              const icon = iconMapper[channel] || <FaceFrownIcon className="w-5 h-5" />;
               return (
                 <motion.a
                   key={idx}
@@ -189,12 +191,18 @@ export default function Footer() {
                   href={s.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-gray-400 hover:text-white bg-gray-800 p-3 rounded-full transition-colors"
+                  className="
+                    flex items-center justify-center 
+                    w-10 h-10 
+                    text-gray-300 hover:text-white 
+                    rounded-full 
+                    transition-colors
+                  "
                   style={{
                     background: `linear-gradient(135deg, ${primary}33, ${secondary}33)`,
                   }}
                 >
-                  <span className="h-5 w-5">{icon}</span>
+                  {icon}
                 </motion.a>
               );
             })}
@@ -203,7 +211,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="mt-8 border-t border-gray-700 pt-6">
+      <div className="mt-12 border-t border-gray-700 pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} {name}. All rights reserved.

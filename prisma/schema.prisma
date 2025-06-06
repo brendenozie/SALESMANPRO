@@ -268,18 +268,19 @@ model Testimonial {
 }
 
 model Banner {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  company   Company   @relation(fields: [companyId], references: [id])
-  companyId String    @db.ObjectId
-  imageUrl  String
-  headline  String?
-  subline   String?
-  ctaText   String?
-  ctaLink   String?
-  badgeText String?
-  price     String?
-  endsAt    DateTime?
-  order     Int       @default(0)
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  company         Company   @relation(fields: [companyId], references: [id])
+  companyId       String    @db.ObjectId
+  imageUrl        String
+  productImageUrl String?
+  headline        String?
+  subline         String?
+  ctaText         String?
+  ctaLink         String?
+  badgeText       String?
+  price           String?
+  endsAt          DateTime?
+  order           Int       @default(0)
 }
 
 model Promotion {
