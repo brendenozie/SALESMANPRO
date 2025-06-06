@@ -163,15 +163,15 @@ export default function HeroSlider() {
                 </motion.h2>
 
                 {slide.ctaLink && slide.ctaText && (
-                  <motion.a
-                    href={slide.ctaLink}
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.7, duration: 0.6 }}
-                    className={`inline-block bg-gradient-to-r from-[${primary}] to-[${secondary}] hover:from-[${secondary}] hover:to-[${primary}] transition-all px-8 py-3 rounded-full text-white font-semibold shadow-2xl tracking-wide`}
-                  >
-                    {slide.ctaText}
-                  </motion.a>
+                   <motion.a
+                   href={slide.ctaLink}
+                   initial={{ scale: 0.9, opacity: 0 }}
+                   animate={{ scale: 1, opacity: 1 }}
+                   transition={{ delay: 0.7, duration: 0.6 }}
+                   className="inline-block bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 transition-all px-8 py-3 rounded-full text-white font-semibold shadow-xl tracking-wide"
+                 >
+                   {slide.ctaText}
+                 </motion.a>
                 )}
               </div>
             </motion.div>

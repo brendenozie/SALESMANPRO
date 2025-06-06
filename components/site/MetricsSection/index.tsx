@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useStoreContext } from '../../contexts/StoreContext';
-import Section from '../site/Section/Section';
+import { useStoreContext } from '../../../contexts/StoreContext';
+import Section from '../Section/Section';
 
 
 interface Metric {

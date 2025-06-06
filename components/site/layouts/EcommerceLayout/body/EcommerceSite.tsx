@@ -6,11 +6,11 @@ import HeroSlider from '@/components/HeroSlider';
 import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
-import PromotionsSection from '@/components/PromotionsSection';
-import MetricsSection from '@/components/MetricsSection';
-import AwardsSection from '@/components/AwardsSection';
+import MetricsSection from '@/components/site/MetricsSection';
+import AwardsSection from '@/components/site/AwardsSection';
 import TestimonialsSection from '@/components/site/TestimonialsSection/NewsletterSection';
+import PromotionsSection from '@/components/site/PromotionsSection';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function EcommerceSite() {
   // Grab everything from context instead of receiving a `store` prop

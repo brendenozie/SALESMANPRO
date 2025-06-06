@@ -118,9 +118,9 @@ export default function Header() {
                   <Image
                     src={logoUrl}
                     alt={name}
-                    width={140}
+                    width={100}
                     height={48}
-                    className="object-contain"
+                    className="object-contain w-16 h-16"
                     loader={loader}
                   />
                 ) : (

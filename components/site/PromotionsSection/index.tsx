@@ -3,20 +3,12 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { useStoreContext } from '../../contexts/StoreContext';
 import { Promotion } from '@/types/typings';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
-
-// interface Promo {
-//   imageUrl: string;
-//   title: string;
-//   subtitle: string;
-//   ctaText?: string;
-//   ctaLink?: string;
-// }
 
 interface PromotionsSectionProps {
   promotions: Promotion[];
