@@ -194,6 +194,8 @@ export default async function EditStorePage({
       typeof store.themeSettings === "string"
         ? JSON.parse(store.themeSettings)
         : store.themeSettings ?? undefined,
+
+    marketplaceListings:[]
   };
 
   return (
