@@ -268,15 +268,18 @@ model Testimonial {
 }
 
 model Banner {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company   @relation(fields: [companyId], references: [id])
+  companyId String    @db.ObjectId
   imageUrl  String
   headline  String?
   subline   String?
   ctaText   String?
   ctaLink   String?
-  order     Int     @default(0)
+  badgeText String?
+  price     String?
+  endsAt    DateTime?
+  order     Int       @default(0)
 }
 
 model Promotion {
@@ -288,6 +291,8 @@ model Promotion {
   description String?
   startsAt    DateTime?
   endsAt      DateTime?
+  ctaText     String?
+  ctaLink     String?
   bannerUrl   String?
 }
 

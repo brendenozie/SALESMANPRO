@@ -154,7 +154,8 @@ export interface Testimonial { author: string; quote: string; avatarUrl?: string
 
 export interface HeroSlide { imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; }
 
-export interface Promotion { title: string; description: string; startsAt?: string; endsAt?: string; bannerUrl?: string; order?: number; }
+export interface Promotion { title: string; description: string; startsAt?: string; 
+                              endsAt?: string; bannerUrl?: string; order?: number;  ctaText?: string; ctaLink?: string; }
 
 export interface Award {
   name: string;
