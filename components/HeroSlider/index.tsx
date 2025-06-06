@@ -22,7 +22,10 @@ const autoAdvanceDelay = 5000;
 
 export default function HeroSlider() {
   const { storeFormData } = useStoreContext();
-  const heroSlides: Slide[] = storeFormData.heroSlides || [];
+  const heroSlides: Slide[] = (storeFormData.heroSlides || []).map((slide: any) => ({
+    ...slide,
+    subline: slide.subline ?? '',
+  }));
 
   const primary = storeFormData.themeSettings?.primaryColor || '#f97316';
   const secondary = storeFormData.themeSettings?.secondaryColor || '#3b82f6';

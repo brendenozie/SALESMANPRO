@@ -44,14 +44,20 @@ export default function PromotionsSection({ promotions }: PromotionsSectionProps
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
-            transition={{ delay: idx * 0.1, duration: 0.6, ease: 'easeOut' }}
+            transition={{
+              delay: idx * 0.1,
+              duration: 0.6,
+              ease: 'easeOut',
+              type: 'spring',
+              stiffness: 250,
+              damping: 20
+            }}
             whileHover={{ scale: 1.03 }}
-            transition={{ type: 'spring', stiffness: 250, damping: 20 }}
           >
             {/* Background Image + Gradient Overlay */}
             <div className="relative w-full h-56 md:h-64 lg:h-72">
               <Image
-                src={promo.bannerUrl}
+                src={promo.bannerUrl || '/placeholder.png'}
                 loader={loader}
                 alt={promo.title}
                 fill
