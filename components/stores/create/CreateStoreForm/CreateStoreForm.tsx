@@ -24,7 +24,7 @@ import ShippingAccordion from '../ShippingAccordion/ShippingAccordion';
 import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
 import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
-import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory } from '../../../../types/typings';
+import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory, Promotion, HeroSlide } from '../../../../types/typings';
 
 // Interfaces
 const steps: StepConfig[] = [
@@ -437,6 +437,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const mappedCategories: ParentCategory[] = availableCategories.map(cat => ({
     id:   cat.id,
     name: cat.name,
+    icon: cat.icon,
     children: cat.subcategories.map((sub,index) => ({
       id:   `${sub.name.slice(0,2)+index}`,
       name: sub.name,
@@ -551,6 +552,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
             {
               id:    parent.id,
               name:  parent.name,
+              icon: parent.icon,
               items: parent.children.map((child) => ({
                 id:   child.id,
                 name: child.name,
@@ -591,14 +593,14 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
       if (!parentEntry) {
         // Parent not in storeCategories → add it with one sub
-        const parentName =
-          mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
+        const parentName = mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
+        const parentIcon = mappedCategories.find((cat) => cat.id === parentId)?.icon ?? "";
 
         return {
           ...prev,
           storeCategories: [
             ...prev.storeCategories,
-            { id: parentId, name: parentName, items: [sub] },
+            { id: parentId, name: parentName,icon: parentIcon, items: [sub] },
           ],
         };
       }
@@ -669,6 +671,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         nextStoreCategories.push({
           id:    parent.id,
           name:  parent.name,
+          icon: parent.icon,
           items: itemsToUse,
         });
       }

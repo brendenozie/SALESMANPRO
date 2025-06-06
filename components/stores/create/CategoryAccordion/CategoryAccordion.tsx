@@ -18,12 +18,14 @@ export type SubObj = {
 export type ParentCategory = {
   id: string;
   name: string;
+  icon:string;
   children: SubObj[];
 };
 
 type SelectedCategory = {
   id: string;
   name: string;
+  icon:string;
   items: SubObj[];
 };
 
