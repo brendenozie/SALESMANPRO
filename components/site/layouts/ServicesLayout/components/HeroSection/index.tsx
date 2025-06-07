@@ -52,7 +52,7 @@ export default function HeroSection({
             initial={{ y: -40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 text-center lg:text-left border border-white/20"
+            className="min-h-[25rem] p-8 text-center lg:text-left justify-center "
           >
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-white">
               Welcome to{' '}
