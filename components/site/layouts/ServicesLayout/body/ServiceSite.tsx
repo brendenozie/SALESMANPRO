@@ -15,6 +15,8 @@ import ServicesSection from "../components/ServicesSection";
 import PricingSection from "../components/PricingSection";
 import TestimonialSection from "../components/TestimonialSection";
 import FAQSection from "../components/FAQSection";
+import CleaningTipsSection from "../components/CleaningTipsSection";
+import GetStartedSection from "../components/GetStartedSection";
 
 
 const loader = ({
@@ -158,8 +160,11 @@ export default function ServiceSite() {
       
       )}
 
+      <CleaningTipsSection />
      
-<BookingForm />
+      <BookingForm />
+
+      <GetStartedSection />
      
     </>
   );
