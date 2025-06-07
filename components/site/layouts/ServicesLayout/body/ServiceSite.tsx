@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 
 import { useStoreContext } from "../../../../../contexts/StoreContext";
 import bannerFallback from "../../../../../assets/homebanner.png";
+import HeroSection from "../components/HeroSection";
 
 
 const loader = ({
@@ -231,86 +232,7 @@ export default function ServiceSite() {
   );
 }
 
-type HeroSectionProps = {
-  slug: string;
-  bannerUrl: string;
-  siteName: string;
-  siteDescription?: string;
-  primary: string;
-  secondary: string;
-};
 
-function HeroSection({
-  slug,
-  bannerUrl,
-  siteName,
-  siteDescription,
-  primary,
-  secondary,
-}: HeroSectionProps) {
-  return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bannerUrl})` }}
-      />
-
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-transparent z-0" />
-
-      {/* Blurred Animated Blobs */}
-      <motion.div
-        className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-30 blur-3xl z-0"
-        style={{ backgroundColor: secondary }}
-        animate={{ x: [0, -30, 0], y: [0, 30, 0] }}
-        transition={{ duration: 10, repeat: Infinity }}
-      />
-      <motion.div
-        className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-30 blur-3xl z-0"
-        style={{ backgroundColor: primary }}
-        animate={{ x: [0, 30, 0], y: [0, -30, 0] }}
-        transition={{ duration: 10, repeat: Infinity, delay: 2 }}
-      />
-
-      {/* Glassmorphism Content Card */}
-      <div className="relative z-10 px-6 max-w-3xl w-full">
-        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-10 text-center shadow-lg">
-          <motion.h1
-            className="text-white text-4xl md:text-6xl font-extrabold tracking-tight mb-4 drop-shadow-md"
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            Welcome to {siteName.toUpperCase()}
-          </motion.h1>
-          {siteDescription && (
-            <motion.p
-              className="text-white/90 text-lg md:text-xl mb-8 drop-shadow-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 1 }}
-            >
-              {siteDescription}
-            </motion.p>
-          )}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 1, duration: 0.5 }}
-          >
-            <Link
-              href={`/${slug}/contact`}
-              className="inline-block bg-white text-gray-900 font-semibold py-3 px-8 rounded-full shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-[0_0_0_4px_rgba(255,255,255,0.2)] hover:animate-pulse"
-            >
-              Get in Touch
-            </Link>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 type TestimonialsProps = {
   testimonials: Array<{
