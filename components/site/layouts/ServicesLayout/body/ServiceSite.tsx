@@ -9,6 +9,12 @@ import { motion } from "framer-motion";
 import { useStoreContext } from "../../../../../contexts/StoreContext";
 import bannerFallback from "../../../../../assets/homebanner.png";
 import HeroSection from "../components/HeroSection";
+import AboutSection from "../components/aboutUs";
+import ExcellenceSection from "../components/ExcellenceSection";
+import ServicesSection from "../components/ServicesSection";
+import PricingSection from "../components/PricingSection";
+import TestimonialSection from "../components/TestimonialSection";
+import FAQSection from "../components/FAQSection";
 
 
 const loader = ({
@@ -77,64 +83,17 @@ export default function ServiceSite() {
         secondary={secondaryColor}
       />
 
-      {/* Service Categories */}
-      <section className="py-24 bg-gradient-to-br from-white via-gray-50 to-white relative overflow-hidden">
-        <div className="container mx-auto px-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-extrabold text-center text-gray-800 mb-16"
-          >
-            Explore Our Services
-          </motion.h2>
+      <AboutSection imageUrl={bannerFallback.src} primary={primaryColor} secondary={secondaryColor} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-            {storeCategories
-              .filter((cat) => cat.visible) // optional: only show visible categories
-              // .sort((a, b) => a.sortOrder - b.sortOrder)
-              .map((cat,index) => (
-                <motion.div
-                  key={cat.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}//cat.sortOrder 
-                  viewport={{ once: true }}
-                >
-                  <Link
-                    href={`/${slug}/service-category/${cat.id}`}
-                    className="group relative block rounded-3xl p-6 bg-white/20 backdrop-blur-md border border-white/30 shadow-xl hover:shadow-2xl transition-all"
-                  >
-                    {/* Icon bubble */}
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-inner flex items-center justify-center"
-                    >
-                      <Image
-                        loader={loader}
-                        src={cat.icon ?? "/icons/default-category.svg"}
-                        alt={cat.name}
-                        width={40}
-                        height={40}
-                        className="object-contain"
-                      />
-                    </motion.div>
+      <ExcellenceSection />
 
-                    {/* Category Name */}
-                    <h3 className="text-lg font-semibold text-center text-gray-900 group-hover:text-indigo-600 transition-colors">
-                      {cat.name}
-                    </h3>
-                  </Link>
-                </motion.div>
-              ))}
-          </div>
-        </div>
+      <ServicesSection />
 
-        {/* Decorative Background Blobs */}
-        <div className="absolute -top-40 -left-20 w-96 h-96 bg-purple-400/20 rounded-full filter blur-3xl z-0" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 bg-indigo-300/20 rounded-full filter blur-3xl z-0" />
-      </section>
+      <PricingSection />
+
+      <TestimonialSection />
+
+      <FAQSection />
 
       {/* Featured Services */}
       {marketplaceListings && marketplaceListings.length > 0 && (
@@ -195,134 +154,79 @@ export default function ServiceSite() {
           <div className="absolute -top-32 -left-20 w-96 h-96 bg-indigo-300/20 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-400/20 rounded-full blur-3xl" />
         </section>
+
+      
       )}
 
-      {/* Testimonials Carousel */}
-      {testimonials && testimonials.length > 0 && (
-        <Testimonials
-          testimonials={testimonials.map((t, idx) => ({
-            id: idx,//t.id ?? 
-            quote: t.quote,
-            author: t.author,
-            role: "user",//t.role
-            avatarUrl: t.avatarUrl,
-          }))}
-        />
-      )}
-
-      {/* FAQs + Children */}
-      {faqs && faqs.length > 0 && (
-        <section className="py-24 bg-gray-50">
-          <div className="container mx-auto px-6 max-w-3xl">
-            <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Frequently Asked Questions
-            </h2>
-            {faqs.map((q, idx) => (
-              <details key={idx} className="mb-4 bg-white rounded-xl p-6 shadow">
-                <summary className="cursor-pointer font-semibold text-gray-900">
-                  {q.question}
-                </summary>
-                <p className="mt-3 text-gray-600">{q.answer}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-      )}
+     
+<BookingForm />
+     
     </>
   );
 }
 
 
 
-type TestimonialsProps = {
-  testimonials: Array<{
-    id: string | number;
-    quote: string;
-    author: string;
-    role?: string;
-    avatarUrl?: string;
-  }>;
-};
 
-const Testimonials = ({ testimonials }: TestimonialsProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
+
+
+function BookingForm() {
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Add your form submission logic here
+    alert('Thank you! We will contact you soon.');
+    setForm({ name: '', email: '', message: '' });
+  };
 
   return (
-    <section className="py-28 bg-gradient-to-r from-pink-50 via-indigo-50 to-purple-50 relative overflow-hidden">
-      <div className="container mx-auto px-6 text-center relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-16"
-        >
-          What Our Clients Say
-        </motion.h2>
+    <section id="booking" className="bg-white py-20 px-4">
+      <div className="max-w-3xl mx-auto text-center">
+        <h2 className="text-3xl font-semibold mb-4">Book Your Cleaning Service</h2>
+        <p className="text-gray-600 mb-8">Fill in your details and we’ll get in touch with you.</p>
 
-        <div className="relative max-w-4xl mx-auto">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="bg-white/70 backdrop-blur-md border border-white/60 rounded-3xl p-8 shadow-xl max-w-xl mx-auto"
+        <form onSubmit={handleSubmit} className="space-y-6 text-left">
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+            placeholder="Your Name"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            placeholder="Your Email"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <textarea
+            name="message"
+            value={form.message}
+            onChange={handleChange}
+            required
+            placeholder="Describe your service needs..."
+            rows={5}
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <button
+            type="submit"
+            className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition"
           >
-            <div className="text-5xl text-indigo-400 mb-4 leading-none">“</div>
-            <p className="text-gray-700 text-lg leading-relaxed italic mb-6">
-              {testimonials[currentIndex].quote}
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-indigo-200 overflow-hidden">
-                <Image
-                  src={testimonials[currentIndex].avatarUrl ?? "/default-avatar.png"}
-                  loader={loader}
-                  alt={testimonials[currentIndex].author}
-                  width={48}
-                  height={48}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div className="text-left">
-                <p className="text-gray-900 font-semibold">
-                  {testimonials[currentIndex].author}
-                </p>
-                {testimonials[currentIndex].role && (
-                  <p className="text-sm text-gray-500">
-                    {testimonials[currentIndex].role}
-                  </p>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Navigation dots */}
-          <div className="flex justify-center mt-8 space-x-2">
-            {testimonials.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  idx === currentIndex
-                    ? "bg-indigo-600 scale-110"
-                    : "bg-indigo-300"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+            Submit Request
+          </button>
+        </form>
       </div>
-
-      {/* Decorative blurred blobs */}
-      <div className="absolute top-[-100px] left-[-100px] w-80 h-80 bg-indigo-300/20 rounded-full blur-3xl z-0" />
-      <div className="absolute bottom-[-80px] right-[-80px] w-72 h-72 bg-pink-300/20 rounded-full blur-3xl z-0" />
     </section>
   );
-};
+}
