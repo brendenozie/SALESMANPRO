@@ -76,14 +76,7 @@ export default function ServiceSite() {
   return (
     <>
       {/* Hero Section */}
-      <HeroSection
-        slug={slug}
-        bannerUrl={bannerUrl ?? bannerFallback.src}
-        siteName={name}
-        siteDescription={description}
-        primary={primaryColor}
-        secondary={secondaryColor}
-      />
+      <HeroSection />
 
       <AboutSection imageUrl={bannerFallback.src} primary={primaryColor} secondary={secondaryColor} />
 

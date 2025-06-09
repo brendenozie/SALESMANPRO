@@ -177,7 +177,7 @@ export default async function EditStorePage({
     storeCategories: store.StoreCategory.map((sc) => ({
       id: sc.categoryId,
       name: sc.displayName ?? sc.category.name,
-      icon: sc.icon ?? undefined,
+      icon: sc.icon ?? "",
       items: Array.isArray(sc.items)
         ? sc.items
         : typeof sc.items === "string"
