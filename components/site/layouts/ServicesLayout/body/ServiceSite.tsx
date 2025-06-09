@@ -51,18 +51,8 @@ export default function ServiceSite() {
 
   const {
     slug,
-    bannerUrl,
-    name,
-    description,
-    storeCategories,      // array of { id, name, icon, items, sortOrder, visible }
     marketplaceListings,     // assume you added this field to Prisma/StoreForm
-    testimonials,
-    faqs,
-    themeSettings,
   } = storeFormData;
-
-  const primaryColor = themeSettings?.primaryColor ?? "#4f46e5";
-  const secondaryColor = themeSettings?.secondaryColor ?? "#ec4899";
 
   /**
    * Push user to /[slug]/contact while storing the serviceId in some global state.
@@ -78,7 +68,7 @@ export default function ServiceSite() {
       {/* Hero Section */}
       <HeroSection />
 
-      <AboutSection imageUrl={bannerFallback.src} primary={primaryColor} secondary={secondaryColor} />
+      <AboutSection />
 
       <ExcellenceSection />
 

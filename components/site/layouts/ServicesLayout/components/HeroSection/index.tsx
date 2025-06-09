@@ -9,18 +9,8 @@ import bannerFallback from "../../../../../assets/homebanner.png";
 
 export default function HeroSection() {
   // Retrieve store data from context
-
-          // slug={slug}
-          // bannerUrl={bannerUrl ?? bannerFallback.src}
-          // siteName={name}
-          // siteDescription={description}
-          // primary={primaryColor}
-          // secondary={secondaryColor}
-
   const { storeFormData } = useStoreContext();
-    // storeFormData should be the same shape you constructed in StoreLayout
   
-    // If there's any chance `storeFormData` is not yet loaded, guard early:
     if (!storeFormData) {
       return (
         <div className="flex items-center justify-center h-64">
@@ -44,18 +34,7 @@ export default function HeroSection() {
   
     const primaryColor = themeSettings?.primaryColor ?? "#4f46e5";
     const secondaryColor = themeSettings?.secondaryColor ?? "#ec4899";
-  // const {
-  //   slug,
-  //   bannerUrl,
-  //   name: siteName,
-  //   tagline: siteDescription,
-  //   themeSettings,
-  //   stats = [],
-  // } = useStoreContext();
-
-  // Fallback colors
-  // const primary = themeSettings?.primaryColor || '#000000';
-  // const secondary = themeSettings?.secondaryColor || '#FFFFFF';
+    
 
   return (
     <>
@@ -157,11 +136,10 @@ export default function HeroSection() {
               key={stat.label}
               className="bg-white/80 backdrop-blur-md border border-white/20 text-black rounded-xl shadow-md py-6 flex flex-col items-center hover:shadow-xl transition"
             >
-              {/* <div className="text-3xl mb-2">{stat.icon}</div> */}
               <img
-                src={stat.icon}
+                src={stat.iconUrl}
                 alt={`${name} Banner`}
-                className="w-20 h-20 sm:w-36 sm:h-36 object-cover rounded-3xl shadow-2xl"
+                className="w-20 h-20 sm:w-36 sm:h-36 object-cover rounded-3xl shadow-2xl mb-2"
               />
               <div className="text-2xl font-bold">{stat.value}</div>
               <div className="text-sm mt-1">{stat.label}</div>

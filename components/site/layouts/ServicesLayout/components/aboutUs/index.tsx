@@ -1,25 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useContext } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-type AboutSectionProps = {
-  imageUrl: string;
-  primary: string;
-  secondary: string;
-};
+export default function AboutSection() {
 
-export default function AboutSection({
-  imageUrl,
-  primary,
-  secondary,
-}: AboutSectionProps) {
+  // Pull data from StoreContext
+  const { storeFormData } = useStoreContext();
+    
+      if (!storeFormData) {
+        return (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        );
+      }
+
+  const {
+    slug,
+    bannerUrl,
+    name,
+    description,
+    storeCategories,      // array of { id, name, icon, items, sortOrder, visible }
+    marketplaceListings,     // assume you added this field to Prisma/StoreForm
+    testimonials,
+    faqs,
+    stats,
+    themeSettings,
+  } = storeFormData;
+  const primary = themeSettings?.primaryColor || "#000000";
+  const secondary = themeSettings?.secondaryColor || "#FFFFFF";
+
   const perks = [
     "100% Customer Satisfaction",
     "Free Collection & Delivery",
@@ -45,7 +63,6 @@ export default function AboutSection({
 
       {/* Content Container */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        
         {/* Image */}
         <motion.div
           initial={{ x: -40, opacity: 0 }}
@@ -56,8 +73,8 @@ export default function AboutSection({
         >
           <div className="relative rounded-3xl overflow-hidden shadow-xl ring-4 ring-white/20 w-full max-w-md">
             <Image
-              src={imageUrl}
-              alt="About Pro-Cleaning"
+              src={bannerUrl}
+              alt={`${name} About Image`}
               width={500}
               height={500}
               className="object-cover w-full h-full aspect-square"
@@ -85,16 +102,15 @@ export default function AboutSection({
             transition={{ delay: 0.2, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Welcome to our{" "}
+             
             <span
               className="bg-clip-text text-transparent"
               style={{
-                backgroundImage: `linear-gradient(to right, ${secondary}, ${primary})`,
+                backgroundImage: `linear-gradient(${primary})`,
               }}
             >
-              Pro-Cleaning
-            </span>{" "}
-            Company
+              {name}{' '}
+            </span>
           </motion.h2>
 
           <motion.p
@@ -104,7 +120,7 @@ export default function AboutSection({
             transition={{ delay: 0.3, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            We make your space shine! Professional, reliable cleaning services for homes and businesses — satisfaction guaranteed.
+            { description || "We make your space shine! Professional, reliable cleaning services for homes and businesses — satisfaction guaranteed."}
           </motion.p>
 
           {/* Perks */}
@@ -135,14 +151,14 @@ export default function AboutSection({
             viewport={{ once: true }}
           >
             <Link
-              href="/book"
+              href={`/${name.toLowerCase()}/book`}
               className="px-6 py-3 rounded-full text-white font-semibold shadow-lg transition hover:scale-105"
               style={{ backgroundColor: primary }}
             >
               Book Now
             </Link>
             <Link
-              href="/about"
+              href={`/${name.toLowerCase()}/about`}
               className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-full hover:bg-gray-100 transition"
             >
               Know More
@@ -151,5 +167,4 @@ export default function AboutSection({
         </div>
       </div>
     </section>
-  );
-}
+  )};

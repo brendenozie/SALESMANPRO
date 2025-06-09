@@ -1,13 +1,41 @@
-'use client';
+"use client";
 
+import React, { useContext } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function GetStartedSection() {
+  const { storeFormData } = useStoreContext();
+            
+    if (!storeFormData) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      );
+    }
+  
+  const {
+  slug,
+  bannerUrl,
+  name,
+  description,
+  storeCategories,      // array of { id, name, icon, items, sortOrder, visible }
+  marketplaceListings,     // assume you added this field to Prisma/StoreForm
+  testimonials,
+  faqs,
+  stats,
+  themeSettings,
+  } = storeFormData;
+
+  const primary = themeSettings?.secondaryColor || '#0d9488';
+
   return (
     <section className="relative z-10 -mb-24">
       <div className="max-w-6xl mx-auto px-6">
@@ -22,11 +50,14 @@ export default function GetStartedSection() {
           <div className="max-w-md text-center md:text-left mb-8 md:mb-0">
             <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-snug">
               Get Started on Your<br />
-              <span className="text-teal-900">Journey to a Cleaner Home Today!</span>
+              <span className="text-primary" style={{ color: primary }}>
+                Journey to a Cleaner Home Today!
+              </span>
             </h2>
             <Link
-              href="/contact"
-              className="inline-block mt-6 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition"
+              href={`/${slug}/contact`}
+              className="inline-block mt-6 font-semibold px-6 py-3 rounded-lg transition"
+              style={{ backgroundColor: primary, color: 'white' }}
             >
               Let's Dive In
             </Link>
@@ -35,8 +66,8 @@ export default function GetStartedSection() {
           {/* Image */}
           <div className="relative w-[280px] h-[180px] md:w-[340px] md:h-[200px]">
             <Image
-            loader={loader}
-              src="/images/cta-cleaning-hand.png" // Use your real image path
+              loader={loader}
+              src="/images/cta-cleaning-hand.png"
               alt="Hand cleaning with cloth"
               fill
               className="object-contain"

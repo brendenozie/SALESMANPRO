@@ -1,38 +1,47 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-
-const faqs = [
-  {
-    question: 'What services are included in the package?',
-    answer:
-      'Our cleaning package includes carpet cleaning, bathroom cleaning, floor cleaning, and bedroom cleaning.',
-  },
-  {
-    question: 'Can I schedule a recurring service?',
-    answer:
-      'Yes, you can choose between one-time or recurring (monthly/yearly) services at checkout.',
-  },
-  {
-    question: 'Do you bring your own cleaning supplies?',
-    answer:
-      'Yes, our team arrives fully equipped with eco-friendly cleaning supplies and tools.',
-  },
-];
+import React, { useState, useContext } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function FAQSection() {
+  const { storeFormData } = useStoreContext();
+          
+  if (!storeFormData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+const {
+slug,
+bannerUrl,
+name,
+description,
+storeCategories,      // array of { id, name, icon, items, sortOrder, visible }
+marketplaceListings,     // assume you added this field to Prisma/StoreForm
+testimonials,
+faqs,
+stats,
+themeSettings,
+} = storeFormData;
+    
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  if (!faqs.length) return null;
+
   return (
     <section className="bg-gray-50 py-20 px-4">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-semibold mb-4">Frequently Asked Questions</h2>
         <p className="text-gray-600 mb-12">
-          Everything you need to know about our cleaning services
+          Everything you need to know about our services
         </p>
 
         <div className="space-y-6 text-left">
@@ -43,13 +52,23 @@ export default function FAQSection() {
                 onClick={() => toggle(index)}
               >
                 {faq.question}
-                <span className="text-orange-500 text-xl">
+                <span className="text-primary text-2xl">
                   {openIndex === index ? '−' : '+'}
                 </span>
               </button>
-              {openIndex === index && (
-                <p className="mt-4 text-gray-600">{faq.answer}</p>
-              )}
+
+              <AnimatePresence>
+                {openIndex === index && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p className="mt-4 text-gray-600">{faq.answer}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>
@@ -57,23 +76,3 @@ export default function FAQSection() {
     </section>
   );
 }
-
-
- {/* FAQs + Children */}
-//  {faqs && faqs.length > 0 && (
-//   <section className="py-24 bg-gray-50">
-//     <div className="container mx-auto px-6 max-w-3xl">
-//       <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">
-//         Frequently Asked Questions
-//       </h2>
-//       {faqs.map((q, idx) => (
-//         <details key={idx} className="mb-4 bg-white rounded-xl p-6 shadow">
-//           <summary className="cursor-pointer font-semibold text-gray-900">
-//             {q.question}
-//           </summary>
-//           <p className="mt-3 text-gray-600">{q.answer}</p>
-//         </details>
-//       ))}
-//     </div>
-//   </section>
-// )}
