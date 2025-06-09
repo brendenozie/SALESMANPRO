@@ -8,6 +8,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
+import CategorySection from './components/CategorySection';
+import PromotionSection from './components/PromotionSection';
+import NewArrivalsSection from './components/NewArrivalsSection';
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -284,6 +287,14 @@ export default function DirectorySite() {
         setSearchTerm={setSearchTerm}
         onSearch={handleSearch}
       />
+
+      <PromotionSection />
+
+      <NewArrivalsSection />
+
+      <CategorySection />
+
+      <NewArrivalsSection />
 
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6">
