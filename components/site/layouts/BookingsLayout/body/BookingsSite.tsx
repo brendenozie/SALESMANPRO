@@ -9,6 +9,14 @@ import DatePicker from 'react-datepicker';
 import { useInView } from 'react-intersection-observer';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { MagnifyingGlassCircleIcon, MapPinIcon } from '@heroicons/react/24/solid';
+import Hero from './components/HeroSection';
+import FeaturesSection from './components/FeaturesSection';
+import BenefitsSection from './components/BenefitsSection';
+import MassageFeatures from './components/MessagesSection';
+import TestimonialsSection from './components/TestimonialsSection';
+import CtaSection from './components/CtaSection';
+
 
 // Loader for next/image
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
@@ -75,18 +83,17 @@ export default function BookingsSite() {
   return (
     <>
       {/* Hero */}
-      <Hero
-        bannerUrl={bannerUrl}
-        name={name}
-        description={description}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        date={date}
-        setDate={setDate}
-        time={time}
-        setTime={setTime}
-        handleSearch={handleSearch}
-      />
+      <Hero />
+
+      <FeaturesSection />
+
+      <BenefitsSection />
+
+      <MassageFeatures />
+
+      <TestimonialsSection />
+
+      <CtaSection />
 
       {/* Categories */}
       <section id="categories" className="py-32 bg-gradient-to-b from-white via-slate-50 to-slate-100">
@@ -202,157 +209,8 @@ export default function BookingsSite() {
         </div>
       </section>
 
-      {/* FAQs */}
-      <section id="faq" className="py-32 bg-gradient-to-b from-white via-slate-50 to-white">
-        <div className="container mx-auto px-6 max-w-4xl">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-center text-slate-800 mb-16">
-            Frequently Asked Questions
-          </h2>
-
-          <div className="space-y-6">
-            {faqs.map((q, i) => (
-              <Reveal key={i}>
-                <motion.details
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.1 }}
-                  className="group bg-white/60 backdrop-blur-lg border border-slate-200 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all"
-                >
-                  <summary className="flex items-center justify-between cursor-pointer text-lg font-semibold text-slate-800">
-                    {q.question}
-                    <svg
-                      className="w-5 h-5 ml-2 text-slate-500 group-open:rotate-180 transition-transform"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </summary>
-                  <p className="mt-4 text-slate-600 leading-relaxed">{q.answer}</p>
-                </motion.details>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      
     </>
   );
 }
 
-interface HeroProps {
-  bannerUrl?: string;
-  name: string;
-  description?: string;
-  searchTerm: string;
-  setSearchTerm: (val: string) => void;
-  date: Date;
-  setDate: (d: Date) => void;
-  time: Date;
-  setTime: (t: Date) => void;
-  handleSearch: () => void;
-}
-
-function Hero({
-  bannerUrl,
-  name,
-  description,
-  searchTerm,
-  setSearchTerm,
-  date,
-  setDate,
-  time,
-  setTime,
-  handleSearch,
-}: HeroProps) {
-  return (
-    <section
-      id="hero"
-      className="relative h-screen w-full overflow-hidden bg-gradient-to-br from-teal-500 to-purple-500"
-    >
-      {/* Background Image Overlay */}
-      {bannerUrl && (
-        <Image
-          loader={loader}
-          src={bannerUrl}
-          alt="Hero"
-          fill
-          className="object-cover opacity-30"
-        />
-      )}
-
-      {/* Soft Animated Light Orb */}
-      <motion.div
-        className="absolute w-96 h-96 bg-fuchsia-300 rounded-full opacity-20 blur-3xl top-1/3 left-1/4"
-        animate={{ x: [0, -50, 0], y: [0, 50, 0] }}
-        transition={{ duration: 14, repeat: Infinity }}
-      />
-
-      {/* Content Container */}
-      <div className="relative z-10 flex flex-col md:flex-row items-center justify-center h-full px-6 bg-white/5 backdrop-blur-md">
-        {/* Left: Title and Description */}
-        <div className="text-center md:text-left max-w-2xl space-y-6">
-          <motion.h1
-            className="text-4xl md:text-6xl font-extrabold text-white"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1 }}
-          >
-            {name}
-          </motion.h1>
-          {description && (
-            <motion.p
-              className="text-lg md:text-xl text-white/90"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 1 }}
-            >
-              {description}
-            </motion.p>
-          )}
-        </div>
-
-        {/* Right: Booking Form */}
-        <motion.div
-          className="mt-10 md:mt-0 md:ml-12 bg-white/20 backdrop-blur-xl p-6 rounded-2xl shadow-xl w-full max-w-md"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 1 }}
-        >
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Search providers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-white/80 text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-teal-400 outline-none"
-            />
-            <DatePicker
-              selected={date}
-              // onChange={setDate}
-              className="w-full px-4 py-3 rounded-lg bg-white/80 text-gray-800 placeholder-gray-500 outline-none"
-              dateFormat="MMM d, yyyy"
-              calendarClassName="rounded-lg p-2 shadow-lg bg-white"
-            />
-            <DatePicker
-              selected={time}
-              // onChange={setTime}
-              showTimeSelect
-              showTimeSelectOnly
-              timeIntervals={30}
-              dateFormat="h:mm aa"
-              className="w-full px-4 py-3 rounded-lg bg-white/80 text-gray-800 placeholder-gray-500 outline-none"
-              calendarClassName="rounded-lg p-2 shadow-lg bg-white"
-            />
-            <button
-              onClick={handleSearch}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg font-semibold shadow-md transition"
-            >
-              Find Available Slots
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}

@@ -117,9 +117,9 @@ export default function PricingSection() {
               >
                 Get Service
               </button>
-              <a href="#booking" className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition">
+              {/* <a href="#booking" className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition">
                 Get Service
-              </a>
+              </a> */}
 
             </div>
           ))}
