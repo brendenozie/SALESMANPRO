@@ -157,17 +157,11 @@ const steps: StepConfig[] = [
     {
       key: 'marketing', title: 'Hero Slides', render: (f, h) => (
         <HeroSlidesAccordion
-          // slides={f.heroSlides}
-          // onUpdateSlide={(i, field, v) => h.onUpdateArray('heroSlides', i, field, v)}
-          // onAddSlide={() => h.onAddArray('heroSlides', { imageUrl: '', headline: '' })}
-          // onRemoveSlide={(i) => h.onRemoveArray('heroSlides', i)}
-          // onImageUpload={(i, file) => {/*...*/}}
-
           slides={f.heroSlides}
           onUpdateSlide={h.onUpdateHeroSlide}
           onAddSlide={h.onAddHeroSlide}
           onRemoveSlide={h.onRemoveHeroSlide}
-          onImageUpload={h.onHeroImageUpload}
+          onImageUpload={h.handleSlideImageUpload}
           
         />
       )
@@ -249,6 +243,9 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [productImageFiles, setProductImageFiles] = useState<(File | null)[]>(
+    () => form.heroSlides.map(() => null)
+  );
 
   // Track one File per hero slide. Initialize from existing heroSlides length
   const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(
@@ -283,6 +280,21 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       );
     }
   }, [form.heroSlides.length]);
+
+  useEffect(() => {
+    if (form.heroSlides.length > productImageFiles.length) {
+      setProductImageFiles((prev) => [
+        ...prev,
+        ...Array(form.heroSlides.length - prev.length).fill(null),
+      ]);
+    }
+    if (form.heroSlides.length < productImageFiles.length) {
+      setProductImageFiles((prev) =>
+        prev.slice(0, form.heroSlides.length)
+      );
+    }
+  }, [form.heroSlides.length]);
+  
 
   // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
   useEffect(() => {
@@ -341,7 +353,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       ...prev,
       heroSlides: [
         ...prev.heroSlides,
-        { imageUrl: "", headline: "", subline: "", ctaText: "", ctaLink: "" },
+        { imageUrl: "", productImageUrl: "", headline: "", subline: "", ctaText: "", ctaLink: "" },
       ],
     }));
   };
@@ -365,19 +377,66 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     });
   };
 
-  const onHeroImageUpload = (index: number, file: File) => {
-    setHeroSlideFiles((prev) => {
-      const copy = [...prev];
-      copy[index] = file;
-      return copy;
-    });
+  const handleSlideImageUpload = (
+    index: number,
+    file: File,
+    field: keyof HeroSlide
+  ) => {
+    // store the file if needed
+    if (field === "imageUrl") {
+      setHeroSlideFiles((prev) => {
+        const copy = [...prev];
+        copy[index] = file;
+        return copy;
+      });
+    } else if (field === "productImageUrl") {
+      setProductImageFiles((prev) => {
+        const copy = [...prev];
+        copy[index] = file;
+        return copy;
+      });
+    }
+  
+    // generate preview URL
     const previewURL = URL.createObjectURL(file);
+  
+    // update the form state
     setForm((prev) => {
       const slides = [...prev.heroSlides];
-      slides[index] = { ...slides[index], imageUrl: previewURL };
+      slides[index] = { ...slides[index], [field]: previewURL };
       return { ...prev, heroSlides: slides };
     });
   };
+
+  // const onHeroImageUpload = (index: number, file: File) => {
+  //   setHeroSlideFiles((prev) => {
+  //     const copy = [...prev];
+  //     copy[index] = file;
+  //     return copy;
+  //   });
+  //   const previewURL = URL.createObjectURL(file);
+  //   setForm((prev) => {
+  //     const slides = [...prev.heroSlides];
+  //     slides[index] = { ...slides[index], imageUrl: previewURL };
+  //     return { ...prev, heroSlides: slides };
+  //   });
+  // };
+  
+
+  // const onProductImageUpload = (index: number, file: File) => {
+  //   setProductImageFiles((prev) => {
+  //     const copy = [...prev];
+  //     copy[index] = file;
+  //     return copy;
+  //   });
+  
+  //   const previewURL = URL.createObjectURL(file);
+  //   setForm((prev) => {
+  //     const slides = [...prev.heroSlides];
+  //     slides[index] = { ...slides[index], productImageUrl: previewURL };
+  //     return { ...prev, heroSlides: slides };
+  //   });
+  // };
 
   // ─────────────────────────────────────────────────────────────────────
   // 4) Handlers for “Promotions” Accordion
@@ -425,11 +484,11 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       return { ...prev, promotions: promos };
     });
   };
+  
 
   // ─────────────────────────────────────────────────────────────────────
   // 5) Generic form handlers (arrays, opening hours, etc.)
   // ─────────────────────────────────────────────────────────────────────
-
 
   const totalSteps = steps.length + 2;
   const [stepIndex, setStepIndex] = useState(0);
@@ -535,7 +594,6 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     });
   }
   
-
   // 1) onToggleParent
   const onToggleParent = (parent: ParentCategory) => {
     setForm((prev) => {
@@ -690,31 +748,41 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   };
 
   const handlers: Handlers = {
-    handleChange, onUpdateArray, onAddArray, onRemoveArray, setAddress, onChangeSettings, onBulkToggle, onToggleDay,
+    handleChange, onUpdateArray, onAddArray, onRemoveArray, 
+    setAddress, onChangeSettings, onBulkToggle, onToggleDay,
+
     onToggleParent,
     onToggleSub,
 
-     onUpdateHeroSlide,
-      onAddHeroSlide,
-      onRemoveHeroSlide,
-      onHeroImageUpload,
+    onUpdateHeroSlide,
+    onAddHeroSlide,
+
+    onRemoveHeroSlide,
+    handleSlideImageUpload,
     
-      onUpdatePromotion,
-      onAddPromotion,
-      onRemovePromotion,
-      onPromotionImageUpload,
+    onUpdatePromotion,
+    onAddPromotion,
+    onRemovePromotion,
+
+    onPromotionImageUpload,
+    // onProductImageUpload,
       
-      // Media (logo/banner)
-      handleMediaUpload,
-      handleMediaRemove,
+    // Media (logo/banner)
+    handleMediaUpload,
+    handleMediaRemove,
   };
 
   const next = () => setStepIndex(i => Math.min(i + 1, totalSteps - 1));
   const prev = () => setStepIndex(i => Math.max(i - 1, 0));
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!session?.user?.id) return;
+    
+    setIsSubmitting(true);
   
     // 1) Prepare a local copy of form data (so we can mutate it without
     //    worrying about React batching or stale closures).
@@ -800,7 +868,40 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         uploadPromises.push(p);
       }
     });
-  
+
+    // 2.c.ii) Product images for Hero Slides
+    productImageFiles.forEach((file, idx) => {
+      if (file) {
+        const p = (async () => {
+          const fd = new FormData();
+          fd.append("type", "image");
+          fd.append("file", file);
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: fd,
+          });
+          if (!res.ok) {
+            throw new Error(`Product image for slide ${idx + 1} upload failed`);
+          }
+          const { url } = await res.json();
+          if (!payload.heroSlides) payload.heroSlides = [];
+          while (payload.heroSlides.length <= idx) {
+            payload.heroSlides.push({...payload.heroSlides[idx], imageUrl: "", productImageUrl: "" });
+          }
+          payload.heroSlides[idx] = {
+            ...payload.heroSlides[idx],
+            productImageUrl: url,
+          };
+          setForm(prev => {
+            const slides = [...prev.heroSlides];
+            slides[idx] = { ...slides[idx], productImageUrl: url };
+            return { ...prev, heroSlides: slides };
+          });
+        })();
+        uploadPromises.push(p);
+      }
+    });
+
     // 3.c) Hero Slides
     promotionSlideFiles.forEach((file, idx) => {
       if (file) {

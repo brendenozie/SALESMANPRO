@@ -12,7 +12,8 @@ export interface HeroSlidesAccordionProps {
   onUpdateSlide: (index: number, field: keyof HeroSlide, value: string) => void;
   onAddSlide: () => void;
   onRemoveSlide: (index: number) => void;
-  onImageUpload?: (index: number, file: File) => void;
+  onImageUpload?: (index: number, file: File, field: keyof HeroSlide) => void;
+
 }
 
 export default function HeroSlidesAccordion({
@@ -57,34 +58,74 @@ export default function HeroSlidesAccordion({
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-6">
-                <label className="relative w-full sm:w-1/3 h-44 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-indigo-400 transition cursor-pointer">
-                  {slide.imageUrl ? (
-                    <img
-                      src={slide.imageUrl}
-                      alt={`Slide ${idx + 1}`}
-                      className="absolute inset-0 h-full w-full object-cover rounded-xl"
-                    />
-                  ) : (
-                    <>
-                      <PhotoIcon className="h-8 w-8 mb-1" />
-                      <span className="text-sm">Click to upload</span>
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        if (onImageUpload) onImageUpload(idx, file);
-                        else onUpdateSlide(idx, "imageUrl", URL.createObjectURL(file));
-                      }
-                    }}
-                  />
-                </label>
+              <div className="flex flex-col gap-6 sm:flex-row">
+                {/* Image Uploads */}
+                <div className="w-full sm:w-1/3 space-y-4">
+                  {/* Primary Image Upload */}
+                  <label className="relative block h-40 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-indigo-400 transition cursor-pointer overflow-hidden">
+                    {slide.imageUrl ? (
+                      <img
+                        src={slide.imageUrl}
+                        alt={`Primary Slide ${idx + 1}`}
+                        className="absolute inset-0 h-full w-full object-cover rounded-xl"
+                      />
+                    ) : (
+                      <>
+                        <PhotoIcon className="h-8 w-8 mb-1" />
+                        <span className="text-xs text-center">Upload Background Image</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (onImageUpload) onImageUpload(idx, file, "imageUrl"); // optional handling
+                          
 
+                          else onUpdateSlide(idx, "imageUrl", URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {/* Secondary Image Upload */}
+                  <label className="relative block h-40 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-purple-400 transition cursor-pointer overflow-hidden">
+                    {slide.productImageUrl ? (
+                      <img
+                        src={slide.productImageUrl}
+                        alt={`Secondary Slide ${idx + 1}`}
+                        className="absolute inset-0 h-full w-full object-cover rounded-xl"
+                      />
+                    ) : (
+                      <>
+                        <PhotoIcon className="h-8 w-8 mb-1" />
+                        <span className="text-xs text-center">Upload Product Image</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // If you want separate handling:
+                          if (onImageUpload) {
+                            const customFile = new File([file], `secondary-${file.name}`, { type: file.type });
+                            onImageUpload(idx, customFile, "productImageUrl");
+                          } else {
+                            onUpdateSlide(idx, "productImageUrl", URL.createObjectURL(file));
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {/* Slide Text Inputs */}
                 <div className="flex-1 space-y-4">
                   <input
                     placeholder="Headline"

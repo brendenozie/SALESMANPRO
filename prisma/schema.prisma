@@ -218,7 +218,7 @@ model Company {
   shippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
   shippingSettingsId String?           @db.ObjectId
 
-  awards   Json? // e.g. [{ name: String, iconUrl: String }]
+  awards   Json?
   metrics  Json?
   stats    Json?
   AppPromo AppPromo[]

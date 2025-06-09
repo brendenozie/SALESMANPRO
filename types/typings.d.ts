@@ -264,7 +264,8 @@ interface Handlers {
   ) => void;
   onAddHeroSlide: () => void;
   onRemoveHeroSlide: (index: number) => void;
-  onHeroImageUpload: (index: number, file: File) => void;
+  handleSlideImageUpload
+  // onHeroImageUpload: (index: number, file: File) => void;
 
   onUpdatePromotion: (
     index: number,
@@ -274,6 +275,9 @@ interface Handlers {
   onAddPromotion: () => void;
   onRemovePromotion: (index: number) => void;
   onPromotionImageUpload: (index: number, file: File) => void;
+
+  // onProductImageUpload: (index: number, file: File) => void;
+  
 
   // Media (logo/banner)
   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
