@@ -108,6 +108,7 @@ export default async function EditStorePage({
     heroSlides: store.heroSlides.map((h) => ({
       id: h.id,
       imageUrl: h.imageUrl,
+      productImageUrl: h.productImageUrl ?? "",
       headline: h.headline ?? "",
       subline: h.subline ?? "",
       ctaText: h.ctaText ?? "",
