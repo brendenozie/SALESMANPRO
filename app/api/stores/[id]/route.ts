@@ -151,6 +151,7 @@ export async function PUT(
         deleteMany: {},
         create: (heroSlides || []).map(({ id, companyId, ...h }: any) => ({
           imageUrl: h.imageUrl,
+          productImageUrl: h.productImageUrl,
           headline: h.headline,
           subline: h.subline,
           ctaText: h.ctaText,

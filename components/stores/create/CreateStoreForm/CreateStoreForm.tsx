@@ -765,8 +765,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     onRemovePromotion,
 
     onPromotionImageUpload,
-    // onProductImageUpload,
-      
+          
     // Media (logo/banner)
     handleMediaUpload,
     handleMediaRemove,
@@ -781,7 +780,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     e.preventDefault();
     if (isSubmitting) return;
     if (!session?.user?.id) return;
-    
+
     setIsSubmitting(true);
   
     // 1) Prepare a local copy of form data (so we can mutate it without
