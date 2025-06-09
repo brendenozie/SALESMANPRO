@@ -8,6 +8,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
 import { MarketplaceListingForm } from '../../../../../types/typings';
+import HeroSection from './components/HeroSection';
+import BusinessSection from './components/BusinessSection';
+import GettingStartedSection from './components/GettingStartedSection';
+import FeaturesSection from './components/FeaturesSection';
+import AboutSection from './components/AboutSection';
+import CaseStudiesSection from './components/CaseStudiesSection';
+import DiscoveryCallSection from './components/DiscoveryCallSection';
+import TestimonialsSection from './components/TestimonialsSection';
 
 // Loader for next/image
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
@@ -37,57 +45,26 @@ export default function PortfolioSite() {
 
   return (
     <div className="space-y-24 font-sans text-gray-800">
-      {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden">
-        {bannerUrl && (
-          <Image
-            src={bannerUrl}
-            alt="Hero"
-            fill
-            className="object-cover object-top brightness-75"
-            loader={loader}
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/30 to-transparent backdrop-blur-sm" />
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
-          <motion.h1
-            initial={{ opacity: 0, y: -40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white drop-shadow-2xl tracking-tight"
-          >
-            {name}
-          </motion.h1>
-          {description && (
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="mt-4 text-base sm:text-lg md:text-2xl text-gray-200 max-w-3xl"
-            >
-              {description}
-            </motion.p>
-          )}
-          <motion.button
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 1, duration: 0.6 }}
-            onClick={() => router.push(`/${slug}/projects`)}
-            className="mt-8 bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white py-3 px-10 rounded-full font-semibold shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none"
-          >
-            View My Work
-          </motion.button>
-        </div>
-      </section>
+      
+      <HeroSection />
+
+      <BusinessSection/>
+
+      <GettingStartedSection />
+
+      <FeaturesSection />
+
+      <AboutSection />
+
+      <CaseStudiesSection />
+
+      <DiscoveryCallSection/>
 
       {/* Projects Gallery */}
       <FeaturedProjects projects={projects} slug={slug} loader={loader} />
 
-      {/* About Section */}
-      <AboutSection slug={slug} description={description}/>
-
       {/* Testimonials */}
-      <TestimonialsSection testimonials={testimonials} />
+      <TestimonialsSection/>
 
       {/* FAQs Accordion */}
       <section className="py-20 bg-gray-50">
@@ -130,45 +107,6 @@ export default function PortfolioSite() {
     </div>
   );
 }
-
-interface AboutSectionProps {
-  slug: string;
-  description:string;
-}
-
-const AboutSection: React.FC<AboutSectionProps> = ({ slug, description }) => {
-  return (
-    <section className="relative py-24 bg-gradient-to-br from-white via-gray-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-center overflow-hidden">
-      <div className="container mx-auto px-6 max-w-3xl">
-        <motion.h2
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white mb-6"
-        >
-          About Me
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-10 leading-relaxed"
-        >
-          {description}
-        </motion.p>
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
-          <Link
-            href={`/${slug}/about`}
-            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 md:py-4 md:px-10 rounded-full font-semibold shadow-md transition-all duration-300"
-          >
-            Learn More
-          </Link>
-        </motion.div>
-      </div>
-      <div className="absolute top-[-50px] right-[-50px] w-96 h-96 bg-indigo-100 dark:bg-indigo-900 opacity-30 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" />
-    </section>
-  );
-};
 
 interface FeaturedProjectsProps {
   projects: Array<MarketplaceListingForm>;
@@ -224,64 +162,3 @@ const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ projects, slug, loa
   );
 };
 
-interface TestimonialsSectionProps {
-  testimonials: Array<{
-    author: string;
-    quote: string;
-    avatarUrl?: string;
-    rating?: number;
-  }>;
-}
-
-const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials }) => {
-  return (
-    <section className="relative py-24 bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-6">
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-4xl sm:text-5xl font-extrabold text-center text-gray-900 dark:text-white mb-20"
-        >
-          What Clients Say
-        </motion.h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.2 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 text-left relative"
-            >
-              <p className="text-gray-700 dark:text-gray-300 italic text-lg mb-6 leading-relaxed">
-                “{t.quote}”
-              </p>
-              <div className="flex items-center space-x-4">
-                {t.avatarUrl && (
-                  <Image
-                    src={t.avatarUrl}
-                    alt={t.author}
-                    width={48}
-                    height={48}
-                    className="rounded-full object-cover"
-                  />
-                )}
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{t.author}</p>
-                  {t.rating !== undefined && (
-                    <div className="text-yellow-400 text-sm">
-                      {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-      <div className="absolute -bottom-20 left-0 w-96 h-96 bg-indigo-100 dark:bg-indigo-800 opacity-20 rounded-full blur-3xl pointer-events-none" />
-    </section>
-  );
-};
