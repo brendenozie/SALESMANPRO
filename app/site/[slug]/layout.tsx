@@ -58,52 +58,6 @@ export default async function StoreLayout({
 }) {
   const raw = await prisma.company.findUnique({
     where: { slug: params.slug },
-    // include: {
-    //   socialLinks: true,
-    //   policies: true,
-    //   faqs: true,
-    //   testimonials: true,
-    //   heroSlides: true,
-    //   promotions: true,
-    //   seo: true,
-
-    //   // Now singular, not array:
-    //   analyticsConfig: true,
-    //   paymentSettings: true,
-    //   shippingSettings: true,
-
-    //   MarketplaceListing: {
-    //     take: 12,
-    //     select: {
-    //       id: true,
-    //       title: true,
-    //       description: true,
-    //       finalPrice: true,
-    //       images: true,
-    //       isAvailable: true,
-    //       isFeatured: true,
-    //       product: {
-    //         select: {
-    //           id: true,
-    //           name: true,
-    //           description: true,
-    //           brand: true,
-    //           color: true,
-    //           size: true,
-    //         },
-    //       },
-    //     },
-    //   },
-      
-    //   StoreCategory: {
-    //     orderBy: { sortOrder: 'asc' },
-    //     include: {
-    //       category: {
-    //         select: { id: true, name: true, slug: true, image: true, icon: true },
-    //       },
-    //     },
-    //   },
-    // },
     include: {
       socialLinks: true,
       policies: true,

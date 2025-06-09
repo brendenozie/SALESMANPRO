@@ -7,6 +7,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
+import HeroSection from './components/HeroSection';
+import LatestPodcastSection from './components/LatestPodcastSection';
+import PopularBlogsSection from './components/PopularBlogsSection';
+import StaffWritersSection from './components/StaffWritersSection';
+import LatestNewsSection from './components/LatestNewsSection';
+import CtaSection from './components/CtaSection';
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -65,7 +71,20 @@ export default function BlogSite() {
   }, []);
 
   return (
-    <div className="font-sans text-gray-900">
+    <main className="container mx-auto flex-1 px-6 py-8 space-y-16">
+
+      <HeroSection />
+
+      <LatestNewsSection />
+
+      <StaffWritersSection />
+
+      <PopularBlogsSection />
+
+      <LatestPodcastSection />
+
+      <CtaSection/>
+      
       {/* Hero Section */}
       <BlogHero siteName={name} bannerUrl={bannerUrl} />
 
@@ -93,7 +112,7 @@ export default function BlogSite() {
           </form>
         </motion.div>
       </section>
-    </div>
+    </main>
   );
 }
 
