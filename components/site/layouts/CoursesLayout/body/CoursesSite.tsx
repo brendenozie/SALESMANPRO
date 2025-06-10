@@ -11,6 +11,9 @@ import HeroSection from "./components/HeroSection";
 import SchoolSection from "./components/SchoolSection";
 import MainCoursesSection from "./components/MainCoursesSection";
 import AboutSection from "./components/AboutSection";
+import TestimonialsSection from "./components/TestimonialsSection";
+import PopularBlogsSection from "./components/PopularBlogsSection";
+import CtaSection from "./components/CtaSection";
 
 //----------------------------------------------
 // Reusable image loader (same as before)
@@ -50,6 +53,11 @@ const Hero = ({
 
       <AboutSection />
 
+      <TestimonialsSection />
+
+      <PopularBlogsSection />
+
+      <CtaSection />
 
       <section className="relative h-[85vh] flex items-center justify-center text-white overflow-hidden">
         {/* Dark gradient overlay */}

@@ -1,53 +1,54 @@
-import { PlayCircleIcon } from "@heroicons/react/24/outline";
-
-
 export default function AboutSection() {
   return (
-    <section className="bg-gray-100">
-      <div className="relative bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/path/to/your/bg-image.jpg')" }}>
-        <div className="bg-black bg-opacity-60">
-          <div className="max-w-6xl mx-auto text-center py-20 px-4">
-            <h1 className="text-white text-4xl font-bold mb-4">The Smarter Way to Learn</h1>
-            <p className="text-white max-w-xl mx-auto">
-              It the of about everything was at anyone out report first at hired sublime ability what infinity, or your rational andmagazine it
+    <section className="bg-[#f4f4f4] py-16 px-4">
+      <div className="max-w-6xl mx-auto bg-white rounded-3xl shadow-md px-8 py-12">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          {/* Left Text Content */}
+          <div>
+            <p className="text-sm font-medium text-orange-500 mb-2">Unlock Your Potential</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              The Smarter Way to Learn
+            </h1>
+            <p className="text-gray-600">
+              It the of about everything was at anyone out report first at hired sublime ability what
+              infinity, or your rational and magazine it.
             </p>
           </div>
-        </div>
 
-        <div className="absolute inset-x-0 -bottom-20 flex justify-center">
-          <div className="relative w-full max-w-4xl">
+          {/* Right Image with Play Icon */}
+          <div className="relative">
             <img
-              src="/path/to/your/video-thumbnail.jpg"
+              src="/video-thumbnail.jpg"
               alt="Video thumbnail"
-              className="rounded-lg shadow-lg w-full"
+              className="rounded-2xl w-full"
             />
             <button className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-orange-500 text-white rounded-full p-3 shadow-lg">
-                <PlayCircleIcon className="w-5 h-5" />
+              <div className="bg-orange-500 hover:bg-orange-600 transition rounded-full p-4 shadow-lg">
+                <svg
+                  className="w-10 h-10 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
               </div>
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="pt-32 pb-16 bg-white">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
-          <div>
-            <h3 className="text-2xl font-bold text-orange-500">120+</h3>
-            <p className="text-sm text-gray-600">Student Campuses</p>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-orange-500">5000+</h3>
-            <p className="text-sm text-gray-600">Student Enrolled</p>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-orange-500">100+</h3>
-            <p className="text-sm text-gray-600">Certified Teachers</p>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-orange-500">60+</h3>
-            <p className="text-sm text-gray-600">Countrywide Award</p>
-          </div>
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-12 text-center">
+          {[
+            { count: "120+", label: "Student Campuses" },
+            { count: "5000+", label: "Students Enrolled" },
+            { count: "100+", label: "Certified Teachers" },
+            { count: "60+", label: "Countrywide Awards" },
+          ].map((stat, idx) => (
+            <div key={idx}>
+              <h3 className="text-2xl font-bold text-orange-500">{stat.count}</h3>
+              <p className="text-sm text-gray-600">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
