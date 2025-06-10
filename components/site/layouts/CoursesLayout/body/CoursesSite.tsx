@@ -7,6 +7,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "../../../../../contexts/StoreContext";
 import { MarketplaceListingForm } from "../../../../../types/typings";
+import HeroSection from "./components/HeroSection";
+import SchoolSection from "./components/SchoolSection";
+import MainCoursesSection from "./components/MainCoursesSection";
+import AboutSection from "./components/AboutSection";
 
 //----------------------------------------------
 // Reusable image loader (same as before)
@@ -37,6 +41,16 @@ const Hero = ({
 
   return (
     <div className="relative">
+
+      <HeroSection />
+
+      <SchoolSection />
+
+      <MainCoursesSection />
+
+      <AboutSection />
+
+
       <section className="relative h-[85vh] flex items-center justify-center text-white overflow-hidden">
         {/* Dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-700 opacity-80 z-0" />
