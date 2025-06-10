@@ -31,6 +31,7 @@ export default function NonProfitSite() {
     name,
     slug,
     bannerUrl,
+    logoUrl,
     description,
     marketplaceListings,
     stats,
