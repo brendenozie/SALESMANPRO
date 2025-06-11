@@ -74,19 +74,16 @@ export default function EcommerceSite() {
       {/* Daily Best Sells */}
       <DailyBestSells />
 
+      {/* Trending Products */}
       <SleepTapeAd />
 
-      <Trending />
-
       {/* Trending Products */}
-      {/* <ProductGrid title={"trending"} /> */}
-
-      {/* Promotions Products */}
-      {/* <PromotionsSection promotions={promotions}/> */}
+      <Trending />
       
       {/* FeaturesSection Products */}
       <FeaturesSection />
 
+      {/* Trending Products */}
       <AllProducts />
 
       {/* Awards */}
