@@ -21,7 +21,6 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-const navItems = ['Home', 'About', 'Causes', 'Pages', 'Contact'];
 
 //----------------------------------------------
 // NonProfitSite component (driven from StoreContext)
@@ -42,49 +41,8 @@ export default function NonProfitSite() {
   } = storeFormData;
 
   return (
-    <div className="font-sans text-gray-800">
-      <div className="font-sans text-gray-800">
-      {/* Top Nav */}
-      <motion.header
-        initial={{ backgroundColor: 'rgba(0,0,0,0)' }}
-        whileInView={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-        transition={{ duration: 0.3 }}
-        className="fixed w-full z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between p-2 text-sm text-white">
-          <div className="space-x-4">
-            <a href="mailto:info@kindflow.org" className="hover:underline">info@kindflow.org</a>
-            <span>|</span>
-            <a href="tel:+1234567890" className="hover:underline">+1 (234) 567-890</a>
-          </div>
-          <div className="space-x-4 flex items-center">
-            {/* Social icons placeholder */}
-            <button className="bg-orange-500 hover:bg-orange-600 px-4 py-1 rounded-md transition">
-              Donate Now
-            </button>
-          </div>
-        </div>
-        <nav className="bg-transparent">
-          <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
-            <div className="text-2xl font-bold text-white cursor-pointer" onClick={() => router.push('/')}>KindFlow</div>
-            <ul className="hidden md:flex space-x-8 text-white">
-              {navItems.map((item) => (
-                <li key={item} className="relative group">
-                  <Link href={`#${item.toLowerCase()}`}>{item}</Link>
-                  <motion.span
-                    className="absolute left-0 -bottom-1 h-0.5 bg-orange-500"
-                    layoutId="underline"
-                    initial={{ width: 0 }}
-                    whileHover={{ width: '100%' }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
-      </motion.header>
-
-      <main className="pt-32">
+    <div className="font-sans text-gray-800">    
+      <main>
         {/* Hero Section */}
         <section id="home" className="relative">
           <div className="absolute inset-0">
@@ -343,61 +301,8 @@ export default function NonProfitSite() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="bg-gray-900 text-gray-300 py-12">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 px-6">
-            <div>
-              <h4 className="text-white font-semibold mb-4">Contact Info</h4>
-              <ul className="space-y-2">
-                <li>123 Charity St.</li>
-                <li>City, Country</li>
-                <li>+1 (234) 567-890</li>
-                <li>info@kindflow.org</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Pages</h4>
-              <ul className="space-y-2">
-                {navItems.map((item) => (
-                  <li key={item}>
-                    <Link href={`#${item.toLowerCase()}`} className="hover:text-white transition">{item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Services</h4>
-              <ul className="space-y-2">
-                <li>Funding</li>
-                <li>Medical</li>
-                <li>Education</li>
-                <li>Support</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Newsletter</h4>
-              <form className="flex">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-2 rounded-l-md focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="bg-orange-500 px-4 rounded-r-md hover:bg-orange-600 transition"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>
-          <div className="mt-8 text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} KindFlow. All rights reserved.
-          </div>
-        </footer>
+      
       </main>
-    </div>
 
 
 

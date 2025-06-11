@@ -2,8 +2,7 @@
 'use client';
 
 import React from 'react';
-import HeroSlider from '@/components/HeroSlider';
-import CategoryBanners from '@/components/site/CategoryBanners/CategoryBanners';
+import HeroSlider from '@/components/site/layouts/EcommerceLayout/body/components/HeroSlider';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import MetricsSection from '@/components/site/MetricsSection';
@@ -11,6 +10,12 @@ import AwardsSection from '@/components/site/AwardsSection';
 import TestimonialsSection from '@/components/site/TestimonialsSection/NewsletterSection';
 import PromotionsSection from '@/components/site/PromotionsSection';
 import { useStoreContext } from '@/contexts/StoreContext';
+import CategorySection from './components/CategorySection';
+import PromoSection from './components/PromoSection';
+import PopularProducts from './components/PopularProducts';
+import DailyBestSells from './components/DailyBestSells';
+import FeaturesSection from './components/FeaturesSection';
+import SleepTapeAd from './components/SleepTapeAd';
 
 export default function EcommerceSite() {
   // Grab everything from context instead of receiving a `store` prop
@@ -53,13 +58,27 @@ export default function EcommerceSite() {
       <HeroSlider />
 
       {/* Category banners */}
-      <CategoryBanners />
+      <CategorySection />
+
+      {/* Promo Section */}
+      <PromoSection />
+
+      {/* Popular Products */}
+      <PopularProducts />
+
+      {/* Daily Best Sells */}
+      <DailyBestSells />
 
       {/* Trending Products */}
       <ProductGrid title={"trending"} />
 
       {/* Promotions Products */}
       <PromotionsSection promotions={promotions}/>
+      
+      {/* FeaturesSection Products */}
+      <FeaturesSection/>
+
+      <SleepTapeAd />
 
       {/* Metrics  */}
       <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support}/>

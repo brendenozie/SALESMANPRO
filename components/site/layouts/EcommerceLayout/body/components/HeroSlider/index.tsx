@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { useStoreContext } from '../../contexts/StoreContext';
+import { useStoreContext } from '../../../../../../../contexts/StoreContext';
 
 // Loader remains the same so Next.js can optimize your images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -166,7 +166,7 @@ export default function HeroSlider() {
                     {slide.ctaLink && slide.ctaText && (
                       <a
                         href={slide.ctaLink}
-                        className="inline-block bg-green-500 hover:bg-green-600 text-white font-semibold text-sm sm:text-base px-6 py-3 rounded-full shadow-md transition transform hover:scale-105"
+                        className="inline-block bg-green-500 hover:bg-green-600 text-white font-semibold text-sm sm:text-base px-6 py-3 rounded-md shadow-md transition transform hover:scale-105"
                       >
                         {slide.ctaText}
                       </a>
