@@ -16,6 +16,8 @@ import PopularProducts from './components/PopularProducts';
 import DailyBestSells from './components/DailyBestSells';
 import FeaturesSection from './components/FeaturesSection';
 import SleepTapeAd from './components/SleepTapeAd';
+import Trending from './components/Trending';
+import AllProducts from './components/AllProducts';
 
 export default function EcommerceSite() {
   // Grab everything from context instead of receiving a `store` prop
@@ -61,13 +63,15 @@ export default function EcommerceSite() {
       <CategorySection />
 
       {/* Promo Section */}
-      <PromoSection />
+      <PromoSection promotions={promotions}/>
 
       {/* Popular Products */}
       <PopularProducts />
 
       {/* Daily Best Sells */}
       <DailyBestSells />
+
+      <Trending />
 
       {/* Trending Products */}
       <ProductGrid title={"trending"} />
@@ -76,15 +80,14 @@ export default function EcommerceSite() {
       <PromotionsSection promotions={promotions}/>
       
       {/* FeaturesSection Products */}
-      <FeaturesSection/>
+      <FeaturesSection />
+
+      <AllProducts />
 
       <SleepTapeAd />
 
       {/* Metrics  */}
       <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support}/>
-
-      {/* Top Selling */}
-      <ProductGrid title="Top Selling" /> 
 
       {/* Awards */}
       <AwardsSection awards={awards}/>

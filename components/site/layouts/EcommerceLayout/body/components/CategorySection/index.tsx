@@ -12,6 +12,7 @@ interface Category {
 }
 
 export default function CategorySection() {
+  
   const { storeFormData } = useStoreContext();
   const { storeCategories = [], themeSettings = {} } = storeFormData || {};
 
