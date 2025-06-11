@@ -21,6 +21,8 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
+const navItems = ['Home', 'About', 'Causes', 'Pages', 'Contact'];
+
 //----------------------------------------------
 // NonProfitSite component (driven from StoreContext)
 //----------------------------------------------
@@ -41,6 +43,402 @@ export default function NonProfitSite() {
 
   return (
     <div className="font-sans text-gray-800">
+      <div className="font-sans text-gray-800">
+      {/* Top Nav */}
+      <motion.header
+        initial={{ backgroundColor: 'rgba(0,0,0,0)' }}
+        whileInView={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+        transition={{ duration: 0.3 }}
+        className="fixed w-full z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between p-2 text-sm text-white">
+          <div className="space-x-4">
+            <a href="mailto:info@kindflow.org" className="hover:underline">info@kindflow.org</a>
+            <span>|</span>
+            <a href="tel:+1234567890" className="hover:underline">+1 (234) 567-890</a>
+          </div>
+          <div className="space-x-4 flex items-center">
+            {/* Social icons placeholder */}
+            <button className="bg-orange-500 hover:bg-orange-600 px-4 py-1 rounded-md transition">
+              Donate Now
+            </button>
+          </div>
+        </div>
+        <nav className="bg-transparent">
+          <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
+            <div className="text-2xl font-bold text-white cursor-pointer" onClick={() => router.push('/')}>KindFlow</div>
+            <ul className="hidden md:flex space-x-8 text-white">
+              {navItems.map((item) => (
+                <li key={item} className="relative group">
+                  <Link href={`#${item.toLowerCase()}`}>{item}</Link>
+                  <motion.span
+                    className="absolute left-0 -bottom-1 h-0.5 bg-orange-500"
+                    layoutId="underline"
+                    initial={{ width: 0 }}
+                    whileHover={{ width: '100%' }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+      </motion.header>
+
+      <main className="pt-32">
+        {/* Hero Section */}
+        <section id="home" className="relative">
+          <div className="absolute inset-0">
+            <Image
+              src="/hero-photo.jpg"
+              alt="Smiling children"
+              layout="fill"
+              objectFit="cover"
+              loader={loader}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+          </div>
+          <div className="relative max-w-4xl mx-auto py-32 px-6 text-white">
+            <h1 className="text-4xl md:text-6xl font-bold">
+              Lend Your Heart To{' '}
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >Change A Child's Story</motion.span>
+            </h1>
+            <p className="mt-4 text-lg md:text-xl max-w-2xl">
+              Join us in providing hope and support to children in need around the world.
+            </p>
+            <div className="mt-8 flex space-x-4">
+              <Link href="#causes" className="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-md font-semibold transition">
+                  Learn More
+              </Link>
+              <a
+                onClick={() => router.push('/donate')}
+                className="border border-white hover:bg-white hover:text-black px-6 py-3 rounded-md font-semibold transition cursor-pointer"
+              >
+                Make a Donation
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Core Highlights */}
+        <section id="services" className="py-20 bg-gray-50">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              { icon: '/icons/medical.svg', label: 'Medical Aid' },
+              { icon: '/icons/trust.svg', label: 'Trust Funds' },
+              { icon: '/icons/funds.svg', label: 'Funds Raised' }
+            ].map((item) => (
+              <motion.div key={item.label} whileHover={{ y: -5 }} className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                <div className="w-12 h-12 mb-4">
+                  <Image src={item.icon} alt={item.label} width={48} height={48} loader={loader}/>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{item.label}</h3>
+                <p className="text-gray-600">Learn about how we support this cause.</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Featured Causes Teaser */}
+        <section id="featured-causes" className="py-20 max-w-7xl mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-8">Featured Causes</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Two causes */}
+            {['Treatment Support', 'Food Support'].map((title, idx) => (
+              <motion.div key={title} whileHover={{ scale: 1.02 }} className="relative bg-white rounded-lg overflow-hidden shadow-lg">
+                <Image src={`/causes/cause${idx + 1}.jpg`} alt={title} width={400} height={300} loader={loader} className="object-cover w-full h-48" />
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-2">{title}</h3>
+                  <p className="text-gray-600">Short impact summary for {title.toLowerCase()}.</p>
+                </div>
+              </motion.div>
+            ))}
+            {/* CTA Panel */}
+            <motion.div whileHover={{ y: -5 }} className="bg-orange-500 text-white p-8 rounded-lg flex flex-col justify-center items-start">
+              <h3 className="text-2xl font-bold mb-4">Contribute Today To Make A Difference</h3>
+              <Link href="/donate"  className="inline-flex items-center font-semibold hover:underline">
+                  Donate Now <ArrowRightIcon className="w-5 h-5 ml-2" />
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* About Us Spotlight */}
+        <section id="about" className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-6">
+            <motion.div initial={{ x: -100, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+              <Image src="/about-child.jpg" alt="Child giving thumbs up" width={500} height={400} loader={loader} className="rounded-lg object-cover" />
+            </motion.div>
+            <motion.div initial={{ x: 100, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+              <h2 className="text-3xl font-bold mb-4">A Trusted Non-Profit Charity Organization</h2>
+              <p className="text-gray-700 mb-6">
+                We’ve been dedicated to improving lives through targeted support and compassionate care. Join us in our mission to uplift communities.
+              </p>
+              <div className="space-y-4 mb-6">
+                <button className="inline-flex items-center bg-orange-500 text-white px-6 py-2 rounded-md font-semibold hover:bg-orange-600 transition">
+                  Be a Hero
+                </button>
+                <button className="inline-flex items-center border border-orange-500 text-orange-500 px-6 py-2 rounded-md font-semibold hover:bg-orange-50 transition">
+                  Help Children with Donations
+                </button>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { label: 'Children Fed', value: 1200 },
+                  { label: 'Lives Touched', value: 850 },
+                  { label: 'Volunteers', value: 300 }
+                ].map((stat) => (
+                  <div key={stat.label} className="flex items-center space-x-4">
+                    <div className="w-24 bg-gray-200 rounded-full h-2 overflow-hidden">
+                      <div className="bg-orange-500 h-2 rounded-full" style={{ width: `${(stat.value / 1200) * 100}%` }} />
+                    </div>
+                    <span className="text-gray-800 font-medium">{stat.value}+ {stat.label}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Impact Areas */}
+        <section id="impact" className="py-20 bg-gray-50">
+          <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-4 gap-6">
+            {[
+              { icon: '/icons/funding.svg', label: 'Funding' },
+              { icon: '/icons/medical2.svg', label: 'Medical' },
+              { icon: '/icons/education.svg', label: 'Education' },
+              { icon: '/icons/support.svg', label: 'Support' }
+            ].map((item) => (
+              <motion.div whileHover={{ scale: 1.05 }} key={item.label} className="bg-white p-6 rounded-lg shadow-md transition">
+                <div className="w-10 h-10 mb-4">
+                  <Image src={item.icon} alt={item.label} width={40} height={40} loader={loader}/>
+                </div>
+                <h4 className="font-semibold mb-2">{item.label}</h4>
+                <p className="text-gray-600 text-sm">Detailed overview of our {item.label.toLowerCase()} efforts.</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Popular Causes Gallery */}
+        <section id="causes" className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="text-3xl font-bold mb-8 text-center">Find Popular Causes</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <motion.div key={i} whileHover={{ y: -5 }} className="relative bg-gray-100 rounded-lg overflow-hidden">
+                  <Image src={`/causes/popular${i}.jpg`} alt="Popular Cause" width={400} height={300} className="object-cover w-full h-48" loader={loader}/>
+                  <div className="p-4">
+                    <h3 className="font-semibold mb-2">Cause Title #{i}</h3>
+                    <p className="text-gray-600 text-sm mb-4">Brief description of this cause impact.</p>
+                    <Link href="/cause"  className="inline-flex items-center text-orange-500 font-semibold hover:underline">
+                        View Cause <ArrowRightIcon className="w-4 h-4 ml-1" />
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <button className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition">
+                Load More Causes
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Events & Latest Updates */}
+        <section id="events" className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Upcoming Events */}
+            <div>
+              <h2 className="text-2xl font-bold mb-6">Join Our Latest Upcoming Events</h2>
+              {[
+                { date: 'May 30, 2025', title: 'Community Clean-Up Day' },
+                { date: 'June 15, 2025', title: 'Hope Gala Fundraiser Event' }
+              ].map((evt) => (
+                <motion.div key={evt.title} whileHover={{ scale: 1.02 }} className="flex items-start mb-6 bg-white rounded-lg shadow p-4">
+                  <div className="flex-shrink-0 bg-orange-500 text-white p-3 rounded-lg mr-4">
+                    <div className="text-sm font-bold">{evt.date.split(' ')[0]}</div>
+                    <div className="text-xs">{evt.date.split(' ')[1]}</div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">{evt.title}</h3>
+                    <p className="text-gray-600 text-sm">Join us for a day of community service and fun.</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            {/* Donation CTA */}
+            <motion.div whileHover={{ y: -5 }} className="bg-white rounded-lg shadow p-6 flex flex-col justify-center">
+              <h3 className="text-xl font-bold mb-4">Your Donation Is A Gift To Them</h3>
+              <p className="text-gray-600 mb-6">Donate what you can offer and bring hope to children today.</p>
+              <Link href="/donate"  className="inline-flex items-center bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition">
+                  Donate Now <ArrowRightIcon className="w-5 h-5 ml-2" />
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Core Highlights */}
+        <section id="services" className="py-20 bg-gray-50">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              { icon: '/icons/medical.svg', label: 'Medical Aid' },
+              { icon: '/icons/trust.svg', label: 'Trust Funds' },
+              { icon: '/icons/funds.svg', label: 'Funds Raised' }
+            ].map((item) => (
+              <motion.div
+                key={item.label}
+                whileHover={{ y: -5 }}
+                className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition"
+              >
+                <div className="w-12 h-12 mb-4">
+                  <Image src={item.icon} alt={item.label} width={48} height={48} loader={loader}/>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{item.label}</h3>
+                <p className="text-gray-600">Learn about how we support this cause.</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Bold CTA */}
+        <section className="py-16 bg-orange-500">
+          <div className="max-w-4xl mx-auto text-center text-white px-6">
+            <motion.h2
+              className="text-3xl md:text-4xl font-bold mb-4"
+              initial={{ x: -100, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              Help Us Build A Future Filled With Hope And Opportunities
+            </motion.h2>
+            <Link href="/join" className="inline-flex items-center bg-white text-orange-500 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
+                Join Us Today <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </Link>
+          </div>
+        </section>
+
+         {/* Testimonials & News */}
+         <section id="testimonials" className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="text-3xl font-bold mb-8 text-center">Voices Sharing Our Mission Success</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              {[
+                { name: 'Alex Johnson', text: 'This organization really changed the lives of my community.', avatar: '/testimonials/1.jpg' },
+                { name: 'Emily Carter', text: 'Their support has been invaluable to families in need.', avatar: '/testimonials/2.jpg' }
+              ].map((test, idx) => (
+                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.3 }} className="bg-gray-50 p-6 rounded-lg shadow">
+                  <div className="flex items-center mb-4 space-x-4">
+                    <Image src={test.avatar} alt={test.name} width={50} height={50} className="rounded-full"  loader={loader}/>
+                    <h4 className="font-semibold">{test.name}</h4>
+                  </div>
+                  <p className="italic text-gray-700">“{test.text}”</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-gray-900 text-gray-300 py-12">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 px-6">
+            <div>
+              <h4 className="text-white font-semibold mb-4">Contact Info</h4>
+              <ul className="space-y-2">
+                <li>123 Charity St.</li>
+                <li>City, Country</li>
+                <li>+1 (234) 567-890</li>
+                <li>info@kindflow.org</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-4">Pages</h4>
+              <ul className="space-y-2">
+                {navItems.map((item) => (
+                  <li key={item}>
+                    <Link href={`#${item.toLowerCase()}`} className="hover:text-white transition">{item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-4">Services</h4>
+              <ul className="space-y-2">
+                <li>Funding</li>
+                <li>Medical</li>
+                <li>Education</li>
+                <li>Support</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-4">Newsletter</h4>
+              <form className="flex">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-2 rounded-l-md focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="bg-orange-500 px-4 rounded-r-md hover:bg-orange-600 transition"
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
+          </div>
+          <div className="mt-8 text-center text-sm text-gray-500">
+            © {new Date().getFullYear()} KindFlow. All rights reserved.
+          </div>
+        </footer>
+      </main>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       {/* ── Hero ── */}
       <section className="relative h-[90vh] flex items-center justify-center">
         <div className="absolute inset-0 -z-10">
