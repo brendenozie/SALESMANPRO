@@ -76,10 +76,7 @@ export default function MetricsSection({
               variants={cardVariants}
               className="
                 flex-1 
-                bg-white/20 backdrop-blur-sm ring-1 ring-gray-200 
-                rounded-3xl 
-                shadow-md 
-                hover:shadow-xl hover:scale-105 
+                
                 transition-all duration-300 
                 flex flex-col items-center text-center 
                 py-8 px-6

@@ -66,34 +66,31 @@ export default function EcommerceSite() {
       <PromoSection promotions={promotions}/>
 
       {/* Popular Products */}
-      <PopularProducts />
+      <PopularProducts />      
+
+      {/* Metrics  */}
+      <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support}/>
 
       {/* Daily Best Sells */}
       <DailyBestSells />
 
+      <SleepTapeAd />
+
       <Trending />
 
       {/* Trending Products */}
-      <ProductGrid title={"trending"} />
+      {/* <ProductGrid title={"trending"} /> */}
 
       {/* Promotions Products */}
-      <PromotionsSection promotions={promotions}/>
+      {/* <PromotionsSection promotions={promotions}/> */}
       
       {/* FeaturesSection Products */}
       <FeaturesSection />
 
       <AllProducts />
 
-      <SleepTapeAd />
-
-      {/* Metrics  */}
-      <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support}/>
-
       {/* Awards */}
       <AwardsSection awards={awards}/>
-
-      {/* All Products */}
-      <ProductGrid title="All Products" /> 
 
       {/* Customer Testimonials */}
       <TestimonialsSection testimonials={testimonials}/>
