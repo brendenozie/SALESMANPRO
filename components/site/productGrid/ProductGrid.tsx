@@ -99,7 +99,7 @@ export default function ProductGrid({ title }: any) {
 
               {/* Product Image */}
               <Link
-                href={`/${slug}/product/${listing.id}`}
+                href={`/site/${slug}/ecommerce/products/${listing.id}`}
                 className="block relative h-56 w-full overflow-hidden"
               >
                 <Image

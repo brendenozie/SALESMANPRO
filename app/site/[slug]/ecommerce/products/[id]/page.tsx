@@ -8,7 +8,7 @@ import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
-import { StoreContextProvider, useStore, useStoreContext } from '@/contexts/StoreContext';
+import { StoreContextProvider, useStore } from '@/contexts/StoreContext';
 import { useState } from 'react';
 import { StoreForm } from '@/types/typings';
 
@@ -19,19 +19,17 @@ interface PageProps {
 export const dynamic = 'force-dynamic';
 
 export default async function ProductPage({ params }: PageProps) {
-  
   const { slug, productId } = params;
-  const { storeFormData } = useStoreContext();
 
   // Fetch store data for context
-  
-  if (!storeFormData) notFound();
+  const rawStore = await prisma.company.findUnique({ where: { slug } });
+  if (!rawStore) notFound();
 
-  
+
 
   // Fetch product and related items
   const product = await prisma.marketplaceListing.findFirst({
-    where: { id: productId, companyId: storeFormData.id },
+    where: { id: productId, company: { slug } },
     // include: { images: true },
   });
   if (!product) notFound();
