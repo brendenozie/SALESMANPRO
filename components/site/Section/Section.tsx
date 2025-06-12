@@ -34,7 +34,7 @@ export default function Section({
 
   // Gradient text style for the heading
   const gradientTextStyle = {
-    background: `linear-gradient(90deg, ${primary}, ${secondary})`,
+    background: `linear-gradient(90deg, ${primary})`,
     WebkitBackgroundClip: 'text' as const,
     WebkitTextFillColor: 'transparent' as const,
   };
@@ -67,16 +67,7 @@ export default function Section({
             >
               {title}
             </motion.h2>
-
-            {/* Gradient Underline */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="h-1 w-28 mx-auto mt-2 rounded origin-left"
-              style={gradientUnderlineStyle}
-            />
+            
           </div>
         )}
 
