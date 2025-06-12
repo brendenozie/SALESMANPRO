@@ -56,7 +56,7 @@ export default function Footer() {
           >
             About Us
           </h3>
-          <p className="text-sm leading-relaxed text-gray-400">
+          <p className="text-sm leading-relaxed text-gray-400  h-12 overflow-clip">
             {description ||
               'Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day.'}
           </p>

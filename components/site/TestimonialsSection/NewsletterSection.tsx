@@ -62,7 +62,7 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
                 </div>
 
                 {/* Quote Text */}
-                <p className="flex-grow text-lg italic text-gray-700 dark:text-gray-200">
+                <p className="flex-grow text-lg italic text-gray-700 dark:text-gray-200 h-12 overflow-clip">
                   “{t.quote}”
                 </p>
 
