@@ -176,7 +176,7 @@ export default function HeroSlider() {
                 </div>
 
                 {/* ========= RIGHT PANEL: IMAGE + BLOB ACCENT ========= */}
-                <div className="hidden md:block md:w-1/2 relative overflow-hidden">
+                <div className="block md:w-1/2 relative overflow-hidden">
                   {/* Faint SVG “blob” behind the photo */}
                   <svg
                     className="absolute -bottom-10 -right-20 w-[400px] h-[400px] text-green-50"
