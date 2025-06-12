@@ -99,8 +99,8 @@ export default function Header() {
             <nav className="hidden md:flex space-x-10">
               {[
                 { label: 'Home', href: `/site/${slug}` },
-                { label: 'Shop', href: `/site/${slug}/products` },
-                { label: 'Categories', href: `/site/${slug}/categories` },
+                { label: 'Shop', href: `/site/${slug}/ecommerce/products` },
+                { label: 'Categories', href: `/site/${slug}/ecommerce/categories` },
               ].map((item) => (
                 <motion.div
                   key={item.label}
@@ -169,7 +169,7 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primary }}
               className={`transition-colors ${iconColor}`}
-              onClick={() => router.push(`/site/${slug}/profile`)}
+              onClick={() => router.push(`/site/${slug}/ecommerce/profile`)}
               aria-label="Profile"
             >
               <UserIcon className="h-6 w-6" />
@@ -179,7 +179,7 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primary }}
               className={`relative transition-colors ${iconColor}`}
-              onClick={() => router.push(`/site/${slug}/checkout`)}
+              onClick={() => router.push(`/site/${slug}/ecommerce/checkout`)}
               aria-label="Cart"
             >
               <ShoppingBagIcon className="h-6 w-6" />
