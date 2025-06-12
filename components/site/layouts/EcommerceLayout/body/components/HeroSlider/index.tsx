@@ -157,7 +157,7 @@ export default function HeroSlider() {
 
                     {/* Description */}
                     {slide.description && (
-                      <p className="text-gray-700 text-sm sm:text-base md:text-lg max-w-md">
+                      <p className="text-gray-700 text-sm sm:text-base md:text-lg max-w-md h-14 overflow-hidden">
                         {slide.description}
                       </p>
                     )}
