@@ -166,6 +166,7 @@ export default function HeroSlider() {
                     {slide.ctaLink && slide.ctaText && (
                       <a
                         href={slide.ctaLink}
+                        style={{background:`${primary}`}}
                         className="inline-block bg-green-500 hover:bg-green-600 text-white font-semibold text-sm sm:text-base px-6 py-3 rounded-md shadow-md transition transform hover:scale-105"
                       >
                         {slide.ctaText}

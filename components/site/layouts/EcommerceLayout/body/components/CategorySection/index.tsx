@@ -16,6 +16,10 @@ export default function CategorySection() {
   const { storeFormData } = useStoreContext();
   const { storeCategories = [], themeSettings = {} } = storeFormData || {};
 
+   // These theme colors control the little progress bar at the bottom:
+   const primary = storeFormData.themeSettings?.primaryColor || '#10B981'; // default: emerald
+   const secondary = storeFormData.themeSettings?.secondaryColor || '#3B82F6'; // default: blue
+
   return (
 
     <section className="py-12 bg-gray-50">

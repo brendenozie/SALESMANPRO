@@ -1,8 +1,16 @@
+import { useStoreContext } from '@/contexts/StoreContext';
 import React from 'react';
 
 export default function SleepTapeAd() {
+  
+  const { storeFormData } = useStoreContext();
+  const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
+  const primary = themeSettings.primaryColor || '#f97316';
+  const secondary = themeSettings.secondaryColor || '#3b82f6';
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-r from-blue-100 to-blue-50 py-16">
+    <section className="relative overflow-hidden bg-gradient-to-r from-blue-100 to-blue-50 py-16"
+    style={{background:`${primary}`}}>
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center">
         {/* Text Section */}
         <div className="w-full md:w-1/2">
@@ -22,7 +30,7 @@ export default function SleepTapeAd() {
         {/* Image Section */}
         <div className="w-full md:w-1/2 mt-10 md:mt-0 flex justify-center relative">
           <img
-            src="/images/sleep-tape.jpg"  // Replace with your actual image path
+            src={`${storeFormData.bannerUrl}`}  // Replace with your actual image path
             alt="Blume Sleep Tape"
             className="w-72 md:w-80 lg:w-96 rounded-xl shadow-2xl transform md:translate-x-10"
           />

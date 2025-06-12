@@ -7,6 +7,7 @@ import {
   Squares2X2Icon,
   ArrowUturnLeftIcon,
 } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const features = [
   {
@@ -40,6 +41,12 @@ const features = [
 ];
 
 export default function FeaturesSection() {
+
+    const { storeFormData } = useStoreContext();
+    const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
+    const primary = themeSettings.primaryColor || '#f97316';
+    const secondary = themeSettings.secondaryColor || '#3b82f6';
+
   return (
     <section className="py-10 bg-white">
       <div className="max-w-7xl mx-auto px-4">
@@ -51,7 +58,7 @@ export default function FeaturesSection() {
                 key={feature.id}
                 className="flex flex-col items-center text-center space-y-4 p-4"
               >
-                <Icon className="w-12 h-12 text-green-600" />
+                <Icon className="w-12 h-12 text-green-600" style={{color:`${primary}`}}/>
                 <h3 className="text-lg font-semibold text-gray-800">
                   {feature.title}
                 </h3>

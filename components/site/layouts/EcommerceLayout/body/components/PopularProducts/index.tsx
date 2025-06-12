@@ -6,7 +6,7 @@ import { MarketplaceListingForm } from '@/types/typings';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 
-const ProductCard: React.FC<{ product: MarketplaceListingForm }> = ({ product }) => (
+const ProductCard: React.FC<{ product: MarketplaceListingForm, primary : any }> = ({ product,primary }) => (
   <div className="relative bg-white rounded-xl shadow hover:shadow-lg transition-all duration-200 p-4 flex flex-col items-center">
     {/* {product.discountLabel && ( */}
       <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded">
@@ -34,7 +34,9 @@ const ProductCard: React.FC<{ product: MarketplaceListingForm }> = ({ product })
       ⭐ 4.5 (149)
       {/* {product.rating} ({product.reviews}) */}
     </div>
-    <button className="mt-4 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full">
+    <button 
+    className="mt-4 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full"
+    style={{background: `${primary}`}}>
       + Add
     </button>
   </div>
@@ -62,7 +64,7 @@ export default function PopularProducts() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {storeFormData.marketplaceListings.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} primary={primary}/>
           ))}
         </div>
       </div>
