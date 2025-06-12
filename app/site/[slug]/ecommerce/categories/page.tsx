@@ -5,15 +5,16 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
-import { useStore } from '../../../../contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { useStore } from '@/contexts/StoreContext';
 
 // Loader for next/image
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function CategoriesPage() {
   const store  = useStore();
-  const categories = store?.StoreCategory || [];
-  const storeSlug = store?.slug;
+  const categories = store?.storeFormData.storeCategories || [];
+  const storeSlug = store?.storeFormData.slug;
 
   if (!storeSlug) {
     return (
@@ -36,7 +37,7 @@ export default function CategoriesPage() {
               >
                 <div className="relative h-48 w-full">
                   <Image
-                    src={cat.imageUrl}
+                    src={cat.icon}
                     alt={cat.name}
                     loader={loader}
                     fill

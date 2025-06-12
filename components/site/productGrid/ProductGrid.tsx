@@ -17,7 +17,7 @@ interface ProductGridProps {
   title?: string;
 }
 
-export default function ProductGrid({ title }: ProductGridProps) {
+export default function ProductGrid({ title }: any) {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};

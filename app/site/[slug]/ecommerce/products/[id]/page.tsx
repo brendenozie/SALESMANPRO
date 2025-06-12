@@ -1,15 +1,16 @@
 // app/[slug]/products/[productId]/page.tsx
 import React from 'react';
 import { notFound } from 'next/navigation';
-import prisma from '../../../../../server/db/prismadb';
+import prisma from '../../../../../../server/db/prismadb';
 import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { StoreContextProvider, Store } from '../../../../../contexts/StoreContext';
 import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
-import { useStateContext } from '../../../../../contexts/ContextProvider';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { StoreContextProvider, useStore } from '@/contexts/StoreContext';
 import { useState } from 'react';
+import { StoreForm } from '@/types/typings';
 
 interface PageProps {
   params: { slug: string; productId: string };
@@ -24,19 +25,19 @@ export default async function ProductPage({ params }: PageProps) {
   const rawStore = await prisma.company.findUnique({ where: { slug } });
   if (!rawStore) notFound();
 
-  const store: Store = {
+  const store: StoreForm = {
     id: rawStore.id,
     name: rawStore.name,
     slug: rawStore.slug,
-    description: rawStore.description || undefined,
+    // description: rawStore.description || undefined,
     category: rawStore.category,
-    logoUrl: rawStore.logoUrl || undefined,
-    bannerUrl: rawStore.bannerUrl || undefined,
+    // logoUrl: rawStore.logoUrl || undefined,
+    // bannerUrl: rawStore.bannerUrl || undefined,
     contactEmail: rawStore.contactEmail,
-    contactPhone: rawStore.contactPhone || undefined,
-    address: rawStore.address || undefined,
-    themeSettings: rawStore.themeSettings,
-    StoreCategory: [], socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [], products: []
+    // contactPhone: rawStore.contactPhone || undefined,
+    // address: rawStore.address || undefined,
+    // themeSettings: rawStore.themeSettings,
+    // StoreCategory: [], socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [], products: []
   };
 
   // Fetch product and related items

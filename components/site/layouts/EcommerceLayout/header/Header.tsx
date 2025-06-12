@@ -226,9 +226,9 @@ export default function Header() {
             <div className="pt-20 pb-8 px-6 space-y-6">
               {/* Nav Links */}
               {[
-                { label: 'Home', href: `/site/${slug}` },
-                { label: 'Shop', href: `/site/${slug}/products` },
-                { label: 'Categories', href: `/site/${slug}/categories` },
+                { label: 'Home', href: `/site/${slug}/ecommerce/` },
+                { label: 'Shop', href: `/site/${slug}/ecommerce/products` },
+                { label: 'Categories', href: `/site/${slug}/ecommerce/categories` },
               ].map((item, idx) => (
                 <motion.div
                   key={item.label}

@@ -5,8 +5,9 @@ import React, { useState, ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import Section from '@/components/site/Section/Section';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { useStore } from '../../../../contexts/StoreContext';
-import { useStateContext } from '../../../../contexts/ContextProvider';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { useStore } from '@/contexts/StoreContext';
+
 
 export default function ProfilePage() {
   const store = useStore();

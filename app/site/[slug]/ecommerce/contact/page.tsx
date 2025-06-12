@@ -4,7 +4,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Section from '@/components/site/Section/Section';
-import { useStore } from '../../../../contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { useStore } from '@/contexts/StoreContext';
 
 export default function ContactPage() {
   const store = useStore();

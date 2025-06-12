@@ -87,7 +87,7 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             <li>
               <Link
-                href={`/site/${slug}/about`}
+                href={`/site/${slug}/ecommerce/about`}
                 className="hover:text-white transition-colors"
               >
                 About
@@ -95,7 +95,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/contact`}
+                href={`/site/${slug}/ecommerce/contact`}
                 className="hover:text-white transition-colors"
               >
                 Contact
@@ -103,7 +103,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/privacy`}
+                href={`/site/${slug}/ecommerce/privacy`}
                 className="hover:text-white transition-colors"
               >
                 Privacy Policy
@@ -111,7 +111,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/terms`}
+                href={`/site/${slug}/ecommerce/terms`}
                 className="hover:text-white transition-colors"
               >
                 Terms of Service
@@ -135,7 +135,7 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             <li>
               <Link
-                href={`/site/${slug}/help`}
+                href={`/site/${slug}/ecommerce/help`}
                 className="hover:text-white transition-colors"
               >
                 Help Center
@@ -143,7 +143,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/returns`}
+                href={`/site/${slug}/ecommerce/returns`}
                 className="hover:text-white transition-colors"
               >
                 Returns
@@ -151,7 +151,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/shipping`}
+                href={`/site/${slug}/ecommerce/shipping`}
                 className="hover:text-white transition-colors"
               >
                 Shipping
@@ -159,7 +159,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/track`}
+                href={`/site/${slug}/ecommerce/track`}
                 className="hover:text-white transition-colors"
               >
                 Track Order
@@ -218,19 +218,19 @@ export default function Footer() {
           </p>
           <div className="mt-4 md:mt-0 flex space-x-6">
             <Link
-              href={`/site/${slug}/sitemap.xml`}
+              href={`/site/${slug}/ecommerce/sitemap.xml`}
               className="text-sm hover:text-white transition-colors"
             >
               Sitemap
             </Link>
             <Link
-              href={`/site/${slug}/faq`}
+              href={`/site/${slug}/ecommerce/faq`}
               className="text-sm hover:text-white transition-colors"
             >
               FAQ
             </Link>
             <Link
-              href={`/site/${slug}/support`}
+              href={`/site/${slug}/ecommerce/support`}
               className="text-sm hover:text-white transition-colors"
             >
               Support

@@ -1,9 +1,10 @@
 
 // 3. Privacy Policy (privacy-policy.tsx)
 import React from 'react';
-import Section from '../../../../components/site/Section/Section';
 import { motion } from 'framer-motion';
-import { useStore } from '../../../../contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { useStore } from '@/contexts/StoreContext';
+import Section from '@/components/site/Section/Section';
 
 
 // Type definitions
