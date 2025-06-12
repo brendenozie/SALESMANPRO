@@ -8,7 +8,7 @@ import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
-import { StoreContextProvider, useStore } from '@/contexts/StoreContext';
+import { StoreContextProvider, useStore, useStoreContext } from '@/contexts/StoreContext';
 import { useState } from 'react';
 import { StoreForm } from '@/types/typings';
 
@@ -19,30 +19,19 @@ interface PageProps {
 export const dynamic = 'force-dynamic';
 
 export default async function ProductPage({ params }: PageProps) {
+  
   const { slug, productId } = params;
+  const { storeFormData } = useStoreContext();
 
   // Fetch store data for context
-  const rawStore = await prisma.company.findUnique({ where: { slug } });
-  if (!rawStore) notFound();
+  
+  if (!storeFormData) notFound();
 
-  const store: StoreForm = {
-    id: rawStore.id,
-    name: rawStore.name,
-    slug: rawStore.slug,
-    // description: rawStore.description || undefined,
-    category: rawStore.category,
-    // logoUrl: rawStore.logoUrl || undefined,
-    // bannerUrl: rawStore.bannerUrl || undefined,
-    contactEmail: rawStore.contactEmail,
-    // contactPhone: rawStore.contactPhone || undefined,
-    // address: rawStore.address || undefined,
-    // themeSettings: rawStore.themeSettings,
-    // StoreCategory: [], socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [], products: []
-  };
+  
 
   // Fetch product and related items
   const product = await prisma.marketplaceListing.findFirst({
-    where: { id: productId, company: { slug } },
+    where: { id: productId, companyId: storeFormData.id },
     // include: { images: true },
   });
   if (!product) notFound();
@@ -59,9 +48,9 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Render inside context provider
   return (
-    <StoreContextProvider initialStore={store}>
+    <>
       <ProductDetail product={product} related={related} />
-    </StoreContextProvider>
+    </>
   );
 }
 

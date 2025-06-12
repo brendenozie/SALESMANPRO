@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Section from '@/components/site/Section/Section';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 type Category = { id: string; name: string };
 type Product = { id: string; name: string; price: number; imageUrl: string; slug?: string };
@@ -31,11 +32,13 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const sort = searchParams.sort || 'newest';
 
   // Ensure store exists
-  const baseCompany = await prisma.company.findUnique({ where: { slug } });
-  if (!baseCompany) notFound();
+  
+  const { storeFormData } = useStoreContext();
+
+  if (!storeFormData) notFound();
 
   // Build filters
-  const where: any = { companyId: baseCompany.id };
+  const where: any = { companyId: storeFormData.id };
   if (search) where.title = { contains: search, mode: 'insensitive' };
   if (categoryId) where.productCategoryId = categoryId;
 
