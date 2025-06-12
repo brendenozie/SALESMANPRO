@@ -8,6 +8,7 @@ import { StarIcon, PlusIcon, MinusIcon, TrashIcon } from '@heroicons/react/24/so
 import { useStateContext } from '../../../contexts/ContextProvider';
 import { useStoreContext } from '../../../contexts/StoreContext';
 import Section from '../Section/Section';
+import { MarketplaceListingForm } from '@/types/typings';
 
 // Next/Image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -16,6 +17,40 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 interface ProductGridProps {
   title?: string;
 }
+
+const ProductCard: React.FC<{ product: MarketplaceListingForm }> = ({ product }) => (
+  <div className="relative bg-white rounded-xl shadow hover:shadow-lg transition-all duration-200 p-4 flex flex-col items-center">
+    {/* {product.discountLabel && ( */}
+      <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded">
+        54%
+        {/* {product.discountLabel} */}
+      </div>
+    {/* )} */}
+    <img
+      src={product.images[0]}
+      alt={product.title}
+      className="w-full h-40 object-cover rounded-md mb-4"
+    />
+    <h3 className="text-lg font-semibold text-gray-800 text-center">
+      {product.title}
+    </h3>
+    <div className="mt-2 text-green-600 font-bold">
+      ${product.finalPrice.toFixed(2)}
+      {product.finalPrice && (
+        <span className="text-gray-400 line-through text-sm ml-2">
+          ${product.finalPrice.toFixed(2)}
+        </span>
+      )}
+    </div>
+    <div className="mt-2 text-yellow-500 text-sm">
+      ⭐ 4.5 (149)
+      {/* {product.rating} ({product.reviews}) */}
+    </div>
+    <button className="mt-4 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full">
+      + Add
+    </button>
+  </div>
+);
 
 export default function ProductGrid({ title }: any) {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
@@ -27,8 +62,8 @@ export default function ProductGrid({ title }: any) {
   const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
 
   return (
-    <Section title={title || 'Products'} background="none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <Section background="none">
+      <div className="max-w-7xl py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
         {marketplaceListings.map((listing: any, idx: number) => {
           const quantity = getQuantity(listing.id);
           const productName = listing.product?.name ?? listing.title;

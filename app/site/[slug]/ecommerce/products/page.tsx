@@ -1,12 +1,11 @@
 // app/[slug]/products/page.tsx
 import React from 'react';
 import { notFound } from 'next/navigation';
-import prisma from '@/server/db/prismadb';
+import prisma from '../../../../../server/db/prismadb';
 import Link from 'next/link';
 import Section from '@/components/site/Section/Section';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { useStoreContext } from '@/contexts/StoreContext';
 
 type Category = { id: string; name: string };
 type Product = { id: string; name: string; price: number; imageUrl: string; slug?: string };
@@ -21,6 +20,7 @@ interface PageProps {
   };
 }
 
+
 export const dynamic = 'force-dynamic';
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
@@ -32,13 +32,11 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const sort = searchParams.sort || 'newest';
 
   // Ensure store exists
-  
-  const { storeFormData } = useStoreContext();
-
-  if (!storeFormData) notFound();
+  const baseCompany = await prisma.company.findUnique({ where: { slug } });
+  if (!baseCompany) notFound();
 
   // Build filters
-  const where: any = { companyId: storeFormData.id };
+  const where: any = { companyId: baseCompany.id };
   if (search) where.title = { contains: search, mode: 'insensitive' };
   if (categoryId) where.productCategoryId = categoryId;
 
@@ -74,7 +72,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto py-8">
         <Section title="Products">
           <form method="get" className="flex flex-col lg:flex-row items-center justify-between mb-6 space-y-4 lg:space-y-0">
             <input
