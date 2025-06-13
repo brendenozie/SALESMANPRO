@@ -1,13 +1,28 @@
-import { PlusIcon, StarIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 import { MarketplaceListingForm } from '@/types/typings';
+
+import { motion } from 'framer-motion';
+import cartItem from '@/components/shop/cartItem';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 interface ProductCardProps {
   product: MarketplaceListingForm;
   primary: string;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, primary }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+
+  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+  const { storeFormData } = useStoreContext();
+  const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
+  const primary = themeSettings.primaryColor || '#f97316';
+  const secondary = themeSettings.secondaryColor || '#3b82f6';
+  
+  const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
+  const quantity = getQuantity(product.id);
+    
   const { title, images, finalPrice,  } = product;
   const originalPrice=0.0;
   const rating = 4.5;
@@ -38,14 +53,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, primary }) => {
 
       {/* Product Details */}
       <div className="p-4 flex flex-col justify-between flex-grow">
-        {/* Title */}
-        <h3 className="text-md font-semibold text-gray-800 line-clamp-2 h-12">
+        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 truncate mb-2">
           {title}
-        </h3>
+        </h4>
 
         {/* Price */}
         <div className="mt-2 flex items-center gap-2">
-          <span className="text-lg font-bold text-green-600">
+          <span className="text-xl font-extrabold"
+                style={{ color: primary }}>
             ${finalPrice.toFixed(2)}
           </span>
           {originalPrice && originalPrice > finalPrice && (
@@ -64,13 +79,51 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, primary }) => {
         </div>
 
         {/* Add to Cart Button */}
-        <button
-          className="mt-4 flex items-center justify-center gap-2 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors duration-200 w-full"
-          style={{ backgroundColor: primary }}
-        >
-          <PlusIcon className="w-5 h-5" />
-          Add to Cart
-        </button>
+        {/* Cart Actions */}
+        {quantity > 0 ? (
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => decreaseQuantity(cartItem)}
+                        className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-red-100 transition"
+                      >
+                        {quantity === 1 ? (
+                          <TrashIcon className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <MinusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                        )}
+                      </button>
+                      <span className="text-gray-800 dark:text-gray-200 font-medium">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => addToCart(cartItem)}
+                        className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-green-100 transition"
+                      >
+                        <PlusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                      </button>
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => removeFromCart(cartItem)}
+                      className="text-sm text-red-500 hover:underline"
+                    >
+                      Remove
+                    </motion.button>
+                  </div>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => addToCart(cartItem)}
+                    className="mt-4 w-full py-2 rounded-full text-white font-medium transition"
+                    style={{
+                      background: `linear-gradient(135deg, ${primary}, ${secondary})`,
+                    }}
+                  >
+                    Add to Cart
+                  </motion.button>
+                )}
       </div>
     </div>
   );
