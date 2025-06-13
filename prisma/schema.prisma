@@ -1336,6 +1336,7 @@ model CustomerOrder {
   shippingMethod        String? // Shipping method (e.g., standard, express)
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
+  deletedAt             DateTime?
   Payment               Payment[]
 }
 

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb";
 import { z } from "zod";
 import nodemailer from "nodemailer";
-import { authenticate } from "../../../../middleware/auth";
 
 // Zod schema
 const orderSchema = z.object({
@@ -44,7 +43,7 @@ function generateTrackingNumber() {
 
 // POST /api/orders
 export async function POST(req: Request) {
-  return authenticate(req, async () => {
+  
     const body = await req.json();
     const parsed = orderSchema.safeParse(body);
     if (!parsed.success) {
@@ -73,12 +72,11 @@ export async function POST(req: Request) {
       console.error("Error creating order:", err);
       return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
-  });
 }
 
 // GET /api/orders
 export async function GET(req: Request) {
-  return authenticate(req, async () => {
+  
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
@@ -103,12 +101,11 @@ export async function GET(req: Request) {
       console.error("Error fetching orders:", err);
       return NextResponse.json({ error: "Failed to fetch orders", detail: err.message }, { status: 500 });
     }
-  });
 }
 
 // PUT /api/orders
 export async function PUT(req: Request) {
-  return authenticate(req, async () => {
+  
     const body = await req.json();
     const { id, status, deliveryStatus } = body;
     if (!id || !status || !deliveryStatus) {
@@ -125,46 +122,27 @@ export async function PUT(req: Request) {
       console.error("Error updating order:", err);
       return NextResponse.json({ error: "Failed to update order", detail: err.message }, { status: 500 });
     }
-  });
 }
 
 // DELETE /api/orders
 // DELETE /api/orders (soft delete)
 export async function DELETE(req: Request) {
-  return authenticate(req, async () => {
+  
     const { id } = await req.json();
     if (!id) {
       return NextResponse.json({ error: "Missing order ID" }, { status: 400 });
     }
     try {
-      // const existing = await prisma.customerOrder.findUnique({ where: { id, deletedAt: null } });
-      // if (!existing || existing.status !== "PENDING") {
-      //   return NextResponse.json({ error: "Only pending orders can be canceled" }, { status: 400 });
-      // }
-      // const canceled = await prisma.customerOrder.update({ where: { id }, data: { status: "CANCELLED", deliveryStatus: "Order Canceled", deletedAt: new Date() } });
-      // return NextResponse.json(canceled, { status: 200 });
+      const existing = await prisma.customerOrder.findUnique({ where: { id, deletedAt: null } });
+      if (!existing || existing.status !== "PENDING") {
+        return NextResponse.json({ error: "Only pending orders can be canceled" }, { status: 400 });
+      }
+      const canceled = await prisma.customerOrder.update({ where: { id }, data: { status: "CANCELLED", deliveryStatus: "Order Canceled", deletedAt: new Date() } });
+      return NextResponse.json(canceled, { status: 200 });
     } catch (err: any) {
       console.error("Error soft-deleting order:", err);
       return NextResponse.json({ error: "Failed to cancel order", detail: err.message }, { status: 500 });
     }
-  });
 }
-export async function DELETEDDDDD(req: Request) {
-  return authenticate(req, async () => {
-    const { id } = await req.json();
-    if (!id) {
-      return NextResponse.json({ error: "Missing order ID" }, { status: 400 });
-    }
-    try {
-      const existing = await prisma.customerOrder.findUnique({ where: { id } });
-      if (!existing || existing.status !== "PENDING") {
-        return NextResponse.json({ error: "Only pending orders can be canceled" }, { status: 400 });
-      }
-      const canceled = await prisma.customerOrder.update({ where: { id }, data: { status: "CANCELLED", deliveryStatus: "Order Canceled" } });
-      return NextResponse.json(canceled, { status: 200 });
-    } catch (err: any) {
-      console.error("Error canceling order:", err);
-      return NextResponse.json({ error: "Failed to cancel order", detail: err.message }, { status: 500 });
-    }
-  });
-}
+
+
