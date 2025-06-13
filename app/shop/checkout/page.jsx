@@ -159,6 +159,8 @@ const CheckoutPage = () => {
         items: cart.map(i => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
         shippingAddress: selectedAddress,
         shippingMethod: formData.shippingMethod,
+        delivery:formData.paymentMethod == "pickupatshop",
+        paymentOption:formData.paymentMethod,
         totalPrice: parseFloat(total.toFixed(2)),
       };
       const res = await fetch('/api/shop/orders', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
@@ -221,18 +223,18 @@ const CheckoutPage = () => {
                   </label>                  
                   
                   <label key={'pickupatshop'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
-                    <input type="radio" id={`pay-${'pickupatshop'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='pickupatshop'} onChange={handleChange}/>
+                    <input type="radio" id={`pay-${'pickupatshop'}`} name="pickupatshop" value="pick up at shop" checked={formData.paymentMethod==='pickupatshop'} onChange={handleChange}/>
                     <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
                     <span htmlFor={`pay-${'pickupatshop'}`}>{'Pick up at Shop'}</span>
                   </label>                                 
                   
                   <label key={'mpesa'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
-                    <input type="radio" id={`pay-${'mpesa'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='mpesa'} onChange={handleChange}/>
+                    <input type="radio" id={`pay-${'mpesa'}`} name="mpesa" value="pick up at shop" checked={formData.paymentMethod==='mpesa'} onChange={handleChange}/>
                     <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
                     <span htmlFor={`pay-${'mpesa'}`}>{'Mpesa'}</span>
                   </label>
                 </div>
-                
+
                 {formData.paymentMethod === 'card' && (
                   <>
                     <div className="space-y-3">

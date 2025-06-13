@@ -124,6 +124,7 @@ export default function CheckoutPage() {
         items: cart.map((i: { id: any; quantity: any; finalPrice: any; }) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
         shippingAddress: selectedAddress,
         shippingMethod: formData.shippingMethod,
+        delivery: false,
         totalPrice: parseFloat(total.toFixed(2)),
       };
       const res = await fetch('/api/shop/orders', {
