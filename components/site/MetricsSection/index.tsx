@@ -30,27 +30,20 @@ const MetricCard = ({
   primary: string;
   secondary: string;
 }) => {
-  return (
+  return (   
     <motion.div
       whileHover={{ scale: 1.05 }}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
       viewport={{ once: true }}
-      className="bg-white dark:bg-zinc-900 rounded-3xl p-8 shadow-xl flex flex-col items-center text-center group hover:shadow-2xl transition-all duration-300"
+      className="flex flex-col items-center text-center space-y-4 p-4"
     >
-      <div
-        className="w-16 h-16 rounded-full mb-4 flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform"
-        style={{
-          background: `${primary}`,
-        }}
-      >
-        <Icon className="h-7 w-7 text-white" />
-      </div>
-      <h3 className="text-4xl font-bold text-gray-800 dark:text-white">
+      <Icon className="w-12 h-12 text-green-600" style={{color:`${primary}`}}/>
+      <h3 className="text-lg font-semibold text-gray-800">
         {value}
       </h3>
-      <p className="text-gray-600 dark:text-gray-300 mt-2 text-sm font-bold uppercase ">{label}</p>
+      <p className="text-gray-600 text-sm">{label}</p>
     </motion.div>
   );
 };
@@ -82,7 +75,7 @@ export default function MetricsSection({
           Powered by Impact
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-          {metrics.map((metric) => (
+          {metrics.map((metric, index) => (            
             <MetricCard
               key={metric.label}
               label={metric.label}

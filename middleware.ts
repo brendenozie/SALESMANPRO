@@ -3,14 +3,15 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 // Paths requiring session-based auth
 const protectedPaths = [
-  "/admin",
-  "/clients",
-  "/agents",
-  "/users",
-  "/destinations",
-  "/addcity",
-  "/adddestination",
-  "/addhotel",
+  // "/admin",
+  // "/clients",
+  // "/agents",
+  // "/users",
+  // "/shop/profile",
+  // "/destinations",
+  // "/addcity",
+  // "/adddestination",
+  // "/addhotel",
   "/addtravelstyle",
 ];
 
@@ -30,22 +31,22 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const { pathname } = request.nextUrl;
 
   // 1. API routes: enforce x-api-key
-  if (pathname.startsWith('/api/')) {
-    if (!API_KEY_HEADER) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Server misconfiguration: API key header not set' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    const apiKey = request.headers.get(API_KEY_HEADER as string);
-    if (apiKey !== API_SECRET) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    return NextResponse.next();
-  }
+  // if (pathname.startsWith('/api/')) {
+  //   if (!API_KEY_HEADER) {
+  //     return new NextResponse(
+  //       JSON.stringify({ error: 'Server misconfiguration: API key header not set' }),
+  //       { status: 500, headers: { 'Content-Type': 'application/json' } }
+  //     );
+  //   }
+  //   const apiKey = request.headers.get(API_KEY_HEADER as string);
+  //   if (apiKey !== API_SECRET) {
+  //     return new NextResponse(
+  //       JSON.stringify({ error: 'Unauthorized' }),
+  //       { status: 403, headers: { 'Content-Type': 'application/json' } }
+  //     );
+  //   }
+  //   return NextResponse.next();
+  // }
 
   // 2. Protected app routes: session-based
   if (protectedPaths.some((path) => pathname.startsWith(path))) {
