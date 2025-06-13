@@ -3,7 +3,7 @@ import React from 'react';
 import { MarketplaceListingForm } from '@/types/typings';
 
 import { motion } from 'framer-motion';
-import cartItem from '@/components/shop/cartItem';
+// import cartItem from '@/components/shop/cartItem';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
@@ -85,49 +85,50 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Add to Cart Button */}
         {/* Cart Actions */}
         {quantity > 0 ? (
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => decreaseQuantity(cartItem)}
-                        className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-red-100 transition"
-                      >
-                        {quantity === 1 ? (
-                          <TrashIcon className="h-5 w-5 text-red-500" />
-                        ) : (
-                          <MinusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                        )}
-                      </button>
-                      <span className="text-gray-800 dark:text-gray-200 font-medium">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => addToCart(cartItem)}
-                        className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-green-100 transition"
-                      >
-                        <PlusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                      </button>
-                    </div>
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => removeFromCart(cartItem)}
-                      className="text-sm text-red-500 hover:underline"
-                    >
-                      Remove
-                    </motion.button>
-                  </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => decreaseQuantity(product.id)}
+                className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-red-100 transition"
+              >
+                {quantity === 1 ? (
+                  <TrashIcon className="h-5 w-5 text-red-500" />
                 ) : (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => addToCart(cartItem)}
-                    className="mt-4 w-full py-2 rounded-full text-white font-medium transition"
-                    style={{
-                      background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-                    }}
-                  >
-                    Add to Cart
-                  </motion.button>
+                  <MinusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                 )}
+              </button>
+              <span className="text-gray-800 dark:text-gray-200 font-medium">
+                {quantity}
+              </span>
+              <button
+                onClick={() => addToCart(product)}
+                className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-green-100 transition"
+              >
+                <PlusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              </button>
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => removeFromCart(product.id)}
+              className="text-sm text-red-500 hover:underline"
+            >
+              Remove
+            </motion.button>
+          </div>
+        ) : (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => addToCart(product)}
+            className="mt-4 w-full py-2 rounded-full text-white font-medium transition"
+            style={{
+              background: `linear-gradient(135deg, ${primary}, ${secondary})`,
+            }}
+          >
+            Add to Cart
+          </motion.button>
+        )}
+
       </div>
     </div>
   );

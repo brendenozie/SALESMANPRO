@@ -17,6 +17,12 @@ interface IUser extends DefaultUser {
   bio?: string;
   address?: string;
   profilePicture?: string;
+  cardNumber?: string;
+  cardExpiry?: string;
+  cvv?: string;
+  promoCode?: string;
+  paymentMethod?: string;
+  shippingMethod?: string;
 }
 
 // Extend NextAuth module with new User and Session types

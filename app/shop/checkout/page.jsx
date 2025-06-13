@@ -49,7 +49,7 @@ const OrderSummary = ({ cart, estimatedDelivery, total }) => (
           <p className="font-medium">{item.title}</p>
           <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
         </div>
-        <p className="font-semibold">${(item.sellingPrice * item.quantity).toFixed(2)}</p>
+        <p className="font-semibold">${(item.finalPrice * item.quantity).toFixed(2)}</p>
       </div>
     ))}
     <div className="border-t pt-3 mt-3">
@@ -109,7 +109,7 @@ const CheckoutPage = () => {
     setError(err => ({ ...err, [name]: '' }));
   }, []);
 
-  const subtotal = useMemo(() => cart.reduce((sum, i) => sum + i.sellingPrice * i.quantity, 0), [cart]);
+  const subtotal = useMemo(() => cart.reduce((sum, i) => sum + i.finalPrice * i.quantity, 0), [cart]);
   const shippingCost = useMemo(() => formData.shippingMethod === 'Express' ? 15 : 5, [formData.shippingMethod]);
   const total = useMemo(() => (subtotal + shippingCost) * (1 - discount), [subtotal, shippingCost, discount]);
 
@@ -153,7 +153,7 @@ const CheckoutPage = () => {
     try {
       const orderPayload = {
         consumerId: session?.user?.id,
-        items: cart.map(i => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.sellingPrice })),
+        items: cart.map(i => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
         shippingAddress: selectedAddress,
         shippingMethod: formData.shippingMethod,
         totalPrice: parseFloat(total.toFixed(2)),
