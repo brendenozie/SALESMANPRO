@@ -15,8 +15,8 @@ const protectedPaths = [
 ];
 
 // API key header name and secret env var
-const API_KEY_HEADER = 'x-api-key';
-const API_SECRET = process.env.API_SECRET_KEY!;
+const API_KEY_HEADER = process.env.NEXT_PUBLIC_API_KEY_HEADER;
+const API_SECRET = process.env.NEXT_PUBLIC_API_SECRET_KEY!;
 
 export const config = {
   // Apply middleware to all app routes and API routes
@@ -31,7 +31,13 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   // 1. API routes: enforce x-api-key
   if (pathname.startsWith('/api/')) {
-    const apiKey = request.headers.get(API_KEY_HEADER);
+    if (!API_KEY_HEADER) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Server misconfiguration: API key header not set' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    const apiKey = request.headers.get(API_KEY_HEADER as string);
     if (apiKey !== API_SECRET) {
       return new NextResponse(
         JSON.stringify({ error: 'Unauthorized' }),
