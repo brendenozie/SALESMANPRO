@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import cartItem from '@/components/shop/cartItem';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+import Link from 'next/link';
 
 interface ProductCardProps {
   product: MarketplaceListingForm;
@@ -42,14 +43,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
       )}
 
-      {/* Product Image */}
-      <div className="relative w-full h-48 bg-gray-100 overflow-hidden">
+      {/* Product Image */}      
+      <Link
+        href={`/site/${slug}/ecommerce/products/${product.id}`}
+        className="block relative h-56 w-full overflow-hidden"
+      >
         <img
           src={images[0]}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-      </div>
+      </Link>
 
       {/* Product Details */}
       <div className="p-4 flex flex-col justify-between flex-grow">
