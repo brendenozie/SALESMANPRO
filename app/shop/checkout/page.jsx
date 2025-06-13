@@ -61,7 +61,7 @@ const OrderSummary = ({ cart, estimatedDelivery, total }) => (
 );
 
 const CheckoutPage = () => {
-  
+
   const router = useRouter();
   const { data: session } = useSession();
   const { cart, clearCart } = useStateContext();
@@ -223,9 +223,16 @@ const CheckoutPage = () => {
                   <label key={'pickupatshop'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
                     <input type="radio" id={`pay-${'pickupatshop'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='pickupatshop'} onChange={handleChange}/>
                     <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
-                    <span htmlFor={`pay-${'pickupatshop'}`}>{'Cash on Delivery'}</span>
+                    <span htmlFor={`pay-${'pickupatshop'}`}>{'Pick up at Shop'}</span>
+                  </label>                                 
+                  
+                  <label key={'mpesa'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
+                    <input type="radio" id={`pay-${'mpesa'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='mpesa'} onChange={handleChange}/>
+                    <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
+                    <span htmlFor={`pay-${'mpesa'}`}>{'Mpesa'}</span>
                   </label>
                 </div>
+                
                 {formData.paymentMethod === 'card' && (
                   <>
                     <div className="space-y-3">
@@ -237,13 +244,15 @@ const CheckoutPage = () => {
                     </div>
                   </>
                 )}
-                {formData.paymentMethod === 'card' && (
+
+                {formData.paymentMethod === 'cod' || formData.paymentMethod === 'card' || formData.paymentMethod === 'pickupatshop' && (
                   <>
                     <div className="space-y-3">
                       <input name="deliveryFee" value={formData.deliveryFee} onChange={handleChange} placeholder="Delivery Fee" disabled className="w-full p-3 border rounded-lg" />
                     </div>
                   </>
                 )}
+
                 <div className="mt-4">
                   <label htmlFor="promoCode" className="sr-only">Promo Code</label>
                   <input id="promoCode" name="promoCode" value={formData.promoCode} onChange={handleChange} placeholder="Promo Code" className="w-full p-2 border rounded-lg" />

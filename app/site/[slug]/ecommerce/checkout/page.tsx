@@ -8,10 +8,12 @@ import Confetti from 'react-confetti';
 import {
   CreditCardIcon,
   TruckIcon,
+  TrashIcon,
   CheckCircleIcon,
   CalendarIcon,
   XCircleIcon,
   ArrowLeftIcon,
+  BuildingLibraryIcon
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStore } from '@/contexts/StoreContext';
@@ -199,6 +201,18 @@ export default function CheckoutPage() {
                     <TruckIcon className="w-6 h-6 text-indigo-600"/>
                     Cash on Delivery
                   </label>
+                  <label htmlFor={`pay-${'pickupatshop'}`} key={'pickupatshop'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
+                    <input type="radio" id={`pay-${'pickupatshop'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='pickupatshop'} onChange={handleChange}/>
+                    <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
+                    <span>{'Pick up at Shop'}</span>
+                  </label>                                 
+                  
+                  <label htmlFor={`pay-${'mpesa'}`} key={'mpesa'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
+                    <input type="radio" id={`pay-${'mpesa'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='mpesa'} onChange={handleChange}/>
+                    <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
+                    <span >{'Mpesa'}</span>
+                  </label>
+
                 </div>
                 {formData.paymentMethod === 'card' && (
                   <>
