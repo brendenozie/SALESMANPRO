@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useStoreContext } from '../../../../../../../contexts/StoreContext';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '../../../../../../../contexts/StoreContext';
 
 interface Category {
   id: string;
@@ -12,44 +12,63 @@ interface Category {
 }
 
 export default function CategorySection() {
-  
   const { storeFormData } = useStoreContext();
   const { storeCategories = [], themeSettings = {} } = storeFormData || {};
 
-   // These theme colors control the little progress bar at the bottom:
-   const primary = storeFormData.themeSettings?.primaryColor || '#10B981'; // default: emerald
-   const secondary = storeFormData.themeSettings?.secondaryColor || '#3B82F6'; // default: blue
+  const primary = themeSettings?.primaryColor || '#10B981';
+  const secondary = themeSettings?.secondaryColor || '#3B82F6';
 
   return (
-
     <section className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Explore Categories</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Title */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            Explore Categories
+          </h2>
+          <p className="mt-2 text-gray-600 text-sm">
+            Find products by category – from essentials to extras.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {storeCategories.map((cat: Category) => (
             <motion.div
               key={cat.id}
               whileHover={{ scale: 1.05 }}
-              className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center"
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-5 flex flex-col items-center text-center cursor-pointer"
             >
+              {/* Icon */}
               {cat.icon && (
-                <div className="w-12 h-12 mb-3">
-                  <img src={cat.icon} alt={cat.name} className="object-contain" />
+                <div className="w-14 h-14 mb-3 rounded-full bg-gray-100 flex items-center justify-center text-2xl">
+                  {cat.icon.startsWith('http') ? (
+                    <img
+                      src={cat.icon}
+                      alt={cat.name}
+                      className="w-8 h-8 object-contain"
+                    />
+                  ) : (
+                    <span>{cat.icon}</span>
+                  )}
                 </div>
               )}
-              <h3 className="text-lg font-semibold text-gray-700">{cat.name}</h3>
-              {<p className="text-sm text-gray-500">view</p>}
+
+              {/* Name */}
+              <h3 className="text-sm font-semibold text-gray-800">{cat.name}</h3>
+              <p className="text-xs text-gray-500 mt-1">View</p>
             </motion.div>
           ))}
 
-          {/* "See All" Button */}
+          {/* See All */}
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="bg-green-100 rounded-lg shadow-md p-6 flex flex-col items-center cursor-pointer"
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:border-gray-400 transition-all"
           >
-            <ArrowRightCircleIcon className="w-6 h-6 text-green-600 mb-2" />
-            <span className="text-green-700 font-medium">See all</span>
+            <ArrowRightCircleIcon className="w-6 h-6 text-gray-500 mb-2" />
+            <span className="text-sm font-medium text-gray-700">See All</span>
           </motion.div>
         </div>
       </div>

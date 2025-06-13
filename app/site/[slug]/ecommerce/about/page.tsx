@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Section from '@/components/site/Section/Section';
 
 
-export default function AboutPage() {
+export default function About() {
 
   return (
       <Section title="About Us" background="none">
@@ -21,5 +21,4 @@ export default function AboutPage() {
       </Section>
   )
 }
-;
 
