@@ -11,7 +11,8 @@ import {
   CheckCircleIcon,
   CalendarIcon,
   XCircleIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  BuildingLibraryIcon
 } from '@heroicons/react/24/outline';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "../../../data/cardFormatter";
 import { useRouter } from "next/navigation";
@@ -60,6 +61,7 @@ const OrderSummary = ({ cart, estimatedDelivery, total }) => (
 );
 
 const CheckoutPage = () => {
+  
   const router = useRouter();
   const { data: session } = useSession();
   const { cart, clearCart } = useStateContext();
@@ -70,6 +72,7 @@ const CheckoutPage = () => {
     phone: session?.user?.phone || '',
     cardNumber: session?.user?.cardNumber || '',
     expiry: session?.user?.expiry || '',
+    deliveryFee: '500',
     cvv: '',
     promoCode: '',
     paymentMethod: 'card',
@@ -215,6 +218,12 @@ const CheckoutPage = () => {
                     <input type="radio" id={`pay-${'cod'}`} name="paymentMethod" value="cod" checked={formData.paymentMethod==='cod'} onChange={handleChange}/>
                     <TruckIcon className="w-6 h-6 text-indigo-600"/>
                     <span htmlFor={`pay-${'cod'}`}>{'Cash on Delivery'}</span>
+                  </label>                  
+                  
+                  <label key={'pickupatshop'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
+                    <input type="radio" id={`pay-${'pickupatshop'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='pickupatshop'} onChange={handleChange}/>
+                    <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
+                    <span htmlFor={`pay-${'pickupatshop'}`}>{'Cash on Delivery'}</span>
                   </label>
                 </div>
                 {formData.paymentMethod === 'card' && (
@@ -225,6 +234,13 @@ const CheckoutPage = () => {
                         <input name="expiry" value={formData.expiry} onChange={handleChange} placeholder="MM/YY" className="w-1/2 p-3 border rounded-lg" />
                         <input name="cvv" value={formData.cvv} onChange={handleChange} placeholder="CVV" className="w-1/2 p-3 border rounded-lg" />
                       </div>
+                    </div>
+                  </>
+                )}
+                {formData.paymentMethod === 'card' && (
+                  <>
+                    <div className="space-y-3">
+                      <input name="deliveryFee" value={formData.deliveryFee} onChange={handleChange} placeholder="Delivery Fee" disabled className="w-full p-3 border rounded-lg" />
                     </div>
                   </>
                 )}

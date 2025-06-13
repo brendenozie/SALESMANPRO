@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb";
-import { requireAuth } from "../../../../lib/auth";
 import { rateLimit } from "../../../../lib/rate-limit";
 
 export async function POST(req: Request) {
@@ -9,9 +8,6 @@ export async function POST(req: Request) {
   if (!rateLimit(ip)) {
     return NextResponse.json({ message: "Too many requests" }, { status: 429 });
   }
-
-  const authResult = await requireAuth(req);
-  if (authResult instanceof Response) return authResult;
 
   try {
     const body = await req.json();

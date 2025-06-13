@@ -1327,6 +1327,7 @@ model CustomerOrder {
   totalPrice            Float
   orderSource           OrderSource @default(WEBSITE)
   status                OrderStatus @default(PENDING)
+  delivery              Boolean?    @default(false)
   trackingNumber        String? // Optional tracking number
   estimatedArrival      DateTime? // Estimated delivery time
   deliveryStatus        String? // "Order Placed", "Processing", "Shipped", etc.
