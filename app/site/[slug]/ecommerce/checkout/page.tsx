@@ -139,6 +139,13 @@ export default function CheckoutPage() {
     try {
       const payload = {
         consumerId: session?.user?.id,
+        name: session?.user?.name || '',
+        email: session?.user?.email || '',
+        phone: session?.user?.phone || '',
+        cardNumber: session?.user?.cardNumber || '',
+        cardExpiry: session?.user?.cardExpiry || '',
+        cvv: '',
+        promoCode: '',
         items: cart.map((i: { id: any; quantity: any; finalPrice: any; }) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
         shippingAddress: formData.shippingAddress,
         shippingMethod: formData.shippingMethod,

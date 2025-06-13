@@ -5,6 +5,13 @@ import nodemailer from "nodemailer";
 
 // Zod schema
 const orderSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+  phone: z.string(),
+  cardNumber: z.string().optional(),
+  cardExpiry: z.string().optional(),
+  cvv: z.string().optional(),
+  promoCode: z.string().optional(),
   consumerId: z.string(),
   delivery: z.boolean(),
   paymentOption: z.string(),
@@ -49,25 +56,40 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.errors }, { status: 400 });
     }
-    const { consumerId, items, totalPrice, shippingAddress, shippingMethod, delivery, paymentOption } = parsed.data;
+    const { consumerId, items, totalPrice, shippingAddress, shippingMethod, delivery, paymentOption,
+      name,
+      email,
+      phone,
+      cardNumber,
+      cardExpiry,
+      cvv,
+      promoCode,
+     } = parsed.data;
 
     try {
       const order = await prisma.customerOrder.create({
         data: {
           consumerId,
+          name,
+          email,
+          phone,
+          cardNumber,
+          cardExpiry,
+          cvv,
+          promoCode,
           totalPrice,
           shippingAddress,
           shippingMethod,
           status: "PENDING",
-          // delivery,
-          // paymentOption,
+          delivery,
+          paymentOption,
           trackingNumber: `TRK${generateTrackingNumber()}`,
           deliveryStatus: "Order Placed",
           items: { create: items },
         },
         include: { items: true },
       });
-      return NextResponse.json(order, { status: 201 });
+      return NextResponse.json(order, { status: 200 });
     } catch (err: any) {
       console.error("Error creating order:", err);
       return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

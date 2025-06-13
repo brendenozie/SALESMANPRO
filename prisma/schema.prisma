@@ -1323,6 +1323,14 @@ model ConsumerInventoryLog {
 model CustomerOrder {
   id                    String      @id @default(auto()) @map("_id") @db.ObjectId
   consumerId            String      @db.ObjectId
+  name                  String?
+  email                 String?
+  phone                 String?
+  cardNumber            String?
+  cardExpiry            String?
+  cvv                   String?
+  promoCode             String?
+  paymentOption         String?
   items                 OrderItem[] // Relationship to multiple order items
   totalPrice            Float
   orderSource           OrderSource @default(WEBSITE)
