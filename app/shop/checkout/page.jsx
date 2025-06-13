@@ -188,7 +188,7 @@ const CheckoutPage = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [cart, clearCart, formData.shippingMethod, selectedAddress, session?.user?.id, total, validateStep]);
+  }, [cart, clearCart, formData.shippingMethod, formData.shippingAddress, session?.user?.id, total, validateStep]);
 
   if (isOrderPlaced) return <OrderStatus success trackingNumber={`${trackingNumber}`} />;
 
