@@ -6,6 +6,9 @@ import React, { useState } from "react";
 import { CheckCircleIcon, ClockIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { OrderItem } from "./page";
 
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 interface ClientProps {
   initialOrderItems: OrderItem[];
 }
@@ -18,6 +21,49 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
   const [status, setStatus] = useState<string>("");
   const [rider, setRider] = useState<string>("");
 
+  const updateOrder = async () => {
+    if (!selectedOrder) return;
+  
+    try {
+      const res = await fetch(`${apiUrl}/orders/${selectedOrder.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status, rider }),
+      });
+  
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(`Error updating order: ${errorData.message}`);
+        return;
+      }
+  
+      // Optimistically update UI
+      setOrderItems((prev) =>
+        prev.map((item) =>
+          item.id === selectedOrder.id
+            ? {
+                ...item,
+                order: {
+                  ...item.order,
+                  status,
+                  rider,
+                },
+              }
+            : item
+        )
+      );
+  
+      alert("Order updated successfully!");
+      closeModal();
+    } catch (err: any) {
+      alert("An error occurred while updating the order.");
+      console.error("Update failed:", err.message);
+    }
+  };
+  
+
   const openModal = (item: OrderItem) => {
     setSelectedOrder(item);
     setStatus(item.order?.status || "");
@@ -28,12 +74,6 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
     setSelectedOrder(null);
     setStatus("");
     setRider("");
-  };
-
-  const updateOrder = () => {
-    // In a real app, you would send a PUT/POST here. For now, just show an alert.
-    alert(`Status updated to: ${status}\nRider assigned: ${rider}`);
-    closeModal();
   };
 
   const getStatusBadge = (st?: string) => {
@@ -139,9 +179,13 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="PENDING">Pending</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
+                <option value="PENDING">PENDING</option>
+                <option value="IN_PROGRESS">IN PROGRESS</option>
+                <option value="COMPLETED">COMPLETED</option>  
+                <option value="recurring">RECURRING</option>
+                <option value="shipped">SHIPPED</option>
+                <option value="OUT_FOR_DELIVERY">OUT FOR DELIVERY</option>
+                <option value="COMPLETED">CANCELLED</option>
               </select>
             </div>
 

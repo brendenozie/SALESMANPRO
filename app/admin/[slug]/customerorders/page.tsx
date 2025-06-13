@@ -40,7 +40,7 @@ export default async function ProductsPage({ params }: Props) {
 
   try {
     const res = await fetch(
-      `${apiUrl}/clients/orders?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // SSR on every request
     );
     if (res.ok) {

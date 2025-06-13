@@ -1351,6 +1351,8 @@ model OrderItem {
   price                Float
   appointment          Appointment?       @relation(fields: [appointmentId], references: [id])
   appointmentId        String?            @db.ObjectId
+  riderId              String?
+  status               OrderStatus?       @default(PENDING)
 }
 
 model Location {
