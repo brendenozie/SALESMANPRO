@@ -42,7 +42,7 @@ const MetricCard = ({
       <div
         className="w-16 h-16 rounded-full mb-4 flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform"
         style={{
-          background: `radial-gradient(circle at top left, ${primary}, ${secondary})`,
+          background: `${primary}`,
         }}
       >
         <Icon className="h-7 w-7 text-white" />

@@ -58,15 +58,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
     prisma.marketplaceListing.count({ where }),
     prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
   ]);
-
-  const products: Product[] = listings.map(p => ({
-    id: p.id,
-    name: p.title,
-    price: p.finalPrice ?? 0,
-    imageUrl: 'p.images[0]?.url ',//|| '/placeholder.png',
-    slug: "",//p.slug || undefined,
-  }));
-
+  
   const cats: Category[] = categories.map(c => ({ id: c.id, name: c.name }));
   const totalPages = Math.ceil(totalCount / pageSize);
 
