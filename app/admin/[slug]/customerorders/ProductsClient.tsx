@@ -18,61 +18,58 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
   const [loading] = useState<boolean>(false);
   const [error] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("PENDING");
   const [rider, setRider] = useState<string>("");
 
   const updateOrder = async () => {
     if (!selectedOrder) return;
   
-    try {
-      const res = await fetch(`${apiUrl}/orders/${selectedOrder.id}`, {
+    const res = await fetch(
+      `/api/admin/orders/${selectedOrder.id}?status=${encodeURIComponent(
+        status
+      )}&riderId=${encodeURIComponent(rider)}`,
+      {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status, rider }),
-      });
-  
-      if (!res.ok) {
-        const errorData = await res.json();
-        alert(`Error updating order: ${errorData.message}`);
-        return;
       }
+    );
   
-      // Optimistically update UI
-      setOrderItems((prev) =>
-        prev.map((item) =>
-          item.id === selectedOrder.id
-            ? {
-                ...item,
-                order: {
-                  ...item.order,
-                  status,
-                  rider,
-                },
-              }
-            : item
-        )
-      );
+    const data = await res.json();
   
-      alert("Order updated successfully!");
-      closeModal();
-    } catch (err: any) {
-      alert("An error occurred while updating the order.");
-      console.error("Update failed:", err.message);
+    if (!res.ok || !data.success) {
+      alert("Failed to update order");
+      return;
     }
-  };
   
+    // Optimistically update UI
+    setOrderItems((prev) =>
+      prev.map((item) =>
+        item.id === selectedOrder.id
+          ? {
+              ...item,
+              order: {
+                ...item.order,
+                status,
+                rider,
+              },
+            }
+          : item
+      )
+    );
+  
+    alert("Order updated successfully");
+    closeModal();
+  };
+    
 
   const openModal = (item: OrderItem) => {
     setSelectedOrder(item);
-    setStatus(item.order?.status || "");
+    setStatus(item.order?.status || "PENDING");
     setRider(item.order?.rider || "");
   };
 
   const closeModal = () => {
     setSelectedOrder(null);
-    setStatus("");
+    setStatus("PENDING");
     setRider("");
   };
 

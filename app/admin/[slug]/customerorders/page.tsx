@@ -9,6 +9,7 @@ export interface OrderItem {
   id: string;
   price: number;
   quantity: number;
+  status?:string;
   marketplaceListing?: {
     title?: string;
   };
