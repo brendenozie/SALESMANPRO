@@ -22,16 +22,25 @@ export interface OrderItem {
   };
 }
 
+
+interface Props {
+  params: {
+    slug: string; // companyId
+  };
+}
+
 /**
  * Server Component: fetches all order items (for a hardcoded sellerId)
  * and passes them into the client side as initial props.
  */
-export default async function ProductsPage() {
+export default async function ProductsPage({ params }: Props) {
+
+  const companyId = params.slug;
   let orderItems: OrderItem[] = [];
 
   try {
     const res = await fetch(
-      `${apiUrl}/clients/orders?sellerId=63f7c9e2d91b1b2a5e80b007`,
+      `${apiUrl}/clients/orders?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // SSR on every request
     );
     if (res.ok) {
