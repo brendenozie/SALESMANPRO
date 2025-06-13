@@ -5,19 +5,19 @@ import nodemailer from "nodemailer";
 
 // Zod schema
 const orderSchema = z.object({
-  consumerId: z.string().min(10),
+  consumerId: z.string(),
   delivery: z.boolean(),
-  paymentOption: z.string().min(10),
+  paymentOption: z.string(),
   items: z.array(
     z.object({
-      marketplaceListingId: z.string().min(10),
+      marketplaceListingId: z.string(),
       quantity: z.number().positive(),
       price: z.number().positive(),
     })
   ),
   totalPrice: z.number().positive(),
   shippingAddress: z.object({
-    display_name: z.string().min(10),
+    display_name: z.string(),
     lat: z.number(),
     lng: z.number(),
   }),

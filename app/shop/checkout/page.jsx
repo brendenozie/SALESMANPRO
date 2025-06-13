@@ -83,9 +83,22 @@ const CheckoutPage = () => {
   const [error, setError] = useState({});
   const [discount, setDiscount] = useState(0);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
-  const [estimatedDelivery, setEstimatedDelivery] = useState('');
-  const [selectedAddress, setSelectedAddress] = useState(session?.user?.address || {});
+  const [estimatedDelivery, setEstimatedDelivery] = useState('');  
+  const [trackingNumber, setTrackingNumber] = useState("");
+  // const [selectedAddress, setSelectedAddress] = useState(session?.user?.address || {});
   const [promoMessage, setPromoMessage] = useState('');
+
+  const handleAddressSelect = (address, coords) => {
+    console.log("Selected address:", address, coords);
+    
+    // Use address/coords (e.g. update form state or submit)
+    setFormData(f => ({ ...f, shippingAddress:{
+          display_name: address,
+          lat: coords.lat,
+          lng: coords.lng,
+      }
+    }));   
+  };
 
   // Estimate delivery
   useEffect(() => {
@@ -157,7 +170,7 @@ const CheckoutPage = () => {
       const orderPayload = {
         consumerId: session?.user?.id,
         items: cart.map(i => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
-        shippingAddress: selectedAddress,
+        shippingAddress: formData.shippingAddress,
         shippingMethod: formData.shippingMethod,
         delivery:formData.paymentMethod == "pickupatshop",
         paymentOption:formData.paymentMethod,
@@ -165,9 +178,11 @@ const CheckoutPage = () => {
       };
       const res = await fetch('/api/shop/orders', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
       if (!res.ok) throw new Error();
-      const data = await res.json();
+      
       clearCart();
       setIsOrderPlaced(true);
+      const order = await res.json();
+      setTrackingNumber(order.trackingNumber);
     } catch {
       setError({ submit: 'Order failed. Try later.' });
     } finally {
@@ -175,7 +190,7 @@ const CheckoutPage = () => {
     }
   }, [cart, clearCart, formData.shippingMethod, selectedAddress, session?.user?.id, total, validateStep]);
 
-  if (isOrderPlaced) return <OrderStatus success orderId="..." />;
+  if (isOrderPlaced) return <OrderStatus success trackingNumber={`${trackingNumber}`} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-6 md:p-12 flex justify-center items-start">
@@ -202,7 +217,7 @@ const CheckoutPage = () => {
             {currentStep === 1 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-extrabold">Shipping Address</h2>
-                <ShippingAddress onAddressSelect={setSelectedAddress} />
+                <ShippingAddress onAddressSelect={handleAddressSelect} />
               </div>
             )}
 
@@ -270,7 +285,7 @@ const CheckoutPage = () => {
                   <p><strong>Name:</strong> {formData.name}</p>
                   <p><strong>Email:</strong> {formData.email}</p>
                   <p><strong>Phone:</strong> {formData.phone}</p>
-                  <p><strong>Shipping:</strong> {selectedAddress.display_name}</p>
+                  <p><strong>Shipping:</strong> {formData.shippingAddress?.display_name || ""}</p>
                   <p><strong>Payment:</strong> {formData.paymentMethod.toUpperCase()}</p>
                   <p><strong>Total:</strong> ${total.toFixed(2)}</p>
                 </div>
@@ -304,7 +319,7 @@ const CheckoutPage = () => {
 
 export default CheckoutPage;
 
-const OrderStatus = ({ success, orderId }) => {
+const OrderStatus = ({ success, trackingNumber }) => {
   const [windowSize, setWindowSize] = useState({ width:0, height:0 });
   useEffect(()=>{
     const update=()=>setWindowSize({ width:window.innerWidth, height:window.innerHeight });
@@ -328,7 +343,7 @@ const OrderStatus = ({ success, orderId }) => {
           </>
         )}
         <div className="mt-6 space-y-4">
-          {success && <button onClick={()=>router.push('/shop/orderTracking')} className="w-full bg-indigo-600 text-white py-3 rounded-lg">Track Order</button>}
+          {success && <button onClick={()=>router.push(`/shop/orderTracking?trackingNumber=${trackingNumber}`)} className="w-full bg-indigo-600 text-white py-3 rounded-lg">Track Order</button>}
           <button onClick={()=>router.push('/')} className="w-full bg-gray-200 text-gray-800 py-3 rounded-lg flex items-center justify-center gap-2">
             <ArrowLeftIcon className="w-5 h-5"/> Continue Shopping
           </button>

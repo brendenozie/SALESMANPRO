@@ -32,6 +32,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState("");
   const [error, setError] = useState<any>({});
 
   // Form state
@@ -41,16 +42,33 @@ export default function CheckoutPage() {
     phone: session?.user?.phone || '',
     cardNumber: session?.user?.cardNumber || '',
     cardExpiry: session?.user?.cardExpiry || '',
+    shippingAddress:{
+      display_name: "",
+      lat: 0.0,
+      lng: 0.0,
+    },
     cvv: '',
     promoCode: '',
     paymentMethod: 'card',
     shippingMethod: 'Standard',
   });
-  const [selectedAddress, setSelectedAddress] = useState<any>(session?.user?.address || {});
+  // const [selectedAddress, setSelectedAddress] = useState<any>(session?.user?.address || {});
   const [promoMessage, setPromoMessage] = useState('');
   const [discount, setDiscount] = useState(0);
   const [estimatedDelivery, setEstimatedDelivery] = useState('');
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  const handleAddressSelect = (address: string, coords: { lat: number; lng: number }) => {
+    console.log("Selected address:", address, coords);
+    // console.log("Selected address:", address, coords);
+    // Use address/coords (e.g. update form state or submit)
+    setFormData(f => ({ ...f, shippingAddress:{
+          display_name: address,
+          lat: coords.lat,
+          lng: coords.lng,
+      }
+    }));   
+  };
 
   // Compute totals
   const subtotal = useMemo(() => cart.reduce((sum: number, item: { finalPrice: number; quantity: number; }) => sum + item.finalPrice * item.quantity, 0), [cart]);
@@ -122,8 +140,9 @@ export default function CheckoutPage() {
       const payload = {
         consumerId: session?.user?.id,
         items: cart.map((i: { id: any; quantity: any; finalPrice: any; }) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
-        shippingAddress: selectedAddress,
+        shippingAddress: formData.shippingAddress,
         shippingMethod: formData.shippingMethod,
+        paymentOption:formData.paymentMethod,
         delivery: false,
         totalPrice: parseFloat(total.toFixed(2)),
       };
@@ -135,6 +154,8 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error();
       clearCart();
       setIsOrderPlaced(true);
+      const order = await res.json();
+      setTrackingNumber(order.trackingNumber);
     } catch {
       setError({ submit: 'Order failed. Try again.' });
     } finally {
@@ -143,7 +164,7 @@ export default function CheckoutPage() {
   };
 
   if (isOrderPlaced) {
-    return <OrderStatus success />;
+    return <OrderStatus success trackingnumber={trackingNumber}/>;
   }
 
   return (
@@ -176,7 +197,7 @@ export default function CheckoutPage() {
             {currentStep === 1 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-extrabold">Shipping Address</h2>
-                <ShippingAddress onAddressSelect={setSelectedAddress} />
+                <ShippingAddress onAddressSelect={handleAddressSelect} />
               </div>
             )}
 
@@ -262,7 +283,7 @@ export default function CheckoutPage() {
                   <p><strong>Name:</strong> {formData.name}</p>
                   <p><strong>Email:</strong> {formData.email}</p>
                   <p><strong>Phone:</strong> {formData.phone}</p>
-                  <p><strong>Shipping:</strong> {selectedAddress.display_name || ""}</p>
+                  <p><strong>Shipping:</strong> {formData?.shippingAddress?.display_name || ""}</p>
                   <p><strong>Payment:</strong> {formData.paymentMethod.toUpperCase()}</p>
                   <p><strong>Total:</strong> ${total.toFixed(2)}</p>
                 </div>
@@ -338,7 +359,7 @@ function OrderSummary({ cart, estimatedDelivery, total }: any) {
   );
 }
 
-function OrderStatus({ success }: { success: boolean }) {
+function OrderStatus({ success , trackingnumber }: { success: boolean, trackingnumber: String }) {
   const router = useRouter();
   const [windowSize, setWindowSize] = useState({ width:0, height:0 });
   useEffect(() => {
@@ -363,7 +384,7 @@ function OrderStatus({ success }: { success: boolean }) {
           </>
         )}
         <div className="mt-6 space-y-4">
-          {success && <button onClick={() => router.push('/shop/orderTracking')} className="w-full bg-indigo-600 text-white py-3 rounded-lg">Track Order</button>}
+          {success && <button onClick={() => router.push(`/shop/orderTracking?trackingnumber=${trackingnumber}`)} className="w-full bg-indigo-600 text-white py-3 rounded-lg">Track Order</button>}
           <button onClick={() => router.push('/')} className="w-full bg-gray-200 text-gray-800 py-3 rounded-lg flex items-center justify-center gap-2">
             <ArrowLeftIcon className="w-5 h-5"/> Continue Shopping
           </button>
