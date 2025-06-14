@@ -17,6 +17,9 @@ export interface OrderItem {
     status?: string;
     rider?: string;
     createdAt?: string;
+    name?: string;
+    email?:string;
+    phone?:string;
     consumer?: {
       name?: string;
     };

@@ -126,7 +126,7 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
               </h2>
               <p className="text-gray-600 mb-1">
                 <strong>Customer:</strong>{" "}
-                {item.order?.consumer?.name || "N/A"}
+                {item.order?.name || item.order?.consumer?.name || item.order?.email || "N/A"}
               </p>
               <p className="text-gray-600 mb-1">
                 <strong>Quantity:</strong> {item.quantity}
