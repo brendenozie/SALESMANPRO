@@ -5,6 +5,7 @@ export interface BasicInfoProps {
   name: string;
   slug: string;
   category: string;
+  hasWebsite: boolean;
   description: string;
   tagline: string;
   domain: string;
@@ -39,6 +40,7 @@ export default function BasicInfo({
   slug,
   category,
   description,
+  hasWebsite,
   tagline,
   domain,
   handleChange,
@@ -119,6 +121,18 @@ export default function BasicInfo({
             className="mt-2 p-3 border border-gray-200 bg-gray-100 rounded-xl text-gray-600 cursor-not-allowed"
           />
         </div>
+
+        {/* // In your BasicInfo component: */}
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            name="hasWebsite"
+            checked={hasWebsite}
+            onChange={handleChange}
+          />
+          <span>I’d like to set up a public website too</span>
+        </label>
+
 
         {/* Domain (read-only) */}
         <div className="flex flex-col">

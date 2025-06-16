@@ -182,6 +182,7 @@ type StoreForm = {
   id:string;
   name: string;
   slug: string;
+  hasWebsite: boolean;
   domain: string;
   tagline: string;
   description: string;

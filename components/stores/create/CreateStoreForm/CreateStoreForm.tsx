@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, FormEvent, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
@@ -27,7 +27,209 @@ import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
 import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory, Promotion, HeroSlide } from '../../../../types/typings';
 
 // Interfaces
-const steps: StepConfig[] = [
+export const storeSteps: StepConfig[] = [
+  {
+    key: 'basic',
+    title: 'Basic Info',
+    render: (f, h) => <BasicInfo {...f} handleChange={h.handleChange} />,
+  },
+  {
+    key: 'categories',
+    title: 'Categories',
+    render: (f, h, cats) => (
+      <CategoryAccordion
+        availableCategories={cats}
+        selectedCategories={f.storeCategories}
+        onToggleParent={h.onToggleParent}
+        onToggleSub={h.onToggleSub}
+        onBulkToggle={h.onBulkToggle}
+        onApply={() => console.log(f.storeCategories)}
+      />
+    ),
+  },
+  {
+    key: 'analytics',
+    title: 'Analytics',
+    render: (f, h) => (
+      <SettingsAccordion analyticsConfig={f.analyticsConfig} onChange={(upd) => h.onChangeSettings({ analyticsConfig: upd })} />
+    ),
+  },
+  {
+    key: 'payment',
+    title: 'Payment',
+    render: (f, h) => (
+      <PaymentAccordion paymentSettings={f.paymentSettings} onChange={(upd) => h.onChangeSettings({ paymentSettings: upd })} />
+    ),
+  },
+  {
+    key: 'shipping',
+    title: 'Shipping',
+    render: (f, h) => (
+      <ShippingAccordion shippingSettings={f.shippingSettings} onChange={(upd) => h.onChangeSettings({ shippingSettings: upd })} />
+    ),
+  }
+];
+
+export const websiteSteps: StepConfig[] = [
+  {
+    key: 'branding',
+    title: 'Branding',
+    render: (f, h) => (
+      <BannerLogoAccordion
+        logoUrl={f.logoUrl}
+        bannerUrl={f.bannerUrl}
+        onUpload={h.handleMediaUpload}
+        onRemove={h.handleMediaRemove}
+      />
+    ),
+  },
+  {
+    key: 'touchpoints',
+    title: 'Customer Touchpoints',
+    render: (f, h) => (
+      <ContactAccordion
+        {...f}
+        openingHours={f.openingHours}
+        onChange={h.handleChange}
+        onToggleDay={h.onToggleDay}
+      />
+    ),
+  },
+  {
+    key: 'location',
+    title: 'Location',
+    render: (f, h) => (
+      <LocationAccordion address={f.address} onAddressSelect={h.setAddress} />
+    ),
+  },
+  {
+    key: 'social',
+    title: 'Social Links',
+    render: (f, h) => (
+      <SocialLinksAccordion
+        socialLinks={f.socialLinks}
+        onUpdateLink={(i, field, v) => h.onUpdateArray('socialLinks', i, field, v)}
+        onAddLink={() => h.onAddArray('socialLinks', { channel: '', url: '' })}
+        onRemoveLink={(i) => h.onRemoveArray('socialLinks', i)}
+      />
+    ),
+  },
+  {
+    key: 'content',
+    title: 'Policies',
+    render: (f, h) => (
+      <PoliciesAccordion
+        policies={f.policies}
+        onUpdatePolicy={(i, field, v) => h.onUpdateArray('policies', i, field, v)}
+        onAddPolicy={() => h.onAddArray('policies', { type: '', content: '' })}
+        onRemovePolicy={(i) => h.onRemoveArray('policies', i)}
+      />
+    ),
+  },
+  {
+    key: 'awards',
+    title: 'Awards',
+    render: (f, h) => (
+      <AwardsAccordion
+        awards={f.awards}
+        onAdd={() => h.onAddArray('awards', { name: '', iconUrl: '' })}
+        onUpdate={(i, field, v) => h.onUpdateArray('awards', i, field, v)}
+        onRemove={(i) => h.onRemoveArray('awards', i)}
+      />
+    ),
+  },
+  {
+    key: 'metrics',
+    title: 'Metrics',
+    render: (f, h) => (
+      <MetricsAccordion
+        metrics={f.metrics}
+        onAdd={() => h.onAddArray('metrics', { label: '', value: 0 })}
+        onUpdate={(i, field, v) => h.onUpdateArray('metrics', i, field, v)}
+        onRemove={(i) => h.onRemoveArray('metrics', i)}
+      />
+    ),
+  },
+  {
+    key: 'stats',
+    title: 'Stats',
+    render: (f, h) => (
+      <StatsAccordion
+        stats={f.stats}
+        onAdd={() => h.onAddArray('stats', { label: '', value: '' })}
+        onUpdate={(i, field, v) => h.onUpdateArray('stats', i, field, v)}
+        onRemove={(i) => h.onRemoveArray('stats', i)}
+      />
+    ),
+  },
+  {
+    key: 'faqs',
+    title: 'FAQs',
+    render: (f, h) => (
+      <FAQsAccordion
+        faqs={f.faqs}
+        onUpdateFAQ={(i, field, v) => h.onUpdateArray('faqs', i, field, v)}
+        onAddFAQ={() => h.onAddArray('faqs', { question: '', answer: '' })}
+        onRemoveFAQ={(i) => h.onRemoveArray('faqs', i)}
+      />
+    ),
+  },
+  {
+    key: 'testimonials',
+    title: 'Testimonials',
+    render: (f, h) => (
+      <TestimonialsAccordion
+        testimonials={f.testimonials}
+        onUpdateTestimonial={(i, field, v) => h.onUpdateArray('testimonials', i, field, v)}
+        onAddTestimonial={() => h.onAddArray('testimonials', { author: '', quote: '' })}
+        onRemoveTestimonial={(i) => h.onRemoveArray('testimonials', i)}
+      />
+    ),
+  },
+  {
+    key: 'marketing',
+    title: 'Hero Slides',
+    render: (f, h) => (
+      <HeroSlidesAccordion
+        slides={f.heroSlides}
+        onUpdateSlide={h.onUpdateHeroSlide}
+        onAddSlide={h.onAddHeroSlide}
+        onRemoveSlide={h.onRemoveHeroSlide}
+        onImageUpload={h.handleSlideImageUpload}
+      />
+    ),
+  },
+  {
+    key: 'promotions',
+    title: 'Promotions',
+    render: (f, h) => (
+      <PromotionsAccordion
+        promotions={f.promotions}
+        onUpdatePromotion={h.onUpdatePromotion}
+        onAddPromotion={h.onAddPromotion}
+        onRemovePromotion={h.onRemovePromotion}
+        onImageUpload={h.onPromotionImageUpload}
+      />
+    ),
+  },
+  {
+    key: 'seo',
+    title: 'SEO Settings',
+    render: (f, h) => (
+      <SeoSettingsAccordion seo={f.seo} onChange={(upd) => h.onChangeSettings({ seo: upd })} />
+    ),
+  },
+  {
+    key: 'theme',
+    title: 'Theme Settings',
+    render: (f, h) => (
+      <ThemeSettingsAccordion themeSettings={f.themeSettings} onChange={(upd) => h.onChangeSettings({ themeSettings: upd })} />
+    ),
+  }
+];
+
+
+const stepsV1: StepConfig[] = [
     {
       key: 'basic',
       title: 'Basic Info',
@@ -213,11 +415,9 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   const { data: session } = useSession();
   const router = useRouter();
 
-  console.log(initialData);
-
   const defaultForm: StoreForm = {
     id:"",
-    name: '', slug: '', domain: '', tagline: '', description: '', category: 'E-commerce',
+    name: '', slug: '', domain: '',hasWebsite: false, tagline: '', description: '', category: 'E-commerce',
     logoUrl: 'https://logourl.com', bannerUrl: 'https://bannerurl.com', contactEmail: '', contactPhone: '', address: '',
     geoLocation: { lat: 0, lng: 0 }, openingHours: { mon: { open: '', close: '' }, tue: { open: '', close: '' }, wed: { open: '', close: '' }, thu: { open: '', close: '' }, fri: { open: '', close: '' }, sat: { open: '', close: '' }, sun: { open: '', close: '' } },
     socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [],
@@ -294,6 +494,17 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       );
     }
   }, [form.heroSlides.length]);
+
+  const allSteps = useMemo<StepConfig[]>(() => {
+    // always have storeSteps…
+    const list = [...storeSteps];
+    // …then, only if they checked “hasWebsite”
+    if (form.hasWebsite) {
+      list.push(...websiteSteps);
+    }
+    return list;
+  }, [form.hasWebsite]);
+  
   
 
   // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
@@ -408,36 +619,6 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     });
   };
 
-  // const onHeroImageUpload = (index: number, file: File) => {
-  //   setHeroSlideFiles((prev) => {
-  //     const copy = [...prev];
-  //     copy[index] = file;
-  //     return copy;
-  //   });
-  //   const previewURL = URL.createObjectURL(file);
-  //   setForm((prev) => {
-  //     const slides = [...prev.heroSlides];
-  //     slides[index] = { ...slides[index], imageUrl: previewURL };
-  //     return { ...prev, heroSlides: slides };
-  //   });
-  // };
-  
-
-  // const onProductImageUpload = (index: number, file: File) => {
-  //   setProductImageFiles((prev) => {
-  //     const copy = [...prev];
-  //     copy[index] = file;
-  //     return copy;
-  //   });
-  
-  //   const previewURL = URL.createObjectURL(file);
-  //   setForm((prev) => {
-  //     const slides = [...prev.heroSlides];
-  //     slides[index] = { ...slides[index], productImageUrl: previewURL };
-  //     return { ...prev, heroSlides: slides };
-  //   });
-  // };
-
   // ─────────────────────────────────────────────────────────────────────
   // 4) Handlers for “Promotions” Accordion
   // ─────────────────────────────────────────────────────────────────────
@@ -490,7 +671,10 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   // 5) Generic form handlers (arrays, opening hours, etc.)
   // ─────────────────────────────────────────────────────────────────────
 
-  const totalSteps = steps.length + 2;
+  // const totalSteps = steps.length + 2;
+
+  const totalSteps = allSteps.length + 1;
+
   const [stepIndex, setStepIndex] = useState(0);
 
   const mappedCategories: ParentCategory[] = availableCategories.map(cat => ({
@@ -973,12 +1157,12 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   
   
 // Render step or review
-const StepContent = stepIndex < steps.length
-? steps[stepIndex].render(form, handlers, mappedCategories)
+const StepContent = stepIndex < allSteps.length
+? allSteps[stepIndex].render(form, handlers, mappedCategories)
 : (
   <div className="space-y-6">
     <h2 className="text-2xl font-semibold">Review Your Store</h2>
-    {steps.map((s, i) => (
+    {allSteps.map((s:any, i:any) => (
       <div
         key={s.key}
         className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
@@ -996,12 +1180,16 @@ const StepContent = stepIndex < steps.length
   </div>
   );
 
+// const StepContent = stepIndex < allSteps.length
+//   ? allSteps[stepIndex].render(form, handlers, mappedCategories)
+//   : <Review … />;
+
   return <div className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
           {/* Sidebar */}
           <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
             <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
             <nav className="flex flex-col gap-2 overflow-y-auto">
-              {steps.map((s, i) => (
+              {allSteps.map((s:any, i:any) => (
                 <button
                   key={s.key}
                   type="button"
@@ -1019,9 +1207,9 @@ const StepContent = stepIndex < steps.length
               <button
                 type="button"
                 className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
-                  stepIndex === steps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
+                  stepIndex === allSteps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
                 }`}
-                onClick={() => setStepIndex(steps.length)}
+                onClick={() => setStepIndex(allSteps.length)}
               >
                 <span className="w-6 h-6 bg-green-200 text-green-700 rounded-full text-xs flex items-center justify-center">
                   ✔
@@ -1043,7 +1231,7 @@ const StepContent = stepIndex < steps.length
               </div>
               <div className="flex justify-between mt-2 text-sm text-gray-500">
                 <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
-                <span>{stepIndex < steps.length ? steps[stepIndex].title : 'Review & Submit'}</span>
+                <span>{stepIndex < allSteps.length ? allSteps[stepIndex].title : 'Review & Submit'}</span>
               </div>
             </div>
 
@@ -1061,7 +1249,7 @@ const StepContent = stepIndex < steps.length
                 ← Back
               </button>
 
-              {stepIndex < steps.length ? (
+              {stepIndex < allSteps.length ? (
                 <button
                   type="button"
                   onClick={next}
