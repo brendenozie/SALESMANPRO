@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   return {
-    title: `${raw.name} – Your One-Stop Shop`,
+    title: `${raw.name} – Your One-Stop ${ params.slug}`,
     description: raw.description ?? 'Discover our exclusive collection of products.',
     openGraph: {
       title: `${raw.name} – Shop`,

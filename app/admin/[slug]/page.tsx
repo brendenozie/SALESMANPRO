@@ -12,6 +12,7 @@ export default async function AdminDashboardPage({
   params: { slug: string };
 }) {
   const session = await getAuthSession();
+  // const { storeFormData } = useStoreContext();
 
   if (!session?.user?.id) {
     redirect('/');

@@ -132,7 +132,7 @@ export default function CheckoutPage() {
   };
   const prev = () => setCurrentStep(s => Math.max(s - 1, 0));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitV1 = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep()) return;
     setIsSubmitting(true);
@@ -169,6 +169,75 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateStep()) return;
+  
+    setIsSubmitting(true);
+    setError({}); // reset errors
+  
+    try {
+      const payload = {
+        consumerId: session?.user?.id,
+        name: session?.user?.name || '',
+        email: session?.user?.email || '',
+        phone: session?.user?.phone || '',
+        cardNumber: session?.user?.cardNumber || '',
+        cardExpiry: session?.user?.cardExpiry || '',
+        cvv: '',
+        promoCode: '',
+        items: cart.map((i: any) => ({
+          marketplaceListingId: i.id,
+          quantity: i.quantity,
+          price: i.finalPrice,
+        })),
+        shippingAddress: formData.shippingAddress,
+        shippingMethod: formData.shippingMethod,
+        paymentOption: formData.paymentMethod,
+        delivery: false,
+        totalPrice: parseFloat(total.toFixed(2)),
+      };
+  
+      const res = await fetch('/api/shop/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY!,
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (!res.ok) {
+        const errorText = await res.text(); // for logging
+        console.error("Server responded with error:", res.status, errorText);
+        throw new Error("Order submission failed");
+      }
+  
+      let order;
+      try {
+        order = await res.json();
+      } catch (err) {
+        console.error("Failed to parse JSON:", err);
+        throw new Error("Invalid server response");
+      }
+  
+      if (!order?.trackingNumber) {
+        throw new Error("No tracking number in response");
+      }
+  
+      clearCart();
+      setTrackingNumber(order.trackingNumber);
+      setIsOrderPlaced(true);
+  
+    } catch (err: any) {
+      console.error("Submit error:", err);
+      setError({ submit: err.message || 'Order failed. Try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
 
   if (isOrderPlaced) {
     return <OrderStatus success trackingnumber={trackingNumber}/>;
@@ -231,13 +300,14 @@ export default function CheckoutPage() {
                     Cash on Delivery
                   </label>
                   <label htmlFor={`pay-${'pickupatshop'}`} key={'pickupatshop'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
-                    <input type="radio" id={`pay-${'pickupatshop'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='pickupatshop'} onChange={handleChange}/>
+                    <input type="radio" id={`pay-${'pickupatshop'}`} name="pickupatshop" 
+                    value="pick up at shop" checked={formData.paymentMethod==='pickupatshop'} onChange={handleChange}/>
                     <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
                     <span>{'Pick up at Shop'}</span>
                   </label>                                 
                   
                   <label htmlFor={`pay-${'mpesa'}`} key={'mpesa'} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg cursor-pointer">
-                    <input type="radio" id={`pay-${'mpesa'}`} name="paymentMethod" value="pick up at shop" checked={formData.paymentMethod==='mpesa'} onChange={handleChange}/>
+                    <input type="radio" id={`pay-${'mpesa'}`} name="mpesa" value="Mpesa" checked={formData.paymentMethod==='mpesa'} onChange={handleChange}/>
                     <BuildingLibraryIcon className="w-6 h-6 text-indigo-600"/>
                     <span >{'Mpesa'}</span>
                   </label>
