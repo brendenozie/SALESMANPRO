@@ -17,7 +17,6 @@ import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-
 interface Store {
   id: string;
   name: string;
@@ -34,9 +33,7 @@ export default function StoresPage() {
   // const [stores, setStores] = useState<Store[]>([]);
   const [page, setPage] = useState(1);
   const [loadingStores, setLoadingStores] = useState(false);
-  const router = useRouter();
-
-  
+  const router = useRouter(); 
 
   // useEffect(() => {
   //   if (status !== 'authenticated' || !session?.user?.id) return;

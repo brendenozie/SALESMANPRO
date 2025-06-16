@@ -155,11 +155,14 @@ model StoreCategory {
 }
 
 model Company {
-  id                String           @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
-  slug              String           @unique
-  tagline           String? // short marketing line
-  description       String?
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String  @unique
+  tagline     String? // short marketing line
+  description String?
+
+  hasWebsite Boolean? @default(false)
+
   companyCategoryId String?          @db.ObjectId
   companyCategory   CompanyCategory? @relation(fields: [companyCategoryId], references: [id])
   category          String

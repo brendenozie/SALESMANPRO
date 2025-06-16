@@ -46,12 +46,17 @@ export const storeSteps: StepConfig[] = [
         onApply={() => console.log(f.storeCategories)}
       />
     ),
-  },
+  },  
   {
-    key: 'analytics',
-    title: 'Analytics',
+    key: 'touchpoints',
+    title: 'Customer Touchpoints',
     render: (f, h) => (
-      <SettingsAccordion analyticsConfig={f.analyticsConfig} onChange={(upd) => h.onChangeSettings({ analyticsConfig: upd })} />
+      <ContactAccordion
+        {...f}
+        openingHours={f.openingHours}
+        onChange={h.handleChange}
+        onToggleDay={h.onToggleDay}
+      />
     ),
   },
   {
@@ -80,18 +85,6 @@ export const websiteSteps: StepConfig[] = [
         bannerUrl={f.bannerUrl}
         onUpload={h.handleMediaUpload}
         onRemove={h.handleMediaRemove}
-      />
-    ),
-  },
-  {
-    key: 'touchpoints',
-    title: 'Customer Touchpoints',
-    render: (f, h) => (
-      <ContactAccordion
-        {...f}
-        openingHours={f.openingHours}
-        onChange={h.handleChange}
-        onToggleDay={h.onToggleDay}
       />
     ),
   },
@@ -225,7 +218,14 @@ export const websiteSteps: StepConfig[] = [
     render: (f, h) => (
       <ThemeSettingsAccordion themeSettings={f.themeSettings} onChange={(upd) => h.onChangeSettings({ themeSettings: upd })} />
     ),
-  }
+  },  
+  {
+    key: 'analytics',
+    title: 'Analytics',
+    render: (f, h) => (
+      <SettingsAccordion analyticsConfig={f.analyticsConfig} onChange={(upd) => h.onChangeSettings({ analyticsConfig: upd })} />
+    ),
+  },
 ];
 
 
@@ -727,7 +727,9 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   // Handlers
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    // const { name, value } = e.target;
+    const { name, type, checked, value } = e.target;
+
   
     if (name.startsWith("openingHours.")) {
       // name is like "openingHours.mon.open" or "openingHours.tue.close"
@@ -743,8 +745,11 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         },
       }));
     } else {
-      // everything else stays the same
-      setForm(f => ({ ...f, [name]: value }));
+      setForm((f: any) => ({
+        ...f,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+      // setForm(f => ({ ...f, [name]: value }));
     }
   };
   
@@ -932,8 +937,11 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   };
 
   const handlers: Handlers = {
-    handleChange, onUpdateArray, onAddArray, onRemoveArray, 
-    setAddress, onChangeSettings, onBulkToggle, onToggleDay,
+    handleChange, onUpdateArray, 
+    onAddArray, onRemoveArray, 
+
+    setAddress, onChangeSettings, 
+    onBulkToggle, onToggleDay,
 
     onToggleParent,
     onToggleSub,

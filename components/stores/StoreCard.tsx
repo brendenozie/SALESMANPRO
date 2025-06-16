@@ -87,7 +87,7 @@ export default function StoreCard(store: Store) {
             View Website
           </button>
           <button
-            onClick={() => router.push(`/admin/${store.slug}`)}
+            onClick={() => router.push(`/admin/${store.id}`)}
             className="text-green-600 hover:underline flex items-center text-sm"
           >
             Manage Store

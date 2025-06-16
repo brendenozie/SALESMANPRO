@@ -92,10 +92,13 @@ export async function PUT(
     currency,
     locale,
   } = data;
+
   console.log("▶ about to create StoreCategory for:", storeCategories);
+
   storeCategories.forEach((sc: any, i: number) => {
     console.log(`  → index ${i}: sc.id =`, sc.id);
   });
+
   const updated = await prisma.company.update({
     where: { id: params.id },
     data: {
@@ -258,24 +261,38 @@ export async function PUT(
           },
         }
       : { delete: true },
-    StoreCategory: storeCategories
+      StoreCategory: storeCategories
   ? {
-      deleteMany: {},
-      create: (storeCategories || []).map((sc: any) => ({
-        category:    { connect: { id: sc.id } },
-            displayName: sc.name,
-            icon:        sc.icon    ?? null,
-            sortOrder:   sc.sortOrder ?? 0,
-            visible:     sc.visible   ?? true,
-            items:       sc.items as Prisma.JsonValue,
+      deleteMany: {}, // remove old ones
+      create: storeCategories.map((sc: any) => ({
+        category: { connect: { id: sc.id } },
+        displayName: sc.name,
+        icon: sc.icon ?? null,
+        sortOrder: sc.sortOrder ?? 0,
+        visible: sc.visible ?? true,
+        items: sc.items as Prisma.InputJsonValue, // ✅ if your schema has items as Json
       })),
     }
   : { deleteMany: {} },
+
+  //   StoreCategory: storeCategories
+  // ? {
+  //     deleteMany: {},
+  //     create: (storeCategories || []).map((sc: any) => ({
+  //       category:    { connect: { id: sc.id } },
+  //           displayName: sc.name,
+  //           icon:        sc.icon    ?? null,
+  //           sortOrder:   sc.sortOrder ?? 0,
+  //           visible:     sc.visible   ?? true,
+  //           items:       sc.items as Prisma.JsonValue,
+  //     })),
+  //   }
+  // : { deleteMany: {} },
     },
     // ── HERE is the key change ──
-    include: {
-      StoreCategory: true, // ← ask Prisma to also return the nested StoreCategory rows
-    },
+    // include: {
+    //   StoreCategory: true, // ← ask Prisma to also return the nested StoreCategory rows
+    // },
   });
 
   return NextResponse.json(updated);

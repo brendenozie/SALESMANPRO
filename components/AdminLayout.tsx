@@ -1,151 +1,127 @@
+// components/AdminLayout.tsx
 "use client";
 
-import React, { useState, useEffect, PropsWithChildren } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import {
-  HomeIcon,
-  UsersIcon,
-  ChartBarIcon,
-  CalendarIcon,
-  ChatBubbleBottomCenterTextIcon,
-  Cog6ToothIcon,
-  QuestionMarkCircleIcon,
-  ArrowRightOnRectangleIcon,
-  ChevronDownIcon,
-} from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { AdminContext } from "../contexts/AdminContextProvider";
+import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
+import { useStoreContext } from "@/contexts/StoreContext";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
-const AdminLayout = ({ children }: PropsWithChildren) => {
-  const router = useRouter();
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { storeFormData } = useStoreContext();
+
   const pathname = usePathname();
-
-  const pathMatch = pathname.match(/^\/admin\/([^\/]+)/);
-  const adminSlug = pathMatch ? pathMatch[1] : "";
-
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
-  const menuItems = [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "Products",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Requests", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Requests", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Market Place Requests", href: `/admin/${adminSlug}/customerorders` },
-      ],
-    },
-    {
-      label: "Sales Agents",
-      icon: ChartBarIcon,
-      subItems: [{ label: "Agents", href: `/admin/${adminSlug}/agents` }],
-    },
-    {
-      label: "Clients",
-      icon: ChartBarIcon,
-      subItems: [{ label: "Clients", href: `/admin/${adminSlug}/customers` }],
-    },
-    {
-      label: "Reports",
-      icon: CalendarIcon,
-      subItems: [
-        { label: "Revenue Reports", href: `/admin/${adminSlug}/revenuereport` },
-        { label: "Target Progress", href: `/admin/${adminSlug}/targetprogress` },
-      ],
-    },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
-    { label: "Help & Support", href: `/admin/${adminSlug}/helpsupport`, icon: QuestionMarkCircleIcon },
-    { label: "Log Out", href: "/logout", icon: ArrowRightOnRectangleIcon },
-  ];
+  const categoryMenus = getCategoryMenus(storeFormData.id);
+  const categoryKey = storeFormData.category.charAt(0).toUpperCase() + storeFormData.category.slice(1) as keyof typeof categoryMenus;
+  const menuItems = categoryMenus[categoryKey] ?? categoryMenus["Other"];
 
-  const toggleSubmenu = (label: string) => {
+  const toggleSubmenu = (label: string) =>
     setOpenSubmenu(openSubmenu === label ? null : label);
-  };
 
-  // Auto-expand submenu if current path is inside one
+  // auto‑expand
   useEffect(() => {
-    const matchedItem = menuItems.find((item) =>
-      item.subItems?.some((sub) => sub.href === pathname)
+    const match = menuItems.find(i =>
+      Array.isArray((i as any).subItems) && (i as any).subItems.some((s: any) => s.href === pathname)
     );
-    if (matchedItem) {
-      setOpenSubmenu(matchedItem.label);
-    }
-  }, [pathname]);
+    if (match) setOpenSubmenu(match.label);
+  }, [pathname, menuItems]);
 
   return (
-    <AdminContext.Provider value={{ id: adminSlug }}>
-      <div className="flex h-screen bg-gradient-to-br from-orange-500 to-yellow-500 font-sans">
+    <>
+      <div className="flex h‑screen bg-gradient-to-br from-orange-500 to-yellow-500 font‑sans">
         <aside className="hidden lg:block w-64 bg-white shadow-lg text-gray-900">
           <div className="flex flex-col items-center p-6 border-b border-gray-200">
-            <h1 className="text-2xl font-extrabold text-orange-600">ADMIN</h1>
+            <h1 className="text-2xl font-extrabold text-orange-600">
+              {storeFormData.name.toUpperCase()}
+            </h1>
           </div>
           <nav className="m-4">
             <ul className="space-y-2">
-              {menuItems.map(({ label, href, icon: Icon, subItems }) => {
-                const isParentActive =
-                  (href && pathname === href) ||
-                  subItems?.some((sub) => pathname === sub.href);
+              {menuItems.map(({ label, href, icon: Icon, subItems = [] }:any) => {
+                const isActiveParent =
+                  (href === pathname) ||
+                  subItems.some((s: any) => s.href === pathname);
 
                 return (
                   <li key={label} className="group">
-                    <div>
-                      {href ? (
-                        <a
-                          href={href}
-                          className={`flex items-center justify-between w-full px-4 py-3 text-base font-medium rounded-lg transition
-                            ${isParentActive ? "bg-orange-100 text-orange-600 font-semibold" : "hover:bg-orange-100 hover:text-orange-500"}`}
-                        >
-                          <div className="flex items-center">
-                            <Icon className={`h-6 w-6 ${isParentActive ? "text-orange-600" : "text-orange-500"}`} />
-                            <span className="ml-4">{label}</span>
-                          </div>
-                        </a>
-                      ) : (
-                        <button
-                          onClick={() => toggleSubmenu(label)}
-                          className={`flex items-center justify-between w-full px-4 py-3 text-base font-medium rounded-lg transition
-                            ${openSubmenu === label || isParentActive ? "bg-orange-100 text-orange-600 font-semibold" : "hover:bg-orange-100 hover:text-orange-500"}`}
-                        >
-                          <div className="flex items-center">
-                            <Icon className={`h-6 w-6 ${openSubmenu === label || isParentActive ? "text-orange-600" : "text-orange-500"}`} />
-                            <span className="ml-4">{label}</span>
-                          </div>
-                          <ChevronDownIcon
-                            className={`h-5 w-5 transform transition-transform duration-300 ${
-                              openSubmenu === label ? "rotate-180 text-orange-600" : ""
-                            }`}
-                          />
-                        </button>
-                      )}
+                    {href ? (
+                      <a
+                        href={href}
+                        className={`flex items-center justify-between w-full px-4 py-3 rounded-lg transition ${
+                          isActiveParent
+                            ? "bg-orange-100 text-orange-600 font-semibold"
+                            : "hover:bg-orange-100 hover:text-orange-500"
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          {Icon && (
+                            <Icon
+                              className={`h-6 w-6 ${
+                                isActiveParent ? "text-orange-600" : "text-orange-500"
+                              }`}
+                            />
+                          )}
+                          <span className="ml-4">{label}</span>
+                        </div>
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => toggleSubmenu(label)}
+                        className={`flex items-center justify-between w-full px-4 py-3 rounded-lg transition ${
+                          openSubmenu === label || isActiveParent
+                            ? "bg-orange-100 text-orange-600 font-semibold"
+                            : "hover:bg-orange-100 hover:text-orange-500"
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          {Icon && (
+                            <Icon
+                              className={`h-6 w-6 ${
+                                openSubmenu === label || isActiveParent
+                                  ? "text-orange-600"
+                                  : "text-orange-500"
+                              }`}
+                            />
+                          )}
+                          <span className="ml-4">{label}</span>
+                        </div>
+                        <ChevronDownIcon
+                          className={`h-5 w-5 transform transition-transform duration-300 ${
+                            openSubmenu === label ? "rotate-180 text-orange-600" : ""
+                          }`}
+                        />
+                      </button>
+                    )}
 
-                      {subItems && (openSubmenu === label || isParentActive) && (
-                        <ul className="mt-2 ml-8 space-y-2 border-l-2 border-orange-200">
-                          {subItems.map(({ label: subLabel, href: subHref }) => {
-                            const isSubActive = pathname === subHref;
-                            return (
-                              <li key={subLabel}>
-                                <a
-                                  href={subHref}
-                                  className={`block px-4 py-2 text-sm rounded-lg transition
-                                    ${isSubActive ? "bg-orange-200 text-orange-800 font-semibold" : "hover:bg-orange-100 hover:text-orange-500"}`}
-                                >
-                                  {subLabel}
-                                </a>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </div>
+                    {subItems && (openSubmenu === label || isActiveParent) && (
+                      <ul className="mt-2 ml-8 space-y-2 border-l-2 border-orange-200">
+                        {subItems.map((sub : any) => {
+                          const isActiveSub = pathname === sub.href;
+                          return (
+                            <li key={sub.label}>
+                              <a
+                                href={sub.href}
+                                className={`block px-4 py-2 text-sm rounded-lg transition ${
+                                  isActiveSub
+                                    ? "bg-orange-200 text-orange-800 font-semibold"
+                                    : "hover:bg-orange-100 hover:text-orange-500"
+                                }`}
+                              >
+                                {sub.label}
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                   </li>
                 );
               })}
@@ -154,8 +130,6 @@ const AdminLayout = ({ children }: PropsWithChildren) => {
         </aside>
         <main className="flex-1 bg-gray-50 overflow-y-auto">{children}</main>
       </div>
-    </AdminContext.Provider>
+    </>
   );
-};
-
-export default AdminLayout;
+}

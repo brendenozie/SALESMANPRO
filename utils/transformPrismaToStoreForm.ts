@@ -7,6 +7,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     id: raw.id,
     name: raw.name,
     slug: raw.slug,
+    hasWebsite: raw.hasWebsite,
     domain: raw.domain ?? '',
     tagline: raw.tagline ?? '',
     description: raw.description ?? '',
