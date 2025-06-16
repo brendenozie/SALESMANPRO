@@ -32,6 +32,13 @@ const SITE_CATEGORIES = [
   "Travel & Tourism",
   "Fitness & Wellness",
   "Marketplace",
+  "Tutors",
+  "Lecturer",
+  "Teacher",
+  "Students",
+  "Pupils",
+  "Principal",
+  "School Head",
   "Other",
 ];
 

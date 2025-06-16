@@ -39,8 +39,8 @@ const paymentSchema = z.object({ stripeKey: z.string().optional(),
                       });
 const shippingSchema = z.object({ 
                                   carrierName: z.string().optional(), 
-                                  trackingUrl: urlSchema.optional(),
-                                  regions: z.string().optional(),
+                                  trackingUrl: z.string().optional(),
+                                  regions: z.array(z.string()).optional(),
                                   enablePickup: z.boolean().optional(),
                                   pickupInstructions: z.string().optional(),
                                 });

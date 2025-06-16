@@ -27,6 +27,7 @@ import BookingAppointmentsDashboard from '@/components/admin/BookingAppointments
 import TutorDashboard from '@/components/admin/TutorDashboard';
 import StudentDashboard from '@/components/admin/StudentDashboard';
 import UncategorizedDashboard from '../../../components/admin/AdminDashClient';
+import PrincipalDashboard from '@/components/admin/PrincipalDashboard';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,6 +102,9 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     case 'students':
     case 'pupils':
       return <StudentDashboard />; //  {...data} session={session}
+    case 'head teacher':
+    case 'school head':
+      return <PrincipalDashboard />; //  {...data} session={session}
     default:
       return <UncategorizedDashboard />; // {...data} session={session} 
   }

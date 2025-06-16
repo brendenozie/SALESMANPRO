@@ -198,6 +198,149 @@ export const getCategoryMenus = (adminSlug: string) => ({
     { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
   ],
 
+  "Tutor": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "My Classes",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Class List", href: `/admin/${adminSlug}/classes` },
+        { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
+        { label: "Materials", href: `/admin/${adminSlug}/materials` },
+      ],
+    },
+    {
+      label: "Students",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Student List", href: `/admin/${adminSlug}/students` },
+        { label: "Grades & Feedback", href: `/admin/${adminSlug}/grades` },
+        { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
+      ],
+    },
+    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+  ],
+
+  "Lecturer": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "My Classes",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Class List", href: `/admin/${adminSlug}/classes` },
+        { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
+        { label: "Materials", href: `/admin/${adminSlug}/materials` },
+      ],
+    },
+    {
+      label: "Students",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Student List", href: `/admin/${adminSlug}/students` },
+        { label: "Grades & Feedback", href: `/admin/${adminSlug}/grades` },
+        { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
+      ],
+    },
+    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+  ],
+
+  "Teacher": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "My Classes",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Class List", href: `/admin/${adminSlug}/classes` },
+        { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
+        { label: "Materials", href: `/admin/${adminSlug}/materials` },
+      ],
+    },
+    {
+      label: "Students",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Student List", href: `/admin/${adminSlug}/students` },
+        { label: "Grades & Feedback", href: `/admin/${adminSlug}/grades` },
+        { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
+      ],
+    },
+    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+  ],
+
+  "Students": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "My Classes", href: `/admin/${adminSlug}/myclasses`, icon: ClipboardDocumentListIcon },
+    { label: "Assignments", href: `/admin/${adminSlug}/assignments`, icon: DocumentTextIcon },
+    { label: "Grades", href: `/admin/${adminSlug}/grades`, icon: ChartBarIcon },
+    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Resources", href: `/admin/${adminSlug}/resources`, icon: PresentationChartBarIcon },
+  ],
+
+  "Pupil": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "My Classes", href: `/admin/${adminSlug}/myclasses`, icon: ClipboardDocumentListIcon },
+    { label: "Assignments", href: `/admin/${adminSlug}/assignments`, icon: DocumentTextIcon },
+    { label: "Grades", href: `/admin/${adminSlug}/grades`, icon: ChartBarIcon },
+    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Resources", href: `/admin/${adminSlug}/resources`, icon: PresentationChartBarIcon },
+  ],
+
+  "School Head": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Management",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
+        { label: "Students", href: `/admin/${adminSlug}/students` },
+        { label: "Classes", href: `/admin/${adminSlug}/classes` },
+      ],
+    },
+    {
+      label: "Reports",
+      icon: ChartBarIcon,
+      subItems: [
+        { label: "Attendance Report", href: `/admin/${adminSlug}/reports/attendance` },
+        { label: "Performance", href: `/admin/${adminSlug}/reports/performance` },
+      ],
+    },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+  ],
+
+
+  "Head Teacher": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Management",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
+        { label: "Students", href: `/admin/${adminSlug}/students` },
+        { label: "Classes", href: `/admin/${adminSlug}/classes` },
+      ],
+    },
+    {
+      label: "Reports",
+      icon: ChartBarIcon,
+      subItems: [
+        { label: "Attendance Report", href: `/admin/${adminSlug}/reports/attendance` },
+        { label: "Performance", href: `/admin/${adminSlug}/reports/performance` },
+      ],
+    },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+  ],
+
+
   "Other": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
