@@ -33,7 +33,7 @@ export interface DashboardData {
   taskData?: { tasks: { id: string; taskName: string; dueDate: string; dueTime: string }[] };
 }
 
-type Props = DashboardData & { session: Session };
+type Props = DashboardData; // & { session: Session };
 
 const calculateProgress = (current: number, goal?: number) => {
   if (!goal) return 0;

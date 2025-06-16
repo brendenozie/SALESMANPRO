@@ -2,12 +2,11 @@
 // app/admin/[slug]/page.tsx
 import { redirect } from 'next/navigation';
 import { getAuthSession } from '../../../lib/auth';
-import AdminDashClient, { DashboardData } from '../../../components/admin/AdminDashClient';
 import prisma from '@/server/db/prismadb';
 import { normalizeCategory } from '@/utils/normalizeCategory';
-import EcomDashboardClient from '@/components/admin/EcomDashboardClient';
+import EcomDashboardClient, { DashboardData } from '@/components/admin/EcomDashboardClient';
 import RealEstateDashboardClient from '@/components/admin/RealEstateDashboardClient';
-import ServicesDashboardClient from '@/components/admin/ServicesDashboardClient';
+// import ServicesDashboardClient from '@/components/admin/ServicesDashboardClient';
 import AutomotiveDashboardClient from '@/components/admin/AutomotiveDashboardClient';
 import BlogDashboardClient from '@/components/admin/BlogDashboardClient';
 import DirectoryDashboardClient from '@/components/admin/DirectoryDashboardClient';
@@ -23,12 +22,17 @@ import RestaurantDashboardClient from '@/components/admin/RestaurantDashboardCli
 import SaaSDashboardClient from '@/components/admin/SaaSDashboardClient';
 import TravelDashboardClient from '@/components/admin/TravelDashboardClient';
 import MarketplaceDashboard from '@/components/admin/MarketplaceDashboard';
+import ServiceProviderDashboard from '@/components/admin/ServiceProviderDashboard';
+import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
+import TutorDashboard from '@/components/admin/TutorDashboard';
+import StudentDashboard from '@/components/admin/StudentDashboard';
+import UncategorizedDashboard from '../../../components/admin/AdminDashClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage({ params }: { params: { slug: string } }) {
   const session = await getAuthSession();
-  if (!session?.user?.id || session.user.role?.toLowerCase() !== 'admin') redirect('/');
+  // if (!session?.user?.id || session.user.role?.toLowerCase() !== 'admin') redirect('/');
 
   // 1. Fetch store data for category
   const store = await prisma.company.findUnique({
@@ -53,12 +57,13 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
   // 3. Render appropriate client component per category
   switch (categoryKey) {
     case 'e-commerce':
-      return <EcomDashboardClient {...data} session={session} />;
+      return <EcomDashboardClient {...data} />; //session={session} 
     case 'real estate':
       return <RealEstateDashboardClient  />;//{...data} session={session}
     case 'service provider':
+      return <ServiceProviderDashboard />
     case 'booking & appointments':
-      return <ServicesDashboardClient {...data} session={session} />;
+      return <BookingAppointmentsDashboard />; // {...data} session={session} 
     case 'portfolio & personal branding':
       return <PortfolioDashboardClient  />; // {...data} session={session} TODO: Replace with <PortfolioDashboardClient />
     case 'blog & content':
@@ -89,20 +94,16 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       return <FitnessDashboardClient/>; //  {...data} session={session} TODO: Replace with <FitnessDashboardClient />
     case 'marketplace':
       return <MarketplaceDashboard />; //  {...data} session={session}
+    case 'tutors':
+    case 'lecturer':
+    case 'teacher':
+      return <TutorDashboard />; //  {...data} session={session}
+    case 'students':
+    case 'pupils':
+      return <StudentDashboard />; //  {...data} session={session}
     default:
-      return <AdminDashClient {...data} session={session} />;
+      return <UncategorizedDashboard />; // {...data} session={session} 
   }
   
-  // switch (categoryKey) {
-  //   case 'e-commerce':
-  //     return <EcomDashboardClient {...data}  session={session} />;
-  //   case 'real estate':
-  //     return <RealEstateDashboardClient />; //{...data}  session={session} 
-  //   case 'service provider':
-  //   case 'booking & appointments':
-  //     return <ServicesDashboardClient {...data}  session={session} />;
-  //   default:
-  //     return <AdminDashClient {...data}  session={session} />;
-  // }
 }
 
