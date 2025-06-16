@@ -6,6 +6,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   XMarkIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 
 export interface ServiceItem {
@@ -30,24 +31,54 @@ export default function AdminServicesClient({ initialServices }: Props) {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [selected, setSelected] = useState<ServiceItem | null>(null);
   const [newStatus, setNewStatus] = useState<ServiceItem["status"]>("Active");
+  const [formMode, setFormMode] = useState<"edit" | "create">("edit");
+  const [formData, setFormData] = useState<Omit<ServiceItem, 'id'>>({
+    name: "",
+    category: "",
+    price: 0,
+    duration: "",
+    provider: { name: "", email: "", phone: "" },
+    status: "Active",
+  });
 
   useEffect(() => {
     setServices(initialServices);
   }, [initialServices]);
 
-  const openModal = (svc: ServiceItem) => {
-    setSelected(svc);
-    setNewStatus(svc.status);
+  const openModal = (svc?: ServiceItem) => {
+    if (svc) {
+      setFormMode("edit");
+      setSelected(svc);
+      setFormData({
+        name: svc.name,
+        category: svc.category,
+        price: svc.price,
+        duration: svc.duration,
+        provider: { ...svc.provider },
+        status: svc.status,
+      });
+    } else {
+      setFormMode("create");
+      setSelected(null);
+      setFormData({ name: "", category: "", price: 0, duration: "", provider: { name: "", email: "", phone: "" }, status: "Active" });
+    }
   };
-  const closeModal = () => setSelected(null);
 
-  const saveStatus = () => {
-    if (!selected) return;
-    setServices((prev) =>
-      prev.map((s) =>
-        s.id === selected.id ? { ...s, status: newStatus } : s
-      )
-    );
+  const closeModal = () => {
+    setSelected(null);
+    setFormData({ name: "", category: "", price: 0, duration: "", provider: { name: "", email: "", phone: "" }, status: "Active" });
+  };
+
+  const saveService = () => {
+    if (formMode === "edit" && selected) {
+      setServices((prev) => prev.map((s) => s.id === selected.id ? { ...selected, ...formData } : s));
+    } else {
+      const newService: ServiceItem = {
+        id: `svc_${Date.now()}`,
+        ...formData,
+      };
+      setServices((prev) => [newService, ...prev]);
+    }
     closeModal();
   };
 
@@ -76,9 +107,16 @@ export default function AdminServicesClient({ initialServices }: Props) {
 
   return (
     <div className="container mx-auto py-12 px-4">
-      <h1 className="text-5xl font-extrabold text-center text-gray-800 mb-12">
-        Services
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-5xl font-extrabold text-gray-800">Services</h1>
+        <button
+          onClick={() => openModal()}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+        >
+          <PlusIcon className="w-5 h-5" />
+          Add Service
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {services.map((svc) => (
@@ -108,17 +146,15 @@ export default function AdminServicesClient({ initialServices }: Props) {
               <p>
                 <span className="font-medium">Provider:</span> {svc.provider.name}
               </p>
-              <p>Email: {svc.provider.email}</p>
-              <p>Phone: {svc.provider.phone}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Modal */}
-      {selected && (
+      {/* Modal Form */}
+      {(selected !== null || formMode === "create") && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative overflow-auto max-h-[90vh]">
             <button
               onClick={closeModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -127,59 +163,108 @@ export default function AdminServicesClient({ initialServices }: Props) {
             </button>
 
             <h3 className="text-3xl font-bold mb-4 text-gray-800">
-              {selected.name}
+              {formMode === "create" ? "Add New Service" : `Edit: ${selected?.name}`}
             </h3>
 
-            <div className="space-y-2 mb-6 text-gray-700">
-              <p>
-                <span className="font-medium">Category:</span> {selected.category}
-              </p>
-              <p>
-                <span className="font-medium">Price:</span> ${selected.price}
-              </p>
-              <p>
-                <span className="font-medium">Duration:</span> {selected.duration}
-              </p>
-              <p>
-                <span className="font-medium">Provider:</span> {selected.provider.name}
-              </p>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Update Status
+            <div className="grid grid-cols-1 gap-4">
+              <label className="block">
+                <span className="text-gray-700">Name</span>
+                <input
+                  type="text"
+                  className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
               </label>
-              <div className="flex gap-3">
-                {(["Active", "Pending", "Completed"] as ServiceItem["status"][]).map(
-                  (s) => (
-                    <button
-                      key={s}
-                      onClick={() => setNewStatus(s)}
-                      className={`flex-1 py-2 rounded-lg font-medium transition \
-                        ${newStatus === s
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"}
-                      `}
-                    >
-                      {s}
-                    </button>
-                  )
-                )}
+
+              <label className="block">
+                <span className="text-gray-700">Category</span>
+                <input
+                  type="text"
+                  className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                />
+              </label>
+
+              <div className="flex gap-4">
+                <label className="flex-1 block">
+                  <span className="text-gray-700">Price ($)</span>
+                  <input
+                    type="number"
+                    className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                  />
+                </label>
+                <label className="flex-1 block">
+                  <span className="text-gray-700">Duration</span>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                    value={formData.duration}
+                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                  />
+                </label>
+              </div>
+
+              <fieldset className="border-t pt-4">
+                <legend className="text-gray-700">Provider Info</legend>
+                <label className="block mt-2">
+                  <span className="text-gray-700">Name</span>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                    value={formData.provider.name}
+                    onChange={(e) => setFormData({ ...formData, provider: { ...formData.provider, name: e.target.value } })}
+                  />
+                </label>
+                <label className="block mt-2">
+                  <span className="text-gray-700">Email</span>
+                  <input
+                    type="email"
+                    className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                    value={formData.provider.email}
+                    onChange={(e) => setFormData({ ...formData, provider: { ...formData.provider, email: e.target.value } })}
+                  />
+                </label>
+                <label className="block mt-2">
+                  <span className="text-gray-700">Phone</span>
+                  <input
+                    type="tel"
+                    className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                    value={formData.provider.phone}
+                    onChange={(e) => setFormData({ ...formData, provider: { ...formData.provider, phone: e.target.value } })}
+                  />
+                </label>
+              </fieldset>
+
+              <div className="mt-4">
+                <span className="text-gray-700">Status</span>
+                <select
+                  className="mt-1 block w-full rounded-lg border-gray-300 p-2"
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as ServiceItem["status"] })}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                </select>
               </div>
             </div>
 
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={closeModal}
-                className="px-5 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 transition"
+                className="px-6 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 transition"
               >
                 Cancel
               </button>
               <button
-                onClick={saveStatus}
-                className="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                onClick={saveService}
+                className="px-6 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
               >
-                Save
+                {formMode === "create" ? "Create" : "Save"}
               </button>
             </div>
           </div>
