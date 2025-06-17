@@ -544,15 +544,15 @@ export default function AdminServicesClient({
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
         >
           <PlusIcon className="w-5 h-5" />
-          Add Service Listing Form 1
+          Add Service Listing
         </button>
-        <button
+        {/* <button
           onClick={() => openModal()}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
         >
           <PlusIcon className="w-5 h-5" />
           Add Service Listing Form 2
-        </button>
+        </button> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -603,14 +603,14 @@ export default function AdminServicesClient({
       </div>
 
       {/* Modal Form */}
-      {(selected !== null || formMode === "create") && (
+      {/* {(selected !== null || formMode === "create") && (
         <ServiceListingFormRedesign
             selected={null} // or your data object
             formMode="create" // or "edit"
             closeModal={() => closeModal()}
             saveService={saveService}
         />
-      )}
+      )} */}
 
       {showAddToMarketModal && (
         <AddToProductMarketModal
