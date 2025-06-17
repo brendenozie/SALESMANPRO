@@ -135,11 +135,20 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   useEffect(() => {
     return () => {
       // Revoke all previews when unmounting
-      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
-      videoPreviews.forEach((url) => URL.revokeObjectURL(url));
-      books.forEach((b) => {
-        if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
-      });
+      if(imagePreviews && imagePreviews.length > 0){
+        imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+      }
+
+      if(videoPreviews && videoPreviews.length > 0){
+        videoPreviews.forEach((url) => URL.revokeObjectURL(url));
+      }
+
+      if(books && books.length > 0){
+        books.forEach((b) => {
+          if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
+        });
+      }
+
       if (newBookCoverPreview) URL.revokeObjectURL(newBookCoverPreview);
     };
   }, [
@@ -170,10 +179,13 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       if (newBookCoverPreview) {
         URL.revokeObjectURL(newBookCoverPreview);
       }
-      books.forEach((b) => {
-        if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
-      });
+      if(books && books.length > 0){
+        books.forEach((b) => {
+          if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
+        });
+      }
     };
+
   }, [books, newBookCoverPreview]);
 
 
@@ -327,9 +339,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             </p>
           </div>
 
-          {imagePreviews.length > 0 && (
+          {imagePreviews && imagePreviews.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {imagePreviews.map((url, idx) => (
+              {imagePreviews && imagePreviews.length > 0 &&imagePreviews.map((url, idx) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, scale: 0.8 }}

@@ -59,7 +59,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
             <h2 className="text-3xl font-semibold text-gray-800 mb-8">Products</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productsData.map((product,index) => (
+              {productsData && productsData.map((product,index) => (
                 <div
                   key={index}//{product._id}
                   className="bg-gray-100 border border-gray-200 rounded-xl p-6 transition transform hover:scale-105 shadow-md hover:shadow-xl duration-300"
@@ -102,7 +102,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
                 </div>
               ))}
 
-              {productsData.length === 0 && (
+              {productsData && productsData.length === 0 && (
                 <div className="col-span-full text-center py-10">
                   <p className="text-gray-500 text-xl">
                     No products available in the marketplace.
