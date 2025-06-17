@@ -44,7 +44,22 @@ const shippingSchema = z.object({
                                   enablePickup: z.boolean().optional(),
                                   pickupInstructions: z.string().optional(),
                                 });
-const storeCategorySchema = z.object({ id: z.string(), displayName: z.string().optional(), sortOrder: z.number().optional(), visible: z.boolean().optional() });
+const storeCategorySchema = z.object({ 
+  id: z.string(), 
+  name: z.string().optional(), 
+  icon: z.string().optional(), 
+  displayName: z.string().optional(), 
+  sortOrder: z.number().optional(), 
+  visible: z.boolean().optional() ,
+  items: z.array(
+    z.object({
+      id: z.string().optional(),
+      name: z.string().optional(),
+      slug: z.string().optional(),
+    })
+  )
+});
+
 const awardsSchema = z.object({ name: z.string(), iconUrl: z.string() });
 const metricsSchema =  z.object({ label: z.string(), value: z.string(), iconUrl: z.string().optional() }); 
 const statsSchema = z.object({ label: z.string(), value: z.string(), iconUrl: z.string().optional() }); 
@@ -263,11 +278,11 @@ export async function POST(req: Request) {
 
         StoreCategory: data.storeCategories
           ? {
-              create: data.storeCategories.map((sc: any) => ({
+              create: data.storeCategories.map((sc: any, index:number) => ({
                 category: { connect: { id: sc.id } },
-                displayName: sc.displayName ?? "",
+                displayName: sc.displayName ?? sc.name,
                 icon: sc.icon ?? null,
-                sortOrder: sc.sortOrder ?? 0,
+                sortOrder: sc.sortOrder ?? index,
                 visible: sc.visible ?? true,
                 items: sc.items as Prisma.InputJsonValue,
               })),

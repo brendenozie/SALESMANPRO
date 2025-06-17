@@ -264,13 +264,13 @@ export async function PUT(
       StoreCategory: storeCategories
   ? {
       deleteMany: {}, // remove old ones
-      create: storeCategories.map((sc: any) => ({
+      create: data.storeCategories.map((sc: any, index:number) => ({
         category: { connect: { id: sc.id } },
-        displayName: sc.name,
+        displayName: sc.displayName ?? sc.name,
         icon: sc.icon ?? null,
-        sortOrder: sc.sortOrder ?? 0,
+        sortOrder: sc.sortOrder ?? index,
         visible: sc.visible ?? true,
-        items: sc.items as Prisma.InputJsonValue, // ✅ if your schema has items as Json
+        items: sc.items as Prisma.InputJsonValue,
       })),
     }
   : { deleteMany: {} },
