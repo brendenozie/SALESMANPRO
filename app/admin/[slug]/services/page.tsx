@@ -92,20 +92,22 @@ export default async function ServicesPage({ params }: PageProps) {
       // For now, we'll return an empty array if fetch fails, but you might throw an error.
       // throw new Error(`Failed to fetch services for company ${companyId}`); 
     } else {
-      const data: ServiceItem[] = await res.json();
+      const data= await res.json();
+
+      console.log(data);
       
       // 2. Transform Date strings back to Date objects if AdminServicesClient expects them
       // This is necessary because Dates are serialized as strings when fetched from an API.
-      initialServices = data.map(item => ({
-        ...item,
-        startDealDate: item.startDealDate ? new Date(item.startDealDate) : undefined,
-        endDealDate: item.endDealDate ? new Date(item.endDealDate) : undefined,
-        availabilityStart: item.availabilityStart ? new Date(item.availabilityStart) : undefined,
-        availabilityEnd: item.availabilityEnd ? new Date(item.availabilityEnd) : undefined,
-        // expirationDate: item.expirationDate ? new Date(item.expirationDate) : undefined,
-        createdAt: item.createdAt ? new Date(item.createdAt) : undefined,
-        updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
-      }));
+    //   initialServices = data.map(item => ({
+    //     ...item,
+    //     startDealDate: item.startDealDate ? new Date(item.startDealDate) : undefined,
+    //     endDealDate: item.endDealDate ? new Date(item.endDealDate) : undefined,
+    //     availabilityStart: item.availabilityStart ? new Date(item.availabilityStart) : undefined,
+    //     availabilityEnd: item.availabilityEnd ? new Date(item.availabilityEnd) : undefined,
+    //     // expirationDate: item.expirationDate ? new Date(item.expirationDate) : undefined,
+    //     createdAt: item.createdAt ? new Date(item.createdAt) : undefined,
+    //     updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
+    //   }));
     }
 
   } catch (error) {

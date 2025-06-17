@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       sellerType, // SellerType? enum
       productId, // String? @db.ObjectId
       title, // String @default("New Name")
+      name, // String @default("New Name")
       description, // String? @default("New Description")
       quantity, // Int
       images, // Json[] (array of URLs)
@@ -234,6 +235,7 @@ export async function POST(req: Request) {
 
       // — title & description —
       title: title || "New Name",
+      name:name || "New Name",
       description: description || "New Description",
 
       // — inventory & media —
@@ -415,17 +417,17 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    
-    // console.error("❌ Error processing marketplace listing:", error);
-         return NextResponse.json(
-            {
-               message: "An error occurred while processing the marketplace listing.",
-               // If 'error' has a 'code' property and you want to include it:
-               code: error.code // Ensure 'error' object has a 'code' property
-             },
-             { status: 500 }
-          );
-          
-  }
+  } 
+  catch (error: any) { // Ensure 'error' is typed as 'any' or 'unknown' for full access
+    console.error("❌ Error processing marketplace listing:", error); // <-- Add this line back
+
+    return NextResponse.json(
+      {
+          message: "An error occurred while processing the marketplace listing.",
+          // If 'error' has a 'code' property and you want to include it:
+          code: (error as any)?.code // Ensure 'error' object has a 'code' property
+        },
+        { status: 500 }
+    );
+}
 }
