@@ -279,13 +279,14 @@ export async function POST(req: Request) {
         StoreCategory: data.storeCategories
           ? {
               create: data.storeCategories.map((sc: any, index:number) => ({
-                category: { connect: { id: sc.id } },
-                displayName: sc.displayName ?? sc.name,
-                icon: sc.icon ?? null,
-                sortOrder: sc.sortOrder ?? index,
-                visible: sc.visible ?? true,
-                items: sc.items as Prisma.InputJsonValue,
-              })),
+                          category: { connect: { id: sc.id } }, // sc.id refers to ProductCategory.id
+                          displayName: sc.displayName ?? sc.name,
+                          icon: sc.icon ?? null,
+                          sortOrder: sc.sortOrder ?? index,
+                          visible: sc.visible ?? true,
+                          items: sc.items as Prisma.InputJsonValue,
+                        })),
+
             }
           : undefined,
       },
