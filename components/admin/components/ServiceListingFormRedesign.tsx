@@ -10,6 +10,7 @@ import {
   TagIcon,
   PlusCircleIcon, // Assuming PlusCircleIcon from heroicons
 } from '@heroicons/react/24/outline'; // Assuming you have heroicons installed
+// ...
 
 // Mock data and types (replace with your actual data/prop types)
 // These would typically come from props or a data fetching hook in a real app.

@@ -182,6 +182,69 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({
             }
           />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <label className="block">
+                <span className="text-gray-700 font-medium text-sm">Deal Start Date</span>
+                {/* Consider a DatePicker component here */}
+                <input
+                    type="datetime-local"
+                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                    // value={formatDateForInput(formData.startDealDate)}
+                    value={formData.startDealDate || ""}
+                    onChange={(e) =>
+                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
+                    }
+                />
+            </label>
+            <label className="block">
+                <span className="text-gray-700 font-medium text-sm">Deal End Date</span>
+                {/* Consider a DatePicker component here */}
+                <input
+                    type="datetime-local"
+                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.startDealDate || ""}
+                    onChange={(e) =>
+                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
+                    }
+                    // value={formatDateForInput(formData.endDealDate)}
+                    // onChange={(e) =>
+                    //     setFormData({ ...formData, endDealDate: e.target.value ? new Date(e.target.value) : undefined })
+                    // }
+                />
+            </label>
+            <label className="block">
+                <span className="text-gray-700 font-medium text-sm">Availability Start Date</span>
+                {/* Consider a DatePicker component here */}
+                <input
+                    type="datetime-local"
+                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.startDealDate || ""}
+                    onChange={(e) =>
+                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
+                    }
+                    // value={formatDateForInput(formData.availabilityStart)}
+                    // onChange={(e) =>
+                    //     setFormData({ ...formData, availabilityStart: e.target.value ? new Date(e.target.value) : undefined })
+                    // }
+                />
+            </label>
+            <label className="block">
+                <span className="text-gray-700 font-medium text-sm">Availability End Date</span>
+                {/* Consider a DatePicker component here */}
+                <input
+                    type="datetime-local"
+                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.startDealDate || ""}
+                    onChange={(e) =>
+                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
+                    }
+                    // value={formatDateForInput(formData.availabilityEnd)}
+                    // onChange={(e) =>
+                    //     setFormData({ ...formData, availabilityEnd: e.target.value ? new Date(e.target.value) : undefined })
+                    // }
+                />
+            </label>
+        </div>
       </div>
     </section>
   );
