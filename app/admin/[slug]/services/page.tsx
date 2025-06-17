@@ -1,5 +1,8 @@
 import React from "react";
 import AdminServicesClient, { ServiceItem } from "./AdminServicesClient"; // Adjust path as needed
+import { Category } from "../categories/page";
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params: {
@@ -51,6 +54,7 @@ export default async function ServicesPage({ params }: PageProps) {
   const companyId = params.slug;
 
   let initialServices: ServiceItem[] = [];
+  let categoriesData: Category[] = [];
 
   try {
     // 1. Fetch marketplace listings for the given companyId
@@ -86,6 +90,21 @@ export default async function ServicesPage({ params }: PageProps) {
         updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
       }));
     }
+
+    // Fetch all categories for this company
+    const categoriesRes = await fetch(
+      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+        companyId
+      )}`,
+      { cache: "no-store" }
+    );
+    if (categoriesRes.ok) {
+      const categoriesJson = (await categoriesRes.json()) as {
+        results: Category[];
+      };
+      categoriesData = categoriesJson.results;
+    }
+
   } catch (error) {
     console.error("Error fetching initial services:", error);
     // You could also set a user-facing error message here if needed.
@@ -102,6 +121,7 @@ export default async function ServicesPage({ params }: PageProps) {
         sellers={dummySellers}
         companies={dummyCompanies}
         companyId={companyId}
+        categoriesData={categoriesData}
       />
     </div>
   );
