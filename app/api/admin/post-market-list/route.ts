@@ -155,7 +155,7 @@ export async function POST(req: Request) {
     }
     // Validate sellerType against your enum
     // Assuming SellerType is defined as 'INDIVIDUAL' | 'COMPANY' in your Prisma schema
-    const validSellerTypes = ['INDIVIDUAL', 'COMPANY']; // Add other valid types if they exist in your enum
+    const validSellerTypes = ['INDIVIDUAL', 'COMPANY', 'ADMIN']; // Add other valid types if they exist in your enum
     if (sellerType && !validSellerTypes.includes(sellerType)) {
       return NextResponse.json(
         { message: `Invalid sellerType. Must be one of ${validSellerTypes.join(', ')}.` },

@@ -621,6 +621,7 @@ export default function AdminServicesClient({
           sellerType={""}     
           marketListItem={selectedProduct}
           categories={categoriesData}
+          companyId={companyId}
         />
       )}
     </div>

@@ -1001,7 +1001,7 @@ model MarketplaceListing {
   condition         String?
   dimension         String?
   material          String[]
-  title             String          @default("New Name")
+  name              String          @default("New Name")
   description       String?         @default("New Description")
   quantity          Int
   images            Json[]
@@ -1127,7 +1127,7 @@ model MarketplaceListing {
   RecentlyViewed RecentlyViewed[]
   WishlistItem   WishlistItem[]
 
-  @@index([title])
+  @@index([name])
   @@index([finalPrice])
   @@index([isFeatured])
   @@index([createdAt])
