@@ -16,7 +16,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   handleInputChange,
 }) => {
   // Derive which “mode” we’re in, based on subCategory name
-  const subCat: string = formData.subCategory || "";
+  const subCat: any = formData.subCategory || {};
+  const subCategoryName: string = formData.subCategoryName || "";
 
   const isService = [
     "Cleaning",
@@ -29,7 +30,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     "Beauty Services",
     "Tutoring",
     "Event Planning",
-  ].includes(subCat);
+    "Landscaping"
+  ].includes(subCategoryName || subCat.name);
 
   const isDigital = [
     "Software Licenses",
@@ -37,7 +39,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     "Online Courses",
     "Streaming Subscriptions",
     "Mobile App Credits",
-  ].includes(subCat);
+  ].includes(subCategoryName || subCat.name);
 
   const isTravel = [
     "Flight Tickets",
@@ -45,9 +47,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     "Tour Packages",
     "Event Tickets",
     "Travel Insurance",
-  ].includes(subCat);
+  ].includes(subCategoryName || subCat.name);
 
-  const isPhysical = !isService || !isDigital || !isTravel;
+  // const isPhysical = !isService || !isDigital || !isTravel;
+  const isPhysical = !isService && !isDigital && !isTravel;
 
   // Determine the header label based on category name
   const headerLabel = (() => {
@@ -289,7 +292,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       )}
 
       {/* ── 4. Service-Specific Fields ── */}
-      {isService && (
+      {/* {isService && (
         <section className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-700">Service Details</h3>
           <div className="space-y-3">
@@ -308,14 +311,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             </div>
           </div>
         </section>
-      )}
+      )} */}
 
       {/* ── 5. Digital Good–Specific Fields ── */}
       {isDigital && (
         <section className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-700">Digital Product Details</h3>
           <div className="space-y-3">
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <label className="block text-gray-600 text-sm">Delivery URL</label>
               <input
                 type="url"
@@ -325,7 +328,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 value={formData.digitalUrl || ""}
                 onChange={handleChange}
               />
-            </div>
+            </div> */}
             <div className="flex items-center space-x-2">
               <input
                 id="autoDeliver"
