@@ -182,6 +182,7 @@ const ServiceListingFormRedesign = ({
     // Tab data for rendering
     const tabs = [
         { id: 'details', name: 'Listing Details', icon: InformationCircleIcon },
+        { id: 'productcategory', name: 'Pick Category', icon: PrinterIcon },
         { id: 'pricing', name: 'Pricing & Tiers', icon: PrinterIcon },
         { id: 'service', name: 'Service Specifics', icon: StarIcon },
         { id: 'availability', name: 'Availability & Deals', icon: CalendarIcon },
@@ -210,8 +211,8 @@ const ServiceListingFormRedesign = ({
                     </h3>
 
                     {/* Tabs Navigation */}
-                    <div className="border-b border-gray-200 mb-6 -mx-8 px-8 overflow-x-auto custom-scrollbar">
-                        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    <div className="border-b border-gray-200 mb-6 -mx-8 px-8 custom-scrollbar">
+                        <nav className="-mb-px flex space-x-8 overflow-x-scroll " aria-label="Tabs">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.id}
@@ -266,7 +267,18 @@ const ServiceListingFormRedesign = ({
                                                 placeholder="Provide a detailed description of your service, its benefits, and what clients can expect."
                                             ></textarea>
                                         </label>
+                                    </div>
+                                </section>
+                            </div>
+                        )}
 
+                        
+                        {activeTab === 'productcategory' && (
+                            <div className="space-y-6">
+                                <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                                    <h4 className="text-2xl font-semibold mb-4 text-gray-800">Product Category</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        
                                         <label className="block">
                                             <span className="text-gray-700 font-medium text-sm">Product Category <span className="text-red-500">*</span></span>
                                             {/* For many options, consider a searchable select component */}
@@ -285,45 +297,6 @@ const ServiceListingFormRedesign = ({
                                             </select>
                                         </label>
 
-                                        <label className="block">
-                                            <span className="text-gray-700 font-medium text-sm">Seller</span>
-                                            <select
-                                                className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                                value={formData.sellerId || ""}
-                                                onChange={(e) => setFormData({ ...formData, sellerId: e.target.value || undefined })}
-                                            >
-                                                <option value="">Select Seller (Optional)</option>
-                                                {sellers.map((seller) => (
-                                                    <option key={seller.id} value={seller.id}>{seller.name}</option>
-                                                ))}
-                                            </select>
-                                        </label>
-
-                                        <label className="block">
-                                            <span className="text-gray-700 font-medium text-sm">Company</span>
-                                            <select
-                                                className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                                value={formData.companyId || ""}
-                                                onChange={(e) => setFormData({ ...formData, companyId: e.target.value || undefined })}
-                                            >
-                                                <option value="">Select Company (Optional)</option>
-                                                {companies.map((company) => (
-                                                    <option key={company.id} value={company.id}>{company.name}</option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-gray-700 font-medium text-sm">Seller Type</span>
-                                            <select
-                                                className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                                value={formData.sellerType || ""}
-                                                onChange={(e) => setFormData({ ...formData, sellerType: e.target.value as SellerType || undefined })}
-                                            >
-                                                <option value="">Select Type</option>
-                                                <option value="INDIVIDUAL">Individual</option>
-                                                <option value="COMPANY">Company</option>
-                                            </select>
-                                        </label>
                                     </div>
                                 </section>
                             </div>
