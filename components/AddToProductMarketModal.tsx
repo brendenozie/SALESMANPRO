@@ -29,11 +29,6 @@ import { ServiceSpecifics } from "./stores/create/ServiceSpecifics/ServiceSpecif
 // MAPPINGS
 // -------------------
 
-
-// -------------------
-// MAPPINGS
-// -------------------
-
 const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   1: CategoryPicker,
   2: ProductDetails,
@@ -309,6 +304,29 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     bathrooms:           marketListItem?.bathrooms           || product?.product?.bathrooms         || "",
     area:                marketListItem?.area                || product?.product?.area              || "",
     serviceSchedule:     marketListItem?.serviceSchedule     || product?.product?.serviceSchedule   || "",
+    
+    // Scheduling
+    
+    availabilityStart:     marketListItem?.availabilityStart     || product?.product?.availabilityStart   || "",
+    availabilityEnd:     marketListItem?.availabilityEnd     || product?.product?.availabilityEnd   || "",
+
+    bookingSlots:     marketListItem?.bookingSlots     || product?.product?.bookingSlots   || [],
+    minNoticePeriod:     marketListItem?.minNoticePeriod     || product?.product?.minNoticePeriod   || "",
+    maxBookingAhead:     marketListItem?.maxBookingAhead     || product?.product?.maxBookingAhead   || "",
+
+    pricingTiers:     marketListItem?.pricingTiers     || product?.product?.pricingTiers   || [],
+
+    requiredClientInfo:     marketListItem?.requiredClientInfo     || product?.product?.requiredClientInfo   || "",
+    fulfillmentStatus:     marketListItem?.fulfillmentStatus     || product?.product?.fulfillmentStatus   || "",
+
+    totalCapacity:     marketListItem?.totalCapacity     || product?.product?.totalCapacity   || "",
+    currentBookedCount:     marketListItem?.currentBookedCount     || product?.product?.currentBookedCount   || "",
+
+    providerRating:     marketListItem?.providerRating     || product?.product?.providerRating   || "",
+
+    hourlyRate:     marketListItem?.hourlyRate     || product?.product?.hourlyRate   || "",
+    minimumHours:     marketListItem?.minimumHours     || product?.product?.minimumHours   || "",
+    deliveryMethod:     marketListItem?.deliveryMethod     || product?.product?.deliveryMethod   || "",
   
     // Digital goods:
     digitalUrl:          marketListItem?.digitalUrl           || product?.product?.digitalUrl        || "",
@@ -470,9 +488,11 @@ const handleCreateListing = async () => {
       productId:            formData.productId,                     // String? @db.ObjectId
       
       images: imageUrls,                  // array of S3 URLs
+
       video: videoUrls.length > 0
         ? videoUrls[0]                     // or send an array, if your schema allows multiple
         : null,
+
       // — Books —
       books: booksWithUrls, 
     
@@ -559,7 +579,29 @@ const handleCreateListing = async () => {
       bathrooms:            formData.bathrooms      || "",            // String?
       area:                 formData.area           || "",            // String?
       serviceSchedule:      formData.serviceSchedule|| "",            // String?
-    
+
+      // Scheduling    
+      availabilityStart:    formData.availabilityStart       || {},
+      availabilityEnd:    formData.availabilityEnd       || {},
+
+      bookingSlots:     formData.bookingSlots       || {},
+      minNoticePeriod:   formData.minNoticePeriod       || {},
+      maxBookingAhead: formData.maxBookingAhead       || {},
+
+      pricingTiers: formData.pricingTiers       || {},
+
+      requiredClientInfo: formData.requiredClientInfo       || {},
+      fulfillmentStatus:  formData.fulfillmentStatus       || {},
+
+      totalCapacity:  formData.totalCapacity       || {},
+      currentBookedCount: formData.currentBookedCount       || {},
+
+      providerRating: formData.providerRating       || {},
+
+      hourlyRate: formData.hourlyRate       || {},
+      minimumHours:  formData.minimumHours       || {},
+      deliveryMethod: formData.deliveryMethod       || {},
+  
       // — Vehicle-specific —
       make:                 formData.make            || "",           // String?
       trim:                 formData.trim            || "",           // String?
@@ -582,74 +624,9 @@ const handleCreateListing = async () => {
     
       // — Admin/Admin-only fields —
       status:               formData.status         || "ACTIVE",     // ListingStatus
-      // (createdAt/updatedAt get handled automatically by Prisma)
+      
     };
-    
-    // const listing = {
-    //   id: formData.id, // If updating; otherwise backend auto-generates
-    //   // sellerId: "63f7c9e2d91b1b2a5e80b007", // Replace with actual seller ID
-    //   sellerType: "ADMIN", // Or "CONSUMER", as appropriate
-    //   companyId: companyId, // Replace with actual seller ID
-    //   // sellerType: "CLIENT", // Or "CONSUMER", as appropriate
-    //   productId: formData.productId,
-    //   title: formData.title,
-    //   description: formData.description,
-    //   quantity: formData.quantity,
-    //   images: images || [], // Use the first uploaded image
-    //   productCategoryId: formData.category?.id || "", // Assuming category is an object with an id
-    //   category: formData.category?.name || "",
-    //   subCategory:formData.subCategory,
-    //   tags: formData.tags || [],
-    //   brand: formData.brand,
-    //   model: formData.model,
-    //   color: formData.color,
-    //   size: formData.size,
-    //   weight: formData.weight,
-    //   condition: formData.condition,
-    //   dimension: formData.dimension,
-    //   commissionRate: formData.commissionRate || 0,
-    //   commissionType: formData.commissionType || 'COST', // Default to "Percentage"
-    //   material: Array.isArray(formData.material)
-    //     ? formData.material
-    //     : formData.material
-    //     ? [formData.material]
-    //     : [],
-    //   salesPrice: parseFloat(formData.sellingPrice) || 0,
-    //   discount: formData.discount,
-    //   isAvailable: formData.isAvailable,
-    //   isOnOffer: formData.isOnOffer,
-    //   isFlashDeal: formData.isFlashDeal,
-    //   isNewArrival: formData.isNewArrival,
-    //   isDiscounted: formData.isDiscounted,
-    //   isFeatured: formData.isFeatured,
-    //   buyingPrice: parseFloat(formData.buyingPrice) || 0,
-    //   sellingPrice: parseFloat(formData.sellingPrice) || 0,
-    //   startDealDate: null,
-    //   finalPrice:parseFloat(formData.finalPrice) || 0,
-    //   contact:formData.contact,
-    //   location:formData.location,
-    //   endDealDate: null,
-    //   year: product?.year || "",
-    //   features: product?.features || [],
-    //   // Category-specific fields for Books
-    //   author: formData.author || "",
-    //   publisher: formData.publisher || "",
-    //   isbn: formData.isbn || "",
-    //   // Category-specific fields for Clothing/Fashion
-    //   fabricComposition: formData.fabricComposition || "",
-    //   careInstructions: formData.careInstructions || "",
-    //   // Category-specific fields for Home Appliances
-    //   energyRating: formData.energyRating || "",
-    //   warrantyPeriod: formData.warrantyPeriod || "",
-    //   applianceDimensions: formData.dimensions || "",
-    //   // Category-specific fields for Beauty Products
-    //   ingredients: formData.ingredients || "",
-    //   usageInstructions: formData.usageInstructions || "",
-    //   expirationDate: formData.expirationDate
-    //     ? new Date(formData.expirationDate)
-    //     : null,
-    // };
-
+   
     try {
       const response = await fetch(`${apiUrl}/admin/post-market-list`, {
         method: "POST",

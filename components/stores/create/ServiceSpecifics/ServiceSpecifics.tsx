@@ -54,25 +54,7 @@ export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => 
     }
   }, [formData.bookingSlots, setFormData]);
 
-  const handleAddBookingSlot = () => {
-    setFormData({
-      ...formData,
-      bookingSlots: [...(formData.bookingSlots || []), { date: '', time: '', capacity: 1 }],
-    });
-  };
-
-  const handleUpdateBookingSlot = (index: number, field: keyof BookingSlotType, value: string | number) => {
-    const updatedSlots = [...(formData.bookingSlots || [])];
-    updatedSlots[index] = { ...updatedSlots[index], [field]: value };
-    setFormData({ ...formData, bookingSlots: updatedSlots });
-  };
-
-  const handleRemoveBookingSlot = (index: number) => {
-    setFormData({
-      ...formData,
-      bookingSlots: (formData.bookingSlots || []).filter((_, i) => i !== index),
-    });
-  };
+  
 
   return (
     <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -84,7 +66,7 @@ export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => 
       >
         <div className="flex items-center space-x-3">
           <CalendarIcon className="h-6 w-6" /> {/* Changed icon */}
-          <h3 className="text-lg font-semibold">Booking Details & Slots</h3> {/* Updated title */}
+          <h3 className="text-lg font-semibold">Service Specifics</h3> {/* Updated title */}
         </div>
         <span className="flex items-center">
           {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
