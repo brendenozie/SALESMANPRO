@@ -1055,6 +1055,23 @@ model MarketplaceListing {
   availabilityStart DateTime?
   availabilityEnd   DateTime?
 
+  bookingSlots    Json[] // [{ date: "2025-06-20", time: "10:00", capacity: 1 }, ...]
+  minNoticePeriod String?
+  maxBookingAhead String?
+  pricingTiers    Json[] // ServicePricingTier name, description, price, duration, features[]
+
+  requiredClientInfo String[] //(e.g., ["vehicle make", "pet type", "number of attendees"]
+  fulfillmentStatus  String? //(e.g., PENDING_CONFIRMATION, IN_PROGRESS, COMPLETED, CANCELLED_BY_CLIENT, CANCELLED_BY_PROVIDER
+
+  totalCapacity      Int? // (e.g., for a workshop with 20 seats).
+  currentBookedCount Int? // (how many seats are currently booked).
+
+  providerRating Float?
+
+  hourlyRate     Float?
+  minimumHours   Int?
+  deliveryMethod String? // (e.g., "On-site", "Remote/Virtual", "At Location")
+
   // Contact & Location
   contact      String?
   email        String?

@@ -1,5 +1,3 @@
-// File: /pages/api/marketplace-list/route.ts (or whatever your path is)
-
 import { NextResponse } from "next/server";
 import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
 
@@ -16,122 +14,136 @@ const parseJsonSafely = (data: any) => {
 const normalizeArray = (val: any) =>
   Array.isArray(val) ? val : val ? [val] : [];
 
-// POST /api/post-market-list
+// POST /api/marketplace-list
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // 1. Destructure every field that MarketplaceListing expects
+    // 1. Destructure ALL fields that MarketplaceListing expects, including new ones
     const {
-      id,                      // String?     (for updates)
-      companyId,               // String?     @db.ObjectId
-      sellerId,                // String?     @db.ObjectId
-      sellerType,              // SellerType? enum
-      productId,               // String?     @db.ObjectId
-      title,                   // String      @default("New Name")
-      description,             // String?     @default("New Description")
-      quantity,                // Int
-      images,                  // Json[]      (array of URLs)
-      video,                   // String?
-      productCategoryId,       // String      @db.ObjectId
-      category,                // String?
-      subCategory,             // Json?
-      subCategoryName,         // String?
-      tags,                    // String[]
-      brand,                   // String?
-      model,                   // String?
-      color,                   // String[]
-      size,                    // String[]
-      weight,                  // String?
-      condition,               // String?
-      dimension,               // String?
-      material,                // String[]
-      profitMargin,            // Float?
-      discount,                // Int?       @default(0)
-      buyingPrice,             // Float
-      sellingPrice,            // Float
-      finalPrice,              // Float?     @default(0)
-      isAvailable,             // Boolean    @default(true)
-      isOnOffer,               // Boolean    @default(false)
-      isFlashDeal,             // Boolean    @default(false)
-      isNewArrival,            // Boolean    @default(false)
-      isDiscounted,            // Boolean    @default(false)
-      isFeatured,              // Boolean    @default(false)
+      id, // String? (for updates)
+      companyId, // String? @db.ObjectId
+      sellerId, // String? @db.ObjectId
+      sellerType, // SellerType? enum
+      productId, // String? @db.ObjectId
+      title, // String @default("New Name")
+      description, // String? @default("New Description")
+      quantity, // Int
+      images, // Json[] (array of URLs)
+      video, // String?
+      productCategoryId, // String @db.ObjectId
+      category, // String?
+      subCategory, // Json?
+      subCategoryName, // String?
+      tags, // String[]
+      brand, // String?
+      model, // String?
+      color, // String[]
+      size, // String[]
+      weight, // String?
+      condition, // String?
+      dimension, // String?
+      material, // String[]
+      profitMargin, // Float?
+      discount, // Int? @default(0)
+      buyingPrice, // Float
+      sellingPrice, // Float
+      finalPrice, // Float? @default(0)
+      isAvailable, // Boolean @default(true)
+      isOnOffer, // Boolean @default(false)
+      isFlashDeal, // Boolean @default(false)
+      isNewArrival, // Boolean @default(false)
+      isDiscounted, // Boolean @default(false)
+      isFeatured, // Boolean @default(false)
 
       // Delivery & payment
-      delivery,                // Boolean    @default(false)
-      paymentOption,           // String     @default("AT SHOP")
-      showOnGhuba,             // Boolean    @default(true)
+      delivery, // Boolean @default(false)
+      paymentOption, // String @default("AT SHOP")
+      showOnGhuba, // Boolean @default(true)
 
       // Deal scheduling
-      startDealDate,           // DateTime?
-      endDealDate,             // DateTime?
+      startDealDate, // DateTime?
+      endDealDate, // DateTime?
 
       // Contact & location
-      contact,                 // String?
-      contactName,             // String?
-      email,                   // String?
-      location,                // Json?      (GeoJSON or similar)
-      locationId,              // String?    @db.ObjectId
-      locationName,            // String?
-      latitude,                // Float?
-      longitude,               // Float?
+      contact, // String?
+      contactName, // String?
+      email, // String?
+      location, // Json? (GeoJSON or similar)
+      locationId, // String? @db.ObjectId
+      locationName, // String?
+      latitude, // Float?
+      longitude, // Float?
 
       // Pricing breakdown
-      tax,                     // Float?     @default(0)
-      shippingCost,            // Float?     @default(0)
+      tax, // Float? @default(0)
+      shippingCost, // Float? @default(0)
 
       // Availability scheduling
-      availabilityStart,       // DateTime?
-      availabilityEnd,         // DateTime?
+      availabilityStart, // DateTime?
+      availabilityEnd, // DateTime?
 
-      // Category-specific fields
-      author,                  // String?    (Books)
-      publisher,               // String?    (Books)
-      isbn,                    // String?    (Books)
-      fabricComposition,       // String?    (Clothing/Fashion)
-      careInstructions,        // String?    (Clothing/Fashion)
-      energyRating,            // String?    (Home Appliances)
-      warrantyPeriod,          // String?    (Home Appliances)
-      applianceDimensions,     // String?    (Home Appliances)
-      ingredients,             // String?    (Beauty Products)
-      usageInstructions,       // String?    (Beauty Products)
-      expirationDate,          // DateTime?  (Beauty Products)
+      // Category-specific fields (Books, Fashion, Appliances, Beauty)
+      author,
+      publisher,
+      isbn,
+      fabricComposition,
+      careInstructions,
+      energyRating,
+      warrantyPeriod,
+      applianceDimensions,
+      ingredients,
+      usageInstructions,
+      expirationDate,
 
       // Amenities
-      amenities,               // String[]
+      amenities, // String[]
 
       // Property-specific fields
-      propertyTypeId,          // String?    @db.ObjectId
-      bathrooms,               // String?
-      area,                    // String?
-      bedrooms,                // Json?
-      studios,                 // Json?
-      serviceSchedule,         // String?
+      propertyTypeId,
+      bathrooms,
+      area,
+      bedrooms,
+      studios,
+      serviceSchedule,
 
       // Vehicle-specific fields
-      make,                    // String?
-      trim,                    // String?
-      type,                    // String?
-      mileage,                 // String?
-      engineType,              // String?
-      engineSize,              // String?
-      transmission,            // String?
-      drivetrain,              // String?
-      vin,                     // String?
-      logbookStatus,           // String?
-      serviceHistory,          // String?
-      negotiable,              // Boolean?  @default(false)
-      financingAvailable,      // Boolean?  @default(false)
-      tradeIn,                 // Boolean?  @default(false)
+      make,
+      trim,
+      type,
+      mileage,
+      engineType,
+      engineSize,
+      transmission,
+      drivetrain,
+      vin,
+      logbookStatus,
+      serviceHistory,
+      negotiable,
+      financingAvailable,
+      tradeIn,
 
       // Digital goods
-      digitalUrl,              // String?
-      autoDeliver,             // Boolean?  @default(false)
+      digitalUrl,
+      autoDeliver,
+
+      // NEW SERVICE-SPECIFIC FIELDS
+      bookingSlots, // Json[]
+      minNoticePeriod, // String?
+      maxBookingAhead, // String?
+      pricingTiers, // Json[]
+      requiredClientInfo, // String[]
+      fulfillmentStatus, // String?
+      totalCapacity, // Int?
+      currentBookedCount, // Int?
+      providerRating, // Float?
+      hourlyRate, // Float?
+      minimumHours, // Int?
+      deliveryMethod, // String? (e.g., "On-site", "Remote/Virtual", "At Location")
 
       // Admin/Admin-only fields
-      status,                  // ListingStatus @default(ACTIVE)
-      collectionId,            // String?   @db.ObjectId
+      status, // ListingStatus @default(ACTIVE)
+      collectionId, // String? @db.ObjectId
     } = body;
 
     // 2. BASIC validation:
@@ -141,189 +153,237 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    if (!["CLIENT", "CONSUMER", "AGENT", "ADMIN", "COMPANY"].includes(sellerType)) {
+    // Validate sellerType against your enum
+    // Assuming SellerType is defined as 'INDIVIDUAL' | 'COMPANY' in your Prisma schema
+    const validSellerTypes = ['INDIVIDUAL', 'COMPANY']; // Add other valid types if they exist in your enum
+    if (sellerType && !validSellerTypes.includes(sellerType)) {
       return NextResponse.json(
-        { message: "Invalid sellerType. Must be one of CLIENT, CONSUMER, AGENT, ADMIN, COMPANY." },
+        { message: `Invalid sellerType. Must be one of ${validSellerTypes.join(', ')}.` },
         { status: 400 }
       );
     }
+    // Basic validation for required service fields for a service listing if applicable
+    // You might want to add more robust validation here based on `productCategoryId`
+    // For example, if productCategoryId is for 'Services', then ensure `hourlyRate` or `pricingTiers` are present.
 
     // 3. Normalize / parse JSON arrays and objects
-    const safeSubCategory   = parseJsonSafely(subCategory)   || {};
-    const safeLocation      = parseJsonSafely(location)      || {};
-    const safeBedrooms      = parseJsonSafely(bedrooms)      || {};
-    const safeStudios       = parseJsonSafely(studios)       || {};
+    const safeSubCategory = parseJsonSafely(subCategory) || {};
+    const safeLocation = parseJsonSafely(location) || {};
+    const safeBedrooms = parseJsonSafely(bedrooms) || {};
+    const safeStudios = parseJsonSafely(studios) || {};
 
-    const safeTags          = normalizeArray(tags);
-    const safeColor         = normalizeArray(color);
-    const safeSize          = normalizeArray(size);
-    const safeMaterial      = normalizeArray(material);
-    const safeAmenities     = normalizeArray(amenities);
-    const safeImages        = normalizeArray(images);
+    const safeTags = normalizeArray(tags);
+    const safeColor = normalizeArray(color);
+    const safeSize = normalizeArray(size);
+    const safeMaterial = normalizeArray(material);
+    const safeAmenities = normalizeArray(amenities);
+    const safeImages = normalizeArray(images);
 
-    // 4. Parse floats
-    const parsedQuantity       = parseInt(quantity  as any, 10) || 0;
-    const parsedBuyingPrice    = parseFloat(buyingPrice  as any) || 0;
-    const parsedSellingPrice   = parseFloat(sellingPrice as any) || 0;
-    const parsedFinalPrice     = parseFloat(finalPrice as any)   || 0;
-    const parsedProfitMargin   = profitMargin !== undefined
+    // NEW: Normalize and parse service-specific JSON arrays
+    const safeBookingSlots = normalizeArray(bookingSlots).map(parseJsonSafely);
+    const safePricingTiers = normalizeArray(pricingTiers).map(parseJsonSafely);
+    const safeRequiredClientInfo = normalizeArray(requiredClientInfo);
+
+    // 4. Parse numbers (integers and floats)
+    const parsedQuantity = parseInt(quantity as any, 10) || 0;
+    const parsedBuyingPrice = parseFloat(buyingPrice as any) || 0;
+    const parsedSellingPrice = parseFloat(sellingPrice as any) || 0;
+    // Calculate finalPrice if not provided, assuming discount is applied
+    const calculatedFinalPrice = finalPrice !== undefined
+        ? parseFloat(finalPrice as any)
+        : (parsedSellingPrice - (parsedSellingPrice * ( (discount || 0) / 100 )));
+    const parsedProfitMargin = profitMargin !== undefined
       ? parseFloat(profitMargin as any)
       : parsedSellingPrice > 0 && parsedBuyingPrice > 0
-        ? +(((parsedSellingPrice - parsedBuyingPrice) / parsedBuyingPrice) * 100).toFixed(1)
-        : 0;
-    const parsedDiscount       = discount !== undefined ? parseInt(discount as any, 10) : 0;
-    const parsedTax            = tax !== undefined ? parseFloat(tax as any) : 0;
-    const parsedShippingCost   = shippingCost !== undefined ? parseFloat(shippingCost as any) : 0;
+      ? +(((parsedSellingPrice - parsedBuyingPrice) / parsedBuyingPrice) * 100).toFixed(1)
+      : 0;
+    const parsedDiscount = discount !== undefined ? parseInt(discount as any, 10) : 0;
+    const parsedTax = tax !== undefined ? parseFloat(tax as any) : 0;
+    const parsedShippingCost = shippingCost !== undefined ? parseFloat(shippingCost as any) : 0;
 
-    const parsedLatitude       = latitude !== undefined ? parseFloat(latitude as any) : null;
-    const parsedLongitude      = longitude !== undefined ? parseFloat(longitude as any) : null;
+    const parsedLatitude = latitude !== undefined ? parseFloat(latitude as any) : null;
+    const parsedLongitude = longitude !== undefined ? parseFloat(longitude as any) : null;
+
+    // NEW: Parse service-specific numbers
+    const parsedTotalCapacity = totalCapacity !== undefined ? parseInt(totalCapacity as any, 10) : null;
+    const parsedCurrentBookedCount = currentBookedCount !== undefined ? parseInt(currentBookedCount as any, 10) : null;
+    const parsedProviderRating = providerRating !== undefined ? parseFloat(providerRating as any) : null;
+    const parsedHourlyRate = hourlyRate !== undefined ? parseFloat(hourlyRate as any) : null;
+    const parsedMinimumHours = minimumHours !== undefined ? parseInt(minimumHours as any, 10) : null;
+
 
     // 5. Parse dates
-    const parsedExpirationDate   = expirationDate  ? new Date(expirationDate)   : null;
-    const parsedStartDealDate    = startDealDate   ? new Date(startDealDate)    : null;
-    const parsedEndDealDate      = endDealDate     ? new Date(endDealDate)      : null;
+    const parsedExpirationDate = expirationDate ? new Date(expirationDate) : null;
+    const parsedStartDealDate = startDealDate ? new Date(startDealDate) : null;
+    const parsedEndDealDate = endDealDate ? new Date(endDealDate) : null;
     const parsedAvailabilityStart = availabilityStart ? new Date(availabilityStart) : null;
-    const parsedAvailabilityEnd   = availabilityEnd   ? new Date(availabilityEnd)   : null;
+    const parsedAvailabilityEnd = availabilityEnd ? new Date(availabilityEnd) : null;
 
-    // 6. Prepare the common data object
-    //    (we’ll spread this into both create and update)
+    // 6. Prepare the common data object for Prisma
     const now = new Date();
     const commonData: any = {
       // — relations —
-      company:          { connect: { id: companyId } },
+      company: { connect: { id: companyId } },
       ...(sellerId ? { seller: { connect: { id: sellerId } } } : {}),
+      sellerType: sellerType || undefined, // Set sellerType
       ...(productId ? { product: { connect: { id: productId } } } : {}),
-      productCategory:  { connect: { id: productCategoryId } },
+      productCategory: { connect: { id: productCategoryId } },
+      ...(locationId ? { myLocation: { connect: { id: locationId } } } : {}), // Connect to Location model
+      ...(propertyTypeId ? { propertyType: { connect: { id: propertyTypeId } } } : {}), // Connect to PropertyType model
+      ...(collectionId ? { Collection: { connect: { id: collectionId } } } : {}), // Connect to Collection model
 
       // — title & description —
-      title:            title || "New Name",
-      description:      description || "New Description",
+      title: title || "New Name",
+      description: description || "New Description",
 
       // — inventory & media —
-      quantity:         parsedQuantity,
-      images:           safeImages,
-      video:            video || null,
+      quantity: parsedQuantity,
+      images: safeImages,
+      video: video || null,
 
       // — category hierarchy & tagging —
-      category:         category || "",
-      subCategory:      safeSubCategory,
-      subCategoryName:  subCategoryName || "",
-      tags:             safeTags,
+      category: category || null, // Ensure null if not provided, matches model
+      subCategory: safeSubCategory,
+      subCategoryName: subCategoryName || null, // Ensure null if not provided
+      tags: safeTags,
 
       // — branding & specs —
-      brand:            brand || "",
-      model:            model || "",
-      color:            safeColor,
-      size:             safeSize,
-      weight:           weight || "",
-      condition:        condition || "",
-      dimension:        dimension || "",
-      material:         safeMaterial,
+      brand: brand || null,
+      model: model || null,
+      color: safeColor,
+      size: safeSize,
+      weight: weight || null,
+      condition: condition || null,
+      dimension: dimension || null,
+      material: safeMaterial,
 
       // — profit & pricing —
-      profitMargin:     parsedProfitMargin,
-      discount:         parsedDiscount,
-      buyingPrice:      parsedBuyingPrice,
-      sellingPrice:     parsedSellingPrice,
-      finalPrice:       parsedFinalPrice,
+      profitMargin: parsedProfitMargin,
+      discount: parsedDiscount,
+      buyingPrice: parsedBuyingPrice,
+      sellingPrice: parsedSellingPrice,
+      finalPrice: calculatedFinalPrice, // Use calculated finalPrice
 
       // — deal scheduling —
-      startDealDate:    parsedStartDealDate,
-      endDealDate:      parsedEndDealDate,
+      startDealDate: parsedStartDealDate,
+      endDealDate: parsedEndDealDate,
 
       // — category-specific —
-      author:           author || "",
-      publisher:        publisher || "",
-      isbn:             isbn || "",
-      fabricComposition: fabricComposition || "",
-      careInstructions: careInstructions || "",
-      energyRating:     energyRating || "",
-      warrantyPeriod:   warrantyPeriod || "",
-      applianceDimensions: applianceDimensions || "",
-      ingredients:      ingredients || "",
-      usageInstructions: usageInstructions || "",
-      expirationDate:   parsedExpirationDate,
+      author: author || null,
+      publisher: publisher || null,
+      isbn: isbn || null,
+      fabricComposition: fabricComposition || null,
+      careInstructions: careInstructions || null,
+      energyRating: energyRating || null,
+      warrantyPeriod: warrantyPeriod || null,
+      applianceDimensions: applianceDimensions || null,
+      ingredients: ingredients || null,
+      usageInstructions: usageInstructions || null,
+      expirationDate: parsedExpirationDate,
 
       // — flags —
-      isAvailable:      Boolean(isAvailable),
-      isOnOffer:        Boolean(isOnOffer),
-      isFlashDeal:      Boolean(isFlashDeal),
-      isNewArrival:     Boolean(isNewArrival),
-      isDiscounted:     Boolean(isDiscounted),
-      isFeatured:       Boolean(isFeatured),
+      isAvailable: Boolean(isAvailable),
+      isOnOffer: Boolean(isOnOffer),
+      isFlashDeal: Boolean(isFlashDeal),
+      isNewArrival: Boolean(isNewArrival),
+      isDiscounted: Boolean(isDiscounted),
+      isFeatured: Boolean(isFeatured),
 
       // — marketplace-specific —
-      delivery:         Boolean(delivery),
-      paymentOption:    paymentOption || "AT SHOP",
-      showOnGhuba:      showOnGhuba !== undefined ? Boolean(showOnGhuba) : true,
+      delivery: Boolean(delivery),
+      paymentOption: paymentOption || "AT SHOP",
+      showOnGhuba: showOnGhuba !== undefined ? Boolean(showOnGhuba) : true,
 
       // — contact & location —
-      contact:          contact || "",
-      contactName:      contactName || "",
-      email:            email || "",
-      location:         safeLocation,
-      locationId:       locationId || undefined,
-      locationName:     locationName || "",
-      latitude:         parsedLatitude,
-      longitude:        parsedLongitude,
+      contact: contact || null,
+      contactName: contactName || null,
+      email: email || null,
+      location: safeLocation, // JSON field for broader location data
+      locationName: locationName || null,
+      latitude: parsedLatitude,
+      longitude: parsedLongitude,
 
       // — pricing breakdown —
-      tax:              parsedTax,
-      shippingCost:     parsedShippingCost,
+      tax: parsedTax,
+      shippingCost: parsedShippingCost,
 
       // — availability scheduling —
       availabilityStart: parsedAvailabilityStart,
-      availabilityEnd:   parsedAvailabilityEnd,
+      availabilityEnd: parsedAvailabilityEnd,
 
       // — amenities —
-      amenities:        safeAmenities,
+      amenities: safeAmenities,
 
       // — property-specific —
-      propertyTypeId:   propertyTypeId || undefined,
-      bathrooms:        bathrooms || "",
-      area:             area || "",
-      bedrooms:         safeBedrooms,
-      studios:          safeStudios,
-      serviceSchedule:  serviceSchedule || "",
+      bathrooms: bathrooms || null,
+      area: area || null,
+      bedrooms: safeBedrooms,
+      studios: safeStudios,
+      serviceSchedule: serviceSchedule || null,
 
       // — vehicle-specific —
-      make:             make || "",
-      trim:             trim || "",
-      type:             type || "",
-      mileage:          mileage || "",
-      engineType:       engineType || "",
-      engineSize:       engineSize || "",
-      transmission:     transmission || "",
-      drivetrain:       drivetrain || "",
-      vin:              vin || "",
-      logbookStatus:    logbookStatus || "",
-      serviceHistory:   serviceHistory || "",
-      negotiable:       Boolean(negotiable),
+      make: make || null,
+      trim: trim || null,
+      type: type || null,
+      mileage: mileage || null,
+      engineType: engineType || null,
+      engineSize: engineSize || null,
+      transmission: transmission || null,
+      drivetrain: drivetrain || null,
+      vin: vin || null,
+      logbookStatus: logbookStatus || null,
+      serviceHistory: serviceHistory || null,
+      negotiable: Boolean(negotiable),
       financingAvailable: Boolean(financingAvailable),
-      tradeIn:          Boolean(tradeIn),
+      tradeIn: Boolean(tradeIn),
 
       // — digital goods —
-      digitalUrl:       digitalUrl || "",
-      autoDeliver:      Boolean(autoDeliver),
+      digitalUrl: digitalUrl || null,
+      autoDeliver: Boolean(autoDeliver),
+
+      // NEW SERVICE-SPECIFIC FIELDS
+      bookingSlots: safeBookingSlots,
+      minNoticePeriod: minNoticePeriod || null,
+      maxBookingAhead: maxBookingAhead || null,
+      pricingTiers: safePricingTiers,
+      requiredClientInfo: safeRequiredClientInfo,
+      fulfillmentStatus: fulfillmentStatus || null,
+      totalCapacity: parsedTotalCapacity,
+      currentBookedCount: parsedCurrentBookedCount, // Typically updated separately or calculated
+      providerRating: parsedProviderRating, // Typically updated separately or calculated
+      hourlyRate: parsedHourlyRate,
+      minimumHours: parsedMinimumHours,
+      deliveryMethod: deliveryMethod || null,
 
       // — admin/meta —
-      status:           status || "ACTIVE",
-      collectionId:     collectionId || undefined,
-
+      status: status || "ACTIVE", // Use provided status or default
+      // collectionId is already handled by connect relation
+      
       // — timestamps —
-      updatedAt:        now,
+      updatedAt: now,
     };
 
     // 7. Upsert within a transaction
     let marketplaceListing;
     await prisma.$transaction(async (tx) => {
-      const existingListing = await tx.marketplaceListing.findFirst({
-        where: {
-          companyId,
-          productId:  productId,
-          id: id 
-        },
-      });
+      // Find an existing listing by ID if provided, or by companyId and productId
+      // Prioritize `id` for updates
+      const whereClause: any = {};
+      if (id) {
+        whereClause.id = id;
+      } else {
+        whereClause.companyId = companyId;
+        // Optionally add productId here if a listing is uniquely identified by company + product
+        // For services, `productId` might be null, so consider your unique constraint logic.
+        // If `productId` is truly unique for a listing (even for services where it might be null),
+        // you might still use it for uniqueness in combination with companyId.
+        // For new service listings, `id` will be null, and you'd typically just create.
+      }
+
+      const existingListing = id ? await tx.marketplaceListing.findUnique({ where: { id } }) : null;
+      // If no ID is provided for an update, or no existing listing found by ID,
+      // consider if you need to find by other means (e.g., if a service can have multiple listings per company).
+      // For a POST, it's generally a CREATE. If 'id' is present, it's an UPDATE.
 
       if (existingListing) {
         // Update
@@ -335,10 +395,14 @@ export async function POST(req: Request) {
         });
       } else {
         // Create
+        // Remove `id` from data when creating, as Prisma handles auto-generation
+        const { id: _, ...createData } = commonData; 
         marketplaceListing = await tx.marketplaceListing.create({
           data: {
-            ...commonData,
+            ...createData,
             createdAt: now,
+            // Ensure companyId is explicitly set for create if it's not part of the `connect` operation due to conditional logic
+            companyId: companyId,
           },
         });
       }
