@@ -108,7 +108,7 @@ export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => 
                   placeholder="1"
                 />
               </label>
-              <label className="block">
+              {/* <label className="block">
                 <span className="text-gray-700 font-medium text-sm">General Service Schedule (e.g., "Mon-Fri, 9am-5pm")</span>
                 <input
                   type="text"
@@ -117,7 +117,7 @@ export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => 
                   onChange={(e) => setFormData({ ...formData, serviceSchedule: e.target.value })}
                   placeholder="Mon-Fri, 9am-5pm"
                 />
-              </label>
+              </label> */}
               <label className="block">
                 <span className="text-gray-700 font-medium text-sm">Hourly Rate ($)</span>
                 <input
