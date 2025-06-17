@@ -12,7 +12,8 @@ type MarketplaceProduct = {
   sellerId: string;
   sellerType: string;
   productId: string;
-  title: string;
+  title?: string;
+  name?: string;
   description: string;
   quantity: number;
   createdAt: string;
@@ -65,7 +66,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
                   className="bg-gray-100 border border-gray-200 rounded-xl p-6 transition transform hover:scale-105 shadow-md hover:shadow-xl duration-300"
                 >
                   <h3 className="text-2xl font-bold text-gray-800 mb-3 hover:text-blue-600 transition-colors">
-                    {product.title}
+                    {product.name || product.title}
                   </h3>
                   <p className="text-sm text-gray-600 mb-1">
                     Description: {product.description}

@@ -41,7 +41,8 @@ interface PricingTier {
 export interface ServiceItem {
   id: string;
   // Core listing details
-  title: string;
+  title?: string;
+  name?: string;
   description?: string;
   productCategoryId: string;
   subCategory?: any; // Keep as Json for now, not directly editable here
@@ -130,7 +131,8 @@ type MarketplaceProduct = {
   sellerId: string;
   sellerType: string;
   productId: string;
-  title: string;
+  name?: string;
+  title?: string;
   description: string;
   quantity: number;
   createdAt: string;
@@ -162,6 +164,7 @@ export default function AdminServicesClient({
   const [formData, setFormData] = useState<Omit<ServiceItem, "id" | "createdAt" | "updatedAt">>(
     {
       title: "",
+      name: "",
       companyId: companyId,
       description: "",
       productCategoryId: productCategories[0]?.id || "",
@@ -215,6 +218,7 @@ export default function AdminServicesClient({
       setSelected(svc);
       setFormData({
         title: svc.title,
+        name: svc.name,
         description: svc.description || "",
         productCategoryId: svc.productCategoryId,
         subCategory: svc.subCategory || {},
@@ -274,6 +278,7 @@ export default function AdminServicesClient({
       setSelected(null);
       setFormData({
         title: "",
+        name:"",
         description: "",
         companyId:companyId,
         productCategoryId: productCategories[0]?.id || "",
@@ -312,6 +317,7 @@ export default function AdminServicesClient({
     setSelected(null);
     setFormData({
       title: "",
+      name:"",
       description: "",
       companyId:companyId,
       productCategoryId: productCategories[0]?.id || "",

@@ -210,7 +210,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
     id:                  marketListItem?.id                     || "",
     productId:           marketListItem?.productId             || product?.product?.id          || "",
-    title:               marketListItem?.title                 || product?.product?.name        || "",
+    name:               marketListItem?.name  || marketListItem?.title                              || product?.product?.name        || "",
     description:         marketListItem?.description           || product?.product?.description || "",
     productCategoryId:   marketListItem?.productCategoryId     || product?.product?.productCategoryId || "",
   
@@ -497,7 +497,7 @@ const handleCreateListing = async () => {
       books: booksWithUrls, 
     
       // — Title & description —
-      title:                formData.title,                         // String
+      name:                formData.name,                         // String
       description:          formData.description,                   // String?
     
       // — Inventory & media —

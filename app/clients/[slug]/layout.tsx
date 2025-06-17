@@ -20,7 +20,7 @@ export default async function StoreLayout({
         take: 8,
         select: {
           id: true,
-          title: true,
+          name: true,
           finalPrice: true,
           images: true,
           // slug: true

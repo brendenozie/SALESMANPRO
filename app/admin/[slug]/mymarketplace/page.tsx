@@ -11,6 +11,7 @@ type MarketplaceProduct = {
   sellerType: string;
   productId: string;
   title: string;
+  name: string;
   description: string;
   quantity: number;
   createdAt: string;

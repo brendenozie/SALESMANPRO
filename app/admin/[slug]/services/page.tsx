@@ -58,7 +58,7 @@ export default async function ServicesPage({ params }: PageProps) {
 
   try {
     // 1. Fetch marketplace listings for the given companyId
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/my-market-place?companyId=${companyId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/my-market-place?companyId=${companyId}`, {
       // You might want to add caching strategies here, e.g., revalidate data every hour
       // next: { revalidate: 3600 }, 
       cache: 'no-store' // For development, ensures fresh data on every request

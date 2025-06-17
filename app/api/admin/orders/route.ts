@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     const whereFilter: any = {
       marketplaceListing: {
         companyId: companyId,
-        ...(search ? { title: { contains: search, mode: 'insensitive' } } : {})
+        ...(search ? { name: { contains: search, mode: 'insensitive' } } : {})
       }
     };
 

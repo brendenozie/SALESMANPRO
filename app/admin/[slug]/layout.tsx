@@ -37,7 +37,7 @@ export default async function AdminStoreLayout({
           take: 12,
           select: {
             id: true,
-            title: true,
+            name: true,
             description: true,
             finalPrice: true,
             images: true,
