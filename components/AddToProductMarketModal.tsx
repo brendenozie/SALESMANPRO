@@ -332,98 +332,6 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     status:              marketListItem?.status             || product?.product?.status            || "ACTIVE",
   });
   
-  // const [formData, setFormData] = useState({
-  //   id: marketListItem?.id || "",
-  //   productId: marketListItem?.productId || product?.product?.id || "",
-  //   title: marketListItem?.title || product?.product?.name || "",
-  //   description: marketListItem?.description || product?.product?.description || "",
-  //   productCategoryId: marketListItem?.productCategoryId || product?.product?.productCategoryId || "",
-
-  //   model: marketListItem?.model || product?.product?.model || "",
-  //   color: marketListItem?.color || product?.product?.color || "",
-  //   size: marketListItem?.size || product?.product?.size || "",
-  //   weight: marketListItem?.weight || product?.product?.weight || "",
-
-  //   condition: marketListItem?.condition || product?.product?.condition || "",
-  //   dimension: marketListItem?.dimension || product?.product?.dimension || "",
-  //   material: marketListItem?.material || product?.product?.material || "",
-  //   images: marketListItem?.images || product?.product?.images || "",
-
-  //   isAvailable: marketListItem?.isAvailable || product?.product?.isAvailable || false,
-  //   isOnOffer: marketListItem?.isOnOffer || product?.product?.isOnOffer || false,
-  //   isFlashDeal: marketListItem?.isFlashDeal || product?.product?.isFlashDeal || false,
-  //   isNewArrival: marketListItem?.isNewArrival || product?.product?.isNewArrival || false,
-  //   isDiscounted: marketListItem?.isDiscounted || product?.product?.isDiscounted || false,
-  //   isFeatured: marketListItem?.isFeatured || product?.product?.isFeatured || false,
-
-  //   quantity: product?.quantityPurchased || 1,
-  //   buyingPrice: marketListItem?.buyingPrice || product?.product?.salesPrice || "",
-  //   sellingPrice: marketListItem?.sellingPrice || 0,
-  //   discount: marketListItem?.discount  || 0,
-  //   finalPrice: marketListItem?.finalPrice || 0,
-  //   profitMargin: marketListItem?.profitMargin || 0,
-  //   category: marketListItem?.productCategory || product?.product?.productCategory || { subcategories: [], allBrands: [] },
-  //   subCategory: marketListItem?.subCategory || product?.product?.subCategory || "",
-  //   brand: marketListItem?.brand || product?.product?.brand || "",
-  //   tags:marketListItem?.tags || product?.product?.tags || [],
-
-  //   year: marketListItem?.year || product?.year || "",
-
-  //   commissionRate: product?.product?.commissionRate || 0,
-  //   commissionType: product?.product?.commissionType || 'COST', // Default to "Percentage"
-  //   companyId: product?.product?.companyId || `${companyId}`,
-  //   // Vehicle-specific keys
-  //   make:  marketListItem?.make || product?.product?.make || "",
-  //   trim:  marketListItem?.trim || product?.product?.trim || "",
-  //   type:  marketListItem?.type || product?.product?.type || "",
-  //   mileage:  marketListItem?.mileage || product?.product?.mileage || "",
-  //   engineType:  marketListItem?.engineType || product?.product?.engineType || "",
-  //   engineSize:  marketListItem?.engineSize || product?.product?.engineSize || "",
-  //   transmission:  marketListItem?.transmission || product?.product?.transmission || "",
-  //   drivetrain:  marketListItem?.drivetrain || product?.product?.drivetrain || "",
-
-  //   vin:  marketListItem?.vin || product?.product?.vin || "",
-  //   logbookStatus:  marketListItem?.logbookStatus || product?.product?.logbookStatus || "Available",
-  //   serviceHistory:  marketListItem?.serviceHistory || product?.product?.serviceHistory || "Full",
-
-  //   price:  marketListItem?.price || product?.product?.price || "",
-
-  //   negotiable:  marketListItem?.negotiable || product?.product?.negotiable || false,
-  //   financingAvailable:  marketListItem?.financingAvailable || product?.product?.financingAvailable || false,
-  //   tradeIn:  marketListItem?.tradeIn || product?.product?.tradeIn || false,
-  //   features:  marketListItem?.features || product?.product?.features || [],
-  //   location:  marketListItem?.location || product?.product?.location || "",
-  //   contact:  marketListItem?.contact || product?.product?.contact || "",
-  //   video:  marketListItem?.video || product?.product?.video || null,
-  //   // Extra fields for Books:
-  //   author:  marketListItem?.author || product?.product?.author || "",
-  //   publisher:  marketListItem?.publisher || product?.product?.publisher || "",
-  //   isbn:  marketListItem?.isbn || product?.product?.isbn || "",
-  //   // Extra fields for Clothing/Fashion:
-  //   fabricComposition:  marketListItem?.fabricComposition || product?.product?.fabricComposition || "",
-  //   careInstructions:  marketListItem?.careInstructions || product?.product?.careInstructions || "",
-  //   // Extra fields for Home Appliances:
-  //   energyRating:  marketListItem?.energyRating || product?.product?.energyRating || "",
-  //   warrantyPeriod:  marketListItem?.warrantyPeriod || product?.product?.warrantyPeriod || "",
-  //   dimensions:  marketListItem?.dimensions || product?.product?.dimensions || "",
-  //   // Extra fields for Beauty Products:
-  //   ingredients:  marketListItem?.ingredients || product?.product?.ingredients || "",
-  //   usageInstructions:  marketListItem?.usageInstructions || product?.product?.usageInstructions || "",
-  //   expirationDate:  marketListItem?.expirationDate || product?.product?.expirationDate || "",
-
-  //   startDealDate: product?.product?.startDealDate,
-  //   endDealDate: product?.product?.endDealDate,
-
-  //   option: product?.product?.option || [],
-  //   amenities: product?.product?.amenities || [],
-  //   featured: product?.product?.featured || false,
-
-  //   bedrooms: product?.product?.bedrooms || [],
-  //   studios: product?.product?.studios || [],
-  //   bathrooms: product?.product?.bathrooms || "",
-  //   area: product?.product?.area || "",
-  // });
-
   const stepsForCategory: number[] = useMemo(() => {
     return CATEGORY_STEPS[formData.category?.name] || [];
   }, [formData.category]);
@@ -433,7 +341,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
   const [images, setImages] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
-  // const [books, setBooks] = useState<String[]>([]);
+  
   const [loading, setLoading] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);

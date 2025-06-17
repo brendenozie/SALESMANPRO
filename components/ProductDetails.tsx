@@ -47,7 +47,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     "Travel Insurance",
   ].includes(subCat);
 
-  const isPhysical = !isService && !isDigital && !isTravel;
+  const isPhysical = !isService || !isDigital || !isTravel;
 
   // Determine the header label based on category name
   const headerLabel = (() => {
