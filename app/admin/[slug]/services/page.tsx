@@ -64,6 +64,23 @@ export default async function ServicesPage({ params }: PageProps) {
       cache: 'no-store' // For development, ensures fresh data on every request
     });
 
+    
+
+    // Fetch all categories for this company
+    const categoriesRes = await fetch(
+      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+        companyId
+      )}`,
+      { cache: "no-store" }
+    );
+
+    if (categoriesRes.ok) {
+      const categoriesJson = (await categoriesRes.json()) as {
+        results: Category[];
+      };
+      categoriesData = categoriesJson.results;
+    }
+
     if (!res.ok) {
       // It's crucial to handle API errors.
       // Depending on your error handling strategy, you might want to:
@@ -89,20 +106,6 @@ export default async function ServicesPage({ params }: PageProps) {
         createdAt: item.createdAt ? new Date(item.createdAt) : undefined,
         updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
       }));
-    }
-
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
-      { cache: "no-store" }
-    );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
     }
 
   } catch (error) {
