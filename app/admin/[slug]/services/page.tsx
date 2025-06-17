@@ -1,59 +1,108 @@
 import React from "react";
-import AdminServicesClient, { ServiceItem } from "./AdminServicesClient";
+import AdminServicesClient, { ServiceItem } from "./AdminServicesClient"; // Adjust path as needed
 
-// Sample data for services
-const sampleServices: ServiceItem[] = [
-  {
-    id: "svc_001",
-    name: "Website Design",
-    category: "Design & Development",
-    price: 1200,
-    duration: "4 weeks",
-    provider: {
-      name: "Creative Studio",
-      email: "contact@creativestudio.com",
-      phone: "+254701234567",
-    },
-    status: "Active",
-  },
-  {
-    id: "svc_002",
-    name: "SEO Optimization",
-    category: "Marketing",
-    price: 800,
-    duration: "2 weeks",
-    provider: {
-      name: "OptimizePro",
-      email: "hello@optimizepro.com",
-      phone: "+254712345678",
-    },
-    status: "Pending",
-  },
-  {
-    id: "svc_003",
-    name: "Social Media Management",
-    category: "Marketing",
-    price: 600,
-    duration: "1 month",
-    provider: {
-      name: "SocialBee",
-      email: "support@socialbee.com",
-      phone: "+254798765432",
-    },
-    status: "Completed",
-  },
+interface PageProps {
+  params: {
+    slug: string; // This will be the companyId
+  };
+}
+
+// Dummy data for select options - In a real app, these would also come from an API
+const dummyProductCategories = [
+  { id: "cat1", name: "Electronics" },
+  { id: "cat2", name: "Services" },
+  { id: "cat3", name: "Real Estate" },
+  { id: "cat4", name: "Vehicles" },
+  { id: "cat5", name: "Digital Goods" },
+  // Add more as per your application's product categories
 ];
 
-export default function ServicesPage() {
-  // In a real scenario, you'd fetch from an API:
-  // const res = await fetch(`/api/admin/services?companyId=${companyId}`);
-  // const services = await res.json();
+const dummyPaymentOptions = [
+  "AT SHOP",
+  "MOBILE MONEY",
+  "BANK TRANSFER",
+  "CREDIT CARD",
+  // Add more as per your application's payment options
+];
 
-  const initialServices = sampleServices;
+const dummyDeliveryMethods = [
+  "On-site",
+  "Remote/Virtual",
+  "At Location",
+  "Shipping",
+  "Pickup",
+  // Add more as per your application's delivery methods for services/products
+];
+
+const dummySellers = [
+  { id: "seller1", name: "John Doe" },
+  { id: "seller2", name: "Jane Smith" },
+  // Fetch actual sellers for the company
+];
+
+const dummyCompanies = [
+  { id: "company1", name: "Acme Corp" },
+  { id: "company2", name: "Widgets Ltd" },
+  // Fetch actual companies
+];
+
+
+export default async function ServicesPage({ params }: PageProps) {
+  const companyId = params.slug;
+
+  let initialServices: ServiceItem[] = [];
+
+  try {
+    // 1. Fetch marketplace listings for the given companyId
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/my-market-place?companyId=${companyId}`, {
+      // You might want to add caching strategies here, e.g., revalidate data every hour
+      // next: { revalidate: 3600 }, 
+      cache: 'no-store' // For development, ensures fresh data on every request
+    });
+
+    if (!res.ok) {
+      // It's crucial to handle API errors.
+      // Depending on your error handling strategy, you might want to:
+      // - Throw an error (will be caught by Next.js error boundary if configured)
+      // - Return an empty array
+      // - Log the error and show a message to the user
+      const errorText = await res.text();
+      console.error(`Failed to fetch services: ${res.status} ${res.statusText} - ${errorText}`);
+      // For now, we'll return an empty array if fetch fails, but you might throw an error.
+      // throw new Error(`Failed to fetch services for company ${companyId}`); 
+    } else {
+      const data: ServiceItem[] = await res.json();
+      
+      // 2. Transform Date strings back to Date objects if AdminServicesClient expects them
+      // This is necessary because Dates are serialized as strings when fetched from an API.
+      initialServices = data.map(item => ({
+        ...item,
+        startDealDate: item.startDealDate ? new Date(item.startDealDate) : undefined,
+        endDealDate: item.endDealDate ? new Date(item.endDealDate) : undefined,
+        availabilityStart: item.availabilityStart ? new Date(item.availabilityStart) : undefined,
+        availabilityEnd: item.availabilityEnd ? new Date(item.availabilityEnd) : undefined,
+        // expirationDate: item.expirationDate ? new Date(item.expirationDate) : undefined,
+        createdAt: item.createdAt ? new Date(item.createdAt) : undefined,
+        updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
+      }));
+    }
+  } catch (error) {
+    console.error("Error fetching initial services:", error);
+    // You could also set a user-facing error message here if needed.
+    initialServices = []; // Ensure it's an empty array on error
+  }
 
   return (
     <div>
-      <AdminServicesClient initialServices={initialServices} />
+      <AdminServicesClient
+        initialServices={initialServices}
+        productCategories={dummyProductCategories}
+        paymentOptions={dummyPaymentOptions}
+        deliveryMethods={dummyDeliveryMethods}
+        sellers={dummySellers}
+        companies={dummyCompanies}
+        companyId={companyId}
+      />
     </div>
   );
 }

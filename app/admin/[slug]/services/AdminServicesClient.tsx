@@ -117,6 +117,8 @@ interface Props {
   // Optional: For seller/company dropdowns
   sellers?: { id: string; name: string }[];
   companies?: { id: string; name: string }[];
+  companyId: string
+
 }
 
 export default function AdminServicesClient({
@@ -126,6 +128,8 @@ export default function AdminServicesClient({
   deliveryMethods,
   sellers = [],
   companies = [],
+  companyId = "",
+
 }: Props) {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [selected, setSelected] = useState<ServiceItem | null>(null);
@@ -133,6 +137,7 @@ export default function AdminServicesClient({
   const [formData, setFormData] = useState<Omit<ServiceItem, "id" | "createdAt" | "updatedAt">>(
     {
       title: "",
+      companyId: companyId,
       description: "",
       productCategoryId: productCategories[0]?.id || "",
       subCategory: {}, // Initialize as empty object or null
@@ -240,6 +245,7 @@ export default function AdminServicesClient({
       setFormData({
         title: "",
         description: "",
+        companyId:companyId,
         productCategoryId: productCategories[0]?.id || "",
         subCategory: {},
         subCategoryName: "",
@@ -277,6 +283,7 @@ export default function AdminServicesClient({
     setFormData({
       title: "",
       description: "",
+      companyId:companyId,
       productCategoryId: productCategories[0]?.id || "",
       subCategory: {},
       subCategoryName: "",
