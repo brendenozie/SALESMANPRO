@@ -20,6 +20,9 @@ import FinalReview from "./FinalReview";
 import ContactLocation from "./ContactLocation";
 import AmenitiesStep from "./AmenitiesStep";
 import VehicleAmenitiesStep from "./VehicleAmenitiesStep";
+import { BookingSlot } from "./stores/create/BookingSlot/BookingSlot";
+import { ProductPricingAndTiers } from "./stores/create/PricingTiers/PricingTiers";
+import { ServiceSpecifics } from "./stores/create/ServiceSpecifics/ServiceSpecifics";
 
 // ..//
 // -------------------
@@ -45,6 +48,9 @@ const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   12: ContactLocation,
   13: AmenitiesStep,
   14: VehicleAmenitiesStep,
+  15: ProductPricingAndTiers,
+  16: ServiceSpecifics,
+  17: BookingSlot
 };
 
 const STEP_LABELS: Record<number, string> = {
@@ -61,6 +67,9 @@ const STEP_LABELS: Record<number, string> = {
   12: "Location / Contact",
   13: "Property Amenities",
   14: "Vehicle Amenities",
+  15: "Product Pricing And Tiers",
+  16: "Service Specifics",
+  17: "Booking Slot",
 };
 
 // ------------------- 
@@ -152,17 +161,17 @@ const CATEGORY_STEPS: Record<string, number[]> = {
   "Hardware":            [1,3,4,5,7,8,10,12,14,11],
 
   // — Services flow —
-  "Services":            [1,2,7,8,9,10,12,11],
-  "Cleaning":            [1,2,7,8,9,10,12,11],
-  "Plumbing":            [1,2,7,8,9,10,12,11],
-  "Electrical":          [1,2,7,8,9,10,12,11],
-  "Landscaping":         [1,2,7,8,9,10,12,11],
-  "Catering":            [1,2,7,8,9,10,12,11],
-  "Transportation":      [1,2,7,8,9,10,12,11],
-  "IT Services":         [1,2,7,8,9,10,12,11],
-  "Beauty Services":     [1,2,7,8,9,10,12,11],
-  "Tutoring":            [1,2,7,8,9,10,12,11],
-  "Event Planning":      [1,2,7,8,9,10,12,11],
+  "Services":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Cleaning":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Plumbing":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Electrical":          [1,2,7,15,16,17,8,9,10,12,11],
+  "Landscaping":         [1,2,7,15,16,17,8,9,10,12,11],
+  "Catering":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Transportation":      [1,2,7,15,16,17,8,9,10,12,11],
+  "IT Services":         [1,2,7,15,16,17,8,9,10,12,11],
+  "Beauty Services":     [1,2,7,15,16,17,8,9,10,12,11],
+  "Tutoring":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Event Planning":      [1,2,7,15,16,17,8,9,10,12,11],
 
   // — Arts & Crafts flow —
   "Arts & Crafts":       [1,2,7,8,9,10,12,11],
