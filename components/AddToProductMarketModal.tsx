@@ -207,7 +207,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    
+
     id:                  marketListItem?.id                     || "",
     productId:           marketListItem?.productId             || product?.product?.id          || "",
     title:               marketListItem?.title                 || product?.product?.name        || "",
@@ -674,8 +674,7 @@ const handleCreateListing = async () => {
                 categories={categories}
                 filteredSubCategories={filteredSubCategories}
                 filteredBrands={filteredBrands}
-                handleInputChange={handleInputChange}
-                
+                handleInputChange={handleInputChange}                
                 imageFiles={imageFiles}
                 setImageFiles={setImageFiles}
                 imagePreviews={imagePreviews}
@@ -686,7 +685,6 @@ const handleCreateListing = async () => {
                 setVideoPreviews={setVideoPreviews}
                 books={books}
                 setBooks={setBooks}
-
               />
             ) : (
               <p>No form available for this step.</p>
