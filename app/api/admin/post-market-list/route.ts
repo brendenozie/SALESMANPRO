@@ -423,7 +423,8 @@ export async function POST(req: Request) {
                message: "An error occurred while processing the marketplace listing.",
                // If 'error' has a 'code' property and you want to include it:
                code: error.code // Ensure 'error' object has a 'code' property
-             }
+             },
+             { status: 500 }
           );
           
   }
