@@ -1,8 +1,9 @@
 // app/[slug]/layout.tsx
 import prisma from '../../../server/db/prismadb';
-import { Store, StoreContextProvider } from '../../../contexts/StoreContext';
+import { StoreContextProvider } from '../../../contexts/StoreContext';
 import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';
+import { StoreForm } from '@/types/typings';
 // import Header from '../../../components/site/header/Header';
 // import Footer from '../../components/site/footer/Footer';
 
@@ -51,7 +52,7 @@ export default async function StoreLayout({
 
   if (!raw) return notFound();
 
-  const store: Store = {
+  const store: StoreForm = {
     id: raw.id,
     name: raw.name,
     slug: raw.slug,
@@ -104,7 +105,7 @@ export default async function StoreLayout({
     })),
     products: raw.MarketplaceListing.map(p => ({
       id: p.id,
-      name: p.title,
+      name: p.name,
       price: p.finalPrice ?? 0,
       imageUrl: (typeof p.images[0] === 'object' && p.images[0] !== null && 'url' in p.images[0])
         ? (p.images[0] as { url: string }).url

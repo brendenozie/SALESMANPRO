@@ -1,10 +1,9 @@
 // app/[slug]/layout.tsx
-import prisma from '../../server/db/prismadb';
-import { Store, StoreContextProvider } from '../../contexts/StoreContext';
+import prisma from '@/server/db/prismadb';
+import { StoreContextProvider } from '@/contexts/StoreContext';
 import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';
-import Header from '../../components/site/header/Header';
-import Footer from '../../components/site/footer/Footer';
+import { StoreForm } from '@/types/typings';
 
 export default async function StoreLayout({
   params,
@@ -51,7 +50,7 @@ export default async function StoreLayout({
 
   if (!raw) return notFound();
 
-  const store: Store = {
+  const store: StoreForm = {
     id: raw.id,
     name: raw.name,
     slug: raw.slug,
@@ -116,9 +115,9 @@ export default async function StoreLayout({
   return (
     <StoreContextProvider initialStore={store}>
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-        <Header store={store} />
+        {/* <Header store={store} /> */}
         {children}
-        <Footer store={store}/>
+        {/* <Footer store={store}/> */}
       </div>
     </StoreContextProvider>
   );
