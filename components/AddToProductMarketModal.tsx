@@ -207,6 +207,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    
     id:                  marketListItem?.id                     || "",
     productId:           marketListItem?.productId             || product?.product?.id          || "",
     title:               marketListItem?.title                 || product?.product?.name        || "",
@@ -305,8 +306,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     area:                marketListItem?.area                || product?.product?.area              || "",
     serviceSchedule:     marketListItem?.serviceSchedule     || product?.product?.serviceSchedule   || "",
     
-    // Scheduling
-    
+    // Scheduling    
     availabilityStart:     marketListItem?.availabilityStart     || product?.product?.availabilityStart   || "",
     availabilityEnd:     marketListItem?.availabilityEnd     || product?.product?.availabilityEnd   || "",
 
