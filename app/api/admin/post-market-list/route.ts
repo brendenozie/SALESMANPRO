@@ -416,13 +416,15 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("❌ Error processing marketplace listing:", error);
-    return NextResponse.json(
-      {
-        message: "An error occurred while processing the marketplace listing.",
-        error: error.message ?? "Unknown error",
-      },
-      { status: 500 }
-    );
+    
+    // console.error("❌ Error processing marketplace listing:", error);
+         return NextResponse.json(
+            {
+               message: "An error occurred while processing the marketplace listing.",
+               // If 'error' has a 'code' property and you want to include it:
+               code: error.code // Ensure 'error' object has a 'code' property
+             }
+          );
+          
   }
 }

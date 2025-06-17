@@ -208,28 +208,28 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
 
-    id:                  marketListItem?.id                     || "",
-    productId:           marketListItem?.productId             || product?.product?.id          || "",
-    name:               marketListItem?.name  || marketListItem?.title                              || product?.product?.name        || "",
-    description:         marketListItem?.description           || product?.product?.description || "",
-    productCategoryId:   marketListItem?.productCategoryId     || product?.product?.productCategoryId || "",
+    id:                  marketListItem?.id                   || "",
+    productId:           marketListItem?.productId            || product?.product?.id          || "",
+    name:                marketListItem?.name                 || marketListItem?.title         || product?.product?.name  || "",
+    description:         marketListItem?.description          || product?.product?.description || "",
+    productCategoryId:   marketListItem?.productCategoryId    || product?.product?.productCategoryId || "",
   
     // Basic specs:
-    model:               marketListItem?.model                 || product?.product?.model       || "",
-    color:               marketListItem?.color                 || product?.product?.color       || [],
-    size:                marketListItem?.size                  || product?.product?.size        || [],
-    weight:              marketListItem?.weight                || product?.product?.weight      || "",
-    condition:           marketListItem?.condition             || product?.product?.condition   || "",
-    dimension:           marketListItem?.dimension             || product?.product?.dimension   || "",
-    material:            marketListItem?.material              || product?.product?.material    || [],
+    model:               marketListItem?.model                || product?.product?.model       || "",
+    color:               marketListItem?.color                || product?.product?.color       || [],
+    size:                marketListItem?.size                 || product?.product?.size        || [],
+    weight:              marketListItem?.weight               || product?.product?.weight      || "",
+    condition:           marketListItem?.condition            || product?.product?.condition   || "",
+    dimension:           marketListItem?.dimension            || product?.product?.dimension   || "",
+    material:            marketListItem?.material             || product?.product?.material    || [],
   
     // Flags:
-    isAvailable:         marketListItem?.isAvailable           || product?.product?.isAvailable   || false,
-    isOnOffer:           marketListItem?.isOnOffer             || product?.product?.isOnOffer     || false,
-    isFlashDeal:         marketListItem?.isFlashDeal           || product?.product?.isFlashDeal   || false,
-    isNewArrival:        marketListItem?.isNewArrival          || product?.product?.isNewArrival  || false,
-    isDiscounted:        marketListItem?.isDiscounted          || product?.product?.isDiscounted  || false,
-    isFeatured:          marketListItem?.isFeatured            || product?.product?.isFeatured    || false,
+    isAvailable:         marketListItem?.isAvailable          || product?.product?.isAvailable   || false,
+    isOnOffer:           marketListItem?.isOnOffer            || product?.product?.isOnOffer     || false,
+    isFlashDeal:         marketListItem?.isFlashDeal          || product?.product?.isFlashDeal   || false,
+    isNewArrival:        marketListItem?.isNewArrival         || product?.product?.isNewArrival  || false,
+    isDiscounted:        marketListItem?.isDiscounted         || product?.product?.isDiscounted  || false,
+    isFeatured:          marketListItem?.isFeatured           || product?.product?.isFeatured    || false,
   
     // Inventory / pricing:
     quantity:            marketListItem?.quantity             || 1,
@@ -628,6 +628,7 @@ const handleCreateListing = async () => {
     };
    
     try {
+
       const response = await fetch(`${apiUrl}/admin/post-market-list`, {
         method: "POST",
         headers: {
@@ -635,6 +636,7 @@ const handleCreateListing = async () => {
         },
         body: JSON.stringify(listing)
       });
+
       if (response.ok) {
         const data = await response.json();
         console.log("Listing created:", data);
@@ -649,6 +651,7 @@ const handleCreateListing = async () => {
         setBooks([]);
       } else {
         console.error("Error creating listing:", response.statusText);
+        console.error("Error creating listing:", response);
         alert("Error creating listing. Please try again.");
       }
     } catch (error) {

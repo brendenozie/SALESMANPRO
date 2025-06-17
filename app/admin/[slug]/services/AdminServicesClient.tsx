@@ -158,6 +158,7 @@ export default function AdminServicesClient({
   companyId = "",
   categoriesData
 }: Props) {
+  
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [selected, setSelected] = useState<ServiceItem | null>(null);
   const [formMode, setFormMode] = useState<"edit" | "create">("edit");
@@ -372,7 +373,7 @@ export default function AdminServicesClient({
   
       if (formMode === "create") {
         // Logic for creating a new service
-        response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/marketplace-list`, {
+        response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/post-market-list`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
