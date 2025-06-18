@@ -41,7 +41,7 @@ const sampleAppointments: AppointmentItem[] = [
     id: "apt_001",
     service: "Dental Checkup",
     date: "2025-06-20",
-    time: "10:00 AM",
+    timeSlot: "10:00 AM",
     client: {
       name: "Alice Johnson",
       email: "alice.johnson@example.com",
@@ -54,7 +54,7 @@ const sampleAppointments: AppointmentItem[] = [
     id: "apt_002",
     service: "Therapy Session",
     date: "2025-06-21",
-    time: "02:30 PM",
+    timeSlot: "02:30 PM",
     client: {
       name: "Bob Smith",
       email: "bob.smith@example.com",
@@ -67,7 +67,7 @@ const sampleAppointments: AppointmentItem[] = [
     id: "apt_003",
     service: "Consultation",
     date: "2025-06-22",
-    time: "11:15 AM",
+    timeSlot: "11:15 AM",
     client: {
       name: "Carol Lee",
       email: "carol.lee@example.com",
@@ -103,6 +103,8 @@ export default async function AppointmentsPage({ params }: Props) {
   
   // For now, use sample data
   const initialAppointments = sampleAppointments;
+
+  console.log(orderItems);
 
   return <AdminAppointmentsClient initialAppointments={initialAppointments} initialOrderItems={orderItems} />;
 }

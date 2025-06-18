@@ -1333,7 +1333,9 @@ model ConsumerInventoryLog {
   consumer          Consumer          @relation(fields: [consumerId], references: [id])
   quantity          Int
   price             Float
-  priceType         String // "buying" or "selling"
+  email             String?
+  name              String?
+  phone             String?
   totalPrice        Float
   status            String //completed, pending
   damaged           Int               @default(0)

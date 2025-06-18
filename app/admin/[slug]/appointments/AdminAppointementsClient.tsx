@@ -133,7 +133,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
             className="bg-white rounded-2xl shadow-xl p-6 cursor-pointer transform hover:scale-[1.02] transition"
           >
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-semibold">{apt.order?.name ||apt.order?.title || apt.order?.consumer?.name || apt.order?.email || "N/A"}</h2>
+              <h2 className="text-2xl font-semibold">{apt.marketplaceListing?.name || apt.marketplaceListing?.title || apt.order?.name ||apt.order?.title || apt.order?.consumer?.name || apt.order?.name || apt.order?.email || "N/A"}</h2>
               {badge((apt.status ?? "Scheduled") as AppointmentItem["status"])}
             </div>
             <p className="text-gray-600 mb-2">
