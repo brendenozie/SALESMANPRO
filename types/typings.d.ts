@@ -217,6 +217,7 @@ type StoreForm = {
 export interface MarketplaceListingForm {
   id: string;
   title: string;
+  name: string;
   description?: string;
   finalPrice: number;
   images: string[];         // JSON[] in Prisma

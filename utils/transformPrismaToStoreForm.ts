@@ -119,6 +119,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     marketplaceListings: raw.MarketplaceListing.map((m:any) => ({
       id: m.id,
       title: m.title,
+      name: m.name,
       description: m.description ?? '',
       finalPrice: m.finalPrice ?? 0,
       images: Array.isArray(m.images)

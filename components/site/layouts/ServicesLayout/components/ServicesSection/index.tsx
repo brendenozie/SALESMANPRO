@@ -1,3 +1,4 @@
+import { useStoreContext } from '@/contexts/StoreContext';
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import React from 'react';
@@ -45,6 +46,22 @@ const services = [
 ];
 
 export default function ServicesSection() {
+  const { storeFormData } = useStoreContext();
+
+   // If there's any chance `storeFormData` is not yet loaded, guard early:
+   if (!storeFormData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  const {
+    slug,
+    marketplaceListings,     // assume you added this field to Prisma/StoreForm
+  } = storeFormData;
+
   return (
     <section className="bg-white py-16 px-6">
       <h2 className="text-center text-3xl md:text-4xl font-semibold mb-12">
@@ -52,6 +69,43 @@ export default function ServicesSection() {
       </h2>
 
       <div className="grid gap-8 md:grid-cols-3 max-w-7xl mx-auto">
+        {/* Featured Services */}
+      {marketplaceListings && marketplaceListings.length > 0 && (
+        marketplaceListings.map((service, index) => (
+          <div
+          key={index}
+          className={`relative rounded-2xl p-4 shadow-md transition-all `}
+          // ${service.bg}
+        >
+          <div className="absolute top-4 right-4">
+            <button
+              className={`p-2 rounded-full transition bg-orange-400 text-white
+                // $ {
+              //   service.bg === 'bg-white'
+              //     ? 'bg-orange-100 text-orange-500'
+              //     : 'bg-orange-400 text-white'
+              // }
+              `}
+            >
+              <ArrowUpRightIcon className="w-4 h-4" />
+            </button>
+          </div>
+
+          <h3 className="text-lg font-semibold mb-2">{service.name || service.title }</h3>
+          <p className="text-sm mb-4 opacity-80">{service.description || "Conducting all cleaning tasks with professionalism, including arriving on time."}</p>
+          <div className="rounded-xl overflow-hidden aspect-[4/3]">
+            <Image
+              src={service.images[0]}
+              loader={loader}
+              alt={service.title || service.name }
+              width={400}
+              height={300}
+              className="object-cover w-full h-full"
+            />
+          </div>
+          </div>
+        ))
+      )}
         {services.map((service, index) => (
           <div
             key={index}

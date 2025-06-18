@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   return {
-    title: `${raw.name} – Your One-Stop ${ params.slug}`,
+    title: `${raw.name}`,
     description: raw.description ?? 'Discover our exclusive collection of products.',
     openGraph: {
       title: `${raw.name} – Shop`,
@@ -79,16 +79,16 @@ export default async function StoreLayout({
           images: true,
           isAvailable: true,
           isFeatured: true,
-          product: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              brand: true,
-              color: true,
-              size: true,
-            },
-          },
+          // product: {
+          //   select: {
+          //     id: true,
+          //     name: true,
+          //     description: true,
+          //     brand: true,
+          //     color: true,
+          //     size: true,
+          //   },
+          // },
         },
       },
       StoreCategory: {

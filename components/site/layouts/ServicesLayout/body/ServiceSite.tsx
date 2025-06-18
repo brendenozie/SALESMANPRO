@@ -117,7 +117,7 @@ export default function ServiceSite() {
 
                   <div className="bg-white/80 backdrop-blur-md p-6">
                     <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                      {svc.name}
+                      {svc.name || svc.title}
                     </h3>
                     <p className="text-gray-600 mb-4">{svc.subtitle}</p>
 
