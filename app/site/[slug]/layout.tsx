@@ -79,16 +79,6 @@ export default async function StoreLayout({
           images: true,
           isAvailable: true,
           isFeatured: true,
-          // product: {
-          //   select: {
-          //     id: true,
-          //     name: true,
-          //     description: true,
-          //     brand: true,
-          //     color: true,
-          //     size: true,
-          //   },
-          // },
         },
       },
       StoreCategory: {
@@ -99,12 +89,10 @@ export default async function StoreLayout({
           },
         },
       },
-      // awards: true,
-      // metrics: true,
-      // stats: true,
-      // themeSettings: true,
     },
   });
+
+  console.log(raw);
 
   if (!raw) return notFound();
 

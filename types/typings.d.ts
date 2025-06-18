@@ -210,7 +210,6 @@ type StoreForm = {
   shippingSettings: Record<string, any>;
   marketplaceListings: MarketplaceListingForm[];
   storeCategories: StoreCategoryEntry[];
-
   pricingTiers: PricingTier[];
 };
 

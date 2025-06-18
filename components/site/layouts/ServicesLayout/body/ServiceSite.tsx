@@ -80,69 +80,6 @@ export default function ServiceSite() {
 
       <FAQSection />
 
-      {/* Featured Services */}
-      {marketplaceListings && marketplaceListings.length > 0 && (
-        <section className="relative py-28 bg-gradient-to-br from-white via-gray-50 to-white overflow-hidden">
-          <div className="container mx-auto px-6 relative z-10">
-            <motion.h2
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-4xl md:text-5xl font-extrabold text-center text-gray-800 mb-16"
-            >
-              Featured Services
-            </motion.h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {marketplaceListings.map((svc:any, idx:any) => (
-                <motion.div
-                  key={svc.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                  className="rounded-3xl shadow-xl overflow-hidden relative group"
-                >
-                  <div className="relative w-full h-64">
-                    <Image
-                      src={svc.imageUrl}
-                      alt={svc.name}
-                      loader={loader}
-                      fill
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition duration-300" />
-                  </div>
-
-                  <div className="bg-white/80 backdrop-blur-md p-6">
-                    <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                      {svc.name || svc.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4">{svc.subtitle}</p>
-
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleInquiry(svc.id)}
-                      className="relative z-10 inline-block bg-indigo-600 text-white px-5 py-2.5 rounded-full transition duration-300 hover:bg-indigo-700 hover:shadow-lg hover:animate-pulse"
-                    >
-                      Learn More
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Decorative Background Blobs */}
-          <div className="absolute -top-32 -left-20 w-96 h-96 bg-indigo-300/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-400/20 rounded-full blur-3xl" />
-        </section>
-
-      
-      )}
-
       <CleaningTipsSection />
      
       <BookingForm />

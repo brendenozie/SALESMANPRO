@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ServiceItem } from '@/app/admin/[slug]/services/AdminServicesClient';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const pricingPlans = [
   {
@@ -27,6 +29,20 @@ const pricingPlans = [
 
 export default function PricingSection() {
   const [billingCycle, setBillingCycle] = useState<'Monthly' | 'Yearly'>('Monthly');
+  
+  const { storeFormData } = useStoreContext();
+  
+    if (!storeFormData) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-600">Loading services...</p>
+        </div>
+      );
+    }
+  
+    const { pricingTiers } = storeFormData;
+
+    console.log(pricingTiers);
 
   return (
     <section className="bg-gray-50 py-16 px-4 text-center">
@@ -55,6 +71,78 @@ export default function PricingSection() {
 
         {/* Cards */}
         <div className="grid gap-6 md:grid-cols-3">
+        {pricingTiers && pricingTiers.length > 0 && pricingTiers.map((plan, index) => (
+            <div
+              key={index}
+              className={`relative p-6 rounded-2xl shadow-md transition-all ${
+                index == 1// plan.featured
+                  ? 'bg-teal-900 text-white'
+                  : 'bg-white text-gray-800'
+              }`}
+            >
+              {/* Badge */}
+              {index == 1  && ( //plan.featured
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-teal-900 font-semibold text-sm px-4 py-1 rounded-full shadow">
+                  {'Most Popular' }
+                  {/* {plan.badge} */}
+                </div>
+              )}
+
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-8 h-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke={index == 1 ? 'white' : '#1F2937'} 
+                  // plan.featured
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 0h6m-6 0v2a2 2 0 002 2h2a2 2 0 002-2v-2m-6 0h6m-6-8v2m0-2h6"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
+              <p className="text-3xl font-bold mb-1">
+                ${plan.price.toFixed(2)}{' '}
+                <span className="text-base font-medium">/ Service</span>
+              </p>
+
+              {/* Features */}
+              <ul className="mt-6 space-y-3 text-left">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <CheckCircleIcon
+                      className={`w-5 h-5 ${
+                        index == 1 ? 'text-orange-300' : 'text-orange-500'
+                        // plan.featured
+                      }`}
+                    />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                className={`mt-8 px-6 py-2 w-full rounded-md text-sm font-medium transition ${
+                  // plan.featured
+                  index == 1
+                    ? 'bg-orange-400 text-white hover:bg-orange-500'
+                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                }`}
+              >
+                Get Service
+              </button>
+              {/* <a href="#booking" className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition">
+                Get Service
+              </a> */}
+
+            </div>
+          ))}
           {pricingPlans.map((plan, index) => (
             <div
               key={index}
