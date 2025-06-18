@@ -12,7 +12,7 @@ const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality|
 
 export default function ServicesSection() {
   const { storeFormData } = useStoreContext();
-  const router = useRouter();
+  
   const [selected, setSelected] = useState<ServiceItem | null>(null);
 
   if (!storeFormData) {
@@ -102,17 +102,7 @@ export default function ServicesSection() {
                   Price: ${ (selected.finalPrice||0).toFixed(2) }
                 </p>
 
-                <BookingForm
-                  listingId={selected.id}
-                  onComplete={(orderId) => {
-                    setSelected(null);
-                    router.push(`/site/service-provider/service-provider/checkout?orderId=${orderId}`);  // <— go to checkout
-                  }}
-                  // onComplete={() => {
-                  //   setSelected(null);
-                  //   router.push("/my-orders");
-                  // }}
-                />
+                <BookingForm service={selected} />
               </div>
             </div>
           </div>

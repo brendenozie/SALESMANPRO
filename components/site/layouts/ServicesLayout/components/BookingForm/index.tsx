@@ -1,43 +1,39 @@
 "use client";
 
+import { ServiceItem } from "@/app/admin/[slug]/services/AdminServicesClient";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface BookingFormProps {
-  listingId: string;
-  onComplete?: (orderId: string) => void;
+  service: ServiceItem;
 }
 
-export default function BookingForm({ listingId, onComplete }: BookingFormProps) {
+export default function BookingForm({ service }: BookingFormProps) {
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/shop/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId, date, timeSlot, quantity: 1 }),
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error || "Booking failed");
-      }
 
-      const { order } = await res.json();            // <— grab the order
-      if (onComplete) {
-        onComplete(order.id);
-      }
-
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (!date || !timeSlot) {
+      setError("Please select both date and time.");
+      return;
     }
+
+    // Build the query string
+    const params = new URLSearchParams({
+      listingId: service.id,
+      name: service.name ?? "",
+      price: service.finalPrice !== undefined ? service.finalPrice.toString() : "0.00",
+      date,
+      timeSlot,
+    });
+
+    // Navigate to your checkout page
+    router.push(`/site/service-provider/service-provider/checkout?${params.toString()}`);
   };
 
   return (
