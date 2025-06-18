@@ -250,7 +250,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     // commissionRate:      marketListItem?.commissionRate        || product?.product?.commissionRate   || 0,
     // commissionType:      marketListItem?.commissionType        || product?.product?.commissionType   || "COST",
   
-    companyId:           marketListItem?.companyId  || product?.product?.companyId          || `${companyId}`,
+    companyId:  marketListItem?.companyId  || product?.product?.companyId          || `${companyId}`,
     sellerType: product?.product?.sellerType || `ADMIN`,
   
     // Vehicle-specific:

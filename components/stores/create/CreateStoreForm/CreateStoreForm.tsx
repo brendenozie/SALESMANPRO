@@ -61,6 +61,9 @@ export const storeSteps: StepConfig[] = [
       />
     ),
   },
+];
+
+export const paymentSteps: StepConfig[] = [
   {
     key: 'payment',
     title: 'Payment',
@@ -453,12 +456,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     awards: [],
     metrics: [],
     stats: [],
-    marketplaceListings: [],
-    // Add these two fields to satisfy FormData
-    // sellingPrice: 0,
-    // buyingPrice: 0,
-
-   
+    marketplaceListings: [],   
   };
 
   // const [form, setForm] = useState<StoreForm>(initialForm);
@@ -531,7 +529,22 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     // always have storeSteps…
     const list = [...storeSteps];
     // …then, only if they checked “hasWebsite”
+
+    list.push(...paymentSteps);
+    
+    list.push(...pricingSteps);
+    
     if (form.hasWebsite) {
+
+      if(form.category.toLocaleLowerCase()=="service" || form.category.toLocaleLowerCase()=="service provider" ||
+          form.category.toLocaleLowerCase()=="portfolio & personal branding" || form.category.toLocaleLowerCase()=="service provider" ||
+          form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
+          form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
+          form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider")
+      {
+        list.push(...pricingSteps);
+      }
+
       list.push(...websiteSteps);
     }
     return list;

@@ -184,6 +184,8 @@ model Company {
   testimonials      Testimonial[] // customer quotes
   promotions        Promotion[] // site-wide deals
 
+  pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
+
   themeSettings Json? // colors, fonts, layout toggles
   seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
 
