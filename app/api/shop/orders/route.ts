@@ -18,6 +18,8 @@ const orderSchema = z.object({
   items: z.array(
     z.object({
       marketplaceListingId: z.string(),
+      date: z.string().optional(),
+      timeSlot: z.string().optional(),
       quantity: z.number().positive(),
       price: z.number().positive(),
     })

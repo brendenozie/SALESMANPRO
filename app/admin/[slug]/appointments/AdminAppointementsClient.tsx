@@ -7,12 +7,13 @@ import {
   ClockIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
+import { OrderItem } from "./page";
 
 export interface AppointmentItem {
   id: string;
   service: string;
   date: string;   // YYYY-MM-DD
-  time: string;   // e.g. "10:00 AM"
+  timeSlot: string;   // e.g. "10:00 AM"
   client: {
     name: string;
     email: string;
@@ -24,12 +25,17 @@ export interface AppointmentItem {
 
 interface Props {
   initialAppointments: AppointmentItem[];
+  initialOrderItems: OrderItem[];
 }
 
-export default function AdminAppointmentsClient({ initialAppointments }: Props) {
+export default function AdminAppointmentsClient({ initialAppointments, initialOrderItems }: Props) {
   const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
   const [selected, setSelected] = useState<AppointmentItem | null>(null);
   const [newStatus, setNewStatus] = useState<AppointmentItem["status"]>("Scheduled");
+  const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
+  const [status, setStatus] = useState<string>("PENDING");
+  const [rider, setRider] = useState<string>("");
+  const [orderItems, setOrderItems] = useState<OrderItem[]>(initialOrderItems);
 
   // on mount, load sample data
   useEffect(() => {
@@ -41,6 +47,45 @@ export default function AdminAppointmentsClient({ initialAppointments }: Props) 
     setNewStatus(apt.status);
   };
   const closeModal = () => setSelected(null);
+
+  const updateOrder = async () => {
+    if (!selectedOrder) return;
+  
+    const res = await fetch(
+      `/api/admin/orders/${selectedOrder.id}?status=${encodeURIComponent(
+        status
+      )}&riderId=${encodeURIComponent(rider)}`,
+      {
+        method: "PUT",
+      }
+    );
+  
+    const data = await res.json();
+  
+    if (!res.ok || !data.success) {
+      alert("Failed to update order");
+      return;
+    }
+  
+    // Optimistically update UI
+    setOrderItems((prev) =>
+      prev.map((item) =>
+        item.id === selectedOrder.id
+          ? {
+              ...item,
+              order: {
+                ...item.order,
+                status,
+                rider,
+              },
+            }
+          : item
+      )
+    );
+  
+    alert("Order updated successfully");
+    closeModal();
+  };
 
   const saveStatus = () => {
     if (!selected) return;
@@ -81,6 +126,28 @@ export default function AdminAppointmentsClient({ initialAppointments }: Props) 
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {initialOrderItems.map((apt) => (
+          <div
+            key={apt.id}
+            onClick={() => "openModal(apt)"}
+            className="bg-white rounded-2xl shadow-xl p-6 cursor-pointer transform hover:scale-[1.02] transition"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-semibold">{apt.order?.name ||apt.order?.title || apt.order?.consumer?.name || apt.order?.email || "N/A"}</h2>
+              {badge((apt.status ?? "Scheduled") as AppointmentItem["status"])}
+            </div>
+            <p className="text-gray-600 mb-2">
+              <span className="font-medium">When:</span> {apt.date} at {apt.timeSlot}
+            </p>
+            <p className="text-gray-600 mb-4">
+              <span className="font-medium">Client:</span> {apt.order?.name || apt.order?.consumer?.name || apt.order?.email || "N/A"}
+            </p>
+            {/* {apt.notes && (
+              <p className="text-gray-500 italic text-sm">&ldquo;{apt.notes}&rdquo;</p>
+            )} */}
+          </div>
+        ))}
+        
         {appointments.map((apt) => (
           <div
             key={apt.id}
@@ -92,7 +159,7 @@ export default function AdminAppointmentsClient({ initialAppointments }: Props) 
               {badge(apt.status)}
             </div>
             <p className="text-gray-600 mb-2">
-              <span className="font-medium">When:</span> {apt.date} at {apt.time}
+              <span className="font-medium">When:</span> {apt.date} at {apt.timeSlot}
             </p>
             <p className="text-gray-600 mb-4">
               <span className="font-medium">Client:</span> {apt.client.name}
@@ -119,7 +186,7 @@ export default function AdminAppointmentsClient({ initialAppointments }: Props) 
 
             <div className="space-y-2 mb-6">
               <p>
-                <span className="font-medium">Date & Time:</span> {selected.date} @ {selected.time}
+                <span className="font-medium">Date & Time:</span> {selected.date} @ {selected.timeSlot}
               </p>
               <p>
                 <span className="font-medium">Client:</span> {selected.client.name}

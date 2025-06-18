@@ -1,6 +1,40 @@
 import React from "react";
 import AdminAppointmentsClient, { AppointmentItem } from "./AdminAppointementsClient";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+export interface OrderItem {
+  id: string;
+  price: number;
+  quantity: number;
+  status?:string;
+  date?:string;
+  timeSlot?:string;
+  marketplaceListing?: {
+    title?: string;
+    name?: string;
+  };
+  order?: {
+    status?: string;
+    rider?: string;
+    createdAt?: string;
+    name?: string;
+    title?: string;
+    email?:string;
+    phone?:string;
+    consumer?: {
+      name?: string;
+    };
+  };
+}
+
+interface Props {
+  params: {
+    slug: string; // companyId
+  };
+}
+
+
 // Sample data for appointments
 const sampleAppointments: AppointmentItem[] = [
   {
@@ -44,13 +78,31 @@ const sampleAppointments: AppointmentItem[] = [
   },
 ];
 
-export default async function AppointmentsPage() {
-  // In a real scenario, fetch from API:
-  // const res = await fetch(`/api/admin/appointments`);
-  // const appointments = (await res.json()) as AppointmentItem[];
+export default async function AppointmentsPage({ params }: Props) {
+  const companyId = params.slug;
+    let orderItems: OrderItem[] = [];
+  
+    try {
+      const res = await fetch(
+        `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
+        { cache: "no-store" } // SSR on every request
+      );
+      if (res.ok) {
+        const json = (await res.json()) as { orderItems: OrderItem[] };
+        orderItems = json.orderItems || [];
+      } else {
+        console.error(
+          "[ProductsPage] Failed to fetch order items →",
+          res.status,
+          res.statusText
+        );
+      }
+    } catch (err: any) {
+      console.error("[ProductsPage] Error fetching order items →", err.message);
+    }
   
   // For now, use sample data
   const initialAppointments = sampleAppointments;
 
-  return <AdminAppointmentsClient initialAppointments={initialAppointments} />;
+  return <AdminAppointmentsClient initialAppointments={initialAppointments} initialOrderItems={orderItems} />;
 }
