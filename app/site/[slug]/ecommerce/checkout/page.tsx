@@ -132,44 +132,6 @@ export default function CheckoutPage() {
   };
   const prev = () => setCurrentStep(s => Math.max(s - 1, 0));
 
-  const handleSubmitV1 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateStep()) return;
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        consumerId: session?.user?.id,
-        name: session?.user?.name || '',
-        email: session?.user?.email || '',
-        phone: session?.user?.phone || '',
-        cardNumber: session?.user?.cardNumber || '',
-        cardExpiry: session?.user?.cardExpiry || '',
-        cvv: '',
-        promoCode: '',
-        items: cart.map((i: { id: any; quantity: any; finalPrice: any; }) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
-        shippingAddress: formData.shippingAddress,
-        shippingMethod: formData.shippingMethod,
-        paymentOption:formData.paymentMethod,
-        delivery: false,
-        totalPrice: parseFloat(total.toFixed(2)),
-      };
-      const res = await fetch('/api/shop/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY! },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error();
-      clearCart();
-      setIsOrderPlaced(true);
-      const order = await res.json();
-      setTrackingNumber(order.trackingNumber);
-    } catch {
-      setError({ submit: 'Order failed. Try again.' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep()) return;

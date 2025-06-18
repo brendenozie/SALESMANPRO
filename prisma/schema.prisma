@@ -1367,6 +1367,8 @@ model CustomerOrder {
   updatedAt             DateTime    @updatedAt
   deletedAt             DateTime?
   Payment               Payment[]
+
+  @@index([consumerId])
 }
 
 model OrderItem {
@@ -1381,6 +1383,14 @@ model OrderItem {
   appointmentId        String?            @db.ObjectId
   riderId              String?
   status               OrderStatus?       @default(PENDING)
+
+  date     DateTime
+  timeSlot String // e.g. "09:00"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([marketplaceListingId])
 }
 
 model Location {

@@ -1,143 +1,123 @@
-import { useStoreContext } from '@/contexts/StoreContext';
-import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import React from 'react';
+"use client";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+import React, { useState } from "react";
+import { ArrowUpRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { useStoreContext } from "@/contexts/StoreContext";
+import { ServiceItem } from "@/app/admin/[slug]/services/AdminServicesClient";
+import { useRouter } from "next/navigation";
+import BookingForm from "../BookingForm";
 
-const services = [
-  {
-    title: 'Regular Home Cleaning',
-    image: '/services/regular-home.jpg',
-    bg: 'bg-teal-900 text-white',
-    description: 'Conducting all cleaning tasks with professionalism, including arriving on time.',
-  },
-  {
-    title: 'Deep Cleaning',
-    image: '/services/deep-cleaning.jpg',
-    bg: 'bg-white',
-    description: 'Conducting all cleaning tasks with professionalism, including arriving on time.',
-  },
-  {
-    title: 'Move-In/Out Cleaning',
-    image: '/services/move-out.jpg',
-    bg: 'bg-white',
-    description: 'Conducting all cleaning tasks with professionalism, including arriving on time.',
-  },
-  {
-    title: 'Post-Construction Cleaning',
-    image: '/services/post-construction.jpg',
-    bg: 'bg-white',
-    description: 'Conducting all cleaning tasks with professionalism, including arriving on time.',
-  },
-  {
-    title: 'Commercial Cleaning',
-    image: '/services/commercial.jpg',
-    bg: 'bg-white',
-    description: 'Conducting all cleaning tasks with professionalism, including arriving on time.',
-  },
-  {
-    title: 'Specialized Cleaning',
-    image: '/services/specialized.jpg',
-    bg: 'bg-white',
-    description: 'Conducting all cleaning tasks with professionalism, including arriving on time.',
-  },
-];
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality||75}`;
 
 export default function ServicesSection() {
   const { storeFormData } = useStoreContext();
+  const router = useRouter();
+  const [selected, setSelected] = useState<ServiceItem | null>(null);
 
-   // If there's any chance `storeFormData` is not yet loaded, guard early:
-   if (!storeFormData) {
+  if (!storeFormData) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">Loading services...</p>
       </div>
     );
   }
 
-  const {
-    slug,
-    marketplaceListings,     // assume you added this field to Prisma/StoreForm
-  } = storeFormData;
+  const { marketplaceListings } = storeFormData;
 
   return (
-    <section className="bg-white py-16 px-6">
-      <h2 className="text-center text-3xl md:text-4xl font-semibold mb-12">
-        We Take Pride for Our Services
-      </h2>
-
-      <div className="grid gap-8 md:grid-cols-3 max-w-7xl mx-auto">
-        {/* Featured Services */}
-      {marketplaceListings && marketplaceListings.length > 0 && (
-        marketplaceListings.map((service, index) => (
-          <div
-          key={index}
-          className={`relative rounded-2xl p-4 shadow-md transition-all `}
-          // ${service.bg}
-        >
-          <div className="absolute top-4 right-4">
-            <button
-              className={`p-2 rounded-full transition bg-orange-400 text-white
-                // $ {
-              //   service.bg === 'bg-white'
-              //     ? 'bg-orange-100 text-orange-500'
-              //     : 'bg-orange-400 text-white'
-              // }
-              `}
+    <>
+      <section className="bg-gray-50 py-16 px-6">
+        <h2 className="text-center text-3xl md:text-4xl font-semibold mb-12">
+          Our Premium Services
+        </h2>
+        <div className="grid gap-8 md:grid-cols-3 max-w-7xl mx-auto">
+          {marketplaceListings.map((svc:any) => (
+            <div
+              key={svc.id}
+              className="bg-white rounded-2xl shadow hover:shadow-lg transition p-6 flex flex-col"
             >
-              <ArrowUpRightIcon className="w-4 h-4" />
-            </button>
-          </div>
+              <div className="aspect-[4/3] w-full mb-4 overflow-hidden rounded-lg">
+                <Image
+                  src={svc.images[0] || "/placeholder.png"}
+                  loader={loader}
+                  alt={svc.name || svc.title}
+                  width={400}
+                  height={300}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">{svc.name || svc.title}</h3>
+              <p className="text-gray-600 flex-1">
+                {(svc.description || "").slice(0, 80)}…
+              </p>
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-lg font-bold">${(svc.finalPrice||0).toFixed(2)}</p>
+                <button
+                  onClick={() => setSelected(svc)}
+                  className="flex items-center gap-1 text-indigo-600 hover:underline"
+                >
+                  Book Now
+                  <ArrowUpRightIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <h3 className="text-lg font-semibold mb-2">{service.name || service.title }</h3>
-          <p className="text-sm mb-4 opacity-80">{service.description || "Conducting all cleaning tasks with professionalism, including arriving on time."}</p>
-          <div className="rounded-xl overflow-hidden aspect-[4/3]">
-            <Image
-              src={service.images[0]}
-              loader={loader}
-              alt={service.title || service.name }
-              width={400}
-              height={300}
-              className="object-cover w-full h-full"
-            />
-          </div>
-          </div>
-        ))
-      )}
-        {services.map((service, index) => (
+      {/* Modal */}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          {/* backdrop */}
           <div
-            key={index}
-            className={`relative rounded-2xl p-4 shadow-md transition-all ${service.bg}`}
-          >
-            <div className="absolute top-4 right-4">
-              <button
-                className={`p-2 rounded-full transition ${
-                  service.bg === 'bg-white'
-                    ? 'bg-orange-100 text-orange-500'
-                    : 'bg-orange-400 text-white'
-                }`}
-              >
-                <ArrowUpRightIcon className="w-4 h-4" />
-              </button>
-            </div>
+            className="fixed inset-0 bg-black opacity-50"
+            onClick={() => setSelected(null)}
+          />
 
-            <h3 className="text-lg font-semibold mb-2">{service.title}</h3>
-            <p className="text-sm mb-4 opacity-80">{service.description}</p>
-            <div className="rounded-xl overflow-hidden aspect-[4/3]">
-              <Image
-                src={service.image}
-                loader={loader}
-                alt={service.title}
-                width={400}
-                height={300}
-                className="object-cover w-full h-full"
-              />
+          <div className="relative bg-white rounded-2xl max-w-xl w-full p-6 mx-auto z-60 shadow-xl">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              onClick={() => setSelected(null)}
+              aria-label="Close"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="md:w-1/2">
+                <Image
+                  src={selected.images[0] || "/placeholder.png"}
+                  loader={loader}
+                  alt={`${selected.name}` || `${selected.title}`}
+                  width={500}
+                  height={350}
+                  className="object-cover rounded-lg w-full h-full"
+                />
+              </div>
+              <div className="md:w-1/2 space-y-4">
+                <h2 className="text-2xl font-bold">{selected.name || selected.title}</h2>
+                <p className="text-gray-700">{selected.description}</p>
+                <p className="text-lg font-semibold">
+                  Price: ${ (selected.finalPrice||0).toFixed(2) }
+                </p>
+
+                <BookingForm
+                  listingId={selected.id}
+                  onComplete={(orderId) => {
+                    setSelected(null);
+                    router.push(`/site/service-provider/service-provider/checkout?orderId=${orderId}`);  // <— go to checkout
+                  }}
+                  // onComplete={() => {
+                  //   setSelected(null);
+                  //   router.push("/my-orders");
+                  // }}
+                />
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-    </section>
+        </div>
+      )}
+    </>
   );
 }
