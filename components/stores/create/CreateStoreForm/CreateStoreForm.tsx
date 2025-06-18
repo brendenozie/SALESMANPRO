@@ -20,11 +20,13 @@ import ThemeSettingsAccordion from '../ThemeSettingsAccordion/ThemeSettingsAccor
 import SeoSettingsAccordion from '../SeoSettingsAccordion/SeoSettingsAccordion';
 import SettingsAccordion from '../SettingsAccordion/SettingsAccordion';
 import PaymentAccordion from '../PaymentAccordion/PaymentAccordion';
+
 import ShippingAccordion from '../ShippingAccordion/ShippingAccordion';
 import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
 import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
 import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory, Promotion, HeroSlide } from '../../../../types/typings';
+import { ProductPricingAndTiers } from '../PricingTiers/PricingTiers';
 
 // Interfaces
 export const storeSteps: StepConfig[] = [
@@ -73,6 +75,31 @@ export const storeSteps: StepConfig[] = [
       <ShippingAccordion shippingSettings={f.shippingSettings} onChange={(upd) => h.onChangeSettings({ shippingSettings: upd })} />
     ),
   }
+];
+
+export const pricingSteps: StepConfig[] = [
+  {
+    key: 'pricingtiers',
+    title: 'Pricing Tiers',
+    render: (f, h) => (
+      <ProductPricingAndTiers
+          formData={
+            {
+              sellingPrice: 0,
+              buyingPrice:0,
+              profitMargin:0,
+              tax:0,
+              shippingCost:0,
+              discount:0,
+              pricingTiers:[],
+            }
+          }
+          setFormData={()=>{
+
+          }}
+      />
+    ),
+  },
 ];
 
 export const websiteSteps: StepConfig[] = [
@@ -426,7 +453,12 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     awards: [],
     metrics: [],
     stats: [],
-    marketplaceListings:[]
+    marketplaceListings: [],
+    // Add these two fields to satisfy FormData
+    // sellingPrice: 0,
+    // buyingPrice: 0,
+
+   
   };
 
   // const [form, setForm] = useState<StoreForm>(initialForm);

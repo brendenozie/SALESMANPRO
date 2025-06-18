@@ -6,6 +6,9 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 export interface OrderItem {
   id: string;
   price: number;
+  name:string;
+  email:string;  
+  phone:string;
   quantity: number;
   status?:string;
   date?:string;

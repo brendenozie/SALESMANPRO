@@ -140,7 +140,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
               <span className="font-medium">When:</span> {apt.date} at {apt.timeSlot}
             </p>
             <p className="text-gray-600 mb-4">
-              <span className="font-medium">Client:</span> {apt.order?.name || apt.order?.consumer?.name || apt.order?.email || "N/A"}
+              <span className="font-medium">Client:</span> {apt.name || apt.order?.name || apt.order?.consumer?.name || apt.order?.email || "N/A"}
             </p>
             {/* {apt.notes && (
               <p className="text-gray-500 italic text-sm">&ldquo;{apt.notes}&rdquo;</p>
