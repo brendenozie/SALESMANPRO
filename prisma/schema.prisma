@@ -1384,8 +1384,8 @@ model OrderItem {
   riderId              String?
   status               OrderStatus?       @default(PENDING)
 
-  date     DateTime
-  timeSlot String // e.g. "09:00"
+  date     DateTime?
+  timeSlot String? // e.g. "09:00"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

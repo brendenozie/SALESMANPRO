@@ -92,11 +92,12 @@ export default function CheckoutPage({ searchParams }: CheckoutPageProps) {
     if (!validate()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/customer-orders", {
+      const res = await fetch("/api/shop/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+                   'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY!, 
+                },        
         body: JSON.stringify({
-          listingId,
           date,
           timeSlot,
           quantity: 1,
@@ -108,6 +109,15 @@ export default function CheckoutPage({ searchParams }: CheckoutPageProps) {
           cardExpiry: billing.cardExpiry,
           cvv: billing.cvv,
           totalPrice: total,
+          items:[
+            {
+              marketplaceListingId: listingId,
+              quantity: 1,
+              date:date,
+              timeSlot:timeSlot,
+              price: total,
+            }
+          ]
         }),
       });
       if (!res.ok) throw new Error(await res.text());

@@ -13,8 +13,8 @@ const orderSchema = z.object({
   cvv: z.string().optional(),
   promoCode: z.string().optional(),
   consumerId: z.string(),
-  delivery: z.boolean(),
-  paymentOption: z.string(),
+  delivery: z.boolean().optional(),
+  paymentOption: z.string().default("Cash"),
   items: z.array(
     z.object({
       marketplaceListingId: z.string(),
@@ -27,8 +27,8 @@ const orderSchema = z.object({
     display_name: z.string(),
     lat: z.number(),
     lng: z.number(),
-  }),
-  shippingMethod: z.enum(["Standard", "Express", "AT SHOP"]),
+  }).optional(),
+  shippingMethod: z.enum(["Standard", "Express", "AT SHOP"]).optional(),
 });
 
 async function sendOrderEmail(email: string, orderStatus: string) {
