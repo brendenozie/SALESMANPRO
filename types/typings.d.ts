@@ -210,7 +210,17 @@ type StoreForm = {
   shippingSettings: Record<string, any>;
   marketplaceListings: MarketplaceListingForm[];
   storeCategories: StoreCategoryEntry[];
+
+  pricingTiers: PricingTier[];
 };
+
+export interface PricingTier {
+  name: string;
+  price: number;
+  features: string[];
+  duration?: string;
+  description?: string;
+}
 
 // types/typings.ts
 
@@ -252,7 +262,7 @@ interface Handlers {
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
 
   setAddress: (address: string, geo: GeoLocation) => void;
-  onChangeSettings: (updated: Partial<StoreForm>) => void;
+  onChangeSettings: (updated: any) => void;//Partial<StoreForm>
 
   onBulkToggle: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void;

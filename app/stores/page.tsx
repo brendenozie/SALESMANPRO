@@ -35,27 +35,6 @@ export default function StoresPage() {
   const [loadingStores, setLoadingStores] = useState(false);
   const router = useRouter(); 
 
-  // useEffect(() => {
-  //   if (status !== 'authenticated' || !session?.user?.id) return;
-
-  //   const fetchStores = async () => {
-  //     setLoadingStores(true);
-  //     try {
-  //       const res = await fetch(`/api/stores?userId=${session?.user?.id}`);
-  //       if (!res.ok) throw new Error('Failed to fetch stores');
-  //       const data: Store[] = await res.json();
-  //       setStores(data);
-  //     } catch (error) {
-  //       console.error('Error loading stores:', error);
-  //       setStores([]);
-  //     } finally {
-  //       setLoadingStores(false);
-  //     }
-  //   };
-
-  //   fetchStores();
-  // }, [status, session?.user?.id]);
-
   const { data: stores = [], error, isLoading } = useSWR<Store[]>(
     session?.user?.id ? `/api/stores?userId=${session.user.id}` : null,
     fetcher

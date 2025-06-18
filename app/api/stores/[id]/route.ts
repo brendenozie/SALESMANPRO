@@ -88,9 +88,11 @@ export async function PUT(
     storeCategories,
     awards,
     metrics,
+    pricingTiers,
     stats,
     currency,
     locale,
+    hasWebsite
   } = data;
 
   console.log("▶ about to create StoreCategory for:", storeCategories);
@@ -122,6 +124,8 @@ export async function PUT(
       awards,
       metrics,
       stats,
+      pricingTiers,
+      hasWebsite,
 
       // ── Array relations: wipe & re‐create ──
       socialLinks: {

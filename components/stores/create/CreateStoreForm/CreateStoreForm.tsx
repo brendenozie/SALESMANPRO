@@ -26,7 +26,13 @@ import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
 import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
 import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory, Promotion, HeroSlide } from '../../../../types/typings';
-import { ProductPricingAndTiers } from '../PricingTiers/PricingTiers';
+import ProductPricingAndTiers  from '../PricingTiers/PricingTiers';
+
+const SITE_CATEGORIES_WITH_PRICING = [
+  "service provider",
+  "booking & appointments",
+  "portfolio & personal branding",
+];
 
 // Interfaces
 export const storeSteps: StepConfig[] = [
@@ -80,30 +86,83 @@ export const paymentSteps: StepConfig[] = [
   }
 ];
 
+// Assuming your StepConfig is defined something like this:
+// interface StepConfig {
+//   key: string;
+//   title: string;
+//   // The 'handlers' parameter should reflect what's actually passed from the parent
+//   render: (formData: StoreForm, handlers: { onChangeSettings: (updated: Partial<StoreForm>) => void }) => JSX.Element;
+// }
+
 export const pricingSteps: StepConfig[] = [
   {
     key: 'pricingtiers',
     title: 'Pricing Tiers',
-    render: (f, h) => (
-      <ProductPricingAndTiers
-          formData={
-            {
-              sellingPrice: 0,
-              buyingPrice:0,
-              profitMargin:0,
-              tax:0,
-              shippingCost:0,
-              discount:0,
-              pricingTiers:[],
-            }
-          }
-          setFormData={()=>{
+    render: (formData, handlers) => {
+      // Create a wrapper function that ProductPricingAndTiers expects
+      const setPricingTiersFormData: React.Dispatch<React.SetStateAction<StoreForm>> = (update) => {
+        if (typeof update === 'function') {
+          // If ProductPricingAndTiers passes a function (e.g., prevData => newData)
+          // We need to apply that function to the *current* formData to get the new state,
+          // and then extract only the relevant parts to pass to onChangeSettings.
+          // IMPORTANT: ProductPricingAndTiers expects 'FormData' structure,
+          // but onChangeSettings expects 'StoreForm'. Ensure compatibility.
+          // For simplicity, let's assume 'FormData' is a subset/compatible with 'StoreForm'
+          // regarding pricingTiers and other fields ProductPricingAndTiers might touch.
+          const newFormData = update(formData as StoreForm); // Cast through unknown to satisfy TypeScript
+          handlers.onChangeSettings({ pricingTiers: (newFormData as any).pricingTiers });
+          // If ProductPricingAndTiers also touched other root-level fields like sellingPrice,
+          // you would include them here:
+          // handlers.onChangeSettings({
+          //   pricingTiers: newFormData.pricingTiers,
+          //   sellingPrice: newFormData.sellingPrice,
+          //   // ... other fields
+          // });
+        } else {
+          // If ProductPricingAndTiers passes a direct object (e.g., { pricingTiers: [...] })
+          handlers.onChangeSettings({ pricingTiers: (update as any).pricingTiers });
+          // Similarly, include other fields if updated directly:
+          // handlers.onChangeSettings({
+          //   pricingTiers: update.pricingTiers,
+          //   sellingPrice: update.sellingPrice,
+          //   // ... other fields
+          // });
+        }
+      };
 
+      return (
+        <ProductPricingAndTiers
+          formData={{
+            ...formData,
+            // Pass only the relevant fields from the main formData that ProductPricingAndTiers needs
+            // sellingPrice: formData.sellingPrice || 0, // Ensure these are present, even if 0
+            // buyingPrice: formData.buyingPrice || 0,
+            // profitMargin: formData.profitMargin || 0,
+            // tax: formData.tax || 0,
+            // shippingCost: formData.shippingCost || 0,
+            // discount: formData.discount || 0,
+            pricingTiers: formData.pricingTiers || [],
           }}
-      />
-    ),
+          setFormData={setPricingTiersFormData}
+        />
+      );
+    },
   },
 ];
+
+// export const pricingSteps: StepConfig[] = [
+//   {
+//     key: 'pricingtiers',
+//     title: 'Pricing Tiers',
+//     render: (f, h) => (
+      
+//       <ProductPricingAndTiers
+//           formData={f}
+//           setFormData={h.onChangeSettings}
+//       />
+//     ),
+//   },
+// ];
 
 export const websiteSteps: StepConfig[] = [
   {
@@ -457,6 +516,13 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     metrics: [],
     stats: [],
     marketplaceListings: [],   
+    // sellingPrice:0,
+    // buyingPrice: 0,
+    // profitMargin:  0,
+    // tax: 0,
+    // shippingCost: 0,
+    // discount: 0,
+    pricingTiers: [{ name: '', price: 0, features: [] }, ],
   };
 
   // const [form, setForm] = useState<StoreForm>(initialForm);
@@ -526,33 +592,53 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   }, [form.heroSlides.length]);
 
   const allSteps = useMemo<StepConfig[]>(() => {
-    // always have storeSteps…
+    // 1) always start with your store steps
     const list = [...storeSteps];
-    // …then, only if they checked “hasWebsite”
-
-    list.push(...paymentSteps);
-    
-    list.push(...pricingSteps);
-    
+  
+    // 2) if they've opted for a website, add payment steps...
     if (form.hasWebsite) {
-
-      if(form.category.toLocaleLowerCase()=="service" || form.category.toLocaleLowerCase()=="service provider" ||
-          form.category.toLocaleLowerCase()=="portfolio & personal branding" || form.category.toLocaleLowerCase()=="service provider" ||
-          form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
-          form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
-          form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider")
-      {
+      list.push(...paymentSteps);
+  
+      // 3) ...and, for certain categories, add pricing
+      const cat = form.category?.toLowerCase().trim() || "";
+      if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
         list.push(...pricingSteps);
       }
-
+  
+      // 4) finally add the website steps
       list.push(...websiteSteps);
     }
+  
     return list;
-  }, [form.hasWebsite]);
+  }, [form.hasWebsite, form.category]);
+
+  // const allSteps = useMemo<StepConfig[]>(() => {
+  //   // always have storeSteps…
+  //   const list = [...storeSteps];
+  //   // …then, only if they checked “hasWebsite”
+
+  //   list.push(...paymentSteps);
+    
+  //   if (form.hasWebsite) {
+
+  //     if(form.category.toLocaleLowerCase()=="service" || form.category.toLocaleLowerCase()=="service provider" ||
+  //         form.category.toLocaleLowerCase()=="portfolio & personal branding" || form.category.toLocaleLowerCase()=="service provider" ||
+  //         form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
+  //         form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
+  //         form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider")
+  //     {
+  //       list.push(...pricingSteps);
+  //     }
+
+  //     list.push(...websiteSteps);
+  //   }
+  //   return list;
+  // }, [form.hasWebsite]);
   
   
 
   // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
+  
   useEffect(() => {
     if (form.promotions.length > promotionSlideFiles.length) {
       setPromotionSlideFiles((prev) => [

@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   XMarkIcon, // Used for consistency for removal
 } from '@heroicons/react/24/outline';
+import { StoreForm } from '@/types/typings';
 
 // 1. Define the type for a single Pricing Tier
 interface PricingTier {
@@ -18,27 +19,27 @@ interface PricingTier {
 }
 
 // 2. Define the relevant part of the FormData structure this component expects
-interface FormData {
-  sellingPrice: number;
-  buyingPrice: number;
-  profitMargin?: number;
-  tax?: number;
-  shippingCost?: number;
-  discount?: number;
-  pricingTiers?: PricingTier[]; // Make it optional for initial state flexibility
-  // ... other form fields that are not directly handled by this component
-}
+// interface FormData {
+//   sellingPrice: number;
+//   buyingPrice: number;
+//   profitMargin?: number;
+//   tax?: number;
+//   shippingCost?: number;
+//   discount?: number;
+//   pricingTiers?: PricingTier[]; // Make it optional for initial state flexibility
+//   // ... other form fields that are not directly handled by this component
+// }
 
 // 3. Define the props for this component
 interface ProductPricingAndTiersProps {
-  formData: FormData;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  formData: StoreForm;
+  setFormData: React.Dispatch<React.SetStateAction<StoreForm>>;
 }
 
-export const ProductPricingAndTiers: React.FC<ProductPricingAndTiersProps> = ({
+export default function ProductPricingAndTiers({
   formData,
   setFormData,
-}) => {
+}:ProductPricingAndTiersProps)  {
   const [open, setOpen] = useState(true); // State for accordion collapse
 
   // Handlers for Pricing Tiers - these now correctly use passed setFormData

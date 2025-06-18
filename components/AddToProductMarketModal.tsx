@@ -21,7 +21,7 @@ import ContactLocation from "./ContactLocation";
 import AmenitiesStep from "./AmenitiesStep";
 import VehicleAmenitiesStep from "./VehicleAmenitiesStep";
 import { BookingSlot } from "./stores/create/BookingSlot/BookingSlot";
-import { ProductPricingAndTiers } from "./stores/create/PricingTiers/PricingTiers";
+import ProductPricingAndTiers  from "./stores/create/PricingTiers/PricingTiers";
 import { ServiceSpecifics } from "./stores/create/ServiceSpecifics/ServiceSpecifics";
 
 // ..//

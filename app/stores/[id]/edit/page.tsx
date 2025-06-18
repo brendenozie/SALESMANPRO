@@ -196,7 +196,15 @@ export default async function EditStorePage({
         ? JSON.parse(store.themeSettings)
         : store.themeSettings ?? undefined,
 
-    marketplaceListings:[]
+    marketplaceListings:[],
+
+    // Add missing properties for StoreForm
+    hasWebsite: typeof store.hasWebsite === "boolean" ? store.hasWebsite : false,
+    pricingTiers: Array.isArray(store.pricingTiers)
+      ? store.pricingTiers
+      : typeof store.pricingTiers === "string"
+      ? JSON.parse(store.pricingTiers)
+      : [],
   };
 
   return (
