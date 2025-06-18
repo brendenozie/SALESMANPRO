@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
-import { ServiceItem } from '@/app/admin/[slug]/services/AdminServicesClient';
 import { useStoreContext } from '@/contexts/StoreContext';
 
 const pricingPlans = [
@@ -32,15 +31,12 @@ export default function PricingSection() {
   
   const { storeFormData } = useStoreContext();
   
-    if (!storeFormData) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-600">Loading services...</p>
-        </div>
-      );
-    }
-  
     const { pricingTiers } = storeFormData;
+
+    if (!storeFormData || !storeFormData.pricingTiers) {
+      console.log('Pricing tiers not found:', storeFormData);
+      return <p>Loading pricing tiers...</p>;
+    }
 
     console.log(pricingTiers);
 
@@ -71,17 +67,17 @@ export default function PricingSection() {
 
         {/* Cards */}
         <div className="grid gap-6 md:grid-cols-3">
-        {pricingTiers && pricingTiers.length > 0 && pricingTiers.map((plan, index) => (
+        {pricingTiers && pricingTiers.length > 0 ? pricingTiers.map((plan, index) => (
             <div
               key={index}
               className={`relative p-6 rounded-2xl shadow-md transition-all ${
-                index == 1// plan.featured
+              plan.isFeatured
                   ? 'bg-teal-900 text-white'
                   : 'bg-white text-gray-800'
               }`}
             >
               {/* Badge */}
-              {index == 1  && ( //plan.featured
+              {plan.isFeatured  && ( 
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-teal-900 font-semibold text-sm px-4 py-1 rounded-full shadow">
                   {'Most Popular' }
                   {/* {plan.badge} */}
@@ -94,8 +90,7 @@ export default function PricingSection() {
                   className="w-8 h-8"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke={index == 1 ? 'white' : '#1F2937'} 
-                  // plan.featured
+                  stroke={plan.isFeatured ? 'white' : '#1F2937'} 
                 >
                   <path
                     strokeLinecap="round"
@@ -109,7 +104,7 @@ export default function PricingSection() {
               <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
               <p className="text-3xl font-bold mb-1">
                 ${plan.price.toFixed(2)}{' '}
-                <span className="text-base font-medium">/ Service</span>
+                <span className="text-base font-medium">/ charge</span>
               </p>
 
               {/* Features */}
@@ -118,8 +113,7 @@ export default function PricingSection() {
                   <li key={i} className="flex items-center gap-2">
                     <CheckCircleIcon
                       className={`w-5 h-5 ${
-                        index == 1 ? 'text-orange-300' : 'text-orange-500'
-                        // plan.featured
+                        plan.isFeatured ? 'text-orange-300' : 'text-orange-500'
                       }`}
                     />
                     <span>{feature}</span>
@@ -129,8 +123,7 @@ export default function PricingSection() {
 
               <button
                 className={`mt-8 px-6 py-2 w-full rounded-md text-sm font-medium transition ${
-                  // plan.featured
-                  index == 1
+                  plan.isFeatured
                     ? 'bg-orange-400 text-white hover:bg-orange-500'
                     : 'bg-orange-500 text-white hover:bg-orange-600'
                 }`}
@@ -142,8 +135,9 @@ export default function PricingSection() {
               </a> */}
 
             </div>
-          ))}
-          {pricingPlans.map((plan, index) => (
+          ))
+          : 
+          pricingPlans.map((plan, index) => (
             <div
               key={index}
               className={`relative p-6 rounded-2xl shadow-md transition-all ${

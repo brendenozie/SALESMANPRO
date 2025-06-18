@@ -13,6 +13,7 @@ import { StoreForm } from '@/types/typings';
 interface PricingTier {
   name: string;
   price: number;
+  isFeatured?: boolean;
   features: string[]; // Stored as an array of strings
   duration?: string; // Optional field
   description?: string; // Optional field
@@ -56,7 +57,7 @@ export default function ProductPricingAndTiers({
   const handleUpdatePricingTier = (
     index: number,
     field: keyof PricingTier, // Use keyof for type safety on field name
-    value: string | number | string[]
+    value: string | number | string[] | boolean
   ) => {
     setFormData((prevFormData) => {
       const updatedTiers = [...(prevFormData.pricingTiers || [])];
@@ -160,6 +161,18 @@ export default function ProductPricingAndTiers({
                       />
                     </label>
                   </div>
+                  
+                  <label className="flex items-center gap-2 mt-6">
+                      <input
+                        type="checkbox"
+                        name="isFeatured"
+                        checked={Boolean(tier.isFeatured || false)}
+                        onChange={(e) =>
+                          handleUpdatePricingTier(index, 'isFeatured', e.target.checked)
+                        }
+                      />
+                      <span className="text-sm">Featured</span>
+                    </label>
                   <label className="block mt-4">
                     <span className="text-gray-600 text-sm">Description</span>
                     <textarea

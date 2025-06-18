@@ -149,5 +149,10 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       typeof raw.themeSettings === 'string'
         ? JSON.parse(raw.themeSettings)
         : raw.themeSettings ?? undefined,
+    pricingTiers: Array.isArray(raw.pricingTiers)
+      ? raw.pricingTiers
+      : typeof raw.pricingTiers === 'string'
+      ? JSON.parse(raw.pricingTiers)
+      : [],
   };
 }

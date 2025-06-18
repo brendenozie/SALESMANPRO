@@ -217,6 +217,7 @@ export interface PricingTier {
   name: string;
   price: number;
   features: string[];
+  isFeatured?: boolean;
   duration?: string;
   description?: string;
 }
