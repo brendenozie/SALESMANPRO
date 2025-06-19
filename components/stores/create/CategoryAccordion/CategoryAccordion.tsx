@@ -40,29 +40,6 @@ type Props = {
   onApply: () => void;
 };
 
-// ─── Sub-component: Selected Pill (showing selected subcategory tags) ───────────
-function SelectedPill({
-  parentId,
-  child,
-  onRemove,
-}: {
-  parentId: string;
-  child: SubObj;
-  onRemove: (parentId: string, sub: SubObj) => void;
-}) {
-  return (
-    <div className="flex items-center space-x-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-md text-sm transition-shadow hover:shadow-md">
-      <span>{child.name}</span>
-      <button
-        onClick={() => onRemove(parentId, child)}
-        className="flex-shrink-0 focus:outline-none"
-        aria-label={`Remove ${child.name}`}
-      >
-        <XMarkIcon className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
 
 // ─── Sub-component: Search Bar ─────────────────────────────────────────────────
 function SearchBar({

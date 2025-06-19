@@ -2,114 +2,100 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bars3BottomLeftIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+const navLinks = [
+  { label: 'Features', href: '#features' },
+  { label: 'Pricing', href: '#pricing' },
+  { label: 'About', href: '#about' },
+  { label: 'Contact', href: '#contact' },
+];
 
 export default function Header() {
-  const { storeFormData } = useStoreContext();
-  const { name, slug, logoUrl, themeSettings } = storeFormData;
-
-  const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
-  const primaryColor = themeSettings?.primaryColor || '#f97316';
-  const secondaryColor = themeSettings?.secondaryColor || '#10b981';
-
-  const links = [
-    { label: 'Home', href: `/${slug}` },
-    { label: 'Projects', href: `/${slug}/projects` },
-    { label: 'About', href: `/${slug}/about` },
-    { label: 'Contact', href: `/${slug}/#contact` },
-  ];
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`fixed w-full top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm py-3'
-          : 'bg-transparent dark:bg-transparent py-6'
+          ? 'bg-white/80 dark:bg-gray-900/80 shadow-sm backdrop-blur-md py-3'
+          : 'bg-transparent py-5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        {/* Branding */}
-        <Link href={`/${slug}`} className="flex items-center space-x-3">
-          {logoUrl ? (
-            <Image
-              src={logoUrl}
-              alt={name}
-              width={120}
-              height={40}
-              className="object-contain"
-              loader={loader}
-              priority
-            />
-          ) : (
-            <span
-              className="text-2xl font-extrabold bg-clip-text text-transparent"
-              style={{
-                backgroundImage: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
-              }}
-            >
-              {name}
-            </span>
-          )}
+      <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+        {/* Logo */}
+        <Link href="/" className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+          ghuba<span className="text-primary">.</span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          {links.map(({ label, href }) => (
+        <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-700 dark:text-gray-200">
+          {navLinks.map(({ label, href }) => (
             <motion.a
               key={label}
               href={href}
-              className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white font-medium transition"
               whileHover={{ scale: 1.05 }}
+              className="hover:text-primary transition"
             >
               {label}
             </motion.a>
           ))}
         </nav>
 
+        {/* CTA */}
+        <div className="hidden md:flex">
+          <Link
+            href="/get-started"
+            className="bg-primary text-white px-4 py-2 rounded-full font-medium text-sm hover:bg-primary-dark transition"
+          >
+            Get Started
+          </Link>
+        </div>
+
         {/* Mobile Toggle */}
         <button
-          onClick={() => setMobileMenuOpen((prev) => !prev)}
-          className="md:hidden text-gray-600 dark:text-gray-300"
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden p-2 rounded-md text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
           aria-label="Toggle menu"
         >
-          {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3BottomLeftIcon className="w-6 h-6" />}
+          {menuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Menu */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {menuOpen && (
           <motion.div
-            className="md:hidden px-6 pt-2 pb-4 space-y-2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
+            className="md:hidden bg-white dark:bg-gray-900 px-6 pt-4 pb-6 space-y-4 border-t border-gray-200 dark:border-gray-700"
           >
-            {links.map(({ label, href }) => (
+            {navLinks.map(({ label, href }) => (
               <Link
                 key={label}
                 href={href}
-                className="block text-gray-800 dark:text-gray-200 font-medium hover:text-teal-500 transition"
-                onClick={() => setMobileMenuOpen(false)}
+                className="block text-gray-900 dark:text-gray-100 font-medium"
+                onClick={() => setMenuOpen(false)}
               >
                 {label}
               </Link>
             ))}
+            <Link
+              href="/get-started"
+              onClick={() => setMenuOpen(false)}
+              className="block text-center bg-primary text-white py-2 rounded-full font-medium mt-2"
+            >
+              Get Started
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
