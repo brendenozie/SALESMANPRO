@@ -3,11 +3,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { FaFacebookF, FaTwitter, FaInstagram, FaWhatsapp } from 'react-icons/fa';
+// import { FaFacebookF, FaTwitter, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { FaceFrownIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function SiteFooter() {
   const year = new Date().getFullYear();
+  const { storeFormData } = useStoreContext();
+  const {
+    name,
+    slug,
+    description,
+    socialLinks,
+    contactPhone
+  } = storeFormData;
 
   return (
     <footer className="relative bg-gray-950 text-white pt-16 pb-10 px-6 overflow-hidden">
@@ -17,9 +26,10 @@ export default function SiteFooter() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         {/* Brand & Tagline */}
         <div>
-          <h3 className="text-2xl font-bold text-rose-500">Ducun Vijed</h3>
+          <h3 className="text-2xl font-bold text-rose-500">{name}</h3>
           <p className="mt-4 text-gray-400 text-sm max-w-xs">
-            Your gateway to personalized, on-demand wellness. Book your perfect massage, anytime.
+            {description || 
+            "Your gateway to personalized, on-demand . Book your perfect , anytime."}
           </p>
           <div className="flex gap-4 mt-6 text-rose-400">
             <a href="#" aria-label="Facebook">
@@ -31,7 +41,7 @@ export default function SiteFooter() {
             <a href="#" aria-label="Twitter">
               <FaceFrownIcon className="hover:text-white transition" />
             </a>
-            <a href="https://wa.me/254712345678" target="_blank" aria-label="WhatsApp">
+            <a href={`https://wa.me/${contactPhone}`} target="_blank" aria-label="WhatsApp">
               <FaceFrownIcon className="hover:text-white transition" />
             </a>
           </div>
@@ -83,7 +93,7 @@ export default function SiteFooter() {
 
       {/* Divider */}
       <div className="border-t border-gray-800 mt-12 pt-6 text-center text-sm text-gray-500">
-        &copy; {year} Ducun Vijed. All rights reserved.
+        &copy; {year} {name}. All rights reserved.
       </div>
     </footer>
   );
