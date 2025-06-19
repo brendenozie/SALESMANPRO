@@ -95,12 +95,6 @@ export async function PUT(
     hasWebsite
   } = data;
 
-  console.log("▶ about to create StoreCategory for:", storeCategories);
-
-  storeCategories.forEach((sc: any, i: number) => {
-    console.log(`  → index ${i}: sc.id =`, sc.id);
-  });
-
   const updated = await prisma.company.update({
     where: { id: params.id },
     data: {
@@ -265,19 +259,37 @@ export async function PUT(
           },
         }
       : { delete: true },
-      StoreCategory: storeCategories
-      ? {
-          deleteMany: {}, // remove old ones
-          create: data.storeCategories.map((sc: any, index:number) => ({
-            category: { connect: { id: sc.id } }, // sc.id refers to ProductCategory.id
+      StoreCategory: {
+        // 1) delete any links *not* in our new list
+        deleteMany: {
+          categoryId: { notIn: data.storeCategories.map((sc:any) => sc.id) },
+        },
+        // 2) for each incoming item, upsert on the composite unique
+        upsert: data.storeCategories.map((sc:any, idx:any) => ({
+          where: {
+            companyId_categoryId: {
+              companyId: params.id,
+              categoryId: sc.id,
+            },
+          },
+          create: {
+            category:    { connect: { id: sc.id } },
             displayName: sc.displayName ?? sc.name,
-            icon: sc.icon ?? null,
-            sortOrder: sc.sortOrder ?? index,
-            visible: sc.visible ?? true,
-            items: sc.items as Prisma.InputJsonValue,
-          })),
-        }
-      : { deleteMany: {} },
+            icon:        sc.icon ?? null,
+            sortOrder:   sc.sortOrder ?? idx,
+            visible:     sc.visible ?? true,
+            items:       sc.items as Prisma.InputJsonValue,
+          },
+          update: {
+            displayName: sc.displayName ?? sc.name,
+            icon:        sc.icon ?? null,
+            sortOrder:   sc.sortOrder ?? idx,
+            visible:     sc.visible ?? true,
+            items:       sc.items as Prisma.InputJsonValue,
+          },
+        })),
+      },
+    
         },
     
   });

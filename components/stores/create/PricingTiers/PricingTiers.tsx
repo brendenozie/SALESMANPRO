@@ -19,19 +19,6 @@ interface PricingTier {
   description?: string; // Optional field
 }
 
-// 2. Define the relevant part of the FormData structure this component expects
-// interface FormData {
-//   sellingPrice: number;
-//   buyingPrice: number;
-//   profitMargin?: number;
-//   tax?: number;
-//   shippingCost?: number;
-//   discount?: number;
-//   pricingTiers?: PricingTier[]; // Make it optional for initial state flexibility
-//   // ... other form fields that are not directly handled by this component
-// }
-
-// 3. Define the props for this component
 interface ProductPricingAndTiersProps {
   formData: StoreForm;
   setFormData: React.Dispatch<React.SetStateAction<StoreForm>>;
@@ -111,7 +98,18 @@ export default function ProductPricingAndTiers({
         <div className="px-4 sm:px-6 py-6 space-y-6">
 
           <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h4 className="text-2xl font-semibold mb-4 text-gray-800">Pricing Tiers/Packages</h4>
+            <div className="justify-between">
+              <h4 className="text-2xl font-semibold mb-4 text-gray-800">Pricing Tiers/Packages</h4>
+              
+            <button
+              type="button"
+              onClick={handleAddPricingTier}
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+            >
+              <PlusCircleIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+              Add Pricing Tier
+            </button>
+            </div>
             <div className="space-y-6">
               {(formData.pricingTiers || []).map((tier, index) => (
                 <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
@@ -198,14 +196,6 @@ export default function ProductPricingAndTiers({
                 </div>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={handleAddPricingTier}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-            >
-              <PlusCircleIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-              Add Pricing Tier
-            </button>
           </section>
         </div>
       )}
