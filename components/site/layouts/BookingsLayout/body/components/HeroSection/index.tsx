@@ -6,26 +6,25 @@ import { motion } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { StarIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function HeroV1() {
-  const { storeFormData } = useStoreContext();
-  const {
-    name,
-    description,
-    bannerUrl,
-    marketplaceListings = [],
-  } = storeFormData;
+const heroText = ["Your Trusted Booking Partner", "Book Experts On-Demand", "Seamless Scheduling"];
 
-  // Form state
+export default function Hero() {
+  const { storeFormData } = useStoreContext();
+  const { name, description, bannerUrl, marketplaceListings = [] } = storeFormData;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
   const [showForm, setShowForm] = useState(false);
+  const [displayedText, setDisplayedText] = useState("");
+  const [textIndex, setTextIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
 
-  // Map featured services
   const featured = marketplaceListings.map((svc) => ({
     id: svc.id,
     name: svc.title,
@@ -33,155 +32,138 @@ export default function HeroV1() {
     imageUrl: svc.images[0],
   }));
 
-  // Reveal booking form
   useEffect(() => {
-    const t = setTimeout(() => setShowForm(true), 1200);
+    const t = setTimeout(() => setShowForm(true), 1000);
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDisplayedText(heroText[textIndex].slice(0, charIndex + 1));
+      if (charIndex === heroText[textIndex].length) {
+        setTimeout(() => {
+          setCharIndex(0);
+          setTextIndex((prev) => (prev + 1) % heroText.length);
+        }, 1500);
+      } else {
+        setCharIndex((prev) => prev + 1);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [charIndex, textIndex]);
+
   const handleSearch = () => {
-    alert(
-      `Searching "${searchTerm}" on ${date.toLocaleDateString()} at ${time.toLocaleTimeString()}`
-    );
+    alert(`Searching \"${searchTerm}\" on ${date.toLocaleDateString()} at ${time.toLocaleTimeString()}`);
   };
 
   return (
-    <section className="relative h-screen w-full overflow-hidden">
-      {/* Parallax BG Image */}
+    <section className="relative min-h-screen w-full overflow-hidden bg-gray-900 text-white">
       {bannerUrl && (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${bannerUrl})` }}
-          data-scroll
-          data-scroll-speed="0.3"
-        />
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={bannerUrl}
+            loader={loader}
+            alt="Banner"
+            fill
+            className="object-cover object-center opacity-40"
+            priority
+          />
+        </div>
       )}
 
-      {/* Layered Orbs */}
+    <div className="relative z-10 container mx-auto px-6 pt-48 pb-28 flex flex-col md:flex-row items-center justify-center gap-16 md:gap-20">
+      {/* Left: Text Content */}
       <motion.div
-        className="absolute w-72 h-72 bg-pink-300 rounded-full opacity-15 blur-2xl top-[20%] left-[10%]"
-        animate={{ x: [0, -30, 0], y: [0, 30, 0] }}
-        transition={{ duration: 18, repeat: Infinity }}
-      />
-      <motion.div
-        className="absolute w-80 h-80 bg-indigo-300 rounded-full opacity-10 blur-3xl top-[60%] right-[15%]"
-        animate={{ x: [0, 40, 0], y: [0, -40, 0] }}
-        transition={{ duration: 20, repeat: Infinity }}
-      />
-
-      {/* Content & Glassmorphic Overlay */}
-      <div className="relative z-10 flex flex-col md:flex-row items-center justify-center h-full px-6 bg-white/5 backdrop-blur-md">
-        {/* Left: Title & Desc */}
-        <motion.div
-          className="text-center md:text-left max-w-2xl space-y-6"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1 }}
-        >
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white">
-            {name}
-          </h1>
-          {description && (
-            <motion.p
-              className="text-lg md:text-xl text-white/90 max-w-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 1 }}
-            >
-              {description}
-            </motion.p>
-          )}
-        </motion.div>
-
-        {/* Right: Booking Form */}
-        {showForm && (
-          <motion.div
-            className="mt-10 md:mt-0 md:ml-12 bg-white/30 backdrop-blur-lg p-6 rounded-2xl shadow-xl w-full max-w-md"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 1 }}
-          >
-            <div className="space-y-6">
-              {/* Floating Label Input */}
-              <div className="relative">
-                <input
-                  id="search"
-                  type="text"
-                  placeholder=" "
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-white/80 text-gray-900 focus:outline-none"
-                />
-                <label
-                  htmlFor="search"
-                  className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-6 peer-focus:top-2 peer-focus:text-xs peer-focus:text-teal-400"
-                >
-                  Search Providers
-                </label>
-              </div>
-
-              {/* Date Picker */}
-              <div className="relative">
-                <DatePicker
-                  selected={date}
-                  onChange={(d) => d && setDate(d)}
-                  placeholderText=" "
-                  className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-white/80 text-gray-900 focus:outline-none"
-                  dateFormat="MMM d, yyyy"
-                  calendarClassName="rounded-lg p-2 shadow-lg bg-white"
-                />
-                <label
-                  className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-focus:top-2 peer-focus:text-xs peer-focus:text-teal-400"
-                >
-                  Pick a Date
-                </label>
-              </div>
-
-              {/* Time Picker */}
-              <div className="relative">
-                <DatePicker
-                  selected={time}
-                  onChange={(t) => t && setTime(t)}
-                  showTimeSelect
-                  showTimeSelectOnly
-                  timeIntervals={30}
-                  placeholderText=" "
-                  className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-white/80 text-gray-900 focus:outline-none"
-                  dateFormat="h:mm aa"
-                  calendarClassName="rounded-lg p-2 shadow-lg bg-white"
-                />
-                <label
-                  className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-focus:top-2 peer-focus:text-xs peer-focus:text-teal-400"
-                >
-                  Pick a Time
-                </label>
-              </div>
-
-              {/* Search Button */}
-              <button
-                onClick={handleSearch}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg font-semibold shadow-md transition hover:scale-102 hover:shadow-lg"
-              >
-                Find Available Slots
-              </button>
-            </div>
-          </motion.div>
+        className=" min-w-[30rem] max-w-xl space-y-8 text-center md:text-left"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <h1 className="text-5xl md:text-6xl font-black leading-tight text-white drop-shadow-xl tracking-tight">
+          {name}
+        </h1>
+        <p className="text-2xl font-light text-teal-300 animate-pulse">{displayedText}</p>
+        {description && (
+          <p className="text-lg md:text-xl text-white/90 drop-shadow-md leading-relaxed">
+            {description}
+          </p>
         )}
-      </div>
+      </motion.div>
 
-      {/* Featured Services Cards */}
+      {/* Right: Booking Form */}
       {showForm && (
         <motion.div
-          className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto px-6"
+          className="w-full max-w-md bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl p-8 rounded-3xl shadow-2xl border border-white/20 ring-1 ring-white/10 transition-all"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.6 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="space-y-6">
+            {/* Input */}
+            <div>
+              <label htmlFor="search" className="block text-sm font-semibold text-white/80 mb-1">Search Providers</label>
+              <input
+                id="search"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white/80 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                placeholder="e.g., Plumber, Makeup Artist"
+              />
+            </div>
+
+            {/* Date */}
+            <div>
+              <label className="block text-sm font-semibold text-white/80 mb-1">Pick a Date</label>
+              <DatePicker
+                selected={date}
+                onChange={(d) => d && setDate(d)}
+                className="w-full px-4 py-3 rounded-xl bg-white/80 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                dateFormat="MMM d, yyyy"
+              />
+            </div>
+
+            {/* Time */}
+            <div>
+              <label className="block text-sm font-semibold text-white/80 mb-1">Pick a Time</label>
+              <DatePicker
+                selected={time}
+                onChange={(t) => t && setTime(t)}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={30}
+                dateFormat="h:mm aa"
+                className="w-full px-4 py-3 rounded-xl bg-white/80 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+              />
+            </div>
+
+            {/* CTA */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleSearch}
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white px-5 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-200"
+            >
+              Find Available Slots
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
+    </div>
+
+
+      {showForm && featured.length > 0 && (
+        <motion.div
+          className="relative z-10 mt-16 px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
         >
           {featured.slice(0, 3).map((svc) => (
-            <button
+            <motion.div
+              whileHover={{ scale: 1.02 }}
               key={svc.id}
-              className="bg-white/90 hover:bg-white backdrop-blur-sm rounded-xl shadow-lg overflow-hidden flex flex-col transition"
-              onClick={() => setSearchTerm(svc.name)}
+              className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden transition-all border border-white/10"
             >
               <div className="relative w-full h-40">
                 <Image
@@ -192,11 +174,17 @@ export default function HeroV1() {
                   className="object-cover"
                 />
               </div>
-              <div className="p-4 text-left">
-                <h3 className="font-semibold text-gray-900">{svc.name}</h3>
-                <p className="mt-1 text-teal-600 font-bold">${svc.price}</p>
+              <div className="p-4 text-left space-y-1">
+                <h3 className="text-lg font-semibold">{svc.name}</h3>
+                <p className="text-teal-400 font-bold">${svc.price}</p>
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <StarIcon key={i} className="h-4 w-4 text-yellow-400" />
+                  ))}
+                  <span className="text-sm text-gray-300">5.0 (243)</span>
+                </div>
               </div>
-            </button>
+            </motion.div>
           ))}
         </motion.div>
       )}

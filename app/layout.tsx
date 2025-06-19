@@ -10,6 +10,7 @@ import Cart from "../components/shop/cart";
 import SignInModal from "../components/shop/SignInModal/SignInModal";
 import siteMetadata from '../data/siteMetadata';
 import { Metadata } from 'next';
+import CookieConsentBar from "@/components/site/CookieConsentBar";
 
 
 export const metadata: Metadata = {
@@ -97,6 +98,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Cart />
           <LocationModal />
           <SignInModal />
+          <CookieConsentBar
+            onConsentChange={(status) => {
+              // Optional: Trigger Google Tag Manager or Analytics here
+              console.log('User cookie preference:', status);
+            }}
+          />
         </Providers>
       </body>
     </html>

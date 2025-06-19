@@ -16,6 +16,7 @@ import BenefitsSection from './components/BenefitsSection';
 import MassageFeatures from './components/MessagesSection';
 import TestimonialsSection from './components/TestimonialsSection';
 import CtaSection from './components/CtaSection';
+import FAQsSection from './components/FAQsSection';
 
 
 // Loader for next/image
@@ -87,13 +88,15 @@ export default function BookingsSite() {
 
       <FeaturesSection />
 
-      <BenefitsSection />
-
       <MassageFeatures />
+
+      <BenefitsSection />
 
       <TestimonialsSection />
 
       <CtaSection />
+
+      <FAQsSection />
 
       {/* Categories */}
       <section id="categories" className="py-32 bg-gradient-to-b from-white via-slate-50 to-slate-100">

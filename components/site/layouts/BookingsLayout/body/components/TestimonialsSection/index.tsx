@@ -1,6 +1,13 @@
+'use client';
+
 import React from "react";
 import Slider from "react-slick";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import { StarIcon } from "@heroicons/react/24/solid";
+
+// Image loader for Next.js
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 const testimonials = [
   {
@@ -8,24 +15,18 @@ const testimonials = [
     text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
     rating: 5,
     image: "/avatars/sarah.png",
-    bgColor: "bg-orange-100",
-    rotate: "-rotate-1",
   },
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: "James K.",
+    text: "The platform is super intuitive and fast. I found an amazing therapist and booked within minutes. Game changer!",
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-green-100",
-    rotate: "rotate-2",
+    image: "/avatars/james.png",
   },
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: "Amara N.",
+    text: "I love the flexibility and professionalism. Every session has been amazing so far. Highly recommended!",
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-orange-100",
-    rotate: "-rotate-2",
+    image: "/avatars/amara.png",
   },
 ];
 
@@ -37,152 +38,124 @@ const settings = {
   slidesToScroll: 1,
   arrows: false,
   autoplay: true,
-  autoplaySpeed: 5000,
+  autoplaySpeed: 6000,
   adaptiveHeight: true,
   responsive: [
     {
-      breakpoint: 768,
+      breakpoint: 1024,
       settings: {
         slidesToShow: 1,
       },
     },
-    {
-      breakpoint: 1024,
-      settings: "unslick" as const, // Destroys slick on larger screens (grid layout instead)
-    },
   ],
 };
 
-const TestimonialsSection = () => {
+export default function TestimonialsSection() {
   return (
-    <section className="bg-[#f8f1eb] py-20 px-6 lg:px-20">
-      <div className="max-w-7xl mx-auto text-center">
+    <section className="relative bg-gray-950 py-24 px-6 lg:px-12 text-white overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-gray-900 via-black to-gray-950" />
+
+      <div className="max-w-6xl mx-auto text-center">
         <motion.span
-          className="inline-block bg-green-100 text-green-600 text-sm font-medium px-3 py-1 rounded-full mb-4"
+          className="inline-block bg-emerald-400/10 text-emerald-300 text-sm font-semibold px-4 py-1.5 rounded-full"
           initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           Testimonials
         </motion.span>
 
         <motion.h2
-          className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4"
+          className="text-4xl sm:text-5xl font-bold mt-6"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          whileInView={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          Hear From Our Happy Clients <br /> and Therapists
+          Hear From Our Happy Clients
         </motion.h2>
 
         <motion.p
-          className="text-gray-600 max-w-2xl mx-auto mb-10"
+          className="text-gray-300 max-w-2xl mx-auto mt-4"
           initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          Discover how Ducun Vijed is making massage booking and therapy sessions
-          easier, more secure, and more rewarding for everyone.
+          Discover how Ducun Vijed is transforming the wellness experience for
+          both clients and therapists.
         </motion.p>
+      </div>
 
-        {/* Carousel on mobile, grid on desktop */}
-        <div className="block md:hidden">
-          <Slider {...settings}>
-            {testimonials.map((t, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className={`relative p-6 shadow-md rounded-2xl ${t.bgColor} ${t.rotate} mx-4`}>
-                  <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={t.image}
-                      alt={t.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                      <div className="flex text-yellow-500">
-                        {"★".repeat(t.rating)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </Slider>
-        </div>
-
-        {/* Desktop Grid */}
-        <div className="hidden md:flex gap-6 justify-center mt-8">
-          {testimonials.map((t, index) => (
+      {/* Mobile Carousel */}
+      <div className="mt-12 block md:hidden">
+        <Slider {...settings}>
+          {testimonials.map((t, i) => (
             <motion.div
-              key={index}
-              className={`w-80 p-6 shadow-md rounded-2xl ${t.bgColor} ${t.rotate}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
+              key={i}
+              className="px-4"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
             >
-              <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
-              <div className="flex items-center gap-3">
-                <img
-                  src={t.image}
-                  alt={t.name}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                  <div className="flex text-yellow-500">
-                    {"★".repeat(t.rating)}
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-lg">
+                <p className="text-gray-100 mb-6">“{t.text}”</p>
+                <div className="flex items-center gap-3">
+                  <Image
+                    loader={loader}
+                    src={t.image}
+                    alt={t.name}
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover"
+                  />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-white">{t.name}</p>
+                    <div className="flex text-yellow-400">
+                      {Array.from({ length: t.rating }).map((_, idx) => (
+                        <StarIcon key={idx} className="w-4 h-4" />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             </motion.div>
           ))}
-        </div>
+        </Slider>
+      </div>
+
+      {/* Desktop Grid */}
+      <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-16 max-w-6xl mx-auto">
+        {testimonials.map((t, i) => (
+          <motion.div
+            key={i}
+            className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 * i }}
+            viewport={{ once: true }}
+          >
+            <p className="text-gray-100 mb-6">“{t.text}”</p>
+            <div className="flex items-center gap-3">
+              <Image
+                src={t.image}
+                loader={loader}
+                alt={t.name}
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+              />
+              <div className="text-left">
+                <p className="text-sm font-semibold text-white">{t.name}</p>
+                <div className="flex text-yellow-400">
+                  {Array.from({ length: t.rating }).map((_, idx) => (
+                    <StarIcon key={idx} className="w-4 h-4" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
-};
-
-export default TestimonialsSection;
-
-
-{/* FAQs */}
-{/* <section id="faq" className="py-32 bg-gradient-to-b from-white via-slate-50 to-white">
-<div className="container mx-auto px-6 max-w-4xl">
-  <h2 className="text-4xl md:text-5xl font-extrabold text-center text-slate-800 mb-16">
-    Frequently Asked Questions
-  </h2>
-
-  <div className="space-y-6">
-    {faqs.map((q, i) => (
-      <Reveal key={i}>
-        <motion.details
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 + i * 0.1 }}
-          className="group bg-white/60 backdrop-blur-lg border border-slate-200 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all"
-        >
-          <summary className="flex items-center justify-between cursor-pointer text-lg font-semibold text-slate-800">
-            {q.question}
-            <svg
-              className="w-5 h-5 ml-2 text-slate-500 group-open:rotate-180 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </summary>
-          <p className="mt-4 text-slate-600 leading-relaxed">{q.answer}</p>
-        </motion.details>
-      </Reveal>
-    ))}
-  </div>
-</div>
-</section> */}
+}
