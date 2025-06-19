@@ -16,6 +16,9 @@ import AboutSection from './components/AboutSection';
 import CaseStudiesSection from './components/CaseStudiesSection';
 import DiscoveryCallSection from './components/DiscoveryCallSection';
 import TestimonialsSection from './components/TestimonialsSection';
+import FAQSection from './components/FAQSection';
+import CtaSection from './components/CtaSection';
+import ContactSection from './components/ContactSection';
 
 // Loader for next/image
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
@@ -66,44 +69,12 @@ export default function PortfolioSite() {
       {/* Testimonials */}
       <TestimonialsSection/>
 
-      {/* FAQs Accordion */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-10">FAQs</h2>
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <motion.details
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.1 }}
-                className="bg-white p-6 rounded-2xl shadow-lg"
-              >
-                <summary className="cursor-pointer text-xl font-semibold text-gray-800">
-                  {faq.question}
-                </summary>
-                <p className="mt-2 text-gray-600">{faq.answer}</p>
-              </motion.details>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FAQSection/>
 
-      {/* Contact Section */}
-      <section className="py-20 bg-white text-center">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Let's Work Together</h2>
-          <p className="text-lg md:text-xl text-gray-600 mb-8">
-            Ready to bring your ideas to life? Reach out for a free consultation.
-          </p>
-          <Link
-            href={`mailto:${storeFormData.contactEmail}`}
-            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-10 rounded-full font-semibold shadow-lg transition"
-          >
-            Contact Me
-          </Link>
-        </div>
-      </section>
+      <CtaSection/>
+
+      <ContactSection email="hello@example.com" phoneNumber="+254712345678" />
+      
     </div>
   );
 }

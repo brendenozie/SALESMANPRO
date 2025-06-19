@@ -1,70 +1,86 @@
+'use client';
+
 import React from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
-const AboutSection = () => {
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+
+export default function AboutSection() {
   return (
-    <section className="flex flex-col lg:flex-row items-center justify-between px-6 lg:px-20 py-12 bg-white">
-      {/* Left Side - Image */}
-      <div className="relative mb-10 lg:mb-0">
-        <div className="rounded-xl overflow-hidden bg-teal-800 w-[320px] h-[420px] flex items-center justify-center">
-          <img
-            src="/coach.jpg" // Replace with your actual image path
+    <section className="relative bg-white py-24 px-6 lg:px-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto flex flex-col-reverse lg:flex-row items-center gap-12">
+        {/* Left Side - Text Content */}
+        <motion.div
+          className="max-w-xl text-center lg:text-left"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-4xl font-bold text-gray-900 mb-3">
+            Meet Your <span className="text-orange-500">Business Coach</span>
+          </h2>
+          <h3 className="text-2xl font-semibold text-teal-700 mb-4">
+            Brittany Jones
+          </h3>
+          <p className="text-gray-600 leading-relaxed mb-6">
+            Former entrepreneur, executive, and coach with a passion for empowering leaders. Brittany brings 16+ years of real-world experience to help you navigate challenges and unlock growth with clarity and confidence.
+          </p>
+
+          {/* Stats */}
+          <div className="flex justify-center lg:justify-start gap-6 mb-8">
+            {[
+              { value: '12+', label: 'Expert Coaches' },
+              { value: '16+', label: 'Years of Experience' },
+              { value: '10+', label: 'Awards Won' },
+            ].map(({ value, label }, idx) => (
+              <div key={idx} className="text-center">
+                <p className="text-3xl font-bold text-gray-900">{value}</p>
+                <p className="text-sm text-gray-500">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          <button className="bg-orange-500 hover:bg-orange-600 transition text-white font-semibold px-6 py-3 rounded-xl shadow">
+            Learn More About Me
+          </button>
+        </motion.div>
+
+        {/* Right Side - Image */}
+        <motion.div
+          className="relative w-[320px] h-[420px] rounded-3xl overflow-hidden shadow-xl"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Image
+            src="/coach.jpg"
+            loader={loader}
             alt="Business Coach"
-            className="object-cover h-full"
+            fill
+            className="object-cover"
+            priority
           />
-        </div>
-        <div className="absolute -left-6 top-1/2 transform -translate-y-1/2 bg-orange-500 p-2 rounded-full shadow-lg">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8c1.657 0 3-1.567 3-3.5S13.657 1 12 1 9 2.567 9 4.5 10.343 8 12 8zm0 2c-2.667 0-8 1.333-8 4v2h16v-2c0-2.667-5.333-4-8-4z"
-            />
-          </svg>
-        </div>
-      </div>
 
-      {/* Right Side - Text */}
-      <div className="max-w-xl text-center lg:text-left">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          Meet the Business Coach
-        </h2>
-        <h3 className="text-2xl text-teal-700 font-semibold mb-4">
-          Brittany Jones
-        </h3>
-        <p className="text-gray-600 mb-6 leading-relaxed">
-          As a former business owner, entrepreneur, and corporate executive, I have gained valuable insights into the pressures, dilemmas, and challenges faced in the business world. Through coaching and mentoring, I aim to share my wealth of knowledge and provide the necessary support for their development.
-        </p>
-
-        {/* Stats */}
-        <div className="flex justify-center lg:justify-start gap-6 mb-6">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">12+</p>
-            <p className="text-sm text-gray-600">Expert Coaches</p>
+          {/* Floating Badge */}
+          <div className="absolute -left-5 top-1/2 -translate-y-1/2 bg-orange-500 p-3 rounded-full shadow-lg">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8c1.657 0 3-1.567 3-3.5S13.657 1 12 1 9 2.567 9 4.5 10.343 8 12 8zm0 2c-2.667 0-8 1.333-8 4v2h16v-2c0-2.667-5.333-4-8-4z"
+              />
+            </svg>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">16+</p>
-            <p className="text-sm text-gray-600">Years of Experience</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">10+</p>
-            <p className="text-sm text-gray-600">Award Won</p>
-          </div>
-        </div>
-
-        {/* Button */}
-        <button className="bg-orange-500 text-white px-6 py-3 rounded hover:bg-orange-600 transition">
-          Learn More About Me
-        </button>
+        </motion.div>
       </div>
     </section>
   );
-};
-
-export default AboutSection;
+}
