@@ -4,9 +4,6 @@ import React, { ReactNode, Suspense } from "react";
 import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
 import AdminLayout from "@/components/AdminLayout";
-import UserNav from "@/components/UserNav";
-import { normalizeCategory } from "@/utils/normalizeCategory";
-import { adminCategorySidebarMap } from "@/constant/adminCategorySidebarMap";
 import { StoreContextProvider } from "@/contexts/StoreContext";
 import { transformCompanyToStoreForm } from "@/utils/transformPrismaToStoreForm";
 

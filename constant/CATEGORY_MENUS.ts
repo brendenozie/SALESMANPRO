@@ -66,6 +66,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
   "Booking & Appointments": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "Calendar", href: `/admin/${adminSlug}/calendar`, icon: CalendarIcon },
+    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
     { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
     { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UsersIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
@@ -74,6 +75,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
   "Portfolio & Personal Branding": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
+    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
     { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
