@@ -8,6 +8,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from 'framer-motion';
+import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
 
 export type SubObj = {
   id: string;
@@ -18,18 +19,19 @@ export type SubObj = {
 export type ParentCategory = {
   id: string;
   name: string;
-  icon:string;
+  icon: string;
   children: SubObj[];
 };
 
 type SelectedCategory = {
   id: string;
   name: string;
-  icon:string;
+  icon: string;
   items: SubObj[];
 };
 
 type Props = {
+  category: string;
   availableCategories: ParentCategory[];
   selectedCategories: SelectedCategory[];
   onToggleParent: (cat: ParentCategory) => void;
@@ -101,126 +103,8 @@ function SearchBar({
   );
 }
 
-// ─── Sub-component: Single Subcategory Row ────────────────────────────────────
-function SubCategoryRow({
-  child,
-  isSelected,
-  onToggle,
-  highlightMatch,
-}: {
-  child: SubObj;
-  isSelected: boolean;
-  onToggle: () => void;
-  highlightMatch: (text: string) => React.ReactNode;
-}) {
-  return (
-    <label 
-    className="flex items-center py-2 space-x-3 hover:bg-gray-100 rounded-lg px-4 transition cursor-pointer"
-    onClick={(e) => e.stopPropagation()}>
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={(e) =>{
-          e.stopPropagation();
-          onToggle();
-        }}
-        className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-        aria-label={`Select subcategory ${child.name}`}
-      />
-      <span className="ml-1 text-sm text-gray-700">
-        {highlightMatch(child.name)}
-      </span>
-    </label>
-  );
-}
-
-// ─── Sub-component: Parent Category Card ──────────────────────────────────────
-function CategoryCard({
-  cat,
-  selectedCount,
-  totalChildren,
-  isOpen,
-  onToggleParentCheckbox,
-  onToggleExpand,
-  childrenRows,
-}: {
-  cat: ParentCategory;
-  selectedCount: number;
-  totalChildren: number;
-  isOpen: boolean;
-  onToggleParentCheckbox: (e: React.MouseEvent) => void;
-  onToggleExpand: () => void;
-  childrenRows: React.ReactNode[];
-}) {
-  const allSelected = totalChildren > 0 && selectedCount === totalChildren;
-  const partial = selectedCount > 0 && selectedCount < totalChildren;
-
-  return (
-    <li className="bg-white rounded-lg shadow-md overflow-hidden transition-shadow hover:shadow-lg">
-      {/* Parent Row */}
-      <div
-        className={`flex items-center justify-between px-6 py-4 cursor-pointer transition-colors
-          ${isOpen ? "bg-indigo-50 border-l-4 border-indigo-600" : "hover:bg-indigo-50"}
-        `}
-        onClick={totalChildren > 0 ? onToggleExpand : () => {}}
-      >
-        <div className="flex items-center space-x-3">
-          <input
-            type="checkbox"
-            checked={allSelected}
-            ref={(el) => el && (el.indeterminate = partial)}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleParentCheckbox(e);
-            }}
-            className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-            aria-label={`Select parent category ${cat.name}`}
-          />
-          <span className={`font-medium ${allSelected ? "text-indigo-600" : "text-gray-800"}`}>
-            {cat.name}
-          </span>
-          {totalChildren > 0 && (
-            <span className="ml-2 text-sm text-gray-500">
-              ({selectedCount} of {totalChildren})
-            </span>
-          )}
-        </div>
-        {totalChildren > 0 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleExpand();
-            }}
-            aria-label={isOpen ? "Collapse" : "Expand"}
-            className="focus:outline-none"
-          >
-            {isOpen ? (
-              <ChevronUpIcon className="h-5 w-5 text-gray-500" />
-            ) : (
-              <ChevronDownIcon className="h-5 w-5 text-gray-500" />
-            )}
-          </button>
-        )}
-      </div>
-
-      {/* Child Rows (expand/collapse) */}
-      <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-300
-          ${isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}
-          bg-gray-50
-        `}
-      >
-        <div className="border-t border-gray-200 pl-6 pr-4 pb-4 transition-opacity duration-300">
-          {childrenRows.length > 0 ? childrenRows : (
-            <p className="text-gray-500 italic px-4 py-2 text-sm">No subcategories</p>
-          )}
-        </div>
-      </div>
-    </li>
-  );
-}
-
 export default function CategoryTree({
+  category,
   availableCategories,
   selectedCategories,
   onToggleParent,
@@ -231,10 +115,16 @@ export default function CategoryTree({
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // Filter logic
+  // Filter availableCategories by STORE_CATEGORY_MAP
+  const filteredBySite = useMemo(() => {
+    const allowedNames = STORE_CATEGORY_MAP[category] || [];
+    return availableCategories.filter(cat => allowedNames.includes(cat.name));
+  }, [category, availableCategories]);
+
+  // Filter logic with search
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return availableCategories
+    return filteredBySite
       .map(cat => ({
         ...cat,
         children: cat.children.filter(c => c.name.toLowerCase().includes(q)),
@@ -243,7 +133,7 @@ export default function CategoryTree({
         cat =>
           cat.name.toLowerCase().includes(q) || (cat.children && cat.children.length > 0)
       );
-  }, [search, availableCategories]);
+  }, [search, filteredBySite]);
 
   // Map for quick lookup
   const selectedMap = useMemo(() => {

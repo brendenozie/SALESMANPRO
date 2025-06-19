@@ -54,6 +54,7 @@ export const storeSteps: StepConfig[] = [
     title: 'Categories',
     render: (f, h, cats) => (
       <CategoryAccordion
+        category={f.category}
         availableCategories={cats}
         selectedCategories={f.storeCategories}
         onToggleParent={h.onToggleParent}
