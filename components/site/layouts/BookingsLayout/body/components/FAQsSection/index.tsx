@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-const faqs = [
+const defaultFaqs = [
   {
     question: 'How do I book a massage session?',
     answer:
@@ -28,11 +28,15 @@ const faqs = [
 ];
 
 export default function FAQsSection() {
+  const { storeFormData } = useStoreContext();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  const faqs = storeFormData?.faqs?.length ? storeFormData.faqs : defaultFaqs;
+  const storeName = storeFormData?.name || 'our platform';
 
   return (
     <section id="faq" className="relative py-24 bg-gray-950 text-white overflow-hidden">
@@ -54,7 +58,7 @@ export default function FAQsSection() {
           </h2>
 
           <p className="text-gray-300 mt-4 max-w-xl mx-auto">
-            We’ve got answers to help you make the most of your wellness experience.
+            We’ve got answers to help you make the most of your wellness experience on {storeName}.
           </p>
         </motion.div>
 

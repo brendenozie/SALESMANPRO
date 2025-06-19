@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StarIcon } from "@heroicons/react/24/solid";
+import { MarketplaceListingForm } from "@/types/typings";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -25,12 +26,42 @@ export default function Hero() {
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
 
-  const featured = marketplaceListings.map((svc) => ({
-    id: svc.id,
-    name: svc.title,
-    price: Number(svc.finalPrice || 0),
-    imageUrl: svc.images[0],
-  }));
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLUListElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+ 
+
+  let filteredServices : any[] = [];
+
+  useEffect(() => {
+    filteredServices = marketplaceListings
+    ?.filter((item) =>
+      item.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      isAvailable: item.isAvailable,
+      price: item.finalPrice,
+      imageUrl: item.images?.[0] ?? null,
+    }));
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setActiveIndex(-1);
+      }
+    };
+  
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setShowForm(true), 1000);
@@ -99,22 +130,65 @@ export default function Hero() {
           transition={{ delay: 0.4 }}
         >
           <div className="space-y-6">
-            {/* Input */}
-            <div>
-              <label htmlFor="search" className="block text-sm font-semibold text-white/80 mb-1">Search Providers</label>
+            {/* Search Input with Dropdown */}
+            <div className="relative">
+              <label htmlFor="search" className="block text-sm font-semibold text-white/80 mb-1">
+                Search Providers
+              </label>
               <input
                 id="search"
+                ref={inputRef}
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setActiveIndex(0);
+                }}
+                onKeyDown={(e) => {
+                  if (filteredServices.length === 0) return;
+
+                  if (e.key === "ArrowDown") {
+                    setActiveIndex((prev) => (prev + 1) % filteredServices.length);
+                    e.preventDefault();
+                  } else if (e.key === "ArrowUp") {
+                    setActiveIndex((prev) => (prev - 1 + filteredServices.length) % filteredServices.length);
+                    e.preventDefault();
+                  } else if (e.key === "Enter") {
+                    if (filteredServices[activeIndex]) {
+                      setSearchTerm(filteredServices[activeIndex].name);
+                    }
+                  }
+                }}
                 className="w-full px-4 py-3 rounded-xl bg-white/80 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                 placeholder="e.g., Plumber, Makeup Artist"
               />
+
+              {filteredServices.length > 0 && (
+                <ul
+                  ref={dropdownRef}
+                  className="absolute left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-white rounded-xl shadow-lg z-50 text-gray-900"
+                >
+                  {filteredServices.slice(0, 6).map((item, index) => (
+                    <li
+                      key={item.id}
+                      onClick={() => {
+                        setSearchTerm(item.name);
+                        setActiveIndex(-1);
+                      }}
+                      className={`px-4 py-3 cursor-pointer transition ${
+                        index === activeIndex ? 'bg-teal-100' : 'hover:bg-teal-50'
+                      }`}
+                    >
+                      {item.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             {/* Date */}
             <div>
-              <label className="block text-sm font-semibold text-white/80 mb-1">Pick a Date</label>
+              <label className="block text-sm font-semibold  w-full text-white/80 mb-1">Pick a Date</label>
               <DatePicker
                 selected={date}
                 onChange={(d) => d && setDate(d)}
@@ -125,7 +199,7 @@ export default function Hero() {
 
             {/* Time */}
             <div>
-              <label className="block text-sm font-semibold text-white/80 mb-1">Pick a Time</label>
+              <label className="block text-sm w-full font-semibold text-white/80 mb-1">Pick a Time</label>
               <DatePicker
                 selected={time}
                 onChange={(t) => t && setTime(t)}
@@ -144,50 +218,12 @@ export default function Hero() {
               onClick={handleSearch}
               className="w-full bg-teal-500 hover:bg-teal-600 text-white px-5 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-200"
             >
-              Find Available Slots
+              Book Slot
             </motion.button>
           </div>
         </motion.div>
       )}
     </div>
-
-
-      {showForm && featured.length > 0 && (
-        <motion.div
-          className="relative z-10 mt-16 px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-        >
-          {featured.slice(0, 3).map((svc) => (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              key={svc.id}
-              className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden transition-all border border-white/10"
-            >
-              <div className="relative w-full h-40">
-                <Image
-                  loader={loader}
-                  src={svc.imageUrl}
-                  alt={svc.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-4 text-left space-y-1">
-                <h3 className="text-lg font-semibold">{svc.name}</h3>
-                <p className="text-teal-400 font-bold">${svc.price}</p>
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <StarIcon key={i} className="h-4 w-4 text-yellow-400" />
-                  ))}
-                  <span className="text-sm text-gray-300">5.0 (243)</span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
     </section>
   );
 }

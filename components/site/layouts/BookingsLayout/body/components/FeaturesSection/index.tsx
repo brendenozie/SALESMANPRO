@@ -1,7 +1,7 @@
 'use client';
 
-import React from "react";
-import Image from "next/image";
+import React from 'react';
+import Image from 'next/image';
 import {
   CheckIcon,
   Cog6ToothIcon,
@@ -9,56 +9,75 @@ import {
   AdjustmentsVerticalIcon,
   ClockIcon,
   UserGroupIcon,
-} from "@heroicons/react/24/solid";
-import { motion } from "framer-motion";
-
-const features = [
-  {
-    Icon: CheckIcon,
-    title: "Effortless Booking",
-    description: "Book your massage in seconds—anywhere, anytime.",
-  },
-  {
-    Icon: UserGroupIcon,
-    title: "Choose Your Therapist",
-    description: "Select from top-rated, vetted professionals.",
-  },
-  {
-    Icon: LockClosedIcon,
-    title: "Secure Payments",
-    description: "Protected transactions via trusted gateways.",
-  },
-  {
-    Icon: AdjustmentsVerticalIcon,
-    title: "Custom Options",
-    description: "Tailor services to your exact needs.",
-  },
-  {
-    Icon: ClockIcon,
-    title: "Real-Time Scheduling",
-    description: "View and manage bookings on your time.",
-  },
-  {
-    Icon: Cog6ToothIcon,
-    title: "Vetted Experts",
-    description: "Skilled, licensed, and passionate therapists.",
-  },
-];
+} from '@heroicons/react/24/solid';
+import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function FeaturesSection() {
+  const { storeFormData } = useStoreContext();
+  const {
+    name,
+    description,
+    bannerUrl,
+    themeSettings,
+    marketplaceListings = [],
+    stats = [],
+    metrics = [],
+    pricingTiers = [],
+  } = storeFormData;
+
+  const features = [
+    {
+      Icon: CheckIcon,
+      title: 'Effortless Booking',
+      description: 'Book any service in seconds—anywhere, anytime.',
+    },
+    {
+      Icon: UserGroupIcon,
+      title: 'Top Service Providers',
+      description: `Choose from ${marketplaceListings.length}+ skilled professionals.`,
+    },
+    {
+      Icon: LockClosedIcon,
+      title: 'Secure Payments',
+      description: 'Protected transactions with MPESA & more.',
+    },
+    {
+      Icon: AdjustmentsVerticalIcon,
+      title: 'Tailored Packages',
+      description: pricingTiers[0]?.description || 'Pick what suits your needs.',
+    },
+    {
+      Icon: ClockIcon,
+      title: 'Live Availability',
+      description: 'Book in real-time and avoid surprises.',
+    },
+    {
+      Icon: Cog6ToothIcon,
+      title: 'Trusted & Vetted',
+      description: 'Each expert is hand-verified for quality service.',
+    },
+  ];
+
+  const primaryColor = themeSettings?.primaryColor || '#10b981';
+
+  const featuredPricing = pricingTiers.find((p) => p.isFeatured);
+
   return (
     <section className="relative bg-gray-950 py-24 px-6 sm:px-12 text-white overflow-hidden">
       {/* Background blur and glow */}
       <div className="absolute inset-0 -z-10">
-        <Image
-          src="/images/spa-massage.jpg"
-          alt="Spa background"
-          fill
-          loader={loader}
-          className="object-cover opacity-10"
-        />
+        {bannerUrl && (
+          <Image
+            src={bannerUrl}
+            alt={`${name} background`}
+            fill
+            loader={loader}
+            className="object-cover opacity-10"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black/90" />
       </div>
 
@@ -79,7 +98,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          Modern Massage Booking, Redefined
+          Why Choose {name}
         </motion.h2>
 
         <motion.p
@@ -88,7 +107,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Discover a seamless way to book massages with confidence. From therapist selection to secure payments, every detail is designed for comfort and clarity.
+          {description || 'Enjoy fast, flexible and reliable service booking — from anywhere.'}
         </motion.p>
       </div>
 
@@ -103,7 +122,12 @@ export default function FeaturesSection() {
             transition={{ duration: 0.4, delay: i * 0.1 }}
             viewport={{ once: true }}
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-500 text-white flex items-center justify-center shadow-md mb-4">
+            <div
+              className="w-12 h-12 rounded-xl text-white flex items-center justify-center shadow-md mb-4"
+              style={{
+                backgroundImage: `linear-gradient(to bottom right, ${primaryColor}, #6366f1)`,
+              }}
+            >
               <Icon className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-semibold group-hover:text-emerald-400 transition">
@@ -113,6 +137,45 @@ export default function FeaturesSection() {
           </motion.div>
         ))}
       </div>
+      {/* Pricing & Stats */}
+      <div className="mt-20 max-w-3xl mx-auto text-center space-y-4">
+        {featuredPricing && (
+          <>
+            <h4 className="text-xl font-bold text-emerald-400">
+              Starting at KES {featuredPricing.price}
+            </h4>
+            <p className="text-sm text-gray-300">{featuredPricing.description}</p>
+          </>
+        )}
+
+        {(stats.length > 0 || metrics.length > 0) && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-10">
+            {[...stats, ...metrics].map(({ label, value, iconUrl }, i) => (
+              <motion.div
+                key={label}
+                className="text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.1 }}
+              >
+                {iconUrl && (
+                  <Image
+                    src={iconUrl}
+                    loader={loader}
+                    alt={label}
+                    width={40}
+                    height={40}
+                    className="mx-auto mb-2"
+                  />
+                )}
+                <h5 className="text-lg font-bold text-white">{value}</h5>
+                <p className="text-sm text-gray-400">{label}</p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
     </section>
   );
 }
