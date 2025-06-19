@@ -1,4 +1,3 @@
-// File: components/CategoryTree.tsx
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
@@ -8,6 +7,7 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from 'framer-motion';
 
 export type SubObj = {
   id: string;
@@ -220,7 +220,6 @@ function CategoryCard({
   );
 }
 
-// ─── Main Component: CategoryTree ──────────────────────────────────────────────
 export default function CategoryTree({
   availableCategories,
   selectedCategories,
@@ -229,181 +228,176 @@ export default function CategoryTree({
   onBulkToggle,
   onApply,
 }: Props) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // 1) Filter parents & their children based on `search`
+  // Filter logic
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return availableCategories
-      .map((cat) => ({
+      .map(cat => ({
         ...cat,
-        children: cat.children.filter((c) => c.name.toLowerCase().includes(q)),
+        children: cat.children.filter(c => c.name.toLowerCase().includes(q)),
       }))
       .filter(
-        (cat) =>
+        cat =>
           cat.name.toLowerCase().includes(q) || (cat.children && cat.children.length > 0)
       );
   }, [search, availableCategories]);
 
+  // Map for quick lookup
+  const selectedMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    selectedCategories.forEach(p => {
+      map[p.id] = p.items.map((i:any) => i.id);
+    });
+    return map;
+  }, [selectedCategories]);
+
+  // Flatten IDs
+  const allFilteredIds = filtered.flatMap(cat => [
+    cat.id,
+    ...cat.children.map((c:any) => c.id),
+  ]);
+
   const toggleExpand = (id: string) => {
-    setExpanded((prev) => {
+    setExpanded(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
   };
 
-  const highlightMatch = (text: string) => {
-    const idx = text.toLowerCase().indexOf(search.toLowerCase());
-    if (idx === -1 || !search) return text;
-    return (
-      <>
-        {text.slice(0, idx)}
-        <mark className="bg-yellow-100 text-yellow-800">
-          {text.slice(idx, idx + search.length)}
-        </mark>
-        {text.slice(idx + search.length)}
-      </>
-    );
-  };
-
-  // Flatten all IDs of filtered categories and their children
-  const allFilteredIds = filtered.flatMap((cat) => [
-    cat.id,
-    ...cat.children.map((c) => c.id),
-  ]);
-
   return (
-    <div className="max-w-4xl mx-auto mt-6 border border-gray-100 rounded-lg shadow-sm bg-white">
-      {/* ─── Selected Pills ──────────────────────────────────────────────────── */}
-      {selectedCategories.length > 0 && (
-        <div className="flex flex-row gap-2 mb-4 px-6 pt-6 overflow-x-auto">
-          {selectedCategories.map((parent) =>
-            parent.items.map((child) => (
-              <SelectedPill
-                key={child.id}
-                parentId={parent.id}
-                child={child}
-                onRemove={onToggleSub}
-              />
-            ))
-          )}
+    <div className="flex flex-col lg:flex-row gap-6">
+      {/* Selected Pane */}
+      <aside className="w-full lg:w-1/3 bg-gray-50 p-4 rounded-lg shadow-sm sticky top-20">
+        <h4 className="text-lg font-semibold mb-4">Your Selection</h4>
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          {selectedCategories.map(parent => (
+            <div key={parent.id}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="h-8 w-8 bg-indigo-100 text-indigo-600 flex items-center justify-center rounded-full">
+                  {parent.icon || parent.name[0]}
+                </span>
+                <span className="font-medium">{parent.name}</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {parent.items.map((child:any) => (
+                  <div
+                    key={child.id}
+                    className="flex items-center bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
+                  >
+                    {child.name}
+                    <button
+                      onClick={() => onToggleSub(parent.id, child)}
+                      className="ml-1 focus:outline-none"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+        <button
+          onClick={onApply}
+          className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+        >
+          Apply
+        </button>
+      </aside>
 
-      {/* ─── Sticky Header & Search ──────────────────────────────────────────── */}
-      <div className=" top-0 bg-white z-10 shadow-sm border-b">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-6 py-5">
-          <div>
-            <h3 className="text-2xl font-semibold text-gray-900">Select Categories</h3>
-            <p className="mt-1 text-gray-600 text-sm">
-              Pick a parent category or drill down to subcategories.
-            </p>
-          </div>
-
-          {/* Bulk Action Buttons */}
-          <div className="flex space-x-2 mt-4 md:mt-0">
+      {/* Browse & Select Pane */}
+      <main className="flex-1">
+        {/* Toolbar */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+          <SearchBar search={search} setSearch={setSearch} placeholder="Filter categories…" />
+          <div className="flex space-x-2">
             <button
               onClick={() => onBulkToggle(allFilteredIds)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 transition-shadow shadow-sm"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 transition"
             >
               Select All
             </button>
             <button
               onClick={() => onBulkToggle([])}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm hover:bg-gray-300 transition-shadow"
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm hover:bg-gray-300 transition"
             >
               Clear All
             </button>
-            <button
-              onClick={() => {
-                const nextSet = new Set<string>();
-                if (expanded.size === 0) {
-                  filtered.forEach((cat) => nextSet.add(cat.id));
-                }
-                setExpanded(nextSet);
-              }}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-shadow"
-            >
-              {expanded.size === 0 ? "Expand All" : "Collapse All"}
-            </button>
-          </div>
-
-          {/* Search Field */}
-          <div className="mt-4 md:mt-0">
-            <SearchBar search={search} setSearch={setSearch} />
           </div>
         </div>
-      </div>
 
-      {/* ─── Category List ───────────────────────────────────────────────────── */}
-      <div className=" p-6 space-y-4">
-        {filtered.length === 0 ? (
-          <div className="text-center text-gray-500 py-16 animate-fadeIn">
-            <MagnifyingGlassIcon className="mx-auto w-12 h-12 mb-3 text-gray-300" />
-            <p className="text-lg">No categories match "<span className="italic">{search}</span>".</p>
-            <button
-              onClick={() => setSearch("")}
-              className="mt-4 text-indigo-600 hover:underline focus:outline-none"
-            >
-              Clear Search
-            </button>
-          </div>
-        ) : (
-          <ul className="space-y-4">
-            {filtered.map((cat) => {
-              const parentEntry = selectedCategories.find((s) => s.id === cat.id);
-              const selectedCount = parentEntry?.items.length ?? 0;
-              const hasChildren = cat.children.length > 0;
+        {/* Category List */}
+        <ul className="space-y-4">
+          <AnimatePresence>
+            {filtered.map(cat => {
+              const selIds = selectedMap[cat.id] || [];
+              const selCount = selIds.length;
+              const totalChildren = cat.children.length;
               const isOpen = expanded.has(cat.id);
 
-              // Prepare subcategory rows
-              const subRows = cat.children.map((child) => {
-                const isSel = parentEntry?.items.some((item) => item.id === child.id) ?? false;
-                return (
-                  <SubCategoryRow
-                    key={child.id}
-                    child={child}
-                    isSelected={isSel}
-                    onToggle={() => onToggleSub(cat.id, child)}
-                    highlightMatch={highlightMatch}
-                  />
-                );
-              });
-
-              const handleParentCheckboxClick = (e: React.MouseEvent) => {
-                e.stopPropagation();
-                onToggleParent(cat);
-                toggleExpand(cat.id);
-              };
-
               return (
-                <CategoryCard
+                <motion.li
                   key={cat.id}
-                  cat={cat}
-                  selectedCount={selectedCount}
-                  totalChildren={cat.children.length}
-                  isOpen={isOpen}
-                  onToggleParentCheckbox={handleParentCheckboxClick}
-                  onToggleExpand={() => toggleExpand(cat.id)}
-                  childrenRows={subRows}
-                />
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-white rounded-lg shadow hover:shadow-md overflow-hidden"
+                >
+                  <div
+                    onClick={() => toggleExpand(cat.id)}
+                    className={`flex items-center justify-between px-6 py-4 cursor-pointer transition-colors
+                      ${isOpen ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'hover:bg-gray-50'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="h-6 w-6 flex items-center justify-center text-indigo-600">
+                        {cat.icon}
+                      </span>
+                      <span className="font-medium text-gray-900">{cat.name}</span>
+                      {totalChildren > 0 && (
+                        <span className="text-sm text-gray-500">
+                          ({selCount}/{totalChildren})
+                        </span>
+                      )}
+                    </div>
+                    {totalChildren > 0 && (
+                      <ChevronDownIcon
+                        className={`h-5 w-5 text-gray-500 transform transition-transform ${isOpen ? '-rotate-180' : ''}`}
+                      />
+                    )}
+                  </div>
+
+                  {isOpen && totalChildren > 0 && (
+                    <div className="p-4 border-t border-gray-100 grid grid-cols-3 md:grid-cols-4 gap-2">
+                      {cat.children.map((child:any) => {
+                        const isSel = selIds.includes(child.id);
+                        return (
+                          <motion.button
+                            key={child.id}
+                            onClick={() => onToggleSub(cat.id, child)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`p-2 rounded-lg border text-sm transition-colors flex items-center justify-center
+                              ${isSel
+                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                : 'bg-white text-gray-700 border-gray-200 hover:bg-indigo-50'}`}
+                          >
+                            {child.name}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </motion.li>
               );
             })}
-          </ul>
-        )}
-      </div>
-
-      {/* ─── Footer: Apply Button ────────────────────────────────────────────── */}
-      <div className="flex justify-end px-6 py-5 border-t bg-gray-50">
-        {/* <button
-          onClick={onApply}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none transition-shadow shadow-sm"
-        >
-          Apply
-        </button> */}
-      </div>
+          </AnimatePresence>
+        </ul>
+      </main>
     </div>
   );
 }

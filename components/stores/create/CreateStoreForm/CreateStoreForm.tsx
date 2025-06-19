@@ -27,6 +27,9 @@ import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
 import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory, Promotion, HeroSlide } from '../../../../types/typings';
 import ProductPricingAndTiers  from '../PricingTiers/PricingTiers';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import { AnimatePresence, motion } from 'framer-motion';
+import CategorySelect from '../CategorySelect/CategorySelect';
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -36,6 +39,11 @@ const SITE_CATEGORIES_WITH_PRICING = [
 
 // Interfaces
 export const storeSteps: StepConfig[] = [
+  {
+    key: 'businesscategory',
+    title: 'Business Category',
+    render: (f, h) => <CategorySelect {...f} handleChange={h.handleChange} />,
+  },
   {
     key: 'basic',
     title: 'Basic Info',
@@ -86,14 +94,6 @@ export const paymentSteps: StepConfig[] = [
   }
 ];
 
-// Assuming your StepConfig is defined something like this:
-// interface StepConfig {
-//   key: string;
-//   title: string;
-//   // The 'handlers' parameter should reflect what's actually passed from the parent
-//   render: (formData: StoreForm, handlers: { onChangeSettings: (updated: Partial<StoreForm>) => void }) => JSX.Element;
-// }
-
 export const pricingSteps: StepConfig[] = [
   {
     key: 'pricingtiers',
@@ -102,31 +102,9 @@ export const pricingSteps: StepConfig[] = [
       // Create a wrapper function that ProductPricingAndTiers expects
       const setPricingTiersFormData: React.Dispatch<React.SetStateAction<StoreForm>> = (update) => {
         if (typeof update === 'function') {
-          // If ProductPricingAndTiers passes a function (e.g., prevData => newData)
-          // We need to apply that function to the *current* formData to get the new state,
-          // and then extract only the relevant parts to pass to onChangeSettings.
-          // IMPORTANT: ProductPricingAndTiers expects 'FormData' structure,
-          // but onChangeSettings expects 'StoreForm'. Ensure compatibility.
-          // For simplicity, let's assume 'FormData' is a subset/compatible with 'StoreForm'
-          // regarding pricingTiers and other fields ProductPricingAndTiers might touch.
-          const newFormData = update(formData as StoreForm); // Cast through unknown to satisfy TypeScript
-          handlers.onChangeSettings({ pricingTiers: (newFormData as any).pricingTiers });
-          // If ProductPricingAndTiers also touched other root-level fields like sellingPrice,
-          // you would include them here:
-          // handlers.onChangeSettings({
-          //   pricingTiers: newFormData.pricingTiers,
-          //   sellingPrice: newFormData.sellingPrice,
-          //   // ... other fields
-          // });
-        } else {
-          // If ProductPricingAndTiers passes a direct object (e.g., { pricingTiers: [...] })
           handlers.onChangeSettings({ pricingTiers: (update as any).pricingTiers });
-          // Similarly, include other fields if updated directly:
-          // handlers.onChangeSettings({
-          //   pricingTiers: update.pricingTiers,
-          //   sellingPrice: update.sellingPrice,
-          //   // ... other fields
-          // });
+        } else {
+          handlers.onChangeSettings({ pricingTiers: (update as any).pricingTiers });
         }
       };
 
@@ -134,13 +112,6 @@ export const pricingSteps: StepConfig[] = [
         <ProductPricingAndTiers
           formData={{
             ...formData,
-            // Pass only the relevant fields from the main formData that ProductPricingAndTiers needs
-            // sellingPrice: formData.sellingPrice || 0, // Ensure these are present, even if 0
-            // buyingPrice: formData.buyingPrice || 0,
-            // profitMargin: formData.profitMargin || 0,
-            // tax: formData.tax || 0,
-            // shippingCost: formData.shippingCost || 0,
-            // discount: formData.discount || 0,
             pricingTiers: formData.pricingTiers || [],
           }}
           setFormData={setPricingTiersFormData}
@@ -149,20 +120,6 @@ export const pricingSteps: StepConfig[] = [
     },
   },
 ];
-
-// export const pricingSteps: StepConfig[] = [
-//   {
-//     key: 'pricingtiers',
-//     title: 'Pricing Tiers',
-//     render: (f, h) => (
-      
-//       <ProductPricingAndTiers
-//           formData={f}
-//           setFormData={h.onChangeSettings}
-//       />
-//     ),
-//   },
-// ];
 
 export const websiteSteps: StepConfig[] = [
   {
@@ -317,184 +274,6 @@ export const websiteSteps: StepConfig[] = [
   },
 ];
 
-
-const stepsV1: StepConfig[] = [
-    {
-      key: 'basic',
-      title: 'Basic Info',
-      render: (f, h) => (
-        <BasicInfo {...f} handleChange={h.handleChange} />
-      )
-    },
-    {
-      key: 'categories',
-      title: 'Categories',
-      render: (f, h, cats) => (
-        <CategoryAccordion
-          availableCategories={cats}
-          selectedCategories={f.storeCategories}
-          onToggleParent={h.onToggleParent}
-          onToggleSub={h.onToggleSub}       // see note below
-          onBulkToggle={h.onBulkToggle}
-          onApply={() => console.log(f.storeCategories)}
-        />
-
-      )
-    },
-    {
-      key: 'branding',
-      title: 'Branding',
-      render: (f,h) => (
-        <BannerLogoAccordion
-          logoUrl={f.logoUrl}
-          bannerUrl={f.bannerUrl}
-          onUpload={h.handleMediaUpload}
-          onRemove={h.handleMediaRemove}
-        />
-      )
-    },
-    {
-      key: 'touchpoints',
-      title: 'Customer Touchpoints',
-      render: (f, h) => (
-        <ContactAccordion {...f} openingHours={f.openingHours} onChange={h.handleChange} onToggleDay={h.onToggleDay}/>
-      )
-    },
-    {
-      key: 'location',
-      title: 'Location',
-      render: (f, h) => (
-        <LocationAccordion address={f.address} onAddressSelect={h.setAddress} />
-      )
-    },
-    {
-      key: 'social',
-      title: 'Social Links',
-      render: (f, h) => (
-        <SocialLinksAccordion
-          socialLinks={f.socialLinks}
-          onUpdateLink={(i, field, v) => h.onUpdateArray('socialLinks', i, field, v)}
-          onAddLink={() => h.onAddArray('socialLinks', { channel: '', url: '' })}
-          onRemoveLink={(i) => h.onRemoveArray('socialLinks', i)}
-        />
-      )
-    },
-    {
-      key: 'content', title: 'Policies', render: (f, h) => (
-        <PoliciesAccordion
-          policies={f.policies}
-          onUpdatePolicy={(i, field, v) => h.onUpdateArray('policies', i, field, v)}
-          onAddPolicy={() => h.onAddArray('policies', { type: '', content: '' })}
-          onRemovePolicy={(i) => h.onRemoveArray('policies', i)}
-        />
-      )
-    },
-    {
-      key: 'awards',
-      title: 'Awards',
-      render: (f, h) => (
-        <AwardsAccordion
-          awards={f.awards}
-          onAdd={() => h.onAddArray('awards', { name: '', iconUrl: '' })}
-          onUpdate={(i, field, v) => h.onUpdateArray('awards', i, field, v)}
-          onRemove={(i) => h.onRemoveArray('awards', i)}
-        />
-      )
-    },
-    {
-      key: 'metrics',
-      title: 'Metrics',
-      render: (f, h) => (
-        <MetricsAccordion
-          metrics={f.metrics}
-          onAdd={() => h.onAddArray('metrics', { label: '', value: 0 })}
-          onUpdate={(i, field, v) => h.onUpdateArray('metrics', i, field, v)}
-          onRemove={(i) => h.onRemoveArray('metrics', i)}
-        />
-      )
-    },
-    {
-      key: 'stats',
-      title: 'Stats',
-      render: (f, h) => (
-        <StatsAccordion
-          stats={f.stats}
-          onAdd={() => h.onAddArray('stats', { label: '', value: '' })}
-          onUpdate={(i, field, v) => h.onUpdateArray('stats', i, field, v)}
-          onRemove={(i) => h.onRemoveArray('stats', i)}
-        />
-      )
-    },    
-    {
-      key: 'faqs', title: 'FAQs', render: (f, h) => (
-        <FAQsAccordion
-          faqs={f.faqs}
-          onUpdateFAQ={(i, field, v) => h.onUpdateArray('faqs', i, field, v)}
-          onAddFAQ={() => h.onAddArray('faqs', { question: '', answer: '' })}
-          onRemoveFAQ={(i) => h.onRemoveArray('faqs', i)}
-        />
-      )
-    },
-    {
-      key: 'testimonials', title: 'Testimonials', render: (f, h) => (
-        <TestimonialsAccordion
-          testimonials={f.testimonials}
-          onUpdateTestimonial={(i, field, v) => h.onUpdateArray('testimonials', i, field, v)}
-          onAddTestimonial={() => h.onAddArray('testimonials', { author: '', quote: '' })}
-          onRemoveTestimonial={(i) => h.onRemoveArray('testimonials', i)}
-        />
-      )
-    },
-    {
-      key: 'marketing', title: 'Hero Slides', render: (f, h) => (
-        <HeroSlidesAccordion
-          slides={f.heroSlides}
-          onUpdateSlide={h.onUpdateHeroSlide}
-          onAddSlide={h.onAddHeroSlide}
-          onRemoveSlide={h.onRemoveHeroSlide}
-          onImageUpload={h.handleSlideImageUpload}
-          
-        />
-      )
-    },
-    {
-      key: 'promotions', title: 'Promotions', render: (f, h) => (
-        <PromotionsAccordion
-          promotions={f.promotions}
-          onUpdatePromotion={h.onUpdatePromotion}
-          onAddPromotion={h.onAddPromotion}
-          onRemovePromotion={h.onRemovePromotion}
-          onImageUpload={h.onPromotionImageUpload}
-        />
-      )
-    },
-    {
-      key: 'seo', title: 'SEO Settings', render: (f, h) => (
-        <SeoSettingsAccordion seo={f.seo} onChange={(upd) => h.onChangeSettings({ seo: upd })} />
-      )
-    },
-    {
-      key: 'theme', title: 'Theme Settings', render: (f, h) => (
-        <ThemeSettingsAccordion themeSettings={f.themeSettings} onChange={(upd) => h.onChangeSettings({ themeSettings: upd })} />
-      )
-    },
-    {
-      key: 'analytics', title: 'Analytics', render: (f, h) => (
-        <SettingsAccordion analyticsConfig={f.analyticsConfig} onChange={(upd) => h.onChangeSettings({ analyticsConfig: upd })} />
-      )
-    },
-    {
-      key: 'payment', title: 'Payment', render: (f, h) => (
-        <PaymentAccordion paymentSettings={f.paymentSettings} onChange={(upd) => h.onChangeSettings({ paymentSettings: upd })} />
-      )
-    },
-    {
-      key: 'shipping', title: 'Shipping', render: (f, h) => (
-        <ShippingAccordion shippingSettings={f.shippingSettings} onChange={(upd) => h.onChangeSettings({ shippingSettings: upd })} />
-      )
-    }
-];
-
 type Props = {
   availableCategories: RawCategory[];
   initialData?: Partial<StoreForm> & { id: string };
@@ -516,16 +295,9 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     metrics: [],
     stats: [],
     marketplaceListings: [],   
-    // sellingPrice:0,
-    // buyingPrice: 0,
-    // profitMargin:  0,
-    // tax: 0,
-    // shippingCost: 0,
-    // discount: 0,
     pricingTiers: [{ name: '', price: 0, features: [] }, ],
   };
 
-  // const [form, setForm] = useState<StoreForm>(initialForm);
   const [form, setForm] = useState<StoreForm>(
     // `initialData` fields overwrite defaults
     initialData
@@ -858,12 +630,11 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   // Handlers
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    // const { name, value } = e.target;
+    
     const { name, type, checked, value } = e.target;
 
-  
     if (name.startsWith("openingHours.")) {
-      // name is like "openingHours.mon.open" or "openingHours.tue.close"
+      
       const [, dayKey, field] = name.split("."); 
       setForm((f : any) => ({
         ...f,
@@ -880,7 +651,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         ...f,
         [name]: type === "checkbox" ? checked : value,
       }));
-      // setForm(f => ({ ...f, [name]: value }));
+      
     }
   };
   
@@ -1319,94 +1090,121 @@ const StepContent = stepIndex < allSteps.length
   </div>
   );
 
-// const StepContent = stepIndex < allSteps.length
-//   ? allSteps[stepIndex].render(form, handlers, mappedCategories)
-//   : <Review … />;
+  const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : 'Review & Submit';
+  const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
 
-  return <div className="min-h-screen flex bg-gradient-to-br from-white via-indigo-50 to-white relative">
-          {/* Sidebar */}
-          <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
-            <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
-            <nav className="flex flex-col gap-2 overflow-y-auto">
-              {allSteps.map((s:any, i:any) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
-                    i === stepIndex ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                  onClick={() => setStepIndex(i)}
-                >
-                  <span className="w-6 h-6 bg-indigo-200 text-indigo-700 rounded-full text-xs flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  {s.title}
-                </button>
-              ))}
-              <button
-                type="button"
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
-                  stepIndex === allSteps.length ? 'bg-indigo-100 text-indigo-800 font-medium' : 'hover:bg-gray-100 text-gray-700'
-                }`}
-                onClick={() => setStepIndex(allSteps.length)}
-              >
-                <span className="w-6 h-6 bg-green-200 text-green-700 rounded-full text-xs flex items-center justify-center">
-                  ✔
-                </span>
-                Review
-              </button>
-            </nav>
-          </aside>
+  return <div className="min-h-screen flex bg-gray-50 relative">
+  {/* Mobile breadcrumb */}
+  <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center">
+    <span className="font-medium">Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
+    <span className="text-sm">{currentTitle}</span>
+  </div>
 
-          {/* Main content */}
-          <main className="flex-1 flex flex-col px-4 sm:px-8 py-8 max-h-screen">
-            {/* Step progress */}
-            <div className="mb-6">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
-                  style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between mt-2 text-sm text-gray-500">
-                <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
-                <span>{stepIndex < allSteps.length ? allSteps[stepIndex].title : 'Review & Submit'}</span>
-              </div>
-            </div>
+  {/* Sidebar */}
+  <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
+    <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
+    <nav className="flex flex-col gap-4 overflow-y-auto">
+      {allSteps.map((s, i) => {
+        const completed = i < stepIndex;
+        const active = i === stepIndex;
+        return (
+          <button
+            key={s.key}
+            onClick={() => setStepIndex(i)}
+            className={`flex items-center gap-3 p-3 rounded-lg transition
+              ${completed ? 'bg-green-100 text-green-800' : ''}
+              ${active ? 'bg-indigo-100 text-indigo-800 font-medium shadow-inner' : 'hover:bg-gray-100 text-gray-700'}`}
+          >
+            <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
+                ${completed ? 'bg-green-600 text-white' : active ? 'bg-indigo-600 text-white' : 'bg-indigo-200 text-indigo-700'}`}>
+              {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
+            </span>
+            <span>{s.title}</span>
+          </button>
+        );
+      })}
+      <button
+        type="button"
+        onClick={() => setStepIndex(allSteps.length)}
+        className={`flex items-center gap-3 p-3 rounded-lg transition
+          ${stepIndex === allSteps.length ? 'bg-green-100 text-green-800' : 'hover:bg-gray-100 text-gray-700'}`}
+      >
+        <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
+          ✔
+        </span>
+        Review
+      </button>
+    </nav>
+  </aside>
 
-            {/* Dynamic step content */}
-            <div className="flex-1 max-h-screen overflow-auto">{StepContent}</div>
+  {/* Main content */}
+  <main className="flex-1 flex flex-col px-4 sm:px-8 py-8">
+    {/* Progress bar with dots */}
+    <div className="relative mb-6">
+      <div className="h-2 bg-gray-200 rounded-full">
+        <div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: `${percent}%` }} />
+      </div>
+      <div className="absolute inset-0 flex justify-between items-center px-1">
+        {Array.from({ length: totalSteps }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setStepIndex(i)}
+            className={`w-3 h-3 rounded-full focus:outline-none
+              ${i <= stepIndex ? 'bg-indigo-600' : 'bg-white border border-gray-300'}`}
+          />
+        ))}
+      </div>
+    </div>
+    <div className="flex justify-between mb-2 text-sm text-gray-500">
+      <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
+      <span>{currentTitle}</span>
+    </div>
 
-            {/* Navigation buttons */}
-            <div className="mt-8 flex justify-between items-center border-t pt-4">
-              <button
-                type="button"
-                disabled={stepIndex === 0}
-                onClick={prev}
-                className="px-5 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-              >
-                ← Back
-              </button>
+    {/* Card wrapper */}
+    <div className="bg-white rounded-2xl shadow-xl p-6 flex-1 overflow-auto">
+      <AnimatePresence mode='wait'>
+        <motion.div
+          key={stepIndex}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -30 }}
+          transition={{ duration: 0.3 }}
+        >
+          {StepContent}
+        </motion.div>
+      </AnimatePresence>
+    </div>
 
-              {stepIndex < allSteps.length ? (
-                <button
-                  type="button"
-                  onClick={next}
-                  className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-                >
-                  Next →
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
-                >
-                  Submit Store
-                </button>
-              )}
-            </div>
-          </main>
-        </div>;
+    {/* Navigation buttons */}
+    <div className="mt-8 flex justify-between items-center border-t pt-4 sticky bottom-0 bg-gray-50 px-4 py-3 md:static md:bg-transparent">
+      <button
+        type="button"
+        disabled={stepIndex === 0}
+        onClick={prev}
+        className="px-5 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+      >
+        ← Back
+      </button>
+
+      {stepIndex < allSteps.length ? (
+        <button
+          type="button"
+          onClick={next}
+          className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+        >
+          Continue →
+        </button>
+      ) : (
+        <button
+          onClick={handleSubmit}
+          className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+        >
+          {isSubmitting ? "Uploading" : "Submit Store"}
+        </button>
+      )}
+    </div>
+  </main>
+</div>
 }
 
  // Helper to render review info for each step
@@ -1442,6 +1240,15 @@ const StepContent = stepIndex < allSteps.length
 
 const renderReviewContent = (stepKey:any, form:any) => {
   switch (stepKey) {
+    case 'businesscategory':
+      return (
+        <ReviewSection title="Business Category">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div><strong>Name:</strong> {form.category || <EmptyState message="Not set" />}</div>
+          </div>
+        </ReviewSection>
+      );
+
     case 'basic':
       return (
         <ReviewSection title="Basic Info">

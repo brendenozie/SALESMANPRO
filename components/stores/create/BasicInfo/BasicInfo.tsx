@@ -1,5 +1,7 @@
+// components/BasicInfo.tsx
 import React, { ChangeEvent } from 'react';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
+
 
 export interface BasicInfoProps {
   name: string;
@@ -12,40 +14,9 @@ export interface BasicInfoProps {
   handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
-const SITE_CATEGORIES = [
-  "E-commerce",
-  "Service Provider",
-  "Booking & Appointments",
-  "Portfolio & Personal Branding",
-  "Blog & Content",
-  "Directory & Listings",
-  "Educational & Online Courses",
-  "Nonprofit & Community",
-  "Restaurant & Food Delivery",
-  "Event & Ticketing",
-  "Real Estate",
-  "Healthcare & Clinics",
-  "SaaS & Web Apps",
-  "Media & Entertainment",
-  "Finance & Legal",
-  "Automotive",
-  "Travel & Tourism",
-  "Fitness & Wellness",
-  "Marketplace",
-  "Tutors",
-  "Lecturer",
-  "Teacher",
-  "Students",
-  "Pupils",
-  "Principal",
-  "School Head",
-  "Other",
-];
-
 export default function BasicInfo({
   name,
   slug,
-  category,
   description,
   hasWebsite,
   tagline,
@@ -94,25 +65,6 @@ export default function BasicInfo({
           />
         </div>
 
-        {/* Category */}
-        <div className="flex flex-col">
-          <label htmlFor="category" className="flex items-center text-sm font-semibold text-gray-700">
-            Category
-            <InformationCircleIcon className="ml-1 h-5 w-5 text-gray-400" title="Choose your store category" />
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={category}
-            onChange={handleChange}
-            className="mt-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-          >
-            {SITE_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
         {/* Slug (read-only) */}
         <div className="flex flex-col">
           <label htmlFor="slug" className="flex items-center text-sm font-semibold text-gray-700">
@@ -129,8 +81,8 @@ export default function BasicInfo({
           />
         </div>
 
-        {/* // In your BasicInfo component: */}
-        <label className="flex items-center space-x-2">
+        {/* Has Website */}
+        <label className="flex items-center space-x-2 md:col-span-2">
           <input
             type="checkbox"
             name="hasWebsite"
@@ -139,7 +91,6 @@ export default function BasicInfo({
           />
           <span>I’d like to set up a public website too</span>
         </label>
-
 
         {/* Domain (read-only) */}
         <div className="flex flex-col">
