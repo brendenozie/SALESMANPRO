@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 
-
 type MarketplaceProduct = {
   _id: string;
   sellerId: string;
