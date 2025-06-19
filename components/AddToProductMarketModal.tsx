@@ -167,6 +167,30 @@ const CATEGORY_STEPS: Record<string, number[]> = {
   "Beauty Services":     [1,2,7,15,16,17,8,9,10,12,11],
   "Tutoring":            [1,2,7,15,16,17,8,9,10,12,11],
   "Event Planning":      [1,2,7,15,16,17,8,9,10,12,11],
+  "Tutors":              [1,2,7,15,16,17,8,9,10,12,11],
+  "Math Tutors":         [1,2,7,15,16,17,8,9,10,12,11],
+  "Science Tutors":      [1,2,7,15,16,17,8,9,10,12,11],
+  "Language Tutors":     [1,2,7,15,16,17,8,9,10,12,11],
+  "Programming Tutors":  [1,2,7,15,16,17,8,9,10,12,11],
+  "Music Tutors":        [1,2,7,15,16,17,8,9,10,12,11],
+  "Art Tutors":          [1,2,7,15,16,17,8,9,10,12,11],
+
+  // Educational institutions
+  "Schools":             [1,2,7,8,9,10,12,11],
+  "Primary Schools":     [1,2,7,8,9,10,12,11],
+  "Secondary Schools":   [1,2,7,8,9,10,12,11],
+  "International Schools":[1,2,7,8,9,10,12,11],
+  "Vocational Schools":  [1,2,7,8,9,10,12,11],
+  "Special Needs Schools":[1,2,7,8,9,10,12,11],
+
+  // Audiences & subjects
+  "Students":            [1,2,7,8,9,10,12,11],
+  "Online Students":     [1,2,7,8,9,10,12,11],
+  "Subjects":            [1,2,7,8,9,10,12,11],
+  "Mathematics":         [1,2,7,8,9,10,12,11],
+  "Science":             [1,2,7,8,9,10,12,11],
+  "English":             [1,2,7,8,9,10,12,11],
+  "Computer Science":    [1,2,7,8,9,10,12,11],
 
   // — Arts & Crafts flow —
   "Arts & Crafts":       [1,2,7,8,9,10,12,11],
@@ -195,13 +219,7 @@ const CATEGORY_STEPS: Record<string, number[]> = {
 
 // -------------------
 // MAIN MODAL COMPONENT
-// -------------------
-
-
-
-// -------------------
-// MAIN MODAL COMPONENT
-// -------------------
+// ------------------
 
 const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem, companyId, categories }: any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -265,7 +283,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     vin:                 marketListItem?.vin                  || product?.product?.vin             || "",
     logbookStatus:       marketListItem?.logbookStatus        || product?.product?.logbookStatus   || "Available",
     serviceHistory:      marketListItem?.serviceHistory       || product?.product?.serviceHistory  || "Full",
-    negotiable:          marketListItem?.negotiable            || product?.product?.negotiable       || false,
+    negotiable:          marketListItem?.negotiable           || product?.product?.negotiable      || false,
     financingAvailable:  marketListItem?.financingAvailable   || product?.product?.financingAvailable || false,
     tradeIn:             marketListItem?.tradeIn              || product?.product?.tradeIn            || false,
   
@@ -293,22 +311,22 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     expirationDate:      marketListItem?.expirationDate       || product?.product?.expirationDate    || "",
   
     // Deals:
-    startDealDate:       marketListItem?.startDealDate       || product?.product?.startDealDate     || null,
-    endDealDate:         marketListItem?.endDealDate         || product?.product?.endDealDate       || null,
+    startDealDate:       marketListItem?.startDealDate        || product?.product?.startDealDate     || null,
+    endDealDate:         marketListItem?.endDealDate          || product?.product?.endDealDate       || null,
   
     // Amenities:
     amenities:           marketListItem?.amenities            || product?.product?.amenities         || [],
   
     // Property-specific:
-    bedrooms:            marketListItem?.bedrooms            || product?.product?.bedrooms          || {},
-    studios:             marketListItem?.studios             || product?.product?.studios           || {},
-    bathrooms:           marketListItem?.bathrooms           || product?.product?.bathrooms         || "",
-    area:                marketListItem?.area                || product?.product?.area              || "",
-    serviceSchedule:     marketListItem?.serviceSchedule     || product?.product?.serviceSchedule   || "",
+    bedrooms:            marketListItem?.bedrooms             || product?.product?.bedrooms          || {},
+    studios:             marketListItem?.studios              || product?.product?.studios           || {},
+    bathrooms:           marketListItem?.bathrooms            || product?.product?.bathrooms         || "",
+    area:                marketListItem?.area                 || product?.product?.area              || "",
+    serviceSchedule:     marketListItem?.serviceSchedule      || product?.product?.serviceSchedule   || "",
     
     // Scheduling    
-    availabilityStart:     marketListItem?.availabilityStart     || product?.product?.availabilityStart   || "",
-    availabilityEnd:     marketListItem?.availabilityEnd     || product?.product?.availabilityEnd   || "",
+    availabilityStart:     marketListItem?.availabilityStart  || product?.product?.availabilityStart   || "",
+    availabilityEnd:     marketListItem?.availabilityEnd      || product?.product?.availabilityEnd   || "",
 
     bookingSlots:     marketListItem?.bookingSlots     || product?.product?.bookingSlots   || [],
     minNoticePeriod:     marketListItem?.minNoticePeriod     || product?.product?.minNoticePeriod   || "",
@@ -585,22 +603,22 @@ const handleCreateListing = async () => {
       availabilityEnd:    formData.availabilityEnd       || {},
 
       bookingSlots:     formData.bookingSlots       || {},
-      minNoticePeriod:   formData.minNoticePeriod       || {},
-      maxBookingAhead: formData.maxBookingAhead       || {},
+      minNoticePeriod:   formData.minNoticePeriod   || "",
+      maxBookingAhead: formData.maxBookingAhead     || "",
 
       pricingTiers: formData.pricingTiers       || {},
 
-      requiredClientInfo: formData.requiredClientInfo       || {},
-      fulfillmentStatus:  formData.fulfillmentStatus       || {},
+      requiredClientInfo: formData.requiredClientInfo       || [],
+      fulfillmentStatus:  formData.fulfillmentStatus       || "",
 
-      totalCapacity:  formData.totalCapacity       || {},
-      currentBookedCount: formData.currentBookedCount       || {},
+      totalCapacity:  formData.totalCapacity       || 0,
+      currentBookedCount: formData.currentBookedCount       || 0,
 
       providerRating: formData.providerRating       || {},
 
-      hourlyRate: formData.hourlyRate       || {},
-      minimumHours:  formData.minimumHours       || {},
-      deliveryMethod: formData.deliveryMethod       || {},
+      hourlyRate: formData.hourlyRate       || 0.0,
+      minimumHours:  formData.minimumHours       || 0,
+      deliveryMethod: formData.deliveryMethod       || "Remote/Virtual",
   
       // — Vehicle-specific —
       make:                 formData.make            || "",           // String?
