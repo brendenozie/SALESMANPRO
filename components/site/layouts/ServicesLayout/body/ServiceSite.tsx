@@ -36,7 +36,7 @@ const loader = ({
  * `StoreLayout`).
  */
 export default function ServiceSite() {
-  const router = useRouter();
+  
   const { storeFormData } = useStoreContext();
   // storeFormData should be the same shape you constructed in StoreLayout
 
@@ -48,20 +48,6 @@ export default function ServiceSite() {
       </div>
     );
   }
-
-  const {
-    slug,
-    marketplaceListings,     // assume you added this field to Prisma/StoreForm
-  } = storeFormData;
-
-  /**
-   * Push user to /[slug]/contact while storing the serviceId in some global state.
-   */
-  const { setInquiryServiceId } = useStoreContext();
-  const handleInquiry = (serviceId: string | number) => {
-    setInquiryServiceId(serviceId);
-    router.push(`/${slug}/contact`);
-  };
 
   return (
     <>

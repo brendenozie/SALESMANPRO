@@ -5,6 +5,9 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
+import { ServiceItem } from '@/app/admin/[slug]/services/AdminServicesClient';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import BookingForm from '../../../components/BookingForm';
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -13,6 +16,7 @@ export default function MassageFeatures() {
   const { marketplaceListings = [] } = storeFormData;
 
   const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<ServiceItem | null>(null);
 
   const filteredListings = marketplaceListings.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
@@ -63,7 +67,7 @@ export default function MassageFeatures() {
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {filteredListings.length > 0 ? (
-            filteredListings.map((item, i) => (
+            filteredListings.map((item:any, i) => (
               <motion.div
                 key={item.id}
                 className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-white/10 bg-white/5 shadow-lg hover:shadow-xl transition-all flex flex-col"
@@ -90,12 +94,12 @@ export default function MassageFeatures() {
                   </p>
 
                   <div className="mt-5 space-x-2 flex flex-wrap w-full">
-                    <Link
-                      href={`/bookings/${item.id}`}
+                  <button
+                  onClick={() => setSelected(item)}
                       className="bg-emerald-500 w-full text-center items-center hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-medium transition-all shadow-md"
                     >
                       Book Now
-                    </Link>
+                    </button>
                     {/* {item.isFeatured && (
                       <Link
                         href={`/services/${item.id}`}
@@ -113,6 +117,48 @@ export default function MassageFeatures() {
           )}
         </div>
       </div>
+      {/* Modal */}
+            {selected && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+                {/* backdrop */}
+                <div
+                  className="fixed inset-0 bg-black opacity-50"
+                  onClick={() => setSelected(null)}
+                />
+      
+                <div className="relative bg-white rounded-2xl max-w-xl w-full p-6 mx-auto z-60 shadow-xl">
+                  <button
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    onClick={() => setSelected(null)}
+                    aria-label="Close"
+                  >
+                    <XMarkIcon className="w-6 h-6" />
+                  </button>
+      
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="md:w-1/2">
+                      <Image
+                        src={selected.images[0] || "/placeholder.png"}
+                        loader={loader}
+                        alt={`${selected.name}` || `${selected.title}`}
+                        width={500}
+                        height={350}
+                        className="object-cover rounded-lg w-full h-full"
+                      />
+                    </div>
+                    <div className="md:w-1/2 space-y-4">
+                      <h2 className="text-2xl font-bold">{selected.name || selected.title}</h2>
+                      <p className="text-gray-700">{selected.description}</p>
+                      <p className="text-lg font-semibold">
+                        Price: ${ (selected.finalPrice||0).toFixed(2) }
+                      </p>
+      
+                      <BookingForm service={selected} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
     </section>
   );
 }
