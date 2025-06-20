@@ -1,83 +1,172 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
 export default function AboutSection() {
+  const { storeFormData } = useStoreContext();
+  
+  let resumeUrl = "url";
+  const {
+    name,
+    tagline,
+    description,
+    themeSettings = {},
+    stats = [],
+    heroSlides = [],
+    bannerUrl,
+    logoUrl,
+    slug,
+    contactEmail,
+  } = storeFormData;
+
+  const primaryColor = themeSettings.primaryColor || '#3b82f6';
+  const secondaryColor = themeSettings.secondaryColor || '#10b981';
+
+  // Title/subtitle/description
+  const title = name ? `About ${name}` : 'About Me';
+  const subtitle = tagline || '';
+  const aboutText = description || '';
+
+  // Stats array fallback
+  const statsData: Array<{ label: string; value: string | number }> =
+    Array.isArray(stats) && stats.length > 0
+      ? stats
+      : [
+          { label: 'Years in Business', value: '–' },
+          { label: 'Clients Served', value: '–' },
+          { label: 'Projects Completed', value: '–' },
+        ];
+
+  // Image source
+  const slide = heroSlides[0] || {};
+  const imgSrc =
+    slide.productImageUrl ||
+    slide.imageUrl ||
+    bannerUrl ||
+    logoUrl ||
+    '/placeholder-about.jpg';
+
+  // CTA links
+  const contactHref = contactEmail ? `mailto:${contactEmail}` : slug ? `/${slug}/contact` : '#';
+  const resumeHref = resumeUrl || null;
+
   return (
-    <section className="relative bg-white py-24 px-6 lg:px-20 overflow-hidden">
-      <div className="max-w-7xl mx-auto flex flex-col-reverse lg:flex-row items-center gap-12">
-        {/* Left Side - Text Content */}
+    <section className="relative overflow-hidden bg-white dark:bg-gray-900 py-24 px-6 lg:px-20">
+      {/* Decorative Shapes */}
+      <div
+        className="absolute -top-24 -left-24 w-64 h-64 rounded-full opacity-20 blur-3xl"
+        style={{ backgroundColor: primaryColor }}
+      />
+      <div
+        className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full opacity-20 blur-3xl"
+        style={{ backgroundColor: secondaryColor }}
+      />
+
+      {/* Content */}
+      <div className="relative max-w-7xl mx-auto flex flex-col-reverse lg:flex-row items-center gap-16">
+        {/* Text Section */}
         <motion.div
-          className="max-w-xl text-center lg:text-left"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          className="flex-1 max-w-xl text-center lg:text-left"
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-3">
-            Meet Your <span className="text-orange-500">Business Coach</span>
+          {/* Heading with underline bar */}
+          <h2 className="text-4xl font-bold mb-3">
+            <span className="block">{title}</span>
+            <span
+              className="block w-16 h-1 mt-1"
+              style={{ backgroundColor: primaryColor }}
+            />
           </h2>
-          <h3 className="text-2xl font-semibold text-teal-700 mb-4">
-            Brittany Jones
-          </h3>
-          <p className="text-gray-600 leading-relaxed mb-6">
-            Former entrepreneur, executive, and coach with a passion for empowering leaders. Brittany brings 16+ years of real-world experience to help you navigate challenges and unlock growth with clarity and confidence.
-          </p>
 
-          {/* Stats */}
-          <div className="flex justify-center lg:justify-start gap-6 mb-8">
-            {[
-              { value: '12+', label: 'Expert Coaches' },
-              { value: '16+', label: 'Years of Experience' },
-              { value: '10+', label: 'Awards Won' },
-            ].map(({ value, label }, idx) => (
-              <div key={idx} className="text-center">
-                <p className="text-3xl font-bold text-gray-900">{value}</p>
-                <p className="text-sm text-gray-500">{label}</p>
-              </div>
+          {subtitle && (
+            <h3
+              className="text-2xl font-semibold mb-6"
+              style={{ color: primaryColor }}
+            >
+              {subtitle}
+            </h3>
+          )}
+
+          {aboutText && (
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-8">
+              {aboutText}
+            </p>
+          )}
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {statsData.map(({ label, value }, idx) => (
+              <motion.div
+                key={idx}
+                className="flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg p-4 shadow hover:shadow-lg transition"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1, duration: 0.5 }}
+              >
+                <p
+                  className="text-2xl font-bold mb-1"
+                  style={{ color: primaryColor }}
+                >
+                  {value}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+              </motion.div>
             ))}
           </div>
 
-          <button className="bg-orange-500 hover:bg-orange-600 transition text-white font-semibold px-6 py-3 rounded-xl shadow">
-            Learn More About Me
-          </button>
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+            <motion.a
+              href={contactHref}
+              className="inline-block px-6 py-3 rounded-full font-semibold text-white shadow-md"
+              style={{ backgroundColor: primaryColor }}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              Get in Touch
+            </motion.a>
+            {resumeHref && (
+              <motion.a
+                href={resumeHref}
+                target="_blank"
+                className="inline-block px-6 py-3 rounded-full font-semibold border-2"
+                style={{ borderColor: primaryColor, color: primaryColor }}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                Download Resume
+              </motion.a>
+            )}
+          </div>
         </motion.div>
 
-        {/* Right Side - Image */}
+        {/* Image Section */}
         <motion.div
-          className="relative w-[320px] h-[420px] rounded-3xl overflow-hidden shadow-xl"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          className="flex-1 flex justify-center"
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Image
-            src="/coach.jpg"
-            loader={loader}
-            alt="Business Coach"
-            fill
-            className="object-cover"
-            priority
-          />
-
-          {/* Floating Badge */}
-          <div className="absolute -left-5 top-1/2 -translate-y-1/2 bg-orange-500 p-3 rounded-full shadow-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8c1.657 0 3-1.567 3-3.5S13.657 1 12 1 9 2.567 9 4.5 10.343 8 12 8zm0 2c-2.667 0-8 1.333-8 4v2h16v-2c0-2.667-5.333-4-8-4z"
-              />
-            </svg>
+          <div className="relative w-full max-w-sm h-96 rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-500">
+            <Image
+              src={imgSrc}
+              loader={loader}
+              alt={name ? `${name} Portrait` : 'About Image'}
+              fill
+              className="object-cover"
+              priority={false}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
           </div>
         </motion.div>
       </div>

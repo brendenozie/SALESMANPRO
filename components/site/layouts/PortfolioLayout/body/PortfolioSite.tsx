@@ -47,7 +47,7 @@ export default function PortfolioSite() {
   }, [marketplaceListings, ctxTestimonials, ctxFaqs]);
 
   return (
-    <div className="space-y-24 font-sans text-gray-800">
+    <div className=" font-sans text-gray-800">
       
       <HeroSection />
 
@@ -63,9 +63,6 @@ export default function PortfolioSite() {
 
       <DiscoveryCallSection/>
 
-      {/* Projects Gallery */}
-      <FeaturedProjects projects={projects} slug={slug} loader={loader} />
-
       {/* Testimonials */}
       <TestimonialsSection/>
 
@@ -73,7 +70,7 @@ export default function PortfolioSite() {
 
       <CtaSection/>
 
-      <ContactSection email="hello@example.com" phoneNumber="+254712345678" />
+      <ContactSection />
       
     </div>
   );

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import {
   CheckIcon,
   Cog6ToothIcon,
@@ -10,110 +11,182 @@ import {
   ClockIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-const features = [
-  {
-    Icon: CheckIcon,
-    title: 'Effortless Booking',
-    description: 'Book your massage in seconds—anywhere, anytime.',
-  },
-  {
-    Icon: UserGroupIcon,
-    title: 'Choose Your Therapist',
-    description: 'Select from top-rated, vetted professionals.',
-  },
-  {
-    Icon: LockClosedIcon,
-    title: 'Secure Payments',
-    description: 'Protected transactions via trusted gateways.',
-  },
-  {
-    Icon: AdjustmentsVerticalIcon,
-    title: 'Custom Options',
-    description: 'Tailor services to your exact needs.',
-  },
-  {
-    Icon: ClockIcon,
-    title: 'Real-Time Scheduling',
-    description: 'View and manage bookings on your time.',
-  },
-  {
-    Icon: Cog6ToothIcon,
-    title: 'Vetted Experts',
-    description: 'Skilled, licensed, and passionate therapists.',
-  },
-];
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  CheckIcon,
+  UserGroupIcon,
+  LockClosedIcon,
+  AdjustmentsVerticalIcon,
+  ClockIcon,
+  Cog6ToothIcon,
+};
 
-const loader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function FeaturesSection() {
+  const { storeFormData } = useStoreContext();
+  let dynamicFeatures : any[] = [];
+  const { themeSettings = {}, bannerUrl, name, } = storeFormData;
+
+  const primaryColor = themeSettings.primaryColor || '#10b981';
+  const secondaryColor = themeSettings.secondaryColor || '#047857';
+  const accentBg = `${primaryColor}20`;
+
+  // Fallback static features if dynamicFeatures not provided
+  const staticFeatures = [
+    {
+      iconKey: 'CheckIcon',
+      title: 'Creative Portfolio',
+      description: 'Showcase of selected works and case studies to highlight my expertise.',
+    },
+    {
+      iconKey: 'UserGroupIcon',
+      title: 'Client Testimonials',
+      description: 'Real feedback from clients I have collaborated with, demonstrating impact.',
+    },
+    {
+      iconKey: 'AdjustmentsVerticalIcon',
+      title: 'Personal Branding',
+      description: 'Tailored strategies to build and elevate your personal brand presence.',
+    },
+    {
+      iconKey: 'ClockIcon',
+      title: 'Consultation',
+      description: 'Schedule a session to discuss projects, career guidance, or collaboration.',
+    },
+    {
+      iconKey: 'LockClosedIcon',
+      title: 'Secure Collaborations',
+      description: 'Confidential and professional engagement on all projects and contracts.',
+    },
+    {
+      iconKey: 'Cog6ToothIcon',
+      title: 'Custom Solutions',
+      description: 'Bespoke services aligned to your unique goals and industry requirements.',
+    },
+  ];
+
+  const featuresData: Array<{
+    iconKey?: string;
+    iconUrl?: string;
+    title: string;
+    description: string;
+  }> =
+    Array.isArray(dynamicFeatures) && dynamicFeatures.length > 0
+      ? dynamicFeatures.map((f: any) => ({
+          iconKey: f.iconKey,
+          iconUrl: f.iconUrl,
+          title: f.title || '',
+          description: f.description || '',
+        }))
+      : staticFeatures;
+
   return (
-    <section className="relative bg-white py-28 px-6 sm:px-12 overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src="/images/spa-massage.jpg"
-          alt="Blurred spa background"
-          fill
-          className="object-cover opacity-10"
-          loader={loader}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-white/90 to-white/95" />
-      </div>
+    <section className="relative py-28 px-6 sm:px-12 overflow-hidden bg-white dark:bg-gray-900">
+      {/* Decorative blobs */}
+      <div
+        className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20 blur-3xl"
+        style={{ backgroundColor: primaryColor }}
+      />
+      <div
+        className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full opacity-20 blur-3xl"
+        style={{ backgroundColor: secondaryColor }}
+      />
+
+      {/* Background image overlay if any */}
+      {bannerUrl && (
+        <div className="absolute inset-0 -z-10">
+          <Image
+            src={bannerUrl}
+            alt={`${name || 'Background'} feature background`}
+            fill
+            className="object-cover opacity-10"
+            loader={loader}
+            priority={false}
+          />
+          <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90" />
+        </div>
+      )}
 
       {/* Header */}
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="relative max-w-4xl mx-auto text-center mb-16 z-10">
         <motion.span
-          className="inline-block text-sm font-semibold bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full shadow-sm"
+          className="inline-block text-sm font-semibold px-4 py-1 rounded-full shadow-sm"
           initial={{ opacity: 0, y: -10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
+          style={{ backgroundColor: accentBg, color: primaryColor }}
         >
-          What You’ll Love
+          What I Offer
         </motion.span>
-
         <motion.h2
-          className="mt-6 text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900"
+          className="mt-6 text-4xl sm:text-5xl font-extrabold tracking-tight"
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
+          style={{ color: '#111827' }}
         >
-          A New Way to Book Wellness
+          My Expertise & Services
         </motion.h2>
-
-        <motion.p
-          className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Enjoy modern convenience with a platform built for ease, clarity, and comfort. Every detail of your journey is refined for satisfaction.
-        </motion.p>
+        {storeFormData.tagline && (
+          <motion.p
+            className="mt-4 text-lg max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ color: '#4B5563' }}
+          >
+            {storeFormData.tagline}
+          </motion.p>
+        )}
       </div>
 
       {/* Features Grid */}
-      <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {features.map(({ Icon, title, description }, i) => (
-          <motion.div
-            key={title}
-            className="bg-white/60 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all group"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.15, duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <div className="w-14 h-14 mb-5 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shadow-inner">
-              <Icon className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 group-hover:text-emerald-600 transition">
-              {title}
-            </h3>
-            <p className="text-sm text-gray-600 mt-2">{description}</p>
-          </motion.div>
-        ))}
+      <div className="relative z-10 mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {featuresData.map(({ iconKey, iconUrl, title, description }, i) => {
+          const IconComponent =
+            (iconKey && iconMap[iconKey]) || CheckIcon;
+          return (
+            <motion.div
+              key={`${title}-${i}`}
+              className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-1 flex flex-col"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.15, duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex items-center justify-center w-14 h-14 mb-4 rounded-full"
+                style={{ backgroundColor: accentBg }}
+              >
+                {iconUrl ? (
+                  <Image
+                    src={iconUrl}
+                    alt={title}
+                    loader={loader}
+                    width={24}
+                    height={24}
+                    className="object-contain"
+                  />
+                ) : (
+                  <IconComponent className="w-6 h-6 text-[color:var(--icon-color)]" />
+                )}
+              </div>
+              <h3 className="text-xl font-semibold mb-2" style={{ color: '#111827' }}>
+                {title}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 flex-grow">
+                {description}
+              </p>
+            </motion.div>
+          );
+        })}
       </div>
+      <style jsx>{`
+        :root {
+          --icon-color: ${primaryColor};
+        }
+      `}</style>
     </section>
   );
 }
