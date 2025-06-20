@@ -34,7 +34,7 @@ export const MetricsAccordion: React.FC<MetricsAccordionProps> = ({ metrics, onA
   const canAddNew = metrics.every(m => m.label.trim() && m.value !== null);
 
   return (
-    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
+    <section className="max-w-4xl mx-auto overflow-hidden">
       {/* Accordion Header */}
       <button
         type="button"

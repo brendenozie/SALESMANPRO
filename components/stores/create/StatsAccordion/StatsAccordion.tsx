@@ -33,7 +33,7 @@ export const StatsAccordion: React.FC<StatsAccordionProps> = ({ stats, onAdd, on
   const canAdd = stats.every(s => s.label.trim() && s.value.toString().trim());
 
   return (
-    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
+    <section className="max-w-4xl mx-auto overflow-hidden">
       {/* Accordion Header */}
       <button
         type="button"

@@ -111,8 +111,8 @@ export default function CategoryTree({
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
       {/* Selected Categories Pane */}
-      <aside className="w-full lg:w-1/3 bg-gray-50 p-4 rounded-lg shadow-sm sticky top-20">
-        <details className="lg:open">
+      <aside className="w-full lg:w-1/3 sticky top-20">
+        <details className=" lg:open">
           <summary className="cursor-pointer text-lg font-semibold mb-4 lg:mb-0">
             Your Selection
           </summary>
@@ -144,12 +144,12 @@ export default function CategoryTree({
               </div>
             ))}
           </div>
-          <button
+          {/* <button
             onClick={onApply}
             className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
           >
             Apply
-          </button>
+          </button> */}
         </details>
       </aside>
 

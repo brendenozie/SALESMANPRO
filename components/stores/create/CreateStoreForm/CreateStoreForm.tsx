@@ -1139,7 +1139,7 @@ const StepContent = stepIndex < allSteps.length
   </aside>
 
   {/* Main Content */}
-  <main className="flex-1 flex flex-col px-4 sm:px-6 py-6 relative">
+  <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
     {/* Progress Bar */}
     <div className="relative mb-4">
       <div className="h-2 bg-gray-200 rounded-full">

@@ -35,7 +35,7 @@ export default function ContactAccordion({
   };
 
   return (
-    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <section className="max-w-3xl mx-auto overflow-hidden">
       <button
         onClick={() => setExpanded(x => !x)}
         className="w-full flex justify-between items-center bg-indigo-100 px-6 py-4"

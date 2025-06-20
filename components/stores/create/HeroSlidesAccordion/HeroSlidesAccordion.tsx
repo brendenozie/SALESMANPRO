@@ -32,7 +32,7 @@ export default function HeroSlidesAccordion({
     }, [slides, onAddSlide]);
 
   return (
-    <div className="max-w-4xl mx-auto rounded-xl shadow-lg overflow-hidden border border-gray-200 bg-white">
+    <div className="max-w-4xl mx-auto overflow-hidden ">
       <details open className="group transition-all">
         <summary className="flex justify-between items-center cursor-pointer px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold text-lg">
           <span>Hero Slides</span>

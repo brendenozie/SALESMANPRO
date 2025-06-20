@@ -26,7 +26,7 @@ export const AwardsAccordion: React.FC<Props> = ({ awards, onAdd, onUpdate, onRe
   }, [awards, onAdd]);
 
   return (
-    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <section className="max-w-4xl mx-auto overflow-hidden">
       {/* Header */}
       <button
         type="button"

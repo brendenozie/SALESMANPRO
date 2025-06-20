@@ -38,7 +38,7 @@ export default function LocationAccordion({
     <div className="max-w-3xl mx-auto p-6 ">
       <div
         onClick={() => setIsOpen(prev => !prev)}
-        className="flex justify-between items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition"
+        className="flex justify-between items-center p-2 cursor-pointer hover:bg-gray-200 transition"
       >
         <div className="flex items-center space-x-2">
           <MapPinIcon className="h-6 w-6 text-blue-500" />

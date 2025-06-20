@@ -31,10 +31,10 @@ export default function SocialLinksAccordion({
   }, [socialLinks, onAddLink]);
 
   return (
-    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <section className="w-full max-w-xl mx-auto">
       {/* Header */}
-      <div
-        className="flex items-center justify-between p-4 bg-indigo-600 text-white cursor-pointer"
+      <button
+        className="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-t-lg focus:outline-none"
         onClick={() => setOpen(prev => !prev)}
       >
         <div className="flex items-center gap-2">
@@ -44,22 +44,24 @@ export default function SocialLinksAccordion({
         <ChevronDownIcon
           className={`w-6 h-6 transition-transform ${open ? 'rotate-180' : ''}`}
         />
-      </div>
+      </button>
 
       {open && (
-        <div className="p-6 space-y-6">
+        <div className="bg-white rounded-b-lg shadow-inner p-4 space-y-4">
           {socialLinks.map((link, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg shadow-sm"
+              className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-gray-50 p-4 rounded-lg"
             >
               {/* Platform */}
               <select
                 value={link.channel}
-                onChange={(e) => onUpdateLink(idx, 'channel', e.target.value)}
-                className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
+                onChange={e => onUpdateLink(idx, 'channel', e.target.value)}
+                className="w-full sm:w-1/3 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
               >
-                <option disabled hidden value="">Select platform</option>
+                <option disabled hidden value="">
+                  Select platform
+                </option>
                 {PLATFORMS.map(p => (
                   <option key={p} value={p}>{p}</option>
                 ))}
@@ -70,15 +72,17 @@ export default function SocialLinksAccordion({
                 type="url"
                 placeholder="https://"
                 value={link.url}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => onUpdateLink(idx, 'url', e.target.value)}
-                className="flex-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  onUpdateLink(idx, 'url', e.target.value)
+                }
+                className="w-full sm:flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
               />
 
               {/* Remove */}
               <button
                 onClick={() => onRemoveLink(idx)}
                 disabled={socialLinks.length === 1}
-                className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition disabled:opacity-50"
+                className="self-start sm:self-auto p-2 text-red-500 hover:bg-red-100 rounded-lg transition disabled:opacity-50"
               >
                 <TrashIcon className="w-5 h-5" />
               </button>
@@ -97,10 +101,12 @@ export default function SocialLinksAccordion({
 
           {/* Footer Guidance */}
           <p className="text-sm text-gray-500">
-            Provide URLs to your social media profiles. Supported platforms: {' '}
-            {PLATFORMS.map(p => (
-              <span key={p} className="italic">{p}</span>
-            )).reduce((prev, curr) => [prev, ', ', curr] as any)}.
+            Provide URLs to your social media profiles. Supported platforms:{' '}
+            {PLATFORMS.map((p, i) => (
+              <span key={p} className="italic">
+                {p}{i < PLATFORMS.length - 1 ? ', ' : ''}
+              </span>
+            ))}
           </p>
         </div>
       )}

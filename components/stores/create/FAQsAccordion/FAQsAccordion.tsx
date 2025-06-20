@@ -15,7 +15,7 @@ export default function FAQsAccordion({ faqs, onUpdateFAQ, onAddFAQ, onRemoveFAQ
   const allFilled = faqs.every(faq => faq.question.trim() && faq.answer.trim());
 
   return (
-    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md">
+    <section className="max-w-3xl mx-auto ">
       {/* Header */}
       <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-t-2xl">
         <div className="flex items-center gap-2">

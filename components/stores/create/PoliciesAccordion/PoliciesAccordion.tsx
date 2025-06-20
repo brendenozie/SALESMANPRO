@@ -39,7 +39,7 @@ export default function PoliciesAccordion({
     }, [policies, onAddPolicy]);
 
   return (
-    <section className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <section className="max-w-3xl mx-auto overflow-hidden">
       {/* Accordion Header */}
       <button
         type="button"

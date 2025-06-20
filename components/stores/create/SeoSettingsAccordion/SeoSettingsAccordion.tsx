@@ -20,7 +20,7 @@ export default function SeoSettingsAccordion({
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-xl">
+    <div className="max-w-3xl mx-auto p-2 ">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">SEO & Config</h2>
         <span className="text-2xl" role="img" aria-label="settings">🔧</span>

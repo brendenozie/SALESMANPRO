@@ -77,7 +77,7 @@ export default function ProductPricingAndTiers({
   }, [formData.pricingTiers]); // Dependency on pricingTiers ensures it runs only once or when tiers become empty
 
   return (
-    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <section className="max-w-4xl mx-auto overflow-hidden">
       {/* Header */}
       <button
         type="button"
