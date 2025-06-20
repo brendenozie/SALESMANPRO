@@ -55,7 +55,7 @@ export default function PortfolioSite() {
 
       <GettingStartedSection />
 
-      <FeaturesSection />
+      {/* <FeaturesSection /> */}
 
       <AboutSection />
 

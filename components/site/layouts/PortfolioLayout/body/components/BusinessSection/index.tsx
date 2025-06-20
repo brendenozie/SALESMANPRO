@@ -134,7 +134,7 @@ export default function BusinessSection() {
                     className="inline-flex items-center gap-1 text-sm font-medium px-4 py-2 rounded-full shadow"
                     style={{ backgroundColor: primaryColor, color: '#fff' }}
                   >
-                    Learn More
+                    Book Consultation
                     <ArrowRightIcon className="w-4 h-4" />
                 </Link>
               </div>

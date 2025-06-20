@@ -24,63 +24,67 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function FeaturesSection() {
+export default function FeaturesClient() {
   const { storeFormData } = useStoreContext();
-  let dynamicFeatures : any[] = [];
-  const { themeSettings = {}, bannerUrl, name, } = storeFormData;
+  const { themeSettings = {}, bannerUrl, name, tagline } = storeFormData;
 
+  const dynamicFeatures: {
+    iconKey?: string;
+    iconUrl?: string;
+    title?: string;
+    description?: string;
+  }[] = []; // Placeholder for dynamic logic
   const primaryColor = themeSettings.primaryColor || '#10b981';
   const secondaryColor = themeSettings.secondaryColor || '#047857';
   const accentBg = `${primaryColor}20`;
 
-  // Fallback static features if dynamicFeatures not provided
   const staticFeatures = [
     {
       iconKey: 'CheckIcon',
+      iconUrl: undefined,
       title: 'Creative Portfolio',
       description: 'Showcase of selected works and case studies to highlight my expertise.',
     },
     {
       iconKey: 'UserGroupIcon',
+      iconUrl: undefined,
       title: 'Client Testimonials',
       description: 'Real feedback from clients I have collaborated with, demonstrating impact.',
     },
     {
       iconKey: 'AdjustmentsVerticalIcon',
+      iconUrl: undefined,
       title: 'Personal Branding',
       description: 'Tailored strategies to build and elevate your personal brand presence.',
     },
     {
       iconKey: 'ClockIcon',
+      iconUrl: undefined,
       title: 'Consultation',
       description: 'Schedule a session to discuss projects, career guidance, or collaboration.',
     },
     {
       iconKey: 'LockClosedIcon',
+      iconUrl: undefined,
       title: 'Secure Collaborations',
       description: 'Confidential and professional engagement on all projects and contracts.',
     },
     {
       iconKey: 'Cog6ToothIcon',
+      iconUrl: undefined,
       title: 'Custom Solutions',
       description: 'Bespoke services aligned to your unique goals and industry requirements.',
     },
   ];
 
-  const featuresData: Array<{
-    iconKey?: string;
-    iconUrl?: string;
-    title: string;
-    description: string;
-  }> =
-    Array.isArray(dynamicFeatures) && dynamicFeatures.length > 0
-      ? dynamicFeatures.map((f: any) => ({
-          iconKey: f.iconKey,
-          iconUrl: f.iconUrl,
-          title: f.title || '',
-          description: f.description || '',
-        }))
-      : staticFeatures;
+  const featuresData = Array.isArray(dynamicFeatures) && dynamicFeatures.length > 0
+    ? dynamicFeatures.map((f) => ({
+        iconKey: f.iconKey,
+        iconUrl: f.iconUrl,
+        title: f.title || '',
+        description: f.description || '',
+      }))
+    : staticFeatures;
 
   return (
     <section className="relative py-28 px-6 sm:px-12 overflow-hidden bg-white dark:bg-gray-900">
@@ -103,7 +107,6 @@ export default function FeaturesSection() {
             fill
             className="object-cover opacity-10"
             loader={loader}
-            priority={false}
           />
           <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90" />
         </div>
@@ -129,7 +132,7 @@ export default function FeaturesSection() {
         >
           My Expertise & Services
         </motion.h2>
-        {storeFormData.tagline && (
+        {tagline && (
           <motion.p
             className="mt-4 text-lg max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
@@ -137,7 +140,7 @@ export default function FeaturesSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             style={{ color: '#4B5563' }}
           >
-            {storeFormData.tagline}
+            {tagline}
           </motion.p>
         )}
       </div>
@@ -145,8 +148,7 @@ export default function FeaturesSection() {
       {/* Features Grid */}
       <div className="relative z-10 mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {featuresData.map(({ iconKey, iconUrl, title, description }, i) => {
-          const IconComponent =
-            (iconKey && iconMap[iconKey]) || CheckIcon;
+          const IconComponent = (iconKey && iconMap[iconKey]) || CheckIcon;
           return (
             <motion.div
               key={`${title}-${i}`}
@@ -182,6 +184,7 @@ export default function FeaturesSection() {
           );
         })}
       </div>
+
       <style jsx>{`
         :root {
           --icon-color: ${primaryColor};

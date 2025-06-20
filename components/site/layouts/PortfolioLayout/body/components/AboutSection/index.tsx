@@ -10,8 +10,8 @@ const loader = ({ src, width, quality }: any) =>
 
 export default function AboutSection() {
   const { storeFormData } = useStoreContext();
+  let  resumeUrl: string = "www.resumeurl.com";
   
-  let resumeUrl = "url";
   const {
     name,
     tagline,
@@ -134,7 +134,7 @@ export default function AboutSection() {
             >
               Get in Touch
             </motion.a>
-            {resumeHref && (
+            {/* {resumeHref && (
               <motion.a
                 href={resumeHref}
                 target="_blank"
@@ -146,7 +146,7 @@ export default function AboutSection() {
               >
                 Download Resume
               </motion.a>
-            )}
+            )} */}
           </div>
         </motion.div>
 
