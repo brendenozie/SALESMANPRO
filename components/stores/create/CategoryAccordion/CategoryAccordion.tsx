@@ -1,34 +1,17 @@
-"use client";
+'use client';
 
 import React, { useState, useMemo, useRef } from "react";
 import {
   ChevronDownIcon,
-  ChevronUpIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from 'framer-motion';
 import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
 
-export type SubObj = {
-  id: string;
-  name: string;
-  slug: string;
-};
-
-export type ParentCategory = {
-  id: string;
-  name: string;
-  icon: string;
-  children: SubObj[];
-};
-
-type SelectedCategory = {
-  id: string;
-  name: string;
-  icon: string;
-  items: SubObj[];
-};
+export type SubObj = { id: string; name: string; slug: string; };
+export type ParentCategory = { id: string; name: string; icon: string; children: SubObj[]; };
+type SelectedCategory = { id: string; name: string; icon: string; items: SubObj[]; };
 
 type Props = {
   category: string;
@@ -40,8 +23,6 @@ type Props = {
   onApply: () => void;
 };
 
-
-// ─── Sub-component: Search Bar ─────────────────────────────────────────────────
 function SearchBar({
   search,
   setSearch,
@@ -92,13 +73,11 @@ export default function CategoryTree({
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // Filter availableCategories by STORE_CATEGORY_MAP
   const filteredBySite = useMemo(() => {
     const allowedNames = STORE_CATEGORY_MAP[category] || [];
     return availableCategories.filter(cat => allowedNames.includes(cat.name));
   }, [category, availableCategories]);
 
-  // Filter logic with search
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return filteredBySite
@@ -106,26 +85,20 @@ export default function CategoryTree({
         ...cat,
         children: cat.children.filter(c => c.name.toLowerCase().includes(q)),
       }))
-      .filter(
-        cat =>
-          cat.name.toLowerCase().includes(q) || (cat.children && cat.children.length > 0)
+      .filter(cat =>
+        cat.name.toLowerCase().includes(q) || cat.children.length > 0
       );
   }, [search, filteredBySite]);
 
-  // Map for quick lookup
   const selectedMap = useMemo(() => {
     const map: Record<string, string[]> = {};
     selectedCategories.forEach(p => {
-      map[p.id] = p.items.map((i:any) => i.id);
+      map[p.id] = p.items.map(i => i.id);
     });
     return map;
   }, [selectedCategories]);
 
-  // Flatten IDs
-  const allFilteredIds = filtered.flatMap(cat => [
-    cat.id,
-    ...cat.children.map((c:any) => c.id),
-  ]);
+  const allFilteredIds = filtered.flatMap(cat => [cat.id, ...cat.children.map(c => c.id)]);
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -136,50 +109,54 @@ export default function CategoryTree({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* Selected Pane */}
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      {/* Selected Categories Pane */}
       <aside className="w-full lg:w-1/3 bg-gray-50 p-4 rounded-lg shadow-sm sticky top-20">
-        <h4 className="text-lg font-semibold mb-4">Your Selection</h4>
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          {selectedCategories.map(parent => (
-            <div key={parent.id}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="h-8 w-8 bg-indigo-100 text-indigo-600 flex items-center justify-center rounded-full">
-                  {parent.icon || parent.name[0]}
-                </span>
-                <span className="font-medium">{parent.name}</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {parent.items.map((child:any) => (
-                  <div
-                    key={child.id}
-                    className="flex items-center bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
-                  >
-                    {child.name}
-                    <button
-                      onClick={() => onToggleSub(parent.id, child)}
-                      className="ml-1 focus:outline-none"
+        <details className="lg:open">
+          <summary className="cursor-pointer text-lg font-semibold mb-4 lg:mb-0">
+            Your Selection
+          </summary>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto mt-4">
+            {selectedCategories.map(parent => (
+              <div key={parent.id}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="h-8 w-8 bg-indigo-100 text-indigo-600 flex items-center justify-center rounded-full text-sm font-medium">
+                    {parent.icon || parent.name[0]}
+                  </span>
+                  <span className="font-medium">{parent.name}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {parent.items.map(child => (
+                    <div
+                      key={child.id}
+                      className="flex items-center bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
                     >
-                      <XMarkIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
+                      {child.name}
+                      <button
+                        onClick={() => onToggleSub(parent.id, child)}
+                        className="ml-1 focus:outline-none"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={onApply}
-          className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
-        >
-          Apply
-        </button>
+            ))}
+          </div>
+          <button
+            onClick={onApply}
+            className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+          >
+            Apply
+          </button>
+        </details>
       </aside>
 
-      {/* Browse & Select Pane */}
+      {/* Category List Panel */}
       <main className="flex-1">
         {/* Toolbar */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <div className="flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-3 mb-6">
           <SearchBar search={search} setSearch={setSearch} placeholder="Filter categories…" />
           <div className="flex space-x-2">
             <button
@@ -197,7 +174,7 @@ export default function CategoryTree({
           </div>
         </div>
 
-        {/* Category List */}
+        {/* Category Accordion */}
         <ul className="space-y-4">
           <AnimatePresence>
             {filtered.map(cat => {
@@ -221,7 +198,7 @@ export default function CategoryTree({
                       ${isOpen ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'hover:bg-gray-50'}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="h-6 w-6 flex items-center justify-center text-indigo-600">
+                      <span className="h-6 w-6 flex items-center justify-center text-indigo-600 text-sm">
                         {cat.icon}
                       </span>
                       <span className="font-medium text-gray-900">{cat.name}</span>
@@ -239,8 +216,8 @@ export default function CategoryTree({
                   </div>
 
                   {isOpen && totalChildren > 0 && (
-                    <div className="p-4 border-t border-gray-100 grid grid-cols-3 md:grid-cols-4 gap-2">
-                      {cat.children.map((child:any) => {
+                    <div className="p-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {cat.children.map(child => {
                         const isSel = selIds.includes(child.id);
                         return (
                           <motion.button
@@ -248,7 +225,7 @@ export default function CategoryTree({
                             onClick={() => onToggleSub(cat.id, child)}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className={`p-2 rounded-lg border text-sm transition-colors flex items-center justify-center
+                            className={`px-3 py-2 rounded-lg border text-sm text-center min-w-[90px]
                               ${isSel
                                 ? 'bg-indigo-600 text-white border-indigo-600'
                                 : 'bg-white text-gray-700 border-gray-200 hover:bg-indigo-50'}`}

@@ -1094,15 +1094,15 @@ const StepContent = stepIndex < allSteps.length
   const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : 'Review & Submit';
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
 
-  return <div className="min-h-screen flex bg-gray-50 relative">
-  {/* Mobile breadcrumb */}
-  <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center">
-    <span className="font-medium">Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
-    <span className="text-sm">{currentTitle}</span>
+  return <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+  {/* Mobile Top Bar with Step Info */}
+  <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+    <span className="font-medium text-sm">Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
+    <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
   </div>
 
   {/* Sidebar */}
-  <aside className="w-64 hidden md:flex flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
+  <aside className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
     <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
     <nav className="flex flex-col gap-4 overflow-y-auto">
       {allSteps.map((s, i) => {
@@ -1120,7 +1120,7 @@ const StepContent = stepIndex < allSteps.length
                 ${completed ? 'bg-green-600 text-white' : active ? 'bg-indigo-600 text-white' : 'bg-indigo-200 text-indigo-700'}`}>
               {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
             </span>
-            <span>{s.title}</span>
+            <span className="text-sm">{s.title}</span>
           </button>
         );
       })}
@@ -1133,15 +1133,15 @@ const StepContent = stepIndex < allSteps.length
         <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
           ✔
         </span>
-        Review
+        <span className="text-sm">Review</span>
       </button>
     </nav>
   </aside>
 
-  {/* Main content */}
-  <main className="flex-1 flex flex-col px-4 sm:px-8 py-8">
-    {/* Progress bar with dots */}
-    <div className="relative mb-6">
+  {/* Main Content */}
+  <main className="flex-1 flex flex-col px-4 sm:px-6 py-6 relative">
+    {/* Progress Bar */}
+    <div className="relative mb-4">
       <div className="h-2 bg-gray-200 rounded-full">
         <div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: `${percent}%` }} />
       </div>
@@ -1156,14 +1156,16 @@ const StepContent = stepIndex < allSteps.length
         ))}
       </div>
     </div>
-    <div className="flex justify-between mb-2 text-sm text-gray-500">
+
+    {/* Step Info (Desktop only) */}
+    <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
       <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
       <span>{currentTitle}</span>
     </div>
 
-    {/* Card wrapper */}
-    <div className="bg-white rounded-2xl shadow-xl p-6 flex-1 overflow-auto">
-      <AnimatePresence mode='wait'>
+    {/* Step Content */}
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
+      <AnimatePresence mode="wait">
         <motion.div
           key={stepIndex}
           initial={{ opacity: 0, x: 30 }}
@@ -1176,13 +1178,13 @@ const StepContent = stepIndex < allSteps.length
       </AnimatePresence>
     </div>
 
-    {/* Navigation buttons */}
-    <div className="mt-8 flex justify-between items-center border-t pt-4 sticky bottom-0 bg-gray-50 px-4 py-3 md:static md:bg-transparent">
+    {/* Navigation Buttons (Sticky on Mobile) */}
+    <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
       <button
         type="button"
         disabled={stepIndex === 0}
         onClick={prev}
-        className="px-5 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+        className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
       >
         ← Back
       </button>
@@ -1191,21 +1193,22 @@ const StepContent = stepIndex < allSteps.length
         <button
           type="button"
           onClick={next}
-          className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+          className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
         >
           Continue →
         </button>
       ) : (
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+          className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
         >
-          {isSubmitting ? "Uploading" : "Submit Store"}
+          {isSubmitting ? "Uploading..." : "Submit Store"}
         </button>
       )}
     </div>
   </main>
 </div>
+
 }
 
  // Helper to render review info for each step
