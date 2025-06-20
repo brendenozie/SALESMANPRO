@@ -119,6 +119,7 @@ const STEP_LABELS: Record<number, string> = {
 interface AddEditBlogModalProps {
   show: boolean;
   onClose: () => void;
+  categoriesData:any[];
   initialData?: any; // if editing, pass existing blog data
 }
 
@@ -126,6 +127,7 @@ export default function AddEditBlogModal({
   show,
   onClose,
   initialData = {},
+  categoriesData = []
 }: AddEditBlogModalProps) {
   const [step, setStep] = useState(1);
   const totalSteps = Object.keys(FORM_COMPONENTS).length;
@@ -210,7 +212,7 @@ export default function AddEditBlogModal({
           exit={{ opacity: 0, x: -20 }}
           className="flex-grow overflow-auto p-4"
         >
-          <FormComponent formData={formData} setFormData={setFormData} />
+          <FormComponent formData={formData} setFormData={setFormData} categories={categoriesData}/>
         </motion.div>
 
         <div className="flex justify-between pt-4 border-t">

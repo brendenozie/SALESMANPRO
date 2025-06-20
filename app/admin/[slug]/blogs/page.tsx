@@ -29,6 +29,14 @@ export type BlogItem = {
   };
 };
 
+type Category = {
+  id: string;
+  name: string;
+  image: string;
+  tags: string[];
+  status: string;
+};
+
 interface PageProps {
   params: {
     slug: string; // companyId
@@ -41,6 +49,7 @@ export default async function BlogsPage({ params }: PageProps) {
   const page      = 1;
 
   let blogsData: BlogItem[] = [];
+  let categoriesData: Category[] = [];
   let totalItems = 0;
   let totalPages = 0;
 
@@ -71,6 +80,21 @@ export default async function BlogsPage({ params }: PageProps) {
         res.statusText
       );
     }
+
+    // Fetch all categories for this company
+    const categoriesRes = await fetch(
+      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+        companyId
+      )}`,
+      { cache: "no-store" }
+    );
+    if (categoriesRes.ok) {
+      const categoriesJson = (await categoriesRes.json()) as {
+        results: Category[];
+      };
+      categoriesData = categoriesJson.results;
+    }
+
   } catch (err: any) {
     console.error("[BlogsPage] Error fetching blogs:", err.message);
   }
@@ -78,6 +102,7 @@ export default async function BlogsPage({ params }: PageProps) {
   return (
     <BlogsClient
       companyId={companyId}
+      categoriesData={categoriesData}
       blogs={blogsData}
       totalItems={totalItems}
       totalPages={totalPages}

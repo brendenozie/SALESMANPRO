@@ -22,9 +22,18 @@ export type BlogItem = {
   updatedAt: string;
 };
 
+type Category = {
+  id: string;
+  name: string;
+  image: string;
+  tags: string[];
+  status: string;
+};
+
 interface BlogsClientProps {
   companyId: string;
   blogs: BlogItem[];
+  categoriesData: Category[];
   totalItems: number;
   totalPages: number;
   currentPage: number;
@@ -33,6 +42,7 @@ interface BlogsClientProps {
 
 export default function BlogsClient({
   companyId,
+  categoriesData,
   blogs,
   totalItems,
   totalPages,
@@ -40,20 +50,31 @@ export default function BlogsClient({
   perPage,
 }: BlogsClientProps) {
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  
   const [selectedBlog, setSelectedBlog] = useState<BlogItem | null>(null);
 
   return (
     <div className="container mx-auto p-10">
       <h1 className="text-5xl font-extrabold text-center text-gray-900 mb-8 tracking-tight">
-        My Blogs
+        
       </h1>
-
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 mb-8">
-        <p className="text-gray-600">
-          Showing {blogs.length} of {totalItems} blogs
-        </p>
-      </div>
+      <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">My Blogs</h2>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+              >
+                Add New Blog Post
+              </button>
+            </div>
+      {blogs && blogs.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 mb-8">
+          <p className="text-gray-600">
+            Showing {blogs.length} of {totalItems} blogs
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {blogs.length === 0 && (
@@ -114,7 +135,7 @@ export default function BlogsClient({
               <button
                 onClick={() => {
                   setSelectedBlog(blog);
-                  setShowDeleteModal(true);
+                  
                 }}
                 className="px-3 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition"
               >
@@ -146,8 +167,16 @@ export default function BlogsClient({
       {showEditModal && selectedBlog && (
         <AddEditBlogModal
           show={showEditModal}
+          categoriesData={categoriesData}
           onClose={() => setShowEditModal(false)}
           initialData={selectedBlog}
+        />
+      )}
+      {showAddModal && (
+        <AddEditBlogModal
+          show={showAddModal}          
+          categoriesData={categoriesData}
+          onClose={() => setShowAddModal(false)}
         />
       )}
     </div>

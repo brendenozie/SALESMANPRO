@@ -56,7 +56,16 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
           </h1>
 
           <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-10">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-8">Products</h2>
+            
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">Products</h2>
+              <button
+                onClick={() => setShowAddToMarketModal(true)}
+                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+              >
+                Add New Product To Market Place
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {productsData && productsData.map((product,index) => (
