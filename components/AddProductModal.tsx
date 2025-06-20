@@ -21,6 +21,9 @@ import FinalReview from "./FinalReview";
 import ContactLocation from "./ContactLocation";
 import AmenitiesStep from "./AmenitiesStep";
 import VehicleAmenitiesStep from "./VehicleAmenitiesStep";
+import { CATEGORY_STEPS } from "@/constant/CATEGORY_STEPS";
+import { FORM_COMPONENTS } from "@/constant/FORM_COMPONENTS";
+import { STEP_LABELS } from "@/constant/STEP_LABELS";
 
 // -------------------
 // MAPPINGS
@@ -28,167 +31,8 @@ import VehicleAmenitiesStep from "./VehicleAmenitiesStep";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-const FORM_COMPONENTS: Record<number, React.FC<any>> = {
-  1: CategoryPicker,
-  2: ProductDetails,
-  3: GeneralDetails,
-  4: EnginePerformance,
-  5: OwnershipPricing,
-  7: PricingDetails,
-  8: ImageUploader,
-  9: ProductVariants,
-  10: ProductAvailability,
-  11: FinalReview,
-  12: ContactLocation,
-  13: AmenitiesStep,
-  14: VehicleAmenitiesStep,
-};
 
-const STEP_LABELS: Record<number, string> = {
-  1: "Category",
-  2: "Details",
-  3: "General Info",
-  4: "Engine Specs",
-  5: "Ownership Pricing",
-  7: "Pricing",
-  8: "Images",
-  9: "Variants",
-  10: "Availability",
-  11: "Review",
-  12: "Location / Contact",
-  13: "Property Amenities",
-  14: "Vehicle Amenities",
-};
 
-// ------------------- 
-// CATEGORY_STEPS  
-// (Already includes all categories and subcategories.)
-// -------------------
-const CATEGORY_STEPS: Record<string, number[]> = {
-  // — Standard “store” items —
-  "Electronics":         [1,2,7,8,9,10,12,11],
-  "Clothing":            [1,2,7,8,9,10,12,11],
-  "Fashion":             [1,2,7,8,9,10,12,11],
-  "Smartphones":         [1,2,7,8,9,10,12,11],
-  "Laptops":             [1,2,7,8,9,10,12,11],
-  "Tablets":             [1,2,7,8,9,10,12,11],
-  "Wearables":           [1,2,7,8,9,10,12,11],
-  "Home Appliances":     [1,2,7,8,9,10,12,11],
-  "Cameras":             [1,2,7,8,9,10,12,11],
-  "Gaming Consoles":     [1,2,7,8,9,10,12,11],
-  "Televisions":         [1,2,7,8,9,10,12,11],
-  "Audio Systems":       [1,2,7,8,9,10,12,11],
-  "Music":               [1,2,7,8,9,10,12,11],
-  "Books":               [1,2,7,8,9,10,12,11],
-  "Stationery":          [1,2,7,8,9,10,12,11],
-  "Shoes":               [1,2,7,8,9,10,12,11],
-  "Watches":             [1,2,7,8,9,10,12,11],
-  "Jewelry":             [1,2,7,8,9,10,12,11],
-  "Beauty Products":     [1,2,7,8,9,10,12,11],
-  "Skincare":            [1,2,7,8,9,10,12,11],
-  "Haircare":            [1,2,7,8,9,10,12,11],
-  "Toys":                [1,2,7,8,9,10,12,11],
-  "Baby Toys":           [1,2,7,8,9,10,12,11],
-  "Sports Equipment":    [1,2,7,8,9,10,12,11],
-  "Fitness Gear":        [1,2,7,8,9,10,12,11],
-  "Outdoor Gear":        [1,2,7,8,9,10,12,11],
-  "Bicycles":            [1,2,7,8,9,10,12,11],
-  "Musical Instruments": [1,2,7,8,9,10,12,11],
-  "Furniture":           [1,2,7,8,9,10,12,11],
-  "Decor":               [1,2,7,8,9,10,12,11],
-  "Kitchenware":         [1,2,7,8,9,10,12,11],
-  "Dining":              [1,2,7,8,9,10,12,11],
-  "Bedding":             [1,2,7,8,9,10,12,11],
-  "Pet Supplies":        [1,2,7,8,9,10,12,11],
-  "Pets":                [1,2,7,8,9,10,12,11],
-  "Lighting":            [1,2,7,8,9,10,12,11],
-  "Gardening":           [1,2,7,8,9,10,12,11],
-  "Home & Garden":       [1,2,7,8,9,10,12,11],
-  "Office Supplies":     [1,2,7,8,9,10,12,11],
-  "Art Supplies":        [1,2,7,8,9,10,12,11],
-  "Health Products":     [1,2,7,8,9,10,12,11],
-  "Health & Beauty":     [1,2,7,8,9,10,12,11],
-  "Supplements":         [1,2,7,8,9,10,12,11],
-  "Baby Products":       [1,2,7,8,9,10,12,11],
-  "Maternity":           [1,2,7,8,9,10,12,11],
-  "Groceries":           [1,2,7,8,9,10,12,11],
-  "Snacks":              [1,2,7,8,9,10,12,11],
-  "Beverages":           [1,2,7,8,9,10,12,11],
-  "Alcohol":             [1,2,7,8,9,10,12,11],
-  "Gourmet Foods":       [1,2,7,8,9,10,12,11],
-  "Cleaning Supplies":   [1,2,7,8,9,10,12,11],
-  "Safety Equipment":    [1,2,7,8,9,10,12,11],
-  "Party Supplies":      [1,2,7,8,9,10,12,11],
-  "Gifts":               [1,2,7,8,9,10,12,11],
-  "Travel Gear":         [1,2,7,8,9,10,12,11],
-
-  // — Property listings flow —
-  "Real Estate":         [1,3,7,8,10,12,13,11],
-  "Property":            [1,3,7,8,10,12,13,11],
-  "Houses":              [1,3,7,8,10,12,13,11],
-  "Land":                [1,3,7,8,10,12,13,11],
-  "Commercial":          [1,3,7,8,10,12,13,11],
-  "Apartments":          [1,3,7,8,10,12,13,11],
-  "Vacation Rentals":    [1,3,7,8,10,12,13,11],
-  "Warehouses":          [1,3,7,8,10,12,13,11],
-  "Gated Communities":   [1,3,7,8,10,12,13,11],
-  "Offices":             [1,3,7,8,10,12,13,11],
-  "Serviced Apartments": [1,3,7,8,10,12,13,11],
-  "Hostels":             [1,3,7,8,10,12,13,11],
-  "Shared Housing":      [1,3,7,8,10,12,13,11],
-  "Shops":               [1,3,7,8,10,12,13,11],
-  "Farms":               [1,3,7,8,10,12,13,11],
-  "Hotels":              [1,3,7,8,10,12,13,11],
-  "Event Spaces":        [1,3,7,8,10,12,13,11],
-
-  // — Automotive & tools flow —
-  "Automotive":          [1,3,4,5,7,8,10,12,14,11],
-  "Cars":                [1,3,4,5,7,8,10,12,14,11],
-  "Car Accessories":     [1,3,4,5,7,8,10,12,14,11],
-  "Tools":               [1,3,4,5,7,8,10,12,14,11],
-  "Hardware":            [1,3,4,5,7,8,10,12,14,11],
-
-  // — Services flow —
-  "Services":            [1,2,7,8,9,10,12,11],
-  "Cleaning":            [1,2,7,8,9,10,12,11],
-  "Plumbing":            [1,2,7,8,9,10,12,11],
-  "Electrical":          [1,2,7,8,9,10,12,11],
-  "Landscaping":         [1,2,7,8,9,10,12,11],
-  "Catering":            [1,2,7,8,9,10,12,11],
-  "Transportation":      [1,2,7,8,9,10,12,11],
-  "IT Services":         [1,2,7,8,9,10,12,11],
-  "Beauty Services":     [1,2,7,8,9,10,12,11],
-  "Tutoring":            [1,2,7,8,9,10,12,11],
-  "Event Planning":      [1,2,7,8,9,10,12,11],
-
-  // — Arts & Crafts flow —
-  "Arts & Crafts":       [1,2,7,8,9,10,12,11],
-  "Painting Supplies":   [1,2,7,8,9,10,12,11],
-  "Knitting & Sewing":   [1,2,7,8,9,10,12,11],
-  "DIY Kits":            [1,2,7,8,9,10,12,11],
-  "Scrapbooking":        [1,2,7,8,9,10,12,11],
-  "Art Prints":          [1,2,7,8,9,10,12,11],
-
-  // — Travel & Experiences flow —
-  "Travel & Experiences":[1,2,7,8,9,10,12,11],
-  "Flight Tickets":      [1,2,7,8,9,10,12,11],
-  "Hotel Bookings":      [1,2,7,8,9,10,12,11],
-  "Tour Packages":       [1,2,7,8,9,10,12,11],
-  "Event Tickets":       [1,2,7,8,9,10,12,11],
-  "Travel Insurance":    [1,2,7,8,9,10,12,11],
-
-  // — Digital Goods & Subscriptions flow —
-  "Digital Goods & Subscriptions":[1,2,7,8,9,10,12,11],
-  "Software Licenses":   [1,2,7,8,9,10,12,11],
-  "E-books":             [1,2,7,8,9,10,12,11],
-  "Online Courses":      [1,2,7,8,9,10,12,11],
-  "Streaming Subscriptions":[1,2,7,8,9,10,12,11],
-  "Mobile App Credits":  [1,2,7,8,9,10,12,11],
-};
-
-// -------------------
-// MAIN MODAL COMPONENT
-// -------------------
 
 interface AddProductModalProps {
   showRequestProductModal: boolean;
