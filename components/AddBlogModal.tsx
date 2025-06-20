@@ -15,6 +15,9 @@ import CategoryPicker from "./CategoryPicker";
 import ImageUploader from "./ImageUploader";
 import Stepper from "./Stepper";
 
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 // Step 2: a simple textarea for content—swap for a full editor if you like
 const ContentEditor: React.FC<{ formData: any; setFormData: any }> = ({
   formData,
@@ -136,7 +139,7 @@ export default function AddEditBlogModal({
     id: initialData.id || "",
     title: initialData.title || "",
     slug: initialData.slug || "",
-    categories: initialData.categories || [],
+    category: initialData.category || [],
     tags: initialData.tags || [],
     content: initialData.content || "",
     images: initialData.images || [],   
@@ -145,13 +148,20 @@ export default function AddEditBlogModal({
     metaKeywords: initialData.seo?.keywords || [],
   });
 
+  // Images state
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [images, setImages] = useState<any[]>(
+    initialData?.images?.map((img: any, index: number) => ({ ...img, index })) || []
+  );
+  const [loading, setLoading] = useState(false);
+
   // Reset when initialData changes (i.e. opening for a new blog)
   useEffect(() => {
     setFormData({
       id: initialData.id || "",
       title: initialData.title || "",
       slug: initialData.slug || "",
-      categories: initialData.categories || [],
+      category: initialData.category || [],
       tags: initialData.tags || [],
       content: initialData.content || "",
       images: initialData.images || [],
@@ -164,16 +174,121 @@ export default function AddEditBlogModal({
 
   const FormComponent = FORM_COMPONENTS[step];
 
+  // Generic input change handler
+    const handleInputChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+      const { name, type, value, checked } = e.target as HTMLInputElement;
+  
+      setFormData((prev: any) => {
+        let updatedData = {
+          ...prev,
+          [name]: type === "checkbox" ? checked : value,
+        };
+  
+        // If pricing fields change, recalc finalPrice & profitMargin
+        if (["costPrice", "salesPrice", "discount"].includes(name)) {
+          const cost = parseFloat(updatedData.costPrice) || 0;
+          const sales = parseFloat(updatedData.salesPrice) || 0;
+          const disc = parseFloat(updatedData.discount) || 0;
+          updatedData.finalPrice = +(
+            sales -
+            (sales * disc) / 100
+          ).toFixed(2);
+          updatedData.profitMargin = cost > 0 ? +(((sales - cost) / cost) * 100).toFixed(1) : 0;
+        }
+  
+        return updatedData;
+      });
+    };
+  
+    // Upload logic (unchanged)
+    async function uploadWithRetry(file: any, retries = 3) {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          return await uploadFile(file, "image");
+        } catch (error) {
+          console.error(`Upload failed for ${file.name}, attempt ${attempt}`);
+          if (attempt === retries) {
+            return null;
+          }
+        }
+      }
+    }
+  
+    const uploadFile = async (file: File, type: string) => {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("type", type);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: data,
+      });
+      const json = await res.json();
+      return json.url;
+    };
+
+   // Subcategories and brands filtered from selected category
+   const filteredSubCategories = useMemo(() => {
+    if (!formData.category) return [];
+    return formData.category.subcategories || [];
+  }, [formData.category]);
+
+  const filteredBrands = useMemo(() => {
+    if (!formData.category) return [];
+    return formData.category.allBrands || [];
+  }, [formData.category]);
+
   const handleSubmit = async () => {
+    let updatedImages = images;
+
+    if (newImages.length > 0) {
+      const newImgsWithId = newImages.map((file, idx) => ({
+        id: crypto.randomUUID(),
+        file,
+        index: idx,
+      }));
+
+      const uploadedUrls = await Promise.all(
+        newImgsWithId.map(async ({ id, file, index }) => {
+          const url = await uploadWithRetry(file);
+          return url ? { id, url, index } : null;
+        })
+      );
+
+      const success = uploadedUrls.filter((u) => !!u) as any[];
+      const failed = newImgsWithId.filter(
+        ({ id }) => !success.some((u) => u.id === id)
+      );
+
+      if (failed.length > 0) {
+        setLoading(false);
+        alert(
+          `The following images failed: ${failed.map((f) => f.file.name).join(", ")}`
+        );
+        return;
+      }
+
+      // Replace placeholder images with actual URLs
+      updatedImages = images.map((img: any, idx: number) => {
+        const match = success.find((u) => u.index === idx);
+        return match ? { ...img, url: match.url } : img;
+      });
+
+      setImages(updatedImages);
+      setNewImages([]);
+    }
+
     const payload = {
       ...formData,
+      images:  images.map((i) => i.url),     
       seo: {
         title: formData.seoTitle,
         description: formData.seoDescription,
         keywords: formData.metaKeywords,
       },
     };
-    const res = await fetch("/api/blogs", {
+    const res = await fetch(`${apiUrl}/admin/post-product`, {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify(payload),
@@ -212,7 +327,15 @@ export default function AddEditBlogModal({
           exit={{ opacity: 0, x: -20 }}
           className="flex-grow overflow-auto p-4"
         >
-          <FormComponent formData={formData} setFormData={setFormData} categories={categoriesData}/>
+          <FormComponent formData={formData} 
+                         setFormData={setFormData} 
+                         categories={categoriesData}
+                         filteredSubCategories={filteredSubCategories}
+                          filteredBrands={filteredBrands}
+                          handleInputChange={handleInputChange}
+                          newImages={newImages}
+                          setNewImages={setNewImages}
+          />
         </motion.div>
 
         <div className="flex justify-between pt-4 border-t">

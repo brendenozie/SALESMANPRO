@@ -26,6 +26,8 @@ import VehicleAmenitiesStep from "./VehicleAmenitiesStep";
 // MAPPINGS
 // -------------------
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   1: CategoryPicker,
   2: ProductDetails,
@@ -203,7 +205,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   companyId,
   categories,
 }) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   // Step state
   const [step, setStep] = useState(1);
