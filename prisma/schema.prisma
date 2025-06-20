@@ -209,7 +209,6 @@ model Company {
   sEOId     String?   @db.ObjectId
 
   PageSection PageSection[]
-  BlogPost    BlogPost[]
   Collection  Collection[]
 
   MarketplaceListing MarketplaceListing[]
@@ -227,6 +226,7 @@ model Company {
   metrics  Json?
   stats    Json?
   AppPromo AppPromo[]
+  Blog     Blog[]
 }
 
 enum CategoryStatus {
@@ -542,27 +542,6 @@ model Payment {
   createdAt     DateTime      @default(now())
 }
 
-model BlogPost {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  company     Company    @relation(fields: [companyId], references: [id])
-  companyId   String     @db.ObjectId
-  title       String
-  slug        String     @unique
-  excerpt     String
-  content     String // Markdown or HTML
-  author      String?
-  coverImage  String?
-  tags        String[]
-  publishedAt DateTime?
-  status      PostStatus @default(DRAFT)
-}
-
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
 enum AppointmentStatus {
   PENDING
   CONFIRMED
@@ -599,6 +578,8 @@ enum PaymentStatus {
 
 model Blog {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  company     Company    @relation(fields: [companyId], references: [id])
+  companyId   String     @db.ObjectId
   title       String     @unique
   slug        String     @unique
   content     String
@@ -606,8 +587,7 @@ model Blog {
   coverImage  String? // URL to the blog's cover image
   categories  String[] // Array of category names
   tags        String[] // Array of relevant tags
-  author      Author     @relation(fields: [authorId], references: [id])
-  authorId    String     @db.ObjectId
+  author      Json? // name profileImage
   seo         SeoBlog?
   status      BlogStatus @default(DRAFT)
   publishedAt DateTime?
@@ -616,13 +596,6 @@ model Blog {
   comments    Comment[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-}
-
-model Author {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  profileImage String?
-  blogs        Blog[]
 }
 
 model SeoBlog {

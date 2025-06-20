@@ -83,11 +83,10 @@ export const getCategoryMenus = (adminSlug: string) => ({
   "Blog & Content": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
-      label: "Posts",
+      label: "Blogs",
       icon: DocumentTextIcon,
       subItems: [
-        { label: "All Posts", href: `/admin/${adminSlug}/posts` },
-        { label: "Create New", href: `/admin/${adminSlug}/posts/new` },
+        { label: "All Blogs", href: `/admin/${adminSlug}/blogs` },
       ],
     },
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
