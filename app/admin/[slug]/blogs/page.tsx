@@ -49,7 +49,7 @@ export default async function BlogsPage({ params }: PageProps) {
   const page      = 1;
 
   let blogsData: BlogItem[] = [];
-  let categoriesData: Category[] = [];
+  let categoriesData: any[] = [];
   let totalItems = 0;
   let totalPages = 0;
 
@@ -90,7 +90,7 @@ export default async function BlogsPage({ params }: PageProps) {
     );
     if (categoriesRes.ok) {
       const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
+        results: any[];
       };
       categoriesData = categoriesJson.results;
     }

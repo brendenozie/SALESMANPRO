@@ -3,276 +3,19 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-
-// Accordion components
-import BasicInfo from '../BasicInfo/BasicInfo';
-import CategoryAccordion from '../CategoryAccordion/CategoryAccordion';
-import BannerLogoAccordion from '../BannerLogoAccordion/BannerLogoAccordion';
-import ContactAccordion from '../ContactAccordion/ContactAccordion';
-import LocationAccordion from '../LocationAccordion/LocationAccordion';
-import SocialLinksAccordion from '../SocialLinksAccordion/SocialLinksAccordion';
-import PoliciesAccordion from '../PoliciesAccordion/PoliciesAccordion';
-import FAQsAccordion from '../FAQsAccordion/FAQsAccordion';
-import TestimonialsAccordion from '../TestimonialsAccordion/TestimonialsAccordion';
-import HeroSlidesAccordion from '../HeroSlidesAccordion/HeroSlidesAccordion';
-import PromotionsAccordion from '../PromotionsAccordion/PromotionsAccordion';
-import ThemeSettingsAccordion from '../ThemeSettingsAccordion/ThemeSettingsAccordion';
-import SeoSettingsAccordion from '../SeoSettingsAccordion/SeoSettingsAccordion';
-import SettingsAccordion from '../SettingsAccordion/SettingsAccordion';
-import PaymentAccordion from '../PaymentAccordion/PaymentAccordion';
-
-import ShippingAccordion from '../ShippingAccordion/ShippingAccordion';
-import { AwardsAccordion } from '../AwardsAccordion/AwardsAccordion';
-import { MetricsAccordion } from '../MetricsAccordion/MetricsAccordion';
-import { StatsAccordion } from '../StatsAccordion/StatsAccordion';
-import { StoreForm, Handlers, StepConfig, GeoLocation, RawCategory, SubObj, ParentCategory, SelectedCategory, Promotion, HeroSlide } from '../../../../types/typings';
-import ProductPricingAndTiers  from '../PricingTiers/PricingTiers';
+import { StoreForm, Handlers, StepConfig, GeoLocation, 
+          RawCategory, SubObj, ParentCategory, 
+          SelectedCategory, Promotion, 
+          HeroSlide 
+      } from '../../../../types/typings';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { AnimatePresence, motion } from 'framer-motion';
-import CategorySelect from '../CategorySelect/CategorySelect';
+import { storeSteps, pricingSteps, websiteSteps, paymentSteps } from '@/constant/STORE_SITE_STEPS';
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
   "booking & appointments",
   "portfolio & personal branding",
-];
-
-// Interfaces
-export const storeSteps: StepConfig[] = [
-  {
-    key: 'businesscategory',
-    title: 'Business Category',
-    render: (f, h) => <CategorySelect {...f} handleChange={h.handleChange} />,
-  },
-  {
-    key: 'basic',
-    title: 'Basic Info',
-    render: (f, h) => <BasicInfo {...f} handleChange={h.handleChange} />,
-  },
-  {
-    key: 'categories',
-    title: 'Categories',
-    render: (f, h, cats) => (
-      <CategoryAccordion
-        category={f.category}
-        availableCategories={cats}
-        selectedCategories={f.storeCategories}
-        onToggleParent={h.onToggleParent}
-        onToggleSub={h.onToggleSub}
-        onBulkToggle={h.onBulkToggle}
-        onApply={() => console.log(f.storeCategories)}
-      />
-    ),
-  },  
-  {
-    key: 'touchpoints',
-    title: 'Customer Touchpoints',
-    render: (f, h) => (
-      <ContactAccordion
-        {...f}
-        openingHours={f.openingHours}
-        onChange={h.handleChange}
-        onToggleDay={h.onToggleDay}
-      />
-    ),
-  },
-];
-
-export const paymentSteps: StepConfig[] = [
-  {
-    key: 'payment',
-    title: 'Payment',
-    render: (f, h) => (
-      <PaymentAccordion paymentSettings={f.paymentSettings} onChange={(upd) => h.onChangeSettings({ paymentSettings: upd })} />
-    ),
-  },
-  {
-    key: 'shipping',
-    title: 'Shipping',
-    render: (f, h) => (
-      <ShippingAccordion shippingSettings={f.shippingSettings} onChange={(upd) => h.onChangeSettings({ shippingSettings: upd })} />
-    ),
-  }
-];
-
-export const pricingSteps: StepConfig[] = [
-  {
-    key: 'pricingtiers',
-    title: 'Pricing Tiers',
-    render: (formData, handlers) => {
-      // Create a wrapper function that ProductPricingAndTiers expects
-      const setPricingTiersFormData: React.Dispatch<React.SetStateAction<StoreForm>> = (update) => {
-        if (typeof update === 'function') {
-          handlers.onChangeSettings({ pricingTiers: (update as any).pricingTiers });
-        } else {
-          handlers.onChangeSettings({ pricingTiers: (update as any).pricingTiers });
-        }
-      };
-
-      return (
-        <ProductPricingAndTiers
-          formData={{
-            ...formData,
-            pricingTiers: formData.pricingTiers || [],
-          }}
-          setFormData={setPricingTiersFormData}
-        />
-      );
-    },
-  },
-];
-
-export const websiteSteps: StepConfig[] = [
-  {
-    key: 'branding',
-    title: 'Branding',
-    render: (f, h) => (
-      <BannerLogoAccordion
-        logoUrl={f.logoUrl}
-        bannerUrl={f.bannerUrl}
-        onUpload={h.handleMediaUpload}
-        onRemove={h.handleMediaRemove}
-      />
-    ),
-  },
-  {
-    key: 'location',
-    title: 'Location',
-    render: (f, h) => (
-      <LocationAccordion address={f.address} onAddressSelect={h.setAddress} />
-    ),
-  },
-  {
-    key: 'social',
-    title: 'Social Links',
-    render: (f, h) => (
-      <SocialLinksAccordion
-        socialLinks={f.socialLinks}
-        onUpdateLink={(i, field, v) => h.onUpdateArray('socialLinks', i, field, v)}
-        onAddLink={() => h.onAddArray('socialLinks', { channel: '', url: '' })}
-        onRemoveLink={(i) => h.onRemoveArray('socialLinks', i)}
-      />
-    ),
-  },
-  {
-    key: 'content',
-    title: 'Policies',
-    render: (f, h) => (
-      <PoliciesAccordion
-        policies={f.policies}
-        onUpdatePolicy={(i, field, v) => h.onUpdateArray('policies', i, field, v)}
-        onAddPolicy={() => h.onAddArray('policies', { type: '', content: '' })}
-        onRemovePolicy={(i) => h.onRemoveArray('policies', i)}
-      />
-    ),
-  },
-  {
-    key: 'awards',
-    title: 'Awards',
-    render: (f, h) => (
-      <AwardsAccordion
-        awards={f.awards}
-        onAdd={() => h.onAddArray('awards', { name: '', iconUrl: '' })}
-        onUpdate={(i, field, v) => h.onUpdateArray('awards', i, field, v)}
-        onRemove={(i) => h.onRemoveArray('awards', i)}
-      />
-    ),
-  },
-  {
-    key: 'metrics',
-    title: 'Metrics',
-    render: (f, h) => (
-      <MetricsAccordion
-        metrics={f.metrics}
-        onAdd={() => h.onAddArray('metrics', { label: '', value: 0 })}
-        onUpdate={(i, field, v) => h.onUpdateArray('metrics', i, field, v)}
-        onRemove={(i) => h.onRemoveArray('metrics', i)}
-      />
-    ),
-  },
-  {
-    key: 'stats',
-    title: 'Stats',
-    render: (f, h) => (
-      <StatsAccordion
-        stats={f.stats}
-        onAdd={() => h.onAddArray('stats', { label: '', value: '' })}
-        onUpdate={(i, field, v) => h.onUpdateArray('stats', i, field, v)}
-        onRemove={(i) => h.onRemoveArray('stats', i)}
-      />
-    ),
-  },
-  {
-    key: 'faqs',
-    title: 'FAQs',
-    render: (f, h) => (
-      <FAQsAccordion
-        faqs={f.faqs}
-        onUpdateFAQ={(i, field, v) => h.onUpdateArray('faqs', i, field, v)}
-        onAddFAQ={() => h.onAddArray('faqs', { question: '', answer: '' })}
-        onRemoveFAQ={(i) => h.onRemoveArray('faqs', i)}
-      />
-    ),
-  },
-  {
-    key: 'testimonials',
-    title: 'Testimonials',
-    render: (f, h) => (
-      <TestimonialsAccordion
-        testimonials={f.testimonials}
-        onUpdateTestimonial={(i, field, v) => h.onUpdateArray('testimonials', i, field, v)}
-        onAddTestimonial={() => h.onAddArray('testimonials', { author: '', quote: '' })}
-        onRemoveTestimonial={(i) => h.onRemoveArray('testimonials', i)}
-      />
-    ),
-  },
-  {
-    key: 'marketing',
-    title: 'Hero Slides',
-    render: (f, h) => (
-      <HeroSlidesAccordion
-        slides={f.heroSlides}
-        onUpdateSlide={h.onUpdateHeroSlide}
-        onAddSlide={h.onAddHeroSlide}
-        onRemoveSlide={h.onRemoveHeroSlide}
-        onImageUpload={h.handleSlideImageUpload}
-      />
-    ),
-  },
-  {
-    key: 'promotions',
-    title: 'Promotions',
-    render: (f, h) => (
-      <PromotionsAccordion
-        promotions={f.promotions}
-        onUpdatePromotion={h.onUpdatePromotion}
-        onAddPromotion={h.onAddPromotion}
-        onRemovePromotion={h.onRemovePromotion}
-        onImageUpload={h.onPromotionImageUpload}
-      />
-    ),
-  },
-  {
-    key: 'seo',
-    title: 'SEO Settings',
-    render: (f, h) => (
-      <SeoSettingsAccordion seo={f.seo} onChange={(upd) => h.onChangeSettings({ seo: upd })} />
-    ),
-  },
-  {
-    key: 'theme',
-    title: 'Theme Settings',
-    render: (f, h) => (
-      <ThemeSettingsAccordion themeSettings={f.themeSettings} onChange={(upd) => h.onChangeSettings({ themeSettings: upd })} />
-    ),
-  },  
-  {
-    key: 'analytics',
-    title: 'Analytics',
-    render: (f, h) => (
-      <SettingsAccordion analyticsConfig={f.analyticsConfig} onChange={(upd) => h.onChangeSettings({ analyticsConfig: upd })} />
-    ),
-  },
 ];
 
 type Props = {
@@ -370,7 +113,6 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   
     // 2) if they've opted for a website, add payment steps...
     if (form.hasWebsite) {
-      list.push(...paymentSteps);
   
       // 3) ...and, for certain categories, add pricing
       const cat = form.category?.toLowerCase().trim() || "";
@@ -378,37 +120,13 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         list.push(...pricingSteps);
       }
   
-      // 4) finally add the website steps
       list.push(...websiteSteps);
+      
+      list.push(...paymentSteps);
     }
   
     return list;
-  }, [form.hasWebsite, form.category]);
-
-  // const allSteps = useMemo<StepConfig[]>(() => {
-  //   // always have storeSteps…
-  //   const list = [...storeSteps];
-  //   // …then, only if they checked “hasWebsite”
-
-  //   list.push(...paymentSteps);
-    
-  //   if (form.hasWebsite) {
-
-  //     if(form.category.toLocaleLowerCase()=="service" || form.category.toLocaleLowerCase()=="service provider" ||
-  //         form.category.toLocaleLowerCase()=="portfolio & personal branding" || form.category.toLocaleLowerCase()=="service provider" ||
-  //         form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
-  //         form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider" ||
-  //         form.category.toLocaleLowerCase()=="service provider" || form.category.toLocaleLowerCase()=="service provider")
-  //     {
-  //       list.push(...pricingSteps);
-  //     }
-
-  //     list.push(...websiteSteps);
-  //   }
-  //   return list;
-  // }, [form.hasWebsite]);
-  
-  
+  }, [form.hasWebsite, form.category]);  
 
   // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
   
@@ -585,11 +303,16 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     id:   cat.id,
     name: cat.name,
     icon: cat.icon,
-    children: cat.subcategories.map((sub,index) => ({
+    items: cat.subcategories.map((sub,index) => ({
       id:   `${sub.name.slice(0,2)+index}`,
       name: sub.name,
       slug: sub.slug,
     })),
+    brands: cat.brands ? cat.brands.map((sub,index) => ({
+      id:   `${sub.name.slice(0,2)+index}`,
+      name: sub.name,
+      slug: sub.slug,
+    })) : [],
   }));
 
   // Auto-generate slug/domain from name
@@ -703,7 +426,12 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
               id:    parent.id,
               name:  parent.name,
               icon: parent.icon,
-              items: parent.children.map((child) => ({
+              items: parent.items.map((child) => ({
+                id:   child.id,
+                name: child.name,
+                slug: child.slug,
+              })),
+              brands: parent.brands.map((child) => ({
                 id:   child.id,
                 name: child.name,
                 slug: child.slug,
@@ -715,20 +443,34 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
       const existingEntry = prev.storeCategories[existingIndex];
       const currentlySelectedCount = existingEntry.items.length;
-      const totalChildrenCount = parent.children.length;
+      const totalItemsCount = parent.items.length;
+      const totalBrandsCount = parent.brands.length;
 
       // B) Parent is “partial” (some but not all) → select all
-      if (currentlySelectedCount < totalChildrenCount) {
-        const allItems = parent.children.map((child) => ({
+      if (currentlySelectedCount < totalItemsCount) {
+        const allItems = parent.items.map((child) => ({
+          id:   child.id,
+          name: child.name,
+          // icon: child.icon,
+          slug: child.slug,
+        }));        
+        
+        const allBrands = parent.brands.map((child) => ({
           id:   child.id,
           name: child.name,
           // icon: child.icon,
           slug: child.slug,
         }));
-        const updated = prev.storeCategories.map((sc) =>
+
+        const updatedItems = prev.storeCategories.map((sc) =>
           sc.id === parent.id ? { ...sc, items: allItems } : sc
         );
-        return { ...prev, storeCategories: updated };
+
+        const updatedBrands = prev.storeCategories.map((sc) =>
+          sc.id === parent.id ? { ...sc, brands: allBrands } : sc
+        );
+        return { ...prev, storeCategories: {...prev.storeCategories, ...updatedItems, ...updatedBrands } };
+
       }
 
       // C) Parent was fully selected → remove it completely
@@ -738,7 +480,8 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   };
 
   // 2) onToggleSub
-  const onToggleSub = (parentId: string, sub: SubObj) => {
+  const onToggleSub = (parentId: string, item: SubObj) => {
+
     setForm((prev) => {
       const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
 
@@ -746,21 +489,21 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         // Parent not in storeCategories → add it with one sub
         const parentName = mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
         const parentIcon = mappedCategories.find((cat) => cat.id === parentId)?.icon ?? "";
+        const parentBrands = mappedCategories.find((cat) => cat.id === parentId)?.brands ?? [];
 
         return {
           ...prev,
           storeCategories: [
             ...prev.storeCategories,
-            { id: parentId, name: parentName,icon: parentIcon, items: [sub] },
+            { id: parentId, name: parentName,icon: parentIcon, brands:parentBrands, items: [item]},
           ],
         };
       }
 
       // Parent already exists → toggle “sub” inside items[]
-      const alreadyHas = parentEntry.items.some((item) => item.id === sub.id);
-      const newItems = alreadyHas
-        ? parentEntry.items.filter((item) => item.id !== sub.id)
-        : [...parentEntry.items, sub];
+      const alreadyItemsHas = parentEntry.items.some((item) => item.id === item.id);
+      const newItems = alreadyItemsHas ? parentEntry.items.filter((item) => item.id !== item.id)
+                                       : [...parentEntry.items, item];       
 
       if (newItems.length === 0) {
         // Last child was removed → drop entire parent
@@ -775,6 +518,50 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       // Otherwise, just update this parent’s items
       const updated = prev.storeCategories.map((sc) =>
         sc.id === parentId ? { ...sc, items: newItems } : sc
+      );
+      return { ...prev, storeCategories: updated };
+    });
+  };
+
+   // 2) onToggleBrand
+   const onToggleBrand = (parentId: string, brand: any) => {
+
+    setForm((prev) => {
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+
+      if (!parentEntry) {
+        // Parent not in storeCategories → add it with one sub
+        const parentName = mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
+        const parentIcon = mappedCategories.find((cat) => cat.id === parentId)?.icon ?? "";
+        const parentItems = mappedCategories.find((cat) => cat.id === parentId)?.items ?? [];
+
+        return {
+          ...prev,
+          storeCategories: [
+            ...prev.storeCategories,
+            { id: parentId, name: parentName,icon: parentIcon, items: parentItems, brands: [brand]},
+          ],
+        };
+      }
+
+      // Parent already exists → toggle brand inside brands[]
+      const alreadyBrndsHas = parentEntry.brands.some((brandID) => brandID.id === brand.id);
+      const newBrands = alreadyBrndsHas ? parentEntry.brands.filter((brandIDD) => brandIDD.id !== brand.id)
+                                       : [...parentEntry.brands, brand];       
+
+      if (newBrands.length === 0) {
+        // Last child was removed → drop entire parent
+        return {
+          ...prev,
+          storeCategories: prev.storeCategories.filter(
+            (sc) => sc.id !== parentId
+          ),
+        };
+      }
+
+      // Otherwise, just update this parent’s items
+      const updated = prev.storeCategories.map((sc) =>
+        sc.id === parentId ? { ...sc, brands: newBrands } : sc
       );
       return { ...prev, storeCategories: updated };
     });
@@ -802,28 +589,46 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       const nextStoreCategories: SelectedCategory[] = [];
       for (const parent of mappedCategories) {
         // Which of this parent’s children appear in childIdSet?
-        const matchedKids = parent.children.filter((child) =>
-          childIdSet.has(child.id)
+        const matchedItemsKids = parent.items.filter((item) =>
+          childIdSet.has(item.id)
         );
-        if (matchedKids.length === 0) {
+        if (matchedItemsKids.length === 0) {
           // None of this parent’s children selected → skip
           continue;
         }
 
         // If ALL children are selected (matchedKids.length === parent.children.length)
         // then we consider this a “full” select. Otherwise it’s “partial.”
-        const allKidsSelected =
-          matchedKids.length === parent.children.length;
+        const allKidsSelected = matchedItemsKids.length === parent.items.length;
 
         const itemsToUse = allKidsSelected
-          ? parent.children.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
-          : matchedKids.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
+          ? parent.items.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
+          : matchedItemsKids.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
+
+          
+        // Which of this parent’s children appear in childIdSet?
+        const matchedBrandsKids = parent.brands.filter((brand) =>
+          childIdSet.has(brand.id)
+        );
+        if (matchedBrandsKids.length === 0) {
+          // None of this parent’s children selected → skip
+          continue;
+        }
+
+        // If ALL children are selected (matchedKids.length === parent.children.length)
+        // then we consider this a “full” select. Otherwise it’s “partial.”
+        const allBrandsSelected = matchedBrandsKids.length === parent.brands.length;
+
+        const brandsToUse = allBrandsSelected
+          ? parent.brands.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
+          : matchedBrandsKids.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
 
         nextStoreCategories.push({
           id:    parent.id,
           name:  parent.name,
           icon: parent.icon,
           items: itemsToUse,
+          brands: brandsToUse,
         });
       }
 
@@ -848,6 +653,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
     onToggleParent,
     onToggleSub,
+    onToggleBrand,
 
     onUpdateHeroSlide,
     onAddHeroSlide,

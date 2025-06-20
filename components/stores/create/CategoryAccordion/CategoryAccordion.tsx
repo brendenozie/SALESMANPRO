@@ -8,17 +8,16 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from 'framer-motion';
 import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
+import { ParentCategory, SelectedCategory, SubObj } from "@/types/typings";
 
-export type SubObj = { id: string; name: string; slug: string; };
-export type ParentCategory = { id: string; name: string; icon: string; children: SubObj[]; };
-type SelectedCategory = { id: string; name: string; icon: string; items: SubObj[]; };
 
 type Props = {
   category: string;
   availableCategories: ParentCategory[];
   selectedCategories: SelectedCategory[];
   onToggleParent: (cat: ParentCategory) => void;
-  onToggleSub: (parentId: string, sub: SubObj) => void;
+  onToggleSub: (parentId: string, sub: SubObj,) => void;
+  onToggleBrand: (parentId: string, brands: any) => void;
   onBulkToggle: (ids: string[]) => void;
   onApply: () => void;
 };
@@ -73,6 +72,8 @@ export default function CategoryTree({
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
+  console.log(availableCategories);
+
   const filteredBySite = useMemo(() => {
     const allowedNames = STORE_CATEGORY_MAP[category] || [];
     return availableCategories.filter(cat => allowedNames.includes(cat.name));
@@ -83,10 +84,10 @@ export default function CategoryTree({
     return filteredBySite
       .map(cat => ({
         ...cat,
-        children: cat.children.filter(c => c.name.toLowerCase().includes(q)),
+        items: cat.items.filter(c => c.name.toLowerCase().includes(q)),
       }))
       .filter(cat =>
-        cat.name.toLowerCase().includes(q) || cat.children.length > 0
+        cat.name.toLowerCase().includes(q) || cat.items.length > 0
       );
   }, [search, filteredBySite]);
 
@@ -98,7 +99,7 @@ export default function CategoryTree({
     return map;
   }, [selectedCategories]);
 
-  const allFilteredIds = filtered.flatMap(cat => [cat.id, ...cat.children.map(c => c.id)]);
+  const allFilteredIds = filtered.flatMap(cat => [cat.id, ...cat.items.map(c => c.id)]);
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -126,14 +127,14 @@ export default function CategoryTree({
                   <span className="font-medium">{parent.name}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {parent.items.map(child => (
+                  {parent.items.map(item => (
                     <div
-                      key={child.id}
+                      key={item.id}
                       className="flex items-center bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
                     >
-                      {child.name}
+                      {item.name}
                       <button
-                        onClick={() => onToggleSub(parent.id, child)}
+                        onClick={() => onToggleSub(parent.id, item,)}
                         className="ml-1 focus:outline-none"
                       >
                         <XMarkIcon className="h-4 w-4" />
@@ -180,7 +181,7 @@ export default function CategoryTree({
             {filtered.map(cat => {
               const selIds = selectedMap[cat.id] || [];
               const selCount = selIds.length;
-              const totalChildren = cat.children.length;
+              const totalItems = cat.items.length;
               const isOpen = expanded.has(cat.id);
 
               return (
@@ -202,27 +203,27 @@ export default function CategoryTree({
                         {cat.icon}
                       </span>
                       <span className="font-medium text-gray-900">{cat.name}</span>
-                      {totalChildren > 0 && (
+                      {totalItems > 0 && (
                         <span className="text-sm text-gray-500">
-                          ({selCount}/{totalChildren})
+                          ({selCount}/{totalItems})
                         </span>
                       )}
                     </div>
-                    {totalChildren > 0 && (
+                    {totalItems > 0 && (
                       <ChevronDownIcon
                         className={`h-5 w-5 text-gray-500 transform transition-transform ${isOpen ? '-rotate-180' : ''}`}
                       />
                     )}
                   </div>
 
-                  {isOpen && totalChildren > 0 && (
+                  {isOpen && totalItems > 0 && (
                     <div className="p-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {cat.children.map(child => {
-                        const isSel = selIds.includes(child.id);
+                      {cat.items.map(item => {
+                        const isSel = selIds.includes(item.id);
                         return (
                           <motion.button
-                            key={child.id}
-                            onClick={() => onToggleSub(cat.id, child)}
+                            key={item.id}
+                            onClick={() => onToggleSub(cat.id, item)}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className={`px-3 py-2 rounded-lg border text-sm text-center min-w-[90px]
@@ -230,7 +231,7 @@ export default function CategoryTree({
                                 ? 'bg-indigo-600 text-white border-indigo-600'
                                 : 'bg-white text-gray-700 border-gray-200 hover:bg-indigo-50'}`}
                           >
-                            {child.name}
+                            {item.name}
                           </motion.button>
                         );
                       })}

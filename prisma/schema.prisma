@@ -147,7 +147,8 @@ model StoreCategory {
   // updatedAt DateTime @updatedAt
 
   // You still store each category’s children in JSON:
-  items Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
+  items  Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
+  brands Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
 
   // @@id([companyId, categoryId])
   @@unique([companyId, categoryId]) // Use a unique constraint instead

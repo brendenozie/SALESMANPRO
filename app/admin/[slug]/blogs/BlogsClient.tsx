@@ -33,7 +33,7 @@ type Category = {
 interface BlogsClientProps {
   companyId: string;
   blogs: BlogItem[];
-  categoriesData: Category[];
+  categoriesData: any[];
   totalItems: number;
   totalPages: number;
   currentPage: number;
