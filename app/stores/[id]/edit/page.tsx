@@ -183,6 +183,11 @@ export default async function EditStorePage({
         : typeof sc.items === "string"
         ? JSON.parse(sc.items)
         : [],
+      brands: Array.isArray(sc.brands)
+        ? sc.brands
+        : typeof sc.brands === "string"
+        ? JSON.parse(sc.brands)
+        : [],
       sortOrder: sc.sortOrder,
       visible: sc.visible,
     })),
