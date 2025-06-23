@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       coverImage:     coverImage || null,
       categories:     safeCategories,
       tags:           safeTags,
-      author:         Object.keys(safeAuthor).length ? safeAuthor : null,
+      ...(author && {author: Object.keys(safeAuthor).length ? safeAuthor : null}),
       status:         status || "DRAFT",
       ...(pubDate && { publishedAt: pubDate }),
     };
