@@ -55,7 +55,7 @@ export default async function BlogsPage({ params }: PageProps) {
 
   try {
     const res = await fetch(
-      `${apiUrl}/blogs?companyId=${encodeURIComponent(companyId)}&limit=${limit}&page=${page}`,
+      `${apiUrl}/admin/get-all-blogs?companyId=${encodeURIComponent(companyId)}&limit=${limit}&page=${page}`,
       { cache: "no-store" }
     );
 

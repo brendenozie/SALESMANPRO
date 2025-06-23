@@ -60,6 +60,7 @@ export default async function StoreLayout({
     where: { slug: params.slug },
     include: {
       socialLinks: true,
+      Blog:true,
       policies: true,
       faqs: true,
       testimonials: true,

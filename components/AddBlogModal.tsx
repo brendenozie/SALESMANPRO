@@ -160,7 +160,7 @@ export default function AddEditBlogModal({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    // onClose();
+    onClose();
   };
 
   return (

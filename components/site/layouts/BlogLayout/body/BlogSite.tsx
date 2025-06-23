@@ -85,33 +85,6 @@ export default function BlogSite() {
 
       <CtaSection/>
       
-      {/* Hero Section */}
-      <BlogHero siteName={name} bannerUrl={bannerUrl} />
-
-      {/* Main Content */}
-      <BlogInsights posts={posts} loader={loader} />
-
-      {/* Newsletter Section */}
-      <section className="bg-indigo-600 py-16">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="container mx-auto text-center px-4 max-w-lg text-white"
-        >
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">Stay Informed</h3>
-          <p className="mb-6">Subscribe for weekly tips, exclusive content, and more.</p>
-          <form className="flex flex-col sm:flex-row gap-4 justify-center">
-            <input
-              type="email"
-              placeholder="Your email address"
-              className="flex-1 px-4 py-3 rounded-lg text-gray-900"
-            />
-            <button className="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg shadow-lg hover:shadow-2xl transition">
-              Subscribe
-            </button>
-          </form>
-        </motion.div>
-      </section>
     </main>
   );
 }

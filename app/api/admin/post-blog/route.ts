@@ -1,8 +1,7 @@
 // app/api/blogs/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // adjust path if needed
+import prisma from "@/server/db/prismadb";
 
-// Safely parse JSON strings into objects
 const parseJsonSafely = (data: any, fallback: any = null) => {
   try {
     return typeof data === "string" ? JSON.parse(data) : data;
@@ -13,9 +12,6 @@ const parseJsonSafely = (data: any, fallback: any = null) => {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-
-    // Destructure expected fields
     const {
       id,
       companyId,
@@ -26,13 +22,12 @@ export async function POST(req: Request) {
       coverImage,
       categories,
       tags,
-      author,       // expect { name: string; profileImage: string }
-      seo,          // expect { title?: string; description?: string; keywords?: string[] }
-      status,       // DRAFT | PUBLISHED | ARCHIVED
-      publishedAt,  // ISO date string
-    } = body;
+      author,
+      seo,
+      status,
+      publishedAt,
+    } = await req.json();
 
-    // Basic required-field validation
     if (!companyId || !title || !slug || !content) {
       return NextResponse.json(
         { message: "Missing required fields: companyId, title, slug or content." },
@@ -40,62 +35,98 @@ export async function POST(req: Request) {
       );
     }
 
-    // Normalize arrays
-    const safeCategories = Array.isArray(categories) ? categories : categories ? [categories] : [];
-    const safeTags       = Array.isArray(tags)       ? tags       : tags       ? [tags]       : [];
-
-    // Parse optional JSON fields
+    const safeCategories = Array.isArray(categories)
+      ? categories
+      : categories
+      ? [categories]
+      : [];
+    const safeTags = Array.isArray(tags) ? tags : tags ? [tags] : [];
     const safeAuthor = parseJsonSafely(author, {});
-    const safeSeo    = parseJsonSafely(seo, {});
+    const safeSeo = parseJsonSafely(seo, {});
 
-    // Parse optional date
-    const pubDate = publishedAt && !isNaN(Date.parse(publishedAt))
-      ? new Date(publishedAt)
-      : null;
+    const pubDate =
+      publishedAt && !isNaN(Date.parse(publishedAt))
+        ? new Date(publishedAt)
+        : undefined;
 
-    // Build data object for Prisma
-    const data: any = {
-      company:        { connect: { id: companyId } },
+    // Base payload (everything except SEO)
+    const baseData: any = {
+      company: { connect: { id: companyId } },
       title,
       slug,
       content,
-      excerpt:        excerpt || null,
-      coverImage:     coverImage || null,
-      categories:     safeCategories,
-      tags:           safeTags,
-      ...(author && {author: Object.keys(safeAuthor).length ? safeAuthor : null}),
-      status:         status || "DRAFT",
-      ...(pubDate && { publishedAt: pubDate }),
+      excerpt: excerpt || null,
+      coverImage: coverImage || null,
+      categories: safeCategories,
+      tags: safeTags,
+      author: Object.keys(safeAuthor).length ? safeAuthor : undefined,
+      status: status || "DRAFT",
+      publishedAt: pubDate,
     };
 
-    // Handle nested SEO record
-    if (Object.keys(safeSeo).length) {
-      data.seo = {
-        upsert: {
-          create: {
-            title:       safeSeo.title    || null,
-            description: safeSeo.description || null,
-            keywords:    Array.isArray(safeSeo.keywords) ? safeSeo.keywords : [],
-          },
-          update: {
-            title:       safeSeo.title    || undefined,
-            description: safeSeo.description || undefined,
-            keywords:    Array.isArray(safeSeo.keywords) ? safeSeo.keywords : undefined,
-          },
-        },
-      };
-    }
-
     let blog;
-    // If `id` provided, try update; otherwise create
     if (id) {
+      // --- UPDATE (with nested upsert for SEO) ---
       blog = await prisma.blog.upsert({
         where: { id },
-        create: data,
-        update: data,
+        create: {
+          ...baseData,
+          // if no existing SEO, create it on the create-path too
+          seo: Object.keys(safeSeo).length
+            ? {
+                create: {
+                  title: safeSeo.title || null,
+                  description: safeSeo.description || null,
+                  keywords: Array.isArray(safeSeo.keywords)
+                    ? safeSeo.keywords
+                    : [],
+                },
+              }
+            : undefined,
+        },
+        update: {
+          ...baseData,
+          // here we can safely upsert (update if exists, create otherwise)
+          seo: Object.keys(safeSeo).length
+            ? {
+                upsert: {
+                  create: {
+                    title: safeSeo.title || null,
+                    description: safeSeo.description || null,
+                    keywords: Array.isArray(safeSeo.keywords)
+                      ? safeSeo.keywords
+                      : [],
+                  },
+                  update: {
+                    title: safeSeo.title ?? undefined,
+                    description: safeSeo.description ?? undefined,
+                    keywords: Array.isArray(safeSeo.keywords)
+                      ? safeSeo.keywords
+                      : undefined,
+                  },
+                },
+              }
+            : undefined,
+        },
       });
     } else {
-      blog = await prisma.blog.create({ data });
+      // --- CREATE (only create-branch) ---
+      blog = await prisma.blog.create({
+        data: {
+          ...baseData,
+          seo: Object.keys(safeSeo).length
+            ? {
+                create: {
+                  title: safeSeo.title || null,
+                  description: safeSeo.description || null,
+                  keywords: Array.isArray(safeSeo.keywords)
+                    ? safeSeo.keywords
+                    : [],
+                },
+              }
+            : undefined,
+        },
+      });
     }
 
     return NextResponse.json(
@@ -106,7 +137,7 @@ export async function POST(req: Request) {
     console.error("❌ Error in blog POST:", error);
     return NextResponse.json(
       { message: "Failed to save blog.", error: error.message },
-      { status: 500 }
+      { status: 500 }   // ← fixed comma here
     );
   }
 }
