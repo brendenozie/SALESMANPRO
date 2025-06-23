@@ -349,13 +349,7 @@ export default function CreateStoreForm({
       name: sub.name,
       slug: sub.slug,
     })),
-    allBrands: cat.allBrands
-      ? cat.allBrands.map((sub, index) => ({
-          id: `${sub.slice(0, 2) + index}`,
-          name: sub.name,
-          slug: sub.slug,
-        }))
-      : [],
+    allBrands: cat.allBrands ? cat.allBrands : [],
   }));
 
   // Auto-generate slug/domain from name
@@ -597,7 +591,7 @@ export default function CreateStoreForm({
   // 2) onToggleBrand
   const onToggleBrand = (parentId: string, brand: string) => {
     setForm((prev) => {
-      
+
       const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
   
       if (!parentEntry) {
