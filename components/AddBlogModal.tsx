@@ -15,9 +15,9 @@ import CategoryPicker from "./CategoryPicker";
 import ImageUploader from "./ImageUploader";
 import Stepper from "./Stepper";
 
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-
-import 'react-quill/dist/quill.snow.css';
+// load the new package dynamically, no ssr
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -44,7 +44,8 @@ interface AddEditBlogModalProps {
   show: boolean;
   onClose: () => void;
   categoriesData: any[];
-  initialData?: any;
+  initialData?: any;  
+  companyId?: string;
 }
 
 export default function AddEditBlogModal({
@@ -52,7 +53,9 @@ export default function AddEditBlogModal({
   onClose,
   initialData = {},
   categoriesData = [],
+  companyId
 }: AddEditBlogModalProps) {
+
   const totalSteps = Object.keys(STEP_LABELS).length;
   const [step, setStep] = useState(1);
 
@@ -72,7 +75,8 @@ export default function AddEditBlogModal({
     metaKeywords: initialData.seo?.keywords || [],
     category: initialData.category || null,
     subCategory: initialData.subCategory || null,
-    brand: initialData.brand || null,
+    brand: initialData.brand || null,    
+    companyId: companyId
   });
 
   const [mounted, setMounted] = useState(false);
@@ -80,7 +84,6 @@ export default function AddEditBlogModal({
   useEffect(() => {
     setMounted(true);
   }, []);
-
 
   const [newImages, setNewImages] = useState<File[]>([]);
   const [images, setImages] = useState(
@@ -147,6 +150,7 @@ export default function AddEditBlogModal({
         description: formData.seoDescription,
         keywords: formData.metaKeywords,
       },
+      companyId: formData.companyId
     };
 
     await fetch(`${apiUrl}/admin/post-blog`, {
@@ -154,7 +158,7 @@ export default function AddEditBlogModal({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    onClose();
+    // onClose();
   };
 
   return (

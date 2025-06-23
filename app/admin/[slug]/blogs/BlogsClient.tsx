@@ -170,6 +170,7 @@ export default function BlogsClient({
           categoriesData={categoriesData}
           onClose={() => setShowEditModal(false)}
           initialData={selectedBlog}
+          companyId={companyId}
         />
       )}
       {showAddModal && (
@@ -177,6 +178,7 @@ export default function BlogsClient({
           show={showAddModal}          
           categoriesData={categoriesData}
           onClose={() => setShowAddModal(false)}
+          companyId={companyId}
         />
       )}
     </div>
