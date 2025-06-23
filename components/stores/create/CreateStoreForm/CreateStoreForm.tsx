@@ -485,11 +485,7 @@ export default function CreateStoreForm({
                 name: child.name,
                 slug: child.slug,
               })),
-              allBrands: parent.allBrands.map((child) => ({
-                id: child.id,
-                name: child.name,
-                slug: child.slug,
-              })),
+              allBrands: parent.allBrands && parent.allBrands,
             },
           ],
         };
@@ -498,7 +494,7 @@ export default function CreateStoreForm({
       const existingEntry = prev.storeCategories[existingIndex];
       const currentlySelectedCount = existingEntry.items.length;
       const totalItemsCount = parent.items.length;
-      const totalBrandsCount = parent.allBrands.length;
+      const totalBrandsCount = parent.allBrands && parent.allBrands.length;
 
       // B) Parent is “partial” (some but not all) → select all
       if (currentlySelectedCount < totalItemsCount) {
@@ -509,12 +505,7 @@ export default function CreateStoreForm({
           slug: child.slug,
         }));
 
-        const allBrands = parent.allBrands.map((child) => ({
-          id: child.id,
-          name: child.name,
-          // icon: child.icon,
-          slug: child.slug,
-        }));
+        const allBrands = parent.allBrands && parent.allBrands;
 
         const updatedItems = prev.storeCategories.map((sc) =>
           sc.id === parent.id ? { ...sc, items: allItems } : sc
@@ -626,60 +617,6 @@ export default function CreateStoreForm({
     });
   };
   
-  const onToggleBrandV1 = (parentId: string, brand: any) => {
-    setForm((prev) => {
-      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
-
-      if (!parentEntry) {
-        // Parent not in storeCategories → add it with one sub
-        const parentName =
-          mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
-        const parentIcon =
-          mappedCategories.find((cat) => cat.id === parentId)?.icon ?? "";
-        const parentItems =
-          mappedCategories.find((cat) => cat.id === parentId)?.items ?? [];
-
-        return {
-          ...prev,
-          storeCategories: [
-            ...prev.storeCategories,
-            {
-              id: parentId,
-              name: parentName,
-              icon: parentIcon,
-              items: parentItems,
-              allBrands: [brand],
-            },
-          ],
-        };
-      }
-
-      // Parent already exists → toggle brand inside brands[]
-      const alreadyBrndsHas = parentEntry.allBrands.some(
-        (brandID) => brandID.id === brand.id
-      );
-      const newBrands = alreadyBrndsHas
-        ? parentEntry.allBrands.filter((brandIDD) => brandIDD.id !== brand.id)
-        : [...parentEntry.allBrands, brand];
-
-      if (newBrands.length === 0) {
-        // Last child was removed → drop entire parent
-        return {
-          ...prev,
-          storeCategories: prev.storeCategories.filter(
-            (sc) => sc.id !== parentId
-          ),
-        };
-      }
-
-      // Otherwise, just update this parent’s items
-      const updated = prev.storeCategories.map((sc) =>
-        sc.id === parentId ? { ...sc, brands: newBrands } : sc
-      );
-      return { ...prev, storeCategories: updated };
-    });
-  };
-
   // 3) onBulkToggle
   const onBulkToggle = (ids: string[]) => {
     setForm((prev) => {
@@ -723,26 +660,19 @@ export default function CreateStoreForm({
             }));
 
         // Which of this parent’s children appear in childIdSet?
-        const matchedBrandsKids = parent.allBrands.filter((brand) =>
-          childIdSet.has(brand.id)
+        const matchedBrandsKids = parent.allBrands && parent.allBrands.filter((brand) =>
+          childIdSet.has(brand)
         );
-        if (matchedBrandsKids.length === 0) {
+        if (matchedBrandsKids?.length === 0) {
           // None of this parent’s children selected → skip
           continue;
         }
 
         // If ALL children are selected (matchedKids.length === parent.children.length)
         // then we consider this a “full” select. Otherwise it’s “partial.”
-        const allBrandsSelected =
-          matchedBrandsKids.length === parent.allBrands.length;
+        const allBrandsSelected = matchedBrandsKids?.length === parent.allBrands?.length;
 
-        const brandsToUse = allBrandsSelected
-          ? parent.allBrands.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
-          : matchedBrandsKids.map((c) => ({
-              id: c.id,
-              name: c.name,
-              slug: c.slug,
-            }));
+        const brandsToUse = allBrandsSelected ? parent.allBrands : matchedBrandsKids;
 
         nextStoreCategories.push({
           id: parent.id,

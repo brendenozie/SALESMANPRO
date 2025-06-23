@@ -100,6 +100,16 @@ export default function CategoryTree({
     return map;
   }, [selectedCategories]);
 
+  const selectedBrandsMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    selectedCategories.forEach(p => {
+      if (p.allBrands && p.allBrands.length > 0) {
+        map[p.id] = p.allBrands;
+      }
+    });
+    return map;
+  }, [selectedCategories]);
+  
   const allFilteredIds = filtered.flatMap(cat => [cat.id, ...cat.items.map(c => c.id)]);
 
   const toggleExpand = (id: string) => {
@@ -143,8 +153,30 @@ export default function CategoryTree({
                     </div>
                   ))}
                 </div>
+                {parent.allBrands && parent.allBrands.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {parent.allBrands.map(brand => (
+                      <div
+                        key={brand}
+                        className="flex items-center bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
+                      >
+                        {brand}
+                        <button
+                          onClick={() => onToggleBrand(parent.id, brand)}
+                          className="ml-1 focus:outline-none"
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+                
             ))}
+
+            
+
           </div>
           
         </details>
@@ -234,15 +266,17 @@ export default function CategoryTree({
                     </div>
                   )}
 
-                  {isOpen && cat.allBrands?.length > 0 && (
+                  {isOpen && cat.allBrands && cat.allBrands?.length > 0 && (
                     <div className="px-4 pb-4">
                       <p className="text-sm font-semibold text-gray-700 mb-2">Brands</p>
                       <div className="flex flex-wrap gap-2">
-                        {cat.allBrands.map((brand: string, index:number) => {
-                          const isBrandSelected = selectedMap[cat.id]?.includes(brand);
+                        {cat.allBrands?.map((brand: string, index:number) => {
+
+                          const isBrandSelected = selectedBrandsMap[cat.id]?.includes(brand);
+
                           return (
                             <motion.button
-                              key={`${brand}-${index}`}
+                              key={index}
                               onClick={() => onToggleBrand(cat.id, brand)}
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
