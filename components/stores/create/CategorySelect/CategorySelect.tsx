@@ -56,7 +56,7 @@ export default function CategoryStep({ category, handleChange }: CategorySelectP
   return (
     <section className="max-w-4xl mx-auto p-2">
       <header className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Choose Your Business Category</h2>
+        <h2 className="text-2xl font-bold text-gray-900">What's Your Business About?</h2>
         <p className="mt-1 text-gray-600 flex items-center">
           <InformationCircleIcon className="h-5 w-5 text-gray-400 mr-1" />
           This helps in setting up your store and website experience.

@@ -15,6 +15,10 @@ export default async function CreateStorePage() {
   
   const availableCategories = data.results;
 
+  console.log("12345678901234567890");
+  
+  console.log(availableCategories);
+
   return <CreateStoreForm availableCategories={availableCategories} />;
 }
 

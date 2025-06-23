@@ -95,7 +95,7 @@ type StoreCategoryEntry = {
   id: string;           // parent ProductCategory.id
   name: string;         // parent name
   items: SubObj[];      // zero or more subcategory objects
-  brands: any[];      // zero or more subcategory objects
+  allBrands: any[];      // zero or more subcategory objects
   displayName?: string; // (optional override)
   icon: string;        // (optional override)
   sortOrder?: number;
@@ -107,7 +107,7 @@ type SelectedCategory = {
   name:  string;
   icon:string;
   items: SubObj[];
-  brands: any[];
+  allBrands: any[];
 };
 
 export type SubObj = {
@@ -123,14 +123,14 @@ export type ParentCategory = {
   name:          string;
   icon:string;
   items:      SubObj[];    // full list of sub‐objects under this parent
-  brands:      any[];    // full list of sub‐objects under this parent
+  allBrands:      any[];    // full list of sub‐objects under this parent
 };
 
 type RawCategory = {
   id:         string;
   name:       string;
   icon:string;
-  brands:Array<any>;
+  allBrands:Array<any>;
   subcategories: Array<{
     id:   string;
     name: string;

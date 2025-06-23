@@ -53,9 +53,6 @@ export default function StoresPage() {
     const confirmDelete = confirm('Are you sure you want to delete this store?');
     if (!confirmDelete) return;
 
-    // Optimistically remove the store
-    // setStores(prev => prev.filter(s => s.id !== id));
-
     try {
       const res = await fetch(`/api/stores/${id}`, { method: 'DELETE' });
       if (!res.ok) {

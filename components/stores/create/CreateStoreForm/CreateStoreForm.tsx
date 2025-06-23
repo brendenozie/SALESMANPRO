@@ -1,16 +1,34 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent, FormEvent, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { StoreForm, Handlers, StepConfig, GeoLocation, 
-          RawCategory, SubObj, ParentCategory, 
-          SelectedCategory, Promotion, 
-          HeroSlide 
-      } from '../../../../types/typings';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
-import { AnimatePresence, motion } from 'framer-motion';
-import { storeSteps, pricingSteps, websiteSteps, paymentSteps } from '@/constant/STORE_SITE_STEPS';
+import React, {
+  useState,
+  useEffect,
+  ChangeEvent,
+  FormEvent,
+  useMemo,
+} from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import {
+  StoreForm,
+  Handlers,
+  StepConfig,
+  GeoLocation,
+  RawCategory,
+  SubObj,
+  ParentCategory,
+  SelectedCategory,
+  Promotion,
+  HeroSlide,
+} from "../../../../types/typings";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  storeSteps,
+  pricingSteps,
+  websiteSteps,
+  paymentSteps,
+} from "@/constant/STORE_SITE_STEPS";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -23,30 +41,59 @@ type Props = {
   initialData?: Partial<StoreForm> & { id: string };
 };
 
-export default function CreateStoreForm({ availableCategories, initialData }: Props) {
+export default function CreateStoreForm({
+  availableCategories,
+  initialData,
+}: Props) {
   const { data: session } = useSession();
   const router = useRouter();
 
   const defaultForm: StoreForm = {
-    id:"",
-    name: '', slug: '', domain: '',hasWebsite: false, tagline: '', description: '', category: 'E-commerce',
-    logoUrl: 'https://logourl.com', bannerUrl: 'https://bannerurl.com', contactEmail: '', contactPhone: '', address: '',
-    geoLocation: { lat: 0, lng: 0 }, openingHours: { mon: { open: '', close: '' }, tue: { open: '', close: '' }, wed: { open: '', close: '' }, thu: { open: '', close: '' }, fri: { open: '', close: '' }, sat: { open: '', close: '' }, sun: { open: '', close: '' } },
-    socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [],
-    themeSettings: {}, seo: {}, analyticsConfig: {}, paymentSettings: {}, shippingSettings: {},
+    id: "",
+    name: "",
+    slug: "",
+    domain: "",
+    hasWebsite: false,
+    tagline: "",
+    description: "",
+    category: "E-commerce",
+    logoUrl: "https://logourl.com",
+    bannerUrl: "https://bannerurl.com",
+    contactEmail: "",
+    contactPhone: "",
+    address: "",
+    geoLocation: { lat: 0, lng: 0 },
+    openingHours: {
+      mon: { open: "", close: "" },
+      tue: { open: "", close: "" },
+      wed: { open: "", close: "" },
+      thu: { open: "", close: "" },
+      fri: { open: "", close: "" },
+      sat: { open: "", close: "" },
+      sun: { open: "", close: "" },
+    },
+    socialLinks: [],
+    policies: [],
+    faqs: [],
+    testimonials: [],
+    heroSlides: [],
+    promotions: [],
+    themeSettings: {},
+    seo: {},
+    analyticsConfig: {},
+    paymentSettings: {},
+    shippingSettings: {},
     storeCategories: [],
     awards: [],
     metrics: [],
     stats: [],
-    marketplaceListings: [],   
-    pricingTiers: [{ name: '', price: 0, features: [] }, ],
+    marketplaceListings: [],
+    pricingTiers: [{ name: "", price: 0, features: [] }],
   };
 
   const [form, setForm] = useState<StoreForm>(
     // `initialData` fields overwrite defaults
-    initialData
-      ? { ...defaultForm, ...initialData }
-      : defaultForm
+    initialData ? { ...defaultForm, ...initialData } : defaultForm
   );
 
   // ─────────────────────────────────────────────────────────────────────
@@ -60,8 +107,8 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   );
 
   // Track one File per hero slide. Initialize from existing heroSlides length
-  const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(
-    () => form.heroSlides.map(() => null)
+  const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(() =>
+    form.heroSlides.map(() => null)
   );
 
   // Track one File per promotion. Initialize from existing promotions length
@@ -87,9 +134,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       ]);
     }
     if (form.heroSlides.length < heroSlideFiles.length) {
-      setHeroSlideFiles((prev) =>
-        prev.slice(0, form.heroSlides.length)
-      );
+      setHeroSlideFiles((prev) => prev.slice(0, form.heroSlides.length));
     }
   }, [form.heroSlides.length]);
 
@@ -101,35 +146,32 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       ]);
     }
     if (form.heroSlides.length < productImageFiles.length) {
-      setProductImageFiles((prev) =>
-        prev.slice(0, form.heroSlides.length)
-      );
+      setProductImageFiles((prev) => prev.slice(0, form.heroSlides.length));
     }
   }, [form.heroSlides.length]);
 
   const allSteps = useMemo<StepConfig[]>(() => {
     // 1) always start with your store steps
     const list = [...storeSteps];
-  
+
     // 2) if they've opted for a website, add payment steps...
     if (form.hasWebsite) {
-  
       // 3) ...and, for certain categories, add pricing
       const cat = form.category?.toLowerCase().trim() || "";
       if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
         list.push(...pricingSteps);
       }
-  
+
       list.push(...websiteSteps);
-      
+
       list.push(...paymentSteps);
     }
-  
+
     return list;
-  }, [form.hasWebsite, form.category]);  
+  }, [form.hasWebsite, form.category]);
 
   // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
-  
+
   useEffect(() => {
     if (form.promotions.length > promotionSlideFiles.length) {
       setPromotionSlideFiles((prev) => [
@@ -138,9 +180,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       ]);
     }
     if (form.promotions.length < promotionSlideFiles.length) {
-      setPromotionSlideFiles((prev) =>
-        prev.slice(0, form.promotions.length)
-      );
+      setPromotionSlideFiles((prev) => prev.slice(0, form.promotions.length));
     }
   }, [form.promotions.length]);
 
@@ -148,10 +188,7 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   // 2) Handlers for “Logo / Banner” Accordion
   // ─────────────────────────────────────────────────────────────────────
 
-  const handleMediaUpload = (
-    field: "logoUrl" | "bannerUrl",
-    file: File
-  ) => {
+  const handleMediaUpload = (field: "logoUrl" | "bannerUrl", file: File) => {
     if (field === "logoUrl") {
       setLogoFile(file);
     } else {
@@ -186,7 +223,14 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       ...prev,
       heroSlides: [
         ...prev.heroSlides,
-        { imageUrl: "", productImageUrl: "", headline: "", subline: "", ctaText: "", ctaLink: "" },
+        {
+          imageUrl: "",
+          productImageUrl: "",
+          headline: "",
+          subline: "",
+          ctaText: "",
+          ctaLink: "",
+        },
       ],
     }));
   };
@@ -229,10 +273,10 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         return copy;
       });
     }
-  
+
     // generate preview URL
     const previewURL = URL.createObjectURL(file);
-  
+
     // update the form state
     setForm((prev) => {
       const slides = [...prev.heroSlides];
@@ -287,39 +331,41 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       return { ...prev, promotions: promos };
     });
   };
-  
 
   // ─────────────────────────────────────────────────────────────────────
   // 5) Generic form handlers (arrays, opening hours, etc.)
   // ─────────────────────────────────────────────────────────────────────
 
-  // const totalSteps = steps.length + 2;
-
   const totalSteps = allSteps.length + 1;
 
   const [stepIndex, setStepIndex] = useState(0);
 
-  const mappedCategories: ParentCategory[] = availableCategories.map(cat => ({
-    id:   cat.id,
+  const mappedCategories: ParentCategory[] = availableCategories.map((cat) => ({
+    id: cat.id,
     name: cat.name,
     icon: cat.icon,
-    items: cat.subcategories.map((sub,index) => ({
-      id:   `${sub.name.slice(0,2)+index}`,
+    items: cat.subcategories.map((sub, index) => ({
+      id: `${sub.name.slice(0, 2) + index}`,
       name: sub.name,
       slug: sub.slug,
     })),
-    brands: cat.brands ? cat.brands.map((sub,index) => ({
-      id:   `${sub.name.slice(0,2)+index}`,
-      name: sub.name,
-      slug: sub.slug,
-    })) : [],
+    allBrands: cat.allBrands
+      ? cat.allBrands.map((sub, index) => ({
+          id: `${sub.slice(0, 2) + index}`,
+          name: sub.name,
+          slug: sub.slug,
+        }))
+      : [],
   }));
 
   // Auto-generate slug/domain from name
   useEffect(() => {
     if (initialData) return;
-    const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-    const domain = slug ? `${slug}.yourdomain.com` : '';
+    const slug = form.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+    const domain = slug ? `${slug}.yourdomain.com` : "";
     setForm((prev) => ({ ...prev, slug, domain }));
   }, [form.name, initialData]);
 
@@ -327,40 +373,43 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   useEffect(() => {
     if (initialData) return;
     if (!form.name) return;
-    const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    setForm(f => ({ ...f, slug, domain: `https://www.${slug}.ghuba.shop` }));
+    const slug = form.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    setForm((f) => ({ ...f, slug, domain: `https://www.${slug}.ghuba.shop` }));
   }, [form.name, initialData]);
 
   // LocalStorage
   useEffect(() => {
-    if (initialData) return;            // ← skip in edit mode
-    const saved = localStorage.getItem('storeForm')
-    if (saved) setForm(JSON.parse(saved))
-  }, [initialData])
-  
+    if (initialData) return; // ← skip in edit mode
+    const saved = localStorage.getItem("storeForm");
+    if (saved) setForm(JSON.parse(saved));
+  }, [initialData]);
 
   useEffect(() => {
     if (initialData) return;
-    localStorage.setItem('storeForm', JSON.stringify(form))
-  }, [form, initialData])
-  
+    localStorage.setItem("storeForm", JSON.stringify(form));
+  }, [form, initialData]);
+
   // Navigation guard
   useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
   }, []);
 
   // Handlers
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    
     const { name, type, checked, value } = e.target;
 
     if (name.startsWith("openingHours.")) {
-      
-      const [, dayKey, field] = name.split("."); 
-      setForm((f : any) => ({
+      const [, dayKey, field] = name.split(".");
+      setForm((f: any) => ({
         ...f,
         openingHours: {
           ...f.openingHours,
@@ -375,30 +424,41 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         ...f,
         [name]: type === "checkbox" ? checked : value,
       }));
-      
     }
   };
-  
-  const onUpdateArray = <T,>(key: keyof StoreForm, idx: number, field: keyof T, value: any) => {
-    setForm(f => { const arr = [...(f[key] as any)]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, [key]: arr }; });
+
+  const onUpdateArray = <T,>(
+    key: keyof StoreForm,
+    idx: number,
+    field: keyof T,
+    value: any
+  ) => {
+    setForm((f) => {
+      const arr = [...(f[key] as any)];
+      arr[idx] = { ...arr[idx], [field]: value };
+      return { ...f, [key]: arr };
+    });
   };
 
   const onAddArray = <T,>(key: keyof StoreForm, item: T) => {
-    setForm(f => ({ ...f, [key]: [...(f[key] as any), item] }));
+    setForm((f) => ({ ...f, [key]: [...(f[key] as any), item] }));
   };
 
   const onRemoveArray = (key: keyof StoreForm, idx: number) => {
-    setForm(f => ({ ...f, [key]: (f[key] as any).filter((_: any, i: number) => i !== idx) }));
+    setForm((f) => ({
+      ...f,
+      [key]: (f[key] as any).filter((_: any, i: number) => i !== idx),
+    }));
   };
 
   const onToggleDay = (key: string) => {
-    setForm(f => {
-      const day = f.openingHours[key] || { open: '', close: '' };
+    setForm((f) => {
+      const day = f.openingHours[key] || { open: "", close: "" };
       const isClosed = !day.open && !day.close;
       const updated = isClosed
-        ? { open: '09:00', close: '17:00' }
-        : { open: '', close: '' };
-  
+        ? { open: "09:00", close: "17:00" }
+        : { open: "", close: "" };
+
       return {
         ...f,
         openingHours: {
@@ -407,8 +467,8 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         },
       };
     });
-  }
-  
+  };
+
   // 1) onToggleParent
   const onToggleParent = (parent: ParentCategory) => {
     setForm((prev) => {
@@ -423,16 +483,16 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
           storeCategories: [
             ...prev.storeCategories,
             {
-              id:    parent.id,
-              name:  parent.name,
+              id: parent.id,
+              name: parent.name,
               icon: parent.icon,
               items: parent.items.map((child) => ({
-                id:   child.id,
+                id: child.id,
                 name: child.name,
                 slug: child.slug,
               })),
-              brands: parent.brands.map((child) => ({
-                id:   child.id,
+              allBrands: parent.allBrands.map((child) => ({
+                id: child.id,
                 name: child.name,
                 slug: child.slug,
               })),
@@ -444,19 +504,19 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       const existingEntry = prev.storeCategories[existingIndex];
       const currentlySelectedCount = existingEntry.items.length;
       const totalItemsCount = parent.items.length;
-      const totalBrandsCount = parent.brands.length;
+      const totalBrandsCount = parent.allBrands.length;
 
       // B) Parent is “partial” (some but not all) → select all
       if (currentlySelectedCount < totalItemsCount) {
         const allItems = parent.items.map((child) => ({
-          id:   child.id,
+          id: child.id,
           name: child.name,
           // icon: child.icon,
           slug: child.slug,
-        }));        
-        
-        const allBrands = parent.brands.map((child) => ({
-          id:   child.id,
+        }));
+
+        const allBrands = parent.allBrands.map((child) => ({
+          id: child.id,
           name: child.name,
           // icon: child.icon,
           slug: child.slug,
@@ -469,8 +529,14 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         const updatedBrands = prev.storeCategories.map((sc) =>
           sc.id === parent.id ? { ...sc, brands: allBrands } : sc
         );
-        return { ...prev, storeCategories: {...prev.storeCategories, ...updatedItems, ...updatedBrands } };
-
+        return {
+          ...prev,
+          storeCategories: {
+            ...prev.storeCategories,
+            ...updatedItems,
+            ...updatedBrands,
+          },
+        };
       }
 
       // C) Parent was fully selected → remove it completely
@@ -481,73 +547,126 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
   // 2) onToggleSub
   const onToggleSub = (parentId: string, item: SubObj) => {
-
     setForm((prev) => {
       const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
-
+  
       if (!parentEntry) {
         // Parent not in storeCategories → add it with one sub
-        const parentName = mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
-        const parentIcon = mappedCategories.find((cat) => cat.id === parentId)?.icon ?? "";
-        const parentBrands = mappedCategories.find((cat) => cat.id === parentId)?.brands ?? [];
-
+        const parentData = mappedCategories.find((cat) => cat.id === parentId);
         return {
           ...prev,
           storeCategories: [
             ...prev.storeCategories,
-            { id: parentId, name: parentName,icon: parentIcon, brands:parentBrands, items: [item]},
+            {
+              id: parentId,
+              name: parentData?.name ?? "",
+              icon: parentData?.icon ?? "",
+              allBrands: parentData?.allBrands ?? [],
+              items: [item],
+            },
           ],
         };
       }
-
-      // Parent already exists → toggle “sub” inside items[]
-      const alreadyItemsHas = parentEntry.items.some((item) => item.id === item.id);
-      const newItems = alreadyItemsHas ? parentEntry.items.filter((item) => item.id !== item.id)
-                                       : [...parentEntry.items, item];       
-
+  
+      // Parent exists → toggle item
+      const alreadyExists = parentEntry.items.some(
+        (existingItem) => existingItem.id === item.id
+      );
+  
+      const newItems = alreadyExists
+        ? parentEntry.items.filter((existingItem) => existingItem.id !== item.id)
+        : [...parentEntry.items, item];
+  
       if (newItems.length === 0) {
-        // Last child was removed → drop entire parent
+        // No more items, remove entire parent
         return {
           ...prev,
-          storeCategories: prev.storeCategories.filter(
-            (sc) => sc.id !== parentId
-          ),
+          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
         };
       }
-
-      // Otherwise, just update this parent’s items
+  
       const updated = prev.storeCategories.map((sc) =>
         sc.id === parentId ? { ...sc, items: newItems } : sc
       );
+  
       return { ...prev, storeCategories: updated };
     });
   };
+  
 
-   // 2) onToggleBrand
-   const onToggleBrand = (parentId: string, brand: any) => {
-
+  // 2) onToggleBrand
+  const onToggleBrand = (parentId: string, brand: string) => {
+    setForm((prev) => {
+      
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+  
+      if (!parentEntry) {
+        const parentData = mappedCategories.find((cat) => cat.id === parentId);
+        return {
+          ...prev,
+          storeCategories: [
+            ...prev.storeCategories,
+            {
+              id: parentId,
+              name: parentData?.name ?? "",
+              icon: parentData?.icon ?? "",
+              allBrands: parentData?.allBrands ?? [],
+              items: [],
+              brands: [brand],
+            },
+          ],
+        };
+      }
+  
+      const existingBrands = parentEntry.allBrands ?? [];
+      const alreadyExists = existingBrands.includes(brand);
+      const newBrands = alreadyExists
+        ? existingBrands.filter((b) => b !== brand)
+        : [...existingBrands, brand];
+  
+      const updated = prev.storeCategories.map((sc) =>
+        sc.id === parentId ? { ...sc, allBrands: newBrands } : sc
+      );
+  
+      return { ...prev, storeCategories: updated };
+    });
+  };
+  
+  const onToggleBrandV1 = (parentId: string, brand: any) => {
     setForm((prev) => {
       const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
 
       if (!parentEntry) {
         // Parent not in storeCategories → add it with one sub
-        const parentName = mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
-        const parentIcon = mappedCategories.find((cat) => cat.id === parentId)?.icon ?? "";
-        const parentItems = mappedCategories.find((cat) => cat.id === parentId)?.items ?? [];
+        const parentName =
+          mappedCategories.find((cat) => cat.id === parentId)?.name ?? "";
+        const parentIcon =
+          mappedCategories.find((cat) => cat.id === parentId)?.icon ?? "";
+        const parentItems =
+          mappedCategories.find((cat) => cat.id === parentId)?.items ?? [];
 
         return {
           ...prev,
           storeCategories: [
             ...prev.storeCategories,
-            { id: parentId, name: parentName,icon: parentIcon, items: parentItems, brands: [brand]},
+            {
+              id: parentId,
+              name: parentName,
+              icon: parentIcon,
+              items: parentItems,
+              allBrands: [brand],
+            },
           ],
         };
       }
 
       // Parent already exists → toggle brand inside brands[]
-      const alreadyBrndsHas = parentEntry.brands.some((brandID) => brandID.id === brand.id);
-      const newBrands = alreadyBrndsHas ? parentEntry.brands.filter((brandIDD) => brandIDD.id !== brand.id)
-                                       : [...parentEntry.brands, brand];       
+      const alreadyBrndsHas = parentEntry.allBrands.some(
+        (brandID) => brandID.id === brand.id
+      );
+      const newBrands = alreadyBrndsHas
+        ? parentEntry.allBrands.filter((brandIDD) => brandIDD.id !== brand.id)
+        : [...parentEntry.allBrands, brand];
 
       if (newBrands.length === 0) {
         // Last child was removed → drop entire parent
@@ -603,11 +722,14 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
         const itemsToUse = allKidsSelected
           ? parent.items.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
-          : matchedItemsKids.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
+          : matchedItemsKids.map((c) => ({
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+            }));
 
-          
         // Which of this parent’s children appear in childIdSet?
-        const matchedBrandsKids = parent.brands.filter((brand) =>
+        const matchedBrandsKids = parent.allBrands.filter((brand) =>
           childIdSet.has(brand.id)
         );
         if (matchedBrandsKids.length === 0) {
@@ -617,18 +739,23 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
         // If ALL children are selected (matchedKids.length === parent.children.length)
         // then we consider this a “full” select. Otherwise it’s “partial.”
-        const allBrandsSelected = matchedBrandsKids.length === parent.brands.length;
+        const allBrandsSelected =
+          matchedBrandsKids.length === parent.allBrands.length;
 
         const brandsToUse = allBrandsSelected
-          ? parent.brands.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
-          : matchedBrandsKids.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
+          ? parent.allBrands.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
+          : matchedBrandsKids.map((c) => ({
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+            }));
 
         nextStoreCategories.push({
-          id:    parent.id,
-          name:  parent.name,
+          id: parent.id,
+          name: parent.name,
           icon: parent.icon,
           items: itemsToUse,
-          brands: brandsToUse,
+          allBrands: brandsToUse,
         });
       }
 
@@ -637,19 +764,23 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
   };
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
-    setForm(f => ({ ...f, address, geoLocation }));
+    setForm((f) => ({ ...f, address, geoLocation }));
   };
 
   const onChangeSettings = (updated: Partial<StoreForm>) => {
-    setForm(f => ({ ...f, ...updated }));
+    setForm((f) => ({ ...f, ...updated }));
   };
 
   const handlers: Handlers = {
-    handleChange, onUpdateArray, 
-    onAddArray, onRemoveArray, 
+    handleChange,
+    onUpdateArray,
+    onAddArray,
+    onRemoveArray,
 
-    setAddress, onChangeSettings, 
-    onBulkToggle, onToggleDay,
+    setAddress,
+    onChangeSettings,
+    onBulkToggle,
+    onToggleDay,
 
     onToggleParent,
     onToggleSub,
@@ -660,20 +791,20 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
 
     onRemoveHeroSlide,
     handleSlideImageUpload,
-    
+
     onUpdatePromotion,
     onAddPromotion,
     onRemovePromotion,
 
     onPromotionImageUpload,
-          
+
     // Media (logo/banner)
     handleMediaUpload,
     handleMediaRemove,
   };
 
-  const next = () => setStepIndex(i => Math.min(i + 1, totalSteps - 1));
-  const prev = () => setStepIndex(i => Math.max(i - 1, 0));
+  const next = () => setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
+  const prev = () => setStepIndex((i) => Math.max(i - 1, 0));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -683,14 +814,14 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
     if (!session?.user?.id) return;
 
     setIsSubmitting(true);
-  
+
     // 1) Prepare a local copy of form data (so we can mutate it without
     //    worrying about React batching or stale closures).
     const payload = { ...form };
-  
+
     // 2) Build upload promises, but write each returned URL into `payload`
     const uploadPromises: Promise<void>[] = [];
-  
+
     // 2.a) Logo
     if (logoFile) {
       const p = (async () => {
@@ -708,11 +839,11 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         // 2.a.i) Write it into our local payload
         payload.logoUrl = url;
         // 2.a.ii) Also update React state so the UI immediately reflects it
-        setForm(prev => ({ ...prev, logoUrl: url }));
+        setForm((prev) => ({ ...prev, logoUrl: url }));
       })();
       uploadPromises.push(p);
     }
-  
+
     // 2.b) Banner
     if (bannerFile) {
       const p = (async () => {
@@ -728,11 +859,11 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         }
         const { url } = await res.json();
         payload.bannerUrl = url;
-        setForm(prev => ({ ...prev, bannerUrl: url }));
+        setForm((prev) => ({ ...prev, bannerUrl: url }));
       })();
       uploadPromises.push(p);
     }
-  
+
     // 2.c) Hero Slides
     heroSlideFiles.forEach((file, idx) => {
       if (file) {
@@ -752,14 +883,17 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
           if (!payload.heroSlides) payload.heroSlides = [];
           // ensure there’s a slot for this index
           while (payload.heroSlides.length <= idx) {
-            payload.heroSlides.push({...payload.heroSlides[idx], imageUrl: "" });
+            payload.heroSlides.push({
+              ...payload.heroSlides[idx],
+              imageUrl: "",
+            });
           }
           payload.heroSlides[idx] = {
             ...payload.heroSlides[idx],
             imageUrl: url,
           };
           // 2.c.ii) Mirror into state so UI updates
-          setForm(prev => {
+          setForm((prev) => {
             const slides = [...prev.heroSlides];
             slides[idx] = { ...slides[idx], imageUrl: url };
             return { ...prev, heroSlides: slides };
@@ -786,13 +920,17 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
           const { url } = await res.json();
           if (!payload.heroSlides) payload.heroSlides = [];
           while (payload.heroSlides.length <= idx) {
-            payload.heroSlides.push({...payload.heroSlides[idx], imageUrl: "", productImageUrl: "" });
+            payload.heroSlides.push({
+              ...payload.heroSlides[idx],
+              imageUrl: "",
+              productImageUrl: "",
+            });
           }
           payload.heroSlides[idx] = {
             ...payload.heroSlides[idx],
             productImageUrl: url,
           };
-          setForm(prev => {
+          setForm((prev) => {
             const slides = [...prev.heroSlides];
             slides[idx] = { ...slides[idx], productImageUrl: url };
             return { ...prev, heroSlides: slides };
@@ -821,14 +959,17 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
           if (!payload.promotions) payload.promotions = [];
           // ensure there’s a slot for this index
           while (payload.promotions.length <= idx) {
-            payload.promotions.push({ ...payload.promotions[idx], bannerUrl: "" });
+            payload.promotions.push({
+              ...payload.promotions[idx],
+              bannerUrl: "",
+            });
           }
           payload.promotions[idx] = {
             ...payload.promotions[idx],
             bannerUrl: url,
           };
           // 2.c.ii) Mirror into state so UI updates
-          setForm(prev => {
+          setForm((prev) => {
             const slides = [...prev.promotions];
             slides[idx] = { ...slides[idx], bannerUrl: url };
             return { ...prev, promotions: slides };
@@ -837,29 +978,29 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
         uploadPromises.push(p);
       }
     });
-  
+
     // 4) Wait for all uploads to finish
     try {
       await Promise.all(uploadPromises);
-  
+
       const isEdit = Boolean(initialData?.id);
       const apiUrl = isEdit
         ? `${process.env.NEXT_PUBLIC_API_URL}/stores/${initialData!.id}`
         : `${process.env.NEXT_PUBLIC_API_URL}/stores`;
       const method = isEdit ? "PUT" : "POST";
-  
+
       // 4) Now payload contains the correct URLs (not the stale form)
       const toSend = {
         ...payload,
         userId: session.user.id,
       };
-  
+
       const res = await fetch(apiUrl, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(toSend),
       });
-  
+
       if (res.ok) {
         router.push("/stores");
       } else {
@@ -871,257 +1012,327 @@ export default function CreateStoreForm({ availableCategories, initialData }: Pr
       alert(`Error: ${err.message}`);
     }
   };
-  
-  
-// Render step or review
-const StepContent = stepIndex < allSteps.length
-? allSteps[stepIndex].render(form, handlers, mappedCategories)
-: (
-  <div className="space-y-6">
-    <h2 className="text-2xl font-semibold">Review Your Store</h2>
-    {allSteps.map((s:any, i:any) => (
-      <div
-        key={s.key}
-        className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
-        onClick={() => setStepIndex(i)}
-      >
-        <h3 className="font-medium mb-2 flex justify-between items-center">
-          <span>{s.title}</span>
-          <span className="text-xs text-indigo-500">Edit ➔</span>
-        </h3>
-        <div className="text-gray-700">
-          {renderReviewContent(s.key, form)}
-        </div>
-      </div>
-    ))}
-  </div>
-  );
 
-  const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : 'Review & Submit';
+  // Render step or review
+  const StepContent =  stepIndex < allSteps.length ? ( 
+        allSteps[stepIndex].render(form, handlers, mappedCategories)
+      ) : (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-semibold">Review Your Store</h2>
+          {allSteps.map((s: any, i: any) => (
+            <div
+              key={s.key}
+              className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+              onClick={() => setStepIndex(i)}
+            >
+              <h3 className="font-medium mb-2 flex justify-between items-center">
+                <span>{s.title}</span>
+                <span className="text-xs text-indigo-500">Edit ➔</span>
+              </h3>
+              <div className="text-gray-700">
+                {renderReviewContent(s.key, form)}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+
+  const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
 
-  return <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
-  {/* Mobile Top Bar with Step Info */}
-  <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
-    <span className="font-medium text-sm">Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
-    <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
-  </div>
-
-  {/* Sidebar */}
-  <aside className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
-    <h2 className="text-xl font-semibold mb-6 text-indigo-700">Setup Wizard</h2>
-    <nav className="flex flex-col gap-4 overflow-y-auto">
-      {allSteps.map((s, i) => {
-        const completed = i < stepIndex;
-        const active = i === stepIndex;
-        return (
-          <button
-            key={s.key}
-            onClick={() => setStepIndex(i)}
-            className={`flex items-center gap-3 p-3 rounded-lg transition
-              ${completed ? 'bg-green-100 text-green-800' : ''}
-              ${active ? 'bg-indigo-100 text-indigo-800 font-medium shadow-inner' : 'hover:bg-gray-100 text-gray-700'}`}
-          >
-            <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
-                ${completed ? 'bg-green-600 text-white' : active ? 'bg-indigo-600 text-white' : 'bg-indigo-200 text-indigo-700'}`}>
-              {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
-            </span>
-            <span className="text-sm">{s.title}</span>
-          </button>
-        );
-      })}
-      <button
-        type="button"
-        onClick={() => setStepIndex(allSteps.length)}
-        className={`flex items-center gap-3 p-3 rounded-lg transition
-          ${stepIndex === allSteps.length ? 'bg-green-100 text-green-800' : 'hover:bg-gray-100 text-gray-700'}`}
-      >
-        <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
-          ✔
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+      {/* Mobile Top Bar with Step Info */}
+      <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+        <span className="font-medium text-sm">
+          Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
         </span>
-        <span className="text-sm">Review</span>
-      </button>
-    </nav>
-  </aside>
-
-  {/* Main Content */}
-  <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
-    {/* Progress Bar */}
-    <div className="relative mb-4">
-      <div className="h-2 bg-gray-200 rounded-full">
-        <div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: `${percent}%` }} />
+        <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
       </div>
-      <div className="absolute inset-0 flex justify-between items-center px-1">
-        {Array.from({ length: totalSteps }).map((_, i) => (
+
+      {/* Sidebar */}
+      <aside className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
+        <h2 className="text-xl font-semibold mb-6 text-indigo-700">
+          Setup Wizard
+        </h2>
+        <nav className="flex flex-col gap-4 overflow-y-auto">
+          {allSteps.map((s, i) => {
+            const completed = i < stepIndex;
+            const active = i === stepIndex;
+            return (
+              <button
+                key={s.key}
+                onClick={() => setStepIndex(i)}
+                className={`flex items-center gap-3 p-3 rounded-lg transition
+              ${completed ? "bg-green-100 text-green-800" : ""}
+              ${
+                active
+                  ? "bg-indigo-100 text-indigo-800 font-medium shadow-inner"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
+              >
+                <span
+                  className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
+                ${
+                  completed
+                    ? "bg-green-600 text-white"
+                    : active
+                    ? "bg-indigo-600 text-white"
+                    : "bg-indigo-200 text-indigo-700"
+                }`}
+                >
+                  {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
+                </span>
+                <span className="text-sm">{s.title}</span>
+              </button>
+            );
+          })}
           <button
-            key={i}
-            onClick={() => setStepIndex(i)}
-            className={`w-3 h-3 rounded-full focus:outline-none
-              ${i <= stepIndex ? 'bg-indigo-600' : 'bg-white border border-gray-300'}`}
-          />
-        ))}
-      </div>
+            type="button"
+            onClick={() => setStepIndex(allSteps.length)}
+            className={`flex items-center gap-3 p-3 rounded-lg transition
+          ${
+            stepIndex === allSteps.length
+              ? "bg-green-100 text-green-800"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
+          >
+            <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
+              ✔
+            </span>
+            <span className="text-sm">Review</span>
+          </button>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
+        {/* Progress Bar */}
+        <div className="relative mb-4">
+          <div className="h-2 bg-gray-200 rounded-full">
+            <div
+              className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+          <div className="absolute inset-0 flex justify-between items-center px-1">
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setStepIndex(i)}
+                className={`w-3 h-3 rounded-full focus:outline-none
+              ${
+                i <= stepIndex
+                  ? "bg-indigo-600"
+                  : "bg-white border border-gray-300"
+              }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Step Info (Desktop only) */}
+        <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
+          <span>
+            Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
+          </span>
+          <span>{currentTitle}</span>
+        </div>
+
+        {/* Step Content */}
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={stepIndex}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.3 }}
+            >
+              {StepContent}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Navigation Buttons (Sticky on Mobile) */}
+        <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
+          <button
+            type="button"
+            disabled={stepIndex === 0}
+            onClick={prev}
+            className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
+          >
+            ← Back
+          </button>
+
+          {stepIndex < allSteps.length ? (
+            <button
+              type="button"
+              onClick={next}
+              className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
+            >
+              Continue →
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
+            >
+              {isSubmitting ? "Uploading..." : "Submit Store"}
+            </button>
+          )}
+        </div>
+      </main>
     </div>
-
-    {/* Step Info (Desktop only) */}
-    <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
-      <span>Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}</span>
-      <span>{currentTitle}</span>
-    </div>
-
-    {/* Step Content */}
-    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={stepIndex}
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.3 }}
-        >
-          {StepContent}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-
-    {/* Navigation Buttons (Sticky on Mobile) */}
-    <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
-      <button
-        type="button"
-        disabled={stepIndex === 0}
-        onClick={prev}
-        className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
-      >
-        ← Back
-      </button>
-
-      {stepIndex < allSteps.length ? (
-        <button
-          type="button"
-          onClick={next}
-          className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
-        >
-          Continue →
-        </button>
-      ) : (
-        <button
-          onClick={handleSubmit}
-          className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
-        >
-          {isSubmitting ? "Uploading..." : "Submit Store"}
-        </button>
-      )}
-    </div>
-  </main>
-</div>
-
+  );
 }
 
- // Helper to render review info for each step
+// Helper to render review info for each step
 
-  const ReviewSection = ({ title, children }:any) => (
-    <div className="bg-white shadow-sm rounded-lg p-4 space-y-2">
-      <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">{title}</h3>
-      <div>{children}</div>
-    </div>
+const ReviewSection = ({ title, children }: any) => (
+  <div className="bg-white shadow-sm rounded-lg p-4 space-y-2">
+    <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">
+      {title}
+    </h3>
+    <div>{children}</div>
+  </div>
+);
+
+const EmptyState = ({ message }: any) => (
+  <em className="text-gray-400 italic">{message}</em>
+);
+
+const renderList = (items: any, renderItem: any, emptyMessage = "No items") =>
+  items && items.length > 0 ? (
+    <ul className="list-disc list-inside space-y-1">{items.map(renderItem)}</ul>
+  ) : (
+    <EmptyState message={emptyMessage} />
   );
 
-  const EmptyState = ({ message }:any) => (
-    <em className="text-gray-400 italic">{message}</em>
+const renderJSON = (data: any, emptyMessage = "No data") =>
+  data && Object.keys(data).length > 0 ? (
+    <pre className="bg-gray-50 text-xs p-3 rounded overflow-x-auto">
+      {JSON.stringify(data, null, 2)}
+    </pre>
+  ) : (
+    <EmptyState message={emptyMessage} />
   );
 
- const renderList = (items:any, renderItem:any, emptyMessage = 'No items') => (
-    items && items.length > 0 ? (
-      <ul className="list-disc list-inside space-y-1">
-        {items.map(renderItem)}
-      </ul>
-    ) : (
-      <EmptyState message={emptyMessage} />
-    )
-  );
-
-  const renderJSON = (data:any, emptyMessage = 'No data') => (
-    data && Object.keys(data).length > 0 ? (
-      <pre className="bg-gray-50 text-xs p-3 rounded overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
-    ) : (
-      <EmptyState message={emptyMessage} />
-    )
-  );
-
-const renderReviewContent = (stepKey:any, form:any) => {
+const renderReviewContent = (stepKey: any, form: any) => {
   switch (stepKey) {
-    case 'businesscategory':
+    case "businesscategory":
       return (
         <ReviewSection title="Business Category">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div><strong>Name:</strong> {form.category || <EmptyState message="Not set" />}</div>
+            <div>
+              <strong>Name:</strong>{" "}
+              {form.category || <EmptyState message="Not set" />}
+            </div>
           </div>
         </ReviewSection>
       );
 
-    case 'basic':
+    case "basic":
       return (
         <ReviewSection title="Basic Info">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div><strong>Name:</strong> {form.name || <EmptyState message="Not set" />}</div>
-            <div><strong>Slug:</strong> {form.slug || <EmptyState message="Not set" />}</div>
-            <div><strong>Domain:</strong> {form.domain || <EmptyState message="Not set" />}</div>
-            <div><strong>Tagline:</strong> {form.tagline || <EmptyState message="Not set" />}</div>
-            <div className="sm:col-span-2"><strong>Description:</strong> {form.description || <EmptyState message="Not set" />}</div>
+            <div>
+              <strong>Name:</strong>{" "}
+              {form.name || <EmptyState message="Not set" />}
+            </div>
+            <div>
+              <strong>Slug:</strong>{" "}
+              {form.slug || <EmptyState message="Not set" />}
+            </div>
+            <div>
+              <strong>Domain:</strong>{" "}
+              {form.domain || <EmptyState message="Not set" />}
+            </div>
+            <div>
+              <strong>Tagline:</strong>{" "}
+              {form.tagline || <EmptyState message="Not set" />}
+            </div>
+            <div className="sm:col-span-2">
+              <strong>Description:</strong>{" "}
+              {form.description || <EmptyState message="Not set" />}
+            </div>
           </div>
         </ReviewSection>
       );
 
-    case 'categories':
+    case "categories":
       return (
         <ReviewSection title="Categories">
-          {renderList(form.storeCategories, (cat:any) => <li key={cat.id}>{cat.name}</li>, 'No categories')}
+          {renderList(
+            form.storeCategories,
+            (cat: any) => (
+              <li key={cat.id}>{cat.name}</li>
+            ),
+            "No categories"
+          )}
         </ReviewSection>
       );
 
-    case 'branding':
+    case "branding":
       return (
         <ReviewSection title="Branding">
           <div className="flex flex-wrap gap-6 text-sm">
             <div className="flex-shrink-0">
               <p className="font-medium mb-1">Logo</p>
               {form.logoUrl ? (
-                <img src={form.logoUrl} alt="Logo" className="h-16 w-16 object-cover rounded-md shadow" />
-              ) : <EmptyState message="Not uploaded" />}
+                <img
+                  src={form.logoUrl}
+                  alt="Logo"
+                  className="h-16 w-16 object-cover rounded-md shadow"
+                />
+              ) : (
+                <EmptyState message="Not uploaded" />
+              )}
             </div>
             <div className="flex-shrink-0">
               <p className="font-medium mb-1">Banner</p>
               {form.bannerUrl ? (
-                <img src={form.bannerUrl} alt="Banner" className="h-16 w-32 object-cover rounded-md shadow" />
-              ) : <EmptyState message="Not uploaded" />}
+                <img
+                  src={form.bannerUrl}
+                  alt="Banner"
+                  className="h-16 w-32 object-cover rounded-md shadow"
+                />
+              ) : (
+                <EmptyState message="Not uploaded" />
+              )}
             </div>
           </div>
         </ReviewSection>
       );
 
-    case 'touchpoints':
+    case "touchpoints":
       return (
         <ReviewSection title="Contact & Hours">
           <div className="space-y-2 text-sm">
-            <div><strong>Email:</strong> {form.contactEmail || <EmptyState message="Not set" />}</div>
-            <div><strong>Phone:</strong> {form.contactPhone || <EmptyState message="Not set" />}</div>
+            <div>
+              <strong>Email:</strong>{" "}
+              {form.contactEmail || <EmptyState message="Not set" />}
+            </div>
+            <div>
+              <strong>Phone:</strong>{" "}
+              {form.contactPhone || <EmptyState message="Not set" />}
+            </div>
             <div>
               <strong>Opening Hours:</strong>
               {Object.keys(form.openingHours || {}).length > 0 ? (
                 <ul className="list-disc list-inside ml-4 mt-1">
                   {Object.entries(form.openingHours).map(([day, hrs]) => {
-                    const { open, close } = hrs as { open: string; close: string };
+                    const { open, close } = hrs as {
+                      open: string;
+                      close: string;
+                    };
                     const display =
-                      open && close
-                        ? `${open} – ${close}`
-                        : 'Closed';
+                      open && close ? `${open} – ${close}` : "Closed";
                     // Capitalize day label (Monday, Tuesday, etc.)
-                    const label =
-                      day.charAt(0).toUpperCase() + day.slice(1);
+                    const label = day.charAt(0).toUpperCase() + day.slice(1);
                     return (
                       <li key={day}>
-                        <span className="font-medium">{label}:</span>{' '}
-                        {display}
+                        <span className="font-medium">{label}:</span> {display}
                       </li>
                     );
                   })}
@@ -1130,198 +1341,209 @@ const renderReviewContent = (stepKey:any, form:any) => {
                 <EmptyState message="Not set" />
               )}
             </div>
-
           </div>
         </ReviewSection>
       );
 
-    case 'location':
+    case "location":
       return (
         <ReviewSection title="Location">
           <div className="space-y-1 text-sm">
-            <div><strong>Address:</strong> {form.address || <EmptyState message="Not set" />}</div>
+            <div>
+              <strong>Address:</strong>{" "}
+              {form.address || <EmptyState message="Not set" />}
+            </div>
             {form.geoLocation ? (
-              <div><strong>Coordinates:</strong> {form.geoLocation.lat}, {form.geoLocation.lng}</div>
+              <div>
+                <strong>Coordinates:</strong> {form.geoLocation.lat},{" "}
+                {form.geoLocation.lng}
+              </div>
             ) : null}
           </div>
         </ReviewSection>
       );
 
-      case 'social':
-        return (
-          <ReviewSection title="Social Links">
-            {
-              renderList(
-                form.socialLinks,
-                (link:any, i:any) => (
-                  <li key={i}>
-                    <strong>{link.channel}:</strong>{' '}
-                    <a
-                      href={link.url}
-                      className="text-blue-600 hover:underline"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {link.url}
-                    </a>
-                  </li>
-                ),
-                'No social links'
-              )
-              
-            }
-          </ReviewSection>
-        );
-
-      case 'content':
-        return (
-          <ReviewSection title="Policies & Content">
-            {renderList(
-              form.policies,
-              (policy:any, i:any) => (
-                <li key={i}>
-                  <strong>{policy.type}:</strong> {policy.content}
-                </li>
-              ),
-              'No policies'
-            )}
-          </ReviewSection>
-        );
-      
-      case 'awards':
-        return (
-          <ReviewSection title="Awards">
-            {renderList(
-              form.awards,
-              (award:any, i:any) => <li key={i}>{award.name}</li>,
-              'No awards'
-            )}
-          </ReviewSection>
-        );
-      
-      case 'metrics':
-        return (
-          <ReviewSection title="Metrics">
-            {renderList(
-              form.metrics,
-              (m:any, i:any) => (
-                <li key={i}>
-                  <strong>{m.label}:</strong> {m.value}
-                </li>
-              ),
-              'No metrics'
-            )}
-          </ReviewSection>
-        );
-      
-      case 'stats':
-        return (
-          <ReviewSection title="Statistics">
-            {renderList(
-              form.stats,
-              (s:any, i:any) => (
-                <li key={i}>
-                  <strong>{s.label}:</strong> {s.value}
-                </li>
-              ),
-              'No statistics'
-            )}
-          </ReviewSection>
-        );
-      
-      case 'faqs':
-        return (
-          <ReviewSection title="FAQs">
-            {form.faqs && form.faqs.length > 0 ? (
-              form.faqs.map((faq:any, i:any) => (
-                <div key={i} className="space-y-1 text-sm">
-                  <p className="font-semibold">Q: {faq.question}</p>
-                  <p className="ml-4">A: {faq.answer}</p>
-                </div>
-              ))
-            ) : (
-              <EmptyState message="No FAQs" />
-            )}
-          </ReviewSection>
-        );
-      
-      case 'testimonials':
-        return (
-          <ReviewSection title="Testimonials">
-            {form.testimonials && form.testimonials.length > 0 ? (
-              form.testimonials.map((t:any, i:any) => (
-                <blockquote
-                  key={i}
-                  className="border-l-2 pl-4 italic text-gray-600"
+    case "social":
+      return (
+        <ReviewSection title="Social Links">
+          {renderList(
+            form.socialLinks,
+            (link: any, i: any) => (
+              <li key={i}>
+                <strong>{link.channel}:</strong>{" "}
+                <a
+                  href={link.url}
+                  className="text-blue-600 hover:underline"
+                  target="_blank"
+                  rel="noreferrer"
                 >
-                  “{t.quote}” — {t.author}
-                </blockquote>
-              ))
-            ) : (
-              <EmptyState message="No testimonials" />
-            )}
-          </ReviewSection>
-        );
-      
-      case 'marketing':
-        return (
-          <ReviewSection title="Hero Slides">
-            {renderList(
-              form.heroSlides,
-              (slide:any, i:any) => <li key={i}>{slide.headline || 'Untitled slide'}</li>,
-              'No slides'
-            )}
-          </ReviewSection>
-        );
-      
-      case 'promotions':
-        return (
-          <ReviewSection title="Promotions">
-            {renderList(
-              form.promotions,
-              (promo:any, i:any) => <li key={i}>{promo.title}</li>,
-              'No promotions'
-            )}
-          </ReviewSection>
-        );
-      
+                  {link.url}
+                </a>
+              </li>
+            ),
+            "No social links"
+          )}
+        </ReviewSection>
+      );
 
-    case 'seo':
+    case "content":
+      return (
+        <ReviewSection title="Policies & Content">
+          {renderList(
+            form.policies,
+            (policy: any, i: any) => (
+              <li key={i}>
+                <strong>{policy.type}:</strong> {policy.content}
+              </li>
+            ),
+            "No policies"
+          )}
+        </ReviewSection>
+      );
+
+    case "awards":
+      return (
+        <ReviewSection title="Awards">
+          {renderList(
+            form.awards,
+            (award: any, i: any) => (
+              <li key={i}>{award.name}</li>
+            ),
+            "No awards"
+          )}
+        </ReviewSection>
+      );
+
+    case "metrics":
+      return (
+        <ReviewSection title="Metrics">
+          {renderList(
+            form.metrics,
+            (m: any, i: any) => (
+              <li key={i}>
+                <strong>{m.label}:</strong> {m.value}
+              </li>
+            ),
+            "No metrics"
+          )}
+        </ReviewSection>
+      );
+
+    case "stats":
+      return (
+        <ReviewSection title="Statistics">
+          {renderList(
+            form.stats,
+            (s: any, i: any) => (
+              <li key={i}>
+                <strong>{s.label}:</strong> {s.value}
+              </li>
+            ),
+            "No statistics"
+          )}
+        </ReviewSection>
+      );
+
+    case "faqs":
+      return (
+        <ReviewSection title="FAQs">
+          {form.faqs && form.faqs.length > 0 ? (
+            form.faqs.map((faq: any, i: any) => (
+              <div key={i} className="space-y-1 text-sm">
+                <p className="font-semibold">Q: {faq.question}</p>
+                <p className="ml-4">A: {faq.answer}</p>
+              </div>
+            ))
+          ) : (
+            <EmptyState message="No FAQs" />
+          )}
+        </ReviewSection>
+      );
+
+    case "testimonials":
+      return (
+        <ReviewSection title="Testimonials">
+          {form.testimonials && form.testimonials.length > 0 ? (
+            form.testimonials.map((t: any, i: any) => (
+              <blockquote
+                key={i}
+                className="border-l-2 pl-4 italic text-gray-600"
+              >
+                “{t.quote}” — {t.author}
+              </blockquote>
+            ))
+          ) : (
+            <EmptyState message="No testimonials" />
+          )}
+        </ReviewSection>
+      );
+
+    case "marketing":
+      return (
+        <ReviewSection title="Hero Slides">
+          {renderList(
+            form.heroSlides,
+            (slide: any, i: any) => (
+              <li key={i}>{slide.headline || "Untitled slide"}</li>
+            ),
+            "No slides"
+          )}
+        </ReviewSection>
+      );
+
+    case "promotions":
+      return (
+        <ReviewSection title="Promotions">
+          {renderList(
+            form.promotions,
+            (promo: any, i: any) => (
+              <li key={i}>{promo.title}</li>
+            ),
+            "No promotions"
+          )}
+        </ReviewSection>
+      );
+
+    case "seo":
       return (
         <ReviewSection title="SEO Settings">
-          {renderJSON(form.seo, 'No SEO settings')}
+          {renderJSON(form.seo, "No SEO settings")}
         </ReviewSection>
       );
 
-    case 'theme':
+    case "theme":
       return (
         <ReviewSection title="Theme Settings">
-          {renderJSON(form.themeSettings, 'No theme settings')}
+          {renderJSON(form.themeSettings, "No theme settings")}
         </ReviewSection>
       );
 
-    case 'analytics':
+    case "analytics":
       return (
         <ReviewSection title="Analytics Config">
-          {renderJSON(form.analyticsConfig, 'No analytics config')}
+          {renderJSON(form.analyticsConfig, "No analytics config")}
         </ReviewSection>
       );
 
-    case 'payment':
+    case "payment":
       return (
         <ReviewSection title="Payment Settings">
-          {renderJSON(form.paymentSettings, 'No payment settings')}
+          {renderJSON(form.paymentSettings, "No payment settings")}
         </ReviewSection>
       );
 
-    case 'shipping':
+    case "shipping":
       return (
         <ReviewSection title="Shipping Settings">
-          {renderJSON(form.shippingSettings, 'No shipping settings')}
+          {renderJSON(form.shippingSettings, "No shipping settings")}
         </ReviewSection>
       );
 
     default:
-      return <p className="text-sm text-gray-500">No data available for this section.</p>;
+      return (
+        <p className="text-sm text-gray-500">
+          No data available for this section.
+        </p>
+      );
   }
 };

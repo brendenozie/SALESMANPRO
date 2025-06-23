@@ -65,6 +65,7 @@ export default function CategoryTree({
   availableCategories,
   selectedCategories,
   onToggleParent,
+  onToggleBrand,
   onToggleSub,
   onBulkToggle,
   onApply,
@@ -145,12 +146,7 @@ export default function CategoryTree({
               </div>
             ))}
           </div>
-          {/* <button
-            onClick={onApply}
-            className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
-          >
-            Apply
-          </button> */}
+          
         </details>
       </aside>
 
@@ -237,11 +233,39 @@ export default function CategoryTree({
                       })}
                     </div>
                   )}
+
+                  {isOpen && cat.allBrands?.length > 0 && (
+                    <div className="px-4 pb-4">
+                      <p className="text-sm font-semibold text-gray-700 mb-2">Brands</p>
+                      <div className="flex flex-wrap gap-2">
+                        {cat.allBrands.map((brand: string, index:number) => {
+                          const isBrandSelected = selectedMap[cat.id]?.includes(brand);
+                          return (
+                            <motion.button
+                              key={`${brand}-${index}`}
+                              onClick={() => onToggleBrand(cat.id, brand)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className={`px-3 py-1 rounded-full border text-sm
+                                ${isBrandSelected
+                                  ? 'bg-purple-600 text-white border-purple-600'
+                                  : 'bg-white text-gray-700 border-gray-200 hover:bg-purple-50'}`}
+                            >
+                              {`${brand}`}
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </motion.li>
               );
             })}
           </AnimatePresence>
         </ul>
+
+        
+
       </main>
     </div>
   );
