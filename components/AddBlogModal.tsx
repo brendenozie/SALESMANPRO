@@ -1,6 +1,7 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect, useMemo } from "react";
+import ReactDOM from "react-dom";        // ← shim import
 import Modal from "./Modal";
 import { motion } from "framer-motion";
 import {
@@ -9,117 +10,36 @@ import {
   CheckCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import dynamic from "next/dynamic";
 import CategoryPicker from "./CategoryPicker";
 import ImageUploader from "./ImageUploader";
 import Stepper from "./Stepper";
+import 'react-quill/dist/quill.snow.css';
+
+// ─── SHIM: prevent findDOMNode errors ───────────────────────────
+if (!ReactDOM.findDOMNode) {
+  // react-quill (and some portals) call ReactDOM.findDOMNode; patch it away
+  (ReactDOM as any).findDOMNode = () => null;
+}
+
+// ─── dynamic import of ReactQuill ──────────────────────────────
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// Step 2: a simple textarea for content—swap for a full editor if you like
-const ContentEditor: React.FC<{ formData: any; setFormData: any }> = ({
-  formData,
-  setFormData,
-}) => (
-  <div>
-    <label className="block text-sm font-medium mb-1">Content</label>
-    <textarea
-      name="content"
-      value={formData.content}
-      onChange={(e) =>
-        setFormData((f: any) => ({ ...f, content: e.target.value }))
-      }
-      rows={8}
-      className="w-full border rounded p-2"
-    />
-  </div>
-);
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link", "blockquote", "code-block"],
+    ["clean"],
+  ],
+};
 
-// Step 3: Image upload
-const ImagesStep: React.FC<{
-  images: any[];
-  newImages: File[];
-  setNewImages: React.Dispatch<React.SetStateAction<File[]>>;
-  setImages: React.Dispatch<React.SetStateAction<any[]>>;
-}> = ({ images, newImages, setNewImages, setImages }) => (
-  <div> Nothing </div>
-  // <ImageUploader
-  //   imagePreviews={images}
-  //   newImages={newImages}
-  //   setNewImages={setNewImages}
-  //   setImages={setImages}
-  // />
-);
-
-// Step 4: SEO fields
-const SeoFields: React.FC<{ formData: any; setFormData: any }> = ({
-  formData,
-  setFormData,
-}) => (
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium">SEO Title</label>
-      <input
-        name="seoTitle"
-        value={formData.seoTitle}
-        onChange={(e) =>
-          setFormData((f: any) => ({ ...f, seoTitle: e.target.value }))
-        }
-        className="mt-1 w-full border rounded p-2"
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium">SEO Description</label>
-      <textarea
-        name="seoDescription"
-        value={formData.seoDescription}
-        onChange={(e) =>
-          setFormData((f: any) => ({ ...f, seoDescription: e.target.value }))
-        }
-        rows={3}
-        className="mt-1 w-full border rounded p-2"
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium">Meta Keywords (comma‑sep)</label>
-      <input
-        name="metaKeywords"
-        value={(formData.metaKeywords || []).join(", ")}
-        onChange={(e) =>
-          setFormData((f: any) => ({
-            ...f,
-            metaKeywords: e.target.value
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean),
-          }))
-        }
-        className="mt-1 w-full border rounded p-2"
-      />
-    </div>
-  </div>
-);
-
-// Review step
-const ReviewStep: React.FC<{ formData: any }> = ({ formData }) => (
-  <div className="space-y-2">
-    <h3 className="font-semibold">Review before submitting</h3>
-    <p><strong>Title:</strong> {formData.title}</p>
-    <p><strong>Slug:</strong> {formData.slug}</p>
-    <p><strong>Category:</strong> {formData.category?.displayName}</p>
-    <p><strong>Subcategory:</strong> {formData.subCategory?.name}</p>
-    <p><strong>Brand:</strong> {formData.brand}</p>
-    <p className="whitespace-pre-wrap"><strong>Content:</strong> {formData.content}</p>
-    <p><strong>SEO Title:</strong> {formData.seoTitle}</p>
-    <p><strong>SEO Description:</strong> {formData.seoDescription}</p>
-    <p><strong>Images:</strong> {(formData.images || []).length} uploaded</p>
-    <p><strong>Meta Keywords:</strong> {(formData.metaKeywords || []).join(", ")}</p>
-  </div>
-);
-
-// Labels
 const STEP_LABELS: Record<number, string> = {
   1: "Categories & Tags",
-  2: "Content",
+  2: "Details",
   3: "Images",
   4: "SEO",
   5: "Review",
@@ -129,7 +49,7 @@ interface AddEditBlogModalProps {
   show: boolean;
   onClose: () => void;
   categoriesData: any[];
-  initialData?: any; // if editing, pass existing blog data
+  initialData?: any;
 }
 
 export default function AddEditBlogModal({
@@ -138,58 +58,68 @@ export default function AddEditBlogModal({
   initialData = {},
   categoriesData = [],
 }: AddEditBlogModalProps) {
-  const [step, setStep] = useState<number>(1);
   const totalSteps = Object.keys(STEP_LABELS).length;
+  const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState<any>({
     id: initialData.id || "",
     title: initialData.title || "",
     slug: initialData.slug || "",
-    category: initialData.category || null,
-    subCategory: initialData.subCategory || null,
-    brand: initialData.brand || null,
-    tags: initialData.tags || [],
+    excerpt: initialData.excerpt || "",
     content: initialData.content || "",
-    images: initialData.images || [],
+    isFeature: initialData.isFeature || false,
+    status: initialData.status || "DRAFT",
+    categories: initialData.categories || [],
+    tags: initialData.tags || [],
+    coverImage: initialData.coverImage || "",
     seoTitle: initialData.seo?.title || "",
     seoDescription: initialData.seo?.description || "",
     metaKeywords: initialData.seo?.keywords || [],
+    category: initialData.category || null,
+    subCategory: initialData.subCategory || null,
+    brand: initialData.brand || null,
   });
 
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [images, setImages] = useState<any[]>(
-    initialData?.images?.map((url: string, idx: number) => ({ id: idx, url })) || []
-  );
-  const [loading, setLoading] = useState<boolean>(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setFormData({
-      id: initialData.id || "",
-      title: initialData.title || "",
-      slug: initialData.slug || "",
-      category: initialData.category || null,
-      subCategory: initialData.subCategory || null,
-      brand: initialData.brand || null,
-      tags: initialData.tags || [],
-      content: initialData.content || "",
-      images: initialData.images || [],
-      seoTitle: initialData.seo?.title || "",
-      seoDescription: initialData.seo?.description || "",
-      metaKeywords: initialData.seo?.keywords || [],
-    });
-    setImages(
-      initialData?.images?.map((url: string, idx: number) => ({ id: idx, url })) || []
-    );
-    setNewImages([]);
-    setStep(1);
-  }, [initialData]);
+    setMounted(true);
+  }, []);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [images, setImages] = useState(
+    initialData.coverImage ? [{ id: 0, url: initialData.coverImage }] : []
+  );
+
+   // Generic handler
+   const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? (e.target as HTMLInputElement).checked
+          : name === "tags" || name === "categories"
+          ? // split comma-separated lists
+            value.split(",").map((s) => s.trim()).filter(Boolean)
+          : value,
+    }));
   };
+
+  const handleQuillChange = (value: string) => {
+    setFormData((prev: any) => ({ ...prev, content: value }));
+  };
+
+  const isStepValid = useMemo(() => {
+    if (step === 1) return formData.category && formData.subCategory;
+    if (step === 2) return formData.title && formData.content.length > 20;
+    if (step === 3) return images.length > 0 || newImages.length > 0;
+    if (step === 4) return formData.seoTitle && formData.seoDescription;
+    return true;
+  }, [step, formData, images, newImages]);
 
   const uploadFile = async (file: File, type: string) => {
     const data = new FormData();
@@ -201,31 +131,41 @@ export default function AddEditBlogModal({
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
-    // Upload newImages here if needed...
+    let coverUrl = images[0]?.url || "";
+    if (newImages[0]) {
+      coverUrl = await uploadFile(newImages[0], "blog-cover");
+    }
 
     const payload = {
-      ...formData,
-      images: images.map((i) => i.url),
+      id: formData.id,
+      title: formData.title,
+      slug: formData.slug,
+      excerpt: formData.excerpt,
+      content: formData.content,
+      isFeature: formData.isFeature,
+      status: formData.status,
+      categories: [formData.category.displayName],
+      tags: formData.tags,
+      coverImage: coverUrl,
       seo: {
         title: formData.seoTitle,
         description: formData.seoDescription,
         keywords: formData.metaKeywords,
       },
     };
-    const res = await fetch(`${apiUrl}/admin/post-blog`, {
-      method: "POST",
+
+    await fetch(`${apiUrl}/admin/post-blog`, {
+      method: formData.id ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    setLoading(false);
-    if (res.ok) onClose();
-    else alert("Error saving blog");
+    onClose();
   };
 
   return (
     <Modal isOpen={show} onClose={onClose}>
-      <div className="p-6 bg-white rounded-lg shadow-lg w-full max-w-3xl mx-auto h-[80vh] flex flex-col">
+      <div className="p-6 bg-white rounded-lg shadow-lg max-w-3xl mx-auto h-[80vh] flex flex-col">
+        {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">
             {formData.id ? "Edit Blog" : "Add New Blog"}
@@ -235,8 +175,14 @@ export default function AddEditBlogModal({
           </button>
         </div>
 
-        <Stepper step={step} stepsForCategory={Object.keys(STEP_LABELS).map(Number)} STEP_LABELS={STEP_LABELS} />
+        {/* Stepper */}
+        <Stepper
+          step={step}
+          stepsForCategory={[1, 2, 3, 4, 5]}
+          STEP_LABELS={STEP_LABELS}
+        />
 
+        {/* Content */}
         <motion.div
           key={step}
           initial={{ opacity: 0, x: 20 }}
@@ -247,30 +193,171 @@ export default function AddEditBlogModal({
           {step === 1 && (
             <CategoryPicker
               formData={formData}
-              handleInputChange={({ target: { name, value } }) =>
-                setFormData((f: any) => ({ ...f, [name]: value }))
-              }
               categories={categoriesData}
               filteredBrands={[]}
+              onCategoryChange={(cat) =>
+                setFormData((f: any) => ({
+                  ...f,
+                  category: cat,
+                  subCategory: null,
+                  brand: null,
+                }))
+              }
+              onSubCategoryChange={(sub) =>
+                setFormData((f: any) => ({ ...f, subCategory: sub }))
+              }
+              onBrandChange={(b) =>
+                setFormData((f: any) => ({ ...f, brand: b }))
+              }
             />
           )}
 
-          {step === 2 && <ContentEditor formData={formData} setFormData={setFormData} />}
+          {step === 2 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Blog Details</h3>
+              <label className="block text-sm font-medium">Title</label>
+              <input
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+                required
+              />
+
+              <label className="block text-sm font-medium">Slug</label>
+              <input
+                name="slug"
+                value={formData.slug}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+                required
+              />
+
+              <label className="block text-sm font-medium">Excerpt</label>
+              <textarea
+                name="excerpt"
+                value={formData.excerpt}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+                rows={3}
+              />
+
+              <label className="block text-sm font-medium">Content</label>
+              {mounted ? (
+                // <ReactQuill
+                //   value={formData.content}
+                //   onChange={handleQuillChange}
+                //   modules={modules}
+                //   theme="snow"
+                // />
+                <div></div>
+              ) : (
+                <div className="h-40 border rounded bg-gray-50" />
+              )}
+
+              <div className="flex space-x-4 items-center">
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isFeature"
+                    checked={formData.isFeature}
+                    onChange={handleChange}
+                    className="mr-2"
+                  />
+                  Feature this post
+                </label>
+
+                <label className="inline-flex items-center">
+                  Status:
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="ml-2 border rounded p-1"
+                  >
+                    <option value="DRAFT">Draft</option>
+                    <option value="PUBLISHED">Published</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="block text-sm font-medium">Tags</label>
+              <input
+                name="tags"
+                value={formData.tags.join(", ")}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+              />
+            </div>
+          )}
 
           {step === 3 && (
-            <ImagesStep
-              images={images}
-              newImages={newImages}
-              setNewImages={setNewImages}
-              setImages={setImages}
+            <ImageUploader
+              imageFiles={newImages}
+              setImageFiles={setNewImages}
+              imagePreviews={images.map((i) => i.url)}
+              setImagePreviews={(value) => {
+                const urls = typeof value === "function"
+                  ? value(images.map((img) => img.url))
+                  : value;
+                setImages(urls.map((url, idx) => ({ id: idx, url })));
+              }}
+              videoFiles={[]}
+              setVideoFiles={() => {}}
+              videoPreviews={[]}
+              setVideoPreviews={() => {}}
+              books={[]}
+              setBooks={() => {}}
             />
           )}
 
-          {step === 4 && <SeoFields formData={formData} setFormData={setFormData} />}
+          {step === 4 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">SEO Settings</h3>
+              <label className="block text-sm font-medium">SEO Title</label>
+              <input
+                name="seoTitle"
+                value={formData.seoTitle}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+              />
+              <label className="block text-sm font-medium">SEO Description</label>
+              <textarea
+                name="seoDescription"
+                value={formData.seoDescription}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+                rows={3}
+              />
+              <label className="block text-sm font-medium">Meta Keywords</label>
+              <input
+                name="metaKeywords"
+                value={formData.metaKeywords.join(", ")}
+                onChange={(e) =>
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    metaKeywords: e.target.value
+                      .split(",")
+                      .map((s) => s.trim()),
+                  }))
+                }
+                className="w-full border rounded p-2"
+              />
+            </div>
+          )}
 
-          {step === 5 && <ReviewStep formData={formData} />}
+          {step === 5 && (
+            <div className="space-y-2">
+              <h3 className="font-semibold">Review before submitting</h3>
+              <pre className="bg-gray-100 p-4 rounded">
+                {JSON.stringify(formData, null, 2)}
+              </pre>
+            </div>
+          )}
         </motion.div>
 
+        {/* Navigation */}
         <div className="flex justify-between pt-4 border-t">
           {step > 1 && (
             <button
@@ -280,10 +367,12 @@ export default function AddEditBlogModal({
               <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
             </button>
           )}
-
           {step < totalSteps ? (
             <button
-              onClick={() => setStep(step + 1)}
+              onClick={() => {
+                if (!isStepValid) return alert("Complete this step first.");
+                setStep(step + 1);
+              }}
               className="flex items-center bg-blue-600 text-white px-4 py-2 rounded"
             >
               Next <ArrowRightIcon className="h-5 w-5 ml-1" />
@@ -291,8 +380,7 @@ export default function AddEditBlogModal({
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={loading}
-              className="flex items-center bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+              className="flex items-center bg-green-600 text-white px-4 py-2 rounded"
             >
               Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
             </button>
