@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from "react";
-import ReactDOM from "react-dom";        // ← shim import
+
 import Modal from "./Modal";
 import { motion } from "framer-motion";
 import {
@@ -14,16 +14,11 @@ import dynamic from "next/dynamic";
 import CategoryPicker from "./CategoryPicker";
 import ImageUploader from "./ImageUploader";
 import Stepper from "./Stepper";
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
 import 'react-quill/dist/quill.snow.css';
 
-// ─── SHIM: prevent findDOMNode errors ───────────────────────────
-if (!ReactDOM.findDOMNode) {
-  // react-quill (and some portals) call ReactDOM.findDOMNode; patch it away
-  (ReactDOM as any).findDOMNode = () => null;
-}
-
-// ─── dynamic import of ReactQuill ──────────────────────────────
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -244,13 +239,12 @@ export default function AddEditBlogModal({
 
               <label className="block text-sm font-medium">Content</label>
               {mounted ? (
-                // <ReactQuill
-                //   value={formData.content}
-                //   onChange={handleQuillChange}
-                //   modules={modules}
-                //   theme="snow"
-                // />
-                <div></div>
+                <ReactQuill
+                  value={formData.content}
+                  onChange={handleQuillChange}
+                  modules={modules}
+                  theme="snow"
+                />
               ) : (
                 <div className="h-40 border rounded bg-gray-50" />
               )}
