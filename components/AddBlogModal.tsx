@@ -76,8 +76,9 @@ export default function AddEditBlogModal({
     category: initialData.category || null,
     subCategory: initialData.subCategory || null,
     brand: initialData.brand || null,    
-    companyId: companyId
-  });
+    companyId: companyId,
+    author: initialData.author || "Admin"
+  }); 
 
   const [mounted, setMounted] = useState(false);
 
@@ -150,7 +151,8 @@ export default function AddEditBlogModal({
         description: formData.seoDescription,
         keywords: formData.metaKeywords,
       },
-      companyId: formData.companyId
+      companyId: formData.companyId,
+      author: formData.author
     };
 
     await fetch(`${apiUrl}/admin/post-blog`, {
