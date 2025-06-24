@@ -25,6 +25,20 @@ const AddToProductMarketModal = ({
   categories,
 }: any) => {
 
+  console.log(categories);
+
+  const pickerCategories = useMemo(() => {
+    return categories.map((raw:any) => ({
+      // ← this must be the *real* ProductCategory ID
+      id: raw.category.id,
+      displayName: raw.displayName,
+      icon: raw.icon,
+      items: raw.items,
+      allBrands: raw.allBrands ?? raw.category.allBrands ?? [],
+    }))
+  }, [categories])
+  
+
   const [formData, setFormData] = useState({
 
     id:                  marketListItem?.id                   || "",
@@ -193,11 +207,23 @@ const AddToProductMarketModal = ({
   
   const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
 
-  // Filtered brands for CategoryPicker
-  const filteredBrands = useMemo(
-    () => formData.category?.allBrands || [],
-    [formData.category.allBrands]
-  );
+  // in AddToProductMarketModal (or directly in CategoryPicker)
+  const filteredBrands = useMemo<string[]>(() => {
+    // try the “allBrands” array first
+    if (Array.isArray(formData.category?.allBrands)) {
+      return formData.category!.allBrands;
+    }
+    // maybe you have brands under a nested `category` object?
+    if (Array.isArray(formData.category?.category?.allBrands)) {
+      return formData.category!.category!.allBrands;
+    }
+    // no brands available
+    return [];
+  }, [
+    formData.category?.allBrands,
+    formData.category?.category?.allBrands,
+  ]);
+
   
   // Handlers
    const handleCategoryChange = (cat: CategoryData|null) => {
@@ -338,7 +364,8 @@ const AddToProductMarketModal = ({
       
         // — Category hierarchy & tagging —
         productCategoryId:    formData.category?.id    || "",         // String @db.ObjectId
-        category:             formData.category?.name  || "",         // String?
+        category:             formData.category?.displayName  || "",         // String?
+
         subCategory:          formData.subCategory      || {},         // Json
         subCategoryName:      formData.subCategoryName  || "",         // String?
         tags:                 formData.tags             || [],         // String[]
@@ -520,7 +547,7 @@ const AddToProductMarketModal = ({
                  subCategory: formData.subCategory,
                  brand: formData.brand,
                }}
-               categories={categories}
+               categories={pickerCategories}
                filteredBrands={filteredBrands}
                onCategoryChange={handleCategoryChange}
                onSubCategoryChange={handleSubCategoryChange}

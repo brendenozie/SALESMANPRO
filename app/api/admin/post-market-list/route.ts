@@ -204,11 +204,14 @@ export async function POST(req: Request) {
     // Build commonData
     const now = new Date();
     const commonData: any = {
+      
       company:    { connect: { id: companyId } },
       ...(sellerId && { seller: { connect: { id: sellerId } } }),
       sellerType,
+
       ...(productId && { product: { connect: { id: productId } } }),
       productCategory: { connect: { id: productCategoryId } },
+      
       ...(propertyTypeId && { propertyType: { connect: { id: propertyTypeId } } }),
       ...(collectionId && { Collection: { connect: { id: collectionId } } }),
 

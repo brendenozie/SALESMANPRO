@@ -47,6 +47,17 @@ type Agent = {
   name: string;
 };
 
+interface PaginatedListings {
+  meta: {
+    companyId:     string;
+    totalItems:    number;
+    totalPages:    number;
+    currentPage:   number;
+    perPage:       number;
+  };
+  results: MarketplaceProduct[];
+}
+
 /**
  * This is a **Server Component**. It fetches all the data
  * at request‐time (no caching, just like getServerSideProps),
@@ -74,9 +85,12 @@ export default async function ClientInventoryPage({ params }: PageProps) {
       `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
+
     if (res.ok) {
-      const data = (await res.json()) as { products: MarketplaceProduct[] };
-      productsData = data.products;
+      
+      const data = (await res.json()) as PaginatedListings;
+      productsData = data.results;    
+      
     } else {
       console.error(
         "[ClientInventoryPage] Failed to fetch marketplace products:",
@@ -98,8 +112,6 @@ export default async function ClientInventoryPage({ params }: PageProps) {
         results: Category[];
       };
       categoriesData = categoriesJson.results;
-
-      console.log(categoriesData);
     }
 
   } catch (err: any) {
