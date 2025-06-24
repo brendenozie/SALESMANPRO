@@ -181,10 +181,6 @@ const AddToProductMarketModal = ({
 
   const [step, setStep] = useState(1);  
   
-  // const stepsForCategory = useMemo<number[]>(() => {
-  //   return CATEGORY_STEPS[ formData.category?.displayName ] || [];
-  // }, [formData.category?.displayName]);
-
   // 1) extract the raw lookup key
   const categoryKey = formData.category?.displayName?.trim();
 
@@ -230,23 +226,6 @@ const AddToProductMarketModal = ({
 
   const isCategoryStep = step === 1;
 
-
-  // const [step, setStep] = useState(1);
-  
-
-   // handlers for category picker
-  //  const isCategoryStep = step === 1;
-
-  //  const handleCategoryChange = (cat: any) => {
-  //    setFormData((prev: any) => ({ ...prev, category: cat, subCategory: null, brand: null }));
-  //  };
-  //  const handleSubCategoryChange = (sub: any) => {
-  //    setFormData((prev: any) => ({ ...prev, subCategory: sub, brand: null }));
-  //  };
-  //  const handleBrandChange = (b: string | null) => {
-  //    setFormData((prev: any) => ({ ...prev, brand: b }));
-  //  };
-
   interface BookItem {
     title?: string;
     author?: string;
@@ -256,287 +235,262 @@ const AddToProductMarketModal = ({
   }
   const [books, setBooks] = useState<BookItem[]>([]);
 
-  const filteredSubCategories = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.subcategories;
-  }, [formData.category]);
-  
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormData((prev) => {
-  //     let newValue = ["discount", "buyingPrice", "sellingPrice"].includes(name)
-  //       ? parseFloat(value) || 0
-  //       : value;
-  //     let updatedData = { ...prev, [name]: newValue };
-  //     if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
-  //       const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
-  //       const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
-  //       const discount = parseFloat(updatedData.discount) || 0;
-  //       updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
-  //       updatedData.profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
-  //     }
-  //     return updatedData;
-  //   });
-  // };
+  const handleCreateListing = async () => {
+    if (window.confirm("Are you sure you want to create this listing?")) {
+      // Build a listing object conforming to the updated MarketplaceListing model
 
-  console.log(categories);
-
-const handleCreateListing = async () => {
-  if (window.confirm("Are you sure you want to create this listing?")) {
-    // Build a listing object conforming to the updated MarketplaceListing model
-
-     // 1) First, upload all images to S3 (in parallel).
-    //    We map each File in imageFiles → a fetch("/api/upload", …) promise.
-    const imageUploadPromises = imageFiles.map((file) => {
-      const formData = new FormData();
-      formData.append("type", "image");
-      formData.append("file", file);
-      return fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Image upload failed");
-          return res.json();
+      // 1) First, upload all images to S3 (in parallel).
+      //    We map each File in imageFiles → a fetch("/api/upload", …) promise.
+      const imageUploadPromises = imageFiles.map((file) => {
+        const formData = new FormData();
+        formData.append("type", "image");
+        formData.append("file", file);
+        return fetch("/api/upload", {
+          method: "POST",
+          body: formData,
         })
-        .then((json) => json.url as string);
-    });
-
-    // 2) Then, upload all videos to S3 (in parallel).
-    const videoUploadPromises = videoFiles.map((file) => {
-      const formData = new FormData();
-      formData.append("type", "video");
-      formData.append("file", file);
-      return fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Video upload failed");
-          return res.json();
-        })
-        .then((json) => json.url as string);
-    });
-
-    // 3) Upload all book covers (in parallel). If a BookItem.coverFile is null, we skip.
-    const bookCoverUploadPromises = books.map((book) => {
-      if (!book.coverFile) {
-        return Promise.resolve(null); // no cover was chosen
-      }
-      const fd = new FormData();
-      fd.append("type", "file"); // or "image" if you prefer putting covers under images/
-      fd.append("file", book.coverFile);
-      return fetch("/api/upload", {
-        method: "POST",
-        body: fd,
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Book cover upload failed");
-          return res.json();
-        })
-        .then((json) => json.url as string);
-    });
-
-    // 4) Await them all together:
-    const [
-      imageUrls,
-      videoUrls,
-      bookCoverUrls,
-    ] = await Promise.all([
-      Promise.all(imageUploadPromises),
-      Promise.all(videoUploadPromises),
-      Promise.all(bookCoverUploadPromises),
-    ]);
-
-    // 5) Build the final array of BookItems, replacing coverFile with coverUrl
-    const booksWithUrls = books.map((book, idx) => ({
-      title: book.title,
-      author: book.author,
-      coverUrl: bookCoverUrls[idx] || null,
-    }));
-
-
-    const listing: any = {
-      // — Identifiers & relations —
-      id:                   formData.id,                           // String @id (for updates) or omit for create
-      sellerType:           formData.sellerType || "ADMIN",         // SellerType enum
-      companyId:            formData.companyId,                              // String? @db.ObjectId
-      sellerId:             undefined,                              // Optional: if you know a specific sellerId
-      productId:            formData.productId,                     // String? @db.ObjectId
-      
-      images: imageUrls,                  // array of S3 URLs
-
-      video: videoUrls.length > 0
-        ? videoUrls[0]                     // or send an array, if your schema allows multiple
-        : null,
-
-      // — Books —
-      books: booksWithUrls, 
-    
-      // — Title & description —
-      name:                formData.name,                         // String
-      description:          formData.description,                   // String?
-    
-      // — Inventory & media —
-      quantity:             formData.quantity,                      // Int
-      // images:               images || [],                           // Json[]
-      // video:                formData.video || null,                 // String?
-    
-      // — Category hierarchy & tagging —
-      productCategoryId:    formData.category?.id    || "",         // String @db.ObjectId
-      category:             formData.category?.name  || "",         // String?
-      subCategory:          formData.subCategory      || {},         // Json
-      subCategoryName:      formData.subCategoryName  || "",         // String?
-      tags:                 formData.tags             || [],         // String[]
-    
-      // — Branding & specs —
-      brand:                formData.brand            || "",         // String?
-      model:                formData.model            || "",         // String?
-      color:                formData.color            || [],         // String[]
-      size:                 formData.size             || [],         // String[]
-      weight:               formData.weight           || "",         // String?
-      condition:            formData.condition        || "",         // String?
-      dimension:            formData.dimension        || "",         // String?
-      material:             Array.isArray(formData.material)
-                             ? formData.material
-                             : formData.material
-                               ? [formData.material]
-                               : [],                              // String[]
-    
-      // — Profit & pricing —
-      profitMargin:         parseFloat(formData.profitMargin) || 0, // Float?
-      discount:             parseInt(formData.discount)      || 0,  // Int?
-      buyingPrice:          parseFloat(formData.buyingPrice) || 0, // Float
-      sellingPrice:         parseFloat(formData.sellingPrice) || 0,// Float
-      finalPrice:           parseFloat(formData.finalPrice)  || 0, // Float?
-    
-      // — Deal scheduling —
-      startDealDate:        formData.startDealDate   || null,       // DateTime? 
-      endDealDate:          formData.endDealDate     || null,       // DateTime?
-      
-      // — Category-specific details —
-      author:               formData.author            || "",       // String?
-      publisher:            formData.publisher         || "",       // String?
-      isbn:                 formData.isbn              || "",       // String?
-      fabricComposition:    formData.fabricComposition || "",       // String?
-      careInstructions:     formData.careInstructions  || "",       // String?
-      energyRating:         formData.energyRating      || "",       // String?
-      warrantyPeriod:       formData.warrantyPeriod    || "",       // String?
-      applianceDimensions:  formData.applianceDimensions|| "",      // String?
-      ingredients:          formData.ingredients       || "",       // String?
-      usageInstructions:    formData.usageInstructions || "",       // String?
-      expirationDate:       formData.expirationDate
-                             ? new Date(formData.expirationDate)
-                             : null,                              // DateTime?
-    
-      // — Feature flags —
-      isAvailable:          formData.isAvailable  || false,         // Boolean
-      isOnOffer:            formData.isOnOffer    || false,         // Boolean
-      isFlashDeal:          formData.isFlashDeal  || false,         // Boolean
-      isNewArrival:         formData.isNewArrival || false,         // Boolean
-      isDiscounted:         formData.isDiscounted || false,         // Boolean
-      isFeatured:           formData.isFeatured   || false,         // Boolean
-    
-      // — Marketplace-specific —
-      delivery:             formData.delivery       || false,         // Boolean
-      paymentOption:        formData.paymentOption  || "AT SHOP",     // String
-      showOnGhuba:          formData.showOnGhuba    || true,          // Boolean?
-      
-      // — Contact & location (embed GeoJSON or link to Location table) —
-      contact:              formData.contact        || "",            // String?
-      location:             formData.location       || {},            // Json?
-      locationId:           formData.locationId     || "",            // String? @db.ObjectId
-      locationName:         formData.locationName   || "",            // String?
-      latitude:             parseFloat(formData.latitude)  || null,      // Float?
-      longitude:            parseFloat(formData.longitude) || null,      // Float?
-    
-      // — Property-specific —
-      bedrooms:             formData.bedrooms       || {},            // Json?
-      studios:              formData.studios        || {},            // Json?
-      bathrooms:            formData.bathrooms      || "",            // String?
-      area:                 formData.area           || "",            // String?
-      serviceSchedule:      formData.serviceSchedule|| "",            // String?
-
-      // Scheduling    
-      availabilityStart:    formData.availabilityStart       || {},
-      availabilityEnd:    formData.availabilityEnd       || {},
-
-      bookingSlots:     formData.bookingSlots       || {},
-      minNoticePeriod:   formData.minNoticePeriod   || "",
-      maxBookingAhead: formData.maxBookingAhead     || "",
-
-      pricingTiers: formData.pricingTiers       || {},
-
-      requiredClientInfo: formData.requiredClientInfo       || [],
-      fulfillmentStatus:  formData.fulfillmentStatus       || "",
-
-      totalCapacity:  formData.totalCapacity       || 0,
-      currentBookedCount: formData.currentBookedCount       || 0,
-
-      providerRating: formData.providerRating       || {},
-
-      hourlyRate: formData.hourlyRate       || 0.0,
-      minimumHours:  formData.minimumHours       || 0,
-      deliveryMethod: formData.deliveryMethod       || "Remote/Virtual",
-  
-      // — Vehicle-specific —
-      make:                 formData.make            || "",           // String?
-      trim:                 formData.trim            || "",           // String?
-      type:                 formData.type            || "",           // String?
-      mileage:              formData.mileage         || "",           // String?
-      engineType:           formData.engineType      || "",           // String?
-      engineSize:           formData.engineSize      || "",           // String?
-      transmission:         formData.transmission    || "",           // String?
-      drivetrain:           formData.drivetrain      || "",           // String?
-      vin:                  formData.vin             || "",           // String?
-      logbookStatus:        formData.logbookStatus   || "",           // String?
-      serviceHistory:       formData.serviceHistory  || "",           // String?
-      negotiable:           formData.negotiable      || false,        // Boolean?
-      financingAvailable:   formData.financingAvailable || false,      // Boolean?
-      tradeIn:              formData.tradeIn         || false,        // Boolean?
-    
-      // — Digital goods —
-      digitalUrl:           formData.digitalUrl      || "",           // String?
-      autoDeliver:          !!formData.autoDeliver,                  // Boolean?
-    
-      // — Admin/Admin-only fields —
-      status:               formData.status         || "ACTIVE",     // ListingStatus
-      
-    };
-   
-    try {
-
-      const response = await fetch(`${apiUrl}/admin/post-market-list`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(listing)
+          .then((res) => {
+            if (!res.ok) throw new Error("Image upload failed");
+            return res.json();
+          })
+          .then((json) => json.url as string);
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Listing created:", data);
-        alert("Marketplace listing created successfully.");
+      // 2) Then, upload all videos to S3 (in parallel).
+      const videoUploadPromises = videoFiles.map((file) => {
+        const formData = new FormData();
+        formData.append("type", "video");
+        formData.append("file", file);
+        return fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("Video upload failed");
+            return res.json();
+          })
+          .then((json) => json.url as string);
+      });
+
+      // 3) Upload all book covers (in parallel). If a BookItem.coverFile is null, we skip.
+      const bookCoverUploadPromises = books.map((book) => {
+        if (!book.coverFile) {
+          return Promise.resolve(null); // no cover was chosen
+        }
+        const fd = new FormData();
+        fd.append("type", "file"); // or "image" if you prefer putting covers under images/
+        fd.append("file", book.coverFile);
+        return fetch("/api/upload", {
+          method: "POST",
+          body: fd,
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("Book cover upload failed");
+            return res.json();
+          })
+          .then((json) => json.url as string);
+      });
+
+      // 4) Await them all together:
+      const [
+        imageUrls,
+        videoUrls,
+        bookCoverUrls,
+      ] = await Promise.all([
+        Promise.all(imageUploadPromises),
+        Promise.all(videoUploadPromises),
+        Promise.all(bookCoverUploadPromises),
+      ]);
+
+      // 5) Build the final array of BookItems, replacing coverFile with coverUrl
+      const booksWithUrls = books.map((book, idx) => ({
+        title: book.title,
+        author: book.author,
+        coverUrl: bookCoverUrls[idx] || null,
+      }));
+
+
+      const listing: any = {
+        // — Identifiers & relations —
+        id:                   formData.id,                           // String @id (for updates) or omit for create
+        sellerType:           formData.sellerType || "ADMIN",         // SellerType enum
+        companyId:            formData.companyId,                              // String? @db.ObjectId
+        sellerId:             undefined,                              // Optional: if you know a specific sellerId
+        productId:            formData.productId,                     // String? @db.ObjectId
         
-        // 7) Close modal + clear all file states:
-        setShowRequestProductModal(false);
-        setImageFiles([]);
-        setImagePreviews([]);
-        setVideoFiles([]);
-        setVideoPreviews([]);
-        setBooks([]);
-      } else {
-        console.error("Error creating listing:", response.statusText);
-        console.error("Error creating listing:", response);
+        images: imageUrls,                  // array of S3 URLs
+
+        video: videoUrls.length > 0
+          ? videoUrls[0]                     // or send an array, if your schema allows multiple
+          : null,
+
+        // — Books —
+        books: booksWithUrls, 
+      
+        // — Title & description —
+        name:                formData.name,                         // String
+        description:          formData.description,                   // String?
+      
+        // — Inventory & media —
+        quantity:             formData.quantity,                      // Int
+        // images:               images || [],                           // Json[]
+        // video:                formData.video || null,                 // String?
+      
+        // — Category hierarchy & tagging —
+        productCategoryId:    formData.category?.id    || "",         // String @db.ObjectId
+        category:             formData.category?.name  || "",         // String?
+        subCategory:          formData.subCategory      || {},         // Json
+        subCategoryName:      formData.subCategoryName  || "",         // String?
+        tags:                 formData.tags             || [],         // String[]
+      
+        // — Branding & specs —
+        brand:                formData.brand            || "",         // String?
+        model:                formData.model            || "",         // String?
+        color:                formData.color            || [],         // String[]
+        size:                 formData.size             || [],         // String[]
+        weight:               formData.weight           || "",         // String?
+        condition:            formData.condition        || "",         // String?
+        dimension:            formData.dimension        || "",         // String?
+        material:             Array.isArray(formData.material)
+                              ? formData.material
+                              : formData.material
+                                ? [formData.material]
+                                : [],                              // String[]
+      
+        // — Profit & pricing —
+        profitMargin:         parseFloat(formData.profitMargin) || 0, // Float?
+        discount:             parseInt(formData.discount)      || 0,  // Int?
+        buyingPrice:          parseFloat(formData.buyingPrice) || 0, // Float
+        sellingPrice:         parseFloat(formData.sellingPrice) || 0,// Float
+        finalPrice:           parseFloat(formData.finalPrice)  || 0, // Float?
+      
+        // — Deal scheduling —
+        startDealDate:        formData.startDealDate   || null,       // DateTime? 
+        endDealDate:          formData.endDealDate     || null,       // DateTime?
+        
+        // — Category-specific details —
+        author:               formData.author            || "",       // String?
+        publisher:            formData.publisher         || "",       // String?
+        isbn:                 formData.isbn              || "",       // String?
+        fabricComposition:    formData.fabricComposition || "",       // String?
+        careInstructions:     formData.careInstructions  || "",       // String?
+        energyRating:         formData.energyRating      || "",       // String?
+        warrantyPeriod:       formData.warrantyPeriod    || "",       // String?
+        applianceDimensions:  formData.applianceDimensions|| "",      // String?
+        ingredients:          formData.ingredients       || "",       // String?
+        usageInstructions:    formData.usageInstructions || "",       // String?
+        expirationDate:       formData.expirationDate
+                              ? new Date(formData.expirationDate)
+                              : null,                              // DateTime?
+      
+        // — Feature flags —
+        isAvailable:          formData.isAvailable  || false,         // Boolean
+        isOnOffer:            formData.isOnOffer    || false,         // Boolean
+        isFlashDeal:          formData.isFlashDeal  || false,         // Boolean
+        isNewArrival:         formData.isNewArrival || false,         // Boolean
+        isDiscounted:         formData.isDiscounted || false,         // Boolean
+        isFeatured:           formData.isFeatured   || false,         // Boolean
+      
+        // — Marketplace-specific —
+        delivery:             formData.delivery       || false,         // Boolean
+        paymentOption:        formData.paymentOption  || "AT SHOP",     // String
+        showOnGhuba:          formData.showOnGhuba    || true,          // Boolean?
+        
+        // — Contact & location (embed GeoJSON or link to Location table) —
+        contact:              formData.contact        || "",            // String?
+        location:             formData.location       || {},            // Json?
+        locationId:           formData.locationId     || "",            // String? @db.ObjectId
+        locationName:         formData.locationName   || "",            // String?
+        latitude:             parseFloat(formData.latitude)  || null,      // Float?
+        longitude:            parseFloat(formData.longitude) || null,      // Float?
+      
+        // — Property-specific —
+        bedrooms:             formData.bedrooms       || {},            // Json?
+        studios:              formData.studios        || {},            // Json?
+        bathrooms:            formData.bathrooms      || "",            // String?
+        area:                 formData.area           || "",            // String?
+        serviceSchedule:      formData.serviceSchedule|| "",            // String?
+
+        // Scheduling    
+        availabilityStart:    formData.availabilityStart       || {},
+        availabilityEnd:    formData.availabilityEnd       || {},
+
+        bookingSlots:     formData.bookingSlots       || {},
+        minNoticePeriod:   formData.minNoticePeriod   || "",
+        maxBookingAhead: formData.maxBookingAhead     || "",
+
+        pricingTiers: formData.pricingTiers       || {},
+
+        requiredClientInfo: formData.requiredClientInfo       || [],
+        fulfillmentStatus:  formData.fulfillmentStatus       || "",
+
+        totalCapacity:  formData.totalCapacity       || 0,
+        currentBookedCount: formData.currentBookedCount       || 0,
+
+        providerRating: formData.providerRating       || {},
+
+        hourlyRate: formData.hourlyRate       || 0.0,
+        minimumHours:  formData.minimumHours       || 0,
+        deliveryMethod: formData.deliveryMethod       || "Remote/Virtual",
+    
+        // — Vehicle-specific —
+        make:                 formData.make            || "",           // String?
+        trim:                 formData.trim            || "",           // String?
+        type:                 formData.type            || "",           // String?
+        mileage:              formData.mileage         || "",           // String?
+        engineType:           formData.engineType      || "",           // String?
+        engineSize:           formData.engineSize      || "",           // String?
+        transmission:         formData.transmission    || "",           // String?
+        drivetrain:           formData.drivetrain      || "",           // String?
+        vin:                  formData.vin             || "",           // String?
+        logbookStatus:        formData.logbookStatus   || "",           // String?
+        serviceHistory:       formData.serviceHistory  || "",           // String?
+        negotiable:           formData.negotiable      || false,        // Boolean?
+        financingAvailable:   formData.financingAvailable || false,      // Boolean?
+        tradeIn:              formData.tradeIn         || false,        // Boolean?
+      
+        // — Digital goods —
+        digitalUrl:           formData.digitalUrl      || "",           // String?
+        autoDeliver:          !!formData.autoDeliver,                  // Boolean?
+      
+        // — Admin/Admin-only fields —
+        status:               formData.status         || "ACTIVE",     // ListingStatus
+        
+      };
+    
+      try {
+
+        const response = await fetch(`${apiUrl}/admin/post-market-list`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(listing)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Listing created:", data);
+          alert("Marketplace listing created successfully.");
+          
+          // 7) Close modal + clear all file states:
+          setShowRequestProductModal(false);
+          setImageFiles([]);
+          setImagePreviews([]);
+          setVideoFiles([]);
+          setVideoPreviews([]);
+          setBooks([]);
+        } else {
+          console.error("Error creating listing:", response.statusText);
+          console.error("Error creating listing:", response);
+          alert("Error creating listing. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error creating listing:", error);
         alert("Error creating listing. Please try again.");
       }
-    } catch (error) {
-      console.error("Error creating listing:", error);
-      alert("Error creating listing. Please try again.");
     }
-  }
-};
+  };
 
   return (
     <Modal
