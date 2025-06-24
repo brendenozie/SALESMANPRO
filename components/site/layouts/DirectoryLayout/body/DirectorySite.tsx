@@ -11,119 +11,13 @@ import { useStoreContext } from '../../../../../contexts/StoreContext';
 import CategorySection from './components/CategorySection';
 import PromotionSection from './components/PromotionSection';
 import NewArrivalsSection from './components/NewArrivalsSection';
+import HeroSection from './components/HeroSection';
+import TestimonialsSection from './components/TestimonialsSection';
+import CtaSection from './components/CtaSection';
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
-
-// Floating category icons for Hero
-const floatingIcons = [
-  { name: 'Restaurants', icon: '🍽️', top: '10%', left: '15%' },
-  { name: 'Healthcare', icon: '🩺', top: '20%', right: '10%' },
-  { name: 'Shopping', icon: '🛍️', bottom: '15%', left: '12%' },
-  { name: 'Services', icon: '🧰', bottom: '10%', right: '14%' },
-  { name: 'Education', icon: '📚', top: '30%', left: '45%' },
-];
-
-function Hero({
-  title,
-  description,
-  bannerUrl,
-  onSearch,
-  searchTerm,
-  setSearchTerm,
-}: {
-  title: string;
-  description?: string;
-  bannerUrl?: string;
-  onSearch: () => void;
-  searchTerm: string;
-  setSearchTerm: (val: string) => void;
-}) {
-  return (
-    <section className="relative h-[85vh] bg-gradient-to-br from-green-600 to-teal-500 text-white flex items-center justify-center overflow-hidden">
-      {/* Background */}
-      {bannerUrl && (
-        <Image
-          src={bannerUrl}
-          alt="Directory Hero"
-          fill
-          className="object-cover opacity-40"
-          priority
-          loader={loader}
-        />
-      )}
-      <div className="absolute inset-0 bg-black/30 z-0" />
-
-      {/* Floating Icons */}
-      {floatingIcons.map((cat, idx) => (
-        <motion.div
-          key={idx}
-          className="absolute text-2xl md:text-3xl"
-          style={{ ...cat }}
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 3 + idx, repeat: Infinity }}
-        >
-          <span title={cat.name}>{cat.icon}</span>
-        </motion.div>
-      ))}
-
-      {/* Main Content */}
-      <div className="relative z-10 text-center px-6 max-w-3xl">
-        <motion.h1
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-md"
-        >
-          Find & Explore <span className="text-orange-400">{title}</span>
-        </motion.h1>
-
-        {description && (
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-4 text-lg md:text-xl text-white/90"
-          >
-            {description}
-          </motion.p>
-        )}
-
-        {/* Search */}
-        <motion.form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSearch();
-          }}
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          role="search"
-          aria-label="Search listings"
-          className="mt-8 flex w-full max-w-xl mx-auto rounded-full overflow-hidden bg-white/90 backdrop-blur"
-        >
-          <div className="flex items-center px-4 text-gray-500">
-            <MagnifyingGlassIcon className="w-5 h-5" />
-          </div>
-          <input
-            type="search"
-            placeholder="Search businesses or categories..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-3 py-3 text-gray-800 focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 font-semibold transition-all"
-          >
-            Search
-          </button>
-        </motion.form>
-      </div>
-    </section>
-  );
-}
 
 function CategoryGrid({
   categories,
@@ -279,7 +173,7 @@ export default function DirectorySite() {
 
   return (
     <div className="font-sans space-y-24">
-      <Hero
+      <HeroSection
         title={storeFormData.name}
         description={storeFormData.description}
         bannerUrl={storeFormData.bannerUrl}
@@ -296,15 +190,6 @@ export default function DirectorySite() {
 
       <NewArrivalsSection />
 
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
-            Top Categories
-          </h2>
-          <CategoryGrid categories={categories} slug={storeFormData.slug} />
-        </div>
-      </section>
-
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
@@ -314,6 +199,10 @@ export default function DirectorySite() {
         </div>
       </section>
 
+      <TestimonialsSection />
+
+      <CtaSection />
+      
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
