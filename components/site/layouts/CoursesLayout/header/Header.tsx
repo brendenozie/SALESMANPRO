@@ -6,13 +6,13 @@ import {
   Bars3Icon,
   XMarkIcon,
   UserIcon,
-  BellIcon,
   ShoppingBagIcon,
   ChevronDownIcon,
-  InboxIcon,
   MagnifyingGlassIcon,
   BookOpenIcon, // New icon for courses/learning
-  AcademicCapIcon, // New icon for school/academy
+  AcademicCapIcon,
+  InboxIcon, // New icon for school/academy
+  // Removed BellIcon for a more minimal approach
 } from "@heroicons/react/24/outline";
 
 // Mocking context data for demonstration purposes
@@ -161,8 +161,9 @@ export default function Header() {
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8 mx-auto">
             <NavLink href={`/${slug}`} label="Home" />
             <NavLink href={`/${slug}/courses`} label="Courses" icon={BookOpenIcon} />
-            <NavLink href={`/${slug}/my-learning`} label="My Learning" />
-            <NavLink href={`/${slug}/become-a-tutor`} label="Become a Tutor" />
+            {/* Removed My Learning and Become a Tutor for a more minimal design */}
+            {/* NavLink href={`/${slug}/my-learning`} label="My Learning" /> */}
+            {/* NavLink href={`/${slug}/become-a-tutor`} label="Become a Tutor" /> */}
             {/* Dropdown */}
             <div className="relative group">
               <button className="flex items-center gap-1 text-white font-semibold py-2 px-3 transition-all duration-300
@@ -209,9 +210,10 @@ export default function Header() {
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-300" />
             </div>
 
-            <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/notifications`)}>
+            {/* Removed BellIcon for a more minimal approach */}
+            {/* <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/notifications`)}>
               <BellIcon className={iconStyleClass} />
-            </motion.button>
+            </motion.button> */}
             <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/profile`)}>
               <UserIcon className={iconStyleClass} />
             </motion.button>
@@ -277,6 +279,7 @@ export default function Header() {
             <div className="px-4 py-4 space-y-3">
               <NavLink href={`/${slug}`} label="Home" icon={AcademicCapIcon} />
               <NavLink href={`/${slug}/courses`} label="Courses" icon={BookOpenIcon} />
+              {/* Added My Learning and Become a Tutor back to mobile menu for accessibility */}
               <NavLink href={`/${slug}/my-learning`} label="My Learning" icon={UserIcon} />
               <NavLink href={`/${slug}/become-a-tutor`} label="Become a Tutor" />
               <details className="group text-white">
