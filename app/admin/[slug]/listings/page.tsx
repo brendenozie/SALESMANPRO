@@ -98,6 +98,8 @@ export default async function ClientInventoryPage({ params }: PageProps) {
         results: Category[];
       };
       categoriesData = categoriesJson.results;
+
+      console.log(categoriesData);
     }
 
   } catch (err: any) {

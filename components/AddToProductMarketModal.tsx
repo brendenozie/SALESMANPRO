@@ -1,24 +1,30 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import Modal from "./Modal";
-import { motion } from "framer-motion";
+'use client';
+
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import Modal from './Modal';
+import { motion } from 'framer-motion';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-} from "@heroicons/react/24/outline";
-import Stepper from "./Stepper";
-import { CATEGORY_STEPS } from "@/constant/CATEGORY_STEPS";
-import { FORM_COMPONENTS } from "@/constant/FORM_COMPONENTS";
-import { STEP_LABELS } from "@/constant/STEP_LABELS";
+} from '@heroicons/react/24/outline';
+import Stepper from './Stepper';
+import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
+import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
+import { STEP_LABELS } from '@/constant/STEP_LABELS';
+import CategoryPicker, { CategoryData } from './CategoryPicker';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// -------------------
-// MAIN MODAL COMPONENT
-// ------------------
+const AddToProductMarketModal = ({
+  showRequestProductModal,
+  setShowRequestProductModal,
+  product,
+  marketListItem,
+  companyId,
+  categories,
+}: any) => {
 
-const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProductModal, product, marketListItem, companyId, categories }: any) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
 
     id:                  marketListItem?.id                   || "",
@@ -161,14 +167,7 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
   
     // Admin/Admin-only:
     status:              marketListItem?.status             || product?.product?.status            || "ACTIVE",
-  });
-  
-  const stepsForCategory: number[] = useMemo(() => {
-    return CATEGORY_STEPS[formData.category?.name] || [];
-  }, [formData.category]);
-
-  const currentDynamicStep = stepsForCategory[step - 1];
-  const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
+  });  
 
   const [images, setImages] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
@@ -179,6 +178,74 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
 
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+
+  const [step, setStep] = useState(1);  
+  
+  // const stepsForCategory = useMemo<number[]>(() => {
+  //   return CATEGORY_STEPS[ formData.category?.displayName ] || [];
+  // }, [formData.category?.displayName]);
+
+  // 1) extract the raw lookup key
+  const categoryKey = formData.category?.displayName?.trim();
+
+  // 2) lookup steps
+  const stepsForCategory = useMemo<number[]>(() => {
+    return CATEGORY_STEPS[categoryKey] || [];
+  }, [categoryKey]); 
+
+  const currentDynamicStep = stepsForCategory[step - 1] || 1;
+  
+  const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
+
+  // Filtered brands for CategoryPicker
+  const filteredBrands = useMemo(
+    () => formData.category?.allBrands || [],
+    [formData.category.allBrands]
+  );
+  
+  // Handlers
+   const handleCategoryChange = (cat: CategoryData|null) => {
+    setFormData(f => ({ ...f, category: cat, subCategory: null, brand: null }));
+  };
+
+  const handleSubCategoryChange = (sub:any) =>  setFormData((prev) => ({ ...prev, subCategory: sub, brand: null }));
+  const handleBrandChange = (b:any) =>  setFormData((prev) => ({ ...prev, brand: b }));
+  const handleInputChange = (e:any) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      let newValue = ['discount', 'buyingPrice', 'sellingPrice'].includes(name)
+        ? parseFloat(value) || 0
+        : value;
+      const updated = { ...prev, [name]: newValue };
+      if (['buyingPrice', 'sellingPrice', 'discount'].includes(name)) {
+        const bp = parseFloat(updated.buyingPrice) || 0;
+        const sp = parseFloat(updated.sellingPrice) || 0;
+        const disc = parseFloat(updated.discount) || 0;
+        updated.finalPrice = sp - (sp * disc) / 100;
+        updated.profitMargin = bp > 0 ? ((sp - bp) / bp) * 100 : 0;
+      }
+      return updated;
+    });
+  };
+
+  const isCategoryStep = step === 1;
+
+
+  // const [step, setStep] = useState(1);
+  
+
+   // handlers for category picker
+  //  const isCategoryStep = step === 1;
+
+  //  const handleCategoryChange = (cat: any) => {
+  //    setFormData((prev: any) => ({ ...prev, category: cat, subCategory: null, brand: null }));
+  //  };
+  //  const handleSubCategoryChange = (sub: any) => {
+  //    setFormData((prev: any) => ({ ...prev, subCategory: sub, brand: null }));
+  //  };
+  //  const handleBrandChange = (b: string | null) => {
+  //    setFormData((prev: any) => ({ ...prev, brand: b }));
+  //  };
 
   interface BookItem {
     title?: string;
@@ -194,28 +261,25 @@ const AddToProductMarketModal = ({ showRequestProductModal, setShowRequestProduc
     return formData.category.subcategories;
   }, [formData.category]);
   
-  const filteredBrands = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.allBrands;
-  }, [formData.category]);
+  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => {
+  //     let newValue = ["discount", "buyingPrice", "sellingPrice"].includes(name)
+  //       ? parseFloat(value) || 0
+  //       : value;
+  //     let updatedData = { ...prev, [name]: newValue };
+  //     if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
+  //       const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
+  //       const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
+  //       const discount = parseFloat(updatedData.discount) || 0;
+  //       updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
+  //       updatedData.profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
+  //     }
+  //     return updatedData;
+  //   });
+  // };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      let newValue = ["discount", "buyingPrice", "sellingPrice"].includes(name)
-        ? parseFloat(value) || 0
-        : value;
-      let updatedData = { ...prev, [name]: newValue };
-      if (["buyingPrice", "sellingPrice", "discount"].includes(name)) {
-        const buyingPrice = parseFloat(updatedData.buyingPrice) || 0;
-        const sellingPrice = parseFloat(updatedData.sellingPrice) || 0;
-        const discount = parseFloat(updatedData.discount) || 0;
-        updatedData.finalPrice = sellingPrice - (sellingPrice * discount) / 100;
-        updatedData.profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
-      }
-      return updatedData;
-    });
-  };
+  console.log(categories);
 
 const handleCreateListing = async () => {
   if (window.confirm("Are you sure you want to create this listing?")) {
@@ -474,51 +538,76 @@ const handleCreateListing = async () => {
   }
 };
 
-
   return (
-    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+    <Modal
+      isOpen={showRequestProductModal}
+      onClose={() => setShowRequestProductModal(false)}
+    >
       <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] flex flex-col">
-        <motion.div key={step} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-grow overflow-y-auto">
-          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
-          <div className="overflow-y-auto flex-grow p-4">
-            {FormComponent ? (
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          className="flex-grow overflow-y-auto"
+        >
+          <Stepper
+            step={step}
+            stepsForCategory={stepsForCategory}
+            STEP_LABELS={STEP_LABELS}
+          />
+
+          {/* Main Content */}
+          <div className="flex-grow overflow-y-auto p-4">
+            {isCategoryStep ? (
+               <CategoryPicker
+               formData={{
+                 category: formData.category,
+                 subCategory: formData.subCategory,
+                 brand: formData.brand,
+               }}
+               categories={categories}
+               filteredBrands={filteredBrands}
+               onCategoryChange={handleCategoryChange}
+               onSubCategoryChange={handleSubCategoryChange}
+               onBrandChange={handleBrandChange}
+             />
+            ) : FormComponent ? (
               <FormComponent
                 formData={formData}
                 setFormData={setFormData}
-                images={images}
-                setImages={setImages}
-                categories={categories}
-                filteredSubCategories={filteredSubCategories}
-                filteredBrands={filteredBrands}
-                handleInputChange={handleInputChange}                
-                imageFiles={imageFiles}
-                setImageFiles={setImageFiles}
-                imagePreviews={imagePreviews}
-                setImagePreviews={setImagePreviews}
-                videoFiles={videoFiles}
-                setVideoFiles={setVideoFiles}
-                videoPreviews={videoPreviews}
-                setVideoPreviews={setVideoPreviews}
-                books={books}
-                setBooks={setBooks}
+                handleInputChange={handleInputChange}
+                // pass other props like images, videos, books etc.
               />
             ) : (
               <p>No form available for this step.</p>
             )}
           </div>
         </motion.div>
+
+        {/* Navigation Buttons */}
         <div className="flex justify-between pt-4 border-t">
           {step > 1 && (
-            <button className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step - 1)}>
+            <button
+              className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center"
+              onClick={() => setStep(step - 1)}
+            >
               <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
             </button>
           )}
+
           {step < stepsForCategory.length ? (
-            <button className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center" onClick={() => setStep(step + 1)}>
+            <button
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center"
+              onClick={() => setStep(step + 1)}
+            >
               Next <ArrowRightIcon className="h-5 w-5 ml-1" />
             </button>
           ) : (
-            <button onClick={handleCreateListing} className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
+            <button
+              onClick={handleCreateListing}
+              className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
+            >
               Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
             </button>
           )}
@@ -529,3 +618,4 @@ const handleCreateListing = async () => {
 };
 
 export default AddToProductMarketModal;
+

@@ -41,22 +41,3 @@ export const FORM_COMPONENTS: Record<number, React.FC<any>> = {
 };
 
 
-
-
-
-// const FORM_COMPONENTS: Record<number, React.FC<any>> = {
-//   1: CategoryPicker,
-//   2: ProductDetails,
-//   3: GeneralDetails,
-//   4: EnginePerformance,
-//   5: OwnershipPricing,
-//   7: PricingDetails,
-//   8: ImageUploader,
-//   9: ProductVariants,
-//   10: ProductAvailability,
-//   11: FinalReview,
-//   12: ContactLocation,
-//   13: AmenitiesStep,
-//   14: VehicleAmenitiesStep,
-// };
-

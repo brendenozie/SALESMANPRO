@@ -160,7 +160,7 @@ const CategoryPicker: React.FC<Props> = ({
             ◀️
           </button>
           <div ref={categoryScrollRef} className="flex space-x-3 overflow-x-auto scrollbar-hide pb-2 snap-x">
-            {categories
+            {categories && categories
               .filter((cat) =>
                 cat.displayName.toLowerCase().includes(searchTerm.toLowerCase())
               )

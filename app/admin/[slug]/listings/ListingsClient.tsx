@@ -130,7 +130,7 @@ export default function ListingsClient({ companyId, categoriesData, productsData
             />
           )}
 
-          {showAddToMarketModal && selectedProduct && (
+          {showAddToMarketModal && (
             <AddToProductMarketModal
               showRequestProductModal={showAddToMarketModal}
               setShowRequestProductModal={setShowAddToMarketModal}
@@ -139,6 +139,7 @@ export default function ListingsClient({ companyId, categoriesData, productsData
               sellerType={""}     
               marketListItem={selectedProduct}
               categories={categoriesData}
+              companyId={companyId}
             />
           )}
 
