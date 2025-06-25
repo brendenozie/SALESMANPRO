@@ -19,15 +19,15 @@ export default function CoursesHeaderLayout({ params, children }: CoursesLayoutP
   
   const path = usePathname();
   // bail out on /login or any deeper login route
-  if (path.startsWith('/login')) return null;   
+  if (path.startsWith('/site/educational-online-courses/courses/login')) return (<section className="container">{children}</section>);   
+// bail out on /login or any deeper login route
+if (path.startsWith('/site/educational-online-courses/courses/signup')) return (<section className="container">{children}</section>);   
 
   return (
     <>
       <Header/>
-
       {/* Child Content (Course Details) */}
       <section className="container">{children}</section>
-
       <Footer/>
     </>
   );
