@@ -39,6 +39,9 @@ enum ROLE {
   AGENT
   CLIENT
   ADMIN
+  STUDENT
+  EDUCATOR
+  HEADTEACHER
 }
 
 model Session {
@@ -719,7 +722,7 @@ model SalesAgent {
   communications     Communication[]      @relation("CommunicationSender")
   Return             Return[]
   AgentInventory     AgentInventory[]
-  Assignment         Assignment[]
+  Assignment         ProductAssignment[]
   Target             Target[]
   ClientInventory    ClientInventory[]
   ClientInventoryLog ClientInventoryLog[]
@@ -741,7 +744,7 @@ model User {
   auditLogs             AuditLog[]
   requests              Request[]
   returns               Return[]
-  Assignment            Assignment[]
+  Assignment            ProductAssignment[]
   emailVerified         DateTime?
   image                 String?
   phone                 String?
@@ -761,6 +764,12 @@ model User {
   Wishlist              Wishlist[]
   Payment               Payment[]
   Appointment           Appointment[]
+  StudentProfile        StudentProfile?
+  EducatorProfile       EducatorProfile?
+  Announcement          Announcement[]
+
+  // If an admin can also post announcements, link directly from User
+  announcements Announcement[] @relation("UserAnnouncements")
 }
 
 enum Status {
@@ -784,7 +793,7 @@ model Return {
   updatedAt     DateTime      @updatedAt
 }
 
-model Assignment {
+model ProductAssignment {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   ApprovedBy       User?         @relation(fields: [ApprovedById], references: [id])
   ApprovedById     String?       @db.ObjectId
@@ -798,19 +807,19 @@ model Assignment {
 }
 
 model InventoryItem {
-  id               String            @id @default(auto()) @map("_id") @db.ObjectId
-  productId        String            @db.ObjectId
-  product          Product           @relation(fields: [productId], references: [id])
-  companyId        String            @db.ObjectId
-  company          Company           @relation(fields: [companyId], references: [id])
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  productId        String              @db.ObjectId
+  product          Product             @relation(fields: [productId], references: [id])
+  companyId        String              @db.ObjectId
+  company          Company             @relation(fields: [companyId], references: [id])
   quantity         Int
   reorderThreshold Int?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
   inventoryLogs    InventoryLog[]
   returns          Return[]
   AgentInventory   AgentInventory[]
-  Assignment       Assignment[]
+  Assignment       ProductAssignment[]
   ClientInventory  ClientInventory[]
 }
 
@@ -1501,4 +1510,121 @@ model WishlistItem {
   addedAt              DateTime            @default(now())
   MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?             @db.ObjectId
+}
+
+// Student Profile Model (one-to-one with User)
+model StudentProfile {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id])
+  studentGrade       String? // e.g., "High School", "Undergraduate", "Graduate"
+  totalCourses       Int                @default(0)
+  completedCourses   Int                @default(0)
+  certificatesEarned Int                @default(0)
+  averageProgress    Float              @default(0.0) // Store as float, format percentage in frontend
+  enrolledCourses    CourseEnrollment[]
+  submissions        Submission[]
+}
+
+// Educator Profile Model (one-to-one with User)
+model EducatorProfile {
+  id                 String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String          @unique
+  user               User            @relation(fields: [userId], references: [id])
+  institutionName    String?
+  totalStudents      Int             @default(0) // Can be calculated or directly stored
+  totalCoursesTaught Int             @default(0) // Can be calculated or directly stored
+  coursesCreated     Course[]
+  classesScheduled   ClassSchedule[]
+}
+
+// Course Model
+model Course {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  description      String?
+  imageUrl         String?
+  instructorId     String // Link to EducatorProfile
+  instructor       EducatorProfile    @relation(fields: [instructorId], references: [id])
+  totalLessons     Int?
+  rating           Float? // e.g., 4.5
+  level            String? // e.g., "3rd Grade", "All Levels", "Advanced", "Undergraduate", "Diploma"
+  studentsEnrolled Int                @default(0) // Can be calculated or stored for quick access
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  assignments      CourseAssignment[]
+  classSchedules   ClassSchedule[]
+  enrollments      CourseEnrollment[]
+}
+
+// Course Enrollment Model (Join table for StudentProfile <-> Course)
+model CourseEnrollment {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+  courseId         String
+  course           Course         @relation(fields: [courseId], references: [id])
+  progress         Int            @default(0) // Percentage 0-100
+  lessonsCompleted Int            @default(0)
+  enrolledAt       DateTime       @default(now())
+
+  @@unique([studentProfileId, courseId]) // Ensure a student can only enroll in a course once
+}
+
+// Assignment Model
+model CourseAssignment {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  dueDate     DateTime
+  courseId    String
+  course      Course       @relation(fields: [courseId], references: [id])
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// Submission Model (Student's assignment submission)
+model Submission {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId      String
+  assignment        CourseAssignment @relation(fields: [assignmentId], references: [id])
+  studentProfileId  String
+  studentProfile    StudentProfile   @relation(fields: [studentProfileId], references: [id])
+  submittedAt       DateTime         @default(now())
+  grade             Float? // e.g., 85.5
+  gradedAt          DateTime?
+  submissionContent String? // e.g., URL to file, text content, JSON of answers
+
+  @@unique([assignmentId, studentProfileId]) // Ensure one submission per student per assignment
+}
+
+// Announcement Model
+model Announcement {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  summary     String?
+  content     String?
+  publishedAt DateTime @default(now())
+  authorId    String // Can be UserId (Admin or Educator)
+  author      User     @relation("UserAnnouncements", fields: [authorId], references: [id])
+  updatedAt   DateTime @updatedAt
+  User        User?    @relation(fields: [userId], references: [id])
+  userId      String?  @db.ObjectId
+}
+
+// Class Schedule Model (for educator's classes/lectures)
+model ClassSchedule {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  courseId          String
+  course            Course          @relation(fields: [courseId], references: [id])
+  educatorProfileId String
+  educator          EducatorProfile @relation(fields: [educatorProfileId], references: [id])
+  date              DateTime // Date of the class
+  startTime         DateTime // Time of the class (e.g., "10:00 AM")
+  endTime           DateTime // End time of the class (e.g., "11:30 AM")
+  topic             String?
+  meetingLink       String? // Link to video conferencing (e.g., Zoom, Google Meet)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
