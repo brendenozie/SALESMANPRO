@@ -134,8 +134,8 @@ export default function SignupPage() {
               whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(79, 70, 229, 0.4)" }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setUserRole('student')}
-              className="flex-1 p-6 border-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 rounded-2xl flex flex-col items-center justify-center
-                         hover:bg-indigo-50 dark:hover:bg-gray-700 transition-all duration-200 font-bold"
+              className={`flex-1 p-6 border-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 rounded-2xl flex flex-col items-center justify-center
+                         hover:bg-indigo-50 dark:hover:bg-gray-700 transition-all duration-200 font-bold`}
             >
               <BookOpenIcon className="w-12 h-12 mb-3 text-indigo-500" />
               I'm a Student
@@ -156,7 +156,7 @@ export default function SignupPage() {
             onSubmit={handleSignup}
             className="w-full relative z-10"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}  
             exit={{ opacity: 0, y: -20 }}
             transition={{ type: "spring", stiffness: 100, damping: 10 }}
           >
@@ -178,9 +178,9 @@ export default function SignupPage() {
                 <input
                   type="text"
                   placeholder="Full Name"
-                  className="w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
+                  className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
@@ -194,9 +194,9 @@ export default function SignupPage() {
                 <input
                   type="email"
                   placeholder="Email address"
-                  className="w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
+                  className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -210,9 +210,9 @@ export default function SignupPage() {
                 <input
                   type="password"
                   placeholder="Password"
-                  className="w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
+                  className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -226,9 +226,9 @@ export default function SignupPage() {
                 <input
                   type="password"
                   placeholder="Confirm Password"
-                  className="w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
+                  className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
                              bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                             focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -243,9 +243,9 @@ export default function SignupPage() {
                   <input
                     type="text"
                     placeholder="Institution Name (Optional)"
-                    className="w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
+                    className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
                                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                               focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                               focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
                     value={institutionName}
                     onChange={(e) => setInstitutionName(e.target.value)}
                   />
@@ -258,9 +258,9 @@ export default function SignupPage() {
                 <div className="relative">
                   <AcademicCapIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <select
-                    className="w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
+                    className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
                                bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white appearance-none pr-10
-                               focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                               focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
                     value={studentGrade}
                     onChange={(e) => setStudentGrade(e.target.value)}
                     required
