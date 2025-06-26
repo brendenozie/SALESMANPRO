@@ -104,6 +104,16 @@ export const getCategoryMenus = (adminSlug: string) => ({
   "Educational & Online Courses": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
+      label: "Management",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
+        { label: "Students", href: `/admin/${adminSlug}/students` },        
+        { label: "Instructors", href: `/admin/${adminSlug}/instructors` },    
+        { label: "Classes", href: `/admin/${adminSlug}/classes` },
+      ],
+    },
+    {
       label: "Courses",
       icon: AcademicCapIcon,
       subItems: [
@@ -111,8 +121,16 @@ export const getCategoryMenus = (adminSlug: string) => ({
         { label: "Add Course", href: `/admin/${adminSlug}/courses/new` },
       ],
     },
-    { label: "Students", href: `/admin/${adminSlug}/students`, icon: UsersIcon },
-    { label: "Instructors", href: `/admin/${adminSlug}/instructors`, icon: BriefcaseIcon },
+    {
+      label: "Reports",
+      icon: ChartBarIcon,
+      subItems: [
+        { label: "Attendance Report", href: `/admin/${adminSlug}/reports/attendance` },
+        { label: "Performance", href: `/admin/${adminSlug}/reports/performance` },
+      ],
+    },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
 
   "Nonprofit & Community": [

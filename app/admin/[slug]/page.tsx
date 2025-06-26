@@ -71,8 +71,8 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       return <BlogDashboardClient />; //  {...data} session={session} TODO: Replace with <BlogDashboardClient />
     case 'directory & listings':
       return <DirectoryDashboardClient/>; //  {...data} session={session}  TODO: Replace with <DirectoryDashboardClient />
-    case 'educational & online courses':
-      return <EducationDashboardClient/>; // {...data} session={session}  TODO: Replace with <EducationDashboardClient />
+    // case 'educational & online courses':
+    //   return <EducationDashboardClient/>; // {...data} session={session}  TODO: Replace with <EducationDashboardClient />
     case 'nonprofit & community':
       return <NonprofitDashboardClient/>; //  {...data} session={session} TODO: Replace with <NonprofitDashboardClient />
     case 'restaurant & food delivery':
@@ -102,6 +102,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     case 'students':
     case 'pupils':
       return <StudentDashboard />; //  {...data} session={session}
+    case 'educational & online courses':
     case 'head teacher':
     case 'school head':
       return <PrincipalDashboard />; //  {...data} session={session}
