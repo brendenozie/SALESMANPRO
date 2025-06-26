@@ -5,8 +5,6 @@ import {
   CalendarIcon,
   ChatBubbleBottomCenterTextIcon,
   Cog6ToothIcon,
-  QuestionMarkCircleIcon,
-  ArrowRightOnRectangleIcon,
   ClipboardDocumentListIcon,
   DocumentTextIcon,
   BuildingOfficeIcon,
@@ -108,8 +106,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
       icon: ClipboardDocumentListIcon,
       subItems: [
         { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
-        { label: "Students", href: `/admin/${adminSlug}/students` },        
-        { label: "Instructors", href: `/admin/${adminSlug}/instructors` },    
+        { label: "Students", href: `/admin/${adminSlug}/students` },          
         { label: "Classes", href: `/admin/${adminSlug}/classes` },
       ],
     },
@@ -118,17 +115,17 @@ export const getCategoryMenus = (adminSlug: string) => ({
       icon: AcademicCapIcon,
       subItems: [
         { label: "All Courses", href: `/admin/${adminSlug}/courses` },
-        { label: "Add Course", href: `/admin/${adminSlug}/courses/new` },
       ],
-    },
-    {
-      label: "Reports",
-      icon: ChartBarIcon,
-      subItems: [
-        { label: "Attendance Report", href: `/admin/${adminSlug}/reports/attendance` },
-        { label: "Performance", href: `/admin/${adminSlug}/reports/performance` },
-      ],
-    },
+    },    
+    { label: "Reports", href: `/admin/${adminSlug}/school-reports`, icon: HomeIcon },
+            // {
+            //   label: "Reports",
+            //   icon: ChartBarIcon,
+            //   subItems: [
+            //     { label: "Attendance Report", href: `/admin/${adminSlug}/reports/attendance` },
+            //     { label: "Performance", href: `/admin/${adminSlug}/reports/performance` },
+            //   ],
+            // },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],

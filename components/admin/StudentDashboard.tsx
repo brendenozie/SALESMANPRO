@@ -1,398 +1,330 @@
 'use client';
 
 import React from 'react';
-import ChartTwo from '@/components/ChartTwo';
-import ChartThree from '@/components/ChartThree';
 import {
-  UsersIcon,
-  AcademicCapIcon,
-  ClipboardDocumentCheckIcon,
-  CalendarDaysIcon,
-  BellAlertIcon,
-  ArrowRightIcon,
-  ChartBarIcon, // For progress/stats
-  ClockIcon, // For time/duration
-} from '@heroicons/react/24/outline';
-import { SparklesIcon } from '@heroicons/react/24/solid'; // For welcome accent
+  AcademicCapIcon, // For overall academic/grades
+  ClipboardDocumentListIcon, // For assignments
+  ChartBarIcon, // For grades/performance
+  CalendarDaysIcon, // For date/timetable
+  ChatBubbleBottomCenterTextIcon, // For messages
+  MegaphoneIcon, // For announcements
+  BookOpenIcon, // For courses/classes
+  CheckCircleIcon, // For completed status
+  ClockIcon, // For time/schedule
+  LinkIcon, // For quick links
+  LightBulbIcon, // For study tips/resources
+} from '@heroicons/react/24/outline'; // Using outline for main icons
 
-import { motion } from 'framer-motion';
+// Sample Data for the Student Dashboard
+const studentName = "Jane Wanjiru"; // Placeholder for logged-in student's name
+const studentGradeLevel = "Grade 8";
 
 const studentStats = [
   {
-    title: "Classes Today",
-    icon: <CalendarDaysIcon className="w-6 h-6 text-indigo-600" />,
-    value: "3",
-    subtitle: "Upcoming today"
+    title: 'Current GPA',
+    icon: <AcademicCapIcon className="h-7 w-7 text-blue-600" />,
+    value: '3.8',
+    description: 'Overall academic standing',
+    color: 'bg-blue-50',
   },
   {
-    title: "Total Subjects",
-    icon: <ChartBarIcon className="w-6 h-6 text-blue-600" />,
-    value: "7",
-    subtitle: "This term"
+    title: 'Assignments Due',
+    icon: <ClipboardDocumentListIcon className="h-7 w-7 text-purple-600" />,
+    value: '5',
+    description: 'Expected this week',
+    color: 'bg-purple-50',
   },
   {
-    title: "Study Hours",
-    icon: <ClockIcon className="w-6 h-6 text-green-600" />,
-    value: "16h",
-    subtitle: "This week"
+    title: 'Classes Today',
+    icon: <BookOpenIcon className="h-7 w-7 text-yellow-600" />,
+    value: '4',
+    description: 'Scheduled for your timetable',
+    color: 'bg-yellow-50',
   },
   {
-    title: "Peers",
-    icon: <UsersIcon className="w-6 h-6 text-orange-600" />,
-    value: "24",
-    subtitle: "In your class"
+    title: 'Attendance Rate',
+    icon: <ChartBarIcon className="h-7 w-7 text-green-600" />,
+    value: '95%',
+    description: 'Overall percentage this term',
+    color: 'bg-green-50',
   },
 ];
 
-const upcomingClasses = [
-  { subject: "Mathematics", time: "09:00 AM", teacher: "Mr. Otieno", room: "B3" },
-  { subject: "Science", time: "11:00 AM", teacher: "Ms. Achieng", room: "Lab 1" },
-  { subject: "History", time: "2:00 PM", teacher: "Mr. Mwangi", room: "C2" },
+const upcomingAssignments = [
+  { id: 1, title: 'Math: Algebra Worksheet', class: 'Mathematics', dueDate: 'Tomorrow', status: 'Pending' },
+  { id: 2, title: 'English: Essay Draft', class: 'English Language', dueDate: 'Fri, July 5', status: 'Pending' },
+  { id: 3, title: 'Science: Lab Report', class: 'Science', dueDate: 'Mon, July 8', status: 'Pending' },
+  { id: 4, title: 'History: Research Project', class: 'History', dueDate: 'July 15', status: 'Pending' },
 ];
-// Mock data for demonstration
-const mockStudentData = {
-  name: "Alex Johnson",
-  currentCourses: [
-    {
-      id: 1,
-      title: "Introduction to Web Development",
-      progress: 75,
-      instructor: "Jane Doe",
-      lessonsCompleted: 15,
-      totalLessons: 20,
-      imageUrl: "https://placehold.co/400x250/3498DB/FFFFFF?text=WebDev",
-      link: "#/courses/web-dev",
-    },
-    {
-      id: 2,
-      title: "Data Science with Python",
-      progress: 40,
-      instructor: "John Smith",
-      lessonsCompleted: 8,
-      totalLessons: 20,
-      imageUrl: "https://placehold.co/400x250/2ECC71/FFFFFF?text=DataScience",
-      link: "#/courses/data-science",
-    },
-    {
-      id: 3,
-      title: "Graphic Design Fundamentals",
-      progress: 90,
-      instructor: "Emily White",
-      lessonsCompleted: 18,
-      totalLessons: 20,
-      imageUrl: "https://placehold.co/400x250/E74C3C/FFFFFF?text=GraphicDesign",
-      link: "#/courses/graphic-design",
-    },
-  ],
-  upcomingAssignments: [
-    {
-      id: 1,
-      title: "Web Dev Project Phase 1",
-      course: "Introduction to Web Development",
-      dueDate: "2024-07-10",
-      status: "Due Soon",
-      link: "#/assignments/web-dev-p1",
-    },
-    {
-      id: 2,
-      title: "Data Science Midterm Quiz",
-      course: "Data Science with Python",
-      dueDate: "2024-07-15",
-      status: "Upcoming",
-      link: "#/assignments/data-sci-quiz",
-    },
-    {
-      id: 3,
-      title: "Design Principles Essay",
-      course: "Graphic Design Fundamentals",
-      dueDate: "2024-07-20",
-      status: "Upcoming",
-      link: "#/assignments/design-essay",
-    },
-  ],
-  recentAnnouncements: [
-    {
-      id: 1,
-      title: "Platform Maintenance Scheduled",
-      date: "2024-07-01",
-      summary: "Our platform will undergo maintenance on July 5th from 2 AM to 4 AM UTC.",
-      link: "#/announcements/maintenance",
-    },
-    {
-      id: 2,
-      title: "New Course: Mobile App Development!",
-      date: "2024-06-28",
-      summary: "Exciting news! We've launched a new course on Mobile App Development using React Native.",
-      link: "#/announcements/new-course",
-    },
-  ],
-  overallStats: {
-    totalCourses: 5,
-    completedCourses: 2,
-    certificatesEarned: 1,
-    averageProgress: "65%",
-  }
-};
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
+const myCourses = [
+  { id: 1, name: 'Mathematics (Grade 8)', teacher: 'Mr. John Doe', schedule: 'Mon, Wed, Fri', currentGrade: 'A-' },
+  { id: 2, name: 'English Language (Grade 8)', teacher: 'Mrs. Jane Smith', schedule: 'Tue, Thu', currentGrade: 'B+' },
+  { id: 3, name: 'Science (Grade 8)', teacher: 'Ms. Emily White', schedule: 'Mon, Wed', currentGrade: 'A' },
+  { id: 4, name: 'History (Grade 8)', teacher: 'Mr. David Green', schedule: 'Tue, Thu', currentGrade: 'A-' },
+];
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 12 } },
-};
+const recentGrades = [
+  { id: 1, assignment: 'Math Quiz 3', subject: 'Mathematics', grade: '92%', date: 'Jun 20' },
+  { id: 2, assignment: 'English Comprehension', subject: 'English Language', grade: '88%', date: 'Jun 18' },
+  { id: 3, assignment: 'Science Pop Quiz', subject: 'Science', grade: '100%', date: 'Jun 15' },
+  { id: 4, assignment: 'History Chapter Test', subject: 'History', grade: '85%', date: 'Jun 10' },
+];
 
-const cardVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 80, damping: 10 } },
-};
+const studentAnnouncements = [
+  { id: 1, text: '📢 School holiday next Monday, July 1st.', type: 'info' },
+  { id: 2, text: '🧪 Science Club meeting moved to Thursday.', type: 'warning' },
+  { id: 3, text: '📚 Library closed for inventory on Friday.', type: 'info' },
+];
 
-// Simplified loader for standard <img> tag
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+const teacherMessages = [
+  { id: 1, sender: 'Mr. John Doe (Math)', message: 'Great job on the last assignment!', time: '10:30 AM' },
+  { id: 2, sender: 'Mrs. Jane Smith (English)', message: 'Remember to submit your essay draft by Friday.', time: 'Yesterday' },
+];
+
+const personalTimetable = [
+  { time: '9:00 - 9:45 AM', event: 'Mathematics', location: 'Room 101' },
+  { time: '10:00 - 10:45 AM', event: 'English Language', location: 'Room 102' },
+  { time: '11:00 - 11:45 AM', event: 'Break', location: 'Cafeteria' },
+  { time: '1:00 - 1:45 PM', event: 'Science', location: 'Lab 2' },
+];
+
+const quickLinks = [
+  { label: 'Homework Portal', icon: <ClipboardDocumentListIcon className="h-6 w-6" />, href: '#' },
+  { label: 'Library Resources', icon: <BookOpenIcon className="h-6 w-6" />, href: '#' },
+  { label: 'Counseling Services', icon: <LightBulbIcon className="h-6 w-6" />, href: '#' },
+  { label: 'Student Handbook', icon: <LinkIcon className="h-6 w-6" />, href: '#' },
+];
+
+
 export default function StudentDashboard() {
-  
-  const { name, currentCourses, upcomingAssignments, recentAnnouncements, overallStats } = mockStudentData;
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 
   return (
-    <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
-      {/* Top Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        {studentStats.map((stat, i) => (
-          <div key={i} className="bg-white p-5 rounded-xl shadow hover:shadow-md transition-all">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gray-100 p-2 rounded-full">
-                {stat.icon}
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+            Hello, {studentName}!
+            <span className="ml-2 text-blue-600 text-base sm:text-xl">🌟</span>
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">{studentGradeLevel}</p>
+        </div>
+        <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
+          <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
+          <span>{today}</span>
+        </div>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Left Column: Academic Overview (Assignments, Courses, Grades) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Key Academic Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {studentStats.map((stat, index) => (
+              <div
+                key={index}
+                className={`p-5 rounded-xl shadow-md border border-gray-200 transition-all duration-200 ease-in-out
+                            hover:shadow-lg transform hover:-translate-y-1 cursor-pointer
+                            ${stat.color}`}
+              >
+                <div className="flex items-center mb-3">
+                  <div className="p-2 bg-white rounded-full shadow-sm mr-3 flex-shrink-0">
+                    {stat.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <h2 className="text-3xl font-bold text-gray-800">{stat.value}</h2>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">{stat.title}</p>
-                <p className="text-xl font-bold text-gray-800">{stat.value}</p>
-                <p className="text-xs text-gray-400">{stat.subtitle}</p>
-              </div>
+            ))}
+          </div>
+
+          {/* Upcoming Assignments */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
+              <ClipboardDocumentListIcon className="h-5 w-5 text-indigo-500" /> Upcoming Assignments
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignment</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {upcomingAssignments.map((assignment) => (
+                    <tr key={assignment.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{assignment.title}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assignment.class}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assignment.dueDate}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                          ${assignment.status === 'Pending' && 'bg-blue-100 text-blue-800'}
+                          ${assignment.status === 'Completed' && 'bg-green-100 text-green-800'}
+                        `}>
+                          {assignment.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h3 className="text-lg font-bold mb-4">Attendance Over Time</h3>
-          <ChartTwo />
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h3 className="text-lg font-bold mb-4">Subject Performance</h3>
-          <ChartThree />
-        </div>
-      </div>
+          {/* My Courses */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
+              <BookOpenIcon className="h-5 w-5 text-teal-500" /> My Courses
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-700">
+              {myCourses.map((course) => (
+                <li key={course.id} className="flex flex-col p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-800">{course.name}</span>
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-indigo-100 text-indigo-800">{course.currentGrade}</span>
+                  </div>
+                  <span className="text-xs text-gray-600 mt-0.5">Teacher: {course.teacher}</span>
+                  <span className="text-xs text-gray-500 mt-1">Schedule: {course.schedule}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      {/* Upcoming Classes */}
-      <div className="bg-white p-6 rounded-xl shadow">
-        <h3 className="text-lg font-bold mb-4">Today's Classes</h3>
-        <div className="space-y-4">
-          {upcomingClasses.map((cls, i) => (
-            <div
-              key={i}
-              className="p-4 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-all flex justify-between items-center"
-            >
-              <div>
-                <h4 className="text-md font-bold text-indigo-800">{cls.subject}</h4>
-                <p className="text-sm text-indigo-600">{cls.teacher} · {cls.room}</p>
-              </div>
-              <div className="text-sm font-medium text-indigo-700">{cls.time}</div>
+          {/* Recent Grades */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
+              <ChartBarIcon className="h-5 w-5 text-lime-600" /> Recent Grades
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignment</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {recentGrades.map((grade) => (
+                    <tr key={grade.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{grade.assignment}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{grade.subject}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                          ${parseInt(grade.grade) >= 90 ? 'bg-green-100 text-green-800' :
+                            parseInt(grade.grade) >= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}
+                        `}>
+                          {grade.grade}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{grade.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          </div>
+
+        </div>
+
+        {/* Right Column: Timetable, Announcements, Messages */}
+        <div className="lg:col-span-1 space-y-6">
+
+          {/* Today's Timetable */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <ClockIcon className="h-5 w-5 text-red-500" /> Today's Timetable
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-700">
+              {personalTimetable.map((slot, idx) => (
+                <li key={idx} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-gray-800">{slot.time}</span>
+                    <span className="text-gray-700 text-sm">{slot.event}</span>
+                  </div>
+                  <span className="text-xs text-gray-500">{slot.location}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* School Announcements */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <MegaphoneIcon className="h-5 w-5 text-orange-500" /> School Announcements
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-700">
+              {studentAnnouncements.map((note) => (
+                <li key={note.id} className={`flex items-start gap-3 p-3 rounded-lg
+                                  ${note.type === 'warning' ? 'bg-yellow-50 border-l-4 border-yellow-400' : 'bg-blue-50 border-l-4 border-blue-400'}`}>
+                  <span className="mt-0.5">{note.type === 'warning' ? '⚠️' : '📢'}</span>
+                  <span>{note.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Messages from Teachers */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <ChatBubbleBottomCenterTextIcon className="h-5 w-5 text-lime-600" /> Messages from Teachers
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-700">
+              {teacherMessages.map((msg) => (
+                <li key={msg.id} className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                    {msg.sender.charAt(0)}
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex justify-between items-center mb-0.5">
+                      <span className="font-semibold text-gray-800">{msg.sender}</span>
+                      <span className="text-xs text-gray-400">{msg.time}</span>
+                    </div>
+                    <p className="text-gray-700 text-sm leading-snug">{msg.message}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Quick Links (Bottom Section) */}
+      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
+          <LinkIcon className="h-5 w-5 text-violet-500" /> Quick Links & Resources
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {quickLinks.map((link, idx) => (
+            <a
+              key={idx}
+              href={link.href}
+              className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
+                         hover:bg-violet-50 hover:text-violet-700 transition-colors duration-200
+                         focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2"
+            >
+              <div className="text-violet-500 mb-2">{link.icon}</div>
+              <span className="text-center text-sm font-medium">{link.label}</span>
+            </a>
           ))}
         </div>
-      </div>
-
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-4 sm:p-6 lg:p-8 font-sans">
-            <motion.div
-              className="max-w-7xl mx-auto"
-              initial="hidden"
-              animate="visible"
-              variants={containerVariants}
-            >
-              {/* Welcome Section */}
-              <motion.div
-                className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-2xl p-6 sm:p-8 mb-8 shadow-lg flex items-center justify-between flex-wrap gap-4"
-                variants={itemVariants}
-              >
-                <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-2">
-                    Welcome, {name}! <SparklesIcon className="w-8 h-8 text-yellow-300" />
-                  </h1>
-                  <p className="text-lg text-indigo-100">Your learning journey continues here.</p>
-                </div>
-                <button
-                  className="inline-flex items-center bg-white text-indigo-700 font-semibold py-3 px-6 rounded-full shadow-md
-                             hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white"
-                  onClick={() => console.log('View All Courses clicked')}
-                >
-                  View All Courses <ArrowRightIcon className="w-5 h-5 ml-2" />
-                </button>
-              </motion.div>
-      
-              {/* Overall Stats */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow flex items-center gap-4" variants={cardVariants}>
-                  <ChartBarIcon className="w-10 h-10 text-indigo-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Courses</p>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{overallStats.totalCourses}</h3>
-                  </div>
-                </motion.div>
-                <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow flex items-center gap-4" variants={cardVariants}>
-                  <ClipboardDocumentCheckIcon className="w-10 h-10 text-green-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Courses Completed</p>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{overallStats.completedCourses}</h3>
-                  </div>
-                </motion.div>
-                <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow flex items-center gap-4" variants={cardVariants}>
-                  <AcademicCapIcon className="w-10 h-10 text-yellow-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Certificates Earned</p>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{overallStats.certificatesEarned}</h3>
-                  </div>
-                </motion.div>
-                <motion.div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow flex items-center gap-4" variants={cardVariants}>
-                  <ClockIcon className="w-10 h-10 text-rose-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Avg. Progress</p>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{overallStats.averageProgress}</h3>
-                  </div>
-                </motion.div>
-              </div>
-      
-      
-              {/* Main Content Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column: Ongoing Courses */}
-                <motion.div className="lg:col-span-2" variants={itemVariants}>
-                  <h2 className="text-2xl font-bold mb-5 text-gray-800 dark:text-white">Your Courses</h2>
-                  <div className="space-y-6">
-                    {currentCourses.map((course) => (
-                      <motion.div
-                        key={course.id}
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden flex flex-col sm:flex-row group
-                                   hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 cursor-pointer"
-                        variants={cardVariants}
-                        onClick={() => console.log(`Course clicked: ${course.title}`)}
-                      >
-                        <div className="flex-shrink-0 w-full sm:w-48 h-40 sm:h-auto overflow-hidden">
-                          <img
-                            src={customLoader({ src: course.imageUrl, width: 400 })}
-                            alt={course.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://placehold.co/400x250/A0A0A0/FFFFFF?text=Course"; }}
-                          />
-                        </div>
-                        <div className="p-5 flex-grow">
-                          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{course.title}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Instructor: {course.instructor}</p>
-                          {/* Progress Bar */}
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2">
-                            <div
-                              className="bg-indigo-500 h-2.5 rounded-full"
-                              style={{ width: `${course.progress}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-                            Progress: {course.progress}% ({course.lessonsCompleted}/{course.totalLessons} Lessons)
-                          </p>
-                          <a
-                            href={course.link}
-                            className="inline-flex items-center text-indigo-600 dark:text-purple-400 font-medium hover:underline group"
-                            onClick={(e) => { e.stopPropagation(); console.log(`Go to course: ${course.title}`); }}
-                          >
-                            Continue Learning <ArrowRightIcon className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                          </a>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-      
-                {/* Right Column: Upcoming & Announcements */}
-                <div className="lg:col-span-1 space-y-8">
-                  {/* Upcoming Assignments */}
-                  <motion.div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" variants={itemVariants}>
-                    <h2 className="text-xl font-bold mb-5 flex items-center gap-2 text-gray-800 dark:text-white">
-                      <CalendarDaysIcon className="w-6 h-6 text-orange-500" /> Upcoming Deadlines
-                    </h2>
-                    <ul className="space-y-4">
-                      {upcomingAssignments.map((assignment) => (
-                        <motion.li
-                          key={assignment.id}
-                          className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
-                          variants={cardVariants}
-                        >
-                          <h3 className="font-semibold text-gray-900 dark:text-white leading-tight">{assignment.title}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{assignment.course}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex items-center gap-1.5">
-                            <ClockIcon className="w-4 h-4" /> Due: {assignment.dueDate}
-                          </p>
-                          <a
-                            href={assignment.link}
-                            className="inline-flex items-center text-indigo-500 hover:underline text-sm mt-2 group"
-                            onClick={(e) => { e.preventDefault(); console.log(`Assignment clicked: ${assignment.title}`); }}
-                          >
-                            View Assignment <ArrowRightIcon className="ml-1 w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" />
-                          </a>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </motion.div>
-      
-                  {/* Recent Announcements */}
-                  <motion.div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" variants={itemVariants}>
-                    <h2 className="text-xl font-bold mb-5 flex items-center gap-2 text-gray-800 dark:text-white">
-                      <BellAlertIcon className="w-6 h-6 text-red-500" /> Latest Announcements
-                    </h2>
-                    <ul className="space-y-4">
-                      {recentAnnouncements.map((announcement) => (
-                        <motion.li
-                          key={announcement.id}
-                          className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
-                          variants={cardVariants}
-                        >
-                          <h3 className="font-semibold text-gray-900 dark:text-white leading-tight">{announcement.title}</h3>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{announcement.date}</p>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{announcement.summary}</p>
-                          <a
-                            href={announcement.link}
-                            className="inline-flex items-center text-indigo-500 hover:underline text-sm mt-2 group"
-                            onClick={(e) => { e.preventDefault(); console.log(`Announcement clicked: ${announcement.title}`); }}
-                          >
-                            Read More <ArrowRightIcon className="ml-1 w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" />
-                          </a>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </motion.div>
-                </div>
-              </div>
-            </motion.div>
       </div>
     </div>
   );
 }
-
-
-// Quick stats (classes, subjects, hours, peers)
-
-// Charts for attendance and subject performance
-
-// Today's classes list with teacher and room info
-
-// Let me know if you want to add homework tracking, a calendar, grades, or messaging!
