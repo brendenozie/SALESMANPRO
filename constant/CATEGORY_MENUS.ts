@@ -291,22 +291,22 @@ export const getCategoryMenus = (adminSlug: string) => ({
 
   "Students": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "My Classes", href: `/admin/${adminSlug}/myclasses`, icon: ClipboardDocumentListIcon },
-    { label: "Assignments", href: `/admin/${adminSlug}/assignments`, icon: DocumentTextIcon },
-    { label: "Grades", href: `/admin/${adminSlug}/grades`, icon: ChartBarIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Resources", href: `/admin/${adminSlug}/resources`, icon: PresentationChartBarIcon },
+    { label: "My Classes", href: `/admin/${adminSlug}/studentclasses`, icon: ClipboardDocumentListIcon },
+    { label: "Assignments", href: `/admin/${adminSlug}/studentassignments`, icon: DocumentTextIcon },
+    { label: "Grades", href: `/admin/${adminSlug}/studentgrades`, icon: ChartBarIcon },
+    { label: "Schedule", href: `/admin/${adminSlug}/studentschedule`, icon: CalendarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/studentmessages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Resources", href: `/admin/${adminSlug}/studentresources`, icon: PresentationChartBarIcon },
   ],
 
   "Pupil": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "My Classes", href: `/admin/${adminSlug}/myclasses`, icon: ClipboardDocumentListIcon },
-    { label: "Assignments", href: `/admin/${adminSlug}/assignments`, icon: DocumentTextIcon },
-    { label: "Grades", href: `/admin/${adminSlug}/grades`, icon: ChartBarIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Resources", href: `/admin/${adminSlug}/resources`, icon: PresentationChartBarIcon },
+    { label: "My Classes", href: `/admin/${adminSlug}/studentclasses`, icon: ClipboardDocumentListIcon },
+    { label: "Assignments", href: `/admin/${adminSlug}/studentassignments`, icon: DocumentTextIcon },
+    { label: "Grades", href: `/admin/${adminSlug}/studentgrades`, icon: ChartBarIcon },
+    { label: "Schedule", href: `/admin/${adminSlug}/studentschedule`, icon: CalendarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/studentmessages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Resources", href: `/admin/${adminSlug}/studentresources`, icon: PresentationChartBarIcon },
   ],
 
   "School Head": [
