@@ -17,7 +17,9 @@ async function findExistingUserByEmail(email: string) {
     (await prisma.consumer.findUnique({ where: { email } })) ||
     (await prisma.salesAgent.findUnique({ where: { email } })) ||
     (await prisma.client.findUnique({ where: { email } })) ||
-    (await prisma.user.findUnique({ where: { email } }))
+    (await prisma.user.findUnique({ where: { email } })) ||
+    (await prisma.student.findUnique({ where: { email } })) ||
+    (await prisma.educator.findUnique({ where: { email } }))
   );
 }
 
