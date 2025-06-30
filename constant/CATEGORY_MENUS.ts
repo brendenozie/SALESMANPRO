@@ -105,18 +105,37 @@ export const getCategoryMenus = (adminSlug: string) => ({
       label: "Management",
       icon: ClipboardDocumentListIcon,
       subItems: [
+        
+        { label: "Departments", href: `/admin/${adminSlug}/departments` },
+        { label: "Subjects", href: `/admin/${adminSlug}/subjects` },
+        { label: "Lessons", href: `/admin/${adminSlug}/lessons` },
+        { label: "Units", href: `/admin/${adminSlug}/units` },
+        { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
+        { label: "Materials", href: `/admin/${adminSlug}/materials` },
+        { label: "Courses", href: `/admin/${adminSlug}/courses` },
+        { label: "Course Materials", href: `/admin/${adminSlug}/course-materials` },
         { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
         { label: "Students", href: `/admin/${adminSlug}/students` },          
         { label: "Classes", href: `/admin/${adminSlug}/classes` },
+
       ],
     },
     {
-      label: "Courses",
+      label: "Exams & Assessments",
       icon: AcademicCapIcon,
       subItems: [
-        { label: "All Courses", href: `/admin/${adminSlug}/courses` },
+        { label: "Exams", href: `/admin/${adminSlug}/exams` },
+        { label: "Results", href: `/admin/${adminSlug}/results` },
       ],
-    }, 
+    },
+    {
+      label: "Attendance",
+      icon: CalendarIcon,
+      subItems: [
+        { label: "Attendance Records", href: `/admin/${adminSlug}/attendance` },
+        { label: "Attendance Reports", href: `/admin/${adminSlug}/attendance-reports` },
+      ],
+    },
     {
       label: "Events",
       icon: AcademicCapIcon,
