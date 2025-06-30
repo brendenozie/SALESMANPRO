@@ -41,7 +41,8 @@ export async function GET(request: Request) {
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error fetching departments:", error);
-    return NextResponse.json({ message: "Failed to fetch departments", error: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ message: "Failed to fetch departments", error: errorMessage }, { status: 500 });
   }
 }
 
@@ -73,9 +74,16 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error creating department:", error);
     // Handle unique constraint error for department name
-    if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as any).code === 'P2002' &&
+      "meta" in error &&
+      (error as any).meta?.target?.includes('name')
+    ) {
       return NextResponse.json({ message: "A department with this name already exists." }, { status: 409 });
     }
-    return NextResponse.json({ message: "Failed to create department", error: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Failed to create department", error: (error as any).message }, { status: 500 });
   }
 }
