@@ -1,65 +1,54 @@
-// app/admin/categories-manager/page.tsx
+// app/admin/departments-manager/page.tsx
 
 import React from "react";
-import DepartmentsPage from "./DepartmentsPage";
+import DepartmentsPage from "./DepartmentsPage"; // Ensure this path is correct
+import { DepartmentData } from "./DepartmentsPage"; // Import the type
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-// Define your Category and Subcategory shapes (adjust fields if your API differs)
-export type Subcategory = {
-  _id: { $oid: string };
-  name: string;
-  slug: string;
-  sortOrder: number;
-  visible: boolean;
-};
-
-export type Category = {
-  _id: { $oid: string };
-  name: string;
-  slug: string;
-  description?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  metaKeywords?: string[];
-  sortOrder?: number;
-  visible?: boolean;
-  isFeatured?: boolean;
-  showInHomepage?: boolean;
-  attributes?: Record<string, any>;
-  subcategories: Subcategory[];
-};
 
 interface PageProps {
   // No dynamic route params here; adjust if you move under [slug].
 }
 
 /**
- * Server Component: fetches all categories (including their subcategories)
+ * Server Component: fetches all departments
  * and passes them down to the client component.
  */
-export default async function CategoryManagerPage(_: PageProps) {
-  let categoriesData: Category[] = [];
+export default async function DepartmentsManagerPage(_: PageProps) {
+  let departmentsData: DepartmentData[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/get-categories`, {
+    const res = await fetch(`${apiUrl}/admin/departments`, { // Changed API endpoint
       cache: "no-store", // SSR on every request
     });
 
     if (res.ok) {
-      // Assuming API responds with { categories: Category[] }
-      const json = (await res.json()) as { categories: Category[] };
-      categoriesData = json.categories;
+      // Assuming API responds directly with DepartmentData[]
+      departmentsData = (await res.json()) as DepartmentData[];
     } else {
       console.error(
-        "[CategoryManagerPage] Failed to fetch categories →",
+        "[DepartmentsManagerPage] Failed to fetch departments →",
         res.status,
         res.statusText
       );
+      // Optionally, set an empty array or specific error state if fetch fails
+      departmentsData = [];
     }
   } catch (err: any) {
-    console.error("[CategoryManagerPage] Error fetching categories →", err.message);
+    console.error("[DepartmentsManagerPage] Error fetching departments →", err.message);
+    departmentsData = []; // Ensure an empty array is passed on error
   }
 
-  return <DepartmentsPage />;
+  // Mock users for head of department selection (in a real app, fetch these from an API)
+  const possibleHeads = [
+    { id: 'user_mock_1', name: 'Mr. John Doe', email: 'john.doe@example.com' },
+    { id: 'user_mock_2', name: 'Mrs. Jane Smith', email: 'jane.smith@example.com' },
+    { id: 'user_mock_3', name: 'Ms. Emily White', email: 'emily.white@example.com' },
+    { id: 'user_mock_4', name: 'Mr. David Green', email: 'david.green@example.com' },
+    { id: 'user_mock_5', name: 'Ms. Sarah Brown', email: 'sarah.brown@example.com' },
+    { id: 'user_mock_6', name: 'Dr. Anne Ndugu', email: 'anne.ndugu@example.com' },
+  ];
+
+
+  return <DepartmentsPage initialDepartments={departmentsData} possibleHeads={possibleHeads} />;
 }

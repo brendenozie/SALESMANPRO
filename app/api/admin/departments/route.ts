@@ -1,0 +1,81 @@
+import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb"; 
+
+// GET /api/departments
+// Fetches all departments with aggregated counts of educators and courses.
+export async function GET(request: Request) {
+  try {
+    const departments = await prisma.department.findMany({
+      include: {
+        _count: {
+          select: {
+            educators: true, // Count of educators in this department
+            courses: true,   // Count of courses offered by this department
+          },
+        },
+        head: { // Include head of department details if available
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc', // Order departments alphabetically by name
+      },
+    });
+
+    // Transform the data to include counts directly in the main object
+    const response = departments.map(department => ({
+      id: department.id,
+      name: department.name,
+      description: department.description,
+      head: department.head, // Contains id, name, email of the head
+      educatorCount: department._count.educators,
+      courseCount: department._count.courses,
+      createdAt: department.createdAt,
+      updatedAt: department.updatedAt,
+    }));
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    return NextResponse.json({ message: "Failed to fetch departments", error: error.message }, { status: 500 });
+  }
+}
+
+// POST /api/departments
+// Creates a new department.
+export async function POST(request: Request) {
+  if (request.method !== "POST") {
+    return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
+  }
+
+  try {
+    const body = await request.json();
+    const { name, description, headId } = body;
+
+    // Basic validation (add more robust validation as needed)
+    if (!name) {
+      return NextResponse.json({ message: "Department name is required." }, { status: 400 });
+    }
+
+    const newDepartment = await prisma.department.create({
+      data: {
+        name,
+        description,
+        headId, // This will link to an existing User's ID
+      },
+    });
+
+    return NextResponse.json(newDepartment, { status: 201 });
+  } catch (error) {
+    console.error("Error creating department:", error);
+    // Handle unique constraint error for department name
+    if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
+      return NextResponse.json({ message: "A department with this name already exists." }, { status: 409 });
+    }
+    return NextResponse.json({ message: "Failed to create department", error: error.message }, { status: 500 });
+  }
+}

@@ -737,28 +737,27 @@ model SalesAgent {
 }
 
 model User {
-  id             String              @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String              @unique
-  password       String?
-  role           ROLE?               @default(ADMIN)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  accounts       Account[]
-  sessions       Session[]
-  tasks          Task[]
-  auditLogs      AuditLog[]
-  requests       Request[]
-  returns        Return[]
-  Assignment     ProductAssignment[]
-  emailVerified  DateTime?
-  image          String?
-  phone          String?
-  username       String?
-  bio            String?
-  address        String?
-  profilePicture String?
-
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String?
+  email                 String                  @unique
+  password              String?
+  role                  ROLE?                   @default(ADMIN)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  accounts              Account[]
+  sessions              Session[]
+  tasks                 Task[]
+  auditLogs             AuditLog[]
+  requests              Request[]
+  returns               Return[]
+  Assignment            ProductAssignment[]
+  emailVerified         DateTime?
+  image                 String?
+  phone                 String?
+  username              String?
+  bio                   String?
+  address               String?
+  profilePicture        String?
   ProductReview         ProductReview[]
   ProductReviewLog      ProductReviewLog[]
   ProductReviewResponse ProductReviewResponse[]
@@ -774,18 +773,7 @@ model User {
   Announcement          Announcement[]
 
   // If an admin can also post announcements, link directly from User
-  announcements    Announcement[]     @relation("UserAnnouncements")
-  DiscussionTopic  DiscussionTopic[]
-  DiscussionPost   DiscussionPost[]
-  AttendanceRecord AttendanceRecord[]
-
-  // Opposite relation for DiscussionPost.createdBy
-  CreatedDiscussionPost DiscussionPost[] @relation("CreatedDiscussionPost")
-
-  Department Department[]
-
-  // Opposite relation for DepartmentHead
-  headedDepartments Department[] @relation("DepartmentHead")
+  announcements Announcement[] @relation("UserAnnouncements")
 }
 
 enum Status {
@@ -1553,8 +1541,6 @@ model Student {
   submissions        Submission[]
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-  AttendanceRecord   AttendanceRecord[]
-  ExamSubmission     ExamSubmission[]
 }
 
 // Educator Profile Model (one-to-one with User)
@@ -1574,51 +1560,33 @@ model Educator {
   profilePicture String?
   role           ROLE?     @default(EDUCATOR)
 
-  departmentId String?     @db.ObjectId
-  department   Department? @relation(fields: [departmentId], references: [id])
-
   institutionName    String?
   totalStudents      Int             @default(0) // Can be calculated or directly stored
   totalCoursesTaught Int             @default(0) // Can be calculated or directly stored
   coursesCreated     Course[]
   classesScheduled   ClassSchedule[]
 
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  Exam             Exam[]
-  CourseMaterial   CourseMaterial[]
-  AttendanceRecord AttendanceRecord[] @relation("RecordedAttendance")
-
-  DiscussionTopic         DiscussionTopic[] @relation("EducatorDiscussionTopics")
-  createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
-
-  uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Course Model
 model Course {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
   title            String
   description      String?
   imageUrl         String?
   instructorId     String // Link to EducatorProfile
-  instructor       Educator @relation(fields: [instructorId], references: [id])
+  instructor       Educator           @relation(fields: [instructorId], references: [id])
   totalLessons     Int?
   rating           Float? // e.g., 4.5
   level            String? // e.g., "3rd Grade", "All Levels", "Advanced", "Undergraduate", "Diploma"
-  studentsEnrolled Int      @default(0) // Can be calculated or stored for quick access
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  departmentId String?     @db.ObjectId // Optional: if a course can exist without a direct department link
-  department   Department? @relation(fields: [departmentId], references: [id])
-
-  assignments     CourseAssignment[]
-  classSchedules  ClassSchedule[]
-  enrollments     CourseEnrollment[]
-  Exam            Exam[]
-  CourseMaterial  CourseMaterial[]
-  DiscussionTopic DiscussionTopic[]
+  studentsEnrolled Int                @default(0) // Can be calculated or stored for quick access
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  assignments      CourseAssignment[]
+  classSchedules   ClassSchedule[]
+  enrollments      CourseEnrollment[]
 }
 
 // Course Enrollment Model (Join table for StudentProfile <-> Course)
@@ -1679,197 +1647,16 @@ model Announcement {
 
 // Class Schedule Model (for educator's classes/lectures)
 model ClassSchedule {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  courseId         String             @db.ObjectId
-  course           Course             @relation(fields: [courseId], references: [id])
-  educatorId       String             @db.ObjectId
-  educator         Educator           @relation(fields: [educatorId], references: [id])
-  date             DateTime // Date of the class
-  startTime        DateTime // Time of the class (e.g., "10:00 AM")
-  endTime          DateTime // End time of the class (e.g., "11:30 AM")
-  topic            String?
-  meetingLink      String? // Link to video conferencing (e.g., Zoom, Google Meet)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  AttendanceRecord AttendanceRecord[]
-}
-
-// Enum for Attendance Status
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  TARDY
-  EXCUSED
-}
-
-// Attendance Record Model
-// Records a student's attendance for a specific class schedule session or a general day.
-model AttendanceRecord {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  studentId       String           @db.ObjectId
-  student         Student          @relation(fields: [studentId], references: [id])
-  classScheduleId String?          @db.ObjectId // Optional: Link to a specific scheduled class session
-  classSchedule   ClassSchedule?   @relation(fields: [classScheduleId], references: [id])
-  date            DateTime // Date of the attendance record
-  status          AttendanceStatus // Enum: PRESENT, ABSENT, TARDY, EXCUSED
-  reason          String? // Optional: Reason for absence/tardy/excused
-  recordedById    String           @db.ObjectId // User (Educator or Admin) who recorded attendance
-  recordedBy      Educator         @relation("RecordedAttendance", fields: [recordedById], references: [id])
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  User            User?            @relation(fields: [userId], references: [id])
-  userId          String?          @db.ObjectId
-
-  @@unique([studentId, date, classScheduleId]) // Ensure unique attendance per student per class session/day
-  @@index([studentId, date])
-  @@index([classScheduleId])
-}
-
-// Enum for Exam Type
-enum ExamType {
-  QUIZ
-  MIDTERM
-  FINAL
-  UNIT_TEST
-  PRACTICAL
-  ESSAY_SUBMISSION // For exams that are primarily essay submissions
-  PROJECT_ASSESSMENT // For exams that are project-based
-  OTHER
-}
-
-// Exam Model
-// Defines a structured examination or assessment event.
-model Exam {
-  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
-  title               String
-  description         String?
-  courseId            String           @db.ObjectId
-  course              Course           @relation(fields: [courseId], references: [id])
-  date                DateTime // Date of the exam
-  startTime           String? // e.g., "09:00 AM"
-  endTime             String? // e.g., "10:30 AM"
-  location            String? // e.g., "School Hall A", "Online"
-  notes               String? // Special instructions for students
-  type                ExamType         @default(UNIT_TEST) // Enum: QUIZ, MIDTERM, FINAL, etc.
-  totalPoints         Float            @default(100)
-  isPublished         Boolean          @default(false) // If results are visible to students
-  createdByEducatorId String           @db.ObjectId // Educator who created the exam
-  createdByEducator   Educator         @relation(fields: [createdByEducatorId], references: [id])
-  submissions         ExamSubmission[]
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-
-  @@index([courseId, date])
-  @@index([createdByEducatorId])
-}
-
-// Exam Submission Model
-// Records a student's submission and result for an Exam.
-model ExamSubmission {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  examId            String    @db.ObjectId
-  exam              Exam      @relation(fields: [examId], references: [id])
-  studentId         String    @db.ObjectId
-  student           Student   @relation(fields: [studentId], references: [id])
-  submittedAt       DateTime  @default(now())
-  score             Float? // e.g., 85.5
-  gradedAt          DateTime?
-  submissionContent String? // e.g., URL to file, text content, JSON of answers
-  feedback          String? // Teacher's feedback on the exam
-
-  @@unique([examId, studentId]) // Ensure one submission per student per exam
-  @@index([studentId, submittedAt])
-}
-
-// Enum for Course Material Type
-enum CourseMaterialType {
-  DOCUMENT // PDF, DOC, PPT
-  VIDEO
-  LINK // External website
-  IMAGE
-  AUDIO
-  OTHER
-}
-
-// Course Material Model
-// Stores links to various educational resources for a course.
-model CourseMaterial {
-  id           String             @id @default(auto()) @map("_id") @db.ObjectId
-  courseId     String             @db.ObjectId
-  course       Course             @relation(fields: [courseId], references: [id])
-  title        String
-  description  String?
-  fileUrl      String? // URL for downloadable files (PDFs, docs)
-  linkUrl      String? // URL for external links (videos, websites)
-  type         CourseMaterialType @default(DOCUMENT) // Enum: DOCUMENT, VIDEO, LINK, IMAGE, AUDIO
-  uploadedById String             @db.ObjectId // Educator who uploaded the material
-  uploadedBy   Educator           @relation("UploadedMaterial", fields: [uploadedById], references: [id])
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  Educator     Educator?          @relation(fields: [educatorId], references: [id])
-  educatorId   String?            @db.ObjectId
-
-  @@index([courseId, type])
-  @@index([uploadedById])
-}
-
-// Discussion Topic Model
-// Represents a discussion forum topic within a course or globally.
-model DiscussionTopic {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  courseId    String?          @db.ObjectId // Optional: if topic is specific to a course
-  course      Course?          @relation(fields: [courseId], references: [id])
-  title       String
-  content     String? // Initial post content
-  createdById String           @db.ObjectId // User (Educator or Student) who created the topic
-  createdBy   Educator         @relation("CreatedDiscussionTopic", fields: [createdById], references: [id])
-  educator    Educator?        @relation("EducatorDiscussionTopics", fields: [createdById], references: [id])
-  posts       DiscussionPost[] // All posts within this topic
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  User        User?            @relation(fields: [userId], references: [id])
-  userId      String?          @db.ObjectId
-
-  @@index([courseId])
-  @@index([createdById])
-}
-
-// Discussion Post Model
-// Represents an individual post or reply within a discussion topic.
-model DiscussionPost {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  topicId     String           @db.ObjectId
-  topic       DiscussionTopic  @relation(fields: [topicId], references: [id])
-  parentId    String?          @db.ObjectId // Optional: For replies to other posts
-  parent      DiscussionPost?  @relation("ReplyToPost", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Self-referencing
-  content     String
-  createdById String           @db.ObjectId // User (Educator or Student) who created the post
-  createdBy   User             @relation("CreatedDiscussionPost", fields: [createdById], references: [id])
-  replies     DiscussionPost[] @relation("ReplyToPost") // Replies to this post
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  User        User?            @relation(fields: [userId], references: [id])
-  userId      String?          @db.ObjectId
-
-  @@index([topicId])
-  @@index([parentId])
-  @@index([createdById])
-}
-
-// Department Model
-// Represents an academic or administrative department within the school.
-model Department {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  name        String // e.g., "Mathematics", "English", "Administration"
-  description String?
-  headId      String?    @db.ObjectId // Optional: Link to the User (Educator/Admin) who heads the department
-  head        User?      @relation("DepartmentHead", fields: [headId], references: [id])
-  educators   Educator[] // Educators belonging to this department
-  courses     Course[] // Courses offered by this department
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  User        User?      @relation(fields: [userId], references: [id])
-  userId      String?    @db.ObjectId
-
-  @@index([name])
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId    String   @db.ObjectId
+  course      Course   @relation(fields: [courseId], references: [id])
+  educatorId  String   @db.ObjectId
+  educator    Educator @relation(fields: [educatorId], references: [id])
+  date        DateTime // Date of the class
+  startTime   DateTime // Time of the class (e.g., "10:00 AM")
+  endTime     DateTime // End time of the class (e.g., "11:30 AM")
+  topic       String?
+  meetingLink String? // Link to video conferencing (e.g., Zoom, Google Meet)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

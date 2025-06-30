@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   BriefcaseIcon, // Main icon for departments
   CalendarDaysIcon, // For date
@@ -12,75 +12,39 @@ import {
   AcademicCapIcon, // For class count
 } from '@heroicons/react/24/outline';
 
-// Sample Data (leveraging previously used data structures where possible)
-const sampleDepartmentsData = [
-  {
-    id: 'D001',
-    name: 'Mathematics Department',
-    head: 'Mr. John Doe', // Assuming John Doe is Head of Math
-    description: 'Responsible for all mathematics curriculum and instruction from Grade 7 to 12.',
-  },
-  {
-    id: 'D002',
-    name: 'English Department',
-    head: 'Mrs. Jane Smith',
-    description: 'Focuses on language arts, literature, and communication skills.',
-  },
-  {
-    id: 'D003',
-    name: 'Science Department',
-    head: 'Ms. Emily White',
-    description: 'Covers Biology, Chemistry, and Physics curricula.',
-  },
-  {
-    id: 'D004',
-    name: 'Social Studies Department',
-    head: 'Mr. David Green',
-    description: 'Educates students on history, geography, civics, and economics.',
-  },
-  {
-    id: 'D005',
-    name: 'Arts Department',
-    head: 'Ms. Sarah Brown',
-    description: 'Includes visual arts, performing arts, and music education.',
-  },
-];
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// Re-using simplified sample data from other pages for dynamic counts
-const allTeachers = [
-  { id: 'T001', name: 'Mr. John Doe', department: 'Mathematics' },
-  { id: 'T002', name: 'Mrs. Jane Smith', department: 'English' },
-  { id: 'T003', name: 'Ms. Emily White', department: 'Science' },
-  { id: 'T004', name: 'Mr. David Green', department: 'Social Studies' },
-  { id: 'T005', name: 'Ms. Sarah Brown', department: 'Arts' },
-  { id: 'T006', name: 'Dr. Anne Ndugu', department: 'Science' }, // Additional teacher
-];
+// Define the shape of department data received from API
+export type DepartmentData = {
+  id: string;
+  name: string;
+  description?: string;
+  head?: { id: string; name: string; email: string } | null; // Matches API response
+  educatorCount: number;
+  courseCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
-const allClasses = [
-  { id: 'CL101', name: 'Grade 7 Mathematics', teacher: 'Mr. John Doe', grade: '7' },
-  { id: 'CL102', name: 'Grade 8 English Language', teacher: 'Mrs. Jane Smith', grade: '8' },
-  { id: 'CL103', name: 'Grade 9 Algebra', teacher: 'Mr. John Doe', grade: '9' },
-  { id: 'CL104', name: 'Grade 10 Geometry', teacher: 'Mr. John Doe', grade: '10' },
-  { id: 'CL105', name: 'Grade 9 Biology', teacher: 'Ms. Emily White', grade: '9' },
-  { id: 'CL106', name: 'World History I', teacher: 'Mr. David Green', grade: '10' },
-  { id: 'CL107', name: 'Art Fundamentals', teacher: 'Ms. Sarah Brown', grade: '7' },
-  { id: 'CL108', name: 'Advanced Physics', teacher: 'Dr. Anne Ndugu', grade: '11' },
-];
+// Define the shape of a possible head of department (User)
+export type PossibleHead = {
+  id: string;
+  name: string;
+  email: string;
+};
 
+interface DepartmentsPageProps {
+  initialDepartments: DepartmentData[];
+  possibleHeads: PossibleHead[]; // List of users who can be heads
+}
 
-export default function DepartmentsPage() {
-  const [departments, setDepartments] = useState(sampleDepartmentsData);
+export default function DepartmentsPage({ initialDepartments, possibleHeads }: DepartmentsPageProps) {
+  const [departments, setDepartments] = useState<DepartmentData[]>(initialDepartments);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
-  type Department = {
-    id: string;
-    name: string;
-    head: string;
-    description: string;
-    teacherCount?: number;
-    classCount?: number;
-  };
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [editingDepartment, setEditingDepartment] = useState<DepartmentData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -88,70 +52,198 @@ export default function DepartmentsPage() {
     day: 'numeric',
   });
 
-  // Calculate dynamic data for each department
-  const departmentsWithCounts = useMemo(() => {
-    return departments.map(dept => {
-      const teacherCount = allTeachers.filter(t => t.department === dept.name.replace(' Department', '')).length;
-      // This is a simplification: linking classes to departments via teacher's department
-      const classCount = allClasses.filter(cls => {
-          const teacher = allTeachers.find(t => t.name === cls.teacher);
-          return teacher && teacher.department === dept.name.replace(' Department', '');
-      }).length;
-      return { ...dept, teacherCount, classCount };
-    });
-  }, [departments]); // Recalculate if departments state changes
+  // --- Data Fetching and Management ---
+  const fetchDepartments = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/departments`);
+      if (res.ok) {
+        const data: DepartmentData[] = await res.json();
+        setDepartments(data);
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to fetch departments.");
+        // Fallback to initial data if API fails after initial load
+        if (initialDepartments.length > 0) {
+          setDepartments(initialDepartments);
+        } else {
+          // If even initial data is empty, use a small sample for display
+          setDepartments(sampleDepartmentsDataFallback);
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error fetching departments.");
+      // Fallback to initial data if API fails after initial load
+      if (initialDepartments.length > 0) {
+        setDepartments(initialDepartments);
+      } else {
+        // If even initial data is empty, use a small sample for display
+        setDepartments(sampleDepartmentsDataFallback);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const filteredDepartments = departmentsWithCounts.filter(dept =>
-    dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dept.head.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dept.description.toLowerCase().includes(searchTerm.toLowerCase())
-  ).sort((a, b) => a.name.localeCompare(b.name));
+  // Fetch departments on mount if initial data is empty (e.g., server fetch failed)
+  useEffect(() => {
+    if (initialDepartments.length === 0) {
+      fetchDepartments();
+    }
+  }, [initialDepartments]);
+
+
+  // Sample Data (Fallback for when API data is not available or empty)
+  const sampleDepartmentsDataFallback: DepartmentData[] = [
+    {
+      id: 'D001',
+      name: 'Mathematics Department',
+      head: { id: 'user_mock_1', name: 'Mr. John Doe', email: 'john.doe@example.com' },
+      description: 'Responsible for all mathematics curriculum and instruction from Grade 7 to 12.',
+      educatorCount: 5, // Sample count
+      courseCount: 12,  // Sample count
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'D002',
+      name: 'English Department',
+      head: { id: 'user_mock_2', name: 'Mrs. Jane Smith', email: 'jane.smith@example.com' },
+      description: 'Focuses on language arts, literature, and communication skills.',
+      educatorCount: 7,
+      courseCount: 15,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'D003',
+      name: 'Science Department',
+      head: { id: 'user_mock_3', name: 'Ms. Emily White', email: 'emily.white@example.com' },
+      description: 'Covers Biology, Chemistry, and Physics curricula.',
+      educatorCount: 6,
+      courseCount: 10,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+
+
+  const filteredDepartments = useMemo(() => {
+    return departments.filter(dept =>
+      dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (dept.head?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (dept.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+    ).sort((a, b) => a.name.localeCompare(b.name));
+  }, [departments, searchTerm]);
 
   const totalDepartments = departments.length;
-  const totalTeachersAcrossDepartments = allTeachers.length;
-  const totalClassesAcrossDepartments = allClasses.length;
+  // These counts would ideally come from the API or be calculated on the backend
+  // For now, using simplified counts based on the current `departments` state
+  const totalTeachersAcrossDepartments = departments.reduce((sum, dept) => sum + (dept.educatorCount || 0), 0);
+  const totalClassesAcrossDepartments = departments.reduce((sum, dept) => sum + (dept.courseCount || 0), 0);
 
 
-  // Event handlers
-  type DepartmentInput = {
-    name: string;
-    head: string;
-    description: string;
+  // Event handlers for CRUD operations via API
+  const handleAddNewDepartment = async (newDeptData: { name: string; description: string; headId?: string }) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/departments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newDeptData),
+      });
+
+      if (res.ok) {
+        // Re-fetch all departments to get the latest data including counts
+        await fetchDepartments();
+        setShowFormModal(false);
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to add department.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error adding department.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleAddNewDepartment = (newDeptData: DepartmentInput) => {
-    const newId = `D${String(departments.length + 1).padStart(3, '0')}`; // Simple ID generation
-    setDepartments([...departments, { id: newId, ...newDeptData }]);
-    setShowFormModal(false);
+  const handleEditDepartment = async (updatedDeptData: { id: string; name: string; description: string; headId?: string }) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/departments/${updatedDeptData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedDeptData),
+      });
+
+      if (res.ok) {
+        // Re-fetch all departments to get the latest data including counts
+        await fetchDepartments();
+        setShowFormModal(false);
+        setEditingDepartment(null);
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to update department.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error updating department.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEditDepartment = (updatedDeptData: { id?: string; name: string; head: string; description: string }) => {
-    if (!updatedDeptData.id) return; // Ensure id exists before updating
-    setDepartments(departments.map(dept => dept.id === updatedDeptData.id ? { ...dept, ...updatedDeptData } : dept));
-    setShowFormModal(false);
-    setEditingDepartment(null);
-  };
+  const handleDeleteDepartment = async (deptId: string) => {
+    if (!confirm("Are you sure you want to delete this department? This action cannot be undone and may affect associated teachers and classes.")) {
+      return; // User cancelled
+    }
 
-  const handleDeleteDepartment = (deptId: string) => {
-    if (confirm("Are you sure you want to delete this department? This action cannot be undone and may affect associated teachers and classes.")) { // Use custom modal in real app
-      setDepartments(departments.filter(dept => dept.id !== deptId));
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/departments/${deptId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // Re-fetch all departments to get the latest data
+        await fetchDepartments();
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to delete department.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error deleting department.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // --- Department Form Modal ---
   type DepartmentFormModalProps = {
-    departmentData?: { id?: string; name: string; head: string; description: string };
+    departmentData?: DepartmentData | null;
     onClose: () => void;
-    onSave: (data: { id?: string; name: string; head: string; description: string }) => void;
+    onSave: (data: { id: string; name: string; description: string; headId?: string }) => void;
     isEdit?: boolean;
+    possibleHeads: PossibleHead[];
   };
 
-  const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({ departmentData, onClose, onSave, isEdit = false }) => {
-    const [formData, setFormData] = useState(departmentData || {
-      name: '', head: '', description: ''
+  const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({ departmentData, onClose, onSave, isEdit = false, possibleHeads }) => {
+    const [formData, setFormData] = useState({
+      id: departmentData?.id || '',
+      name: departmentData?.name || '',
+      description: departmentData?.description || '',
+      headId: departmentData?.head?.id || '', // Use head.id for the form
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -171,9 +263,14 @@ export default function DepartmentsPage() {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
             </div>
             <div>
-              <label htmlFor="head" className="block text-sm font-medium text-gray-700">Head of Department (Optional)</label>
-              <input type="text" name="head" id="head" value={formData.head} onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
+              <label htmlFor="headId" className="block text-sm font-medium text-gray-700">Head of Department (Optional)</label>
+              <select name="headId" id="headId" value={formData.headId} onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                <option value="">-- Select Head --</option>
+                {possibleHeads.map(user => (
+                  <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
+                ))}
+              </select>
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
@@ -186,8 +283,10 @@ export default function DepartmentsPage() {
                 Cancel
               </button>
               <button type="submit"
-                className="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {isEdit ? 'Save Changes' : 'Add Department'}
+                className="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={isLoading} // Disable button while loading
+                >
+                {isLoading ? 'Saving...' : (isEdit ? 'Save Changes' : 'Add Department')}
               </button>
             </div>
           </form>
@@ -251,6 +350,16 @@ export default function DepartmentsPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline"> {error}</span>
+          <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" onClick={() => setError(null)}><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+          </span>
+        </div>
+      )}
+
       {/* Departments List Section */}
       <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -281,65 +390,69 @@ export default function DepartmentsPage() {
           />
         </div>
 
-        {/* Departments Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Head of Department</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teachers</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes</th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDepartments.length > 0 ? (
-                filteredDepartments.map((dept) => (
-                  <tr key={dept.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{dept.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dept.head || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dept.teacherCount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dept.classCount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => { setEditingDepartment(dept); setShowFormModal(true); }}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                          title="Edit Department"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteDepartment(dept.id)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
-                          title="Delete Department"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">Loading departments...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No departments found matching your criteria.</td>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department Name</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Head of Department</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teachers</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes</th>
+                  <th scope="col" className="relative px-6 py-3">
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredDepartments.length > 0 ? (
+                  filteredDepartments.map((dept) => (
+                    <tr key={dept.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{dept.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dept.head?.name || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dept.educatorCount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{dept.courseCount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => { setEditingDepartment(dept); setShowFormModal(true); }}
+                            className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                            title="Edit Department"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDepartment(dept.id)}
+                            className="text-red-600 hover:text-red-900 flex items-center"
+                            title="Delete Department"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No departments found matching your criteria.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Modals */}
       {showFormModal && (
         <DepartmentFormModal
-          departmentData={editingDepartment ?? undefined}
+          departmentData={editingDepartment}
           onClose={() => setShowFormModal(false)}
           onSave={editingDepartment ? handleEditDepartment : handleAddNewDepartment}
           isEdit={!!editingDepartment}
+          possibleHeads={possibleHeads} // Pass possible heads to the modal
         />
       )}
     </div>
