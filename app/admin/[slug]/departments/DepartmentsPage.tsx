@@ -72,7 +72,15 @@ export default function DepartmentsPage() {
   const [departments, setDepartments] = useState(sampleDepartmentsData);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
-  const [editingDepartment, setEditingDepartment] = useState(null);
+  type Department = {
+    id: string;
+    name: string;
+    head: string;
+    description: string;
+    teacherCount?: number;
+    classCount?: number;
+  };
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -105,35 +113,49 @@ export default function DepartmentsPage() {
 
 
   // Event handlers
-  const handleAddNewDepartment = (newDeptData) => {
+  type DepartmentInput = {
+    name: string;
+    head: string;
+    description: string;
+  };
+
+  const handleAddNewDepartment = (newDeptData: DepartmentInput) => {
     const newId = `D${String(departments.length + 1).padStart(3, '0')}`; // Simple ID generation
     setDepartments([...departments, { id: newId, ...newDeptData }]);
     setShowFormModal(false);
   };
 
-  const handleEditDepartment = (updatedDeptData) => {
-    setDepartments(departments.map(dept => dept.id === updatedDeptData.id ? updatedDeptData : dept));
+  const handleEditDepartment = (updatedDeptData: { id?: string; name: string; head: string; description: string }) => {
+    if (!updatedDeptData.id) return; // Ensure id exists before updating
+    setDepartments(departments.map(dept => dept.id === updatedDeptData.id ? { ...dept, ...updatedDeptData } : dept));
     setShowFormModal(false);
     setEditingDepartment(null);
   };
 
-  const handleDeleteDepartment = (deptId) => {
+  const handleDeleteDepartment = (deptId: string) => {
     if (confirm("Are you sure you want to delete this department? This action cannot be undone and may affect associated teachers and classes.")) { // Use custom modal in real app
       setDepartments(departments.filter(dept => dept.id !== deptId));
     }
   };
 
   // --- Department Form Modal ---
-  const DepartmentFormModal = ({ departmentData, onClose, onSave, isEdit = false }) => {
+  type DepartmentFormModalProps = {
+    departmentData?: { id?: string; name: string; head: string; description: string };
+    onClose: () => void;
+    onSave: (data: { id?: string; name: string; head: string; description: string }) => void;
+    isEdit?: boolean;
+  };
+
+  const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({ departmentData, onClose, onSave, isEdit = false }) => {
     const [formData, setFormData] = useState(departmentData || {
       name: '', head: '', description: ''
     });
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       onSave(formData);
     };
@@ -155,7 +177,7 @@ export default function DepartmentsPage() {
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows="3"
+              <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows={3}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
             </div>
             <div className="flex justify-end gap-3 pt-4">
@@ -303,7 +325,7 @@ export default function DepartmentsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-gray-500">No departments found matching your criteria.</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No departments found matching your criteria.</td>
                 </tr>
               )}
             </tbody>
@@ -312,7 +334,14 @@ export default function DepartmentsPage() {
       </div>
 
       {/* Modals */}
-      {showFormModal && <DepartmentFormModal departmentData={editingDepartment} onClose={() => setShowFormModal(false)} onSave={editingDepartment ? handleEditDepartment : handleAddNewDepartment} isEdit={!!editingDepartment} />}
+      {showFormModal && (
+        <DepartmentFormModal
+          departmentData={editingDepartment ?? undefined}
+          onClose={() => setShowFormModal(false)}
+          onSave={editingDepartment ? handleEditDepartment : handleAddNewDepartment}
+          isEdit={!!editingDepartment}
+        />
+      )}
     </div>
   );
 }
