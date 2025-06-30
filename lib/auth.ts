@@ -8,7 +8,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import AppleProvider from "next-auth/providers/apple";
 import EmailProvider from "next-auth/providers/email";
-import prisma from "../server/db/prismadb"; // Adjust path as needed
+import prisma from "../server/db/prismadb"; 
 import { randomBytes, randomUUID } from "crypto";
 
 // Utility to find any existing user across multiple models
