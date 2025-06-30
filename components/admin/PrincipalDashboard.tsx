@@ -174,7 +174,21 @@ export default function PrincipalDashboard() {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          <SchoolCalendar role="principal" userId="admin" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-5 bg-white rounded-xl shadow-md border border-gray-200 text-center flex flex-col items-center justify-center hover:shadow-lg transition">
+              <StarIcon className="h-8 w-8 text-yellow-500 mb-2" />
+              <h4 className="font-semibold text-gray-800">Student of the Week</h4>
+              <p className="text-sm text-gray-600">Jane Wanjiru - Grade 8</p>
+            </div>
+            <div className="p-5 bg-white rounded-xl shadow-md border border-gray-200 text-center flex flex-col items-center justify-center hover:shadow-lg transition">
+              <StarIcon className="h-8 w-8 text-green-500 mb-2" />
+              <h4 className="font-semibold text-gray-800">Teacher of the Week</h4>
+              <p className="text-sm text-gray-600">Mr. Otieno - Science Dept.</p>
+            </div>
+          </div>
+
+          {/* <SchoolCalendar role="principal" userId="admin" /> */}
           
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
@@ -213,18 +227,6 @@ export default function PrincipalDashboard() {
             </ul>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 bg-white rounded-xl shadow-md border border-gray-200 text-center flex flex-col items-center justify-center hover:shadow-lg transition">
-              <StarIcon className="h-8 w-8 text-yellow-500 mb-2" />
-              <h4 className="font-semibold text-gray-800">Student of the Week</h4>
-              <p className="text-sm text-gray-600">Jane Wanjiru - Grade 8</p>
-            </div>
-            <div className="p-5 bg-white rounded-xl shadow-md border border-gray-200 text-center flex flex-col items-center justify-center hover:shadow-lg transition">
-              <StarIcon className="h-8 w-8 text-green-500 mb-2" />
-              <h4 className="font-semibold text-gray-800">Teacher of the Week</h4>
-              <p className="text-sm text-gray-600">Mr. Otieno - Science Dept.</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
