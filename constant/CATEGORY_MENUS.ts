@@ -119,21 +119,14 @@ export const getCategoryMenus = (adminSlug: string) => ({
       ],
     },
     {
-      label: "Exams & Assessments",
+      label: "Exams/Assessments",
       icon: AcademicCapIcon,
       subItems: [
         { label: "Exams", href: `/admin/${adminSlug}/exams` },
         { label: "Results", href: `/admin/${adminSlug}/results` },
       ],
-    },
-    {
-      label: "Attendance",
-      icon: CalendarIcon,
-      subItems: [
-        { label: "Attendance Records", href: `/admin/${adminSlug}/attendance` },
-        { label: "Attendance Reports", href: `/admin/${adminSlug}/attendance-reports` },
-      ],
-    },
+    },    
+    { label: "Attendance", href: `/admin/${adminSlug}/attendance`, icon: HomeIcon },
     {
       label: "Events",
       icon: AcademicCapIcon,
