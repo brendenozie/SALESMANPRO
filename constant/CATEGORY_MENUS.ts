@@ -116,6 +116,20 @@ export const getCategoryMenus = (adminSlug: string) => ({
       subItems: [
         { label: "All Courses", href: `/admin/${adminSlug}/courses` },
       ],
+    }, 
+    {
+      label: "Events",
+      icon: AcademicCapIcon,
+      subItems: [
+        { label: "All Events", href: `/admin/${adminSlug}/calendarAdmin` },
+      ],
+    },    
+    {
+      label: "Announcements",
+      icon: AcademicCapIcon,
+      subItems: [
+        { label: "All Announcements", href: `/admin/${adminSlug}/schoolAnnouncements` },
+      ],
     },    
     { label: "Reports", href: `/admin/${adminSlug}/school-reports`, icon: HomeIcon },
             // {
