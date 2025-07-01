@@ -1757,45 +1757,6 @@ model CourseEnrollment {
   @@unique([studentId, courseId])
 }
 
-// model Course {
-//   id               String   @id @default(auto()) @map("_id") @db.ObjectId
-//   title            String
-//   description      String?
-//   imageUrl         String?
-//   instructorId     String // Link to EducatorProfile
-//   instructor       Educator @relation(fields: [instructorId], references: [id])
-//   totalLessons     Int?
-//   rating           Float? // e.g., 4.5
-//   level            String? // e.g., "3rd Grade", "All Levels", "Advanced", "Undergraduate", "Diploma"
-//   studentsEnrolled Int      @default(0) // Can be calculated or stored for quick access
-//   createdAt        DateTime @default(now())
-//   updatedAt        DateTime @updatedAt
-
-//   departmentId String?     @db.ObjectId // Optional: if a course can exist without a direct department link
-//   department   Department? @relation(fields: [departmentId], references: [id])
-
-//   assignments     CourseAssignment[]
-//   classSchedules  ClassSchedule[]
-//   enrollments     CourseEnrollment[]
-//   Exam            Exam[]
-//   CourseMaterial  CourseMaterial[]
-//   DiscussionTopic DiscussionTopic[]
-// }
-
-// // Course Enrollment Model (Join table for StudentProfile <-> Course)
-// model CourseEnrollment {
-//   id               String   @id @default(auto()) @map("_id") @db.ObjectId
-//   studentId        String
-//   student          Student  @relation(fields: [studentId], references: [id])
-//   courseId         String
-//   course           Course   @relation(fields: [courseId], references: [id])
-//   progress         Int      @default(0) // Percentage 0-100
-//   lessonsCompleted Int      @default(0)
-//   enrolledAt       DateTime @default(now())
-
-//   @@unique([studentId, courseId]) // Ensure a student can only enroll in a course once
-// }
-
 // Assignment Model
 model CourseAssignment {
   id          String       @id @default(auto()) @map("_id") @db.ObjectId

@@ -107,7 +107,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
       subItems: [
         
         { label: "Departments", href: `/admin/${adminSlug}/departments` },
-        { label: "Subjects", href: `/admin/${adminSlug}/categories` },
+        { label: "Categories", href: `/admin/${adminSlug}/categories` },
         { label: "Lessons", href: `/admin/${adminSlug}/lessons` },
         { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
         { label: "Courses", href: `/admin/${adminSlug}/courses` },
@@ -116,7 +116,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
         { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
         { label: "Parents", href: `/admin/${adminSlug}/parents` },     
         { label: "Students", href: `/admin/${adminSlug}/students` },          
-        { label: "Classes", href: `/admin/${adminSlug}/classes` },
+        // { label: "Classes", href: `/admin/${adminSlug}/classes` }, // subjects
 
       ],
     },
