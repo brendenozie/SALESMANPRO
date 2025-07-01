@@ -1,196 +1,218 @@
-// app/admin/timetable-manager/page.tsx
+// app/admin/[slug]/timetable/page.tsx
 
 import React from "react";
-import WeeklyTimetable, { TimetableEntry, CourseOption, EducatorOption } from "./WeeklyTimetable"; // Import types
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import WeeklyTimetable, { TimetableEntry, CourseOption, EducatorOption, AcademicLevelOption } from "./WeeklyTimetable";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params?: {
-    slug?: string; // Optional, in case you want to use it later
+  params: {
+    slug: string; // companyId
   };
 }
 
 // --- Helper function to generate sample data ---
-const generateSampleTimetableData = (): {
+const generateSampleTimetableData = (companyId: string): {
   sampleTimetableEntries: TimetableEntry[];
   sampleCourses: CourseOption[];
   sampleEducators: EducatorOption[];
+  sampleAcademicLevels: AcademicLevelOption[];
 } => {
-  const sampleCourses: CourseOption[] = [
-    { id: 'C001', title: 'Grade 7 Mathematics', level: 'Grade 7' },
-    { id: 'C002', title: 'Grade 8 Science', level: 'Grade 8' },
-    { id: 'C003', title: 'Grade 9 Algebra', level: 'Grade 9' },
-    { id: 'C004', title: 'Grade 10 English', level: 'Grade 10' },
-    { id: 'C005', title: 'Grade 11 Physics', level: 'Grade 11' },
-    { id: 'C006', title: 'Grade 12 Literature', level: 'Grade 12' },
+  const academicLevels: AcademicLevelOption[] = [
+    { id: 'AL001', name: 'Playgroup', sortOrder: 1 },
+    { id: 'AL002', name: 'Kindergarten', sortOrder: 2 },
+    { id: 'AL003', name: 'Grade 1', sortOrder: 3 },
+    { id: 'AL006', name: 'Grade 9', sortOrder: 9 },
+    { id: 'AL007', name: 'High School - Freshman', sortOrder: 10 },
   ];
 
-  const sampleEducators: EducatorOption[] = [
-    { id: 'E001', name: 'Mr. John Doe', email: 'john.doe@school.com' },
-    { id: 'E002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com' },
-    { id: 'E003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com' },
-    { id: 'E004', name: 'Mrs. Emily Chen', email: 'emily.chen@school.com' },
+  const educators: EducatorOption[] = [
+    { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com' },
+    { id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com' },
+    { id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com' },
   ];
 
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  const baseDate = new Date(); // Use current date as a base
-  const dayOffset = baseDate.getDay() === 0 ? -6 : 1 - baseDate.getDay(); // Adjust to Monday
-  const monday = new Date(baseDate.setDate(baseDate.getDate() + dayOffset));
+  const courses: CourseOption[] = [
+    { id: 'CRS001', title: 'Algebra I', instructorName: 'Mr. John Doe', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
+    { id: 'CRS002', title: 'Literary Analysis', instructorName: 'Ms. Jane Smith', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
+    { id: 'CRS003', title: 'Elementary Math', instructorName: 'Dr. Alex Lee', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
+  ];
 
-  const sampleTimetableEntries: TimetableEntry[] = [
+  const dummyDate = '1970-01-01T'; // For storing time components as Date objects
+
+  const timetableEntries: TimetableEntry[] = [
     {
-      id: 'TTE_S001',
-      courseId: 'C003',
-      course: sampleCourses.find(c => c.id === 'C003')!,
-      educatorId: 'E001',
-      educator: sampleEducators.find(e => e.id === 'E001')!,
-      date: new Date(monday).toISOString().split('T')[0], // Monday
-      startTime: '08:00 AM',
-      endTime: '08:45 AM',
-      topic: 'Algebraic Expressions',
+      id: 'SCH001',
+      courseId: 'CRS001',
+      courseTitle: 'Algebra I',
+      courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      educatorId: 'EDU001',
+      educatorName: 'Mr. John Doe',
+      educatorEmail: 'john.doe@school.com',
+      dayOfWeek: 'Monday',
+      startTime: `${dummyDate}08:00:00.000Z`,
+      endTime: `${dummyDate}08:45:00.000Z`,
+      topic: 'Introduction to Linear Equations',
       meetingLink: 'https://zoom.us/j/algebra-001',
-      createdAt: new Date().toISOString(),
+      companyId: companyId,
+      createdAt: new Date('2023-01-01').toISOString(),
       updatedAt: new Date().toISOString(),
     },
     {
-      id: 'TTE_S002',
-      courseId: 'C001',
-      course: sampleCourses.find(c => c.id === 'C001')!,
-      educatorId: 'E002',
-      educator: sampleEducators.find(e => e.id === 'E002')!,
-      date: new Date(new Date(monday).setDate(monday.getDate() + 1)).toISOString().split('T')[0], // Tuesday
-      startTime: '09:00 AM',
-      endTime: '09:45 AM',
-      topic: 'Number Theory Basics',
+      id: 'SCH002',
+      courseId: 'CRS002',
+      courseTitle: 'Literary Analysis',
+      courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
+      educatorId: 'EDU002',
+      educatorName: 'Ms. Jane Smith',
+      educatorEmail: 'jane.smith@school.com',
+      dayOfWeek: 'Tuesday',
+      startTime: `${dummyDate}09:00:00.000Z`,
+      endTime: `${dummyDate}09:45:00.000Z`,
+      topic: 'Analyzing Poetic Devices',
       meetingLink: '',
-      createdAt: new Date().toISOString(),
+      companyId: companyId,
+      createdAt: new Date('2023-01-02').toISOString(),
       updatedAt: new Date().toISOString(),
     },
     {
-      id: 'TTE_S003',
-      courseId: 'C005',
-      course: sampleCourses.find(c => c.id === 'C005')!,
-      educatorId: 'E003',
-      educator: sampleEducators.find(e => e.id === 'E003')!,
-      date: new Date(new Date(monday).setDate(monday.getDate() + 2)).toISOString().split('T')[0], // Wednesday
-      startTime: '10:00 AM',
-      endTime: '10:45 AM',
-      topic: 'Kinematics',
-      meetingLink: 'https://meet.google.com/physics-001',
-      createdAt: new Date().toISOString(),
+      id: 'SCH003',
+      courseId: 'CRS001',
+      courseTitle: 'Algebra I',
+      courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      educatorId: 'EDU001',
+      educatorName: 'Mr. John Doe',
+      educatorEmail: 'john.doe@school.com',
+      dayOfWeek: 'Wednesday',
+      startTime: `${dummyDate}10:00:00.000Z`,
+      endTime: `${dummyDate}10:45:00.000Z`,
+      topic: 'Solving Systems by Substitution',
+      meetingLink: 'https://meet.google.com/algebra-002',
+      companyId: companyId,
+      createdAt: new Date('2023-01-03').toISOString(),
       updatedAt: new Date().toISOString(),
     },
     {
-      id: 'TTE_S004',
-      courseId: 'C004',
-      course: sampleCourses.find(c => c.id === 'C004')!,
-      educatorId: 'E002',
-      educator: sampleEducators.find(e => e.id === 'E002')!,
-      date: new Date(new Date(monday).setDate(monday.getDate() + 0)).toISOString().split('T')[0], // Monday
-      startTime: '10:00 AM',
-      endTime: '10:45 AM',
-      topic: 'Literary Devices',
+      id: 'SCH004',
+      courseId: 'CRS003',
+      courseTitle: 'Elementary Math',
+      courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
+      educatorId: 'EDU003',
+      educatorName: 'Dr. Alex Lee',
+      educatorEmail: 'alex.lee@school.com',
+      dayOfWeek: 'Monday',
+      startTime: `${dummyDate}09:00:00.000Z`,
+      endTime: `${dummyDate}09:45:00.000Z`,
+      topic: 'Counting and Number Recognition',
       meetingLink: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'TTE_S005',
-      courseId: 'C002',
-      course: sampleCourses.find(c => c.id === 'C002')!,
-      educatorId: 'E004',
-      educator: sampleEducators.find(e => e.id === 'E004')!,
-      date: new Date(new Date(monday).setDate(monday.getDate() + 1)).toISOString().split('T')[0], // Tuesday
-      startTime: '11:00 AM',
-      endTime: '11:45 AM',
-      topic: 'Ecosystems',
-      meetingLink: 'https://zoom.us/j/science-002',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'TTE_S006',
-      courseId: 'C006',
-      course: sampleCourses.find(c => c.id === 'C006')!,
-      educatorId: 'E001',
-      educator: sampleEducators.find(e => e.id === 'E001')!,
-      date: new Date(new Date(monday).setDate(monday.getDate() + 4)).toISOString().split('T')[0], // Friday
-      startTime: '09:00 AM',
-      endTime: '09:45 AM',
-      topic: 'Poetry Analysis',
-      meetingLink: '',
-      createdAt: new Date().toISOString(),
+      companyId: companyId,
+      createdAt: new Date('2023-01-04').toISOString(),
       updatedAt: new Date().toISOString(),
     },
   ];
 
-  return { sampleTimetableEntries, sampleCourses, sampleEducators };
+  return { sampleTimetableEntries: timetableEntries, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels };
 };
 // --- End Helper function ---
 
 
 export default async function TimetableManagerPage({ params }: PageProps) {
-  const companyId = params?.slug || "default-company"; // Use a default or handle as needed
+  const companyId = params.slug;
 
   let initialTimetable: TimetableEntry[] = [];
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];
+  let allAcademicLevels: AcademicLevelOption[] = [];
+  let fetchError: boolean = false;
 
   try {
     // Fetch timetable entries with related course and educator info
-    const timetableRes = await fetch(`${apiUrl}/timetables`, {
-      cache: "no-store", // SSR on every request
-    });
+    const timetableRes = await fetch(
+      `${apiUrl}/class-schedules?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" } // SSR on every request
+    );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()) as TimetableEntry[];
     } else {
-      console.error(
-        "[TimetableManagerPage] Failed to fetch timetable →",
-        timetableRes.status,
-        timetableRes.statusText
-      );
+      // console.error(
+      //   "[TimetableManagerPage] Failed to fetch timetable →",
+      //   timetableRes.status,
+      //   timetableRes.statusText
+      // );
+      fetchError = true;
     }
 
     // Fetch all courses for dropdowns
-    const coursesRes = await prisma.course.findMany({
-      select: {
-        id: true,
-        title: true,
-        level: true,
-        instructorId: true,
-      },
-      orderBy: { title: 'asc' },
-    });
-    allCourses = coursesRes as CourseOption[];
+    const coursesRes = await fetch(
+      `${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" }
+    );
+    if (coursesRes.ok) {
+      const fetchedCourses = (await coursesRes.json()) as any[];
+      allCourses = fetchedCourses.map(c => ({
+        id: c.id,
+        title: c.title,
+        instructorName: c.instructorName,
+        academicLevels: c.academicLevels,
+      }));
+    } else {
+      // console.error(
+      //   "[TimetableManagerPage] Failed to fetch courses →",
+      //   coursesRes.status,
+      //   coursesRes.statusText
+      // );
+      fetchError = true;
+    }
 
     // Fetch all educators for dropdowns
-    const educatorsRes = await prisma.educator.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-      orderBy: { name: 'asc' },
-    });
-    allEducators = educatorsRes as EducatorOption[];
+    const educatorsRes = await fetch(
+      `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" }
+    );
+    if (educatorsRes.ok) {
+      const fetchedEducators = (await educatorsRes.json()) as any[];
+      allEducators = fetchedEducators.map(e => ({
+        id: e.id,
+        name: e.name,
+        email: e.email,
+      }));
+    } else {
+      // console.error(
+      //   "[TimetableManagerPage] Failed to fetch educators →",
+      //   educatorsRes.status,
+      //   educatorsRes.statusText
+      // );
+      fetchError = true;
+    }
+
+    // Fetch all academic levels (for display in course options)
+    const academicLevelsRes = await fetch(
+      `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" }
+    );
+    if (academicLevelsRes.ok) {
+      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+    } else {
+      // console.error(
+      //   `[TimetableManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      // );
+      fetchError = true;
+    }
+
 
   } catch (err: any) {
-    console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
-    // If any fetch fails, clear current data to ensure fallback is used
-    initialTimetable = [];
-    allCourses = [];
-    allEducators = [];
+    // console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
+    fetchError = true;
   }
 
   // If no data was fetched from the API, generate and use sample data
-  if (initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0) {
+  if (fetchError || initialTimetable.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0) {
     console.log("[TimetableManagerPage] No data fetched, generating sample data...");
-    const { sampleTimetableEntries, sampleCourses, sampleEducators } = generateSampleTimetableData();
+    const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(companyId);
     initialTimetable = sampleTimetableEntries;
     allCourses = sampleCourses;
     allEducators = sampleEducators;
+    allAcademicLevels = sampleAcademicLevels;
   }
 
   return (
@@ -198,6 +220,8 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       initialTimetable={initialTimetable}
       allCourses={allCourses}
       allEducators={allEducators}
+      allAcademicLevels={allAcademicLevels} // Corrected: Passing the prop here
+      companyId={companyId}
     />
   );
 }

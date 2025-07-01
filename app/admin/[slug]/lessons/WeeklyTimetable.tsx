@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   CalendarDaysIcon,
   PlusCircleIcon,
@@ -10,6 +10,8 @@ import {
   UsersIcon, // For educator
   LinkIcon, // For meeting link
   ClockIcon, // For time display
+  XMarkIcon, // For error close button
+  TagIcon, // For academic levels
 } from '@heroicons/react/24/outline';
 import { DndContext, useSensor, useSensors, PointerSensor, KeyboardSensor, DragOverlay, closestCenter } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates, rectSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable';
@@ -17,26 +19,21 @@ import { CSS } from '@dnd-kit/utilities';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-// --- Type Definitions (Aligned with ClassScheduleEntry) ---
+// --- Type Definitions (Aligned with ClassSchedule API) ---
 export type TimetableEntry = {
   id: string;
   courseId: string;
-  course: {
-    id: string;
-    title: string;
-    level?: string;
-  };
+  courseTitle: string; // Flattened from course relation
+  courseAcademicLevels: { id: string; name: string; sortOrder?: number }[]; // Flattened from course relation
   educatorId: string;
-  educator: {
-    id: string;
-    name?: string;
-    email: string;
-  };
-  date: string; // YYYY-MM-DD
-  startTime: string; // e.g., "09:00 AM"
-  endTime: string;   // e.g., "10:30 AM"
-  topic?: string;
-  meetingLink?: string;
+  educatorName: string; // Flattened from educator relation
+  educatorEmail: string; // Flattened from educator relation
+  dayOfWeek: string; // e.g., "Monday", "Tuesday"
+  startTime: string; // ISO string for time (e.g., "1970-01-01T08:00:00.000Z")
+  endTime: string;   // ISO string for time
+  topic?: string | null;
+  meetingLink?: string | null;
+  companyId: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -44,15 +41,22 @@ export type TimetableEntry = {
 export type CourseOption = {
   id: string;
   title: string;
-  level?: string;
-  instructorId?: string; // Optional, if courses have a default instructor
+  academicLevels: { id: string; name: string; sortOrder?: number }[];
+  instructorName?: string; // Optional, if courses have a default instructor
 };
 
 export type EducatorOption = {
   id: string;
-  name?: string;
+  name: string;
   email: string;
 };
+
+export type AcademicLevelOption = {
+  id: string;
+  name: string;
+  sortOrder?: number;
+};
+
 
 // --- Styling Constants ---
 const FONT = 'font-inter'; // Using 'Inter' as requested for React apps
@@ -63,95 +67,111 @@ const LESSON_COLORS = {
   highlight: 'bg-indigo-100 text-indigo-800 border-indigo-200',
 };
 
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-const defaultTimeSlots = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM'];
+const daysOfWeekOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const defaultTimeSlots = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00']; // Using 24-hour format for consistency with Date objects
 
 // --- Sample Data (Aligned with TimetableEntry) ---
-const sampleCourses: CourseOption[] = [
-  { id: 'C001', title: 'Grade 7 Mathematics', level: 'Grade 7' },
-  { id: 'C002', title: 'Grade 8 Science', level: 'Grade 8' },
-  { id: 'C003', title: 'Grade 9 Algebra', level: 'Grade 9' },
-  { id: 'C004', title: 'Grade 10 English', level: 'Grade 10' },
-];
+const generateSampleTimetableData = (companyId: string): {
+  sampleTimetableEntries: TimetableEntry[];
+  sampleCourses: CourseOption[];
+  sampleEducators: EducatorOption[];
+  sampleAcademicLevels: AcademicLevelOption[];
+} => {
+  const academicLevels: AcademicLevelOption[] = [
+    { id: 'AL001', name: 'Playgroup', sortOrder: 1 },
+    { id: 'AL002', name: 'Kindergarten', sortOrder: 2 },
+    { id: 'AL003', name: 'Grade 1', sortOrder: 3 },
+    { id: 'AL006', name: 'Grade 9', sortOrder: 9 },
+    { id: 'AL007', name: 'High School - Freshman', sortOrder: 10 },
+  ];
 
-const sampleEducators: EducatorOption[] = [
-  { id: 'E001', name: 'Mr. John Doe', email: 'john.doe@school.com' },
-  { id: 'E002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com' },
-  { id: 'E003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com' },
-];
+  const educators: EducatorOption[] = [
+    { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com' },
+    { id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com' },
+    { id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com' },
+  ];
 
-const sampleTimetableEntries: TimetableEntry[] = [
-  {
-    id: 'TTE001',
-    courseId: 'C003',
-    course: sampleCourses.find(c => c.id === 'C003')!,
-    educatorId: 'E001',
-    educator: sampleEducators.find(e => e.id === 'E001')!,
-    date: '2025-07-07', // Monday
-    startTime: '08:00 AM',
-    endTime: '08:45 AM',
-    topic: 'Introduction to Linear Equations',
-    meetingLink: 'https://zoom.us/j/algebra-001',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'TTE002',
-    courseId: 'C001',
-    course: sampleCourses.find(c => c.id === 'C001')!,
-    educatorId: 'E002',
-    educator: sampleEducators.find(e => e.id === 'E002')!,
-    date: '2025-07-08', // Tuesday
-    startTime: '09:00 AM',
-    endTime: '09:45 AM',
-    topic: 'Fractions and Decimals Review',
-    meetingLink: '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'TTE003',
-    courseId: 'C003',
-    course: sampleCourses.find(c => c.id === 'C003')!,
-    educatorId: 'E001',
-    educator: sampleEducators.find(e => e.id === 'E001')!,
-    date: '2025-07-09', // Wednesday
-    startTime: '10:00 AM',
-    endTime: '10:45 AM',
-    topic: 'Solving Systems by Substitution',
-    meetingLink: 'https://meet.google.com/algebra-002',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'TTE004',
-    courseId: 'C002',
-    course: sampleCourses.find(c => c.id === 'C002')!,
-    educatorId: 'E003',
-    educator: sampleEducators.find(e => e.id === 'E003')!,
-    date: '2025-07-07', // Monday
-    startTime: '09:00 AM',
-    endTime: '09:45 AM',
-    topic: 'Cell Biology',
-    meetingLink: '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'TTE005',
-    courseId: 'C004',
-    course: sampleCourses.find(c => c.id === 'C004')!,
-    educatorId: 'E002',
-    educator: sampleEducators.find(e => e.id === 'E002')!,
-    date: '2025-07-07', // Monday
-    startTime: '10:00 AM',
-    endTime: '10:45 AM',
-    topic: 'Literary Analysis',
-    meetingLink: '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+  const courses: CourseOption[] = [
+    { id: 'CRS001', title: 'Algebra I', instructorName: 'Mr. John Doe', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
+    { id: 'CRS002', title: 'Literary Analysis', instructorName: 'Ms. Jane Smith', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
+    { id: 'CRS003', title: 'Elementary Math', instructorName: 'Dr. Alex Lee', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
+  ];
+
+  const dummyDate = '1970-01-01T'; // For storing time components as Date objects
+
+  const timetableEntries: TimetableEntry[] = [
+    {
+      id: 'SCH001',
+      courseId: 'CRS001',
+      courseTitle: 'Algebra I',
+      courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      educatorId: 'EDU001',
+      educatorName: 'Mr. John Doe',
+      educatorEmail: 'john.doe@school.com',
+      dayOfWeek: 'Monday',
+      startTime: `${dummyDate}08:00:00.000Z`,
+      endTime: `${dummyDate}08:45:00.000Z`,
+      topic: 'Introduction to Linear Equations',
+      meetingLink: 'https://zoom.us/j/algebra-001',
+      companyId: companyId,
+      createdAt: new Date('2023-01-01').toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'SCH002',
+      courseId: 'CRS002',
+      courseTitle: 'Literary Analysis',
+      courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
+      educatorId: 'EDU002',
+      educatorName: 'Ms. Jane Smith',
+      educatorEmail: 'jane.smith@school.com',
+      dayOfWeek: 'Tuesday',
+      startTime: `${dummyDate}09:00:00.000Z`,
+      endTime: `${dummyDate}09:45:00.000Z`,
+      topic: 'Analyzing Poetic Devices',
+      meetingLink: '',
+      companyId: companyId,
+      createdAt: new Date('2023-01-02').toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'SCH003',
+      courseId: 'CRS001',
+      courseTitle: 'Algebra I',
+      courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      educatorId: 'EDU001',
+      educatorName: 'Mr. John Doe',
+      educatorEmail: 'john.doe@school.com',
+      dayOfWeek: 'Wednesday',
+      startTime: `${dummyDate}10:00:00.000Z`,
+      endTime: `${dummyDate}10:45:00.000Z`,
+      topic: 'Solving Systems by Substitution',
+      meetingLink: 'https://meet.google.com/algebra-002',
+      companyId: companyId,
+      createdAt: new Date('2023-01-03').toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 'SCH004',
+      courseId: 'CRS003',
+      courseTitle: 'Elementary Math',
+      courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
+      educatorId: 'EDU003',
+      educatorName: 'Dr. Alex Lee',
+      educatorEmail: 'alex.lee@school.com',
+      dayOfWeek: 'Monday',
+      startTime: `${dummyDate}09:00:00.000Z`,
+      endTime: `${dummyDate}09:45:00.000Z`,
+      topic: 'Counting and Number Recognition',
+      meetingLink: '',
+      companyId: companyId,
+      createdAt: new Date('2023-01-04').toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+
+  return { sampleTimetableEntries: timetableEntries, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels };
+};
 
 
 // --- Sortable Lesson Card Component ---
@@ -179,6 +199,11 @@ const SortableLessonCard: React.FC<SortableLessonCardProps> = ({ entry, onClick,
     boxShadow: isDragging ? '0px 8px 20px rgba(0, 0, 0, 0.2)' : '0px 2px 5px rgba(0, 0, 0, 0.05)',
   };
 
+  const formatTime = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -190,19 +215,21 @@ const SortableLessonCard: React.FC<SortableLessonCardProps> = ({ entry, onClick,
                   hover:shadow-md transition-shadow duration-200 ease-in-out`}
     >
       <div className="flex-grow">
-        <p className="font-bold text-base truncate">{entry.course.title}</p>
+        <p className="font-bold text-base truncate">{entry.courseTitle}</p>
         <p className="text-xs text-gray-700 flex items-center mt-0.5">
-          <UsersIcon className="h-3 w-3 mr-1" /> {entry.educator.name || 'N/A'}
+          <UsersIcon className="h-3 w-3 mr-1" /> {entry.educatorName || 'N/A'}
         </p>
-        <p className="text-xs text-gray-700 flex items-center mt-0.5">
-          <AcademicCapIcon className="h-3 w-3 mr-1" /> {entry.course.level || 'N/A'}
-        </p>
+        {entry.courseAcademicLevels && entry.courseAcademicLevels.length > 0 && (
+          <p className="text-xs text-gray-700 flex items-center mt-0.5">
+            <AcademicCapIcon className="h-3 w-3 mr-1" /> {entry.courseAcademicLevels.map(al => al.name).join(', ')}
+          </p>
+        )}
         {entry.topic && (
           <p className="text-xs text-gray-600 mt-1 line-clamp-2">Topic: {entry.topic}</p>
         )}
       </div>
       <div className="flex justify-between items-center text-xs text-gray-700 mt-2 pt-2 border-t border-gray-200">
-        <span>{entry.startTime} - {entry.endTime}</span>
+        <span>{formatTime(entry.startTime)} - {formatTime(entry.endTime)}</span>
         <div className="flex items-center gap-1">
           {entry.meetingLink && (
             <a href={entry.meetingLink} target="_blank" rel="noopener noreferrer" className="p-1 rounded-full hover:bg-gray-100 text-blue-700" title="Join Meeting">
@@ -234,107 +261,174 @@ const SortableLessonCard: React.FC<SortableLessonCardProps> = ({ entry, onClick,
 type LessonFormModalProps = {
   entryData?: TimetableEntry | null;
   onClose: () => void;
-  onSave: (data: Omit<TimetableEntry, 'course' | 'educator' | 'createdAt' | 'updatedAt'>) => void;
-  isEdit?: boolean;
+  onSave: (data: Omit<TimetableEntry, 'courseTitle' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => void;
+  isLoading: boolean; // From parent component
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
-  isLoading: boolean; // From parent component
+  companyId: string; // Pass companyId to the modal for new entries
+  selectedDayOfWeek?: string; // Pre-fill day if coming from grid cell
+  selectedTimeSlot?: string; // Pre-fill time if coming from grid cell
 };
 
-const LessonFormModal: React.FC<LessonFormModalProps> = ({ entryData, onClose, onSave, isEdit = false, allCourses, allEducators, isLoading }) => {
+const LessonFormModal: React.FC<LessonFormModalProps> = ({ entryData, onClose, onSave, isLoading, allCourses, allEducators, companyId, selectedDayOfWeek, selectedTimeSlot }) => {
   const [formData, setFormData] = useState({
     id: entryData?.id || '',
     courseId: entryData?.courseId || '',
     educatorId: entryData?.educatorId || '',
-    date: entryData?.date || '', // Date is selected via grid cell, but allow manual input if not from grid
-    startTime: entryData?.startTime || '',
-    endTime: entryData?.endTime || '',
+    dayOfWeek: entryData?.dayOfWeek || selectedDayOfWeek || '',
+    startTime: entryData?.startTime ? new Date(entryData.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : (selectedTimeSlot || ''), // Convert ISO to HH:MM for input
+    endTime: entryData?.endTime ? new Date(entryData.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
     topic: entryData?.topic || '',
     meetingLink: entryData?.meetingLink || '',
+    companyId: entryData?.companyId || companyId,
   });
-
-  // Set default date if not provided (e.g., when clicking "Add New Entry" button)
-  useEffect(() => {
-    if (!formData.date) {
-      setFormData(prev => ({ ...prev, date: new Date().toISOString().split('T')[0] }));
-    }
-  }, [formData.date]);
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Basic validation
+    if (!formData.courseId || !formData.educatorId || !formData.dayOfWeek || !formData.startTime || !formData.endTime || !formData.companyId) {
+      alert("Please fill all required fields: Course, Educator, Day, Start Time, End Time.");
+      return;
+    }
+
+    // Ensure times are valid HH:MM format
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(formData.startTime) || !timeRegex.test(formData.endTime)) {
+      alert("Time format must be HH:MM (24-hour).");
+      return;
+    }
+
+    // Convert HH:MM back to dummy ISO string for API
+    const dummyDate = '1970-01-01T';
+    const startTimeISO = `${dummyDate}${formData.startTime}:00.000Z`;
+    const endTimeISO = `${dummyDate}${formData.endTime}:00.000Z`;
+
+    onSave({
+      id: formData.id,
+      courseId: formData.courseId,
+      educatorId: formData.educatorId,
+      dayOfWeek: formData.dayOfWeek,
+      startTime: startTimeISO,
+      endTime: endTimeISO,
+      topic: formData.topic,
+      meetingLink: formData.meetingLink,
+      companyId: formData.companyId,
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">{isEdit ? `Edit Schedule for: ${entryData?.course.title || 'Entry'}` : 'Add New Timetable Entry'}</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="courseId" className="block text-sm font-medium text-gray-700">Course</label>
-            <select name="courseId" id="courseId" value={formData.courseId} onChange={handleChange} required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
-            >
-              <option value="">-- Select Course --</option>
-              {allCourses.map(course => (
-                <option key={course.id} value={course.id}>{course.title} ({course.level})</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="educatorId" className="block text-sm font-medium text-gray-700">Educator</label>
-            <select name="educatorId" id="educatorId" value={formData.educatorId} onChange={handleChange} required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
-            >
-              <option value="">-- Select Educator --</option>
-              {allEducators.map(educator => (
-                <option key={educator.id} value={educator.id}>{educator.name} ({educator.email})</option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
-              <input type="date" name="date" id="date" value={formData.date} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all duration-300 scale-100 opacity-100 relative max-h-[90vh] overflow-y-auto">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors duration-200"
+          title="Close"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+
+        <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-4 border-gray-200">
+          {entryData ? `Edit Schedule for: ${entryData.courseTitle}` : 'Add New Timetable Entry'}
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Schedule Details */}
+          <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <ClockIcon className="h-6 w-6 text-indigo-500" /> Schedule Details
+            </h3>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 mb-1">Course <span className="text-red-500">*</span></label>
+                <select name="courseId" id="courseId" value={formData.courseId} onChange={handleChange} required
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                >
+                  <option value="">-- Select Course --</option>
+                  {allCourses.map(course => (
+                    <option key={course.id} value={course.id}>
+                      {course.title} ({course.academicLevels.map(al => al.name).join(', ')})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="educatorId" className="block text-sm font-medium text-gray-700 mb-1">Educator <span className="text-red-500">*</span></label>
+                <select name="educatorId" id="educatorId" value={formData.educatorId} onChange={handleChange} required
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                >
+                  <option value="">-- Select Educator --</option>
+                  {allEducators.map(educator => (
+                    <option key={educator.id} value={educator.id}>{educator.name} ({educator.email})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="dayOfWeek" className="block text-sm font-medium text-gray-700 mb-1">Day of Week <span className="text-red-500">*</span></label>
+                <select name="dayOfWeek" id="dayOfWeek" value={formData.dayOfWeek} onChange={handleChange} required
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                >
+                  <option value="">-- Select Day --</option>
+                  {daysOfWeekOrder.map(day => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">Start Time (HH:MM) <span className="text-red-500">*</span></label>
+                  <input type="text" name="startTime" id="startTime" value={formData.startTime} onChange={handleChange} placeholder="e.g., 09:00" required
+                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+                </div>
+                <div>
+                  <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">End Time (HH:MM) <span className="text-red-500">*</span></label>
+                  <input type="text" name="endTime" id="endTime" value={formData.endTime} onChange={handleChange} placeholder="e.g., 10:30" required
+                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1">Topic (Optional)</label>
+                <input type="text" name="topic" id="topic" value={formData.topic} onChange={handleChange}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="meetingLink" className="block text-sm font-medium text-gray-700 mb-1">Meeting Link (Optional)</label>
+                <input type="url" name="meetingLink" id="meetingLink" value={formData.meetingLink} onChange={handleChange} placeholder="https://zoom.us/j/..."
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+              </div>
             </div>
-            <div>
-              <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">Start Time</label>
-              <input type="text" name="startTime" id="startTime" value={formData.startTime} onChange={handleChange} placeholder="e.g., 09:00 AM" required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
           </div>
-          <div>
-            <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">End Time</label>
-            <input type="text" name="endTime" id="endTime" value={formData.endTime} onChange={handleChange} placeholder="e.g., 10:30 AM"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-          </div>
-          <div>
-            <label htmlFor="topic" className="block text-sm font-medium text-gray-700">Topic (Optional)</label>
-            <input type="text" name="topic" id="topic" value={formData.topic} onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-          </div>
-          <div>
-            <label htmlFor="meetingLink" className="block text-sm font-medium text-gray-700">Meeting Link (Optional)</label>
-            <input type="url" name="meetingLink" id="meetingLink" value={formData.meetingLink} onChange={handleChange} placeholder="e.g., https://zoom.us/j/..."
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-          </div>
+
+          {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              Cancel
-            </button>
-            <button type="submit"
-              className="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               disabled={isLoading}
             >
-              {isLoading ? 'Saving...' : (isEdit ? 'Save Changes' : 'Add Entry')}
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-indigo-600 border border-transparent rounded-lg text-base font-medium text-white shadow-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (entryData ? 'Save Changes' : 'Add Entry')}
             </button>
           </div>
         </form>
@@ -349,11 +443,16 @@ interface WeeklyTimetableProps {
   initialTimetable: TimetableEntry[];
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
+  allAcademicLevels: AcademicLevelOption[]; // Corrected: Added here
+  companyId: string; // Pass companyId for API calls
 }
 
-export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators }: WeeklyTimetableProps) {
+export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, companyId }: WeeklyTimetableProps) {
   const [timetable, setTimetable] = useState<TimetableEntry[]>(initialTimetable);
-  const [selectedClassId, setSelectedClassId] = useState(sampleCourses[0]?.id || 'All'); // Default to first class or 'All'
+  
+  const [selectedClassId, setSelectedClassId] = useState(allAcademicLevels[0]?.id || 'All'); // Default to first class or 'All'
+  const [selectedCourseId, setSelectedCourseId] = useState('All'); // Renamed from selectedClassId
+  const [selectedEducatorId, setSelectedEducatorId] = useState('All'); // New filter for educator
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimetableEntry | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For API operations
@@ -366,48 +465,40 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   });
 
   // --- Data Fetching and Management (API Integration) ---
-  const fetchTimetable = async () => {
+  const fetchTimetable = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/timetables`); // Your API endpoint
+      // Pass companyId to the API
+      const res = await fetch(`${apiUrl}/class-schedules?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: TimetableEntry[] = await res.json();
-        // Ensure nested objects are correctly populated from API response if they are not by default
-        const processedData = data.map(entry => ({
-          ...entry,
-          course: allCourses.find(c => c.id === entry.courseId) || entry.course,
-          educator: allEducators.find(e => e.id === entry.educatorId) || entry.educator,
-        }));
-        setTimetable(processedData);
+        setTimetable(data); // Data from API should already be flattened and include course/educator details
       } else {
         const errorData = await res.json();
         setError(errorData.message || "Failed to fetch timetable.");
-        setTimetable(sampleTimetableEntries); // Fallback to sample data on API error
+        // Fallback to sample data if API fails
+        const { sampleTimetableEntries } = generateSampleTimetableData(companyId);
+        setTimetable(sampleTimetableEntries);
       }
     } catch (err: any) {
       setError(err.message || "Network error fetching timetable.");
-      setTimetable(sampleTimetableEntries); // Fallback to sample data on network error
+      // Fallback to sample data on network error
+      const { sampleTimetableEntries } = generateSampleTimetableData(companyId);
+      setTimetable(sampleTimetableEntries);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [apiUrl, companyId]);
 
   useEffect(() => {
-    if (initialTimetable.length === 0 && sampleTimetableEntries.length === 0) { // Only fetch if no initial data and no sample fallback
+    // Initial fetch if no data provided from server or if sample data is needed
+    if (initialTimetable.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0) {
       fetchTimetable();
-    } else if (initialTimetable.length > 0) {
-      // If initial data is provided, process it to ensure course/educator objects are complete
-      const processedInitialData = initialTimetable.map(entry => ({
-        ...entry,
-        course: allCourses.find(c => c.id === entry.courseId) || entry.course,
-        educator: allEducators.find(e => e.id === entry.educatorId) || entry.educator,
-      }));
-      setTimetable(processedInitialData);
     } else {
-      setTimetable(sampleTimetableEntries); // Use sample if no initial data but sample exists
+      setTimetable(initialTimetable);
     }
-  }, [initialTimetable, allCourses, allEducators]);
+  }, [fetchTimetable, initialTimetable, allCourses, allEducators, allAcademicLevels]);
 
 
   // DnD State
@@ -419,9 +510,13 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   );
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const lessonsForSelectedClass = useMemo(
-    () => timetable.filter(l => selectedClassId === 'All' || l.courseId === selectedClassId),
-    [timetable, selectedClassId]
+  const filteredLessons = useMemo(
+    () => timetable.filter(entry => {
+      const matchesCourse = selectedCourseId === 'All' || entry.courseId === selectedCourseId;
+      const matchesEducator = selectedEducatorId === 'All' || entry.educatorId === selectedEducatorId;
+      return matchesCourse && matchesEducator;
+    }),
+    [timetable, selectedCourseId, selectedEducatorId]
   );
 
   // DnD Handlers
@@ -430,32 +525,44 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   const handleDragEnd = async ({ active, over }: any) => {
     if (over && active.id !== over.id) {
       const draggedLesson = timetable.find(l => l.id === active.id);
-      const targetDay = over.data.current?.day;
-      const targetTime = over.data.current?.time;
-      const targetDate = over.data.current?.date; // This will be the YYYY-MM-DD for the target cell
+      const targetDayOfWeek = over.data.current?.dayOfWeek; // Get dayOfWeek from drop target
+      const targetTime = over.data.current?.time; // Get time from drop target
 
-      if (draggedLesson && targetDay && targetTime && targetDate) {
+      if (draggedLesson && targetDayOfWeek && targetTime) {
+        // Calculate new end time based on new start time and original duration
+        const originalStartTimeObj = new Date(draggedLesson.startTime);
+        const originalEndTimeObj = new Date(draggedLesson.endTime);
+        const originalDurationMs = originalEndTimeObj.getTime() - originalStartTimeObj.getTime();
+
+        const [hours, minutes] = targetTime.split(':').map(Number);
+        const newStartDate = new Date('1970-01-01T00:00:00Z');
+        newStartDate.setUTCHours(hours, minutes, 0, 0);
+
+        const newEndTimeObj = new Date(newStartDate.getTime() + originalDurationMs);
+
         const updatedLesson = {
           ...draggedLesson,
-          date: targetDate, // Update the date
-          startTime: targetTime, // Update the time
-          // endTime might need to be adjusted based on duration, or kept as is
+          dayOfWeek: targetDayOfWeek, // Update the day of week
+          startTime: newStartDate.toISOString(), // Store as ISO string
+          endTime: newEndTimeObj.toISOString(),   // Store as ISO string
         };
 
         setIsLoading(true);
         setError(null);
         try {
-          const res = await fetch(`${apiUrl}/timetables/${updatedLesson.id}`, {
-            method: 'PUT',
+          const res = await fetch(`${apiUrl}/class-schedules/${updatedLesson.id}`, {
+            method: 'PATCH', // Use PATCH for updates
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               courseId: updatedLesson.courseId,
               educatorId: updatedLesson.educatorId,
-              date: updatedLesson.date,
-              startTime: updatedLesson.startTime,
-              endTime: updatedLesson.endTime,
+              dayOfWeek: updatedLesson.dayOfWeek,
+              // Send HH:MM strings to the API
+              startTime: new Date(updatedLesson.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+              endTime: new Date(updatedLesson.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
               topic: updatedLesson.topic,
               meetingLink: updatedLesson.meetingLink,
+              companyId: updatedLesson.companyId,
             }),
           });
 
@@ -475,20 +582,40 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setActiveId(null);
   };
 
+  // Generate dates for the current week (Monday to Friday)
+  const currentWeekDays = useMemo(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 for Sunday, 1 for Monday
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to get Monday of current week
+    const monday = new Date(today.setDate(diff));
+
+    return daysOfWeekOrder.map((dayName, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return date.toISOString().split('T')[0]; // YYYY-MM-DD
+    });
+  }, []); // Recalculate only once or when a "week" navigation is added
+  
+
   // Modal Save Handler (for Add/Edit)
-  const handleSave = async (lessonData: Omit<TimetableEntry, 'course' | 'educator' | 'createdAt' | 'updatedAt'>) => {
+  const handleSave = async (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     setError(null);
-    
-    const method = lessonData.id ? 'PUT' : 'POST';
-    
+
+    const method = lessonData.id ? 'PATCH' : 'POST'; // Use PATCH for existing, POST for new
+
     try {
-      const url = lessonData.id ? `${apiUrl}/timetables/${lessonData.id}` : `${apiUrl}/timetables`;
+      const url = lessonData.id ? `${apiUrl}/class-schedules/${lessonData.id}` : `${apiUrl}/class-schedules`;
 
       const res = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(lessonData),
+        // Ensure times are sent as HH:MM strings to the API
+        body: JSON.stringify({
+          ...lessonData,
+          startTime: new Date(lessonData.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          endTime: new Date(lessonData.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        }),
       });
 
       if (res.ok) {
@@ -514,7 +641,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/timetables/${entryId}`, {
+      const res = await fetch(`${apiUrl}/class-schedules/${entryId}`, {
         method: 'DELETE',
       });
 
@@ -531,94 +658,51 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     }
   };
 
-
-  // Generate dates for the current week (Monday to Friday)
-  const currentWeekDays = useMemo(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 for Sunday, 1 for Monday
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to get Monday of current week
-    const monday = new Date(today.setDate(diff));
-
-    return daysOfWeek.map((dayName, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return date.toISOString().split('T')[0]; // YYYY-MM-DD
-    });
-  }, []); // Recalculate only once or when a "week" navigation is added
-
-
-  // Render cell content
-  const renderCellContent = useCallback((dayDate: string, timeSlot: string) => {
-    const lesson = lessonsForSelectedClass.find(l => l.date === dayDate && l.startTime === timeSlot);
-
-    if (!lesson) {
-      // Empty slot: clickable to add new lesson
-      return (
-        <div
-          data-day={daysOfWeek[new Date(dayDate).getDay() - 1]} // Pass day name for reference
-          data-time={timeSlot}
-          data-date={dayDate} // Pass full date for form pre-fill
-          className="h-full flex items-center justify-center bg-gray-50 rounded-md border border-dashed border-gray-200
-                     hover:bg-gray-100 transition-colors duration-150 cursor-pointer group"
-          onClick={() => {
-            setEditingEntry({
-              id: '', // New entry
-              courseId: selectedClassId === 'All' ? '' : selectedClassId, // Pre-fill if class is selected
-              course: { id: '', title: '', level: '' }, // Placeholder, will be filled on save
-              educatorId: '',
-              educator: { id: '', name: '', email: '' }, // Placeholder
-              date: dayDate,
-              startTime: timeSlot,
-              endTime: '', // User will fill
-              topic: '',
-              meetingLink: '',
-              createdAt: '', // Will be filled on save
-              updatedAt: '', // Will be filled on save
-            });
-            setShowFormModal(true);
-          }}
-        >
-          <PlusCircleIcon className="h-6 w-6 text-gray-300 group-hover:text-indigo-400 transition-colors" />
-        </div>
-      );
-    }
-
-    return (
-      <SortableContext items={[lesson.id]} strategy={rectSortingStrategy}>
-        <SortableLessonCard
-          key={lesson.id}
-          entry={lesson}
-          onClick={(entry) => { setEditingEntry(entry); setShowFormModal(true); }}
-          onDelete={handleDelete}
-        />
-      </SortableContext>
-    );
-  }, [lessonsForSelectedClass, selectedClassId, handleDelete]);
-
-
   const activeLesson = activeId ? timetable.find(l => l.id === activeId) : null;
-
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
       {/* Header */}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
             Weekly Timetable
             <span className="ml-2 text-purple-600 text-base sm:text-xl">🗓️</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">View and manage class schedules for the week.</p>
+          <p className="text-sm text-gray-600 mt-1">View and manage recurring class schedules.</p>
         </div>
         <div className="flex items-center gap-4">
           <select
             value={selectedClassId}
             onChange={e => setSelectedClassId(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="All">All Classes</option>
-            {allCourses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.level})</option>)}
+            {allAcademicLevels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          {/* <select
+            value={selectedCourseId}
+            onChange={e => setSelectedCourseId(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700
+                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="All">All Courses</option>
+            {allCourses.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.title} ({c.academicLevels.map(al => al.name).join(', ')})
+              </option>
+            ))}
+          </select> */}
+          <select
+            value={selectedEducatorId}
+            onChange={e => setSelectedEducatorId(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700
+                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="All">All Educators</option>
+            {allEducators.map(e => <option key={e.id} value={e.id}>{e.name} ({e.email})</option>)}
           </select>
           <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
             <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
@@ -627,76 +711,141 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         </div>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-4" role="alert">
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline"> {error}</span>
-          <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
-            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" onClick={() => setError(null)}><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
-          </span>
-        </div>
-      )}
-
+      {/* Loading and Error Indicators */}
       {isLoading && (
-        <div className="text-center py-4 text-gray-600">Loading timetable...</div>
+        <div className="flex items-center justify-center py-4 text-blue-700 font-medium text-lg">
+          <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading timetable...
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl relative shadow-md mb-6 flex items-center justify-between">
+          <div>
+            <strong className="font-bold">Error!</strong>
+            <span className="block sm:inline ml-2">{error}</span>
+          </div>
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-800 focus:outline-none">
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
       )}
 
-      {/* DnD Context & Grid */}
-      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-        <div className="grid grid-cols-[100px_repeat(5,1fr)] border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white">
-          {/* Time Header */}
-          <div className="bg-gray-50 border-b border-r border-gray-200 p-3 flex items-center justify-center text-sm font-semibold text-gray-700">Time</div>
-          {/* Days Header */}
-          {daysOfWeek.map((day, index) => (
-            <div key={day} className="bg-gray-50 border-b border-gray-200 p-3 text-center text-sm font-semibold text-gray-700">
-              {day} <br />
-              <span className="text-xs font-normal text-gray-500">{new Date(currentWeekDays[index]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-            </div>
-          ))}
+      {/* Timetable Grid */}
+      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 overflow-x-auto">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className="grid gap-2" style={{ gridTemplateColumns: `80px repeat(${daysOfWeekOrder.length}, minmax(150px, 1fr))` }}>
+            {/* Corner Cell */}
+            <div className="p-2 border-b border-r border-gray-200 bg-gray-50 rounded-tl-lg"></div>
+            {/* Day Headers */}
+            
+            {daysOfWeekOrder.map((day, index) => (
+              // <div key={day} className="p-2 text-center font-semibold text-gray-700 border-b border-gray-200 bg-gray-50">
+              //   {day}
+              // </div>
+               <div key={day} className="bg-gray-50 border-b border-gray-200 p-3 text-center text-sm font-semibold text-gray-700">
+               {day} <br />
+               <span className="text-xs font-normal text-gray-500">{new Date(currentWeekDays[index]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+             </div>
+            ))}
 
-          {/* Timetable Rows */}
-          {defaultTimeSlots.map(time => (
-            <React.Fragment key={time}>
-              <div className="border-r border-gray-200 p-3 bg-gray-50 text-sm font-semibold text-gray-700 flex items-center justify-center">
-                {time}
-              </div>
-              {currentWeekDays.map((dayDate, dayIndex) => (
-                <SortableContext key={`${dayDate}-${time}`} items={lessonsForSelectedClass.map(l => l.id)} strategy={rectSortingStrategy}>
-                  <div
-                    key={`${dayDate}-${time}`}
-                    className="border-t border-gray-200 h-32 p-2 relative" // Increased height for better content display
-                    data-day={daysOfWeek[dayIndex]} // For reference, though date is primary
-                    data-time={time}
-                    data-date={dayDate} // Crucial for DnD target
-                  >
-                    {renderCellContent(dayDate, time)}
-                  </div>
-                </SortableContext>
-              ))}
-            </React.Fragment>
-          ))}
-        </div>
+            {/* Time Slots and Lesson Cells */}
+            {defaultTimeSlots.map(timeSlot => (
+              <React.Fragment key={timeSlot}>
+                {/* Time Slot Header */}
+                <div className="p-2 text-right font-semibold text-gray-700 border-r border-gray-200 bg-gray-50 flex items-center justify-end rounded-bl-lg">
+                  <ClockIcon className="h-4 w-4 mr-1 text-gray-500" /> {timeSlot}
+                </div>
+                {/* Lesson Cells */}
+                {daysOfWeekOrder.map(dayOfWeek => {
+                  const lessonsInCell = filteredLessons.filter(
+                    l => l.dayOfWeek === dayOfWeek &&
+                         new Date(l.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) === timeSlot
+                  );
+                  const cellId = `${dayOfWeek}-${timeSlot}`; // Unique ID for drop target
 
-        <DragOverlay>
-          {activeId && activeLesson ? (
-            <div className={`p-3 rounded-lg border ${LESSON_COLORS.highlight} ${FONT} shadow-xl`}>
-              <p className="font-bold text-base">{activeLesson.course.title}</p>
-              <p className="text-xs text-gray-700">{activeLesson.educator.name || 'N/A'}</p>
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+                  return (
+                    <div
+                      key={cellId}
+                      className="p-1 min-h-[100px] border border-gray-200 rounded-md overflow-hidden relative"
+                      data-dayOfWeek={dayOfWeek} // Pass dayOfWeek for drop target
+                      data-time={timeSlot} // Pass time for drop target
+                    >
+                      <SortableContext items={lessonsInCell.map(l => l.id)} strategy={rectSortingStrategy}>
+                        <div className="flex flex-col gap-1 h-full">
+                          {lessonsInCell.length > 0 ? (
+                            lessonsInCell.map(lesson => (
+                              <SortableLessonCard
+                                key={lesson.id}
+                                entry={lesson}
+                                onClick={(entry) => { setEditingEntry(entry); setShowFormModal(true); }}
+                                onDelete={handleDelete}
+                              />
+                            ))
+                          ) : (
+                            <div
+                              className="h-full flex items-center justify-center bg-gray-50 rounded-md border border-dashed border-gray-200
+                                         hover:bg-gray-100 transition-colors duration-150 cursor-pointer group"
+                              onClick={() => {
+                                setEditingEntry(null); // Ensure it's a new entry
+                                setShowFormModal(true);
+                                // Pre-fill modal with day and time
+                                setEditingEntry({
+                                  id: '',
+                                  courseId: selectedCourseId === 'All' ? '' : selectedCourseId,
+                                  courseTitle: '', // Will be populated on save
+                                  courseAcademicLevels: [], // Will be populated on save
+                                  educatorId: selectedEducatorId === 'All' ? '' : selectedEducatorId,
+                                  educatorName: '', // Will be populated on save
+                                  educatorEmail: '', // Will be populated on save
+                                  dayOfWeek: dayOfWeek,
+                                  startTime: `1970-01-01T${timeSlot}:00Z`, // Send as ISO string
+                                  endTime: '', // User will fill
+                                  topic: null,
+                                  meetingLink: null,
+                                  companyId: companyId,
+                                  createdAt: '',
+                                  updatedAt: '',
+                                });
+                              }}
+                            >
+                              <PlusCircleIcon className="h-6 w-6 text-gray-300 group-hover:text-indigo-400 transition-colors" />
+                            </div>
+                          )}
+                        </div>
+                      </SortableContext>
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+          <DragOverlay>
+            {activeLesson ? (
+              <SortableLessonCard
+                entry={activeLesson}
+                onClick={() => {}} // No-op for overlay
+                onDelete={() => {}} // No-op for overlay
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
 
-      {/* Lesson Form Modal */}
+      {/* Modals */}
       {showFormModal && (
         <LessonFormModal
           entryData={editingEntry}
           onClose={() => { setShowFormModal(false); setEditingEntry(null); }}
           onSave={handleSave}
-          isEdit={!!editingEntry}
+          isLoading={isLoading}
           allCourses={allCourses}
           allEducators={allEducators}
-          isLoading={isLoading}
+          companyId={companyId}
+          selectedDayOfWeek={editingEntry?.dayOfWeek || (editingEntry === null ? (activeId ? (timetable.find(l => l.id === activeId)?.dayOfWeek || '') : '') : '')} // Pass day from clicked cell or dragged item
+          selectedTimeSlot={editingEntry?.startTime ? new Date(editingEntry.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : (editingEntry === null ? (activeId ? (new Date(timetable.find(l => l.id === activeId)?.startTime || '').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) || '') : '') : '')} // Pass time from clicked cell or dragged item
         />
       )}
     </div>
