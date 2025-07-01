@@ -1,430 +1,209 @@
-// app/admin/categories-manager/CategoryManagerClient.tsx
+'use client';
 
-"use client";
+import React, { useState } from 'react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { PlusCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import type { DragEndEvent } from '@dnd-kit/core';
 
-import React, { useEffect, useState } from "react";
-import type { Category, Subcategory } from "./page";
+// Types
+export type Subcategory = { id: string; name: string; slug: string; sortOrder: number; visible: boolean };
+export type StoreCategory = {
+  id: string;
+  displayName: string;
+  icon?: string;
+  sortOrder: number;
+  visible: boolean;
+  items: Subcategory[];
+};
 
-interface ClientProps {
-  initialCategories: Category[];
-}
+interface Props { initialCategories: StoreCategory[]; apiUrl: string; companyId: string; }
 
-export default function CategoryManagerClient({ initialCategories }: ClientProps) {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [selected, setSelected] = useState<Category | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [subSelected, setSubSelected] = useState<Subcategory | null>(null);
-  const [subForm, setSubForm] = useState<Record<string, any>>({});
+export default function CategoryManagerClient({ initialCategories, apiUrl, companyId }: Props) {
+  const [categories, setCategories] = useState<StoreCategory[]>(initialCategories);
+  const [openModal, setOpenModal] = useState(false);
+  const [editingCat, setEditingCat] = useState<StoreCategory | null>(null);
+  const [editingSub, setEditingSub] = useState<{ parentId: string; sub: Subcategory } | null>(null);
 
-  // When a category is selected, initialize its form data
-  useEffect(() => {
-    if (selected) {
-      setFormData({
-        name: selected.name || "",
-        slug: selected.slug || "",
-        description: selected.description || "",
-        seoTitle: selected.seoTitle || "",
-        seoDescription: selected.seoDescription || "",
-        metaKeywords: (selected.metaKeywords || []).join(", "),
-        sortOrder: selected.sortOrder || 0,
-        visible: selected.visible || false,
-        isFeatured: selected.isFeatured || false,
-        showInHomepage: selected.showInHomepage || false,
-        attributes: JSON.stringify(selected.attributes || {}, null, 2),
-      });
-      setSubSelected(null);
-      setSubForm({});
-    }
-  }, [selected]);
+  const sensors = useSensors(useSensor(PointerSensor));
 
-  // When a subcategory is selected, initialize its form data
-  useEffect(() => {
-    if (subSelected) {
-      setSubForm({
-        name: subSelected.name || "",
-        slug: subSelected.slug || "",
-        sortOrder: subSelected.sortOrder || 0,
-        visible: subSelected.visible || false,
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+    if (active.id !== over.id) {
+      setCategories(curr => {
+        const oldIndex = curr.findIndex(c => c.id === active.id as string);
+        const newIndex = curr.findIndex(c => c.id === over.id as string);
+        const rearranged = arrayMove(curr, oldIndex, newIndex).map((c, idx) => ({ ...c, sortOrder: idx }));
+        syncCategoryOrder(rearranged);
+        return rearranged;
       });
     }
-  }, [subSelected]);
-
-  // Category‐level handlers
-  const handleSelect = (cat: Category) => {
-    setSelected(cat);
-    setSubSelected(null);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
+  async function syncCategoryOrder(updated: StoreCategory[]) {
+    await fetch(`${apiUrl}/admin/reorder-store-categories`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId, categories: updated.map(c => ({ id: c.id, sortOrder: c.sortOrder })) })
+    });
+  }
+
+  async function saveCategory(cat: StoreCategory) {
+    const url = cat.id
+      ? `${apiUrl}/admin/store-category/${cat.id}`
+      : `${apiUrl}/admin/store-category`;
+    const res = await fetch(url, {
+      method: cat.id ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId, ...cat })
+    });
+    const saved: StoreCategory = await res.json();
+    setCategories(curr => {
+      if (cat.id) return curr.map(c => c.id === saved.id ? saved : c);
+      return [...curr, saved];
+    });
+  }
+
+  async function deleteCategory(id: string) {
+    if (!confirm('Delete this category?')) return;
+    await fetch(`${apiUrl}/admin/store-category/${id}`, { method: 'DELETE' });
+    setCategories(curr => curr.filter(c => c.id !== id));
+  }
+
+  // Subcategory actions
+  async function saveSubcategory(parentId: string, sub: Subcategory) {
+    const parent = categories.find(c => c.id === parentId)!;
+    const isEdit = Boolean(sub.id);
+    const url = isEdit
+      ? `${apiUrl}/admin/store-category/${parentId}/subcategory/${sub.id}`
+      : `${apiUrl}/admin/store-category/${parentId}/subcategory`;
+    const res = await fetch(url, {
+      method: isEdit ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sub)
+    });
+    const saved: Subcategory = await res.json();
+    setCategories(curr => curr.map(c => {
+      if (c.id !== parentId) return c;
+      const items = isEdit
+        ? c.items.map(i => i.id === saved.id ? saved : i)
+        : [...c.items, saved];
+      return { ...c, items };
     }));
-  };
+  }
 
-  const onSaveCategory = (updatedCat: Category) => {
-    // Replace the existing category in state with the updated one
-    setCategories((prev) =>
-      prev.map((c) =>
-        c._id.$oid === updatedCat._id.$oid ? updatedCat : c
-      )
-    );
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selected) return;
-
-    // Build the updated category object from formData
-    const updated: Category = {
-      ...selected,
-      name: formData.name,
-      slug: formData.slug,
-      description: formData.description,
-      seoTitle: formData.seoTitle,
-      seoDescription: formData.seoDescription,
-      metaKeywords: formData.metaKeywords
-        .split(",")
-        .map((k: string) => k.trim()),
-      sortOrder: Number(formData.sortOrder),
-      visible: Boolean(formData.visible),
-      isFeatured: Boolean(formData.isFeatured),
-      showInHomepage: Boolean(formData.showInHomepage),
-      attributes: JSON.parse(formData.attributes || "{}"),
-      subcategories: selected.subcategories,
-    };
-
-    onSaveCategory(updated);
-    setSelected(updated);
-  };
-
-  // Subcategory‐level handlers
-  const handleSubSelect = (sub: Subcategory) => {
-    setSubSelected(sub);
-  };
-
-  const handleSubChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value, type, checked } = e.target;
-    setSubForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selected || !subSelected) return;
-
-    // Build the updated subcategory from subForm
-    const updatedSub: Subcategory = {
-      ...subSelected,
-      name: subForm.name,
-      slug: subForm.slug,
-      sortOrder: Number(subForm.sortOrder),
-      visible: Boolean(subForm.visible),
-    };
-
-    // Replace that subcategory in `selected.subcategories`
-    const updatedSubs = selected.subcategories.map((sub) =>
-      sub._id.$oid === updatedSub._id.$oid ? updatedSub : sub
-    );
-
-    // Create a new Category object with updated subcategories
-    const updatedCat: Category = {
-      ...selected,
-      subcategories: updatedSubs,
-    };
-
-    onSaveCategory(updatedCat);
-    setSelected(updatedCat);
-    setSubSelected(updatedSub);
-  };
-
-  const handleAddSub = () => {
-    if (!selected) return;
-
-    // Create a brand‐new subcategory (temporary _id using Date.now())
-    const newSub: Subcategory = {
-      _id: { $oid: Date.now().toString() },
-      name: "New Subcategory",
-      slug: "",
-      sortOrder: selected.subcategories.length,
-      visible: true,
-    };
-
-    const updatedCat: Category = {
-      ...selected,
-      subcategories: [...selected.subcategories, newSub],
-    };
-
-    onSaveCategory(updatedCat);
-    setSelected(updatedCat);
-    setSubSelected(newSub);
-  };
+  async function deleteSubcategory(parentId: string, subId: string) {
+    if (!confirm('Delete this subcategory?')) return;
+    await fetch(`${apiUrl}/admin/store-category/${parentId}/subcategory/${subId}`, { method: 'DELETE' });
+    setCategories(curr => curr.map(c => c.id === parentId ? { ...c, items: c.items.filter(i => i.id !== subId) } : c));
+  }
 
   return (
-      <div className="grid grid-cols-4 h-full gap-4">
-        <aside className="col-span-1 p-4 border-r overflow-y-auto">
-          <h2 className="text-2xl font-semibold mb-4">Categories</h2>
-          <ul>
-            {categories.map((cat) => (
-              <li key={cat._id.$oid} className="mb-1">
-                <button
-                  onClick={() => handleSelect(cat)}
-                  className={`w-full text-left px-3 py-2 rounded ${
-                    selected?._id.$oid === cat._id.$oid
-                      ? "bg-gray-200 font-medium"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </aside>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Categories</h1>
+        <button onClick={() => { setEditingCat({ id: '', displayName: '', icon: '', sortOrder: categories.length, visible: true, items: [] }); setEditingSub(null); setOpenModal(true); }}
+          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+          <PlusCircleIcon className="h-5 w-5 mr-2" /> Add Category
+        </button>
+      </div>
 
-        <main className="col-span-3 p-6 overflow-y-auto">
-          {selected ? (
-            <>
-              {/* Category Edit Form */}
-              <div className="shadow-lg p-6 bg-white rounded mb-6">
-                <h2 className="text-2xl font-semibold mb-6">
-                  Edit Category: {selected.name}
-                </h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium">Name</label>
-                      <input
-                        name="name"
-                        value={formData.name || ""}
-                        onChange={handleChange}
-                        className="w-full border rounded p-2"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium">Slug</label>
-                      <input
-                        name="slug"
-                        value={formData.slug || ""}
-                        onChange={handleChange}
-                        className="w-full border rounded p-2"
-                      />
-                    </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={categories.map(c => c.id)} strategy={verticalListSortingStrategy}>
+          <ul className="space-y-2">
+            {categories.map(cat => (
+              <li key={cat.id} className="bg-white p-4 rounded shadow">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xl">{cat.icon}</span>
+                    <span className="font-medium">{cat.displayName}</span>
+                    <span>({cat.items.length})</span>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">Description</label>
-                    <textarea
-                      name="description"
-                      value={formData.description || ""}
-                      onChange={handleChange}
-                      className="w-full border rounded p-2"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">SEO Title</label>
-                    <input
-                      name="seoTitle"
-                      value={formData.seoTitle || ""}
-                      onChange={handleChange}
-                      className="w-full border rounded p-2"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">
-                      SEO Description
-                    </label>
-                    <textarea
-                      name="seoDescription"
-                      value={formData.seoDescription || ""}
-                      onChange={handleChange}
-                      className="w-full border rounded p-2"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">
-                      Meta Keywords (comma-separated)
-                    </label>
-                    <input
-                      name="metaKeywords"
-                      value={formData.metaKeywords || ""}
-                      onChange={handleChange}
-                      className="w-full border rounded p-2"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium">Sort Order</label>
-                      <input
-                        type="number"
-                        name="sortOrder"
-                        value={formData.sortOrder || 0}
-                        onChange={handleChange}
-                        className="w-full border rounded p-2"
-                      />
-                    </div>
-                    <label className="flex items-center gap-2 mt-6">
-                      <input
-                        type="checkbox"
-                        name="visible"
-                        checked={Boolean(formData.visible)}
-                        onChange={handleChange}
-                      />
-                      <span className="text-sm">Visible</span>
-                    </label>
-                    <label className="flex items-center gap-2 mt-6">
-                      <input
-                        type="checkbox"
-                        name="isFeatured"
-                        checked={Boolean(formData.isFeatured)}
-                        onChange={handleChange}
-                      />
-                      <span className="text-sm">Featured</span>
-                    </label>
-                  </div>
-
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      name="showInHomepage"
-                      checked={Boolean(formData.showInHomepage)}
-                      onChange={handleChange}
-                    />
-                    <span className="text-sm">Show on Homepage</span>
-                  </label>
-
-                  <div>
-                    <label className="block text-sm font-medium">
-                      Custom Attributes (JSON)
-                    </label>
-                    <textarea
-                      name="attributes"
-                      value={formData.attributes || "{}"}
-                      onChange={handleChange}
-                      className="w-full border rounded p-2"
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="pt-4">
-                    <button
-                      type="submit"
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                      Save Category
+                  <div className="flex items-center space-x-2">
+                    <button onClick={() => { setEditingSub({ parentId: cat.id, sub: { id: '', name: '', slug: '', sortOrder: cat.items.length, visible: true } }); setEditingCat(null); setOpenModal(true); }}>
+                      <PlusCircleIcon className="h-5 w-5 text-green-500 hover:text-green-700" />
+                    </button>
+                    <button onClick={() => { setEditingCat(cat); setEditingSub(null); setOpenModal(true); }}>
+                      <PencilIcon className="h-5 w-5 text-indigo-600 hover:text-indigo-800" />
+                    </button>
+                    <button onClick={() => deleteCategory(cat.id)}>
+                      <TrashIcon className="h-5 w-5 text-red-600 hover:text-red-800" />
                     </button>
                   </div>
-                </form>
-              </div>
-
-              {/* Subcategories Section */}
-              <div className="shadow-lg p-6 bg-white rounded">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold">Subcategories</h3>
-                  <button
-                    onClick={handleAddSub}
-                    className="bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700"
-                  >
-                    Add New
-                  </button>
                 </div>
-
-                <ul className="mb-4">
-                  {selected.subcategories.map((sub) => (
-                    <li key={sub._id.$oid} className="mb-1">
-                      <button
-                        onClick={() => handleSubSelect(sub)}
-                        className={`w-full text-left px-3 py-2 rounded ${
-                          subSelected?._id.$oid === sub._id.$oid
-                            ? "bg-gray-200 font-medium"
-                            : "hover:bg-gray-100"
-                        }`}
-                      >
-                        {sub.name}
-                      </button>
+                {/* List subcategories with edit/delete */}
+                <ul className="mt-2 ml-8 space-y-1">
+                  {cat.items.map(sub => (
+                    <li key={sub.id} className="flex justify-between items-center">
+                      <span>{sub.name}</span>
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => { setEditingSub({ parentId: cat.id, sub }); setEditingCat(null); setOpenModal(true); }}>
+                          <PencilIcon className="h-4 w-4 text-indigo-600 hover:text-indigo-800" />
+                        </button>
+                        <button onClick={() => deleteSubcategory(cat.id, sub.id)}>
+                          <TrashIcon className="h-4 w-4 text-red-600 hover:text-red-800" />
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
+              </li>
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
 
-                {subSelected ? (
-                  <form onSubmit={handleSubSave} className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium">Name</label>
-                        <input
-                          name="name"
-                          value={subForm.name || ""}
-                          onChange={handleSubChange}
-                          className="w-full border rounded p-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium">Slug</label>
-                        <input
-                          name="slug"
-                          value={subForm.slug || ""}
-                          onChange={handleSubChange}
-                          className="w-full border rounded p-2"
-                        />
-                      </div>
-                    </div>
+      {openModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button onClick={() => setOpenModal(false)} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
 
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium">Sort Order</label>
-                        <input
-                          type="number"
-                          name="sortOrder"
-                          value={subForm.sortOrder || 0}
-                          onChange={handleSubChange}
-                          className="w-full border rounded p-2"
-                        />
-                      </div>
-                      <label className="flex items-center gap-2 mt-6">
-                        <input
-                          type="checkbox"
-                          name="visible"
-                          checked={Boolean(subForm.visible)}
-                          onChange={handleSubChange}
-                        />
-                        <span className="text-sm">Visible</span>
-                      </label>
-                    </div>
+            {editingCat && (
+              <form onSubmit={e => { e.preventDefault(); saveCategory(editingCat); setOpenModal(false); }} className="space-y-4">
+                <h2 className="text-lg font-bold">{editingCat.id ? 'Edit Category' : 'New Category'}</h2>
+                <div>
+                  <label className="block text-sm font-medium">Name</label>
+                  <input value={editingCat.displayName} onChange={e => setEditingCat({ ...editingCat, displayName: e.target.value })} className="mt-1 w-full border rounded p-2" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Icon</label>
+                  <input value={editingCat.icon} onChange={e => setEditingCat({ ...editingCat, icon: e.target.value })} className="mt-1 w-full border rounded p-2" placeholder="🎵" />
+                </div>
+                <div className="flex items-center">
+                  <input type="checkbox" checked={editingCat.visible} onChange={e => setEditingCat({ ...editingCat, visible: e.target.checked })} />
+                  <label className="ml-2 text-sm">Visible</label>
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <button type="button" onClick={() => setOpenModal(false)} className="px-4 py-2 border rounded">Cancel</button>
+                  <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded">Save</button>
+                </div>
+              </form>
+            )}
 
-                    <div>
-                      <button
-                        type="submit"
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                      >
-                        Save Subcategory
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="text-gray-500">
-                    Select a subcategory to edit, or click "Add New".
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center text-gray-500">
-              Select a category to view and edit its details.
-            </div>
-          )}
-        </main>
-      </div>
+            {editingSub && (
+              <form onSubmit={e => { e.preventDefault(); saveSubcategory(editingSub.parentId, editingSub.sub); setOpenModal(false); }} className="space-y-4">
+                <h2 className="text-lg font-bold">{editingSub.sub.id ? 'Edit Subcategory' : 'New Subcategory'}</h2>
+                <div>
+                  <label className="block text-sm font-medium">Name</label>
+                  <input value={editingSub.sub.name} onChange={e => setEditingSub({ ...editingSub, sub: { ...editingSub.sub, name: e.target.value } })} className="mt-1 w-full border rounded p-2" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Slug</label>
+                  <input value={editingSub.sub.slug} onChange={e => setEditingSub({ ...editingSub, sub: { ...editingSub.sub, slug: e.target.value } })} className="mt-1 w-full border rounded p-2" />
+                </div>
+                <div className="flex items-center">
+                  <input type="checkbox" checked={editingSub.sub.visible} onChange={e => setEditingSub({ ...editingSub, sub: { ...editingSub.sub, visible: e.target.checked } })} />
+                  <label className="ml-2 text-sm">Visible</label>
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <button type="button" onClick={() => setOpenModal(false)} className="px-4 py-2 border rounded">Cancel</button>
+                  <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">Save</button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

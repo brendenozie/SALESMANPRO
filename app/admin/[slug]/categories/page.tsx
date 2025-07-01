@@ -1,24 +1,36 @@
-// app/admin/categories-manager/page.tsx
+import React from 'react';
+import CategoryManagerClient from './CategoryManagerClient';
 
-import React from "react";
-import CategoryManagerClient from "./CategoryManagerClient";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// Define StoreCategory and ProductCategory shapes
+export type StoreCategory = {
+  id: string;
+  companyId: string;
+  categoryId: string;
+  displayName: string;
+  icon?: string;
+  sortOrder: number;
+  visible: boolean;
+  items?: any[];
+  allBrands?: any[] | null;
+  category: ProductCategory;
+};
 
-// Define your Category and Subcategory shapes (adjust fields if your API differs)
 export type Subcategory = {
-  _id: { $oid: string };
+  id: string;
   name: string;
   slug: string;
   sortOrder: number;
   visible: boolean;
 };
 
-export type Category = {
-  _id: { $oid: string };
+export type ProductCategory = {
+  id: string;
   name: string;
   slug: string;
   description?: string;
+  longDescription?: string;
   seoTitle?: string;
   seoDescription?: string;
   metaKeywords?: string[];
@@ -28,38 +40,97 @@ export type Category = {
   showInHomepage?: boolean;
   attributes?: Record<string, any>;
   subcategories: Subcategory[];
+  icon?: string;
+  image?: string;
 };
 
 interface PageProps {
-  // No dynamic route params here; adjust if you move under [slug].
+  params: {
+    slug: string; // company ID
+  };
 }
 
 /**
- * Server Component: fetches all categories (including their subcategories)
+ * Server Component: fetches store-specific category settings
  * and passes them down to the client component.
  */
-export default async function CategoryManagerPage(_: PageProps) {
-  let categoriesData: Category[] = [];
+export default async function CategoryManagerPage({ params }: PageProps) {
+  let storeCategories: StoreCategory[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/get-categories`, {
-      cache: "no-store", // SSR on every request
-    });
+    console.log('Fetching store categories for company:', params.slug);
+    const res = await fetch(
+      `${apiUrl}/admin/get-store-categories?companyId=${params.slug}`,
+      { cache: 'no-store' }
+    );
 
     if (res.ok) {
-      // Assuming API responds with { categories: Category[] }
-      const json = (await res.json()) as { categories: Category[] };
-      categoriesData = json.categories;
+      console.log(`res.json() for company ${params.slug} categories`);
+
+      const resJson = await res.json();
+      // Ensure the response has the expected structure
+      if (!resJson || !resJson.results) {
+        throw new Error('Invalid response structure');
+      }
+
+      const data = resJson.results || resJson.data; // Handle both cases
+      
+      storeCategories = data.map((sc: any) => ({
+        id: sc.id,
+        companyId: sc.companyId,
+        categoryId: sc.categoryId,
+        displayName: sc.displayName,
+        icon: sc.icon || sc.category.icon,
+        sortOrder: sc.sortOrder,
+        visible: sc.visible,
+        items: Array.isArray(sc.items)
+          ? sc.items.map((sub: any) => ({
+              id: sub.id,
+              name: sub.name,
+              slug: sub.slug,
+              sortOrder: sub.sortOrder,
+              visible: sub.visible,
+            }))
+          : sc.category.subcategories.map((sub: any) => ({
+              id: sub._id.$oid,
+              name: sub.name,
+              slug: sub.slug,
+              sortOrder: sub.sortOrder,
+              visible: sub.visible,
+            })),
+        allBrands: sc.allBrands || [],
+        category: {
+          id: sc.category.id,
+          name: sc.category.name,
+          slug: sc.category.slug,
+          description: sc.category.description,
+          longDescription: sc.category.longDescription,
+          seoTitle: sc.category.seoTitle,
+          seoDescription: sc.category.seoDescription,
+          metaKeywords: sc.category.metaKeywords,
+          sortOrder: sc.category.sortOrder,
+          visible: sc.category.visible,
+          isFeatured: sc.category.isFeatured,
+          showInHomepage: sc.category.showInHomepage,
+          attributes: sc.category.attributes,
+          subcategories: sc.category.subcategories.map((sub: any) => ({
+            id: sub._id?.$oid || sub.id,
+            name: sub.name,
+            slug: sub.slug,
+            sortOrder: sub.sortOrder,
+            visible: sub.visible,
+          })),
+          icon: sc.category.icon,
+          image: sc.category.image,
+        },
+      }));
+      console.log('Fetched store categories:', storeCategories);
     } else {
-      console.error(
-        "[CategoryManagerPage] Failed to fetch categories →",
-        res.status,
-        res.statusText
-      );
+      console.error('Failed to fetch store categories', res.status, res.statusText);
     }
-  } catch (err: any) {
-    console.error("[CategoryManagerPage] Error fetching categories →", err.message);
+  } catch (e: any) {
+    console.error('Error fetching store categories', e.message);
   }
 
-  return <CategoryManagerClient initialCategories={categoriesData} />;
+  return <CategoryManagerClient initialCategories={storeCategories} />;
 }
