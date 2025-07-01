@@ -787,6 +787,7 @@ model User {
 
   Department Department[]
   Educator   Educator?
+  Student    Student?
 }
 
 enum Status {
@@ -1530,40 +1531,40 @@ model WishlistItem {
 }
 
 // Student Profile Model (one-to-one with User)
+// Updated Student model (focus on student-specific data)
 model Student {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(fields: [userId], references: [id])
 
+  loginCode String @unique // NEW: Unique generated number for login
+
+  // Student-specific contact/profile details (if different from User model)
   phone          String?
-  password       String?
-  username       String?
   bio            String?
   address        String?
-  profilePicture String?
+  profilePicture String? // If different from User.image
 
-  role ROLE? @default(STUDENT)
-
-  studentGrade       String? // e.g., "High School", "Undergraduate", "Graduate"
-  totalCourses       Int     @default(0)
-  completedCourses   Int     @default(0)
-  certificatesEarned Int     @default(0)
-  averageProgress    Float   @default(0.0) // Store as float, format percentage in frontend  
-
-  accounts Account[]
-  sessions Session[]
+  // Remove: name, email, emailVerified, image, password, username, accounts, sessions, role (these are on User)
 
   Company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?  @db.ObjectId
+  companyId String?  @db.ObjectId // Keep optional if students can be independent
+
+  studentGrade       String?
+  totalCourses       Int     @default(0) // Consider calculating on demand
+  completedCourses   Int     @default(0) // Consider calculating on demand
+  certificatesEarned Int     @default(0) // Consider calculating on demand
+  averageProgress    Float   @default(0.0) // Consider calculating on demand
 
   enrolledCourses  CourseEnrollment[]
   submissions      Submission[]
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
   AttendanceRecord AttendanceRecord[]
   ExamSubmission   ExamSubmission[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Account   Account[]
+  Session   Session[]
 }
 
 // Educator Profile Model (one-to-one with User)
