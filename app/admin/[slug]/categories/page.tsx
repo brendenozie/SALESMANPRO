@@ -12,7 +12,7 @@ export type StoreCategory = {
   icon?: string;
   sortOrder: number;
   visible: boolean;
-  items?: any[];
+  items: Subcategory[]; // always an array
   allBrands?: any[] | null;
   category: ProductCategory;
 };
@@ -56,6 +56,7 @@ interface PageProps {
  */
 export default async function CategoryManagerPage({ params }: PageProps) {
   let storeCategories: StoreCategory[] = [];
+  const companyId = params.slug;
 
   try {
     console.log('Fetching store categories for company:', params.slug);
@@ -91,13 +92,15 @@ export default async function CategoryManagerPage({ params }: PageProps) {
               sortOrder: sub.sortOrder,
               visible: sub.visible,
             }))
-          : sc.category.subcategories.map((sub: any) => ({
-              id: sub._id.$oid,
-              name: sub.name,
-              slug: sub.slug,
-              sortOrder: sub.sortOrder,
-              visible: sub.visible,
-            })),
+          : Array.isArray(sc.category.subcategories)
+            ? sc.category.subcategories.map((sub: any) => ({
+                id: sub._id?.$oid || sub.id,
+                name: sub.name,
+                slug: sub.slug,
+                sortOrder: sub.sortOrder,
+                visible: sub.visible,
+              }))
+            : [],
         allBrands: sc.allBrands || [],
         category: {
           id: sc.category.id,
@@ -113,13 +116,15 @@ export default async function CategoryManagerPage({ params }: PageProps) {
           isFeatured: sc.category.isFeatured,
           showInHomepage: sc.category.showInHomepage,
           attributes: sc.category.attributes,
-          subcategories: sc.category.subcategories.map((sub: any) => ({
-            id: sub._id?.$oid || sub.id,
-            name: sub.name,
-            slug: sub.slug,
-            sortOrder: sub.sortOrder,
-            visible: sub.visible,
-          })),
+          subcategories: Array.isArray(sc.category.subcategories)
+            ? sc.category.subcategories.map((sub: any) => ({
+                id: sub._id?.$oid || sub.id,
+                name: sub.name,
+                slug: sub.slug,
+                sortOrder: sub.sortOrder,
+                visible: sub.visible,
+              }))
+            : [],
           icon: sc.category.icon,
           image: sc.category.image,
         },
@@ -132,5 +137,5 @@ export default async function CategoryManagerPage({ params }: PageProps) {
     console.error('Error fetching store categories', e.message);
   }
 
-  return <CategoryManagerClient initialCategories={storeCategories} />;
+  return <CategoryManagerClient initialCategories={storeCategories} apiUrl={apiUrl} companyId={companyId} />;
 }
