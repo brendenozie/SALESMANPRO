@@ -22,6 +22,7 @@ export type DepartmentData = {
   head?: { id: string; name: string; email: string } | null; // Matches API response
   educatorCount: number;
   courseCount: number;
+  companyId?: string; // Optional, if needed for filtering
   createdAt: string;
   updatedAt: string;
 };
@@ -36,9 +37,11 @@ export type PossibleHead = {
 interface DepartmentsPageProps {
   initialDepartments: DepartmentData[];
   possibleHeads: PossibleHead[]; // List of users who can be heads
+  companyId?: string;
 }
 
-export default function DepartmentsPage({ initialDepartments, possibleHeads }: DepartmentsPageProps) {
+export default function DepartmentsPage({ initialDepartments, possibleHeads, companyId }: DepartmentsPageProps) {
+
   const [departments, setDepartments] = useState<DepartmentData[]>(initialDepartments);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -57,7 +60,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads }: D
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/departments`);
+      const res = await fetch(`${apiUrl}/admin/departments?companyId=${companyId}`);
       if (res.ok) {
         const data: DepartmentData[] = await res.json();
         setDepartments(data);
@@ -145,11 +148,11 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads }: D
 
 
   // Event handlers for CRUD operations via API
-  const handleAddNewDepartment = async (newDeptData: { name: string; description: string; headId?: string }) => {
+  const handleAddNewDepartment = async (newDeptData: { name: string; description: string; headId?: string, companyId?: string }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/departments`, {
+      const res = await fetch(`${apiUrl}/admin/departments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,11 +175,11 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads }: D
     }
   };
 
-  const handleEditDepartment = async (updatedDeptData: { id: string; name: string; description: string; headId?: string }) => {
+  const handleEditDepartment = async (updatedDeptData: { id: string; name: string; description: string; headId?: string, companyId?: string }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/departments/${updatedDeptData.id}`, {
+      const res = await fetch(`${apiUrl}/admin/departments/${updatedDeptData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +211,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads }: D
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/departments/${deptId}`, {
+      const res = await fetch(`${apiUrl}/admin/departments/${deptId}`, {
         method: 'DELETE',
       });
 
@@ -230,17 +233,19 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads }: D
   type DepartmentFormModalProps = {
     departmentData?: DepartmentData | null;
     onClose: () => void;
-    onSave: (data: { id: string; name: string; description: string; headId?: string }) => void;
+    onSave: (data: { id: string; name: string; description: string; headId?: string; companyId?: string }) => void;
     isEdit?: boolean;
     possibleHeads: PossibleHead[];
+    companyId?: string; // Optional, if needed for filtering
   };
 
-  const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({ departmentData, onClose, onSave, isEdit = false, possibleHeads }) => {
+  const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({ departmentData, onClose, onSave, isEdit = false, possibleHeads,  }) => {
     const [formData, setFormData] = useState({
       id: departmentData?.id || '',
       name: departmentData?.name || '',
       description: departmentData?.description || '',
       headId: departmentData?.head?.id || '', // Use head.id for the form
+      companyId: departmentData?.companyId || companyId, // Pass companyId if needed
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

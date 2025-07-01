@@ -234,11 +234,12 @@ model Company {
   shippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
   shippingSettingsId String?           @db.ObjectId
 
-  awards   Json?
-  metrics  Json?
-  stats    Json?
-  AppPromo AppPromo[]
-  Blog     Blog[]
+  awards     Json?
+  metrics    Json?
+  stats      Json?
+  AppPromo   AppPromo[]
+  Blog       Blog[]
+  Department Department[]
 }
 
 enum CategoryStatus {
@@ -1868,6 +1869,8 @@ model Department {
   courses     Course[] // Courses offered by this department
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  Company     Company?   @relation(fields: [companyId], references: [id])
+  companyId   String?    @db.ObjectId
   User        User?      @relation(fields: [userId], references: [id])
   userId      String?    @db.ObjectId
 

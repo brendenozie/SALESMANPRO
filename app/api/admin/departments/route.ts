@@ -32,6 +32,7 @@ export async function GET(request: Request) {
       name: department.name,
       description: department.description,
       head: department.head, // Contains id, name, email of the head
+      companyId: department.companyId,
       educatorCount: department._count.educators,
       courseCount: department._count.courses,
       createdAt: department.createdAt,
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { name, description, headId } = body;
+    const { name, description, headId, companyId } = body;
 
     // Basic validation (add more robust validation as needed)
     if (!name) {
@@ -66,7 +67,8 @@ export async function POST(request: Request) {
       data: {
         name,
         description,
-        headId, // This will link to an existing User's ID
+        headId: headId || null, // This will link to an existing User's ID
+        companyId: companyId || null,
       },
     });
 

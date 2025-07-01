@@ -7,18 +7,20 @@ import { DepartmentData } from "./DepartmentsPage"; // Import the type
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  // No dynamic route params here; adjust if you move under [slug].
+  params: {
+    slug: string; // companyId
+  };
 }
 
 /**
  * Server Component: fetches all departments
  * and passes them down to the client component.
  */
-export default async function DepartmentsManagerPage(_: PageProps) {
+export default async function DepartmentsManagerPage({ params: { slug } }: PageProps) {
   let departmentsData: DepartmentData[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/departments`, { // Changed API endpoint
+    const res = await fetch(`${apiUrl}/admin/departments?companyId=${slug}`, { // Changed API endpoint
       cache: "no-store", // SSR on every request
     });
 
@@ -50,5 +52,5 @@ export default async function DepartmentsManagerPage(_: PageProps) {
   ];
 
 
-  return <DepartmentsPage initialDepartments={departmentsData} possibleHeads={possibleHeads} />;
+  return <DepartmentsPage initialDepartments={departmentsData} possibleHeads={possibleHeads} companyId={slug}/>;
 }
