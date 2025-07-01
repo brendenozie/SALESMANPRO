@@ -171,7 +171,7 @@ export async function POST(request: Request) {
         bio,
         address,
         profilePicture,
-        departmentId,
+        // departmentId: typeof departmentId !== 'undefined' ? departmentId : null, // Allow null if no department is specified
         // totalStudents and totalCoursesTaught are @default(0) and calculated dynamically
       },
       include: {

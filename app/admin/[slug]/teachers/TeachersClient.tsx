@@ -77,7 +77,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: EducatorType[] = await res.json();
         setEducators(data);
@@ -118,7 +118,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
     setError(null);
     const method = educatorData.id ? 'PATCH' : 'POST';
     try {
-      const url = educatorData.id ? `${apiUrl}/educators/${educatorData.id}` : `${apiUrl}/educators`;
+      const url = educatorData.id ? `${apiUrl}/admin/educators/${educatorData.id}` : `${apiUrl}/admin/educators`;
 
       const payload = {
         ...educatorData,
@@ -154,7 +154,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/educators/${educatorId}`, {
+      const res = await fetch(`${apiUrl}/admin/educators/${educatorId}`, {
         method: 'DELETE',
       });
 
