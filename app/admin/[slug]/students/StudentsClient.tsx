@@ -17,11 +17,14 @@ import {
   BookOpenIcon, // For total courses
   TrophyIcon, // For certificates
   CheckCircleIcon, // For completed courses
-  KeyIcon,
-  XMarkIcon, // For login code
+  KeyIcon, // For login code
+  UserGroupIcon,
+  XMarkIcon, // For parent icon
 } from '@heroicons/react/24/outline';
 
 import StudentFormModal from './StudentFormModal'; // Import the new modal component
+
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Type Definitions (matching API response) ---
 export type StudentType = {
@@ -36,6 +39,10 @@ export type StudentType = {
   address?: string;
   companyId?: string; // Optional as per Prisma model
   studentGrade?: string;
+  parentId?: string; // NEW: Parent ID
+  parentName?: string; // NEW: Flattened parent name
+  parentEmail?: string; // NEW: Flattened parent email
+  parentPhone?: string; // NEW: Flattened parent phone
   totalCourses: number; // From _count.enrolledCourses
   completedCourses: number; // Directly from model
   certificatesEarned: number; // Directly from model
@@ -47,14 +54,25 @@ export type StudentType = {
   updatedAt: string;
 };
 
+export type ParentOption = {
+  id: string;
+  name: string;
+  email?: string; // Include email and phone for better parent selection display
+  phone?: string;
+  loginCode?: string; // Also include loginCode for display if needed
+};
+
+
 interface StudentsClientProps {
   initialStudents: StudentType[];
+  allParents: ParentOption[]; // NEW: Pass allParents to the client component
   companyId: string;
   apiUrl: string;
 }
 
-export default function StudentsClient({ initialStudents, companyId, apiUrl }: StudentsClientProps) {
+export default function StudentsClient({ initialStudents, allParents, companyId, apiUrl }: StudentsClientProps) {
   const [students, setStudents] = useState<StudentType[]>(initialStudents);
+  const [parents, setParents] = useState<ParentOption[]>(allParents); // State for parents
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGrade, setFilterGrade] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -69,43 +87,60 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
   });
 
   // --- Data Fetching and Management ---
-  const fetchStudents = useCallback(async () => {
+  const fetchStudentsAndParents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`);
-      if (res.ok) {
-        const data: StudentType[] = await res.json();
-        setStudents(data);
+      const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`);
+      const parentsRes = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`);
+
+      if (studentsRes.ok) {
+        const studentsData: StudentType[] = await studentsRes.json();
+        setStudents(studentsData);
       } else {
-        const errorData = await res.json();
+        const errorData = await studentsRes.json();
         setError(errorData.message || "Failed to fetch students.");
-        setStudents(initialStudents); // Fallback to initial data on client-side fetch error
+        setStudents(initialStudents);
       }
+
+      if (parentsRes.ok) {
+        const parentsData: ParentOption[] = await parentsRes.json();
+        setParents(parentsData);
+      } else {
+        const errorData = await parentsRes.json();
+        setError(errorData.message || "Failed to fetch parents.");
+        setParents(allParents); // Fallback to initial data
+      }
+
     } catch (err: any) {
-      setError(err.message || "Network error fetching students.");
-      setStudents(initialStudents); // Fallback to initial data on network error
+      setError(err.message || "Network error fetching data.");
+      setStudents(initialStudents);
+      setParents(allParents);
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, initialStudents]);
+  }, [apiUrl, companyId, initialStudents, allParents]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialStudents.length === 0) {
-      fetchStudents();
+    if (initialStudents.length === 0 || allParents.length === 0) {
+      fetchStudentsAndParents();
     }
-  }, [fetchStudents, initialStudents]);
+  }, [fetchStudentsAndParents, initialStudents, allParents]);
 
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
       const matchesSearch = (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (student.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') || // Search by login code
+                            (student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (student.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (student.address?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+                            (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') || // Search by parent name
+                            (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') || // Search by parent email
+                            (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || ''); // Search by parent phone
+
       const matchesGrade = filterGrade === 'All' || student.studentGrade === filterGrade;
       return matchesSearch && matchesGrade;
     }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
@@ -135,13 +170,13 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
   }, [students]);
 
   // --- API Interaction Functions ---
-  const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt'> & { id?: string; userId?: string }) => {
+  const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone'> & { id?: string; userId?: string; parentId?: string | null }) => {
     setIsLoading(true);
     setError(null);
-
     const method = studentData.id ? 'PATCH' : 'POST';
     
     try {
+
       const url = studentData.id ? `${apiUrl}/students/${studentData.id}` : `${apiUrl}/students`;
 
       const payload = {
@@ -156,7 +191,7 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
       });
 
       if (res.ok) {
-        await fetchStudents(); // Re-fetch to get the latest data with calculated counts
+        await fetchStudentsAndParents(); // Re-fetch to get the latest data with calculated counts and parent info
         setShowFormModal(false);
         setEditingStudent(null);
       } else {
@@ -183,7 +218,7 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
       });
 
       if (res.ok) {
-        await fetchStudents();
+        await fetchStudentsAndParents();
       } else {
         const errorData = await res.json();
         setError(errorData.message || "Failed to delete student.");
@@ -197,7 +232,7 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
 
   // --- Calculated Stats ---
   const totalStudents = students.length;
-  const totalGrades = getGradeStats.length;
+  const totalGrades = getGradeStats.length; // Number of unique grades
   const avgCoursesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.totalCourses, 0) / totalStudents).toFixed(1) : '0';
   const avgProgressPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.averageProgress, 0) / totalStudents).toFixed(1) : '0';
   const avgCertificatesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.certificatesEarned, 0) / totalStudents).toFixed(1) : '0';
@@ -334,9 +369,9 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Student</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission #</th> {/* NEW COLUMN */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission #</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th> {/* Updated column header */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                 <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
                   <span className="sr-only">Actions</span>
@@ -355,6 +390,7 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
                             src={student.profilePicture || `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.name?.charAt(0) || '?'}`}
                             alt={student.name || 'Student Avatar'}
                             width={40}
+                            loader={loader}
                             height={40}
                             onError={(e) => {
                               (e.target as HTMLImageElement).onerror = null;
@@ -378,15 +414,24 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
                       <div className="text-xs text-gray-500 mt-1">Enrolled: {new Date(student.createdAt).toLocaleDateString()}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.phone && (
-                        <div className="flex items-center gap-1">
-                          <PhoneIcon className="h-4 w-4 text-gray-400" /> {student.phone}
-                        </div>
-                      )}
-                      {student.address && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <MapPinIcon className="h-4 w-4 text-gray-400" /> {student.address}
-                        </div>
+                      {student.parentName ? (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <UserGroupIcon className="h-4 w-4 text-gray-400" /> {student.parentName}
+                          </div>
+                          {student.parentPhone && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <PhoneIcon className="h-4 w-4 text-gray-400" /> {student.parentPhone}
+                            </div>
+                          )}
+                          {student.parentEmail && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <EnvelopeIcon className="h-4 w-4 text-gray-400" /> {student.parentEmail}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <span>N/A</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -444,7 +489,8 @@ export default function StudentsClient({ initialStudents, companyId, apiUrl }: S
           onClose={() => { setShowFormModal(false); setEditingStudent(null); }}
           onSave={handleSaveStudent}
           isLoading={isLoading}
-          companyId={companyId} // Pass companyId to the modal
+          companyId={companyId}
+          allParents={parents} // NEW: Pass allParents to the modal
         />
       )}
     </div>

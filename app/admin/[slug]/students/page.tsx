@@ -1,7 +1,7 @@
 // app/admin/[slug]/students/page.tsx
 
 import React from "react";
-import StudentsClient, { StudentType } from "./StudentsClient";
+import StudentsClient, { StudentType, ParentOption } from "./StudentsClient";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -13,12 +13,23 @@ interface PageProps {
 }
 
 // --- Helper function to generate sample data ---
-const generateSampleStudentsData = (companyId: string): StudentType[] => {
+const generateSampleStudentsData = (companyId: string): {
+  sampleStudents: StudentType[];
+  sampleParents: ParentOption[];
+} => {
+  const sampleParents: ParentOption[] = [
+    { id: 'PAR001', name: 'Mercy Wanjiru', email: 'mercy.w@example.com', phone: '+254711223344', loginCode: '900001' },
+    { id: 'PAR002', name: 'David Otieno', email: 'david.o@example.com', phone: '+254722334455', loginCode: '900002' },
+    { id: 'PAR003', name: 'Elizabeth Kimani', email: 'elizabeth.k@example.com', phone: '+254733445566', loginCode: '900003' },
+    { id: 'PAR004', name: 'Ruth Njoroge', email: 'ruth.n@example.com', phone: '+254744556677', loginCode: '900004' },
+    { id: 'PAR005', name: 'Ahmed Hassan', email: 'ahmed.h@example.com', phone: '+254755667788', loginCode: '900005' },
+  ];
+
   const sampleStudents: StudentType[] = [
     {
       id: 'STU001',
       userId: 'USER001',
-      loginCode: '100001', // Sample login code
+      loginCode: '100001',
       name: 'Jane Wanjiru',
       email: 'jane.w@school.com',
       profilePicture: 'https://placehold.co/100x100/FFD1DC/FF69B4?text=JW',
@@ -27,6 +38,10 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
       address: '123 Nairobi St, Nairobi',
       companyId: companyId,
       studentGrade: '8',
+      parentId: 'PAR001',
+      parentName: 'Mercy Wanjiru',
+      parentEmail: 'mercy.w@example.com',
+      parentPhone: '+254711223344',
       totalCourses: 3,
       completedCourses: 1,
       certificatesEarned: 0,
@@ -40,7 +55,7 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
     {
       id: 'STU002',
       userId: 'USER002',
-      loginCode: '100002', // Sample login code
+      loginCode: '100002',
       name: 'Kevin Otieno',
       email: 'kevin.o@school.com',
       profilePicture: 'https://placehold.co/100x100/C8E6C9/4CAF50?text=KO',
@@ -49,6 +64,10 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
       address: '456 Mombasa Rd, Nairobi',
       companyId: companyId,
       studentGrade: '7',
+      parentId: 'PAR002',
+      parentName: 'David Otieno',
+      parentEmail: 'david.o@example.com',
+      parentPhone: '+254722334455',
       totalCourses: 2,
       completedCourses: 0,
       certificatesEarned: 0,
@@ -62,7 +81,7 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
     {
       id: 'STU003',
       userId: 'USER003',
-      loginCode: '100003', // Sample login code
+      loginCode: '100003',
       name: 'Sarah Kimani',
       email: 'sarah.k@school.com',
       profilePicture: 'https://placehold.co/100x100/B3E5FC/2196F3?text=SK',
@@ -71,6 +90,10 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
       address: '789 Kisumu St, Nairobi',
       companyId: companyId,
       studentGrade: '9',
+      parentId: 'PAR003',
+      parentName: 'Elizabeth Kimani',
+      parentEmail: 'elizabeth.k@example.com',
+      parentPhone: '+254733445566',
       totalCourses: 4,
       completedCourses: 2,
       certificatesEarned: 1,
@@ -84,7 +107,7 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
     {
       id: 'STU004',
       userId: 'USER004',
-      loginCode: '100004', // Sample login code
+      loginCode: '100004',
       name: 'Michael Njoroge',
       email: 'michael.n@school.com',
       profilePicture: 'https://placehold.co/100x100/CFD8DC/607D8B?text=MN',
@@ -93,6 +116,10 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
       address: '101 Eldoret Ave, Nairobi',
       companyId: companyId,
       studentGrade: '8',
+      parentId: 'PAR004',
+      parentName: 'Ruth Njoroge',
+      parentEmail: 'ruth.n@example.com',
+      parentPhone: '+254744556677',
       totalCourses: 3,
       completedCourses: 3,
       certificatesEarned: 2,
@@ -105,7 +132,7 @@ const generateSampleStudentsData = (companyId: string): StudentType[] => {
     },
   ];
 
-  return sampleStudents;
+  return { sampleStudents, sampleParents };
 };
 // --- End Helper function ---
 
@@ -119,20 +146,42 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   const companyId = params.slug;
 
   let initialStudents: StudentType[] = [];
+  let allParents: ParentOption[] = [];
   let fetchError: boolean = false;
 
   try {
     // Fetch all students for this company
     const studentsRes = await fetch(
-      `${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (studentsRes.ok) {
       initialStudents = (await studentsRes.json()) as StudentType[];
     } else {
-      console.error(
-        `[StudentsManagementPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`
-      );
+      // console.error(
+      //   `[StudentsManagementPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`
+      // );
+      fetchError = true;
+    }
+
+    // Fetch all parents for this company (or globally if not company-specific)
+    const parentsRes = await fetch(
+      `${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" }
+    );
+    if (parentsRes.ok) {
+      const parentsData = (await parentsRes.json()) as ParentOption[];
+      allParents = parentsData.map(p => ({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        phone: p.phone,
+        loginCode: p.loginCode // Include loginCode for display/search if needed
+      }));
+    } else {
+      // console.error(
+      //   `[StudentsManagementPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -142,14 +191,17 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError || initialStudents.length === 0) {
-    console.log("[StudentsManagementPage] Using sample data for students.");
-    initialStudents = generateSampleStudentsData(companyId);
+  if (fetchError || initialStudents.length === 0 || allParents.length === 0) {
+    console.log("[StudentsManagementPage] Using sample data for students and parents.");
+    const { sampleStudents, sampleParents } = generateSampleStudentsData(companyId);
+    initialStudents = sampleStudents;
+    allParents = sampleParents;
   }
 
   return (
     <StudentsClient
       initialStudents={initialStudents}
+      allParents={allParents} // Pass allParents to the client component
       companyId={companyId}
       apiUrl={apiUrl}
     />

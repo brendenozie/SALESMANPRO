@@ -47,6 +47,22 @@ export async function GET(request: Request) {
             emailVerified: true,
           },
         },
+        parent: { // NEW: Include the linked Parent details
+          select: {
+            id: true,
+            phone: true,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
         _count: { // Include counts of related records
           select: {
             enrolledCourses: true,
@@ -63,7 +79,7 @@ export async function GET(request: Request) {
       },
     });
 
-    // Transform the data to include calculated counts and flattened user info
+    // Transform the data to include calculated counts and flattened user/parent info
     const response = students.map((student) => {
       return {
         id: student.id,
@@ -77,10 +93,14 @@ export async function GET(request: Request) {
         address: student.address,
         companyId: student.companyId,
         studentGrade: student.studentGrade,
+        parentId: student.parentId, // NEW: Include parentId
+        parentName: student.parent?.user.name, // NEW: Flatten parent name
+        parentEmail: student.parent?.user.email, // NEW: Flatten parent email
+        parentPhone: student.parent?.phone, // NEW: Flatten parent phone
         totalCourses: student._count.enrolledCourses,
-        completedCourses: student.completedCourses, // Assuming this is directly stored
-        certificatesEarned: student.certificatesEarned, // Assuming this is directly stored
-        averageProgress: student.averageProgress, // Assuming this is directly stored
+        completedCourses: student.completedCourses,
+        certificatesEarned: student.certificatesEarned,
+        averageProgress: student.averageProgress,
         totalSubmissions: student._count.submissions,
         totalAttendanceRecords: student._count.AttendanceRecord,
         totalExamSubmissions: student._count.ExamSubmission,
@@ -97,7 +117,7 @@ export async function GET(request: Request) {
 }
 
 // POST /api/students
-// Creates a new Student profile, linking to an existing User or creating a new basic User.
+// Creates a new Student profile, linking to an existing User and optionally an existing Parent.
 export async function POST(request: Request) {
   if (request.method !== "POST") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
@@ -105,10 +125,10 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { email, name, companyId, phone, bio, address, profilePicture, studentGrade } = body;
+    const { email, name, companyId, phone, bio, address, profilePicture, studentGrade, parentId } = body; // NEW: parentId
 
     // Basic validation
-    if (!email || !name) { // companyId is optional on Student model
+    if (!email || !name) {
       return NextResponse.json({ message: "Email and Name are required to create a student." }, { status: 400 });
     }
 
@@ -118,18 +138,14 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      // If user doesn't exist, create a new basic user
       user = await prisma.user.create({
         data: {
           email,
           name,
-          image: profilePicture, // Use provided profile picture for user's image too
-          // You might want to set a default role here if your User model has one
-          // role: 'STUDENT',
+          image: profilePicture,
         },
       });
     } else {
-      // If user exists, check if they already have a student profile for this user
       const existingStudent = await prisma.student.findUnique({
         where: { userId: user.id },
       });
@@ -138,25 +154,48 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Generate a unique login code (admission number)
+    // 2. Validate ParentId if provided
+    if (parentId) {
+      const existingParent = await prisma.parent.findUnique({
+        where: { id: parentId },
+      });
+      if (!existingParent) {
+        return NextResponse.json({ message: "Provided parentId does not exist." }, { status: 400 });
+      }
+    }
+
+    // 3. Generate a unique login code (admission number)
     const loginCode = await generateUniqueLoginCode();
 
-    // 3. Create Student Profile
+    // 4. Create Student Profile
     const newStudent = await prisma.student.create({
       data: {
         userId: user.id,
-        loginCode, // Assign the generated unique code
-        companyId, // This is optional in your model
+        loginCode,
+        companyId,
+        parentId, // NEW: Assign parentId
         phone,
         bio,
         address,
         profilePicture,
         studentGrade,
-        // totalCourses, completedCourses, certificatesEarned, averageProgress are @default(0)
       },
       include: {
         user: {
           select: { id: true, name: true, email: true, image: true },
+        },
+        parent: { // NEW: Include parent for response
+          select: { id: true, phone: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
         },
       },
     });
@@ -165,7 +204,7 @@ export async function POST(request: Request) {
     const responseData = {
       id: newStudent.id,
       userId: newStudent.userId,
-      loginCode: newStudent.loginCode, // Include the login code in the response
+      loginCode: newStudent.loginCode,
       name: newStudent.user?.name,
       email: newStudent.user?.email,
       profilePicture: newStudent.profilePicture || newStudent.user?.image,
@@ -174,10 +213,14 @@ export async function POST(request: Request) {
       address: newStudent.address,
       companyId: newStudent.companyId,
       studentGrade: newStudent.studentGrade,
-      totalCourses: 0, // Will be calculated on GET
-      completedCourses: 0, // Will be calculated on GET
-      certificatesEarned: 0, // Will be calculated on GET
-      averageProgress: 0.0, // Will be calculated on GET
+      parentId: newStudent.parentId,
+      parentName: newStudent.parent?.user.name,
+      parentEmail: newStudent.parent?.user.email,
+      parentPhone: newStudent.parent?.phone,
+      totalCourses: 0,
+      completedCourses: 0,
+      certificatesEarned: 0,
+      averageProgress: 0.0,
       totalSubmissions: 0,
       totalAttendanceRecords: 0,
       totalExamSubmissions: 0,
@@ -188,7 +231,6 @@ export async function POST(request: Request) {
     return NextResponse.json(responseData, { status: 201 });
   } catch (error: any) {
     console.error("Error creating student:", error);
-    // Handle unique constraint error for userId on Student model
     if (error.code === 'P2002' && error.meta?.target?.includes('userId')) {
       return NextResponse.json({ message: "A student profile already exists for this user." }, { status: 409 });
     }

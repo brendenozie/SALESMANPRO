@@ -242,6 +242,7 @@ model Company {
   Department Department[]
   Student    Student[]
   Educator   Educator[]
+  Parent     Parent[]
 }
 
 enum CategoryStatus {
@@ -788,6 +789,7 @@ model User {
   Department Department[]
   Educator   Educator?
   Student    Student?
+  Parent     Parent?
 }
 
 enum Status {
@@ -1530,6 +1532,28 @@ model WishlistItem {
   marketplaceListingId String?             @db.ObjectId
 }
 
+// Parent Profile Model (one-to-one with User, one-to-many with Student)
+model Parent {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(fields: [userId], references: [id])
+
+  loginCode String @unique // Unique generated number for parent login
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  children Student[] // One-to-many relation: a parent can have many children
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Student Profile Model (one-to-one with User)
 // Updated Student model (focus on student-specific data)
 model Student {
@@ -1545,7 +1569,8 @@ model Student {
   address        String?
   profilePicture String? // If different from User.image
 
-  // Remove: name, email, emailVerified, image, password, username, accounts, sessions, role (these are on User)
+  parentId String? @db.ObjectId // NEW: Link to Parent model
+  parent   Parent? @relation(fields: [parentId], references: [id]) // NEW: Relation to Parent
 
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Keep optional if students can be independent

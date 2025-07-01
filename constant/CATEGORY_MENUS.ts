@@ -113,6 +113,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
         { label: "Courses", href: `/admin/${adminSlug}/courses` },
         { label: "Course Materials", href: `/admin/${adminSlug}/course-materials` },
         { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
+        { label: "Parents", href: `/admin/${adminSlug}/parents` },     
         { label: "Students", href: `/admin/${adminSlug}/students` },          
         { label: "Classes", href: `/admin/${adminSlug}/classes` },
 

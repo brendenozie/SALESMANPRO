@@ -19,6 +19,22 @@ export async function GET(request: Request, { params }: { params: { id: string }
             emailVerified: true,
           },
         },
+        parent: { // NEW: Include parent details
+          select: {
+            id: true,
+            phone: true,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             enrolledCourses: true,
@@ -38,7 +54,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const responseData = {
       id: student.id,
       userId: student.userId,
-      loginCode: student.loginCode, // Include the new loginCode
+      loginCode: student.loginCode,
       name: student.user?.name,
       email: student.user?.email,
       profilePicture: student.profilePicture || student.user?.image,
@@ -47,6 +63,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
       address: student.address,
       companyId: student.companyId,
       studentGrade: student.studentGrade,
+      parentId: student.parentId, // NEW: Include parentId
+      parentName: student.parent?.user.name, // NEW: Flatten parent name
+      parentEmail: student.parent?.user.email, // NEW: Flatten parent email
+      parentPhone: student.parent?.phone, // NEW: Flatten parent phone
       totalCourses: student._count.enrolledCourses,
       completedCourses: student.completedCourses,
       certificatesEarned: student.certificatesEarned,
@@ -72,21 +92,30 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   try {
     const body = await request.json();
-    // Exclude loginCode from direct update via PATCH
-    const { phone, bio, address, profilePicture, studentGrade, name, email, loginCode, ...rest } = body;
+    const { phone, bio, address, profilePicture, studentGrade, name, email, loginCode, parentId, ...rest } = body; // NEW: parentId
 
-    // Check for any unexpected fields
     if (Object.keys(rest).length > 0) {
       console.warn("Unexpected fields in PATCH request for student:", rest);
     }
 
-    // Check if student exists
     const existingStudent = await prisma.student.findUnique({
       where: { id },
     });
 
     if (!existingStudent) {
       return NextResponse.json({ message: "Student not found" }, { status: 404 });
+    }
+
+    // Validate ParentId if provided and it's changing
+    if (parentId !== undefined && parentId !== existingStudent.parentId) {
+      if (parentId !== null) { // Allow setting to null to unassign parent
+        const existingParent = await prisma.parent.findUnique({
+          where: { id: parentId },
+        });
+        if (!existingParent) {
+          return NextResponse.json({ message: "Provided parentId does not exist." }, { status: 400 });
+        }
+      }
     }
 
     // Prepare data for Student update
@@ -96,26 +125,35 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (address !== undefined) studentUpdateData.address = address;
     if (profilePicture !== undefined) studentUpdateData.profilePicture = profilePicture;
     if (studentGrade !== undefined) studentUpdateData.studentGrade = studentGrade;
-    // Note: totalCourses, completedCourses, certificatesEarned, averageProgress are not directly updated via PATCH
-    // They are typically derived or updated through other actions (e.g., course completion).
+    if (parentId !== undefined) studentUpdateData.parentId = parentId; // NEW: Allow updating parentId
 
-    // Perform Student update
     const updatedStudent = await prisma.student.update({
       where: { id },
       data: studentUpdateData,
       include: {
-        user: { // Include user for response
+        user: {
           select: { id: true, name: true, email: true, image: true },
+        },
+        parent: { // NEW: Include parent for response
+          select: { id: true, phone: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
         },
       },
     });
 
-    // Optionally update associated User's name/email if provided (careful with email uniqueness)
     if (name !== undefined || email !== undefined) {
       const userUpdateData: any = {};
       if (name !== undefined) userUpdateData.name = name;
       if (email !== undefined) {
-        // Check if new email is already taken by another user if it's changing
         if (email !== updatedStudent.user?.email) {
           const existingUserWithNewEmail = await prisma.user.findUnique({ where: { email } });
           if (existingUserWithNewEmail && existingUserWithNewEmail.id !== updatedStudent.userId) {
@@ -124,7 +162,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         }
         userUpdateData.email = email;
       }
-      if (profilePicture !== undefined) userUpdateData.image = profilePicture; // Sync profile picture to User model too
+      if (profilePicture !== undefined) userUpdateData.image = profilePicture;
 
       if (Object.keys(userUpdateData).length > 0) {
         await prisma.user.update({
@@ -134,12 +172,24 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
     }
 
-    // Re-fetch to get the most current state after potential user update
     const finalStudent = await prisma.student.findUnique({
       where: { id },
       include: {
         user: {
           select: { id: true, name: true, email: true, image: true },
+        },
+        parent: { // NEW: Include parent for final response
+          select: { id: true, phone: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
         },
         _count: {
           select: {
@@ -155,7 +205,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const responseData = {
       id: finalStudent!.id,
       userId: finalStudent!.userId,
-      loginCode: finalStudent!.loginCode, // Include the new loginCode
+      loginCode: finalStudent!.loginCode,
       name: finalStudent!.user?.name,
       email: finalStudent!.user?.email,
       profilePicture: finalStudent!.profilePicture || finalStudent!.user?.image,
@@ -164,6 +214,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       address: finalStudent!.address,
       companyId: finalStudent!.companyId,
       studentGrade: finalStudent!.studentGrade,
+      parentId: finalStudent!.parentId,
+      parentName: finalStudent!.parent?.user.name,
+      parentEmail: finalStudent!.parent?.user.email,
+      parentPhone: finalStudent!.parent?.phone,
       totalCourses: finalStudent!._count.enrolledCourses,
       completedCourses: finalStudent!.completedCourses,
       certificatesEarned: finalStudent!.certificatesEarned,
@@ -196,31 +250,13 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: "Student not found" }, { status: 404 });
     }
 
-    // IMPORTANT: When deleting a Student, consider the cascading effects.
-    // - What happens to their course enrollments?
-    // - What happens to their submissions?
-    // - What happens to their attendance records?
-    // - What happens to their exam submissions?
-    // Prisma's foreign key constraints will prevent deletion if related records exist
-    // unless you configure onDelete actions (e.g., CASCADE, SET NULL).
-    // For now, this will throw an error if linked records exist.
-    // You might need to:
-    // 1. Delete related records (use with extreme caution!).
-    // 2. Set the foreign key to NULL if the field is optional.
-
     const deletedStudent = await prisma.student.delete({
       where: { id },
     });
 
-    // Optionally, if the user associated with this student profile should also be deleted
-    // AND they have no other roles/profiles, you could delete the user here.
-    // This requires careful logic to avoid deleting users who might also be educators, admins, etc.
-    // For safety, we are NOT deleting the User here. The User record will remain.
-
     return NextResponse.json({ message: "Student deleted successfully", deletedId: deletedStudent.id }, { status: 200 });
   } catch (error: any) {
     console.error(`Error deleting student with ID ${id}:`, error);
-    // Handle specific error if foreign key constraint fails
     if (error.code === 'P2003') {
       return NextResponse.json({ message: "Cannot delete student: They are linked to existing enrollments, submissions, or other records. Please reassign or delete associated records first." }, { status: 409 });
     }

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image'; // For profile picture preview
-import { XMarkIcon, UserCircleIcon, PhoneIcon, MapPinIcon, AcademicCapIcon, UserGroupIcon } from '@heroicons/react/24/outline'; // New icons for sections
+import { XMarkIcon, UserCircleIcon, PhoneIcon, MapPinIcon, AcademicCapIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Assuming StudentType and ParentOption are imported from StudentsClient.tsx
-export type StudentType = {
+// Assuming ParentType is imported from ParentsClient.tsx
+export type ParentType = {
   id: string;
   userId: string;
-  loginCode?: string;
+  loginCode: string;
   name: string;
   email: string;
   profilePicture?: string;
@@ -16,93 +16,63 @@ export type StudentType = {
   bio?: string;
   address?: string;
   companyId?: string;
-  studentGrade?: string;
-  parentId?: string; // Parent ID
-  parentName?: string; // Flattened parent name
-  parentEmail?: string; // Flattened parent email
-  parentPhone?: string; // Flattened parent phone
-  totalCourses: number;
-  completedCourses: number;
-  certificatesEarned: number;
-  averageProgress: number;
-  totalSubmissions: number;
-  totalAttendanceRecords: number;
-  totalExamSubmissions: number;
+  totalChildren: number;
   createdAt: string;
   updatedAt: string;
 };
 
-export type ParentOption = {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  loginCode?: string;
-};
-
-interface StudentFormModalProps {
-  studentData?: StudentType | null;
+interface ParentFormModalProps {
+  parentData?: ParentType | null;
   onClose: () => void;
-  onSave: (data: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone'> & { id?: string; userId?: string; parentId?: string | null }) => Promise<void>;
+  onSave: (data: Omit<ParentType, 'id' | 'userId' | 'loginCode' | 'totalChildren' | 'createdAt' | 'updatedAt'> & { id?: string; userId?: string }) => Promise<void>;
   isLoading: boolean;
   companyId: string;
-  allParents: ParentOption[]; // NEW: List of all available parents
 }
 
-const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClose, onSave, isLoading, companyId, allParents }) => {
+const ParentFormModal: React.FC<ParentFormModalProps> = ({ parentData, onClose, onSave, isLoading, companyId }) => {
   const [formData, setFormData] = useState({
-    id: studentData?.id || '',
-    userId: studentData?.userId || '',
-    name: studentData?.name || '',
-    email: studentData?.email || '',
-    profilePicture: studentData?.profilePicture || '',
-    phone: studentData?.phone || '',
-    bio: studentData?.bio || '',
-    address: studentData?.address || '',
-    studentGrade: studentData?.studentGrade || '',
-    parentId: studentData?.parentId || '', // Initialize with existing parentId
+    id: parentData?.id || '',
+    userId: parentData?.userId || '',
+    name: parentData?.name || '',
+    email: parentData?.email || '',
+    profilePicture: parentData?.profilePicture || '',
+    phone: parentData?.phone || '',
+    bio: parentData?.bio || '',
+    address: parentData?.address || '',
   });
 
   useEffect(() => {
-    if (studentData) {
+    if (parentData) {
       setFormData({
-        id: studentData.id,
-        userId: studentData.userId,
-        name: studentData.name,
-        email: studentData.email,
-        profilePicture: studentData.profilePicture || '',
-        phone: studentData.phone || '',
-        bio: studentData.bio || '',
-        address: studentData.address || '',
-        studentGrade: studentData.studentGrade || '',
-        parentId: studentData.parentId || '',
+        id: parentData.id,
+        userId: parentData.userId,
+        name: parentData.name,
+        email: parentData.email,
+        profilePicture: parentData.profilePicture || '',
+        phone: parentData.phone || '',
+        bio: parentData.bio || '',
+        address: parentData.address || '',
       });
     } else {
       setFormData({
         id: '', userId: '', name: '', email: '', profilePicture: '',
-        phone: '', bio: '', address: '', studentGrade: '', parentId: ''
+        phone: '', bio: '', address: ''
       });
     }
-  }, [studentData]);
+  }, [parentData]);
 
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Ensure parentId is undefined if empty string is selected
-    const payload = {
-      ...formData,
-      companyId,
-      parentId: formData.parentId === '' ? undefined : formData.parentId,
-    };
-    await onSave(payload);
+    await onSave({ ...formData, companyId });
   };
 
-  const defaultProfilePic = `https://placehold.co/100x100/E0F2F7/0288D1?text=${formData.name?.charAt(0) || '?'}`;
+  const defaultProfilePic = `https://placehold.co/100x100/FCE7F3/D946EF?text=${formData.name?.charAt(0) || '?'}`;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
@@ -117,7 +87,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
         </button>
 
         <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-4 border-gray-200">
-          {studentData ? `Edit Student: ${studentData.name}` : 'Add New Student'}
+          {parentData ? `Edit Parent: ${parentData.name}` : 'Add New Parent'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -148,8 +118,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
                     className="h-20 w-20 rounded-full object-cover border-2 border-indigo-200 shadow-md"
                     src={formData.profilePicture || defaultProfilePic}
                     alt="Profile Preview"
-                    width={80}
                     loader={loader}
+                    width={80}
                     height={80}
                     onError={(e) => {
                       (e.target as HTMLImageElement).onerror = null;
@@ -167,18 +137,12 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
             </div>
           </div>
 
-          {/* Contact & Academic Information */}
+          {/* Contact Information */}
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
             <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <AcademicCapIcon className="h-6 w-6 text-blue-500" /> Academic & Contact
+              <PhoneIcon className="h-6 w-6 text-green-500" /> Contact Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="studentGrade" className="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                <input type="text" name="studentGrade" id="studentGrade" value={formData.studentGrade} onChange={handleChange}
-                  placeholder="e.g., 7, High School, Undergraduate"
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-              </div>
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <div className="relative mt-1">
@@ -200,31 +164,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Parent Information */}
-          <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <UserGroupIcon className="h-6 w-6 text-purple-500" /> Parent/Guardian Information
-            </h3>
-            <div className="relative mt-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <UserGroupIcon className="h-5 w-5 text-gray-400" />
-              </div>
-              <label htmlFor="parentId" className="sr-only">Select Parent</label>
-              <select name="parentId" id="parentId" value={formData.parentId} onChange={handleChange}
-                className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white">
-                <option value="">-- Select Existing Parent (Optional) --</option>
-                {allParents.map(parent => (
-                  <option key={parent.id} value={parent.id}>
-                    {parent.name} ({parent.email || parent.phone || parent.loginCode})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p className="text-sm text-gray-600 mt-2">
-              If the parent is not listed, please create their profile first via the <a href="/admin/parents" className="text-indigo-600 hover:underline">Parents Management page</a>.
-            </p>
           </div>
 
           {/* Action Buttons */}
@@ -250,7 +189,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
                   </svg>
                   Saving...
                 </>
-              ) : (studentData ? 'Save Changes' : 'Add Student')}
+              ) : (parentData ? 'Save Changes' : 'Add Parent')}
             </button>
           </div>
         </form>
@@ -259,4 +198,4 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
   );
 };
 
-export default StudentFormModal;
+export default ParentFormModal;
