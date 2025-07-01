@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 // GET /api/educators/[id]
-// Fetches a single educator by ID, including associated User data and calculated counts.
+// Fetches a single educator by ID, including associated User data, calculated counts,
+// and assigned academic levels.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
@@ -25,6 +26,17 @@ export async function GET(request: Request, { params }: { params: { id: string }
             name: true,
           },
         },
+        academicLevelAssignments: { // NEW: Include the junction table
+          include: {
+            academicLevel: { // NEW: Include the actual AcademicLevel details
+              select: {
+                id: true,
+                name: true,
+                sortOrder: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             classesScheduled: true,
@@ -43,9 +55,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: "Educator not found" }, { status: 404 });
     }
 
-    // Dynamically calculate totalStudents for this educator
     const totalStudents = 0;
-    //  await prisma.student.count({
+    // await prisma.student.count({
     //   where: {
     //     courses: {
     //       some: {
@@ -55,11 +66,18 @@ export async function GET(request: Request, { params }: { params: { id: string }
     //   },
     // });
 
+    // Extract and sort assigned academic levels
+    const assignedAcademicLevels = educator.academicLevelAssignments
+      .map(assignment => assignment.academicLevel)
+      .filter(Boolean) // Filter out any nulls
+      .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+      .map(level => ({ id: level!.id, name: level!.name }));
+
     // Transform the data
     const responseData = {
       id: educator.id,
       userId: educator.userId,
-      loginCode: educator.loginCode, // Include the new loginCode
+      loginCode: educator.loginCode,
       name: educator.user?.name,
       email: educator.user?.email,
       profilePicture: educator.profilePicture || educator.user?.image,
@@ -69,6 +87,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       companyId: educator.companyId,
       departmentId: educator.departmentId,
       departmentName: educator.Department?.name || 'N/A',
+      assignedAcademicLevels: assignedAcademicLevels, // NEW: Array of assigned academic levels
       totalStudents: totalStudents,
       totalCoursesTaught: educator._count.coursesCreated,
       totalClassesScheduled: educator._count.classesScheduled,
@@ -86,76 +105,124 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PATCH /api/educators/[id]
-// Updates an existing Educator profile by ID.
+// Updates an existing Educator profile by ID, including academic level assignments.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
     const body = await request.json();
-    // Exclude loginCode from direct update via PATCH
-    const { phone, bio, address, profilePicture, departmentId, name, email, loginCode, ...rest } = body;
+    // Destructure assignedAcademicLevelIds from the body
+    const { phone, bio, address, profilePicture, departmentId, name, email, assignedAcademicLevelIds, ...rest } = body;
 
-    // Check for any unexpected fields
     if (Object.keys(rest).length > 0) {
       console.warn("Unexpected fields in PATCH request for educator:", rest);
     }
 
-    // Check if educator exists
     const existingEducator = await prisma.educator.findUnique({
       where: { id },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, image: true },
+        },
+      },
     });
 
     if (!existingEducator) {
       return NextResponse.json({ message: "Educator not found" }, { status: 404 });
     }
 
-    // Prepare data for Educator update
-    const educatorUpdateData: any = {};
-    if (phone !== undefined) educatorUpdateData.phone = phone;
-    if (bio !== undefined) educatorUpdateData.bio = bio;
-    if (address !== undefined) educatorUpdateData.address = address;
-    if (profilePicture !== undefined) educatorUpdateData.profilePicture = profilePicture;
-    if (departmentId !== undefined) educatorUpdateData.departmentId = departmentId;
-
-    // Perform Educator update
-    const updatedEducator = await prisma.educator.update({
-      where: { id },
-      data: educatorUpdateData,
-      include: {
-        user: { // Include user for response
-          select: { id: true, name: true, email: true, image: true },
-        },
-        Department: { // Include department for response
-          select: { id: true, name: true },
-        },
-      },
-    });
-
-    // Optionally update associated User's name/email if provided (careful with email uniqueness)
-    if (name !== undefined || email !== undefined) {
-      const userUpdateData: any = {};
-      if (name !== undefined) userUpdateData.name = name;
-      if (email !== undefined) {
-        // Check if new email is already taken by another user if it's changing
-        if (email !== updatedEducator.user?.email) {
-          const existingUserWithNewEmail = await prisma.user.findUnique({ where: { email } });
-          if (existingUserWithNewEmail && existingUserWithNewEmail.id !== updatedEducator.userId) {
-            return NextResponse.json({ message: "The provided email is already in use by another user." }, { status: 409 });
+    // Start a Prisma transaction to ensure atomicity for assignments and educator update
+    const result = await prisma.$transaction(async (prisma) => {
+      // 1. Update associated User's name/email/image if provided
+      if (name !== undefined || email !== undefined || profilePicture !== undefined) {
+        const userUpdateData: any = {};
+        if (name !== undefined) userUpdateData.name = name;
+        if (email !== undefined) {
+          if (email !== existingEducator.user?.email) { // Check if email is actually changing
+            const existingUserWithNewEmail = await prisma.user.findUnique({ where: { email } });
+            if (existingUserWithNewEmail && existingUserWithNewEmail.id !== existingEducator.userId) {
+              throw new Error("The provided email is already in use by another user.");
+            }
           }
+          userUpdateData.email = email;
         }
-        userUpdateData.email = email;
-      }
-      if (profilePicture !== undefined) userUpdateData.image = profilePicture; // Sync profile picture to User model too
+        if (profilePicture !== undefined) userUpdateData.image = profilePicture; // Sync profile picture to User model too
 
-      if (Object.keys(userUpdateData).length > 0) {
-        await prisma.user.update({
-          where: { id: updatedEducator.userId },
-          data: userUpdateData,
+        if (Object.keys(userUpdateData).length > 0) {
+          await prisma.user.update({
+            where: { id: existingEducator.userId },
+            data: userUpdateData,
+          });
+        }
+      }
+
+      // 2. Handle Academic Level Assignments
+      if (assignedAcademicLevelIds !== undefined) {
+        // Validate all provided academicLevelIds exist
+        const existingAcademicLevels = await prisma.academicLevel.findMany({
+          where: {
+            id: {
+              in: assignedAcademicLevelIds,
+            },
+          },
+          select: { id: true },
         });
-      }
-    }
 
-    // Re-fetch to get the most current state after potential user update
+        if (existingAcademicLevels.length !== assignedAcademicLevelIds.length) {
+          const foundIds = new Set(existingAcademicLevels.map(al => al.id));
+          const notFoundIds = assignedAcademicLevelIds.filter((id: string) => !foundIds.has(id));
+          throw new Error(`One or more academic levels not found: ${notFoundIds.join(', ')}. Please ensure all provided academicLevelIds are valid.`);
+        }
+
+        // Delete existing assignments for this educator
+        await prisma.educatorAcademicLevelAssignment.deleteMany({
+          where: { educatorId: id },
+        });
+
+        // Create new assignments
+        if (assignedAcademicLevelIds.length > 0) {
+          const newAssignments = assignedAcademicLevelIds.map((academicLevelId: string) => ({
+            educatorId: id,
+            academicLevelId: academicLevelId,
+          }));
+          await prisma.educatorAcademicLevelAssignment.createMany({
+            data: newAssignments
+          });
+        }
+      }
+
+      // 3. Update Educator's other fields
+      const educatorUpdateData: any = {};
+      if (phone !== undefined) educatorUpdateData.phone = phone;
+      if (bio !== undefined) educatorUpdateData.bio = bio;
+      if (address !== undefined) educatorUpdateData.address = address;
+      if (profilePicture !== undefined) educatorUpdateData.profilePicture = profilePicture;
+      if (departmentId !== undefined) educatorUpdateData.departmentId = departmentId;
+
+      const updatedEducator = await prisma.educator.update({
+        where: { id },
+        data: educatorUpdateData,
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+          Department: {
+            select: { id: true, name: true },
+          },
+          academicLevelAssignments: { // Re-include for the response
+            include: {
+              academicLevel: {
+                select: { id: true, name: true, sortOrder: true },
+              },
+            },
+          },
+        },
+      });
+
+      return updatedEducator;
+    }); // End of transaction
+
+    // Re-fetch to get the most current state after potential user update and assignments
     const finalEducator = await prisma.educator.findUnique({
       where: { id },
       include: {
@@ -164,6 +231,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         },
         Department: {
           select: { id: true, name: true },
+        },
+        academicLevelAssignments: {
+          include: {
+            academicLevel: {
+              select: { id: true, name: true, sortOrder: true },
+            },
+          },
         },
         _count: {
           select: {
@@ -180,6 +254,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     });
 
     const totalStudents = 0;
+    
     // await prisma.student.count({
     //   where: {
     //     courses: {
@@ -190,10 +265,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     //   },
     // });
 
+    const assignedAcademicLevels = finalEducator!.academicLevelAssignments
+      .map(assignment => assignment.academicLevel)
+      .filter(Boolean)
+      .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+      .map(level => ({ id: level!.id, name: level!.name }));
+
     const responseData = {
       id: finalEducator!.id,
       userId: finalEducator!.userId,
-      loginCode: finalEducator!.loginCode, // Include the new loginCode
+      loginCode: finalEducator!.loginCode,
       name: finalEducator!.user?.name,
       email: finalEducator!.user?.email,
       profilePicture: finalEducator!.profilePicture || finalEducator!.user?.image,
@@ -203,6 +284,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       companyId: finalEducator!.companyId,
       departmentId: finalEducator!.departmentId,
       departmentName: finalEducator!.Department?.name || 'N/A',
+      assignedAcademicLevels: assignedAcademicLevels,
       totalStudents: totalStudents,
       totalCoursesTaught: finalEducator!._count.coursesCreated,
       totalClassesScheduled: finalEducator!._count.classesScheduled,
@@ -215,6 +297,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json(responseData, { status: 200 });
   } catch (error: any) {
     console.error(`Error updating educator with ID ${id}:`, error);
+    // Handle unique constraint error for email if it's the cause of the transaction failure
+    if (error.message.includes("The provided email is already in use")) {
+      return NextResponse.json({ message: error.message }, { status: 409 });
+    }
     return NextResponse.json({ message: "Failed to update educator", error: error.message }, { status: 500 });
   }
 }
@@ -232,6 +318,11 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (!existingEducator) {
       return NextResponse.json({ message: "Educator not found" }, { status: 404 });
     }
+
+    // When deleting an Educator, the onDelete: Cascade on EducatorAcademicLevelAssignment
+    // will automatically delete associated assignment records.
+    // However, other relations (Courses, Classes, Exams, etc.) might prevent deletion
+    // if not configured with onDelete actions in your schema.
 
     const deletedEducator = await prisma.educator.delete({
       where: { id },

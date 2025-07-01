@@ -6,12 +6,9 @@ async function generateUniqueLoginCode(): Promise<string> {
   let code: string = '';
   let isUnique = false;
   while (!isUnique) {
-    // Generate a random 6-digit number (000000 to 999999)
     code = Math.floor(100000 + Math.random() * 900000).toString();
-    // Pad with leading zeros if necessary
     code = code.padStart(6, '0');
 
-    // Check if the code already exists in the database
     const existingEducator = await prisma.educator.findUnique({
       where: { loginCode: code },
     });
@@ -24,7 +21,8 @@ async function generateUniqueLoginCode(): Promise<string> {
 }
 
 // GET /api/educators
-// Fetches all educators, including their associated User data and calculated counts.
+// Fetches all educators, including their associated User data, calculated counts,
+// and assigned academic levels.
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -53,6 +51,17 @@ export async function GET(request: Request) {
             name: true,
           },
         },
+        academicLevelAssignments: { // NEW: Include the junction table
+          include: {
+            academicLevel: { // NEW: Include the actual AcademicLevel details
+              select: {
+                id: true,
+                name: true,
+                sortOrder: true,
+              },
+            },
+          },
+        },
         _count: { // Include counts of related records
           select: {
             classesScheduled: true,
@@ -72,13 +81,13 @@ export async function GET(request: Request) {
       },
     });
 
-    // Transform the data to include calculated counts and flattened user/department info
+    // Transform the data to include calculated counts and flattened user/department/academic level info
     const response = await Promise.all(educators.map(async (educator) => {
       // Dynamically calculate totalStudents for each educator
       const totalStudents = 0;
       // await prisma.student.count({
       //   where: {
-      //     courses: {
+      //     courses: { // Assuming a Course model links to Educator as instructor
       //       some: {
       //         instructorId: educator.id,
       //       },
@@ -86,22 +95,30 @@ export async function GET(request: Request) {
       //   },
       // });
 
+      // Extract and sort assigned academic levels
+      const assignedAcademicLevels = educator.academicLevelAssignments
+        .map(assignment => assignment.academicLevel)
+        .filter(Boolean) // Remove any nulls if academicLevel somehow wasn't found
+        .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0)) // Sort by sortOrder
+        .map(level => ({ id: level!.id, name: level!.name })); // Just id and name
+
       return {
         id: educator.id,
         userId: educator.userId,
-        loginCode: educator.loginCode, // Include the new loginCode
+        loginCode: educator.loginCode,
         name: educator.user?.name,
         email: educator.user?.email,
-        profilePicture: educator.profilePicture || educator.user?.image, // Prefer educator's specific pic, fallback to user's
+        profilePicture: educator.profilePicture || educator.user?.image,
         phone: educator.phone,
         bio: educator.bio,
         address: educator.address,
         companyId: educator.companyId,
         departmentId: educator.departmentId,
         departmentName: educator.Department?.name || 'N/A',
-        totalStudents: totalStudents, // Calculated
-        totalCoursesTaught: educator._count.coursesCreated, // From _count
-        totalClassesScheduled: educator._count.classesScheduled, // From _count
+        assignedAcademicLevels: assignedAcademicLevels, // NEW: Array of assigned academic levels
+        totalStudents: totalStudents,
+        totalCoursesTaught: educator._count.coursesCreated,
+        totalClassesScheduled: educator._count.classesScheduled,
         totalExamsCreated: educator._count.Exam,
         totalMaterialsUploaded: educator._count.CourseMaterial,
         createdAt: educator.createdAt,
@@ -118,6 +135,7 @@ export async function GET(request: Request) {
 
 // POST /api/educators
 // Creates a new Educator profile, linking to an existing User or creating a new basic User.
+// Academic level assignments are NOT handled here; they should be done via a PATCH to /[id]
 export async function POST(request: Request) {
   if (request.method !== "POST") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
@@ -127,29 +145,23 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, name, companyId, phone, bio, address, profilePicture, departmentId } = body;
 
-    // Basic validation
     if (!email || !name || !companyId) {
       return NextResponse.json({ message: "Email, Name, and Company ID are required to create an educator." }, { status: 400 });
     }
 
-    // 1. Find or Create User
     let user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
-      // If user doesn't exist, create a new basic user
       user = await prisma.user.create({
         data: {
           email,
           name,
-          image: profilePicture, // Use provided profile picture for user's image too
-          // You might want to set a default role here if your User model has one
-          // role: 'EDUCATOR', // Assuming your User model has a role field
+          image: profilePicture,
         },
       });
     } else {
-      // If user exists, check if they already have an educator profile for this user
       const existingEducator = await prisma.educator.findUnique({
         where: { userId: user.id },
       });
@@ -158,21 +170,18 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Generate a unique login code
     const loginCode = await generateUniqueLoginCode();
 
-    // 3. Create Educator Profile
     const newEducator = await prisma.educator.create({
       data: {
         userId: user.id,
         companyId,
-        loginCode, // Assign the generated unique code
+        loginCode,
         phone,
         bio,
         address,
         profilePicture,
-        // departmentId: typeof departmentId !== 'undefined' ? departmentId : null, // Allow null if no department is specified
-        // totalStudents and totalCoursesTaught are @default(0) and calculated dynamically
+        departmentId,
       },
       include: {
         user: {
@@ -181,14 +190,16 @@ export async function POST(request: Request) {
         Department: {
           select: { id: true, name: true },
         },
+        academicLevelAssignments: { // Include for consistency, but will be empty
+          include: { academicLevel: true }
+        }
       },
     });
 
-    // Transform the response
     const responseData = {
       id: newEducator.id,
       userId: newEducator.userId,
-      loginCode: newEducator.loginCode, // Include the login code in the response
+      loginCode: newEducator.loginCode,
       name: newEducator.user?.name,
       email: newEducator.user?.email,
       profilePicture: newEducator.profilePicture || newEducator.user?.image,
@@ -198,8 +209,9 @@ export async function POST(request: Request) {
       companyId: newEducator.companyId,
       departmentId: newEducator.departmentId,
       departmentName: newEducator.Department?.name || 'N/A',
-      totalStudents: 0, // Will be calculated on GET
-      totalCoursesTaught: 0, // Will be calculated on GET
+      assignedAcademicLevels: [], // Newly created educator has no assignments yet
+      totalStudents: 0,
+      totalCoursesTaught: 0,
       totalClassesScheduled: 0,
       totalExamsCreated: 0,
       totalMaterialsUploaded: 0,
@@ -210,7 +222,6 @@ export async function POST(request: Request) {
     return NextResponse.json(responseData, { status: 201 });
   } catch (error: any) {
     console.error("Error creating educator:", error);
-    // Handle unique constraint error for userId on Educator model
     if (error.code === 'P2002' && error.meta?.target?.includes('userId')) {
       return NextResponse.json({ message: "A teacher profile already exists for this user." }, { status: 409 });
     }

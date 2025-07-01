@@ -1,25 +1,26 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import Image from 'next/image'; // For profile pictures
+import Image from 'next/image';
 import {
   UsersIcon,
-  AcademicCapIcon, // For overall students
-  ChartBarIcon, // For grades breakdown / progress
-  UserPlusIcon, // For add student
-  PencilIcon, // For edit
-  TrashIcon, // For delete
-  MagnifyingGlassIcon, // For search
-  CalendarDaysIcon, // For date
-  PhoneIcon, // For phone
-  EnvelopeIcon, // For email
-  MapPinIcon, // For address
-  BookOpenIcon, // For total courses
-  TrophyIcon, // For certificates
-  CheckCircleIcon, // For completed courses
-  KeyIcon, // For login code
+  AcademicCapIcon,
+  ChartBarIcon,
+  UserPlusIcon,
+  PencilIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+  CalendarDaysIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  BookOpenIcon,
+  TrophyIcon,
+  CheckCircleIcon,
+  KeyIcon,
   UserGroupIcon,
-  XMarkIcon, // For parent icon
+  TagIcon, // New icon for academic levels
+  XMarkIcon, // For error close button
 } from '@heroicons/react/24/outline';
 
 import StudentFormModal from './StudentFormModal'; // Import the new modal component
@@ -27,29 +28,37 @@ import StudentFormModal from './StudentFormModal'; // Import the new modal compo
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Type Definitions (matching API response) ---
+export type AcademicLevelOption = {
+  id: string;
+  name: string;
+  sortOrder?: number;
+};
+
 export type StudentType = {
   id: string;
   userId: string;
-  loginCode?: string; // Admission number
+  loginCode?: string;
   name: string;
   email: string;
   profilePicture?: string;
   phone?: string;
   bio?: string;
   address?: string;
-  companyId?: string; // Optional as per Prisma model
-  studentGrade?: string;
-  parentId?: string; // NEW: Parent ID
-  parentName?: string; // NEW: Flattened parent name
-  parentEmail?: string; // NEW: Flattened parent email
-  parentPhone?: string; // NEW: Flattened parent phone
-  totalCourses: number; // From _count.enrolledCourses
-  completedCourses: number; // Directly from model
-  certificatesEarned: number; // Directly from model
-  averageProgress: number; // Directly from model
-  totalSubmissions: number; // From _count.submissions
-  totalAttendanceRecords: number; // From _count.AttendanceRecord
-  totalExamSubmissions: number; // From _count.ExamSubmission
+  companyId?: string;
+  studentGrade?: string; // Kept for backward compatibility if needed, but academicLevelName is preferred
+  parentId?: string;
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  academicLevelId?: string; // NEW
+  academicLevelName?: string; // NEW
+  totalCourses: number;
+  completedCourses: number;
+  certificatesEarned: number;
+  averageProgress: number;
+  totalSubmissions: number;
+  totalAttendanceRecords: number;
+  totalExamSubmissions: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -57,24 +66,26 @@ export type StudentType = {
 export type ParentOption = {
   id: string;
   name: string;
-  email?: string; // Include email and phone for better parent selection display
+  email?: string;
   phone?: string;
-  loginCode?: string; // Also include loginCode for display if needed
+  loginCode?: string;
 };
 
 
 interface StudentsClientProps {
   initialStudents: StudentType[];
-  allParents: ParentOption[]; // NEW: Pass allParents to the client component
+  allParents: ParentOption[];
+  allAcademicLevels: AcademicLevelOption[]; // NEW: Pass all academic levels
   companyId: string;
   apiUrl: string;
 }
 
-export default function StudentsClient({ initialStudents, allParents, companyId, apiUrl }: StudentsClientProps) {
+export default function StudentsClient({ initialStudents, allParents, allAcademicLevels, companyId, apiUrl }: StudentsClientProps) {
   const [students, setStudents] = useState<StudentType[]>(initialStudents);
-  const [parents, setParents] = useState<ParentOption[]>(allParents); // State for parents
+  const [parents, setParents] = useState<ParentOption[]>(allParents);
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels); // State for academic levels
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterGrade, setFilterGrade] = useState('All');
+  const [filterAcademicLevel, setFilterAcademicLevel] = useState('All'); // Filter by academic level ID
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,12 +98,13 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
   });
 
   // --- Data Fetching and Management ---
-  const fetchStudentsAndParents = useCallback(async () => {
+  const fetchStudentsAndParentsAndAcademicLevels = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const studentsRes = await fetch(`${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`);
-      const parentsRes = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
+      const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`);
+      const parentsRes = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`); // NEW fetch
 
       if (studentsRes.ok) {
         const studentsData: StudentType[] = await studentsRes.json();
@@ -109,24 +121,34 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
       } else {
         const errorData = await parentsRes.json();
         setError(errorData.message || "Failed to fetch parents.");
-        setParents(allParents); // Fallback to initial data
+        setParents(allParents);
+      }
+
+      if (academicLevelsRes.ok) { // NEW academic levels update
+        const academicLevelsData: AcademicLevelOption[] = await academicLevelsRes.json();
+        setAcademicLevels(academicLevelsData);
+      } else {
+        const errorData = await academicLevelsRes.json();
+        setError(errorData.message || "Failed to fetch academic levels.");
+        setAcademicLevels(allAcademicLevels);
       }
 
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
       setStudents(initialStudents);
       setParents(allParents);
+      setAcademicLevels(allAcademicLevels);
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, initialStudents, allParents]);
+  }, [apiUrl, companyId, initialStudents, allParents, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialStudents.length === 0 || allParents.length === 0) {
-      fetchStudentsAndParents();
+    if (initialStudents.length === 0 || allParents.length === 0 || allAcademicLevels.length === 0) {
+      fetchStudentsAndParentsAndAcademicLevels();
     }
-  }, [fetchStudentsAndParents, initialStudents, allParents]);
+  }, [fetchStudentsAndParentsAndAcademicLevels, initialStudents, allParents, allAcademicLevels]);
 
 
   const filteredStudents = useMemo(() => {
@@ -137,51 +159,52 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
                             (student.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (student.address?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') || // Search by parent name
-                            (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') || // Search by parent email
-                            (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || ''); // Search by parent phone
+                            (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (student.academicLevelName?.toLowerCase().includes(searchTerm.toLowerCase()) || ''); // Search by academic level name
 
-      const matchesGrade = filterGrade === 'All' || student.studentGrade === filterGrade;
-      return matchesSearch && matchesGrade;
+      const matchesAcademicLevel = filterAcademicLevel === 'All' || student.academicLevelId === filterAcademicLevel; // Filter by academic level ID
+      return matchesSearch && matchesAcademicLevel;
     }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
-  }, [students, searchTerm, filterGrade]);
+  }, [students, searchTerm, filterAcademicLevel]);
 
-  // Helper function to get unique grade levels and count students per grade
-  const getGradeStats = useMemo(() => {
-    const grades: { [grade: string]: number } = {};
+  // Helper function to get unique academic levels and count students per level
+  const getAcademicLevelStats = useMemo(() => {
+    const levels: { [levelId: string]: { name: string; count: number } } = {};
     students.forEach(student => {
-      if (student.studentGrade) {
-        if (grades[student.studentGrade]) {
-          grades[student.studentGrade]++;
+      if (student.academicLevelId && student.academicLevelName) {
+        if (levels[student.academicLevelId]) {
+          levels[student.academicLevelId].count++;
         } else {
-          grades[student.studentGrade] = 1;
+          levels[student.academicLevelId] = { name: student.academicLevelName, count: 1 };
         }
       }
     });
-    // Sort grades numerically if they are numbers, otherwise alphabetically
-    return Object.entries(grades).sort((a, b) => {
-      const gradeA = parseInt(a[0]);
-      const gradeB = parseInt(b[0]);
-      if (!isNaN(gradeA) && !isNaN(gradeB)) {
-        return gradeA - gradeB;
-      }
-      return a[0].localeCompare(b[0]);
-    });
-  }, [students]);
+    // Convert to array and sort by academic level sortOrder
+    return Object.entries(levels)
+      .map(([id, data]) => ({ id, name: data.name, count: data.count }))
+      .sort((a, b) => {
+        const levelA = academicLevels.find(al => al.id === a.id);
+        const levelB = academicLevels.find(al => al.id === b.id);
+        return (levelA?.sortOrder || 0) - (levelB?.sortOrder || 0);
+      });
+  }, [students, academicLevels]);
 
   // --- API Interaction Functions ---
-  const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone'> & { id?: string; userId?: string; parentId?: string | null }) => {
+  const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevelName'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => {
     setIsLoading(true);
     setError(null);
-    const method = studentData.id ? 'PATCH' : 'POST';
     
+    const method = studentData.id ? 'PATCH' : 'POST';
+
     try {
 
-      const url = studentData.id ? `${apiUrl}/admin/students/${studentData.id}` : `${apiUrl}/admin/students`;
+      const url = studentData.id ? `${apiUrl}/students/${studentData.id}` : `${apiUrl}/students`;
 
       const payload = {
         ...studentData,
-        companyId: companyId, // Ensure companyId is always included for new students
+        companyId: companyId,
       };
 
       const res = await fetch(url, {
@@ -191,7 +214,7 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
       });
 
       if (res.ok) {
-        await fetchStudentsAndParents(); // Re-fetch to get the latest data with calculated counts and parent info
+        await fetchStudentsAndParentsAndAcademicLevels();
         setShowFormModal(false);
         setEditingStudent(null);
       } else {
@@ -218,7 +241,7 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
       });
 
       if (res.ok) {
-        await fetchStudentsAndParents();
+        await fetchStudentsAndParentsAndAcademicLevels();
       } else {
         const errorData = await res.json();
         setError(errorData.message || "Failed to delete student.");
@@ -232,7 +255,6 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
 
   // --- Calculated Stats ---
   const totalStudents = students.length;
-  const totalGrades = getGradeStats.length; // Number of unique grades
   const avgCoursesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.totalCourses, 0) / totalStudents).toFixed(1) : '0';
   const avgProgressPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.averageProgress, 0) / totalStudents).toFixed(1) : '0';
   const avgCertificatesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.certificatesEarned, 0) / totalStudents).toFixed(1) : '0';
@@ -351,13 +373,13 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
           </div>
           <div className="flex-shrink-0">
             <select
-              value={filterGrade}
-              onChange={(e) => setFilterGrade(e.target.value)}
+              value={filterAcademicLevel}
+              onChange={(e) => setFilterAcademicLevel(e.target.value)}
               className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             >
-              <option value="All">All Grades</option>
-              {getGradeStats.map(([grade]) => (
-                <option key={grade} value={grade}>Grade {grade}</option>
+              <option value="All">All Academic Levels</option>
+              {academicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                <option key={level.id} value={level.id}>{level.name}</option>
               ))}
             </select>
           </div>
@@ -370,8 +392,8 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Student</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission #</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th> {/* Updated column header */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Level</th> {/* Updated column header */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                 <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
                   <span className="sr-only">Actions</span>
@@ -390,8 +412,8 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
                             src={student.profilePicture || `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.name?.charAt(0) || '?'}`}
                             alt={student.name || 'Student Avatar'}
                             width={40}
-                            loader={loader}
                             height={40}
+                            loader={loader}
                             onError={(e) => {
                               (e.target as HTMLImageElement).onerror = null;
                               (e.target as HTMLImageElement).src = `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.name?.charAt(0) || '?'}`;
@@ -410,7 +432,9 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="font-medium">Grade {student.studentGrade || 'N/A'}</div>
+                      <div className="font-medium flex items-center gap-1">
+                        <TagIcon className="h-4 w-4 text-gray-500" /> {student.academicLevelName || 'N/A'}
+                      </div>
                       <div className="text-xs text-gray-500 mt-1">Enrolled: {new Date(student.createdAt).toLocaleDateString()}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -490,7 +514,8 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
           onSave={handleSaveStudent}
           isLoading={isLoading}
           companyId={companyId}
-          allParents={parents} // NEW: Pass allParents to the modal
+          allParents={parents}
+          allAcademicLevels={academicLevels} // NEW: Pass all academic levels
         />
       )}
     </div>

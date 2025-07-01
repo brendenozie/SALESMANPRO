@@ -234,15 +234,16 @@ model Company {
   shippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
   shippingSettingsId String?           @db.ObjectId
 
-  awards     Json?
-  metrics    Json?
-  stats      Json?
-  AppPromo   AppPromo[]
-  Blog       Blog[]
-  Department Department[]
-  Student    Student[]
-  Educator   Educator[]
-  Parent     Parent[]
+  awards        Json?
+  metrics       Json?
+  stats         Json?
+  AppPromo      AppPromo[]
+  Blog          Blog[]
+  Department    Department[]
+  Student       Student[]
+  Educator      Educator[]
+  Parent        Parent[]
+  AcademicLevel AcademicLevel[]
 }
 
 enum CategoryStatus {
@@ -1572,6 +1573,9 @@ model Student {
   parentId String? @db.ObjectId // NEW: Link to Parent model
   parent   Parent? @relation(fields: [parentId], references: [id]) // NEW: Relation to Parent
 
+  academicLevelId String?        @db.ObjectId // NEW: Link to AcademicLevel model
+  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id]) // NEW: Relation
+
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Keep optional if students can be independent
 
@@ -1617,15 +1621,67 @@ model Educator {
   AttendanceRecord   AttendanceRecord[] @relation("RecordedAttendance")
 
   createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
-  uploadedMaterials       CourseMaterial[]  @relation("UploadedMaterial")
-  headedDepartments       Department[]      @relation("DepartmentHead")
-  Department              Department?       @relation(fields: [departmentId], references: [id])
-  departmentId            String?           @db.ObjectId
+
+  uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
+  headedDepartments Department[]     @relation("DepartmentHead")
+
+  // NEW: Junction table for many-to-many with AcademicLevel
+  academicLevelAssignments EducatorAcademicLevelAssignment[]
+
+  Department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?     @db.ObjectId
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   Account   Account[]
   Session   Session[]
+}
+
+// Academic Level Model
+// Defines the different educational levels or "classes" students can belong to.
+model AcademicLevel {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String // e.g., "Playgroup", "Grade 1", "High School - Freshman", "University - Year 1"
+  description String?
+  sortOrder   Int     @default(0) // For ordering display (e.g., Grade 1 before Grade 2)
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId // Academic levels are specific to a company/school
+
+  students Student[] // One-to-many relation: many students can be in one academic level
+
+  // NEW: Junction table for many-to-many with Educator
+  educatorAssignments EducatorAcademicLevelAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name]) // A company cannot have two academic levels with the same name
+  @@index([companyId, sortOrder]) // For efficient querying and ordering
+}
+
+// NEW JUNCTION MODEL: EducatorAcademicLevelAssignment
+// This model represents the many-to-many relationship between Educator and AcademicLevel.
+model EducatorAcademicLevelAssignment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  educator   Educator @relation(fields: [educatorId], references: [id], onDelete: Cascade)
+  educatorId String   @db.ObjectId
+
+  academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
+  academicLevelId String        @db.ObjectId
+
+  // Optional: You could add more fields here relevant to the assignment,
+  // e.g., 'assignedDate', 'isActive', 'roleInLevel' (e.g., 'Lead Teacher', 'Assistant')
+  roleInLevel String? // e.g., "Lead Educator", "Assistant Educator"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensures that an educator can only be assigned to a specific academic level once
+  @@unique([educatorId, academicLevelId])
+  @@index([educatorId])
+  @@index([academicLevelId])
 }
 
 // Course Model Can also be known as Subject Model

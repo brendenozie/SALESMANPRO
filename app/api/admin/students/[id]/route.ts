@@ -35,6 +35,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
             },
           },
         },
+        academicLevel: { // NEW: Include academic level details
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         _count: {
           select: {
             enrolledCourses: true,
@@ -66,7 +72,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
       parentId: student.parentId, // NEW: Include parentId
       parentName: student.parent?.user.name, // NEW: Flatten parent name
       parentEmail: student.parent?.user.email, // NEW: Flatten parent email
-      parentPhone: student.parent?.phone, // NEW: Flatten parent phone
+      parentPhone: student.parent?.phone, // NEW: Flatten parent phone      
+      academicLevelId: student.academicLevelId, // NEW: Include academicLevelId
+      academicLevelName: student.academicLevel?.name, // NEW: Flatten academic level name
       totalCourses: student._count.enrolledCourses,
       completedCourses: student.completedCourses,
       certificatesEarned: student.certificatesEarned,
@@ -92,7 +100,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   try {
     const body = await request.json();
-    const { phone, bio, address, profilePicture, studentGrade, name, email, loginCode, parentId, ...rest } = body; // NEW: parentId
+    const { phone, bio, address, profilePicture, studentGrade, name, email, loginCode, parentId, academicLevelId, ...rest } = body; // NEW: parentId
 
     if (Object.keys(rest).length > 0) {
       console.warn("Unexpected fields in PATCH request for student:", rest);
@@ -118,6 +126,18 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
     }
 
+    // NEW: Validate academicLevelId if provided and it's changing
+    if (academicLevelId !== undefined && academicLevelId !== existingStudent.academicLevelId) {
+      if (academicLevelId !== null) {
+        const existingAcademicLevel = await prisma.academicLevel.findUnique({
+          where: { id: academicLevelId },
+        });
+        if (!existingAcademicLevel) {
+          return NextResponse.json({ message: "Provided academicLevelId does not exist." }, { status: 400 });
+        }
+      }
+    }
+
     // Prepare data for Student update
     const studentUpdateData: any = {};
     if (phone !== undefined) studentUpdateData.phone = phone;
@@ -126,6 +146,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (profilePicture !== undefined) studentUpdateData.profilePicture = profilePicture;
     if (studentGrade !== undefined) studentUpdateData.studentGrade = studentGrade;
     if (parentId !== undefined) studentUpdateData.parentId = parentId; // NEW: Allow updating parentId
+    if (academicLevelId !== undefined) studentUpdateData.academicLevelId = academicLevelId; // NEW: Allow updating academicLevelId
 
     const updatedStudent = await prisma.student.update({
       where: { id },
@@ -146,6 +167,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
               },
             },
           },
+        },
+        academicLevel: { // NEW: Include academic level for response
+          select: { id: true, name: true },
         },
       },
     });
@@ -191,6 +215,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
             },
           },
         },
+        academicLevel: { // NEW: Include academic level for final response
+          select: { id: true, name: true },
+        },
         _count: {
           select: {
             enrolledCourses: true,
@@ -218,6 +245,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       parentName: finalStudent!.parent?.user.name,
       parentEmail: finalStudent!.parent?.user.email,
       parentPhone: finalStudent!.parent?.phone,
+      academicLevelId: finalStudent!.academicLevelId,
+      academicLevelName: finalStudent!.academicLevel?.name,
       totalCourses: finalStudent!._count.enrolledCourses,
       completedCourses: finalStudent!.completedCourses,
       certificatesEarned: finalStudent!.certificatesEarned,

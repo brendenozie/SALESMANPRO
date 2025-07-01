@@ -6,12 +6,9 @@ async function generateUniqueLoginCode(): Promise<string> {
   let code: string = '';
   let isUnique = false;
   while (!isUnique) {
-    // Generate a random 6-digit number (000000 to 999999)
     code = Math.floor(100000 + Math.random() * 900000).toString();
-    // Pad with leading zeros if necessary
     code = code.padStart(6, '0');
 
-    // Check if the code already exists in the database for students
     const existingStudent = await prisma.student.findUnique({
       where: { loginCode: code },
     });
@@ -24,7 +21,8 @@ async function generateUniqueLoginCode(): Promise<string> {
 }
 
 // GET /api/students
-// Fetches all student profiles, including their associated User data and calculated counts.
+// Fetches all student profiles, including their associated User data, calculated counts,
+// and linked academic level.
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -38,7 +36,7 @@ export async function GET(request: Request) {
     const students = await prisma.student.findMany({
       where: whereClause,
       include: {
-        user: { // Include the linked User details
+        user: {
           select: {
             id: true,
             name: true,
@@ -47,7 +45,7 @@ export async function GET(request: Request) {
             emailVerified: true,
           },
         },
-        parent: { // NEW: Include the linked Parent details
+        parent: {
           select: {
             id: true,
             phone: true,
@@ -63,7 +61,13 @@ export async function GET(request: Request) {
             },
           },
         },
-        _count: { // Include counts of related records
+        academicLevel: { // NEW: Include academic level details
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
           select: {
             enrolledCourses: true,
             submissions: true,
@@ -74,29 +78,30 @@ export async function GET(request: Request) {
       },
       orderBy: {
         user: {
-          name: 'asc', // Order by student's name
+          name: 'asc',
         },
       },
     });
 
-    // Transform the data to include calculated counts and flattened user/parent info
+    // Transform the data to include calculated counts and flattened user/parent/academic level info
     const response = students.map((student) => {
       return {
         id: student.id,
         userId: student.userId,
-        loginCode: student.loginCode, // Include the new loginCode (admission number)
+        loginCode: student.loginCode,
         name: student.user?.name,
         email: student.user?.email,
-        profilePicture: student.profilePicture || student.user?.image, // Prefer student's specific pic, fallback to user's
+        profilePicture: student.profilePicture || student.user?.image,
         phone: student.phone,
         bio: student.bio,
         address: student.address,
         companyId: student.companyId,
-        studentGrade: student.studentGrade,
-        parentId: student.parentId, // NEW: Include parentId
-        parentName: student.parent?.user.name, // NEW: Flatten parent name
-        parentEmail: student.parent?.user.email, // NEW: Flatten parent email
-        parentPhone: student.parent?.phone, // NEW: Flatten parent phone
+        parentId: student.parentId,
+        parentName: student.parent?.user.name,
+        parentEmail: student.parent?.user.email,
+        parentPhone: student.parent?.phone,
+        academicLevelId: student.academicLevelId, // NEW: Include academicLevelId
+        academicLevelName: student.academicLevel?.name, // NEW: Flatten academic level name
         totalCourses: student._count.enrolledCourses,
         completedCourses: student.completedCourses,
         certificatesEarned: student.certificatesEarned,
@@ -117,7 +122,7 @@ export async function GET(request: Request) {
 }
 
 // POST /api/students
-// Creates a new Student profile, linking to an existing User and optionally an existing Parent.
+// Creates a new Student profile, linking to an existing User and optionally an existing Parent and AcademicLevel.
 export async function POST(request: Request) {
   if (request.method !== "POST") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
@@ -125,14 +130,12 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { email, name, companyId, phone, bio, address, profilePicture, studentGrade, parentId } = body; // NEW: parentId
+    const { email, name, companyId, phone, bio, address, profilePicture, studentGrade, parentId, academicLevelId } = body; // studentGrade is now academicLevelId
 
-    // Basic validation
     if (!email || !name) {
       return NextResponse.json({ message: "Email and Name are required to create a student." }, { status: 400 });
     }
 
-    // 1. Find or Create User
     let user = await prisma.user.findUnique({
       where: { email },
     });
@@ -154,7 +157,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Validate ParentId if provided
     if (parentId) {
       const existingParent = await prisma.parent.findUnique({
         where: { id: parentId },
@@ -164,27 +166,36 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Generate a unique login code (admission number)
+    // NEW: Validate academicLevelId if provided
+    if (academicLevelId) {
+      const existingAcademicLevel = await prisma.academicLevel.findUnique({
+        where: { id: academicLevelId },
+      });
+      if (!existingAcademicLevel) {
+        return NextResponse.json({ message: "Provided academicLevelId does not exist." }, { status: 400 });
+      }
+    }
+
     const loginCode = await generateUniqueLoginCode();
 
-    // 4. Create Student Profile
     const newStudent = await prisma.student.create({
       data: {
         userId: user.id,
         loginCode,
         companyId,
-        parentId, // NEW: Assign parentId
+        parentId,
+        academicLevelId, // NEW: Assign academicLevelId
         phone,
         bio,
         address,
         profilePicture,
-        studentGrade,
+        studentGrade: studentGrade, // Keep for now if you still use it for other purposes, but academicLevelId is the primary
       },
       include: {
         user: {
           select: { id: true, name: true, email: true, image: true },
         },
-        parent: { // NEW: Include parent for response
+        parent: {
           select: { id: true, phone: true },
           include: {
             user: {
@@ -197,10 +208,12 @@ export async function POST(request: Request) {
             },
           },
         },
+        academicLevel: { // NEW: Include academic level for response
+          select: { id: true, name: true },
+        },
       },
     });
 
-    // Transform the response
     const responseData = {
       id: newStudent.id,
       userId: newStudent.userId,
@@ -217,6 +230,8 @@ export async function POST(request: Request) {
       parentName: newStudent.parent?.user.name,
       parentEmail: newStudent.parent?.user.email,
       parentPhone: newStudent.parent?.phone,
+      academicLevelId: newStudent.academicLevelId,
+      academicLevelName: newStudent.academicLevel?.name,
       totalCourses: 0,
       completedCourses: 0,
       certificatesEarned: 0,

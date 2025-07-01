@@ -1,9 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image'; // For profile picture preview
-import { XMarkIcon, UserCircleIcon, BriefcaseIcon, PhoneIcon, MapPinIcon, AcademicCapIcon } from '@heroicons/react/24/outline'; // New icons for sections
-import { EducatorType } from './TeachersClient';
+import Image from 'next/image';
+import { XMarkIcon, UserCircleIcon, BriefcaseIcon, PhoneIcon, MapPinIcon, AcademicCapIcon, TagIcon } from '@heroicons/react/24/outline';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
+// Assuming EducatorType, DepartmentOption, AcademicLevelOption are imported from TeachersClient.tsx
+export type AcademicLevelOption = {
+  id: string;
+  name: string;
+  sortOrder?: number;
+};
+
+export type EducatorType = {
+  id: string;
+  userId: string;
+  loginCode: string;
+  name: string;
+  email: string;
+  profilePicture?: string;
+  phone?: string;
+  bio?: string;
+  address?: string;
+  companyId: string;
+  departmentId?: string;
+  departmentName?: string;
+  assignedAcademicLevels: AcademicLevelOption[];
+  totalStudents: number;
+  totalCoursesTaught: number;
+  totalClassesScheduled: number;
+  totalExamsCreated: number;
+  totalMaterialsUploaded: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type DepartmentOption = {
   id: string;
@@ -13,14 +42,14 @@ export type DepartmentOption = {
 interface EducatorFormModalProps {
   educatorData?: EducatorType | null;
   onClose: () => void;
-  // Adjusted onSave type to match the client component's handleSaveEducator
-  onSave: (data: Omit<EducatorType, 'id' | 'userId' | 'loginCode' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'createdAt' | 'updatedAt' | 'departmentName'> & { id?: string; userId?: string }) => Promise<void>;
+  onSave: (data: Omit<EducatorType, 'id' | 'userId' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'createdAt' | 'updatedAt' | 'departmentName' | 'assignedAcademicLevels'> & { id?: string; userId?: string; assignedAcademicLevelIds?: string[] }) => Promise<void>;
   allDepartments: DepartmentOption[];
+  allAcademicLevels: AcademicLevelOption[]; // NEW: All available academic levels
   isLoading: boolean;
-  companyId: string; // Pass companyId to the modal for the save function
+  companyId: string;
 }
 
-const EducatorFormModal: React.FC<EducatorFormModalProps> = ({ educatorData, onClose, onSave, allDepartments, isLoading, companyId }) => {
+const EducatorFormModal: React.FC<EducatorFormModalProps> = ({ educatorData, onClose, onSave, allDepartments, allAcademicLevels, isLoading, companyId }) => {
   const [formData, setFormData] = useState({
     id: educatorData?.id || '',
     userId: educatorData?.userId || '',
@@ -31,9 +60,9 @@ const EducatorFormModal: React.FC<EducatorFormModalProps> = ({ educatorData, onC
     bio: educatorData?.bio || '',
     address: educatorData?.address || '',
     departmentId: educatorData?.departmentId || '',
+    assignedAcademicLevelIds: educatorData?.assignedAcademicLevels.map(al => al.id) || [], // Initialize with assigned IDs
   });
 
-  // Effect to update form data if educatorData changes (e.g., when switching from Add to Edit)
   useEffect(() => {
     if (educatorData) {
       setFormData({
@@ -46,11 +75,12 @@ const EducatorFormModal: React.FC<EducatorFormModalProps> = ({ educatorData, onC
         bio: educatorData.bio || '',
         address: educatorData.address || '',
         departmentId: educatorData.departmentId || '',
+        assignedAcademicLevelIds: educatorData.assignedAcademicLevels.map(al => al.id),
       });
     } else {
       setFormData({
         id: '', userId: '', name: '', email: '', profilePicture: '',
-        phone: '', bio: '', address: '', departmentId: ''
+        phone: '', bio: '', address: '', departmentId: '', assignedAcademicLevelIds: []
       });
     }
   }, [educatorData]);
@@ -61,9 +91,22 @@ const EducatorFormModal: React.FC<EducatorFormModalProps> = ({ educatorData, onC
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleAcademicLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData(prev => {
+      const currentLevels = new Set(prev.assignedAcademicLevelIds);
+      if (checked) {
+        currentLevels.add(value);
+      } else {
+        currentLevels.delete(value);
+      }
+      return { ...prev, assignedAcademicLevelIds: Array.from(currentLevels) };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await onSave({ ...formData, companyId }); // Ensure companyId is passed with the payload
+    await onSave({ ...formData, companyId, loginCode: educatorData?.loginCode || '' });
   };
 
   const defaultProfilePic = `https://placehold.co/100x100/E0E7FF/4338CA?text=${formData.name?.charAt(0) || '?'}`;
@@ -111,8 +154,8 @@ const EducatorFormModal: React.FC<EducatorFormModalProps> = ({ educatorData, onC
                   <Image
                     className="h-20 w-20 rounded-full object-cover border-2 border-indigo-200 shadow-md"
                     src={formData.profilePicture || defaultProfilePic}
-                    loader={loader}
                     alt="Profile Preview"
+                    loader={loader}
                     width={80}
                     height={80}
                     onError={(e) => {
@@ -172,6 +215,35 @@ const EducatorFormModal: React.FC<EducatorFormModalProps> = ({ educatorData, onC
                   </select>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Academic Level Assignments */}
+          <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <TagIcon className="h-6 w-6 text-purple-500" /> Assigned Academic Levels
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-lg">
+              {allAcademicLevels.length > 0 ? allAcademicLevels
+                .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)) // Sort by sortOrder
+                .map(level => (
+                <div key={level.id} className="flex items-center">
+                  <input
+                    id={`level-${level.id}`}
+                    name="assignedAcademicLevelIds"
+                    type="checkbox"
+                    value={level.id}
+                    checked={formData.assignedAcademicLevelIds.includes(level.id)}
+                    onChange={handleAcademicLevelChange}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor={`level-${level.id}`} className="ml-2 block text-sm text-gray-900">
+                    {level.name}
+                  </label>
+                </div>
+              )) : (
+                <p className="text-sm text-gray-500 col-span-2">No academic levels available. Please add them first.</p>
+              )}
             </div>
           </div>
 

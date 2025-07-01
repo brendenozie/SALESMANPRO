@@ -1,31 +1,42 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import Image from 'next/image'; // For profile pictures
+import Image from 'next/image';
 import {
   UsersIcon,
-  AcademicCapIcon, // For overall teachers
-  BriefcaseIcon, // For departments
-  UserPlusIcon, // For add teacher
-  PencilIcon, // For edit
-  TrashIcon, // For delete
-  MagnifyingGlassIcon, // For search
-  CalendarDaysIcon, // For date
-  PhoneIcon, // For phone
-  EnvelopeIcon, // For email
-  MapPinIcon, // For address
-  BookOpenIcon, // For courses
-  ClockIcon, // For classes scheduled
-  DocumentTextIcon, // For exams/materials
+  AcademicCapIcon,
+  BriefcaseIcon,
+  UserPlusIcon,
+  PencilIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+  CalendarDaysIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  BookOpenIcon,
+  ClockIcon,
+  DocumentTextIcon,
+  KeyIcon,
+  XMarkIcon,
+  TagIcon, // New icon for academic levels
 } from '@heroicons/react/24/outline';
-import EducatorFormModal from './EducatorFormModal';
+
+import EducatorFormModal from './EducatorFormModal'; // Import the new modal component
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Type Definitions (matching API response) ---
+export type AcademicLevelOption = {
+  id: string;
+  name: string;
+  sortOrder?: number; // Include for sorting if needed
+};
+
 export type EducatorType = {
   id: string;
   userId: string;
+  loginCode: string;
   name: string;
   email: string;
   profilePicture?: string;
@@ -34,9 +45,10 @@ export type EducatorType = {
   address?: string;
   companyId: string;
   departmentId?: string;
-  departmentName?: string; // Flattened for display
-  totalStudents: number; // Calculated by API
-  totalCoursesTaught: number; // Calculated by API
+  departmentName?: string;
+  assignedAcademicLevels: AcademicLevelOption[]; // NEW: Array of assigned academic levels
+  totalStudents: number;
+  totalCoursesTaught: number;
   totalClassesScheduled: number;
   totalExamsCreated: number;
   totalMaterialsUploaded: number;
@@ -52,13 +64,15 @@ export type DepartmentOption = {
 interface TeachersClientProps {
   initialEducators: EducatorType[];
   allDepartments: DepartmentOption[];
+  allAcademicLevels: AcademicLevelOption[]; // NEW: Pass all academic levels
   companyId: string;
   apiUrl: string;
 }
 
-export default function TeachersClient({ initialEducators, allDepartments, companyId, apiUrl }: TeachersClientProps) {
+export default function TeachersClient({ initialEducators, allDepartments, allAcademicLevels, companyId, apiUrl }: TeachersClientProps) {
   const [educators, setEducators] = useState<EducatorType[]>(initialEducators);
   const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments);
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels); // State for academic levels
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -73,56 +87,72 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
   });
 
   // --- Data Fetching and Management ---
-  const fetchEducators = useCallback(async () => {
+  const fetchEducatorsAndAcademicLevels = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
-      if (res.ok) {
-        const data: EducatorType[] = await res.json();
+      const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+
+      if (educatorsRes.ok) {
+        const data: EducatorType[] = await educatorsRes.json();
         setEducators(data);
       } else {
-        const errorData = await res.json();
+        const errorData = await educatorsRes.json();
         setError(errorData.message || "Failed to fetch educators.");
-        setEducators(initialEducators); // Fallback to initial data on client-side fetch error
+        setEducators(initialEducators);
       }
+
+      if (academicLevelsRes.ok) {
+        const data: AcademicLevelOption[] = await academicLevelsRes.json();
+        setAcademicLevels(data);
+      } else {
+        const errorData = await academicLevelsRes.json();
+        setError(errorData.message || "Failed to fetch academic levels.");
+        setAcademicLevels(allAcademicLevels); // Fallback to initial data
+      }
+
     } catch (err: any) {
-      setError(err.message || "Network error fetching educators.");
-      setEducators(initialEducators); // Fallback to initial data on network error
+      setError(err.message || "Network error fetching data.");
+      setEducators(initialEducators);
+      setAcademicLevels(allAcademicLevels);
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, initialEducators]);
+  }, [apiUrl, companyId, initialEducators, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialEducators.length === 0 && allDepartments.length === 0) {
-      fetchEducators();
+    if (initialEducators.length === 0 || allAcademicLevels.length === 0) {
+      fetchEducatorsAndAcademicLevels();
     }
-  }, [fetchEducators, initialEducators, allDepartments]);
+  }, [fetchEducatorsAndAcademicLevels, initialEducators, allAcademicLevels]);
 
 
   const filteredEducators = useMemo(() => {
     return educators.filter(educator => {
       const matchesSearch = (educator.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (educator.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (educator.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+                            (educator.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (educator.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            educator.assignedAcademicLevels.some(level => level.name.toLowerCase().includes(searchTerm.toLowerCase())); // Search by assigned academic level name
       const matchesDepartment = filterDepartment === 'All' || educator.departmentId === filterDepartment;
       return matchesSearch && matchesDepartment;
     }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
   }, [educators, searchTerm, filterDepartment]);
 
   // --- API Interaction Functions ---
-  const handleSaveEducator = async (educatorData: Omit<EducatorType, 'id' | 'userId' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'createdAt' | 'updatedAt' | 'departmentName'> & { id?: string; userId?: string }) => {
+  const handleSaveEducator = async (educatorData: Omit<EducatorType, 'id' | 'userId' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'createdAt' | 'updatedAt' | 'departmentName' | 'assignedAcademicLevels'> & { id?: string; userId?: string; assignedAcademicLevelIds?: string[] }) => {
     setIsLoading(true);
     setError(null);
     const method = educatorData.id ? 'PATCH' : 'POST';
     try {
-      const url = educatorData.id ? `${apiUrl}/admin/educators/${educatorData.id}` : `${apiUrl}/admin/educators`;
+
+      const url = educatorData.id ? `${apiUrl}/educators/${educatorData.id}` : `${apiUrl}/educators`;
 
       const payload = {
         ...educatorData,
-        companyId: companyId, // Ensure companyId is always included for new educators
+        companyId: companyId,
       };
 
       const res = await fetch(url, {
@@ -132,7 +162,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
       });
 
       if (res.ok) {
-        await fetchEducators(); // Re-fetch to get the latest data with calculated counts
+        await fetchEducatorsAndAcademicLevels(); // Re-fetch to get the latest data with calculated counts
         setShowFormModal(false);
         setEditingEducator(null);
       } else {
@@ -154,12 +184,12 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/educators/${educatorId}`, {
+      const res = await fetch(`${apiUrl}/educators/${educatorId}`, {
         method: 'DELETE',
       });
 
       if (res.ok) {
-        await fetchEducators();
+        await fetchEducatorsAndAcademicLevels();
       } else {
         const errorData = await res.json();
         setError(errorData.message || "Failed to delete educator.");
@@ -214,7 +244,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
             <span className="block sm:inline ml-2">{error}</span>
           </div>
           <button onClick={() => setError(null)} className="text-red-500 hover:text-red-800 focus:outline-none">
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
       )}
@@ -282,7 +312,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
             </div>
             <input
               type="text"
-              placeholder="Search by name, email, or department..."
+              placeholder="Search by name, email, department, academic level, or login code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500
@@ -309,8 +339,10 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Teacher</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Login Code</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Levels</th> {/* NEW COLUMN */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
                 <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
                   <span className="sr-only">Actions</span>
@@ -328,9 +360,9 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
                             className="h-10 w-10 rounded-full object-cover border border-gray-200"
                             src={educator.profilePicture || `https://placehold.co/100x100/E0E7FF/4338CA?text=${educator.name?.charAt(0) || '?'}`}
                             alt={educator.name || 'Teacher Avatar'}
-                            loader={loader}
                             width={40}
                             height={40}
+                            loader={loader}
                             onError={(e) => {
                               (e.target as HTMLImageElement).onerror = null;
                               (e.target as HTMLImageElement).src = `https://placehold.co/100x100/E0E7FF/4338CA?text=${educator.name?.charAt(0) || '?'}`;
@@ -341,6 +373,11 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
                           <div className="text-sm font-medium text-gray-900">{educator.name}</div>
                           <div className="text-xs text-gray-500">{educator.bio?.substring(0, 50)}...</div>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-700">
+                      <div className="flex items-center gap-1">
+                        <KeyIcon className="h-4 w-4 text-purple-500" /> {educator.loginCode}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -361,6 +398,19 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="font-medium">{educator.departmentName || 'N/A'}</div>
                       <div className="text-xs text-gray-500 mt-1">Joined: {new Date(educator.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {educator.assignedAcademicLevels && educator.assignedAcademicLevels.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {educator.assignedAcademicLevels.map(level => (
+                            <span key={level.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                              <TagIcon className="h-3 w-3 mr-1" /> {level.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">N/A</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center gap-1">
@@ -398,7 +448,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500"> {/* Updated colspan */}
                     <UsersIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                     <p className="text-lg">No teachers found matching your criteria.</p>
                     <p className="text-sm mt-2">Try adjusting your filters or add a new teacher.</p>
@@ -417,6 +467,7 @@ export default function TeachersClient({ initialEducators, allDepartments, compa
           onClose={() => { setShowFormModal(false); setEditingEducator(null); }}
           onSave={handleSaveEducator}
           allDepartments={departments}
+          allAcademicLevels={academicLevels} // NEW: Pass all academic levels
           isLoading={isLoading}
           companyId={companyId}
         />
