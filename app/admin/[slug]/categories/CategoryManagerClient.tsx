@@ -104,8 +104,8 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setIsLoading(true);
     setError(null);
     
-    const isEdit = Boolean(cat.id);
-    const url = isEdit ? `${apiUrl}/admin/store-category/${cat.id}` : `${apiUrl}/admin/store-category`;
+    const isEdit = Boolean(cat.id);///admin
+    const url = isEdit ? `${apiUrl}/admin/store-categories/${cat.id}` : `${apiUrl}/admin/store-categories`;
 
     try {
       const res = await fetch(url, {
@@ -134,7 +134,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/store-category/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${apiUrl}/admin/store-categories/${id}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchCategories();
       } else {
@@ -153,8 +153,8 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setError(null);
 
     const isEdit = Boolean(sub.id);
-    const url = isEdit ? `${apiUrl}/admin/store-category/${parentId}/subcategory/${sub.id}`
-      : `${apiUrl}/admin/store-category/${parentId}/subcategory`;
+    const url = isEdit ? `${apiUrl}/admin/store-categories/${parentId}/subcategories/${sub.id}`
+      : `${apiUrl}/admin/store-categories/${parentId}/subcategories`;
 
     try {
       const res = await fetch(url, {
@@ -183,7 +183,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/store-category/${parentId}/subcategory/${subId}`, { method: 'DELETE' });
+      const res = await fetch(`${apiUrl}/admin/store-categories/${parentId}/subcategories/${subId}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchCategories();
       } else {
