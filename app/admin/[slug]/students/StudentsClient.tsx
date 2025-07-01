@@ -91,8 +91,8 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
     setIsLoading(true);
     setError(null);
     try {
-      const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`);
-      const parentsRes = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`);
+      const studentsRes = await fetch(`${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`);
+      const parentsRes = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
 
       if (studentsRes.ok) {
         const studentsData: StudentType[] = await studentsRes.json();
@@ -177,7 +177,7 @@ export default function StudentsClient({ initialStudents, allParents, companyId,
     
     try {
 
-      const url = studentData.id ? `${apiUrl}/students/${studentData.id}` : `${apiUrl}/students`;
+      const url = studentData.id ? `${apiUrl}/admin/students/${studentData.id}` : `${apiUrl}/admin/students`;
 
       const payload = {
         ...studentData,

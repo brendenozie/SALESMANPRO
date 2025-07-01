@@ -152,7 +152,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   try {
     // Fetch all students for this company
     const studentsRes = await fetch(
-      `${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (studentsRes.ok) {
@@ -166,7 +166,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
 
     // Fetch all parents for this company (or globally if not company-specific)
     const parentsRes = await fetch(
-      `${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (parentsRes.ok) {

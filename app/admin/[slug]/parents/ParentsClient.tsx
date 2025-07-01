@@ -64,7 +64,7 @@ export default function ParentsClient({ initialParents, companyId, apiUrl }: Par
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: ParentType[] = await res.json();
         setParents(data);
@@ -107,7 +107,7 @@ export default function ParentsClient({ initialParents, companyId, apiUrl }: Par
     setError(null);
     const method = parentData.id ? 'PATCH' : 'POST';
     try {
-      const url = parentData.id ? `${apiUrl}/parents/${parentData.id}` : `${apiUrl}/parents`;
+      const url = parentData.id ? `${apiUrl}/admin/parents/${parentData.id}` : `${apiUrl}/admin/parents`;
 
       const payload = {
         ...parentData,
@@ -143,7 +143,7 @@ export default function ParentsClient({ initialParents, companyId, apiUrl }: Par
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/parents/${parentId}`, {
+      const res = await fetch(`${apiUrl}/admin/parents/${parentId}`, {
         method: 'DELETE',
       });
 
