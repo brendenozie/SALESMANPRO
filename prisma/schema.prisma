@@ -240,6 +240,8 @@ model Company {
   AppPromo   AppPromo[]
   Blog       Blog[]
   Department Department[]
+  Student    Student[]
+  Educator   Educator[]
 }
 
 enum CategoryStatus {
@@ -784,9 +786,7 @@ model User {
   CreatedDiscussionPost DiscussionPost[] @relation("CreatedDiscussionPost")
 
   Department Department[]
-
-  // Opposite relation for DepartmentHead
-  headedDepartments Department[] @relation("DepartmentHead")
+  Educator   Educator?
 }
 
 enum Status {
@@ -1531,72 +1531,78 @@ model WishlistItem {
 
 // Student Profile Model (one-to-one with User)
 model Student {
-  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
-  name               String?
-  email              String             @unique
-  emailVerified      DateTime?
-  image              String?
-  accounts           Account[]
-  sessions           Session[]
-  phone              String?
-  password           String?
-  username           String?
-  bio                String?
-  address            String?
-  profilePicture     String?
-  role               ROLE?              @default(STUDENT)
-  studentGrade       String? // e.g., "High School", "Undergraduate", "Graduate"
-  totalCourses       Int                @default(0)
-  completedCourses   Int                @default(0)
-  certificatesEarned Int                @default(0)
-  averageProgress    Float              @default(0.0) // Store as float, format percentage in frontend
-  enrolledCourses    CourseEnrollment[]
-  submissions        Submission[]
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  AttendanceRecord   AttendanceRecord[]
-  ExamSubmission     ExamSubmission[]
-}
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
 
-// Educator Profile Model (one-to-one with User)
-model Educator {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String    @unique
-  emailVerified  DateTime?
-  image          String?
-  accounts       Account[]
-  sessions       Session[]
   phone          String?
   password       String?
   username       String?
   bio            String?
   address        String?
   profilePicture String?
-  role           ROLE?     @default(EDUCATOR)
 
-  departmentId String?     @db.ObjectId
-  department   Department? @relation(fields: [departmentId], references: [id])
+  role ROLE? @default(STUDENT)
 
-  institutionName    String?
-  totalStudents      Int             @default(0) // Can be calculated or directly stored
-  totalCoursesTaught Int             @default(0) // Can be calculated or directly stored
-  coursesCreated     Course[]
-  classesScheduled   ClassSchedule[]
+  studentGrade       String? // e.g., "High School", "Undergraduate", "Graduate"
+  totalCourses       Int     @default(0)
+  completedCourses   Int     @default(0)
+  certificatesEarned Int     @default(0)
+  averageProgress    Float   @default(0.0) // Store as float, format percentage in frontend  
 
+  accounts Account[]
+  sessions Session[]
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  enrolledCourses  CourseEnrollment[]
+  submissions      Submission[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
-  Exam             Exam[]
-  CourseMaterial   CourseMaterial[]
-  AttendanceRecord AttendanceRecord[] @relation("RecordedAttendance")
-
-  DiscussionTopic         DiscussionTopic[] @relation("EducatorDiscussionTopics")
-  createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
-
-  uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
+  AttendanceRecord AttendanceRecord[]
+  ExamSubmission   ExamSubmission[]
 }
 
-// Course Model
+// Educator Profile Model (one-to-one with User)
+model Educator {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(fields: [userId], references: [id])
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  loginCode String @unique // NEW: Unique generated number for login
+
+  Company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  totalStudents      Int                @default(0)
+  totalCoursesTaught Int                @default(0)
+  coursesCreated     Course[]
+  classesScheduled   ClassSchedule[]
+  Exam               Exam[]
+  CourseMaterial     CourseMaterial[]
+  AttendanceRecord   AttendanceRecord[] @relation("RecordedAttendance")
+
+  createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
+  uploadedMaterials       CourseMaterial[]  @relation("UploadedMaterial")
+  headedDepartments       Department[]      @relation("DepartmentHead")
+  Department              Department?       @relation(fields: [departmentId], references: [id])
+  departmentId            String?           @db.ObjectId
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Account   Account[]
+  Session   Session[]
+}
+
+// Course Model Can also be known as Subject Model
 model Course {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   title            String
@@ -1817,19 +1823,19 @@ model CourseMaterial {
 // Discussion Topic Model
 // Represents a discussion forum topic within a course or globally.
 model DiscussionTopic {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  courseId    String?          @db.ObjectId // Optional: if topic is specific to a course
-  course      Course?          @relation(fields: [courseId], references: [id])
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId    String?  @db.ObjectId // Optional: if topic is specific to a course
+  course      Course?  @relation(fields: [courseId], references: [id])
   title       String
   content     String? // Initial post content
-  createdById String           @db.ObjectId // User (Educator or Student) who created the topic
-  createdBy   Educator         @relation("CreatedDiscussionTopic", fields: [createdById], references: [id])
-  educator    Educator?        @relation("EducatorDiscussionTopics", fields: [createdById], references: [id])
-  posts       DiscussionPost[] // All posts within this topic
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  User        User?            @relation(fields: [userId], references: [id])
-  userId      String?          @db.ObjectId
+  createdById String   @db.ObjectId // User (Educator or Student) who created the topic
+  createdBy   Educator @relation("CreatedDiscussionTopic", fields: [createdById], references: [id])
+
+  posts     DiscussionPost[] // All posts within this topic
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  User      User?            @relation(fields: [userId], references: [id])
+  userId    String?          @db.ObjectId
 
   @@index([courseId])
   @@index([createdById])
@@ -1860,19 +1866,21 @@ model DiscussionPost {
 // Department Model
 // Represents an academic or administrative department within the school.
 model Department {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String // e.g., "Mathematics", "English", "Administration"
   description String?
-  headId      String?    @db.ObjectId // Optional: Link to the User (Educator/Admin) who heads the department
-  head        User?      @relation("DepartmentHead", fields: [headId], references: [id])
-  educators   Educator[] // Educators belonging to this department
-  courses     Course[] // Courses offered by this department
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  Company     Company?   @relation(fields: [companyId], references: [id])
-  companyId   String?    @db.ObjectId
-  User        User?      @relation(fields: [userId], references: [id])
-  userId      String?    @db.ObjectId
+
+  headId String?   @db.ObjectId // Optional: Link to the User (Educator/Admin) who heads the department
+  head   Educator? @relation("DepartmentHead", fields: [headId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  educators Educator[] // Educators belonging to this department
+  courses   Course[] // Courses offered by this department
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Company   Company?   @relation(fields: [companyId], references: [id])
+  companyId String?    @db.ObjectId
+  User      User?      @relation(fields: [userId], references: [id])
+  userId    String?    @db.ObjectId
 
   @@index([name])
 }

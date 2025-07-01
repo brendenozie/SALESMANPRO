@@ -1,94 +1,70 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Image from 'next/image'; // For profile pictures
 import {
   UsersIcon,
   AcademicCapIcon, // For overall teachers
   BriefcaseIcon, // For departments
   UserPlusIcon, // For add teacher
   PencilIcon, // For edit
-  EyeIcon, // For view details
-  ArrowLeftIcon, // For deactivate
-  ArrowRightIcon, // For activate (replacing ToggleRightIcon)
+  TrashIcon, // For delete
   MagnifyingGlassIcon, // For search
   CalendarDaysIcon, // For date
-  CubeTransparentIcon, // For status color
+  PhoneIcon, // For phone
+  EnvelopeIcon, // For email
+  MapPinIcon, // For address
+  BookOpenIcon, // For courses
+  ClockIcon, // For classes scheduled
+  DocumentTextIcon, // For exams/materials
 } from '@heroicons/react/24/outline';
+import EducatorFormModal from './EducatorFormModal';
 
-// Sample Teacher Data
-const sampleTeachers = [
-  {
-    id: 'T001',
-    name: 'Mr. John Doe',
-    email: 'john.doe@school.com',
-    department: 'Mathematics',
-    classesTaught: ['Grade 7 Math', 'Grade 8 Math'],
-    status: 'Active',
-    phone: '+254712345678',
-    hireDate: '2015-08-01',
-  },
-  {
-    id: 'T002',
-    name: 'Mrs. Jane Smith',
-    email: 'jane.smith@school.com',
-    department: 'English',
-    classesTaught: ['Grade 7 English', 'Grade 8 English'],
-    status: 'Active',
-    phone: '+254723456789',
-    hireDate: '2018-09-01',
-  },
-  {
-    id: 'T003',
-    name: 'Ms. Emily White',
-    email: 'emily.white@school.com',
-    department: 'Science',
-    classesTaught: ['Grade 8 Science', 'Grade 9 Biology'],
-    status: 'Inactive', // Example inactive teacher
-    phone: '+254734567890',
-    hireDate: '2020-01-15',
-  },
-  {
-    id: 'T004',
-    name: 'Mr. David Green',
-    email: 'david.green@school.com',
-    department: 'History',
-    classesTaught: ['Grade 8 History', 'Grade 10 History'],
-    status: 'Active',
-    phone: '+254745678901',
-    hireDate: '2017-03-10',
-  },
-  {
-    id: 'T005',
-    name: 'Ms. Sarah Brown',
-    email: 'sarah.brown@school.com',
-    department: 'Art',
-    classesTaught: ['Grade 7 Art', 'Grade 8 Art'],
-    status: 'Active',
-    phone: '+254756789012',
-    hireDate: '2022-02-20',
-  },
-];
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Helper function to get unique departments
-const uniqueDepartments = Array.from(new Set(sampleTeachers.map(teacher => teacher.department)));
+// --- Type Definitions (matching API response) ---
+export type EducatorType = {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  profilePicture?: string;
+  phone?: string;
+  bio?: string;
+  address?: string;
+  companyId: string;
+  departmentId?: string;
+  departmentName?: string; // Flattened for display
+  totalStudents: number; // Calculated by API
+  totalCoursesTaught: number; // Calculated by API
+  totalClassesScheduled: number;
+  totalExamsCreated: number;
+  totalMaterialsUploaded: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
-export default function TeachersManagementPage() {
-  const [teachers, setTeachers] = useState(sampleTeachers);
+export type DepartmentOption = {
+  id: string;
+  name: string;
+};
+
+interface TeachersClientProps {
+  initialEducators: EducatorType[];
+  allDepartments: DepartmentOption[];
+  companyId: string;
+  apiUrl: string;
+}
+
+export default function TeachersClient({ initialEducators, allDepartments, companyId, apiUrl }: TeachersClientProps) {
+  const [educators, setEducators] = useState<EducatorType[]>(initialEducators);
+  const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('All');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  type Teacher = {
-    id: string;
-    name: string;
-    email: string;
-    department: string;
-    classesTaught: string[];
-    status: string;
-    phone: string;
-    hireDate: string;
-  };
-  const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingEducator, setEditingEducator] = useState<EducatorType | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -96,194 +72,124 @@ export default function TeachersManagementPage() {
     day: 'numeric',
   });
 
-  const filteredTeachers = teachers.filter(teacher => {
-    const matchesSearch = teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          teacher.department.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = filterDepartment === 'All' || teacher.department === filterDepartment;
-    return matchesSearch && matchesDepartment;
-  });
+  // --- Data Fetching and Management ---
+  const fetchEducators = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
+      if (res.ok) {
+        const data: EducatorType[] = await res.json();
+        setEducators(data);
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to fetch educators.");
+        setEducators(initialEducators); // Fallback to initial data on client-side fetch error
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error fetching educators.");
+      setEducators(initialEducators); // Fallback to initial data on network error
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiUrl, companyId, initialEducators]);
 
-  const totalTeachers = teachers.length;
-  const activeTeachers = teachers.filter(t => t.status === 'Active').length;
-  const totalDepartments = uniqueDepartments.length;
+  useEffect(() => {
+    // If initial data from server is empty, try fetching on client side
+    if (initialEducators.length === 0 && allDepartments.length === 0) {
+      fetchEducators();
+    }
+  }, [fetchEducators, initialEducators, allDepartments]);
 
-  // Placeholder functions for modal interactions
-  const handleAddNewTeacher = (newTeacherData: Omit<Teacher, 'id' | 'status' | 'classesTaught'>) => {
-    // In a real app, you'd send this to a backend API
-    const newId = `T${String(teachers.length + 1).padStart(3, '0')}`; // Simple ID generation
-    setTeachers([...teachers, { id: newId, ...newTeacherData, status: 'Active', classesTaught: [] }]);
-    setShowAddModal(false);
+
+  const filteredEducators = useMemo(() => {
+    return educators.filter(educator => {
+      const matchesSearch = (educator.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (educator.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (educator.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+      const matchesDepartment = filterDepartment === 'All' || educator.departmentId === filterDepartment;
+      return matchesSearch && matchesDepartment;
+    }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
+  }, [educators, searchTerm, filterDepartment]);
+
+  // --- API Interaction Functions ---
+  const handleSaveEducator = async (educatorData: Omit<EducatorType, 'id' | 'userId' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'createdAt' | 'updatedAt' | 'departmentName'> & { id?: string; userId?: string }) => {
+    setIsLoading(true);
+    setError(null);
+    const method = educatorData.id ? 'PATCH' : 'POST';
+    try {
+      const url = educatorData.id ? `${apiUrl}/educators/${educatorData.id}` : `${apiUrl}/educators`;
+
+      const payload = {
+        ...educatorData,
+        companyId: companyId, // Ensure companyId is always included for new educators
+      };
+
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        await fetchEducators(); // Re-fetch to get the latest data with calculated counts
+        setShowFormModal(false);
+        setEditingEducator(null);
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || `Failed to ${method === 'POST' ? 'add' : 'update'} educator.`);
+      }
+    } catch (err: any) {
+      setError(err.message || `Network error ${method === 'POST' ? 'adding' : 'updating'} educator.`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEditTeacher = (updatedTeacherData: Teacher) => {
-    // In a real app, you'd send this to a backend API
-    setTeachers(teachers.map(t => t.id === updatedTeacherData.id ? updatedTeacherData : t));
-    setShowEditModal(false);
-    setEditingTeacher(null);
+  const handleDeleteEducator = async (educatorId: string) => {
+    if (!confirm("Are you sure you want to delete this educator? This action cannot be undone and may affect linked records.")) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/educators/${educatorId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        await fetchEducators();
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to delete educator.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error deleting educator.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const toggleTeacherStatus = (teacherId: string) => {
-    setTeachers(teachers.map(t =>
-      t.id === teacherId ? { ...t, status: t.status === 'Active' ? 'Inactive' : 'Active' } : t
-    ));
-  };
+  // --- Calculated Stats ---
+  const totalTeachers = educators.length;
+  const totalDepartments = departments.length;
+  const avgCoursesPerTeacher = totalTeachers > 0 ? (educators.reduce((sum, e) => sum + e.totalCoursesTaught, 0) / totalTeachers).toFixed(1) : '0';
+  const avgStudentsPerTeacher = totalTeachers > 0 ? (educators.reduce((sum, e) => sum + e.totalStudents, 0) / totalTeachers).toFixed(1) : '0';
 
-  // --- Modal Components (Simplified for demonstration) ---
-  const AddTeacherModal = ({
-    onClose,
-    onSave,
-  }: {
-    onClose: () => void;
-    onSave: (newTeacherData: {
-      name: string;
-      email: string;
-      department: string;
-      phone: string;
-      hireDate: string;
-    }) => void;
-  }) => {
-    const [formData, setFormData] = useState({
-      name: '', email: '', department: '', phone: '', hireDate: ''
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      onSave(formData);
-    };
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Add New Teacher</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-              <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-              <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="department" className="block text-sm font-medium text-gray-700">Department</label>
-              <input type="text" name="department" id="department" value={formData.department} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
-              <input type="text" name="phone" id="phone" value={formData.phone} onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="hireDate" className="block text-sm font-medium text-gray-700">Hire Date</label>
-              <input type="date" name="hireDate" id="hireDate" value={formData.hireDate} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <button type="button" onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Cancel
-              </button>
-              <button type="submit"
-                className="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Add Teacher
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  };
-
-  const EditTeacherModal = ({
-    teacher,
-    onClose,
-    onSave,
-  }: {
-    teacher: Teacher;
-    onClose: () => void;
-    onSave: (updatedTeacherData: Teacher) => void;
-  }) => {
-    const [formData, setFormData] = useState<Teacher>(teacher);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      onSave(formData);
-    };
-
-    if (!formData) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Edit Teacher: {formData.name}</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-              <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-              <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="department" className="block text-sm font-medium text-gray-700">Department</label>
-              <input type="text" name="department" id="department" value={formData.department} onChange={handleChange} required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
-              <input type="text" name="phone" id="phone" value={formData.phone} onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
-            </div>
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
-              <select name="status" id="status" value={formData.status} onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <button type="button" onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Cancel
-              </button>
-              <button type="submit"
-                className="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  };
-  // --- End Modal Components ---
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen font-sans antialiased">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+            <AcademicCapIcon className="h-10 w-10 text-purple-600" />
             Teachers Management
-            <span className="ml-2 text-purple-600 text-base sm:text-xl">🧑‍🏫</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">Efficiently manage all teaching staff information.</p>
+          <p className="text-lg text-gray-600 mt-2 max-w-2xl">
+            Efficiently manage all teaching staff information, profiles, and assignments.
+          </p>
         </div>
         <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
           <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
@@ -291,39 +197,64 @@ export default function TeachersManagementPage() {
         </div>
       </div>
 
+      {/* Loading and Error Indicators */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-4 text-purple-700 font-medium text-lg">
+          <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading data...
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl relative shadow-md mb-6 flex items-center justify-between">
+          <div>
+            <strong className="font-bold">Error!</strong>
+            <span className="block sm:inline ml-2">{error}</span>
+          </div>
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-800 focus:outline-none">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+      )}
+
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <UsersIcon className="h-7 w-7 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Teachers</p>
-              <h2 className="text-3xl font-bold text-gray-800">{totalTeachers}</h2>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50 flex items-center gap-4">
+          <div className="p-3 bg-white rounded-full shadow-sm">
+            <UsersIcon className="h-8 w-8 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-600">Total Teachers</p>
+            <h2 className="text-3xl font-bold text-gray-800">{totalTeachers}</h2>
           </div>
         </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <AcademicCapIcon className="h-7 w-7 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Active Teachers</p>
-              <h2 className="text-3xl font-bold text-gray-800">{activeTeachers}</h2>
-            </div>
+        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50 flex items-center gap-4">
+          <div className="p-3 bg-white rounded-full shadow-sm">
+            <BriefcaseIcon className="h-8 w-8 text-green-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-600">Total Departments</p>
+            <h2 className="text-3xl font-bold text-gray-800">{totalDepartments}</h2>
           </div>
         </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <BriefcaseIcon className="h-7 w-7 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Departments</p>
-              <h2 className="text-3xl font-bold text-gray-800">{totalDepartments}</h2>
-            </div>
+        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50 flex items-center gap-4">
+          <div className="p-3 bg-white rounded-full shadow-sm">
+            <BookOpenIcon className="h-8 w-8 text-yellow-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-600">Avg. Courses/Teacher</p>
+            <h2 className="text-3xl font-bold text-gray-800">{avgCoursesPerTeacher}</h2>
+          </div>
+        </div>
+        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50 flex items-center gap-4">
+          <div className="p-3 bg-white rounded-full shadow-sm">
+            <UsersIcon className="h-8 w-8 text-purple-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-600">Avg. Students/Teacher</p>
+            <h2 className="text-3xl font-bold text-gray-800">{avgStudentsPerTeacher}</h2>
           </div>
         </div>
       </div>
@@ -331,13 +262,13 @@ export default function TeachersManagementPage() {
       {/* Teachers List Section */}
       <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <UsersIcon className="h-5 w-5 text-indigo-500" /> All Teachers
+          <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <UsersIcon className="h-6 w-6 text-indigo-500" /> All Teachers
           </h3>
           <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm
-                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={() => { setEditingEducator(null); setShowFormModal(true); }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md
+                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
           >
             <UserPlusIcon className="h-5 w-5" /> Add New Teacher
           </button>
@@ -354,80 +285,124 @@ export default function TeachersManagementPage() {
               placeholder="Search by name, email, or department..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500
+                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             />
           </div>
           <div className="flex-shrink-0">
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             >
               <option value="All">All Departments</option>
-              {uniqueDepartments.map(dept => (
-                <option key={dept} value={dept}>{dept}</option>
+              {departments.map(dept => (
+                <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
           </div>
         </div>
 
         {/* Teachers Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Teacher</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="relative px-6 py-3">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
+                <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTeachers.length > 0 ? (
-                filteredTeachers.map((teacher) => (
-                  <tr key={teacher.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{teacher.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{teacher.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{teacher.department}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {teacher.classesTaught.join(', ') || 'N/A'}
-                    </td>
+              {filteredEducators.length > 0 ? (
+                filteredEducators.map((educator) => (
+                  <tr key={educator.id} className="hover:bg-gray-50 transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                        ${teacher.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-                      `}>
-                        {teacher.status}
-                      </span>
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 relative">
+                          <Image
+                            className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                            src={educator.profilePicture || `https://placehold.co/100x100/E0E7FF/4338CA?text=${educator.name?.charAt(0) || '?'}`}
+                            alt={educator.name || 'Teacher Avatar'}
+                            loader={loader}
+                            width={40}
+                            height={40}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).onerror = null;
+                              (e.target as HTMLImageElement).src = `https://placehold.co/100x100/E0E7FF/4338CA?text=${educator.name?.charAt(0) || '?'}`;
+                            }}
+                          />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{educator.name}</div>
+                          <div className="text-xs text-gray-500">{educator.bio?.substring(0, 50)}...</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <EnvelopeIcon className="h-4 w-4 text-gray-400" /> {educator.email}
+                      </div>
+                      {educator.phone && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <PhoneIcon className="h-4 w-4 text-gray-400" /> {educator.phone}
+                        </div>
+                      )}
+                      {educator.address && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <MapPinIcon className="h-4 w-4 text-gray-400" /> {educator.address}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="font-medium">{educator.departmentName || 'N/A'}</div>
+                      <div className="text-xs text-gray-500 mt-1">Joined: {new Date(educator.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <BookOpenIcon className="h-4 w-4 text-gray-400" /> Courses: {educator.totalCoursesTaught}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <UsersIcon className="h-4 w-4 text-gray-400" /> Students: {educator.totalStudents}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <ClockIcon className="h-4 w-4 text-gray-400" /> Classes: {educator.totalClassesScheduled}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <DocumentTextIcon className="h-4 w-4 text-gray-400" /> Exams: {educator.totalExamsCreated}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
-                          onClick={() => { setEditingTeacher(teacher); setShowEditModal(true); }}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                          onClick={() => { setEditingEducator(educator); setShowFormModal(true); }}
+                          className="p-2 rounded-full text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition-colors duration-200"
                           title="Edit Teacher"
                         >
-                          <PencilIcon className="h-4 w-4" />
+                          <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => toggleTeacherStatus(teacher.id)}
-                          className={`flex items-center ${teacher.status === 'Active' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'}`}
-                          title={teacher.status === 'Active' ? 'Deactivate' : 'Activate'}
+                          onClick={() => handleDeleteEducator(educator.id)}
+                          className="p-2 rounded-full text-red-600 hover:bg-red-50 hover:text-red-800 transition-colors duration-200"
+                          title="Delete Teacher"
                         >
-                          {teacher.status === 'Active' ? <ArrowLeftIcon className="h-5 w-5" /> : <ArrowRightIcon className="h-5 w-5" />}
+                          <TrashIcon className="h-5 w-5" />
                         </button>
-                        {/* Could add a 'View Details' button here too */}
                       </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No teachers found matching your criteria.</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <UsersIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg">No teachers found matching your criteria.</p>
+                    <p className="text-sm mt-2">Try adjusting your filters or add a new teacher.</p>
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -436,8 +411,16 @@ export default function TeachersManagementPage() {
       </div>
 
       {/* Modals */}
-      {showAddModal && <AddTeacherModal onClose={() => setShowAddModal(false)} onSave={handleAddNewTeacher} />}
-      {showEditModal && editingTeacher && <EditTeacherModal teacher={editingTeacher} onClose={() => setShowEditModal(false)} onSave={handleEditTeacher} />}
+      {showFormModal && (
+        <EducatorFormModal
+          educatorData={editingEducator}
+          onClose={() => { setShowFormModal(false); setEditingEducator(null); }}
+          onSave={handleSaveEducator}
+          allDepartments={departments}
+          isLoading={isLoading}
+          companyId={companyId}
+        />
+      )}
     </div>
   );
 }
