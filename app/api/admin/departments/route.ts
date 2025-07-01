@@ -5,48 +5,60 @@ import prisma from "@/server/db/prismadb";
 // Fetches all departments with aggregated counts of educators and courses.
 export async function GET(request: Request) {
   try {
-    const departments = await prisma.department.findMany({
-      include: {
-        _count: {
-          select: {
-            educators: true, // Count of educators in this department
-            courses: true,   // Count of courses offered by this department
+    const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
+
+    if (companyId) {
+
+      const departments = await prisma.department.findMany({
+        where: { companyId: companyId },
+        include: {
+          _count: {
+            select: {
+              educators: true, // Count of educators in this department
+              courses: true,   // Count of courses offered by this department
+            },
           },
-        },
-        head: { // Include head of department details if available
-          select: {
-            id: true,
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
+          head: { // Include head of department details if available
+            select: {
+              id: true,
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: {
-        name: 'asc', // Order departments alphabetically by name
-      },
-    });
+        orderBy: {
+          name: 'asc', // Order departments alphabetically by name
+        },
+      });
 
-    // Transform the data to include counts directly in the main object
-    const response = departments.map(department => ({
-      id: department.id,
-      name: department.name,
-      description: department.description,
-      head: department.head, // Contains id, name, email of the head
-      companyId: department.companyId,
-      educatorCount: department._count.educators,
-      courseCount: department._count.courses,
-      createdAt: department.createdAt,
-      updatedAt: department.updatedAt,
-    }));
+      // Transform the data to include counts directly in the main object
+      const response = departments.map(department => ({
+        id: department.id,
+        name: department.name,
+        description: department.description,
+        head: department.head, // Contains id, name, email of the head
+        companyId: department.companyId,
+        educatorCount: department._count.educators,
+        courseCount: department._count.courses,
+        createdAt: department.createdAt,
+        updatedAt: department.updatedAt,
+      }));
 
-    return NextResponse.json(response, { status: 200 });
+      return NextResponse.json(response, { status: 200 });
+     } else {
+      // For a multi-tenant app, it's safer to require companyId or courseId for a global view.
+      // If neither is provided, we might return an error or all assignments (less secure).
+      // For now, let's require companyId for the global view.
+      return NextResponse.json({ message: "companyId is required." }, { status: 400 });
+    }
   } catch (error) {
     console.error("Error fetching departments:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);

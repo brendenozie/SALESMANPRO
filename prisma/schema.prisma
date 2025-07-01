@@ -245,6 +245,7 @@ model Company {
   Parent        Parent[]
   AcademicLevel AcademicLevel[]
   Course        Course[]
+  ClassSchedule ClassSchedule[]
 }
 
 enum CategoryStatus {
@@ -1809,20 +1810,34 @@ model Announcement {
 }
 
 // Class Schedule Model (for educator's classes/lectures)
+// Class Schedule Model (for educator's classes/lectures and school timetabling)
 model ClassSchedule {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  courseId         String             @db.ObjectId
-  course           Course             @relation(fields: [courseId], references: [id])
-  educatorId       String             @db.ObjectId
-  educator         Educator           @relation(fields: [educatorId], references: [id])
-  date             DateTime // Date of the class
-  startTime        DateTime // Time of the class (e.g., "10:00 AM")
-  endTime          DateTime // End time of the class (e.g., "11:30 AM")
-  topic            String?
-  meetingLink      String? // Link to video conferencing (e.g., Zoom, Google Meet)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId    String   @db.ObjectId
+  course      Course   @relation(fields: [courseId], references: [id])
+  educatorId  String   @db.ObjectId
+  educator    Educator @relation(fields: [educatorId], references: [id])
+  dayOfWeek   String // Date of the class (e.g., '2025-07-01T00:00:00.000Z' for the specific day)
+  startTime   DateTime // Time of the class (e.g., '1970-01-01T10:00:00.000Z' - only time component matters, date part is ignored)
+  endTime     DateTime // End time of the class (e.g., '1970-01-01T11:30:00.000Z' - only time component matters, date part is ignored)
+  topic       String?
+  meetingLink String? // Link to video conferencing (e.g., Zoom, Google Meet)
+
+  // NEW: Link to Company for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   AttendanceRecord AttendanceRecord[]
+
+  // Unique constraint: An educator can only have one class scheduled at a specific date and time within a company.
+  // This helps prevent accidental double-booking for the same educator.
+  @@unique([companyId, educatorId, dayOfWeek, startTime])
+  @@index([courseId]) // For efficient lookup of schedules by course
+  @@index([companyId]) // For efficient lookup of all schedules for a company
+  @@index([dayOfWeek])
 }
 
 // Enum for Attendance Status
