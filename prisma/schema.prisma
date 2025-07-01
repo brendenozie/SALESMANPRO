@@ -1758,31 +1758,40 @@ model CourseEnrollment {
 }
 
 // Assignment Model
+// Course Assignment Model
 model CourseAssignment {
   id          String       @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   dueDate     DateTime
+  maxGrade    Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
   courseId    String       @db.ObjectId
   course      Course       @relation(fields: [courseId], references: [id])
-  submissions Submission[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  submissions Submission[] // Relation to AssignmentSubmission (or Submission) model
+
+  // assignedAt is implicitly handled by createdAt in your API,
+  // but if you need a distinct field for when it's formally assigned/published
+  // vs. just created, you could add:
+  // assignedAt  DateTime   @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Submission Model (Student's assignment submission)
 model Submission {
   id                String           @id @default(auto()) @map("_id") @db.ObjectId
-  assignmentId      String           @db.ObjectId
-  assignment        CourseAssignment @relation(fields: [assignmentId], references: [id])
+  assignmentId      String           @db.ObjectId // Foreign key to CourseAssignment
+  assignment        CourseAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade) // CRITICAL: onDelete: Cascade
   studentId         String           @db.ObjectId
   student           Student          @relation(fields: [studentId], references: [id])
-  submittedAt       DateTime         @default(now())
-  grade             Float? // e.g., 85.5
+  grade             Float?
   gradedAt          DateTime?
-  submissionContent String? // e.g., URL to file, text content, JSON of answers
+  submissionContent String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
-  @@unique([assignmentId, studentId]) // Ensure one submission per student per assignment
+  @@unique([assignmentId, studentId])
 }
 
 // Announcement Model

@@ -19,8 +19,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
         head: {
           select: {
             id: true,
-            name: true,
-            email: true,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },

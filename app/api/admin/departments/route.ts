@@ -16,8 +16,15 @@ export async function GET(request: Request) {
         head: { // Include head of department details if available
           select: {
             id: true,
-            name: true,
-            email: true,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
