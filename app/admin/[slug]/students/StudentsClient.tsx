@@ -102,9 +102,9 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     setIsLoading(true);
     setError(null);
     try {
-      const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`);
-      const parentsRes = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`); // NEW fetch
+      const studentsRes = await fetch(`${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`);
+      const parentsRes = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`); // NEW fetch
 
       if (studentsRes.ok) {
         const studentsData: StudentType[] = await studentsRes.json();
@@ -200,7 +200,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
 
     try {
 
-      const url = studentData.id ? `${apiUrl}/students/${studentData.id}` : `${apiUrl}/students`;
+      const url = studentData.id ? `${apiUrl}/admin/students/${studentData.id}` : `${apiUrl}/admin/students`;
 
       const payload = {
         ...studentData,
@@ -236,7 +236,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/students/${studentId}`, {
+      const res = await fetch(`${apiUrl}/admin/students/${studentId}`, {
         method: 'DELETE',
       });
 

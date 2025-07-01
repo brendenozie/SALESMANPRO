@@ -169,21 +169,21 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   try {
     // Fetch all students for this company
     const studentsRes = await fetch(
-      `${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (studentsRes.ok) {
       initialStudents = (await studentsRes.json()) as StudentType[];
     } else {
-      console.error(
-        `[StudentsManagementPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`
-      );
+      // console.error(
+      //   `[StudentsManagementPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`
+      // );
       fetchError = true;
     }
 
     // Fetch all parents for this company (or globally if not company-specific)
     const parentsRes = await fetch(
-      `${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (parentsRes.ok) {

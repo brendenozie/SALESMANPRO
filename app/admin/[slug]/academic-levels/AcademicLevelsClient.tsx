@@ -50,7 +50,7 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: AcademicLevelType[] = await res.json();
         setAcademicLevels(data.sort((a, b) => a.sortOrder - b.sortOrder)); // Ensure sorted by sortOrder
@@ -90,10 +90,10 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     setError(null);
     
     const method = academicLevelData.id ? 'PATCH' : 'POST';
-    
+
     try {
 
-      const url = academicLevelData.id ? `${apiUrl}/academic-levels/${academicLevelData.id}` : `${apiUrl}/academic-levels`;
+      const url = academicLevelData.id ? `${apiUrl}/admin/academic-levels/${academicLevelData.id}` : `${apiUrl}/admin/academic-levels`;
 
       const payload = {
         ...academicLevelData,
@@ -129,7 +129,7 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/academic-levels/${academicLevelId}`, {
+      const res = await fetch(`${apiUrl}/admin/academic-levels/${academicLevelId}`, {
         method: 'DELETE',
       });
 

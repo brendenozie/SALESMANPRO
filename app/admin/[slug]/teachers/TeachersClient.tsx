@@ -91,8 +91,8 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     setIsLoading(true);
     setError(null);
     try {
-      const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (educatorsRes.ok) {
         const data: EducatorType[] = await educatorsRes.json();
@@ -148,7 +148,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     const method = educatorData.id ? 'PATCH' : 'POST';
     try {
 
-      const url = educatorData.id ? `${apiUrl}/educators/${educatorData.id}` : `${apiUrl}/educators`;
+      const url = educatorData.id ? `${apiUrl}/admin/educators/${educatorData.id}` : `${apiUrl}/admin/educators`;
 
       const payload = {
         ...educatorData,

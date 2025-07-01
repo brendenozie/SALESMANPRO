@@ -87,20 +87,20 @@ export default async function AcademicLevelsManagementPage({ params }: PageProps
   try {
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (academicLevelsRes.ok) {
       initialAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelType[];
     } else {
-      console.error(
-        `[AcademicLevelsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      );
+      // console.error(
+      //   `[AcademicLevelsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      // );
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("[AcademicLevelsManagementPage] Error fetching initial data:", err.message);
+    // console.error("[AcademicLevelsManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 

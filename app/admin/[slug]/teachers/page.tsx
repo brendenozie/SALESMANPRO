@@ -162,7 +162,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
   try {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
-      `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (educatorsRes.ok) {
@@ -184,7 +184,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
 
     // NEW: Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (academicLevelsRes.ok) {
