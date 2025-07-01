@@ -244,6 +244,7 @@ model Company {
   Educator      Educator[]
   Parent        Parent[]
   AcademicLevel AcademicLevel[]
+  Course        Course[]
 }
 
 enum CategoryStatus {
@@ -1653,8 +1654,9 @@ model AcademicLevel {
   // NEW: Junction table for many-to-many with Educator
   educatorAssignments EducatorAcademicLevelAssignment[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  CourseAcademicLevel CourseAcademicLevel[]
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
@@ -1686,21 +1688,27 @@ model EducatorAcademicLevelAssignment {
 
 // Course Model Can also be known as Subject Model
 model Course {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  title            String
-  description      String?
-  imageUrl         String?
-  instructorId     String // Link to EducatorProfile
-  instructor       Educator @relation(fields: [instructorId], references: [id])
-  totalLessons     Int?
-  rating           Float? // e.g., 4.5
-  level            String? // e.g., "3rd Grade", "All Levels", "Advanced", "Undergraduate", "Diploma"
-  studentsEnrolled Int      @default(0) // Can be calculated or stored for quick access
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String?
 
-  departmentId String?     @db.ObjectId // Optional: if a course can exist without a direct department link
+  instructorId String?   @db.ObjectId // Made optional for flexibility
+  instructor   Educator? @relation(fields: [instructorId], references: [id])
+
+  // REMOVED: totalLessons (will be calculated)
+  // REMOVED: studentsEnrolled (will be calculated)
+  rating Float? // Can still be stored as an average, or calculated from a separate Rating model
+
+  // NEW: Company relation for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  departmentId String?     @db.ObjectId
   department   Department? @relation(fields: [departmentId], references: [id])
+
+  // NEW JUNCTION TABLE: For many-to-many with AcademicLevel
+  academicLevels CourseAcademicLevel[]
 
   assignments     CourseAssignment[]
   classSchedules  ClassSchedule[]
@@ -1708,9 +1716,34 @@ model Course {
   Exam            Exam[]
   CourseMaterial  CourseMaterial[]
   DiscussionTopic DiscussionTopic[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, title]) // Ensure course title is unique per company
 }
 
-// Course Enrollment Model (Join table for StudentProfile <-> Course)
+// NEW JUNCTION MODEL: CourseAcademicLevel
+// This model represents the many-to-many relationship between Course and AcademicLevel.
+model CourseAcademicLevel {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String @db.ObjectId
+
+  academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
+  academicLevelId String        @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensures a course can only be associated with a specific academic level once
+  @@unique([courseId, academicLevelId])
+  @@index([courseId])
+  @@index([academicLevelId])
+}
+
+// Course Enrollment Model (No changes needed, it's well-structured)
 model CourseEnrollment {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   studentId        String
@@ -1721,8 +1754,47 @@ model CourseEnrollment {
   lessonsCompleted Int      @default(0)
   enrolledAt       DateTime @default(now())
 
-  @@unique([studentId, courseId]) // Ensure a student can only enroll in a course once
+  @@unique([studentId, courseId])
 }
+
+// model Course {
+//   id               String   @id @default(auto()) @map("_id") @db.ObjectId
+//   title            String
+//   description      String?
+//   imageUrl         String?
+//   instructorId     String // Link to EducatorProfile
+//   instructor       Educator @relation(fields: [instructorId], references: [id])
+//   totalLessons     Int?
+//   rating           Float? // e.g., 4.5
+//   level            String? // e.g., "3rd Grade", "All Levels", "Advanced", "Undergraduate", "Diploma"
+//   studentsEnrolled Int      @default(0) // Can be calculated or stored for quick access
+//   createdAt        DateTime @default(now())
+//   updatedAt        DateTime @updatedAt
+
+//   departmentId String?     @db.ObjectId // Optional: if a course can exist without a direct department link
+//   department   Department? @relation(fields: [departmentId], references: [id])
+
+//   assignments     CourseAssignment[]
+//   classSchedules  ClassSchedule[]
+//   enrollments     CourseEnrollment[]
+//   Exam            Exam[]
+//   CourseMaterial  CourseMaterial[]
+//   DiscussionTopic DiscussionTopic[]
+// }
+
+// // Course Enrollment Model (Join table for StudentProfile <-> Course)
+// model CourseEnrollment {
+//   id               String   @id @default(auto()) @map("_id") @db.ObjectId
+//   studentId        String
+//   student          Student  @relation(fields: [studentId], references: [id])
+//   courseId         String
+//   course           Course   @relation(fields: [courseId], references: [id])
+//   progress         Int      @default(0) // Percentage 0-100
+//   lessonsCompleted Int      @default(0)
+//   enrolledAt       DateTime @default(now())
+
+//   @@unique([studentId, courseId]) // Ensure a student can only enroll in a course once
+// }
 
 // Assignment Model
 model CourseAssignment {
