@@ -59,9 +59,9 @@ export async function GET( req : Request,
     const topAgentData = agentSalesData.sort((a, b) => b.totalSales - a.totalSales)[0] || { name: "", totalSales: 0 };
 
     // Count communications today
-    const communicationsToday = await prisma.communication.count({
+    const communicationsToday = await prisma.conversation.count({
       where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      // companyId: slug
+      companyId: slug
      },
     });
 

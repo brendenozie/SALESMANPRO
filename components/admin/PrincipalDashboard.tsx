@@ -5,7 +5,7 @@ import {
   ChartBarIcon,
   UsersIcon,
   CalendarDaysIcon,
-  HeartIcon,
+  HeartIcon, // Changed to BriefcaseIcon for teachers
   ClockIcon,
   ChatBubbleBottomCenterTextIcon,
   MegaphoneIcon,
@@ -14,72 +14,333 @@ import {
   BookOpenIcon,
   ClipboardDocumentCheckIcon,
   ClockIcon as ClockSolidIcon,
+  BriefcaseIcon, // Added for teachers
+  ArrowTrendingUpIcon, // For avg attendance
+  ChartPieIcon, // For ChartThree
+  SparklesIcon, // For events
 } from '@heroicons/react/24/outline';
 
-import ChartTwo from '@/components/ChartTwo';
-import ChartThree from '@/components/ChartThree';
-import SchoolCalendar from '@/components/SchoolCalendar';
+import dynamic from "next/dynamic";
+import { ApexOptions } from "apexcharts";
+import Link from 'next/link'; // Import Link for navigation
 
-const principalStats = [
-  {
-    title: 'Total Students',
-    icon: <UsersIcon className="h-7 w-7 text-blue-600" />,
-    value: '1,245',
-    description: 'Enrolled across all grades',
-    color: 'bg-blue-50',
-    ringColor: 'focus:ring-blue-500',
-  },
-  {
-    title: 'Total Teachers',
-    icon: <HeartIcon className="h-7 w-7 text-green-600" />,
-    value: '86',
-    description: 'Full-time and part-time staff',
-    color: 'bg-green-50',
-    ringColor: 'focus:ring-green-500',
-  },
-  {
-    title: 'Upcoming Events',
-    icon: <CalendarDaysIcon className="h-7 w-7 text-purple-600" />,
-    value: '3',
-    description: 'Key events this week',
-    color: 'bg-purple-50',
-    ringColor: 'focus:ring-purple-500',
-  },
-  {
-    title: 'Pending Approvals',
-    icon: <ClockSolidIcon className="h-7 w-7 text-yellow-600" />,
-    value: '12',
-    description: 'Administrative actions required',
-    color: 'bg-yellow-50',
-    ringColor: 'focus:ring-yellow-500',
-  },
-];
+// Dynamic imports for ApexCharts to ensure SSR is false
+const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const quickActions = [
-  { label: 'Teacher Reports', icon: <BookOpenIcon className="h-6 w-6" />, href: '#' },
-  { label: 'Student Discipline', icon: <ClipboardDocumentCheckIcon className="h-6 w-6" />, href: '#' },
-  { label: 'Exam Timetables', icon: <CalendarDaysIcon className="h-6 w-6" />, href: '#' },
-  { label: 'School Announcements', icon: <MegaphoneIcon className="h-6 w-6" />, href: '#' },
-];
 
-const announcements = [
-  { id: 1, text: '📢 Midterm exams begin next Monday.', type: 'info' },
-  { id: 2, text: '🧪 Science fair projects due Friday. Submit early!', type: 'warning' },
-  { id: 3, text: '📌 New cafeteria schedule published. Check details.', type: 'info' },
-];
+// --- Type Definitions for Props ---
+export type PrincipalStat = {
+  title: string;
+  value: string;
+  description: string;
+  color: string; // Tailwind bg-color class
+};
 
-const staffMessages = [
-  { id: 1, name: 'Mrs. Owino', message: 'Submitted report on 10A performance.', time: '10:30 AM' },
-  { id: 2, name: 'Mr. Kiptoo', message: 'Requesting projector for staff meeting.', time: 'Yesterday' },
-  { id: 3, name: 'Ms. Cherono', message: 'New student registration complete.', time: '2 hours ago' },
-];
+export type QuickAction = {
+  label: string;
+  href: string;
+};
 
-export default function PrincipalDashboard() {
+export type Announcement = {
+  id: number;
+  text: string;
+  type: 'info' | 'warning';
+};
+
+export type RecentStaffMessage = {
+  id: string;
+  name: string;
+  message: string;
+  time: string;
+};
+
+export type PerformanceOverviewData = {
+  series: { name: string; data: number[] }[];
+  categories: string[];
+};
+
+export type AttendanceInsightsData = {
+  series: number[];
+  labels: string[];
+};
+
+export interface PrincipalDashboardData {
+  principalStats: PrincipalStat[];
+  quickActions: QuickAction[];
+  announcements: Announcement[];
+  recentStaffMessages: RecentStaffMessage[];
+  performanceOverviewData: PerformanceOverviewData;
+  attendanceInsightsData: AttendanceInsightsData;
+}
+
+interface PrincipalDashboardProps extends PrincipalDashboardData {
+  companyId: string; // Pass companyId for dynamic links
+  currentUserId: string; // Pass currentUserId for dynamic links
+}
+
+// --- Chart Components (Moved here for self-containment) ---
+
+interface ChartTwoProps {
+  seriesData: { name: string; data: number[] }[];
+  categories: string[];
+  title: string;
+}
+
+const ChartTwo: React.FC<ChartTwoProps> = ({ seriesData, categories, title }) => {
+  const options: ApexOptions = {
+    colors: ["#3C50E0", "#80CAEE", "#FFA70B", "#10B981"],
+    chart: {
+      fontFamily: "Satoshi, sans-serif",
+      type: "bar",
+      height: 350,
+      stacked: true,
+      toolbar: {
+        show: true,
+      },
+      zoom: {
+        enabled: false,
+      },
+      background: "transparent",
+    },
+    responsive: [
+      {
+        breakpoint: 1024,
+        options: {
+          plotOptions: {
+            bar: {
+              borderRadius: 5,
+              columnWidth: "35%",
+            },
+          },
+          legend: {
+            fontSize: "12px",
+          },
+        },
+      },
+    ],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 10,
+        columnWidth: "30%",
+        borderRadiusApplication: "end",
+        borderRadiusWhenStacked: "last",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    xaxis: {
+      categories: categories,
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+      labels: {
+        style: {
+          colors: "#6B7280",
+          fontSize: "12px",
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: "#6B7280",
+          fontSize: "12px",
+        },
+      },
+    },
+    grid: {
+      strokeDashArray: 5,
+      borderColor: "#E5E7EB",
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "center",
+      fontFamily: "Satoshi",
+      fontWeight: 500,
+      fontSize: "14px",
+      markers: {
+      },
+      itemMargin: {
+        horizontal: 10,
+        vertical: 5,
+      },
+    },
+    fill: {
+      opacity: 0.9,
+      colors: ["#3C50E0", "#80CAEE", "#FFA70B", "#10B981"],
+    },
+    tooltip: {
+      theme: "light",
+      style: {
+        fontSize: "12px",
+        fontFamily: "Satoshi",
+      },
+    },
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-white via-blue-50 to-blue-100 p-8 rounded-xl shadow-xl">
+      <h4 className="text-2xl font-bold text-gray-900 mb-6">{title}</h4>
+      <div className="relative">
+        <ApexCharts options={options} series={seriesData} type="bar" height={400} />
+      </div>
+    </div>
+  );
+};
+
+
+interface ChartThreeProps {
+  seriesData: number[];
+  labels: string[];
+  title: string;
+}
+
+const ChartThree: React.FC<ChartThreeProps> = ({ seriesData, labels, title }) => {
+  const options: ApexOptions = {
+    chart: {
+      type: "donut",
+      animations: {
+        enabled: true,
+        speed: 800,
+      },
+    },
+    colors: ["#10B981", "#375E83", "#259AE6", "#FFA70B", "#EF4444", "#8B5CF6"],
+    labels: labels,
+    legend: {
+      show: true,
+      position: "bottom",
+      horizontalAlign: "center",
+      fontSize: "14px",
+      labels: {
+        colors: "#6B7280",
+      },
+      itemMargin: {
+        horizontal: 10,
+        vertical: 5,
+      },
+      onItemClick: {
+        toggleDataSeries: true,
+      },
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: "70%",
+          labels: {
+            show: true,
+            name: {
+              show: true,
+              fontSize: "18px",
+              color: "#6B7280",
+            },
+            value: {
+              show: true,
+              fontSize: "16px",
+              color: "#6B7280",
+              formatter: (val) => `${val}`,
+            },
+          },
+        },
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    responsive: [
+      {
+        breakpoint: 1024,
+        options: {
+          chart: {
+            width: "100%",
+          },
+          legend: {
+            fontSize: "12px",
+          },
+        },
+      },
+      {
+        breakpoint: 640,
+        options: {
+          chart: {
+            width: 250,
+          },
+          legend: {
+            position: "bottom",
+          },
+        },
+      },
+    ],
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-white via-blue-50 to-blue-100 p-8 rounded-xl shadow-xl">
+      <h4 className="text-2xl font-bold text-gray-900 mb-6">{title}</h4>
+      <div className="relative mb-6">
+        <ApexCharts options={options} series={seriesData} type="donut" height={320} />
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+        {labels.map((label, index) => (
+          <div
+            key={index}
+            className="flex flex-col items-center p-2 transition-transform transform hover:scale-105 cursor-pointer"
+            onClick={() => { /* handleLegendClick(index) - if needed, implement toggling logic */ }}
+          >
+            <span
+              className="h-4 w-4 rounded-full mb-2"
+              style={{ backgroundColor: options.colors?.[index] }}
+            ></span>
+            <p className="text-sm font-medium text-gray-800">
+              {label}
+            </p>
+            <p className="text-xs text-gray-500">
+              {seriesData[index]}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+// --- Main PrincipalDashboard Component ---
+export default function PrincipalDashboard({
+  principalStats,
+  quickActions,
+  announcements,
+  recentStaffMessages,
+  performanceOverviewData,
+  attendanceInsightsData,
+  companyId,
+  currentUserId,
+}: PrincipalDashboardProps) {
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
+
+  // Map icons to stat titles
+  const statIcons: { [key: string]: JSX.Element } = {
+    'Total Students': <UsersIcon className="h-7 w-7 text-blue-600" />,
+    'Total Teachers': <BriefcaseIcon className="h-7 w-7 text-green-600" />, // Changed from HeartIcon
+    'Upcoming Events': <CalendarDaysIcon className="h-7 w-7 text-purple-600" />,
+    'Pending Approvals': <ClockSolidIcon className="h-7 w-7 text-yellow-600" />,
+  };
+
+  // Map colors to ring colors (for hover effect)
+  const colorToRingColor: { [key: string]: string } = {
+    'bg-blue-50': 'focus:ring-blue-500',
+    'bg-green-50': 'focus:ring-green-500',
+    'bg-purple-50': 'focus:ring-purple-500',
+    'bg-yellow-50': 'focus:ring-yellow-500',
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
@@ -100,17 +361,18 @@ export default function PrincipalDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
 
+          {/* Principal Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {principalStats.map((stat, index) => (
               <div
                 key={index}
                 className={`p-5 rounded-xl shadow-md border border-gray-200 transition-all duration-200 ease-in-out
                             hover:shadow-lg transform hover:-translate-y-1 cursor-pointer
-                            ${stat.color} ${stat.ringColor}`}
+                            ${stat.color} ${colorToRingColor[stat.color]}`}
               >
                 <div className="flex items-center mb-3">
                   <div className="p-2 bg-white rounded-full shadow-sm mr-3 flex-shrink-0">
-                    {stat.icon}
+                    {statIcons[stat.title]} {/* Use dynamic icon */}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">{stat.title}</p>
@@ -121,60 +383,77 @@ export default function PrincipalDashboard() {
               </div>
             ))}
           </div>
-          
+
+          {/* Quick Actions */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
-                <RocketLaunchIcon className="h-5 w-5 text-red-500" /> Quick Actions
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {quickActions.map((action, idx) => (
-                  <a
-                    key={idx}
-                    href={action.href}
-                    className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
-                              hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200
-                              focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                  >
-                    <div className="text-blue-500 mb-2">{action.icon}</div>
-                    <span className="text-center text-sm font-medium">{action.label}</span>
-                  </a>
-                ))}
-              </div>
+            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
+              <RocketLaunchIcon className="h-5 w-5 text-red-500" /> Quick Actions
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {quickActions.map((action, idx) => (
+                <Link
+                  key={idx}
+                  href={action.href}
+                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
+                             hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200
+                             focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                >
+                  <div className="text-blue-500 mb-2">
+                    {action.label === 'Teacher Reports' && <BookOpenIcon className="h-6 w-6" />}
+                    {action.label === 'Student Discipline' && <ClipboardDocumentCheckIcon className="h-6 w-6" />}
+                    {action.label === 'Exam Timetables' && <CalendarDaysIcon className="h-6 w-6" />}
+                    {action.label === 'School Announcements' && <MegaphoneIcon className="h-6 w-6" />}
+                  </div>
+                  <span className="text-center text-sm font-medium">{action.label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
 
+          {/* Performance Overview & Attendance Insights Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 bg-white rounded-xl shadow-md border border-gray-200 flex flex-col hover:shadow-lg transition">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                   <ChartBarIcon className="h-5 w-5 text-indigo-500" /> Performance Overview
                 </h3>
-                <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition">
+                <Link href={`/admin/${companyId}/reports`} className="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition">
                   View Full Report &rarr;
-                </button>
+                </Link>
               </div>
               <div className="flex-grow min-h-[200px]">
-                <ChartTwo />
+                <ChartTwo
+                  title=""
+                  seriesData={performanceOverviewData.series}
+                  categories={performanceOverviewData.categories}
+                />
               </div>
             </div>
             <div className="p-6 bg-white rounded-xl shadow-md border border-gray-200 flex flex-col hover:shadow-lg transition">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <CalendarDaysIcon className="h-5 w-5 text-teal-500" /> Attendance Insights
+                  <ChartPieIcon className="h-5 w-5 text-teal-500" /> Attendance Insights
                 </h3>
-                <button className="text-sm text-teal-600 hover:text-teal-800 font-medium transition">
+                <Link href={`/admin/${companyId}/reports`} className="text-sm text-teal-600 hover:text-teal-800 font-medium transition">
                   Detailed View &rarr;
-                </button>
+                </Link>
               </div>
               <div className="flex-grow min-h-[200px]">
-                <ChartThree />
+                <ChartThree
+                  title=""
+                  seriesData={attendanceInsightsData.series}
+                  labels={attendanceInsightsData.labels}
+                />
               </div>
             </div>
           </div>
-          
+
         </div>
 
+        {/* Right Column: Awards, Announcements, Messages */}
         <div className="lg:col-span-1 space-y-6">
-          
+
+          {/* Student/Teacher of the Week */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-5 bg-white rounded-xl shadow-md border border-gray-200 text-center flex flex-col items-center justify-center hover:shadow-lg transition">
               <StarIcon className="h-8 w-8 text-yellow-500 mb-2" />
@@ -188,8 +467,7 @@ export default function PrincipalDashboard() {
             </div>
           </div>
 
-          {/* <SchoolCalendar role="principal" userId="admin" /> */}
-          
+          {/* Latest Announcements */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
               <MegaphoneIcon className="h-5 w-5 text-orange-500" /> Latest Announcements
@@ -205,26 +483,34 @@ export default function PrincipalDashboard() {
             </ul>
           </div>
 
+          {/* Recent Staff Messages */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
               <ChatBubbleBottomCenterTextIcon className="h-5 w-5 text-lime-600" /> Recent Staff Messages
             </h3>
             <ul className="space-y-3 text-sm text-gray-700">
-              {staffMessages.map((msg) => (
-                <li key={msg.id} className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
-                    {msg.name.charAt(0)}
-                  </div>
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-center mb-0.5">
-                      <span className="font-semibold text-gray-800">{msg.name}</span>
-                      <span className="text-xs text-gray-400">{msg.time}</span>
+              {recentStaffMessages.length > 0 ? (
+                recentStaffMessages.map((msg) => (
+                  <li key={msg.id} className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                      {msg.name.charAt(0)}
                     </div>
-                    <p className="text-gray-700 text-sm leading-snug">{msg.message}</p>
-                  </div>
-                </li>
-              ))}
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center mb-0.5">
+                        <span className="font-semibold text-gray-800">{msg.name}</span>
+                        <span className="text-xs text-gray-400">{msg.time}</span>
+                      </div>
+                      <p className="text-gray-700 text-sm leading-snug">{msg.message}</p>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li className="text-center text-gray-500 py-4">No recent staff messages.</li>
+              )}
             </ul>
+            <Link href={`/admin/${companyId}/messages`} className="mt-4 w-full text-sm text-blue-600 hover:underline block text-center">
+              View All Messages &rarr;
+            </Link>
           </div>
 
         </div>
