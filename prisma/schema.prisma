@@ -246,6 +246,7 @@ model Company {
   AcademicLevel AcademicLevel[]
   Course        Course[]
   ClassSchedule ClassSchedule[]
+  Exam          Exam[]
 }
 
 enum CategoryStatus {
@@ -1870,18 +1871,6 @@ model AttendanceRecord {
   @@index([classScheduleId])
 }
 
-// Enum for Exam Type
-enum ExamType {
-  QUIZ
-  MIDTERM
-  FINAL
-  UNIT_TEST
-  PRACTICAL
-  ESSAY_SUBMISSION // For exams that are primarily essay submissions
-  PROJECT_ASSESSMENT // For exams that are project-based
-  OTHER
-}
-
 // Exam Model
 // Defines a structured examination or assessment event.
 model Exam {
@@ -1890,10 +1879,10 @@ model Exam {
   description         String?
   courseId            String           @db.ObjectId
   course              Course           @relation(fields: [courseId], references: [id])
-  date                DateTime // Date of the exam
-  startTime           String? // e.g., "09:00 AM"
-  endTime             String? // e.g., "10:30 AM"
-  location            String? // e.g., "School Hall A", "Online"
+  date                DateTime // Date of the exam (e.g., '2025-07-01T00:00:00.000Z' for the specific day)
+  startTime           DateTime? // Time of the exam (e.g., '1970-01-01T09:00:00.000Z')
+  endTime             DateTime? // End time of the exam (e.g., '1970-01-01T10:30:00.000Z')
+  location            String? // e.g., "School Hall A", "Online" - can be used for physical location or "Online"
   notes               String? // Special instructions for students
   type                ExamType         @default(UNIT_TEST) // Enum: QUIZ, MIDTERM, FINAL, etc.
   totalPoints         Float            @default(100)
@@ -1901,29 +1890,93 @@ model Exam {
   createdByEducatorId String           @db.ObjectId // Educator who created the exam
   createdByEducator   Educator         @relation(fields: [createdByEducatorId], references: [id])
   submissions         ExamSubmission[]
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
 
-  @@index([courseId, date])
+  // Fields for online exams
+  isOnline        Boolean        @default(false) // Whether this is an online exam
+  durationMinutes Int? // Duration of the exam once started (in minutes)
+  autoGrade       Boolean        @default(false) // Whether the exam can be automatically graded (e.g., for MCQs)
+  questions       ExamQuestion[] // Relation to ExamQuestion model
+
+  // Link to Company for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Suggested unique constraint: One exam per course at a specific date and start time within a company
+  @@unique([companyId, courseId, date, startTime])
   @@index([createdByEducatorId])
+  @@index([companyId]) // For efficient lookup of all exams for a company
 }
 
-// Exam Submission Model
-// Records a student's submission and result for an Exam.
-model ExamSubmission {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  examId            String    @db.ObjectId
-  exam              Exam      @relation(fields: [examId], references: [id])
-  studentId         String    @db.ObjectId
-  student           Student   @relation(fields: [studentId], references: [id])
-  submittedAt       DateTime  @default(now())
-  score             Float? // e.g., 85.5
-  gradedAt          DateTime?
-  submissionContent String? // e.g., URL to file, text content, JSON of answers
-  feedback          String? // Teacher's feedback on the exam
+// ExamQuestion Model
+// Represents a single question within an online examination.
+model ExamQuestion {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  examId       String @db.ObjectId
+  exam         Exam   @relation(fields: [examId], references: [id], onDelete: Cascade) // Cascade delete questions with exam
+  questionText String
 
-  @@unique([examId, studentId]) // Ensure one submission per student per exam
-  @@index([studentId, submittedAt])
+  // NEW FIELDS for image and video
+  imageUrl String? // URL to an image associated with the question
+  videoUrl String? // URL to a video associated with the question
+
+  questionType  QuestionType // Enum: MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER, ESSAY
+  options       String[] // For multiple choice: array of possible answers (JSON string array)
+  correctAnswer String? // For auto-grading: stores the correct answer(s) as a string (e.g., "option_A_id", or a JSON string for complex answers)
+  points        Float        @default(1)
+  order         Int // Order of the question in the exam
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([examId])
+  @@index([order])
+}
+
+// ExamSubmission Model (Recommended Update for Online Exam Answers)
+model ExamSubmission {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  examId      String   @db.ObjectId
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade) // Ensure cascade delete
+  studentId   String   @db.ObjectId
+  student     Student  @relation(fields: [studentId], references: [id])
+  submittedAt DateTime @default(now())
+  score       Float? // Final score for the submission
+  feedback    String?
+
+  // Field for online exam answers
+  answers Json? // Stores the student's answers in a flexible JSON format
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([examId, studentId]) // A student can only submit one exam per exam
+}
+
+// Enums used in the models
+enum ExamType {
+  QUIZ
+  UNIT_TEST
+  MIDTERM
+  FINAL
+  ASSIGNMENT_BASED // If some assignments are considered exams
+  PRACTICE
+  PRACTICAL
+  ESSAY_SUBMISSION // For exams that are primarily essay submissions
+  PROJECT_ASSESSMENT // For exams that are project-based
+  OTHER
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+  FILL_IN_THE_BLANK
+  MATCHING
+  NUMERIC
 }
 
 // Enum for Course Material Type
