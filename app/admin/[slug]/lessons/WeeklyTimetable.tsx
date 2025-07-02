@@ -16,6 +16,9 @@ import {
 import { DndContext, useSensor, useSensors, PointerSensor, KeyboardSensor, DragOverlay, closestCenter } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates, rectSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import LessonFormModal from './LessonFormModal';
+import { TimetableGrid } from './TimetableGrid';
+import Header from './Header';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -257,185 +260,9 @@ const SortableLessonCard: React.FC<SortableLessonCardProps> = ({ entry, onClick,
 };
 
 
-// --- Lesson Form Modal ---
-type LessonFormModalProps = {
-  entryData?: TimetableEntry | null;
-  onClose: () => void;
-  onSave: (data: Omit<TimetableEntry, 'courseTitle' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => void;
-  isLoading: boolean; // From parent component
-  allCourses: CourseOption[];
-  allEducators: EducatorOption[];
-  companyId: string; // Pass companyId to the modal for new entries
-  selectedDayOfWeek?: string; // Pre-fill day if coming from grid cell
-  selectedTimeSlot?: string; // Pre-fill time if coming from grid cell
-};
 
-const LessonFormModal: React.FC<LessonFormModalProps> = ({ entryData, onClose, onSave, isLoading, allCourses, allEducators, companyId, selectedDayOfWeek, selectedTimeSlot }) => {
-  const [formData, setFormData] = useState({
-    id: entryData?.id || '',
-    courseId: entryData?.courseId || '',
-    educatorId: entryData?.educatorId || '',
-    dayOfWeek: entryData?.dayOfWeek || selectedDayOfWeek || '',
-    startTime: entryData?.startTime ? new Date(entryData.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : (selectedTimeSlot || ''), // Convert ISO to HH:MM for input
-    endTime: entryData?.endTime ? new Date(entryData.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
-    topic: entryData?.topic || '',
-    meetingLink: entryData?.meetingLink || '',
-    companyId: entryData?.companyId || companyId,
-  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // Basic validation
-    if (!formData.courseId || !formData.educatorId || !formData.dayOfWeek || !formData.startTime || !formData.endTime || !formData.companyId) {
-      alert("Please fill all required fields: Course, Educator, Day, Start Time, End Time.");
-      return;
-    }
-
-    // Ensure times are valid HH:MM format
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timeRegex.test(formData.startTime) || !timeRegex.test(formData.endTime)) {
-      alert("Time format must be HH:MM (24-hour).");
-      return;
-    }
-
-    // Convert HH:MM back to dummy ISO string for API
-    const dummyDate = '1970-01-01T';
-    const startTimeISO = `${dummyDate}${formData.startTime}:00.000Z`;
-    const endTimeISO = `${dummyDate}${formData.endTime}:00.000Z`;
-
-    onSave({
-      id: formData.id,
-      courseId: formData.courseId,
-      educatorId: formData.educatorId,
-      dayOfWeek: formData.dayOfWeek,
-      startTime: startTimeISO,
-      endTime: endTimeISO,
-      topic: formData.topic,
-      meetingLink: formData.meetingLink,
-      companyId: formData.companyId,
-    });
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all duration-300 scale-100 opacity-100 relative max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors duration-200"
-          title="Close"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-
-        <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-4 border-gray-200">
-          {entryData ? `Edit Schedule for: ${entryData.courseTitle}` : 'Add New Timetable Entry'}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Schedule Details */}
-          <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <ClockIcon className="h-6 w-6 text-indigo-500" /> Schedule Details
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 mb-1">Course <span className="text-red-500">*</span></label>
-                <select name="courseId" id="courseId" value={formData.courseId} onChange={handleChange} required
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
-                >
-                  <option value="">-- Select Course --</option>
-                  {allCourses.map(course => (
-                    <option key={course.id} value={course.id}>
-                      {course.title} ({course.academicLevels.map(al => al.name).join(', ')})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="educatorId" className="block text-sm font-medium text-gray-700 mb-1">Educator <span className="text-red-500">*</span></label>
-                <select name="educatorId" id="educatorId" value={formData.educatorId} onChange={handleChange} required
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
-                >
-                  <option value="">-- Select Educator --</option>
-                  {allEducators.map(educator => (
-                    <option key={educator.id} value={educator.id}>{educator.name} ({educator.email})</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="dayOfWeek" className="block text-sm font-medium text-gray-700 mb-1">Day of Week <span className="text-red-500">*</span></label>
-                <select name="dayOfWeek" id="dayOfWeek" value={formData.dayOfWeek} onChange={handleChange} required
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
-                >
-                  <option value="">-- Select Day --</option>
-                  {daysOfWeekOrder.map(day => (
-                    <option key={day} value={day}>{day}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">Start Time (HH:MM) <span className="text-red-500">*</span></label>
-                  <input type="text" name="startTime" id="startTime" value={formData.startTime} onChange={handleChange} placeholder="e.g., 09:00" required
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-                </div>
-                <div>
-                  <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">End Time (HH:MM) <span className="text-red-500">*</span></label>
-                  <input type="text" name="endTime" id="endTime" value={formData.endTime} onChange={handleChange} placeholder="e.g., 10:30" required
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-                </div>
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1">Topic (Optional)</label>
-                <input type="text" name="topic" id="topic" value={formData.topic} onChange={handleChange}
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="meetingLink" className="block text-sm font-medium text-gray-700 mb-1">Meeting Link (Optional)</label>
-                <input type="url" name="meetingLink" id="meetingLink" value={formData.meetingLink} onChange={handleChange} placeholder="https://zoom.us/j/..."
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-3 bg-indigo-600 border border-transparent rounded-lg text-base font-medium text-white shadow-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center gap-2"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Saving...
-                </>
-              ) : (entryData ? 'Save Changes' : 'Add Entry')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
 
 
 // --- Main WeeklyTimetable Component ---
@@ -664,6 +491,17 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
       {/* Header */}
 
+      <Header
+        selectedClassId={selectedClassId}
+        setSelectedClassId={setSelectedClassId}
+        selectedEducatorId={selectedEducatorId}
+        setSelectedEducatorId={setSelectedEducatorId}
+        allAcademicLevels={allAcademicLevels}
+        todayLabel={today}
+        allEducators={allEducators}
+
+      />
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
@@ -732,6 +570,45 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
           </button>
         </div>
       )}
+
+      <TimetableGrid
+        timetable={timetable}
+        daysOfWeek={daysOfWeekOrder}
+        timeSlots={defaultTimeSlots}
+        onClickLesson={(entry: TimetableEntry) => {
+          setEditingEntry(entry);
+          setShowFormModal(true);
+        }}
+        onDeleteLesson={(id: string) => {
+          handleDelete(id);
+        }}
+        onAddLesson={(dayOfWeek: string, time: string) => {
+          setEditingEntry({
+            id: '',
+            courseId: selectedCourseId === 'All' ? '' : selectedCourseId,
+            courseTitle: '', // Will be populated on save
+            courseAcademicLevels: [], // Will be populated on save
+            educatorId: selectedEducatorId === 'All' ? '' : selectedEducatorId,
+            educatorName: '', // Will be populated on save
+            educatorEmail: '', // Will be populated on save
+            dayOfWeek,
+            startTime: new Date(`1970-01-01T${time}:00.000Z`).toISOString(),
+            endTime: new Date(`1970-01-01T${time}:00.000Z`).toISOString(), // Default to same time for now
+            topic: '',
+            meetingLink: '',
+            companyId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+          setShowFormModal(true);
+        }}
+        activeId={activeId}
+        setActiveId={setActiveId}
+        onDragEnd={handleDragEnd}
+        filteredLessons={filteredLessons} // Pass filtered lessons to the grid
+      />
+
+      
 
       {/* Timetable Grid */}
       <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 overflow-x-auto">

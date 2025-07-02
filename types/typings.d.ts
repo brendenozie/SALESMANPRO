@@ -335,3 +335,40 @@ export interface HeroSlide {
   ctaLink?: string;
   order?: number;
 }
+
+export type TimetableEntry = {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
+  educatorId: string;
+  educatorName: string;
+  educatorEmail: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  topic?: string | null;
+  meetingLink?: string | null;
+  companyId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CourseOption = {
+  id: string;
+  title: string;
+  academicLevels: { id: string; name: string; sortOrder?: number }[];
+  instructorName?: string;
+};
+
+export type EducatorOption = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type AcademicLevelOption = {
+  id: string;
+  name: string;
+  sortOrder?: number;
+};
