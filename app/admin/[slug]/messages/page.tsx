@@ -1,44 +1,11 @@
-// app/admin/[slug]/inventory/page.tsx
-
+// app/admin/[slug]/messages/page.tsx
 import React from "react";
-import MessagesPage from "./MessagesPage";
+import MessagesPageClient, {
+  ConversationData,
+  UserData,
+} from "./MessagesPageClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: string;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
 
 interface Props {
   params: {
@@ -46,67 +13,154 @@ interface Props {
   };
 }
 
+// IMPORTANT: In a real application, the currentUserId would come from an authentication context (e.g., NextAuth.js session).
+// For this example, we'll use a hardcoded mock ID.
+const MOCK_CURRENT_USER_ID = "USR001"; // Replace with a real user ID from your DB for testing
+
+// --- Helper function to generate sample data (for fallback) ---
+const generateSampleMessageData = (companyId: string, currentUserId: string): {
+  sampleConversations: ConversationData[];
+  sampleAllUsers: UserData[];
+} => {
+  const sampleUsers: UserData[] = [
+    { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+    { id: 'USR002', name: 'Jane Wanjiru', email: 'jane.w@school.com' },
+    { id: 'USR003', name: 'Mr. Alex Smith', email: 'alex.s@school.com' },
+    { id: 'USR004', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
+    { id: 'USR005', name: 'Principal\'s Office', email: 'principal@school.com' },
+  ];
+
+  const sampleConversations: ConversationData[] = [
+    {
+      id: 'CONV001',
+      title: null, // Direct chat
+      companyId: companyId,
+      createdAt: new Date('2025-06-25T14:00:00Z').toISOString(),
+      updatedAt: new Date('2025-06-25T14:30:00Z').toISOString(),
+      lastMessageAt: new Date('2025-06-25T14:30:00Z').toISOString(),
+      isArchived: false,
+      isDeleted: false,
+      unreadCount: 0,
+      participants: [
+        { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+        { id: 'USR002', name: 'Jane Wanjiru', email: 'jane.w@school.com' },
+      ],
+      lastMessage: {
+        id: 'MSG001',
+        content: 'Hi, I had a question about problem 5 on Assignment 3.',
+        createdAt: new Date('2025-06-25T14:30:00Z').toISOString(),
+        senderName: 'Jane Wanjiru',
+      },
+    },
+    {
+      id: 'CONV002',
+      title: null, // Direct chat
+      companyId: companyId,
+      createdAt: new Date('2025-06-24T09:00:00Z').toISOString(),
+      updatedAt: new Date('2025-06-24T10:30:00Z').toISOString(),
+      lastMessageAt: new Date('2025-06-24T10:30:00Z').toISOString(),
+      isArchived: false,
+      isDeleted: false,
+      unreadCount: 0,
+      participants: [
+        { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+        { id: 'USR003', name: 'Mr. Alex Smith', email: 'alex.s@school.com' },
+      ],
+      lastMessage: {
+        id: 'MSG002',
+        content: 'Good morning Mr. Smith, I am available on Tuesday or Thursday afternoon.',
+        createdAt: new Date('2025-06-24T10:30:00Z').toISOString(),
+        senderName: 'Current User (You)',
+      },
+    },
+    {
+      id: 'CONV003',
+      title: 'English Department Meeting', // Group chat
+      companyId: companyId,
+      createdAt: new Date('2025-06-23T09:00:00Z').toISOString(),
+      updatedAt: new Date('2025-06-23T09:15:00Z').toISOString(),
+      lastMessageAt: new Date('2025-06-23T09:15:00Z').toISOString(),
+      isArchived: false,
+      isDeleted: false,
+      unreadCount: 1, // Example unread
+      participants: [
+        { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+        { id: 'USR004', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
+        { id: 'USR005', name: 'Principal\'s Office', email: 'principal@school.com' },
+      ],
+      lastMessage: {
+        id: 'MSG003',
+        content: 'Hi John, the new English curriculum materials are now uploaded to the shared drive.',
+        createdAt: new Date('2025-06-23T09:15:00Z').toISOString(),
+        senderName: 'Mrs. Jane Smith',
+      },
+    },
+  ];
+
+  return {
+    sampleConversations: sampleConversations,
+    sampleAllUsers: sampleUsers,
+  };
+};
+
+
 /**
  * This is a **Server Component**. It fetches all the data
  * at request‐time (no caching, just like getServerSideProps),
  * then renders the Client Component below.
  */
-export default async function AdminInventoryPage({ params }: Props) {
+export default async function MessagesManagerPage({ params }: Props) {
   const companyId = params.slug;
+  const currentUserId = MOCK_CURRENT_USER_ID; // In a real app, get this from auth context
 
-  let productsData: Product[] = [];
-  let categoriesData: Category[] = [];
-  let agentsData: Agent[] = [];
+  let initialConversations: ConversationData[] = [];
+  let allUsers: UserData[] = [];
+  let fetchError: boolean = false;
 
   try {
-    // Fetch all products for this company
-    const productsRes = await fetch(
-      `${apiUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
-    );
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
-    }
-
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
+    // Fetch conversations for the current user
+    const conversationsRes = await fetch(
+      `${apiUrl}/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
+    if (conversationsRes.ok) {
+      initialConversations = (await conversationsRes.json()) as ConversationData[];
+    } else {
+      console.error(`[MessagesManagerPage] Failed to fetch conversations: ${conversationsRes.status} ${conversationsRes.statusText}`);
+      fetchError = true;
     }
 
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
+    // Fetch all users in the company (for recipient selection in compose)
+    const usersRes = await fetch(
+      `${apiUrl}/users?companyId=${encodeURIComponent(companyId)}`, // Assuming an /api/users endpoint
       { cache: "no-store" }
     );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
+    if (usersRes.ok) {
+      allUsers = (await usersRes.json()) as UserData[];
+    } else {
+      console.error(`[MessagesManagerPage] Failed to fetch users: ${usersRes.status} ${usersRes.statusText}`);
+      fetchError = true;
     }
 
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
-    }
   } catch (err: any) {
-    console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
+    console.error("MessagesManagerPage-fetch error:", err.message);
+    fetchError = true;
+  }
+
+  // If any fetch failed or data is missing, use sample data as fallback
+  if (fetchError || initialConversations.length === 0 || allUsers.length === 0) {
+    console.log("[MessagesManagerPage] Using sample data as fallback for messages.");
+    const { sampleConversations, sampleAllUsers } = generateSampleMessageData(companyId, currentUserId);
+    initialConversations = sampleConversations;
+    allUsers = sampleAllUsers;
   }
 
   return (
-    <MessagesPage />
+    <MessagesPageClient
+      initialConversations={initialConversations}
+      allUsers={allUsers}
+      currentUserId={currentUserId}
+      companyId={companyId}
+    />
   );
 }

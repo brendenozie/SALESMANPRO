@@ -250,6 +250,7 @@ model Company {
   Exam          Exam[]
   Announcement  Announcement[]
   Event         Event[]
+  Conversation  Conversation[]
 }
 
 enum CategoryStatus {
@@ -690,7 +691,6 @@ model Client {
   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
-  communications    Communication[]     @relation("CommunicationReceiver")
   ClientInventory   ClientInventory[]
   AgentInventoryLog AgentInventoryLog[]
   emailVerified     DateTime?
@@ -705,15 +705,95 @@ model Client {
   sessions          Session[]
 }
 
-model Communication {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  senderId   String     @db.ObjectId
-  sender     SalesAgent @relation("CommunicationSender", fields: [senderId], references: [id])
-  receiverId String     @db.ObjectId
-  receiver   Client     @relation("CommunicationReceiver", fields: [receiverId], references: [id])
-  subject    String?
-  message    String
-  createdAt  DateTime   @default(now())
+// --- Messaging System Models ---
+
+// Conversation Model
+// Represents a message thread or chat between multiple participants.
+model Conversation {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  title         String? // Optional: For group chats, or subject of a direct conversation
+  companyId     String    @db.ObjectId // For multi-tenancy: Ensures conversations belong to a specific company
+  company       Company   @relation(fields: [companyId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt // Automatically updates on any change to the conversation or its messages
+  lastMessageAt DateTime? // Stores the timestamp of the most recent message for easy sorting in inbox views
+
+  // Relations
+  participants ConversationParticipant[] // Links to users participating in this conversation
+  messages     Message[] // Links to individual messages within this conversation
+
+  // Indexes for efficient querying
+  @@index([companyId])
+  @@index([updatedAt]) // Useful for sorting conversations by recent activity
+}
+
+// ConversationParticipant Model
+// This is a join table that links a User to a Conversation.
+// It also stores individual user-specific settings for that conversation,
+// such as read status and soft deletion/archiving.
+model ConversationParticipant {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade) // If conversation is deleted, so are its participants
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Individual status for this participant in this conversation
+  isArchived Boolean @default(false) // True if the user has archived this conversation from their inbox
+  isDeleted  Boolean @default(false) // True if the user has "deleted" this conversation from their view (soft delete)
+
+  // Tracks the last message ID this user has read in this conversation.
+  // This is efficient for calculating unread messages in a conversation.
+  lastReadMessageId String? @db.ObjectId
+
+  // Denormalized count of unread messages for quick display in inbox list.
+  // This would need to be updated via application logic (e.g., a background job or on message send/read).
+  unreadCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensures a user can only be a participant in a specific conversation once
+  @@unique([conversationId, userId])
+  // Indexes for efficient querying
+  @@index([userId])
+  @@index([conversationId])
+}
+
+// Message Model
+// Represents an individual message sent within a conversation.
+model Message {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade) // If conversation is deleted, its messages are deleted
+
+  senderId String @db.ObjectId
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id]) // Renamed relation for clarity
+
+  content        String // The actual message text
+  messageType    MessageType @default(TEXT) // Categorizes the content (e.g., text, image, file)
+  attachmentUrls String[] // Stores URLs to any attached files or images
+
+  createdAt DateTime @default(now()) // Timestamp when the message was sent
+
+  // Indexes for efficient querying
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt]) // Essential for ordering messages chronologically within a conversation
+}
+
+// --- Enums for Messaging System ---
+
+// Enum for Message Type
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  AUDIO
+  VIDEO
+  SYSTEM_NOTIFICATION // For automated messages (e.g., "User X joined the chat")
+  OTHER
 }
 
 // One on One relationship with user
@@ -740,7 +820,6 @@ model SalesAgent {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   commissions        Commission[]
-  communications     Communication[]      @relation("CommunicationSender")
   Return             Return[]
   AgentInventory     AgentInventory[]
   Assignment         ProductAssignment[]
@@ -803,6 +882,10 @@ model User {
   Parent            Parent?
   // Removed: Event      Event[]
   EventRegistration EventRegistration[] @relation("EventRegistrations")
+
+  ConversationParticipant ConversationParticipant[]
+
+  SentMessages Message[] @relation("SentMessages")
 }
 
 enum Status {
