@@ -2,23 +2,19 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  CalendarDaysIcon,
-  PlusCircleIcon,
   PencilIcon,
   TrashIcon,
   AcademicCapIcon, // For course level
   UsersIcon, // For educator
   LinkIcon, // For meeting link
-  ClockIcon, // For time display
-  XMarkIcon, // For error close button
-  TagIcon, // For academic levels
+  XMarkIcon, // For academic levels
 } from '@heroicons/react/24/outline';
-import { DndContext, useSensor, useSensors, PointerSensor, KeyboardSensor, DragOverlay, closestCenter } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates, rectSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable';
+import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import LessonFormModal from './LessonFormModal';
 import { TimetableGrid } from './TimetableGrid';
-import Header from './Header';
+import TimetableHeader from './Header';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -491,64 +487,21 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
       {/* Header */}
 
-      <Header
+      <TimetableHeader
+        today={today}
         selectedClassId={selectedClassId}
-        setSelectedClassId={setSelectedClassId}
         selectedEducatorId={selectedEducatorId}
-        setSelectedEducatorId={setSelectedEducatorId}
+        onChangeClass={setSelectedClassId}
+        onChangeEducator={setSelectedEducatorId}
         allAcademicLevels={allAcademicLevels}
-        todayLabel={today}
         allEducators={allEducators}
-
+        onAddLesson={() => {
+          setEditingEntry(null);
+          setShowFormModal(true);
+        }}
       />
-      
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Weekly Timetable
-            <span className="ml-2 text-purple-600 text-base sm:text-xl">🗓️</span>
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">View and manage recurring class schedules.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <select
-            value={selectedClassId}
-            onChange={e => setSelectedClassId(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700
-                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="All">All Classes</option>
-            {allAcademicLevels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          {/* <select
-            value={selectedCourseId}
-            onChange={e => setSelectedCourseId(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="All">All Courses</option>
-            {allCourses.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.title} ({c.academicLevels.map(al => al.name).join(', ')})
-              </option>
-            ))}
-          </select> */}
-          <select
-            value={selectedEducatorId}
-            onChange={e => setSelectedEducatorId(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="All">All Educators</option>
-            {allEducators.map(e => <option key={e.id} value={e.id}>{e.name} ({e.email})</option>)}
-          </select>
-          <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
-            <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-            <span>{today}</span>
-          </div>
-        </div>
-      </div>
 
+    
       {/* Loading and Error Indicators */}
       {isLoading && (
         <div className="flex items-center justify-center py-4 text-blue-700 font-medium text-lg">
@@ -571,6 +524,8 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         </div>
       )}
 
+
+      {/* Timetable Grid */}
       <TimetableGrid
         timetable={timetable}
         daysOfWeek={daysOfWeekOrder}
@@ -607,110 +562,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         onDragEnd={handleDragEnd}
         filteredLessons={filteredLessons} // Pass filtered lessons to the grid
       />
-
       
-
-      {/* Timetable Grid */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 overflow-x-auto">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="grid gap-2" style={{ gridTemplateColumns: `80px repeat(${daysOfWeekOrder.length}, minmax(150px, 1fr))` }}>
-            {/* Corner Cell */}
-            <div className="p-2 border-b border-r border-gray-200 bg-gray-50 rounded-tl-lg"></div>
-            {/* Day Headers */}
-            
-            {daysOfWeekOrder.map((day, index) => (
-              // <div key={day} className="p-2 text-center font-semibold text-gray-700 border-b border-gray-200 bg-gray-50">
-              //   {day}
-              // </div>
-               <div key={day} className="bg-gray-50 border-b border-gray-200 p-3 text-center text-sm font-semibold text-gray-700">
-               {day} <br />
-               <span className="text-xs font-normal text-gray-500">{new Date(currentWeekDays[index]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-             </div>
-            ))}
-
-            {/* Time Slots and Lesson Cells */}
-            {defaultTimeSlots.map(timeSlot => (
-              <React.Fragment key={timeSlot}>
-                {/* Time Slot Header */}
-                <div className="p-2 text-right font-semibold text-gray-700 border-r border-gray-200 bg-gray-50 flex items-center justify-end rounded-bl-lg">
-                  <ClockIcon className="h-4 w-4 mr-1 text-gray-500" /> {timeSlot}
-                </div>
-                {/* Lesson Cells */}
-                {daysOfWeekOrder.map(dayOfWeek => {
-                  const lessonsInCell = filteredLessons.filter(
-                    l => l.dayOfWeek === dayOfWeek &&
-                         new Date(l.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) === timeSlot
-                  );
-                  const cellId = `${dayOfWeek}-${timeSlot}`; // Unique ID for drop target
-
-                  return (
-                    <div
-                      key={cellId}
-                      className="p-1 min-h-[100px] border border-gray-200 rounded-md overflow-hidden relative"
-                      data-dayOfWeek={dayOfWeek} // Pass dayOfWeek for drop target
-                      data-time={timeSlot} // Pass time for drop target
-                    >
-                      <SortableContext items={lessonsInCell.map(l => l.id)} strategy={rectSortingStrategy}>
-                        <div className="flex flex-col gap-1 h-full">
-                          {lessonsInCell.length > 0 ? (
-                            lessonsInCell.map(lesson => (
-                              <SortableLessonCard
-                                key={lesson.id}
-                                entry={lesson}
-                                onClick={(entry) => { setEditingEntry(entry); setShowFormModal(true); }}
-                                onDelete={handleDelete}
-                              />
-                            ))
-                          ) : (
-                            <div
-                              className="h-full flex items-center justify-center bg-gray-50 rounded-md border border-dashed border-gray-200
-                                         hover:bg-gray-100 transition-colors duration-150 cursor-pointer group"
-                              onClick={() => {
-                                setEditingEntry(null); // Ensure it's a new entry
-                                setShowFormModal(true);
-                                // Pre-fill modal with day and time
-                                setEditingEntry({
-                                  id: '',
-                                  courseId: selectedCourseId === 'All' ? '' : selectedCourseId,
-                                  courseTitle: '', // Will be populated on save
-                                  courseAcademicLevels: [], // Will be populated on save
-                                  educatorId: selectedEducatorId === 'All' ? '' : selectedEducatorId,
-                                  educatorName: '', // Will be populated on save
-                                  educatorEmail: '', // Will be populated on save
-                                  dayOfWeek: dayOfWeek,
-                                  startTime: `1970-01-01T${timeSlot}:00Z`, // Send as ISO string
-                                  endTime: '', // User will fill
-                                  topic: null,
-                                  meetingLink: null,
-                                  companyId: companyId,
-                                  createdAt: '',
-                                  updatedAt: '',
-                                });
-                              }}
-                            >
-                              <PlusCircleIcon className="h-6 w-6 text-gray-300 group-hover:text-indigo-400 transition-colors" />
-                            </div>
-                          )}
-                        </div>
-                      </SortableContext>
-                    </div>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-          </div>
-          <DragOverlay>
-            {activeLesson ? (
-              <SortableLessonCard
-                entry={activeLesson}
-                onClick={() => {}} // No-op for overlay
-                onDelete={() => {}} // No-op for overlay
-              />
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      </div>
-
       {/* Modals */}
       {showFormModal && (
         <LessonFormModal

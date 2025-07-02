@@ -1,65 +1,93 @@
-// File: components/WeeklyTimetable/Header.tsx
 'use client';
 
 import React from 'react';
-import { CalendarDaysIcon } from '@heroicons/react/24/outline';
-import { AcademicLevelOption, EducatorOption } from '@/types/typings';
+import {
+  CalendarDaysIcon,
+  UsersIcon,
+  AcademicCapIcon,
+  FunnelIcon,
+  PlusIcon,
+} from '@heroicons/react/24/outline';
 
-interface HeaderProps {
+interface TimetableHeaderProps {
+  today: string;
   selectedClassId: string;
-  setSelectedClassId: (id: string) => void;
   selectedEducatorId: string;
-  setSelectedEducatorId: (id: string) => void;
-  allAcademicLevels: AcademicLevelOption[];
-  allEducators: EducatorOption[];
-  todayLabel: string;
+  onChangeClass: (value: string) => void;
+  onChangeEducator: (value: string) => void;
+  allAcademicLevels: { id: string; name: string }[];
+  allEducators: { id: string; name: string }[];
+  onAddLesson: () => void;
 }
 
-export default function Header({
+export default function TimetableHeader({
+  today,
   selectedClassId,
-  setSelectedClassId,
   selectedEducatorId,
-  setSelectedEducatorId,
+  onChangeClass,
+  onChangeEducator,
   allAcademicLevels,
   allEducators,
-  todayLabel,
-}: HeaderProps) {
+  onAddLesson,
+}: TimetableHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-          Weekly Timetable <span className="ml-2 text-purple-600 text-base sm:text-xl">🗓️</span>
-        </h1>
-        <p className="text-sm text-gray-600 mt-1">View and manage recurring class schedules.</p>
-      </div>
-      <div className="flex items-center gap-4">
-        <select
-          value={selectedClassId}
-          onChange={e => setSelectedClassId(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="All">All Classes</option>
-          {allAcademicLevels.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-
-        <select
-          value={selectedEducatorId}
-          onChange={e => setSelectedEducatorId(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="All">All Educators</option>
-          {allEducators.map(e => (
-            <option key={e.id} value={e.id}>{e.name} ({e.email})</option>
-          ))}
-        </select>
-
-        <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
+    <div className="relative bg-white shadow-sm rounded-xl p-4 sm:p-6 mb-6">
+      {/* Title & Date */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+            Weekly Timetable <span className="inline-block">📅</span>
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">Manage class schedules by level and educator.</p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-600">
           <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-          <span>{todayLabel}</span>
+          <span className="whitespace-nowrap">{today}</span>
         </div>
       </div>
+
+      {/* Filter Panel */}
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+
+        {/* Academic Level Filter */}
+        <div className="flex items-center gap-2">
+          <AcademicCapIcon className="h-5 w-5 text-gray-500" />
+          <select
+            value={selectedClassId}
+            onChange={e => onChangeClass(e.target.value)}
+            className="w-full md:min-w-12 sm:w-auto px-3 py-2 border rounded-md text-sm bg-gray-50 text-gray-700 border-gray-300 focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="All">All Levels</option>
+            {allAcademicLevels.map(level => (
+              <option key={level.id} value={level.id}>{level.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Educator Filter */}
+        <div className="flex items-center gap-2">
+          <UsersIcon className="h-5 w-5 text-gray-500" />
+          <select
+            value={selectedEducatorId}
+            onChange={e => onChangeEducator(e.target.value)}
+            className="w-full md:min-w-12  sm:w-auto  border rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-700 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="All">All Educators</option>
+            {allEducators.map(e => (
+              <option key={e.id} value={e.id}>{e.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Floating Add Lesson Button */}
+      <button
+        onClick={onAddLesson}
+        className="fixed sm:static bottom-4 right-4 sm:mt-6 sm:ml-auto sm:flex sm:justify-end z-50 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-medium transition-all"
+      >
+        <PlusIcon className="h-5 w-5" />
+        <span className="hidden sm:inline">Add Lesson</span>
+      </button>
     </div>
   );
 }
