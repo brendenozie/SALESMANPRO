@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import { AdminContext } from "../contexts/AdminContextProvider";
 import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
 import { useStoreContext } from "@/contexts/StoreContext";
 import Link from "next/link";
@@ -11,25 +10,6 @@ import {
   ChevronDownIcon,
   Bars3Icon,
   XMarkIcon,
-  HomeIcon,
-  BookOpenIcon,
-  UsersIcon,
-  ChartBarIcon,
-  Cog6ToothIcon,
-  CalendarDaysIcon,
-  FolderIcon,
-  ClipboardDocumentListIcon,
-  DocumentTextIcon,
-  BuildingOfficeIcon,
-  PresentationChartBarIcon,
-  WrenchScrewdriverIcon,
-  HeartIcon,
-  BriefcaseIcon,
-  GlobeAltIcon,
-  AcademicCapIcon,
-  FilmIcon,
-  CreditCardIcon,
-  ChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/24/outline";
 
 interface MenuItem {
@@ -129,9 +109,8 @@ export default function AdminLayout({
       >
         <div className="flex flex-col items-center p-6 pt-8 border-b border-blue-800/50">
           <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">
-            {storeFormData.name?.toUpperCase() || "LMS ADMIN"}
+            {storeFormData.name?.toUpperCase() || "ADMIN"}
           </h1>
-          <p className="text-sm text-blue-200 mt-1">Dashboard</p>
         </div>
 
         <nav className="flex-1 px-4 py-6 overflow-y-auto custom-scrollbar">
