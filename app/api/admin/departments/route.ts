@@ -8,6 +8,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
+    console.log("Fetching departments for companyId:", companyId);
+
     if (companyId) {
 
       const departments = await prisma.department.findMany({
@@ -15,14 +17,11 @@ export async function GET(request: Request) {
         include: {
           _count: {
             select: {
-              educators: true, // Count of educators in this department
-              courses: true,   // Count of courses offered by this department
+              educators: true,
+              courses: true,
             },
           },
-          head: { // Include head of department details if available
-            select: {
-              id: true,
-            },
+          head: {
             include: {
               user: {
                 select: {
@@ -35,22 +34,24 @@ export async function GET(request: Request) {
           },
         },
         orderBy: {
-          name: 'asc', // Order departments alphabetically by name
+          name: 'asc',
         },
       });
+      
 
       // Transform the data to include counts directly in the main object
       const response = departments.map(department => ({
         id: department.id,
         name: department.name,
         description: department.description,
-        head: department.head, // Contains id, name, email of the head
+        head: department.head?.user || null,
         companyId: department.companyId,
         educatorCount: department._count.educators,
         courseCount: department._count.courses,
         createdAt: department.createdAt,
         updatedAt: department.updatedAt,
       }));
+      
 
       return NextResponse.json(response, { status: 200 });
      } else {
@@ -60,7 +61,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "companyId is required." }, { status: 400 });
     }
   } catch (error) {
-    console.error("Error fetching departments:", error);
+    // console.error("Error fetching departments:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ message: "Failed to fetch departments", error: errorMessage }, { status: 500 });
   }
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(newDepartment, { status: 201 });
   } catch (error) {
-    console.error("Error creating department:", error);
+    // console.error("Error creating department:", error);
     // Handle unique constraint error for department name
     if (
       typeof error === "object" &&

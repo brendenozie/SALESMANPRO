@@ -28,16 +28,16 @@ export default async function DepartmentsManagerPage({ params: { slug } }: PageP
       // Assuming API responds directly with DepartmentData[]
       departmentsData = (await res.json()) as DepartmentData[];
     } else {
-      console.error(
-        "[DepartmentsManagerPage] Failed to fetch departments →",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[DepartmentsManagerPage] Failed to fetch departments →",
+      //   res.status,
+      //   res.statusText
+      // );
       // Optionally, set an empty array or specific error state if fetch fails
       departmentsData = [];
     }
   } catch (err: any) {
-    console.error("[DepartmentsManagerPage] Error fetching departments →", err.message);
+    // console.error("[DepartmentsManagerPage] Error fetching departments →", err.message);
     departmentsData = []; // Ensure an empty array is passed on error
   }
 
