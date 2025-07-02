@@ -133,16 +133,10 @@ export const getCategoryMenus = (adminSlug: string) => ({
       label: "Events",
       icon: AcademicCapIcon,
       subItems: [
-        { label: "All Events", href: `/admin/${adminSlug}/calendarAdmin` },
+        { label: "All Events", href: `/admin/${adminSlug}/events` },
       ],
     },    
-    {
-      label: "Announcements",
-      icon: AcademicCapIcon,
-      subItems: [
-        { label: "All Announcements", href: `/admin/${adminSlug}/schoolAnnouncements` },
-      ],
-    },    
+    { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements`, icon: AcademicCapIcon },
     { label: "Reports", href: `/admin/${adminSlug}/school-reports`, icon: HomeIcon },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },

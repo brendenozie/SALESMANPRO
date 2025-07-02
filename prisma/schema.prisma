@@ -40,6 +40,7 @@ model Account {
 
 enum ROLE {
   USER
+  CONSUMER
   AGENT
   CLIENT
   ADMIN
@@ -247,6 +248,8 @@ model Company {
   Course        Course[]
   ClassSchedule ClassSchedule[]
   Exam          Exam[]
+  Announcement  Announcement[]
+  Event         Event[]
 }
 
 enum CategoryStatus {
@@ -674,6 +677,7 @@ model Task {
   updatedAt   DateTime? @updatedAt
 }
 
+//One on One relationship with user
 model Client {
   id                String              @id @default(auto()) @map("_id") @db.ObjectId
   name              String?
@@ -712,6 +716,7 @@ model Communication {
   createdAt  DateTime   @default(now())
 }
 
+// One on One relationship with user
 model SalesAgent {
   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
   name               String?
@@ -779,7 +784,6 @@ model User {
   Wishlist              Wishlist[]
   Payment               Payment[]
   Appointment           Appointment[]
-  Announcement          Announcement[]
 
   // If an admin can also post announcements, link directly from User
   announcements    Announcement[]     @relation("UserAnnouncements")
@@ -790,10 +794,15 @@ model User {
   // Opposite relation for DiscussionPost.createdBy
   CreatedDiscussionPost DiscussionPost[] @relation("CreatedDiscussionPost")
 
-  Department Department[]
-  Educator   Educator?
-  Student    Student?
-  Parent     Parent?
+  // Opposite relation for Event.organizer
+  OrganizedEvents Event[] @relation("OrganizedEvents")
+
+  Department        Department[]
+  Educator          Educator?
+  Student           Student?
+  Parent            Parent?
+  // Removed: Event      Event[]
+  EventRegistration EventRegistration[] @relation("EventRegistrations")
 }
 
 enum Status {
@@ -1301,6 +1310,7 @@ enum RequesterType {
   SALES_AGENT
 }
 
+//One on One relationship with user
 model Consumer {
   id                   String                 @id @default(auto()) @map("_id") @db.ObjectId
   name                 String?
@@ -1593,10 +1603,11 @@ model Student {
   AttendanceRecord AttendanceRecord[]
   ExamSubmission   ExamSubmission[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Account   Account[]
-  Session   Session[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  Account           Account[]
+  Session           Session[]
+  EventRegistration EventRegistration[]
 }
 
 // Educator Profile Model (one-to-one with User)
@@ -1797,17 +1808,216 @@ model Submission {
 }
 
 // Announcement Model
+// Defines a structured announcement event.
+// Announcement Model
+// Defines a structured announcement event.
 model Announcement {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  title   String
+  summary String? // A short summary of the announcement
+  content String? // Full content of the announcement
+
+  // publishedAt: When the announcement becomes visible. No default if it can be scheduled.
+  publishedAt DateTime
+
+  // expiresAt: When the announcement is no longer visible. Made nullable to allow permanent announcements.
+  expiresAt DateTime?
+
+  authorId String @db.ObjectId // User (Admin or Educator) who created the announcement
+  author   User   @relation("UserAnnouncements", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String  @db.ObjectId // Link to Company for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+
+  status AnnouncementStatus @default(PENDING) // Current status of the announcement
+
+  // NEW: Announcement Type (e.g., General, Event, Policy Update)
+  type AnnouncementType @default(GENERAL)
+
+  // NEW: Announcement Audience (e.g., ALL, ACADEMIC_LEVEL, STUDENT)
+  audience AnnouncementAudience @default(ALL)
+
+  // Audience Targeting Fields (arrays of IDs - populated based on 'audience' selection)
+  // These are optional and will be used by application logic to filter visibility.
+  targetAcademicLevelIds String[] @db.ObjectId // IDs of AcademicLevels targeted (if audience is ACADEMIC_LEVEL)
+  targetCourseIds        String[] @db.ObjectId // IDs of Courses targeted (if audience is COURSE)
+  targetEducatorIds      String[] @db.ObjectId // IDs of Educators targeted (if audience is EDUCATOR)
+  targetStudentIds       String[] @db.ObjectId // IDs of specific Students targeted (if audience is STUDENT)
+  targetDepartmentIds    String[] @db.ObjectId // NEW: IDs of Departments targeted (if audience is DEPARTMENT)
+  targetParentIds        String[] @db.ObjectId // NEW: IDs of Parents targeted (if audience is PARENT)
+
+  // Indexes for common queries
+  @@index([companyId])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([expiresAt])
+  @@index([type])
+  @@index([audience]) // New index for filtering by audience
+}
+
+// Enum for Announcement Status
+enum AnnouncementStatus {
+  PENDING // Draft or scheduled
+  PUBLISHED // Actively visible
+  ARCHIVED // No longer visible, but kept for historical records
+}
+
+// NEW: Enum for Announcement Type
+enum AnnouncementType {
+  GENERAL // For general announcements
+  ACADEMIC // Related to academic matters (e.g., exams, curriculum)
+  EVENT // For school events (e.g., sports day, parent-teacher meeting)
+  HOLIDAY // For holiday announcements
+  ALERT // For urgent notifications (e.g., school closure, emergency)
+  NEWS // For company/school news or updates
+  POLICY_UPDATE // For updates to school policies
+  FEEDBACK // For collecting feedback from users
+  SURVEY // For conducting surveys among users
+  OTHER // For any other type of announcement not covered above
+}
+
+// NEW: Enum for Announcement Audience
+enum AnnouncementAudience {
+  ALL // Visible to all users in the company
+  ACADEMIC_LEVEL // Visible to all students and educators in specific academic levels
+  COURSE // Visible to all students and educators in specific courses
+  EDUCATOR // Visible only to specific educators
+  STUDENT // Visible only to specific students
+  DEPARTMENT // Visible to all users in specific departments
+  STAFF // Visible only to staff members (e.g., admins, educators)
+  PARENT // Visible to parents of students
+}
+
+// Event Model
+// Represents a scheduled event within the company/school.
+model Event {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   title       String
-  summary     String?
-  content     String?
-  publishedAt DateTime @default(now())
-  authorId    String   @db.ObjectId // Can be UserId (Admin or Educator)
-  author      User     @relation("UserAnnouncements", fields: [authorId], references: [id])
-  updatedAt   DateTime @updatedAt
-  User        User?    @relation(fields: [userId], references: [id])
-  userId      String?  @db.ObjectId
+  summary     String? // A short summary of the event
+  description String? // Full detailed description of the event
+
+  startDateTime DateTime // Start date and time of the event
+  endDateTime   DateTime? // End date and time of the event (nullable for single-point events)
+
+  location          String? // Physical location or "Online"
+  onlineMeetingLink String? // URL for online meetings (e.g., Zoom, Google Meet)
+
+  imageUrl String? // URL to an image for the event
+  videoUrl String? // URL to a video for the event
+
+  eventType   EventType   @default(GENERAL) // Categorization of the event
+  eventStatus EventStatus @default(SCHEDULED) // Current status of the event
+
+  // Organizer/Author of the event (can be a User like Admin or Educator)
+  organizerId String @db.ObjectId
+  organizer   User   @relation("OrganizedEvents", fields: [organizerId], references: [id])
+
+  // Multi-tenancy
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Audience Targeting (similar to Announcements)
+  audience               EventAudience @default(ALL)
+  targetAcademicLevelIds String[]      @db.ObjectId // IDs of AcademicLevels targeted
+  targetCourseIds        String[]      @db.ObjectId // IDs of Courses targeted
+  targetEducatorIds      String[]      @db.ObjectId // IDs of Educators targeted
+  targetStudentIds       String[]      @db.ObjectId // IDs of specific Students targeted
+  targetDepartmentIds    String[]      @db.ObjectId // IDs of Departments targeted
+  targetParentIds        String[]      @db.ObjectId // IDs of Parents targeted
+
+  // Registration & Capacity
+  isRegistrationRequired Boolean @default(false)
+  maxCapacity            Int? // Maximum number of attendees
+  // currentAttendees: This would typically be a count from a separate 'EventRegistration' model
+  // or a computed field, not directly stored here to avoid race conditions.
+
+  // Cost/Payment
+  isPaid Boolean @default(false)
+  price  Float? // Price of the event if isPaid is true
+
+  // Contact Information
+  contactPerson String?
+  contactEmail  String?
+  contactPhone  String?
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  EventRegistration EventRegistration[]
+
+  // Indexes for efficient querying
+  @@index([companyId])
+  @@index([organizerId])
+  @@index([startDateTime])
+  @@index([eventStatus])
+  @@index([eventType])
+  @@index([audience])
+}
+
+// Enum for Event Type
+enum EventType {
+  GENERAL // General school event, not specific to academics/sports
+  ACADEMIC // Related to academic activities (e.g., study groups, academic competitions)
+  SPORTS // Sports events (e.g., games, tryouts)
+  CULTURAL // Cultural events (e.g., plays, concerts, art exhibitions)
+  MEETING // Staff meetings, parent meetings, etc.
+  WORKSHOP // Training sessions, skill-building workshops
+  ORIENTATION // New student/parent orientation
+  FUNDRAISER // Fundraising events
+  OTHER // Any other type not covered
+}
+
+// Enum for Event Status
+enum EventStatus {
+  SCHEDULED // Event is planned and active
+  POSTPONED // Event has been delayed to a later date/time
+  CANCELLED // Event has been cancelled
+  COMPLETED // Event has already occurred
+}
+
+// Enum for Event Audience (similar to AnnouncementAudience)
+enum EventAudience {
+  ALL // Visible to all users in the company
+  ACADEMIC_LEVEL // Visible to all students and educators in specific academic levels
+  COURSE // Visible to all students and educators in specific courses
+  EDUCATOR // Visible only to specific educators
+  STUDENT // Visible only to specific students
+  DEPARTMENT // Visible to all users in specific departments
+  STAFF // Visible only to staff members (e.g., admins, educators)
+  PARENT // Visible to parents of students
+}
+
+// EventRegistration Model
+// Tracks individual user registrations for events.
+model EventRegistration {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  eventId String @db.ObjectId
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade) // Cascade delete if event is removed
+
+  userId String @db.ObjectId // The user who registered (can be Student, Parent, Educator, etc.)
+  user   User   @relation("EventRegistrations", fields: [userId], references: [id])
+
+  registeredAt DateTime           @default(now())
+  status       RegistrationStatus @default(REGISTERED) // e.g., REGISTERED, ATTENDED, CANCELLED
+
+  // Optional: If you need to track specific student for a parent registration
+  studentId String?  @db.ObjectId
+  student   Student? @relation(fields: [studentId], references: [id])
+
+  // Add more fields as needed, e.g., paymentStatus, notes, etc.
+
+  @@unique([eventId, userId]) // A user can only register for an event once
+  @@index([eventId])
+  @@index([userId])
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  ATTENDED
+  CANCELLED
+  WAITLISTED
 }
 
 // Class Schedule Model (for educator's classes/lectures and school timetabling)
