@@ -1809,7 +1809,6 @@ model Announcement {
   userId      String?  @db.ObjectId
 }
 
-// Class Schedule Model (for educator's classes/lectures)
 // Class Schedule Model (for educator's classes/lectures and school timetabling)
 model ClassSchedule {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
