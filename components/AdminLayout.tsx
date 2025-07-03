@@ -33,11 +33,9 @@ export default function AdminLayout({
   const [isManuallyToggled, setIsManuallyToggled] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR' ? `${userId}` : storeFormData.id || "default-company-id";
+  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR' ? `${userId}` : storeFormData?.id || "default-company-id";
 
-  const categoryType =
-    storeFormData.category?.charAt(0).toUpperCase() +
-    storeFormData.category?.slice(1) || "Other";
+  const categoryType = storeFormData?.category ? storeFormData.category.charAt(0).toUpperCase() + storeFormData.category.slice(1)  : userRole || "Other";
 
   // Determine the menu based on user role first, then company category
   const allCategoryMenus: { [key: string]: MenuItem[] } = getCategoryMenus(companyId);
@@ -111,7 +109,7 @@ export default function AdminLayout({
           )}
         </button>
         <h1 className="text-xl font-bold text-indigo-800">
-          {storeFormData.name?.toUpperCase() || "ADMIN PANEL"}
+          { userRole || storeFormData?.name?.substring(0, 10).toUpperCase() || "ADMIN PANEL"}
         </h1>
         <div className="w-7 h-7"></div>
       </header>
@@ -125,7 +123,7 @@ export default function AdminLayout({
       >
         <div className="flex flex-col items-center p-6 pt-8 border-b border-blue-800/50">
           <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">
-            {userRole || storeFormData.name?.substring(0, 10).toUpperCase() || "ADMIN"}
+            {userRole || storeFormData?.name?.substring(0, 10).toUpperCase() || "ADMIN"}
           </h1>
         </div>
 

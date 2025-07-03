@@ -64,7 +64,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
 
   if (userRole !== 'STUDENT' && !company && userRole !== 'EDUCATOR') {
     // If company not found, redirect to a generic dashboard or error page
-    console.error(`Company with ID ${companyId} not found.`);
+    // console.error(`Company with ID ${companyId} not found.`);
     redirect('/dashboard'); // Or show a 404 page
   }
 

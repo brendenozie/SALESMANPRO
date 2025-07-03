@@ -48,13 +48,19 @@ export default async function AdminStoreLayout({
     },
   });
 
-  if (!raw) return notFound();
-
-  // Transform the raw data into the StoreForm shape
-  const storeFormData = transformCompanyToStoreForm(raw);
+  
 
   // Get the user's role from the session
   const userRole = session.user.role?.toUpperCase() || 'OTHER'; // Default to 'OTHER' if role is not found
+
+  if (!raw && userRole === 'OTHER' || !raw && userRole === 'ADMIN') return notFound();
+
+  let storeFormData = null;
+
+  // Transform the raw data into the StoreForm shape
+  if (raw !== null) {
+    storeFormData = transformCompanyToStoreForm(raw);
+  }
 
   // Pass storeFormData and userRole to the client component via context
   return (

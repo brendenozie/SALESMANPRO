@@ -16,7 +16,7 @@ import { StoreForm } from '../types/typings'; // Ensure StoreForm is correctly i
 //
 interface StoreContextType {
   // The full StoreForm fetched from Prisma → passed in from StoreLayout
-  storeFormData: StoreForm;
+  storeFormData: StoreForm | null;
 
   // The ID of the service the user clicked “Learn More” on.
   // Components can read this if they need to prefill a contact form, etc.
@@ -59,7 +59,7 @@ export const useStore = useStoreContext;
 //
 interface StoreContextProviderProps {
   children: ReactNode;
-  initialStore: StoreForm;
+  initialStore: StoreForm | null; // The initial store data, can be null if not available
   userRole: string; // New prop for the user's role
   userId: string; // New prop for the user's ID
 }
