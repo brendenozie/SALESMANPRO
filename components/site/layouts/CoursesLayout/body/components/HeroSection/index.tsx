@@ -227,7 +227,7 @@ export default function HeroSection() {
         }}
       >
         {/* Overlay with a semi-transparent white background and subtle patterns */}
-        <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center text-center px-4">
+        <div className="absolute inset-0 bg-white/30 flex flex-col items-center justify-center text-center px-4">
           {/* Abstract geometric shapes or patterns */}
           <div className={`absolute top-0 left-0 w-40 h-40 bg-[${primaryColor}] rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob`}></div>
           <div className={`absolute top-0 right-0 w-40 h-40 bg-[${accentColor}] rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000`}></div>

@@ -37,7 +37,7 @@ const useMockStoreContext = () => ({
     },
     teacherClasses: [ // Sample classes assigned to this teacher
       {
-        id: 'CL101',
+        id: '685018d708b38f9635fb3a03',
         name: 'Grade 7 Mathematics',
         grade: '7',
         studentsEnrolled: 35,
@@ -55,7 +55,7 @@ const useMockStoreContext = () => ({
         events: [{ id: 'E001', name: 'Math Club Meeting', date: '2025-07-15', time: '3:00 PM' }],
       },
       {
-        id: 'CL102',
+        id: '685018d708b38f9635fb3a03',
         name: 'Grade 8 English Language',
         grade: '8',
         studentsEnrolled: 30,
@@ -72,7 +72,7 @@ const useMockStoreContext = () => ({
         events: [{ id: 'E002', name: 'Poetry Reading', date: '2025-07-20', time: '2:00 PM' }],
       },
       {
-        id: 'CL103',
+        id: '685018d708b38f9635fb3a03',
         name: 'Grade 9 Algebra',
         grade: '9',
         studentsEnrolled: 28,
@@ -86,7 +86,7 @@ const useMockStoreContext = () => ({
         assignments: [], resources: [], events: [],
       },
       {
-        id: 'CL104',
+        id: '685018d708b38f9635fb3a03',
         name: 'Grade 10 Geometry',
         grade: '10',
         studentsEnrolled: 22,
@@ -129,7 +129,7 @@ export default function TeachersClassListPage() {
   );
 
   // --- Placeholder Functions for Class Management ---
-  const handleViewRoster = (classId: string, className: string, students: any[]) => {
+  const handleViewRoster = (companyId: string, classId: string, className: string, students: any[]) => {
     console.log(`Navigating to roster for Class ID: ${classId} (${className})`);
     // In a real app, use router.push(`/teacher/classes/${classId}/roster`);
     // alert(`Functionality: View Roster for "${className}"\nStudents: ${students.map(s => s.name).join(', ')}\n(See console for full student details)`);
@@ -137,60 +137,61 @@ export default function TeachersClassListPage() {
 
     //Navigate to Student Roster Page
 
-    router.push(`/admin/${classId}/teacherclasseslist/student-roster`); // Adjust the path as needed
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/student-roster`); // Adjust the path as needed
 
 
   };
 
-  const handleTakeAttendance = (classId: string, className: string) => {
+  const handleTakeAttendance = (companyId: string, classId: string, className: string) => {
     console.log(`Taking Attendance for Class ID: ${classId} (${className})`);
     // In a real app, open an attendance marking interface
-    alert(`Functionality: Take Attendance for "${className}"`);
+    // alert(`Functionality: Take Attendance for "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/take-attendance`); // Navigate to Attendance Page
   };
 
-  const handleViewConsolidatedGrades = (classId: string, className: string) => {
+  const handleViewConsolidatedGrades = (companyId: string, classId: string, className: string) => {
     console.log(`Viewing Consolidated Grades for Class ID: ${classId} (${className})`);
     // In a real app, navigate to a consolidated grades view
-    alert(`Functionality: View Consolidated Grades for "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/consolidated-grades`); // Navigate to Consolidated Grades Page
   };
 
-  const handleManageAssignments = (classId: string, className: string) => {
+  const handleManageAssignments = (companyId: string, classId: string, className: string) => {
     console.log(`Managing Assignments for Class ID: ${classId} (${className})`);
     // In a real app, navigate to an assignments management page for this class
-    alert(`Functionality: Manage Assignments for "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/manage-assignments`); // Navigate to Manage Assignments Page
   };
 
-  const handleUploadResources = (classId: string, className: string) => {
+  const handleUploadResources = (companyId: string, classId: string, className: string) => {
     console.log(`Uploading Resources for Class ID: ${classId} (${className})`);
     // In a real app, open a file upload interface
-    alert(`Functionality: Upload Resources for "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/upload-resources`); // Navigate to Upload Resources Page
   };
 
-  const handleViewClassSchedule = (classId: string, className: string) => {
+  const handleViewClassSchedule = (companyId: string, classId: string, className: string) => {
     console.log(`Viewing Class Schedule for Class ID: ${classId} (${className})`);
     // In a real app, navigate to a class-specific schedule view
-    alert(`Functionality: View Class Schedule for "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/class-schedule`); // Navigate to Class Schedule Page
   };
 
-  const handleAddClassEvent = (classId: string, className: string) => {
+  const handleAddClassEvent = (companyId: string, classId: string, className: string) => {
     console.log(`Adding Class Event for Class ID: ${classId} (${className})`);
     // In a real app, open a modal to add a new event to the class calendar
-    alert(`Functionality: Add Class Event for "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/class-event`); // Navigate to Add Class Event Page
   };
 
-  const handleSendMessage = (classId: string, className: string) => {
+  const handleSendMessage = (companyId: string, classId: string, className: string) => {
     console.log(`Sending Message to Class ID: ${classId} (${className})`);
     // In a real app, open a messaging interface pre-populated with class recipients
-    alert(`Functionality: Send Message to "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/send-message`); // Navigate to Send Message Page
   };
 
-  const handleGenerateReports = (classId: string, className: string) => {
+  const handleGenerateReports = (companyId: string, classId: string, className: string) => {
     console.log(`Generating Reports for Class ID: ${classId} (${className})`);
     // In a real app, open a report generation interface
-    alert(`Functionality: Generate Reports for "${className}"`);
+    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/generate-reports`); // Navigate to Generate Reports Page
   };
 
-  const handleDeleteClassRequest = (classId: string, className: string) => {
+  const handleDeleteClassRequest = (companyId: string, classId: string, className: string) => {
     if (window.confirm(`Are you sure you want to request deletion of "${className}"? This will send a request to the admin.`)) {
       console.log(`Requesting deletion of Class ID: ${classId} (${className})`);
       // In a real app, send a deletion request to the admin
@@ -289,56 +290,56 @@ export default function TeachersClassListPage() {
                   </button>
                   <div className="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
                     <button
-                      onClick={() => handleTakeAttendance(cls.id, cls.name)}
+                      onClick={() => handleTakeAttendance("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <ClipboardDocumentCheckIcon className={`h-5 w-5 text-[${accentColor}]`} /> Take Attendance
                     </button>
                     <button
-                      onClick={() => handleViewConsolidatedGrades(cls.id, cls.name)}
+                      onClick={() => handleViewConsolidatedGrades("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <ChartBarIcon className={`h-5 w-5 text-blue-500`} /> View Consolidated Grades
                     </button>
                     <button
-                      onClick={() => handleManageAssignments(cls.id, cls.name)}
+                      onClick={() => handleManageAssignments("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <ClipboardDocumentListIcon className={`h-5 w-5 text-green-500`} /> Manage Assignments
                     </button>
                     <button
-                      onClick={() => handleUploadResources(cls.id, cls.name)}
+                      onClick={() => handleUploadResources("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <CloudArrowUpIcon className={`h-5 w-5 text-purple-500`} /> Upload Resources
                     </button>
                     <button
-                      onClick={() => handleViewClassSchedule(cls.id, cls.name)}
+                      onClick={() => handleViewClassSchedule("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <ClockIcon className={`h-5 w-5 text-indigo-500`} /> View Class Schedule
                     </button>
                     <button
-                      onClick={() => handleAddClassEvent(cls.id, cls.name)}
+                      onClick={() => handleAddClassEvent("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <PlusIcon className={`h-5 w-5 text-orange-500`} /> Add Class Event
                     </button>
                     <button
-                      onClick={() => handleSendMessage(cls.id, cls.name)}
+                      onClick={() => handleSendMessage("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <ChatBubbleBottomCenterTextIcon className={`h-5 w-5 text-pink-500`} /> Send Message
                     </button>
                     <button
-                      onClick={() => handleGenerateReports(cls.id, cls.name)}
+                      onClick={() => handleGenerateReports("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     >
                       <ChartBarIcon className={`h-5 w-5 text-teal-500`} /> Generate Reports
                     </button>
                     <div className="border-t border-gray-100 my-1"></div> {/* Separator */}
                     <button
-                      onClick={() => handleDeleteClassRequest(cls.id, cls.name)}
+                      onClick={() => handleDeleteClassRequest("685018d708b38f9635fb3a03", cls.id, cls.name)}
                       className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
                     >
                       <TrashIcon className="h-5 w-5" /> Request Class Deletion
@@ -371,7 +372,7 @@ export default function TeachersClassListPage() {
 
               <div className="mt-6 border-t border-gray-100 pt-4">
                 <button
-                  onClick={() => handleViewRoster("683581bba1bdf6ca3624b530", cls.name, cls.students)}
+                  onClick={() => handleViewRoster("685018d708b38f9635fb3a03", cls.id, cls.name, cls.students)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-[${accentColor}] text-gray-900 rounded-md shadow-sm
                               hover:bg-[${accentColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
                 >
