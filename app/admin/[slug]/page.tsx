@@ -232,7 +232,6 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     }
   }
 
-
   // 5. Render appropriate client component based on user role and category
   if (userRole === 'STUDENT') {
     return <StudentDashboard {...(studentDashboardData as StudentDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
