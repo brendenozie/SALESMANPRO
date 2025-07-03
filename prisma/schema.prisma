@@ -1652,7 +1652,6 @@ model Parent {
 }
 
 // Student Profile Model (one-to-one with User)
-// Updated Student model (focus on student-specific data)
 model Student {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @unique @db.ObjectId // Link to User model
