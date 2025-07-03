@@ -35,6 +35,12 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage({ params }: { params: { slug: string } }) {
   const session = await getAuthSession();
+  
+  if (!session) {
+    redirect('/login'); // Redirect to login if no session
+  }
+
+  const userRole = session.user?.role?.toUpperCase() || 'ADMIN'; // Default to ADMIN if role is not set
 
   // 1. Authentication and Authorization Check
   // Allow 'ADMIN', 'STUDENT', and 'EDUCATOR' roles to access admin dashboards
@@ -45,7 +51,9 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     redirect('/'); // Redirect if not authorized
   }
 
-  const companyId = params.slug;
+  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR' ? session.user.id : params.slug; // Use user ID for student/educator, company ID for admin
+
+
   const currentUserId = session.user.id; // Get current user ID from session
 
   // 2. Fetch company category
@@ -54,14 +62,13 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     select: { category: true },
   });
 
-  if (!company) {
+  if (userRole !== 'STUDENT' && !company && userRole !== 'EDUCATOR') {
     // If company not found, redirect to a generic dashboard or error page
     console.error(`Company with ID ${companyId} not found.`);
     redirect('/dashboard'); // Or show a 404 page
   }
 
-  const categoryKey = normalizeCategory(company.category);
-  const userRole = session.user.role?.toUpperCase(); // Ensure role is uppercase for comparison
+  const categoryKey = normalizeCategory(company?.category || userRole); // Normalize category for consistent handling
 
   // 3. Fetch Dashboard Metrics based on Role and Category
   let dashboardData: DashboardData | null = null; // General dashboard data
@@ -71,22 +78,11 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
   let fetchError: boolean = false;
 
   try {
-    // Fetch general dashboard data (might be used by various dashboards as a base)
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${companyId}`,
-      { cache: 'no-store' }
-    );
-    if (res.ok) {
-      dashboardData = (await res.json()) as DashboardData;
-    } else {
-      console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-      fetchError = true;
-    }
 
     // Fetch role-specific data
     if (userRole === 'STUDENT') {
       const studentRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/student?companyId=${encodeURIComponent(companyId)}&userId=${encodeURIComponent(currentUserId)}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
         { cache: 'no-store' }
       );
       if (studentRes.ok) {
@@ -99,7 +95,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       // Check if this educator is a Principal/Head Teacher based on company category
       if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head') {
         const principalRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/principal?companyId=${encodeURIComponent(companyId)}&userId=${encodeURIComponent(currentUserId)}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store' }
         );
         if (principalRes.ok) {
@@ -111,7 +107,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       } else {
         // Otherwise, fetch general tutor/teacher data
         const tutorRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/tutor?companyId=${encodeURIComponent(companyId)}&userId=${encodeURIComponent(currentUserId)}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store' }
         );
         if (tutorRes.ok) {
@@ -121,7 +117,19 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
           fetchError = true;
         }
       }
+    }else {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${companyId}`,
+        { cache: 'no-store' }
+      );
+      if (res.ok) {
+        dashboardData = (await res.json()) as DashboardData;
+      } else {
+        console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+        fetchError = true;
+      }
     }
+
 
   } catch (err: any) {
     console.error("AdminDashboardPage-fetch error:", err.message);

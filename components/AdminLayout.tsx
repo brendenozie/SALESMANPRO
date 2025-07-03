@@ -1,9 +1,11 @@
+// components/AdminLayout.tsx
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
-import { useStoreContext } from "@/contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext"; // Import useStoreContext
 import Link from "next/link";
 
 import {
@@ -24,23 +26,37 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { storeFormData } = useStoreContext();
+  const { storeFormData, userRole, userId } = useStoreContext(); // Get userRole from context
   const pathname = usePathname();
 
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const [isManuallyToggled, setIsManuallyToggled] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const companyId = storeFormData.id || "default-company-id";
+  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR' ? `${userId}` : storeFormData.id || "default-company-id";
+
   const categoryType =
     storeFormData.category?.charAt(0).toUpperCase() +
-      storeFormData.category?.slice(1) || "Other";
+    storeFormData.category?.slice(1) || "Other";
 
-  const allCategoryMenus: { [key: string]: MenuItem[] } =
-    getCategoryMenus(companyId);
-  const menuItems: MenuItem[] =
-    allCategoryMenus[categoryType as keyof typeof allCategoryMenus] ||
-    allCategoryMenus["Other"];
+  // Determine the menu based on user role first, then company category
+  const allCategoryMenus: { [key: string]: MenuItem[] } = getCategoryMenus(companyId);
+  let menuItems: MenuItem[];
+
+  if (userRole === 'STUDENT') {
+    menuItems = allCategoryMenus['Student'] || allCategoryMenus['Other'];
+  } else if (userRole === 'EDUCATOR') {
+    // If the educator is tied to a 'school head' or 'head teacher' category, use Principal menu
+    if (categoryType === 'Educational & Online Courses' || categoryType === 'Head Teacher' || categoryType === 'School Head') {
+      menuItems = allCategoryMenus['Principal'] || allCategoryMenus['Educator'] || allCategoryMenus['Other'];
+    } else {
+      // Otherwise, use the general Educator/Tutor menu
+      menuItems = allCategoryMenus['Educator'] || allCategoryMenus['Tutor'] || allCategoryMenus['Other'];
+    }
+  } else {
+    // For other roles (e.g., ADMIN) or general categories, use the existing category-based logic
+    menuItems = allCategoryMenus[categoryType as keyof typeof allCategoryMenus] || allCategoryMenus["Other"];
+  }
 
   const handleToggleSubmenu = useCallback((label: string) => {
     setIsManuallyToggled(true);
@@ -66,7 +82,7 @@ export default function AdminLayout({
     if (submenuToOpen !== openSubmenu) {
       setOpenSubmenu(submenuToOpen);
     }
-  }, [pathname, menuItems]);
+  }, [pathname, menuItems, isManuallyToggled, openSubmenu]); // Add dependencies
 
   useEffect(() => {
     setIsManuallyToggled(false);
@@ -76,7 +92,7 @@ export default function AdminLayout({
     if (mobileSidebarOpen) {
       setMobileSidebarOpen(false);
     }
-  }, [pathname]);
+  }, [pathname, mobileSidebarOpen]); // Add mobileSidebarOpen dependency
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans text-gray-800 antialiased">
@@ -109,7 +125,7 @@ export default function AdminLayout({
       >
         <div className="flex flex-col items-center p-6 pt-8 border-b border-blue-800/50">
           <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">
-            {storeFormData.name?.toUpperCase() || "ADMIN"}
+            {userRole || storeFormData.name?.substring(0, 10).toUpperCase() || "ADMIN"}
           </h1>
         </div>
 

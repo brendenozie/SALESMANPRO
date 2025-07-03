@@ -9,7 +9,7 @@ import React, {
   Dispatch,
   SetStateAction,
 } from 'react';
-import { StoreForm } from '../types/typings';
+import { StoreForm } from '../types/typings'; // Ensure StoreForm is correctly imported
 
 //
 // 1. Define the shape of what our context will provide.
@@ -24,6 +24,11 @@ interface StoreContextType {
 
   // Setter so that any child can call setInquiryServiceId(...)
   setInquiryServiceId: Dispatch<SetStateAction<string | number | null>>;
+
+  // Add the userRole to the context type
+  userRole: string;
+  
+  userId: string;
 }
 
 //
@@ -50,15 +55,21 @@ export const useStore = useStoreContext;
 
 //
 // 5. The Provider component. It expects the `initialStore` (a StoreForm object)
-//    and then sets up local state for inquiryServiceId so that children can read/set it.
+//    and `userRole`, then sets up local state for inquiryServiceId so that children can read/set it.
 //
+interface StoreContextProviderProps {
+  children: ReactNode;
+  initialStore: StoreForm;
+  userRole: string; // New prop for the user's role
+  userId: string; // New prop for the user's ID
+}
+
 export function StoreContextProvider({
   children,
   initialStore,
-}: {
-  children: ReactNode;
-  initialStore: StoreForm;
-}) {
+  userRole, // Destructure userRole from props
+  userId, // New prop for the user's ID
+}: StoreContextProviderProps) {
   // Local piece of state to track which service the user last clicked “Learn More” on.
   const [inquiryServiceId, setInquiryServiceId] = useState<string | number | null>(null);
 
@@ -67,6 +78,8 @@ export function StoreContextProvider({
     storeFormData: initialStore,
     inquiryServiceId,
     setInquiryServiceId,
+    userRole, // Include userRole in the context value
+    userId
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
