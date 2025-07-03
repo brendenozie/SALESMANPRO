@@ -375,7 +375,7 @@ export default function AdminReportsPage({
           {/* Grade Distribution */}
           <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-semibold text-gray-800 mb-3">Grade Distribution</h4>
-            <div className="h-48 flex items-center justify-center text-gray-400">
+            <div className=" flex items-center justify-center text-gray-400">
               <ChartThree
                 title="" // Title already in h4
                 seriesData={studentPerformanceData.gradeDistribution.map(d => d.value)}
@@ -388,7 +388,7 @@ export default function AdminReportsPage({
           {/* Attendance Trend */}
           <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-semibold text-gray-800 mb-3">Overall Attendance Trend</h4>
-            <div className="h-48 flex items-center justify-center text-gray-400">
+            <div className=" flex items-center justify-center text-gray-400">
               <ApexCharts
                 options={{
                   chart: {
@@ -471,7 +471,7 @@ export default function AdminReportsPage({
           {/* Teachers by Department */}
           <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-semibold text-gray-800 mb-3">Teachers by Department</h4>
-            <div className="h-48 flex items-center justify-center text-gray-400">
+            <div className=" flex items-center justify-center text-gray-400">
               <ChartThree
                 title=""
                 seriesData={staffReportsData.teachersByDepartment.map(d => d.count)}
@@ -506,7 +506,7 @@ export default function AdminReportsPage({
           {/* Class Enrollment Distribution */}
           <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-semibold text-gray-800 mb-3">Class Enrollment Distribution</h4>
-            <div className="h-48 flex items-center justify-center text-gray-400">
+            <div className="flex items-center justify-center text-gray-400">
               <ChartThree
                 title=""
                 seriesData={academicReportsData.classEnrollmentDistribution.map(d => d.count)}
