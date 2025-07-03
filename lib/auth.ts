@@ -10,20 +10,20 @@ import AppleProvider from "next-auth/providers/apple";
 import EmailProvider from "next-auth/providers/email";
 import prisma from "../server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
-import bcrypt from 'bcryptjs'; 
+import bcrypt from 'bcryptjs'; // Keep bcryptjs for your existing email/password flow
 
 // Utility to find any existing user across multiple models by EMAIL
 async function findExistingUserByEmail(email: string) {
-  return (
-    (await prisma.user.findUnique({ where: { email } })) 
-  );
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (user) return user;
+  return null;
 }
 
-// Utility to find user by LOGIN CODE
+// Utility to find user by LOGIN CODE (for the new passwordless flow)
 async function findUserByLoginCode(loginCode: string) {
   const student = await prisma.student.findUnique({
     where: { loginCode },
-    include: { user: true },
+    include: { user: true }, // Include the associated User model
   });
   if (student) {
     return { user: student.user, role: 'STUDENT' };
@@ -31,7 +31,7 @@ async function findUserByLoginCode(loginCode: string) {
 
   const educator = await prisma.educator.findUnique({
     where: { loginCode },
-    include: { user: true },
+    include: { user: true }, // Include the associated User model
   });
   if (educator) {
     return { user: educator.user, role: 'EDUCATOR' };
@@ -60,7 +60,6 @@ async function findUserByLoginCode(loginCode: string) {
   // if (client) {
   //   return { user: client.user, role: 'CLIENT' };
   // } 
-
   return null;
 }
 
@@ -76,80 +75,30 @@ async function createDefaultUser({ email, name, image }: { email: string; name?:
   });
 }
 
-// Function to validate if a string is likely an email
+// Function to validate if a string is likely an email (still needed for the generic CredentialsProvider)
 const isEmail = (str: string) => /\S+@\S+\.\S+/.test(str);
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    // Existing Credentials Provider for Email/Password logins (for other sites)
     CredentialsProvider({
-      name: "Credentials", // Keep a generic name as it handles multiple types
+      id: "credentials-email-password", // Give it a unique ID
+      name: "Email & Password",
       credentials: {
-        identifier: { label: "Login ID (Email or Code)", type: "text" }, // Generic identifier
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-
-        if (!credentials?.identifier || !credentials?.password) {
+        
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        let userFoundInDb: any = null;
-        let determinedRole: string | null = null;
-        let userIdForSession: string | null = null;
+        const userFoundInDb = await findExistingUserByEmail(credentials.email);
 
-        if (isEmail(credentials.identifier)) {
-          // Attempting to log in with an email
-          userFoundInDb = await findExistingUserByEmail(credentials.identifier);
-          if (userFoundInDb) {
-            // Determine role based on which model the user belongs to
-            // This is a simplified example. In a real app, your User model
-            // might have a direct 'role' field, or you'd fetch from Student/Educator
-            const studentCheck = await prisma.student.findUnique({ where: { userId: userFoundInDb.id } });
-            const educatorCheck = await prisma.educator.findUnique({ where: { userId: userFoundInDb.id } });
-            const consumerCheck = await prisma.consumer.findUnique({ where: { email: credentials.identifier } });
-            const salesAgentCheck = await prisma.salesAgent.findUnique({ where: { email: credentials.identifier } });
-            const clientCheck = await prisma.client.findUnique({ where: { email: credentials.identifier } });
-
-            const userCheck = await prisma.user.findUnique({ where: { id: userFoundInDb.id } });
-
-
-            if (studentCheck) {
-                determinedRole = 'STUDENT';
-            } else if (educatorCheck) {
-                determinedRole = 'EDUCATOR';
-            }
-            else if (consumerCheck) {
-                determinedRole = 'CONSUMER';
-            } else if (salesAgentCheck) {
-                determinedRole = 'SALES_AGENT';
-            } else if (clientCheck) {
-                determinedRole = 'CLIENT';
-            } else if (userCheck && userCheck.role) {
-              determinedRole = userCheck.role; 
-            } else {
-                determinedRole = 'UNKNOWN'; // Fallback if role can't be determined
-            }
-            userIdForSession = userFoundInDb.id;
-
-          }
-        } else {
-          // Attempting to log in with a school login code
-          const loginCodeResult = await findUserByLoginCode(credentials.identifier);
-          if (loginCodeResult) {
-            userFoundInDb = loginCodeResult.user; // The associated User object
-            determinedRole = loginCodeResult.role; // 'STUDENT' or 'EDUCATOR'
-            userIdForSession = userFoundInDb.id;
-          }
-        }
-
-        if (
-          !userFoundInDb ||
-          !userFoundInDb.password ||
-          !userIdForSession ||
-          typeof userIdForSession !== "string"
-        ) {
-          console.error("No user found with identifier or user has no password set.");
+        if (!userFoundInDb || !userFoundInDb.password) {
+          console.error("No user found with this email or user has no password set.");
           return null;
         }
 
@@ -157,26 +106,101 @@ export const authOptions: NextAuthOptions = {
         const passwordMatch = await bcrypt.compare(credentials.password, userFoundInDb.password);
 
         if (!passwordMatch) {
-          console.error("Invalid password for identifier:", credentials.identifier);
+          console.error("Invalid password for email:", credentials.email);
           return null;
         }
 
-        // If login is successful, return a user object
-        // Ensure role is never null, fallback to undefined if not determined
+        // Determine role for email/password users
+        // Use undefined instead of null for role if not found, and ensure type matches Role | undefined
+        let determinedRole: string | undefined = userFoundInDb.role || undefined; // Start with generic User role
+
+        // If the user is linked to a Student or Educator, prioritize that role
+        const studentCheck = await prisma.student.findUnique({ where: { userId: userFoundInDb.id } });
+        const educatorCheck = await prisma.educator.findUnique({ where: { userId: userFoundInDb.id } });
+        const consumerCheck = await prisma.consumer.findUnique({ where: { email: credentials.email } });
+        const salesAgentCheck = await prisma.salesAgent.findUnique({ where: { email: credentials.email } });
+        const clientCheck = await prisma.client.findUnique({ where: { email: credentials.email } });
+
+        if (studentCheck) {
+            determinedRole = 'STUDENT';
+        } 
+        else if (consumerCheck) {
+            determinedRole = 'CONSUMER';
+        }
+        else if (salesAgentCheck) {
+            determinedRole = 'SALES_AGENT';
+        }
+        else if (clientCheck) {
+            determinedRole = 'CLIENT';
+        } 
+        else if (educatorCheck) {
+            determinedRole = 'EDUCATOR';
+        }
+
         return {
-          id: userIdForSession, // Use the ID from the User model (guaranteed string)
-          name: userFoundInDb.name,
+          id: userFoundInDb.id,
+          name: userFoundInDb.name ?? undefined,
           email: userFoundInDb.email,
-          // Cast determinedRole to the Role type expected by NextAuth (assumes Role is a string union type)
-          role: determinedRole as any, // Replace 'any' with your actual Role type if imported, e.g. 'as Role'
-          phone: userFoundInDb.phone,
-          username: userFoundInDb.username,
-          bio: userFoundInDb.bio,
-          address: userFoundInDb.address,
-          profilePicture: userFoundInDb.profilePicture || userFoundInDb.image,
+          role: determinedRole as any, // Cast to any to satisfy User type, or import Role type and use as Role | undefined
+          phone: userFoundInDb.phone ?? undefined,
+          username: userFoundInDb.username ?? undefined,
+          bio: userFoundInDb.bio ?? undefined,
+          address: userFoundInDb.address ?? undefined,
+          profilePicture: (userFoundInDb.profilePicture ?? userFoundInDb.image) ?? undefined,
         };
       },
     }),
+
+    // NEW Credentials Provider for School Login Code (Passwordless)
+    CredentialsProvider({
+      id: "school-code-login", // Unique ID for this provider
+      name: "School Login Code",
+      credentials: {
+        loginCode: { label: "School Login Code", type: "text" },
+      },
+      async authorize(credentials, req) {
+        if (!credentials?.loginCode) {
+          return null;
+        }
+
+        // Validate login code format (optional, but good practice)
+        if (credentials.loginCode.length !== 6 || !/^\d+$/.test(credentials.loginCode)) {
+          console.error("Invalid login code format:", credentials.loginCode);
+          return null;
+        }
+
+        const loginCodeResult = await findUserByLoginCode(credentials.loginCode);
+
+        if (!loginCodeResult || !loginCodeResult.user) {
+          console.error("No user found with school login code:", credentials.loginCode);
+          return null;
+        }
+
+        // For a passwordless flow, we directly authenticate if the code is valid.
+        // If you need more security (e.g., one-time codes, expiry, or a "hidden" password),
+        // this is where you'd add that logic.
+        // For example, if you stored a 'lastUsed' timestamp for the loginCode and checked its freshness.
+
+        const userFoundInDb = loginCodeResult.user;
+        // Import Role type from your Prisma schema or define it if not already imported
+        // import type { Role } from "@prisma/client";
+        const determinedRole = loginCodeResult.role as any; // Cast to 'any' or 'Role' if imported
+
+        return {
+          id: userFoundInDb.id,
+          name: userFoundInDb.name ?? undefined,
+          email: userFoundInDb.email, // User model still has email
+          role: determinedRole, // 'STUDENT' or 'EDUCATOR'
+          phone: userFoundInDb.phone ?? undefined,
+          username: userFoundInDb.username ?? undefined,
+          bio: userFoundInDb.bio ?? undefined,
+          address: userFoundInDb.address ?? undefined,
+          profilePicture: (userFoundInDb.profilePicture ?? userFoundInDb.image) ?? undefined,
+        };
+      },
+    }),
+
+    // Keep other providers as they are
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,

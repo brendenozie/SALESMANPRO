@@ -98,7 +98,69 @@ const personalTimetable = [
 ];
 
 
-export default function TeachersClient() {
+// --- Type Definitions for Props ---
+export type PrincipalStat = {
+  title: string;
+  value: string;
+  description: string;
+  color: string; // Tailwind bg-color class
+};
+
+export type QuickAction = {
+  label: string;
+  href: string;
+};
+
+export type Announcement = {
+  id: number;
+  text: string;
+  type: 'info' | 'warning';
+};
+
+export type RecentStaffMessage = {
+  id: string;
+  name: string;
+  message: string;
+  time: string;
+};
+
+export type PerformanceOverviewData = {
+  series: { name: string; data: number[] }[];
+  categories: string[];
+};
+
+export type AttendanceInsightsData = {
+  series: number[];
+  labels: string[];
+};
+
+export interface PrincipalDashboardData {
+  principalStats: PrincipalStat[];
+  quickActions: QuickAction[];
+  announcements: Announcement[];
+  recentStaffMessages: RecentStaffMessage[];
+  performanceOverviewData: PerformanceOverviewData;
+  attendanceInsightsData: AttendanceInsightsData;
+}
+
+export type TutorDashboardData = {
+  tutorStats: { title: string; value: string; description: string; color: string }[];
+  coursesTaught: { id: string; title: string; totalStudents: number }[];
+  recentSubmissions: { studentName: string; assignment: string; status: string; submissionDate: string }[];
+  pendingGrading: { id: string; assignment: string; student: string }[];
+  // Add other tutor-specific data fields as needed
+};
+
+interface PrincipalDashboardProps extends TutorDashboardData {
+  companyId: string; // Pass companyId for dynamic links
+  currentUserId: string; // Pass currentUserId for dynamic links
+}
+
+
+export default function TeachersClient({
+  companyId,
+  currentUserId,
+}: PrincipalDashboardProps) {
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',

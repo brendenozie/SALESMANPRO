@@ -2,16 +2,16 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AcademicCapIcon, ArrowRightIcon, KeyIcon, LockClosedIcon } from '@heroicons/react/24/outline'; // Replaced EnvelopeIcon with KeyIcon
-import { useRouter } from 'next/navigation'; // Import useRouter for redirection
+import { AcademicCapIcon, ArrowRightIcon, KeyIcon } from '@heroicons/react/24/outline'; // Removed LockClosedIcon
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react'; // Import signIn function from next-auth/react
 
 export default function LoginPage() {
-  const [loginCode, setLoginCode] = useState(''); // Changed from email
-  const [password, setPassword] = useState('');
+  const [loginCode, setLoginCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
 
   // Animation variants (no changes needed here)
   const containerVariants = {
@@ -39,75 +39,45 @@ export default function LoginPage() {
     setLoading(true);
     setMessage(null);
 
+    // Basic validation for 6 digits
+    if (loginCode.length !== 6 || !/^\d+$/.test(loginCode)) {
+      setMessage({ type: 'error', text: 'Please enter a valid 6-digit school login code.' });
+      setLoading(false);
+      return;
+    }
+
     try {
-      // In a real application, you would make a fetch or axios call to your backend here
-      // This will call your NextAuth credentials provider
-      const response = await fetch('/api/auth/callback/credentials', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ loginCode, password, redirect: false }), // Send loginCode, disable default redirect
+      // Call the specific 'school-code-login' provider
+      const result = await signIn('school-code-login', {
+        loginCode,
+        redirect: false, // Prevent NextAuth from redirecting automatically
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.url) { // NextAuth will return a URL for successful login
+      if (result?.error) {
+        // Handle errors from the signIn function (e.g., credentials mismatch)
+        setMessage({ type: 'error', text: result.error });
+      } else if (result?.ok) {
         setMessage({ type: 'success', text: 'Login successful! Redirecting...' });
-        
-        // Determine redirection based on role (which you'll get from the session/token eventually)
-        // For now, we'll make a direct assumption or fetch user role after successful login.
-        // A more robust approach involves passing the role in the login response or fetching the session.
-        // For this example, let's assume `data.user.role` is available in the response from your /shop/login endpoint
-        // or we can fetch the session after successful login.
-        
+
+        // A more robust redirection logic would involve fetching the session
+        // and using the role from there. For immediate redirection based on
+        // mock logic, we can still use the startsWith for demonstration,
+        // but remember to replace this with actual session-based role checking.
+        // For example, after `signIn` is successful, you could `await getSession()`
+        // and then check `session.user.role`.
+
         // Simulating role-based redirection based on the provided URLs
-        // You'll likely need to fetch the session or have the backend provide the role
-        // in the successful login response for accurate redirection.
-        // For a true NextAuth flow, you'd typically rely on the `jwt` and `session` callbacks
-        // to put the role into the session and then use `useSession` on the client side.
-
-        // For immediate redirection based on your provided structure:
-        // After successful NextAuth login, the user's session is established.
-        // We need to know the role to redirect correctly.
-        // Let's assume your backend /shop/login endpoint returns the user's role.
-        // Or, more accurately with NextAuth, after a successful credential login,
-        // you would typically redirect to a dashboard, and then inside the dashboard,
-        // check the session to determine the user's specific role and redirect internally if needed.
-
-        // For this example, let's hardcode for demonstration based on a mock response.
-        // In a real scenario, after a successful credential login, you'd be redirected to `/dashboard`
-        // or a default protected route, and then use `useSession` to get the user's role.
-        
-        // To make this work directly after credential login, your backend response
-        // in the `authorize` callback should include the user's role.
-        // Let's modify the `authorize` callback to return the role.
-
-        // Placeholder for actual redirection logic:
-        // If your backend gives you the role:
-        // const { user } = data; // Assuming data contains user info including role
-        // if (user.role === 'EDUCATOR') {
-        //   router.push('/admin/685018d708b38f9635fb3a03'); // Teacher dashboard
-        // } else if (user.role === 'STUDENT') {
-        //   router.push('/admin/685084cc4da288b5c3156e4a'); // Student dashboard
-        // } else {
-        //   router.push('/dashboard'); // Default fallback
-        // }
-
-        // For now, let's simulate by checking if a mock `loginCode` is for a teacher or student.
-        // This is not how it would work in production, but demonstrates the client-side decision.
         setTimeout(() => {
-          if (loginCode.startsWith('teacher')) { // Example: If teacher codes start with 'teacher'
-            router.push('/admin/685018d708b38f9635fb3a03');
-          } else if (loginCode.startsWith('student')) { // Example: If student codes start with 'student'
-            router.push('/admin/685084cc4da288b5c3156e4a');
-          } else {
-            router.push('/dashboard'); // Fallback
+          // In a real app, after successful signIn, you'd typically redirect to a
+          // protected route (e.g., /dashboard) and then use `useSession` to get
+          // the user's role and perform the final role-based redirection.
+          // For this example, we'll keep the mock logic for immediate redirection.
+          if (loginCode.startsWith('1')) { // Example: Teacher codes start with '1'
+            router.push('/admin/685018d708b38f9635fb3a03'); // Teacher dashboard
+          } else { // Assume others are students for this mock
+            router.push('/admin/685084cc4da288b5c3156e4a'); // Student dashboard
           }
         }, 1000);
-
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Invalid login code or password. Please try again.' });
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -136,41 +106,34 @@ export default function LoginPage() {
             Welcome Back!
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">
-            Sign in to your account using your school login code.
+            Enter your 6-digit school login code to continue.
           </p>
         </motion.div>
 
         <motion.form onSubmit={handleLogin} className="w-full relative z-10" variants={itemVariants}>
           <div className="mb-6">
             <div className="relative">
-              <KeyIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" /> {/* Changed icon */}
+              <KeyIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <input
-                type="text" // Changed type to text for login code
-                placeholder="School Login Code" // Changed placeholder
+                type="text" // Keep as text to allow leading zeros if any, but validate length
+                inputMode="numeric" // Suggest numeric keyboard on mobile
+                pattern="[0-9]*" // Hint for numeric input
+                maxLength={6} // Enforce 6 digits
+                placeholder="6-Digit Login Code"
                 className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
                            bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
                            focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
-                value={loginCode} // Changed value and onChange
-                onChange={(e) => setLoginCode(e.target.value)}
+                value={loginCode}
+                onChange={(e) => {
+                  // Allow only digits and limit to 6 characters
+                  const value = e.target.value.replace(/\D/g, '').substring(0, 6);
+                  setLoginCode(value);
+                }}
                 required
               />
             </div>
           </div>
-          <div className="mb-6">
-            <div className="relative">
-              <LockClosedIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-              <input
-                type="password"
-                placeholder="Password"
-                className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
-                           bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                           focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </div>
+          {/* Removed the password input field entirely */}
 
           {message && (
             <motion.div
@@ -202,20 +165,13 @@ export default function LoginPage() {
             ) : (
               <>
                 Login
-                <ArrowRightIcon className="w-5 h-5 ml-2" />
               </>
             )}
           </motion.button>
         </motion.form>
 
-        <motion.div className="mt-8 text-sm relative z-10" variants={itemVariants}>
-          <a
-            href="#forgot-password"
-            className="text-indigo-400 dark:text-purple-300 hover:underline transition-colors"
-            onClick={(e) => { e.preventDefault(); console.log('Forgot password clicked!'); }}
-          >
-            Forgot password?
-          </a>
+        {/* <motion.div className="mt-8 text-sm relative z-10" variants={itemVariants}>
+           Removed "Forgot password?" as there's no password for this flow 
           <p className="mt-4 text-gray-700 dark:text-gray-300">
             Don't have an account?{' '}
             <a
@@ -226,7 +182,7 @@ export default function LoginPage() {
               Sign up
             </a>
           </p>
-        </motion.div>
+        </motion.div> */}
       </motion.div>
 
       {/* Tailwind CSS keyframe animation for the blob effect (copy-pasted from previous sections) */}

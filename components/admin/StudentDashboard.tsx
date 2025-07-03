@@ -97,7 +97,69 @@ const quickLinks = [
 ];
 
 
-export default function StudentDashboard() {
+// --- Type Definitions for Props ---
+export type PrincipalStat = {
+  title: string;
+  value: string;
+  description: string;
+  color: string; // Tailwind bg-color class
+};
+
+export type QuickAction = {
+  label: string;
+  href: string;
+};
+
+export type Announcement = {
+  id: number;
+  text: string;
+  type: 'info' | 'warning';
+};
+
+export type RecentStaffMessage = {
+  id: string;
+  name: string;
+  message: string;
+  time: string;
+};
+
+export type PerformanceOverviewData = {
+  series: { name: string; data: number[] }[];
+  categories: string[];
+};
+
+export type AttendanceInsightsData = {
+  series: number[];
+  labels: string[];
+};
+
+export interface PrincipalDashboardData {
+  principalStats: PrincipalStat[];
+  quickActions: QuickAction[];
+  announcements: Announcement[];
+  recentStaffMessages: RecentStaffMessage[];
+  performanceOverviewData: PerformanceOverviewData;
+  attendanceInsightsData: AttendanceInsightsData;
+}
+
+export type StudentDashboardData = {
+  studentStats: { title: string; value: string; description: string; color: string }[];
+  enrolledCourses: { id: string; title: string; progress: number }[];
+  recentGrades: { subject: string; score: number; date: string }[];
+  upcomingAssignments: { id: string; title: string; dueDate: string; course: string }[];
+  // Add other student-specific data fields as needed
+};
+
+interface PrincipalDashboardProps extends StudentDashboardData {
+  companyId: string; // Pass companyId for dynamic links
+  currentUserId: string; // Pass currentUserId for dynamic links
+}
+
+
+export default function StudentDashboard({
+  companyId,
+  currentUserId,
+}: PrincipalDashboardProps) {
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
