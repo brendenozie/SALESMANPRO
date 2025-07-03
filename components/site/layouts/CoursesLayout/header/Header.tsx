@@ -53,6 +53,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 export default function Header() {
+  
   const { storeFormData } = useStoreContext();
   // const { cart } = useMockStateContext();
   const [menuOpen, setMenuOpen] = useState(false);

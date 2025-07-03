@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { PlayCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid'; // Added ArrowRightIcon for consistency
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Mocking the image loader since Next.js Image is not available
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -10,6 +11,9 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 export default function HeroSection() {
+
+  const { storeFormData } = useStoreContext();
+  
   // Animation variants for hero text and buttons
   const heroVariants = {
     hidden: { opacity: 0, y: 30 },
