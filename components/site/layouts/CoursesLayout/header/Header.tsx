@@ -14,6 +14,7 @@ import {
   InboxIcon, // New icon for school/academy
   // Removed BellIcon for a more minimal approach
 } from "@heroicons/react/24/outline";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Mocking context data for demonstration purposes
 // In a real application, replace with actual data sources
@@ -52,8 +53,8 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 export default function Header() {
-  const { storeFormData } = useMockStoreContext();
-  const { cart } = useMockStateContext();
+  const { storeFormData } = useStoreContext();
+  // const { cart } = useMockStateContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false); // State for mobile search input
 
@@ -144,7 +145,7 @@ export default function Header() {
                 alt={name}
                 width={180}
                 height={60}
-                className="object-contain rounded-md"
+                className="object-contain rounded-md w-44 h-16"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = "https://placehold.co/180x60/4A00B7/FFFFFF?text=Logo";
@@ -217,7 +218,7 @@ export default function Header() {
             <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/profile`)}>
               <UserIcon className={iconStyleClass} />
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/checkout`)}>
+            {/* <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/checkout`)}>
               <div className="relative">
                 <ShoppingBagIcon className={iconStyleClass} />
                 {cart.length > 0 && (
@@ -226,7 +227,7 @@ export default function Header() {
                   </span>
                 )}
               </div>
-            </motion.button>
+            </motion.button> */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="lg:hidden p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
