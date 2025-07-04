@@ -25,7 +25,9 @@ export default async function AdminStoreLayout({
   if (!session?.user?.id ||
       (session.user.role?.toLowerCase() !== 'admin' &&
        session.user.role?.toLowerCase() !== 'student' &&
-       session.user.role?.toLowerCase() !== 'educator')) {
+       session.user.role?.toLowerCase() !== 'educator' &&
+       session.user.role?.toLowerCase() !== 'consumer')) {
+        console.log(`Unauthorized access attempt by user ID: ${session?.user?.id} with role: ${session?.user?.role}`);
     notFound(); // Using notFound instead of redirect for layout, or redirect to a more appropriate unauthorized page
   }
 
@@ -47,8 +49,6 @@ export default async function AdminStoreLayout({
       },
     },
   });
-
-  
 
   // Get the user's role from the session
   const userRole = session.user.role?.toUpperCase() || 'OTHER'; // Default to 'OTHER' if role is not found

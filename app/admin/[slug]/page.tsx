@@ -47,7 +47,8 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
   if (!session?.user?.id ||
       (session.user.role?.toLowerCase() !== 'admin' &&
        session.user.role?.toLowerCase() !== 'student' &&
-       session.user.role?.toLowerCase() !== 'educator')) {
+       session.user.role?.toLowerCase() !== 'educator'&&
+       session.user.role?.toLowerCase() !== 'consumer')) {
     redirect('/'); // Redirect if not authorized
   }
 
@@ -91,9 +92,13 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
         console.error(`[AdminDashboardPage] Failed to fetch student dashboard data: ${studentRes.status} ${studentRes.statusText}`);
         fetchError = true;
       }
-    } else if (userRole === 'EDUCATOR') {
+    } else if (userRole === 'EDUCATOR' || userRole === 'TEACHER' || userRole === 'LECTURER' || userRole === 'TUTOR' || userRole === 'HEAD_TEACHER' || 
+        userRole == 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD' || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' ||
+        userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' ||
+        userRole === 'EDUCATIONAL_OFFICER' || userRole === 'EDUCATIONAL_OFFICER' || userRole === 'CONSUMER' && company?.category == 'educational & online courses'
+    ) {
       // Check if this educator is a Principal/Head Teacher based on company category
-      if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head') {
+      if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher'  || categoryKey === 'consumer' || categoryKey === 'school head') {
         const principalRes = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store' }
@@ -171,7 +176,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     };
   }
 
-  if (userRole === 'EDUCATOR' && !principalDashboardData && !tutorDashboardData) {
+  if (userRole === 'EDUCATOR' && !principalDashboardData && !tutorDashboardData || userRole === 'CONSUMER' && (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head')) {
     // Fallback for Principal Dashboard (if applicable and failed)
     if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head') {
       console.warn("Using fallback data for Principal Dashboard.");
@@ -235,8 +240,17 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
   // 5. Render appropriate client component based on user role and category
   if (userRole === 'STUDENT') {
     return <StudentDashboard {...(studentDashboardData as StudentDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
-  } else if (userRole === 'EDUCATOR') {
-    if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head') {
+  } else if (userRole === 'EDUCATOR' || userRole === 'TEACHER' || userRole === 'LECTURER' || userRole === 'TUTOR' || userRole === 'HEAD_TEACHER' ||
+      userRole == 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD' || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' ||
+      userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' ||
+      userRole === 'EDUCATIONAL_OFFICER' || userRole === 'EDUCATIONAL_OFFICER' || userRole === 'CONSUMER' && (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head')
+  ) {
+    if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head' || userRole === 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD'
+        || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' || userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || 
+        userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' || userRole === 'EDUCATIONAL_OFFICER' || 
+        userRole === 'CONSUMER' && (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || 
+          categoryKey === 'school head')
+    ) {
       return <PrincipalDashboard {...(principalDashboardData as PrincipalDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
     } else {
       // Default for other educators (teachers, lecturers, tutors)
