@@ -94,10 +94,10 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     setIsLoading(true);
     setError(null);
     try {
-      const coursesRes = await fetch(`${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
-      const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
-      const departmentsRes = await fetch(`${apiUrl}/departments?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`);
+      const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
+      const departmentsRes = await fetch(`${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (coursesRes.ok) {
         const data: CourseType[] = await coursesRes.json();
@@ -177,7 +177,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
 
     try {
 
-      const url = courseData.id ? `${apiUrl}/courses/${courseData.id}` : `${apiUrl}/courses`;
+      const url = courseData.id ? `${apiUrl}/admin/courses/${courseData.id}` : `${apiUrl}/admin/courses`;
 
       const payload = {
         ...courseData,
@@ -213,7 +213,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/courses/${courseId}`, {
+      const res = await fetch(`${apiUrl}/admin/courses/${courseId}`, {
         method: 'DELETE',
       });
 

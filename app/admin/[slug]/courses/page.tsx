@@ -161,7 +161,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
 
     // Fetch all educators for this company
     const educatorsRes = await fetch(
-      `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (educatorsRes.ok) {
@@ -180,7 +180,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
 
     // Fetch all departments for this company
     const departmentsRes = await fetch(
-      `${apiUrl}/departments?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (departmentsRes.ok) {
@@ -194,7 +194,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
 
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (academicLevelsRes.ok) {
@@ -212,7 +212,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError || initialCourses.length === 0 || allEducators.length === 0 || allDepartments.length === 0 || allAcademicLevels.length === 0) {
+  if (fetchError && initialCourses.length === 0 && allEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0) {
     console.log("[AdminCoursesPage] Using sample data for courses, educators, departments, and academic levels.");
     const { sampleCourses, sampleEducators, sampleDepartments, sampleAcademicLevels } = generateSampleCoursesData(companyId);
     initialCourses = sampleCourses;
