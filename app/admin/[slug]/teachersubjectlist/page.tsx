@@ -1,7 +1,7 @@
 // app/admin/[slug]/inventory/page.tsx
 
 import React from "react";
-import TeachersClassListPage from "./TeachersClassListPage";
+import TeachersSubjectListPage from "./TeachersSubjectListPage";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -107,6 +107,6 @@ export default async function AdminInventoryPage({ params }: Props) {
   }
 
   return (
-    <TeachersClassListPage />
+    <TeachersSubjectListPage />
   );
 }

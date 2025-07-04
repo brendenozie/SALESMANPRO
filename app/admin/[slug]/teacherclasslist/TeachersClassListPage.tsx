@@ -38,7 +38,7 @@ const useMockStoreContext = () => ({
     teacherClasses: [ // Sample classes assigned to this teacher
       {
         id: '685018d708b38f9635fb3a03',
-        name: 'Grade 7 Mathematics',
+        name: 'Grade 7',
         grade: '7',
         studentsEnrolled: 35,
         schedule: 'Mon, Wed, Fri | 9:00 AM - 9:45 AM',
@@ -56,7 +56,7 @@ const useMockStoreContext = () => ({
       },
       {
         id: '685018d708b38f9635fb3a03',
-        name: 'Grade 8 English Language',
+        name: 'Grade 8',
         grade: '8',
         studentsEnrolled: 30,
         schedule: 'Tue, Thu | 10:30 AM - 11:15 AM',
@@ -73,7 +73,7 @@ const useMockStoreContext = () => ({
       },
       {
         id: '685018d708b38f9635fb3a03',
-        name: 'Grade 9 Algebra',
+        name: 'Grade 9',
         grade: '9',
         studentsEnrolled: 28,
         schedule: 'Mon, Wed | 1:00 PM - 1:45 PM',
@@ -87,7 +87,7 @@ const useMockStoreContext = () => ({
       },
       {
         id: '685018d708b38f9635fb3a03',
-        name: 'Grade 10 Geometry',
+        name: 'Grade 10',
         grade: '10',
         studentsEnrolled: 22,
         schedule: 'Tue, Thu | 1:00 PM - 1:45 PM',
@@ -137,7 +137,7 @@ export default function TeachersClassListPage() {
 
     //Navigate to Student Roster Page
 
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/student-roster`); // Adjust the path as needed
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/student-roster`); // Adjust the path as needed
 
 
   };
@@ -146,49 +146,49 @@ export default function TeachersClassListPage() {
     console.log(`Taking Attendance for Class ID: ${classId} (${className})`);
     // In a real app, open an attendance marking interface
     // alert(`Functionality: Take Attendance for "${className}"`);
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/take-attendance`); // Navigate to Attendance Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/take-attendance`); // Navigate to Attendance Page
   };
 
   const handleViewConsolidatedGrades = (companyId: string, classId: string, className: string) => {
     console.log(`Viewing Consolidated Grades for Class ID: ${classId} (${className})`);
     // In a real app, navigate to a consolidated grades view
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/consolidated-grades`); // Navigate to Consolidated Grades Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/consolidated-grades`); // Navigate to Consolidated Grades Page
   };
 
   const handleManageAssignments = (companyId: string, classId: string, className: string) => {
     console.log(`Managing Assignments for Class ID: ${classId} (${className})`);
     // In a real app, navigate to an assignments management page for this class
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/manage-assignments`); // Navigate to Manage Assignments Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/manage-assignments`); // Navigate to Manage Assignments Page
   };
 
   const handleUploadResources = (companyId: string, classId: string, className: string) => {
     console.log(`Uploading Resources for Class ID: ${classId} (${className})`);
     // In a real app, open a file upload interface
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/upload-resources`); // Navigate to Upload Resources Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/upload-resources`); // Navigate to Upload Resources Page
   };
 
   const handleViewClassSchedule = (companyId: string, classId: string, className: string) => {
     console.log(`Viewing Class Schedule for Class ID: ${classId} (${className})`);
     // In a real app, navigate to a class-specific schedule view
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/class-schedule`); // Navigate to Class Schedule Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/class-schedule`); // Navigate to Class Schedule Page
   };
 
   const handleAddClassEvent = (companyId: string, classId: string, className: string) => {
     console.log(`Adding Class Event for Class ID: ${classId} (${className})`);
     // In a real app, open a modal to add a new event to the class calendar
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/class-event`); // Navigate to Add Class Event Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/class-event`); // Navigate to Add Class Event Page
   };
 
   const handleSendMessage = (companyId: string, classId: string, className: string) => {
     console.log(`Sending Message to Class ID: ${classId} (${className})`);
     // In a real app, open a messaging interface pre-populated with class recipients
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/send-message`); // Navigate to Send Message Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/send-message`); // Navigate to Send Message Page
   };
 
   const handleGenerateReports = (companyId: string, classId: string, className: string) => {
     console.log(`Generating Reports for Class ID: ${classId} (${className})`);
     // In a real app, open a report generation interface
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/generate-reports`); // Navigate to Generate Reports Page
+    router.push(`/admin/${companyId}/teacherclasslist/${classId}/generate-reports`); // Navigate to Generate Reports Page
   };
 
   const handleDeleteClassRequest = (companyId: string, classId: string, className: string) => {

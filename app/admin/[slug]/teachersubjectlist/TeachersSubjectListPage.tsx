@@ -99,7 +99,7 @@ const useMockStoreContext = () => ({
   },
 });
 
-export default function TeachersClassListPage() {
+export default function TeachersSubjectListPage() {
   // IMPORTANT: In your actual application, use:
   // const { storeFormData } = useStoreContext();
   const { storeFormData } = useMockStoreContext(); // Using mock for consistent data and colors
@@ -137,7 +137,7 @@ export default function TeachersClassListPage() {
 
     //Navigate to Student Roster Page
 
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/student-roster`); // Adjust the path as needed
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/student-roster`); // Adjust the path as needed
 
 
   };
@@ -146,49 +146,49 @@ export default function TeachersClassListPage() {
     console.log(`Taking Attendance for Class ID: ${classId} (${className})`);
     // In a real app, open an attendance marking interface
     // alert(`Functionality: Take Attendance for "${className}"`);
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/take-attendance`); // Navigate to Attendance Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/take-attendance`); // Navigate to Attendance Page
   };
 
   const handleViewConsolidatedGrades = (companyId: string, classId: string, className: string) => {
     console.log(`Viewing Consolidated Grades for Class ID: ${classId} (${className})`);
     // In a real app, navigate to a consolidated grades view
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/consolidated-grades`); // Navigate to Consolidated Grades Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/consolidated-grades`); // Navigate to Consolidated Grades Page
   };
 
   const handleManageAssignments = (companyId: string, classId: string, className: string) => {
     console.log(`Managing Assignments for Class ID: ${classId} (${className})`);
     // In a real app, navigate to an assignments management page for this class
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/manage-assignments`); // Navigate to Manage Assignments Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/manage-assignments`); // Navigate to Manage Assignments Page
   };
 
   const handleUploadResources = (companyId: string, classId: string, className: string) => {
     console.log(`Uploading Resources for Class ID: ${classId} (${className})`);
     // In a real app, open a file upload interface
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/upload-resources`); // Navigate to Upload Resources Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/upload-resources`); // Navigate to Upload Resources Page
   };
 
   const handleViewClassSchedule = (companyId: string, classId: string, className: string) => {
     console.log(`Viewing Class Schedule for Class ID: ${classId} (${className})`);
     // In a real app, navigate to a class-specific schedule view
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/class-schedule`); // Navigate to Class Schedule Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/class-schedule`); // Navigate to Class Schedule Page
   };
 
   const handleAddClassEvent = (companyId: string, classId: string, className: string) => {
     console.log(`Adding Class Event for Class ID: ${classId} (${className})`);
     // In a real app, open a modal to add a new event to the class calendar
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/class-event`); // Navigate to Add Class Event Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/class-event`); // Navigate to Add Class Event Page
   };
 
   const handleSendMessage = (companyId: string, classId: string, className: string) => {
     console.log(`Sending Message to Class ID: ${classId} (${className})`);
     // In a real app, open a messaging interface pre-populated with class recipients
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/send-message`); // Navigate to Send Message Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/send-message`); // Navigate to Send Message Page
   };
 
   const handleGenerateReports = (companyId: string, classId: string, className: string) => {
     console.log(`Generating Reports for Class ID: ${classId} (${className})`);
     // In a real app, open a report generation interface
-    router.push(`/admin/${companyId}/teacherclasseslist/${classId}/generate-reports`); // Navigate to Generate Reports Page
+    router.push(`/admin/${companyId}/teachersubjectlist/${classId}/generate-reports`); // Navigate to Generate Reports Page
   };
 
   const handleDeleteClassRequest = (companyId: string, classId: string, className: string) => {
@@ -231,9 +231,9 @@ export default function TeachersClassListPage() {
       >
         <motion.div variants={itemVariants}>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            My Classes <span style={{ color: primaryColor }}>📚</span>
+            My Subjects <span style={{ color: primaryColor }}>📚</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">Overview of all classes assigned to {teacherName}, {teacherRole}.</p>
+          <p className="text-sm text-gray-600 mt-1">Overview of all subjects assigned to {teacherName}, {teacherRole}.</p>
         </motion.div>
         <motion.div variants={itemVariants} className="flex items-center gap-4">
           <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
