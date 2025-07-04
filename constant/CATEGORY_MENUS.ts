@@ -232,7 +232,8 @@ export const getCategoryMenus = (adminSlug: string) => ({
       label: "My Classes",
       icon: ClipboardDocumentListIcon,
       subItems: [
-        { label: "Class List", href: `/admin/${adminSlug}/teacherclasseslist` },
+        { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasseslist` },
+        { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist` },
         { label: "Assignments", href: `/admin/${adminSlug}/teacherassignments` },
         { label: "Materials", href: `/admin/${adminSlug}/teachermaterials` },
       ],

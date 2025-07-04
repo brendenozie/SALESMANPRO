@@ -23,7 +23,7 @@ const useMockStoreContext = () => ({
     },
     teacherClasses: [ // Sample classes with mock events
       {
-        id: 'CL101',
+        id: '6863daeef4ad17d957b92403',
         name: 'Grade 7 Mathematics',
         grade: '7',
         studentsEnrolled: 35,
