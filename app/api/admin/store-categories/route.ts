@@ -139,3 +139,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Failed to create store category", error: error.message }, { status: 500 });
   }
 }
+
+// DELETE /api/store-categories/:id
+// Deletes a StoreCategory entry by ID.
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ message: "Store category ID is required." }, { status: 400 });
+    }
+
+    // Check if the store category exists
+    const existingStoreCategory = await prisma.storeCategory.findUnique({
+      where: { id },
+    });
+
+    if (!existingStoreCategory) {
+      return NextResponse.json({ message: "Store category not found." }, { status: 404 });
+    }
+
+    // Delete the store category
+    await prisma.storeCategory.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ message: "Store category deleted successfully." }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error deleting store category:", error);
+    return NextResponse.json({ message: "Failed to delete store category", error: error.message }, { status: 500 });
+  }
+}

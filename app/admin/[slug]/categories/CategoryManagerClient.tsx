@@ -52,7 +52,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/get-categories?companyId=${companyId}`, { cache: 'no-store' });
+      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
       if (res.ok) {
         const json = await res.json();
         // Assuming API returns { categories: StoreCategory[] }
@@ -134,7 +134,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/store-categories/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${apiUrl}/admin/store-categories?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchCategories();
       } else {
