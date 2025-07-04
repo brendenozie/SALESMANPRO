@@ -46,11 +46,10 @@ export async function GET(request: Request) {
           },
         },
         parent: {
+          // Corrected structure: Use 'select' for parent, and within it, specify 'user'
           select: {
             id: true,
             phone: true,
-          },
-          include: {
             user: {
               select: {
                 id: true,
@@ -116,7 +115,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
-    console.error("Error fetching students:", error);
+    // console.error("Error fetching students:", error);
     return NextResponse.json({ message: "Failed to fetch students", error: error.message }, { status: 500 });
   }
 }
@@ -196,8 +195,10 @@ export async function POST(request: Request) {
           select: { id: true, name: true, email: true, image: true },
         },
         parent: {
-          select: { id: true, phone: true },
-          include: {
+          // Corrected structure for POST as well
+          select: {
+            id: true,
+            phone: true,
             user: {
               select: {
                 id: true,

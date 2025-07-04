@@ -3,7 +3,7 @@ import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 // Helper function to generate a unique 6-digit login code for parents
 async function generateUniqueLoginCode(): Promise<string> {
-  let code: string;
+  let code: string = '';
   let isUnique = false;
   while (!isUnique) {
     code = Math.floor(100000 + Math.random() * 900000).toString();

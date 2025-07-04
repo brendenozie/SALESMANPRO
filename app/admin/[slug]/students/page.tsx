@@ -204,7 +204,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
 
     // NEW: Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (academicLevelsRes.ok) {
@@ -222,7 +222,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError || initialStudents.length === 0 || allParents.length === 0 || allAcademicLevels.length === 0) {
+  if (fetchError && initialStudents.length === 0 && allParents.length === 0 && allAcademicLevels.length === 0) {
     console.log("[StudentsManagementPage] Using sample data for students, parents, and academic levels.");
     const { sampleStudents, sampleParents, sampleAcademicLevels } = generateSampleStudentsData(companyId);
     initialStudents = sampleStudents;

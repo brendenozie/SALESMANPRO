@@ -53,10 +53,74 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
-      if (res.ok) {
-        const json = await res.json();
-        // Assuming API returns { categories: StoreCategory[] }
-        setCategories(json.categories || []);
+      
+        if (res.ok) {
+              
+          const resJson = await res.json();
+          // Ensure the response has the expected structure
+          if (!resJson || !resJson.results) {
+            throw new Error('Invalid response structure');
+          }
+    
+          const data = resJson.results || resJson.data; // Handle both cases
+          
+          let storeCategories = data.map((sc: any) => ({
+            id: sc.id,
+            companyId: sc.companyId,
+            categoryId: sc.categoryId,
+            displayName: sc.displayName,
+            icon: sc.icon || sc.category.icon,
+            sortOrder: sc.sortOrder,
+            visible: sc.visible,
+            items: Array.isArray(sc.items)
+              ? sc.items.map((sub: any) => ({
+                  id: sub.id,
+                  name: sub.name,
+                  slug: sub.slug,
+                  sortOrder: sub.sortOrder,
+                  visible: sub.visible,
+                }))
+              : Array.isArray(sc.category.subcategories)
+                ? sc.category.subcategories.map((sub: any) => ({
+                    id: sub._id?.$oid || sub.id,
+                    name: sub.name,
+                    slug: sub.slug,
+                    sortOrder: sub.sortOrder,
+                    visible: sub.visible,
+                  }))
+                : [],
+            allBrands: sc.allBrands || [],
+            category: {
+              id: sc.category.id,
+              name: sc.category.name,
+              slug: sc.category.slug,
+              description: sc.category.description,
+              longDescription: sc.category.longDescription,
+              seoTitle: sc.category.seoTitle,
+              seoDescription: sc.category.seoDescription,
+              metaKeywords: sc.category.metaKeywords,
+              sortOrder: sc.category.sortOrder,
+              visible: sc.category.visible,
+              isFeatured: sc.category.isFeatured,
+              showInHomepage: sc.category.showInHomepage,
+              attributes: sc.category.attributes,
+              subcategories: Array.isArray(sc.category.subcategories)
+                ? sc.category.subcategories.map((sub: any) => ({
+                    id: sub._id?.$oid || sub.id,
+                    name: sub.name,
+                    slug: sub.slug,
+                    sortOrder: sub.sortOrder,
+                    visible: sub.visible,
+                  }))
+                : [],
+              icon: sc.category.icon,
+              image: sc.category.image,
+            },
+          }));
+          
+          console.log('Fetched store categories:', storeCategories);
+          setCategories(storeCategories);
+         
       } else {
         const errorData = await res.json();
         setError(errorData.message || "Failed to fetch categories.");

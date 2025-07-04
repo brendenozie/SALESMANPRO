@@ -109,7 +109,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
       {/* Subcategories List (Collapsible) */}
       {category.items.length > 0 && (
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSubcategoriesOpen ? 'max-h-screen opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+        <div className={`overflow-y-auto transition-all duration-300 ease-in-out ${isSubcategoriesOpen ? 'max-h-screen opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
           <h4 className="text-md font-semibold text-gray-700 mb-3 ml-12 border-b border-gray-100 pb-2">Subcategories:</h4>
           <ul className="ml-12 space-y-2">
             {category.items.sort((a, b) => a.sortOrder - b.sortOrder).map(sub => (
