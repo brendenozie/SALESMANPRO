@@ -1,117 +1,43 @@
-// app/admin/[slug]/inventory/page.tsx
-
+// app/admin/[companyId]/academic-levels/[academicLevelId]/attendance/page.tsx
 import React from "react";
 import TakeAttendancePage from "./TakeAttendancePage";
 
+// Define the API base URL
+// Ensure this matches where your Next.js API routes are served
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: string;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
 
 interface Props {
   params: {
-    slug: string; // companyId
+    slug: string;
+    classId: string;
   };
 }
 
 /**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
+ * This is a Server Component. It extracts path parameters
+ * and passes them to the Client Component below.
+ * In a real application, 'educatorId' would typically come from
+ * an authenticated session (e.g., using NextAuth.js's getServerSession).
  */
-export default async function AdminInventoryPage({ params }: Props) {
-  const companyId = params.slug;
+export default async function AcademicLevelAttendancePage({ params }: Props) {
+  const { slug, classId } = params;
 
-  let productsData: Product[] = [];
-  let categoriesData: Category[] = [];
-  let agentsData: Agent[] = [];
+  // TODO: Replace with actual educatorId from your authentication system.
+  // For demonstration, we use a placeholder.
+  const educatorId = slug; //"EDUCATOR_ID_PLACEHOLDER"; // Example: "60c72b2f9b1e8b001c8e4d1b"
 
-  try {
-    // Fetch all products for this company
-    const productsRes = await fetch(
-      `${apiUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
-    );
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
-    }
-
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
-      { cache: "no-store" }
-    );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
-    }
-
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
-    );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
-    }
-
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
-    }
-  } catch (err: any) {
-    // console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
-  }
-
-  // You need to determine how to get the classId; here we use a placeholder.
-  const classId = "CL101"; // TODO: Replace with actual classId value
+  // No need to fetch products, categories, agents here, as this page is
+  // specifically for attendance and TakeAttendancePage will fetch its own data.
 
   return (
     <TakeAttendancePage
-      classId={classId}
+      companyId={slug}
+      academicLevelId={classId}
+      educatorId={educatorId}
+      // Pass apiUrl if your client component needs to know it
+      // Though typically, client-side fetches would go to relative /api paths
+      // or use a configured base URL if the API is external.
+      // For this example, we'll keep API_BASE_URL defined within TakeAttendancePage.
     />
   );
 }

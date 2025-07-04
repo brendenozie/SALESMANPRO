@@ -1753,6 +1753,7 @@ model AcademicLevel {
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   CourseAcademicLevel CourseAcademicLevel[]
+  AttendanceRecord    AttendanceRecord[]
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
@@ -1816,8 +1817,9 @@ model Course {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  AcademicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id])
-  academicLevelId String?        @db.ObjectId
+  AcademicLevel    AcademicLevel?     @relation(fields: [academicLevelId], references: [id])
+  academicLevelId  String?            @db.ObjectId
+  AttendanceRecord AttendanceRecord[]
 
   @@unique([title, academicLevelId, companyId]) // A course name should be unique within an academic level and company
   @@index([academicLevelId])
@@ -2156,26 +2158,61 @@ enum AttendanceStatus {
 
 // Attendance Record Model
 // Records a student's attendance for a specific class schedule session or a general day.
-model AttendanceRecord {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  studentId       String           @db.ObjectId
-  student         Student          @relation(fields: [studentId], references: [id])
-  classScheduleId String?          @db.ObjectId // Optional: Link to a specific scheduled class session
-  classSchedule   ClassSchedule?   @relation(fields: [classScheduleId], references: [id])
-  date            DateTime // Date of the attendance record
-  status          AttendanceStatus // Enum: PRESENT, ABSENT, TARDY, EXCUSED
-  reason          String? // Optional: Reason for absence/tardy/excused
-  recordedById    String           @db.ObjectId // User (Educator or Admin) who recorded attendance
-  recordedBy      Educator         @relation("RecordedAttendance", fields: [recordedById], references: [id])
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  User            User?            @relation(fields: [userId], references: [id])
-  userId          String?          @db.ObjectId
 
-  @@unique([studentId, date, classScheduleId]) // Ensure unique attendance per student per class session/day
+// Class Attendance Model
+model AttendanceRecord {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
+
+  classScheduleId String?        @db.ObjectId // Optional: Link to a specific scheduled class session
+  classSchedule   ClassSchedule? @relation(fields: [classScheduleId], references: [id])
+
+  academicLevelId String?        @db.ObjectId // NEW: Optional: Link to a specific Academic Level if not tied to a ClassSchedule
+  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id])
+
+  courseId String? @db.ObjectId // NEW: Optional: Link to a specific Course if not tied to a ClassSchedule
+  course   Course? @relation(fields: [courseId], references: [id])
+
+  date   DateTime // Date of the attendance record (consider making it specific to a point in time if needed)
+  status AttendanceStatus // Enum: PRESENT, ABSENT, TARDY, EXCUSED
+  reason String? // Optional: Reason for absence/tardy/excused
+
+  recordedById String   @db.ObjectId // User (Educator or Admin) who recorded attendance
+  recordedBy   Educator @relation("RecordedAttendance", fields: [recordedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
+
+  @@unique([studentId, date, classScheduleId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
   @@index([studentId, date])
   @@index([classScheduleId])
+  @@index([academicLevelId]) // NEW INDEX
+  @@index([courseId]) // NEW INDEX
 }
+
+// model AttendanceRecord {
+//   id              String           @id @default(auto()) @map("_id") @db.ObjectId
+//   studentId       String           @db.ObjectId
+//   student         Student          @relation(fields: [studentId], references: [id])
+//   classScheduleId String?          @db.ObjectId // Optional: Link to a specific scheduled class session
+//   classSchedule   ClassSchedule?   @relation(fields: [classScheduleId], references: [id])
+//   date            DateTime // Date of the attendance record
+//   status          AttendanceStatus // Enum: PRESENT, ABSENT, TARDY, EXCUSED
+//   reason          String? // Optional: Reason for absence/tardy/excused
+//   recordedById    String           @db.ObjectId // User (Educator or Admin) who recorded attendance
+//   recordedBy      Educator         @relation("RecordedAttendance", fields: [recordedById], references: [id])
+//   createdAt       DateTime         @default(now())
+//   updatedAt       DateTime         @updatedAt
+//   User            User?            @relation(fields: [userId], references: [id])
+//   userId          String?          @db.ObjectId
+
+//   @@unique([studentId, date, recordedById]) // Ensure unique attendance per student per class session/day
+//   @@index([studentId, date])
+//   @@index([classScheduleId])
+// }
 
 // Exam Model
 // Defines a structured examination or assessment event.

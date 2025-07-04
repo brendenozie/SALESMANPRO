@@ -9,112 +9,57 @@ import {
   PencilIcon, // For add/edit note
   MagnifyingGlassIcon, // For search
   EnvelopeIcon, // For email parent
-  IdentificationIcon,
-  ArrowRightIcon,
-  UsersIcon, // For student ID
+  IdentificationIcon, // For student ID
+  ArrowRightIcon, // For view details
+  UsersIcon, // Generic users icon
 } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
+import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import { StudentRosterPageData, StudentRosterStudent } from '@/app/api/teacher/academic-levels/[academicLevelId]/students/route';
 
-// Mocking context data for demonstration purposes
-const useMockStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      accentColor: "#FFC107", // Amber Yellow, for consistency
-    },
-    teacherClasses: [ // Sample classes with student data
-      {
-        id: 'CL101',
-        name: 'Grade 7 Mathematics',
-        grade: '7',
-        studentsEnrolled: 35,
-        schedule: 'Mon, Wed, Fri | 9:00 AM - 9:45 AM',
-        room: 'Room 101',
-        description: 'Foundational concepts of algebra and geometry.',
-        students: [
-          { studentId: 'S001', name: 'Alice Smith', email: 'alice.s@example.com', parentEmail: 'parent.alice@example.com', avatarUrl: 'https://placehold.co/100x100/FFC107/FFFFFF?text=AS' },
-          { studentId: 'S002', name: 'Bob Johnson', email: 'bob.j@example.com', parentEmail: 'parent.bob@example.com', avatarUrl: 'https://placehold.co/100x100/fd2121/FFFFFF?text=BJ' },
-          { studentId: 'S003', name: 'Charlie Brown', email: 'charlie.b@example.com', parentEmail: 'parent.charlie@example.com', avatarUrl: 'https://placehold.co/100x100/28A745/FFFFFF?text=CB' },
-          { studentId: 'S004', name: 'Diana Prince', email: 'diana.p@example.com', parentEmail: 'parent.diana@example.com', avatarUrl: 'https://placehold.co/100x100/007BFF/FFFFFF?text=DP' },
-          { studentId: 'S005', name: 'Ethan Hunt', email: 'ethan.h@example.com', parentEmail: 'parent.ethan@example.com', avatarUrl: 'https://placehold.co/100x100/8A2BE2/FFFFFF?text=EH' },
-          { studentId: 'S006', name: 'Fiona Gallagher', email: 'fiona.g@example.com', parentEmail: 'parent.fiona@example.com', avatarUrl: 'https://placehold.co/100x100/DDA0DD/FFFFFF?text=FG' },
-          { studentId: 'S007', name: 'George Costanza', email: 'george.c@example.com', parentEmail: 'parent.george@example.com', avatarUrl: 'https://placehold.co/100x100/4169E1/FFFFFF?text=GC' },
-          { studentId: 'S008', name: 'Hannah Montana', email: 'hannah.m@example.com', parentEmail: 'parent.hannah@example.com', avatarUrl: 'https://placehold.co/100x100/FF4500/FFFFFF?text=HM' },
-        ]
-      },
-      {
-        id: 'CL102',
-        name: 'Grade 8 English Language',
-        grade: '8',
-        studentsEnrolled: 30,
-        schedule: 'Tue, Thu | 10:30 AM - 11:15 AM',
-        room: 'Room 102',
-        description: 'Developing critical reading, writing, and communication skills.',
-        students: [
-          { studentId: 'S009', name: 'Isabelle Lightwood', email: 'isabelle.l@example.com', parentEmail: 'parent.isabelle@example.com', avatarUrl: 'https://placehold.co/100x100/FFC107/FFFFFF?text=IL' },
-          { studentId: 'S010', name: 'Jacob Black', email: 'jacob.b@example.com', parentEmail: 'parent.jacob@example.com', avatarUrl: 'https://placehold.co/100x100/fd2121/FFFFFF?text=JB' },
-        ]
-      },
-      // ... more classes if needed
-    ]
-  },
-});
 
-// Simplified loader for standard <img> tag
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-interface StudentRosterPageProps {
-  classId: string; // The ID of the class whose roster to display
-  // onBack: () => void; // Callback to navigate back to the class list
+interface StudentRosterPageProps extends StudentRosterPageData {
+  companyId: string; // Passed from server component for dynamic links
 }
 
-export default function StudentRosterPage({ classId, }: StudentRosterPageProps) {
-  // IMPORTANT: In your actual application, use:
-  // const { storeFormData } = useStoreContext();
-  const { storeFormData } = useMockStoreContext();
+export default function StudentRosterPage({
+  academicLevelInfo,
+  students,
+  themeSettings,
+  companyId,
+}: StudentRosterPageProps) {
+  const router = useRouter();
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = storeFormData?.themeSettings?.accentColor || "#FFC107";
+  const primaryColor = themeSettings.primaryColor;
+  const accentColor = themeSettings.accentColor;
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentClass, setCurrentClass] = useState<any | null>(null);
 
-  useEffect(() => {
-    // In a real application, you would fetch this class data from an API
-    // For now, we find it in our mock data
-    const foundClass = storeFormData?.teacherClasses?.find(cls => cls.id === classId);
-    setCurrentClass(foundClass || null);
-  }, [classId, storeFormData?.teacherClasses]);
-
-  const filteredStudents = currentClass?.students?.filter((student: any) =>
+  const filteredStudents = students.filter((student: StudentRosterStudent) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.studentId.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+    student.id.toLowerCase().includes(searchTerm.toLowerCase()) // Search by Student ID
+  );
 
   // --- Placeholder Functions for Student Management ---
-  const handleViewStudentProfile = (studentId: string, studentName: string) => {
-    console.log(`Navigating to profile for Student ID: ${studentId} (${studentName})`);
-    // In a real app, use router.push(`/teacher/students/${studentId}/profile`);
-    alert(`Functionality: View Profile for "${studentName}"`);
+  const handleViewStudentProfile = (studentId: string) => {
+    router.push(`/admin/${companyId}/students/${studentId}/profile`); // Navigate to student profile page
   };
 
   const handleSendMessageToStudent = (studentId: string, studentName: string, studentEmail?: string) => {
     console.log(`Sending message to Student ID: ${studentId} (${studentName})`);
-    // In a real app, open a messaging interface
+    // In a real app, open a messaging interface pre-populated for this student
     alert(`Functionality: Send Message to "${studentName}" (Email: ${studentEmail || 'N/A'})`);
   };
 
   const handleSendMessageToParent = (studentId: string, studentName: string, parentEmail?: string) => {
     console.log(`Sending message to Parent of Student ID: ${studentId} (${studentName})`);
-    // In a real app, open a messaging interface
+    // In a real app, open a messaging interface pre-populated for this student's parent
     alert(`Functionality: Send Message to Parent of "${studentName}" (Email: ${parentEmail || 'N/A'})`);
   };
 
   const handleAddEditStudentNote = (studentId: string, studentName: string) => {
     console.log(`Adding/Editing note for Student ID: ${studentId} (${studentName})`);
-    // In a real app, open a modal for adding/editing notes
+    // In a real app, open a modal for adding/editing notes for this student
     alert(`Functionality: Add/Edit Note for "${studentName}"`);
   };
 
@@ -139,24 +84,6 @@ export default function StudentRosterPage({ classId, }: StudentRosterPageProps) 
     },
   };
 
-  if (!currentClass) {
-    return (
-      <div className="p-8 text-center bg-gray-50 min-h-screen flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">Class Not Found</h2>
-        <p className="text-gray-500 mb-6">The class with ID "{classId}" could not be loaded.</p>
-        <button
-          onClick={
-            () => window.history.back() // Navigate back to the previous page
-          }
-          className={`inline-flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-md shadow-sm
-                      hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400`}
-        >
-          <ArrowLeftIcon className="h-5 w-5" /> Back to Class List
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
       {/* Header */}
@@ -168,9 +95,7 @@ export default function StudentRosterPage({ classId, }: StudentRosterPageProps) 
       >
         <motion.div variants={itemVariants} className="flex items-center gap-4">
           <button
-            onClick={
-              () => window.history.back()
-            }
+            onClick={() => router.back()} // Use router.back() for consistent navigation
             className={`p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
             aria-label="Back to Class List"
           >
@@ -178,10 +103,10 @@ export default function StudentRosterPage({ classId, }: StudentRosterPageProps) 
           </button>
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Student Roster <span style={{ color: primaryColor }}>{currentClass.name}</span>
+              Student Roster <span style={{ color: primaryColor }}>{academicLevelInfo.name}</span>
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Currently viewing {currentClass.studentsEnrolled} students in Grade {currentClass.grade}.
+              Currently viewing {academicLevelInfo.studentsCount} students in {academicLevelInfo.name}.
             </p>
           </div>
         </motion.div>
@@ -192,9 +117,9 @@ export default function StudentRosterPage({ classId, }: StudentRosterPageProps) 
         <input
           type="text"
           placeholder="Search students by name or ID..."
-          className="w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
-                     focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
-                     text-gray-900 placeholder-gray-500 bg-white"
+          className={`w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
+                      text-gray-900 placeholder-gray-500 bg-white`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -209,16 +134,16 @@ export default function StudentRosterPage({ classId, }: StudentRosterPageProps) 
         variants={containerVariants}
       >
         {filteredStudents.length > 0 ? (
-          filteredStudents.map((student: any) => (
+          filteredStudents.map((student: StudentRosterStudent) => (
             <motion.div
-              key={student.studentId}
+              key={student.id}
               className="bg-white rounded-xl shadow-md border border-gray-200 p-6 flex flex-col items-center text-center
-                         hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out"
+                          hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out"
               variants={itemVariants}
             >
-              {student.avatarUrl ? (
+              {student.profilePicture ? (
                 <img
-                  src={customLoader({ src: student.avatarUrl, width: 100 })}
+                  src={student.profilePicture}
                   alt={student.name}
                   className="w-24 h-24 rounded-full object-cover mb-4 border-4 border-gray-100 shadow-sm"
                   onError={(e) => {
@@ -232,27 +157,29 @@ export default function StudentRosterPage({ classId, }: StudentRosterPageProps) 
 
               <h3 className="text-xl font-bold text-gray-900 mb-1">{student.name}</h3>
               <p className="text-sm text-gray-600 flex items-center gap-1">
-                <IdentificationIcon className="h-4 w-4 text-gray-400" /> {student.studentId}
+                <IdentificationIcon className="h-4 w-4 text-gray-400" /> {student.studentGrade ? `${student.studentGrade} | ` : ''} {student.id}
               </p>
 
               <div className="mt-6 w-full space-y-3">
                 <button
-                  onClick={() => handleViewStudentProfile(student.studentId, student.name)}
+                  onClick={() => handleViewStudentProfile(student.id)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-md text-sm font-medium
                               hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
                 >
                   View Profile <ArrowRightIcon className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => handleSendMessageToStudent(student.studentId, student.name, student.email)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-[${accentColor}] text-gray-900 rounded-md text-sm font-medium
-                              hover:bg-[${accentColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+                  onClick={() => handleSendMessageToStudent(student.id, student.name, student.email)}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium
+                              bg-[${accentColor}] text-gray-900
+                              hover:opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+                  style={{ backgroundColor: accentColor }} // Apply accent color dynamically
                 >
                   <ChatBubbleBottomCenterTextIcon className="h-4 w-4" /> Message Student
                 </button>
                 {student.parentEmail && (
                   <button
-                    onClick={() => handleSendMessageToParent(student.studentId, student.name, student.parentEmail)}
+                    onClick={() => handleSendMessageToParent(student.id, student.name, student.parentEmail || '')}
                     className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium
                                 hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400`}
                   >
@@ -260,7 +187,7 @@ export default function StudentRosterPage({ classId, }: StudentRosterPageProps) 
                   </button>
                 )}
                 <button
-                  onClick={() => handleAddEditStudentNote(student.studentId, student.name)}
+                  onClick={() => handleAddEditStudentNote(student.id, student.name)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md text-sm font-medium
                               hover:bg-green-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400`}
                 >

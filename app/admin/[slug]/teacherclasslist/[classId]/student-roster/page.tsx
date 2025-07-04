@@ -1,117 +1,87 @@
-// app/admin/[slug]/inventory/page.tsx
-
+// app/admin/[slug]/academic-levels/[academicLevelId]/student-roster/page.tsx
 import React from "react";
 import StudentRosterPage from "./StudentRosterPage";
+import { StudentRosterAcademicLevelInfo, StudentRosterPageData, StudentRosterStudent } from "@/app/api/teacher/academic-levels/[academicLevelId]/students/route";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: string;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
-
 interface Props {
   params: {
-    slug: string; // companyId
+    slug: string; // teacherId
+    classId: string; // The ID of the academic level/class
   };
 }
+
+// --- Helper function to generate sample data (for fallback) ---
+const generateSampleStudentRosterData = (classId: string): StudentRosterPageData => {
+  const sampleAcademicLevelInfo: StudentRosterAcademicLevelInfo = {
+    id: classId,
+    name: 'Grade 7 Mathematics', // This should be AcademicLevel name, not Course name
+    description: 'Foundational concepts of algebra and geometry.',
+    studentsCount: 8, // Adjust based on sample students below
+  };
+
+  const sampleStudents: StudentRosterStudent[] = [
+    { id: 'S001', userId: 'U001', name: 'Alice Smith', email: 'alice.s@example.com', parentId: 'P001', parentEmail: 'parent.alice@example.com', profilePicture: 'https://placehold.co/100x100/FFC107/FFFFFF?text=AS', studentGrade: '7' },
+    { id: 'S002', userId: 'U002', name: 'Bob Johnson', email: 'bob.j@example.com', parentId: 'P002', parentEmail: 'parent.bob@example.com', profilePicture: 'https://placehold.co/100x100/fd2121/FFFFFF?text=BJ', studentGrade: '7' },
+    { id: 'S003', userId: 'U003', name: 'Charlie Brown', email: 'charlie.b@example.com', parentId: 'P003', parentEmail: 'parent.charlie@example.com', profilePicture: 'https://placehold.co/100x100/28A745/FFFFFF?text=CB', studentGrade: '7' },
+    { id: 'S004', userId: 'U004', name: 'Diana Prince', email: 'diana.p@example.com', parentId: 'P004', parentEmail: 'parent.diana@example.com', profilePicture: 'https://placehold.co/100x100/007BFF/FFFFFF?text=DP', studentGrade: '7' },
+    { id: 'S005', userId: 'U005', name: 'Ethan Hunt', email: 'ethan.h@example.com', parentId: 'P005', parentEmail: 'parent.ethan@example.com', profilePicture: 'https://placehold.co/100x100/8A2BE2/FFFFFF?text=EH', studentGrade: '7' },
+    { id: 'S006', userId: 'U006', name: 'Fiona Gallagher', email: 'fiona.g@example.com', parentId: 'P006', parentEmail: 'parent.fiona@example.com', profilePicture: 'https://placehold.co/100x100/DDA0DD/FFFFFF?text=FG', studentGrade: '7' },
+    { id: 'S007', userId: 'U007', name: 'George Costanza', email: 'george.c@example.com', parentId: 'P007', parentEmail: 'parent.george@example.com', profilePicture: 'https://placehold.co/100x100/4169E1/FFFFFF?text=GC', studentGrade: '7' },
+    { id: 'S008', userId: 'U008', name: 'Hannah Montana', email: 'hannah.m@example.com', parentId: 'P008', parentEmail: 'parent.hannah@example.com', profilePicture: 'https://placehold.co/100x100/FF4500/FFFFFF?text=HM', studentGrade: '7' },
+  ];
+
+  return {
+    academicLevelInfo: { ...sampleAcademicLevelInfo, studentsCount: sampleStudents.length },
+    students: sampleStudents,
+    themeSettings: {
+      primaryColor: "#fd2121",
+      accentColor: "#FFC107",
+    },
+  };
+};
 
 /**
  * This is a **Server Component**. It fetches all the data
  * at request‐time (no caching, just like getServerSideProps),
  * then renders the Client Component below.
  */
-export default async function AdminInventoryPage({ params }: Props) {
-  const companyId = params.slug;
+export default async function StudentRosterPageServer({ params }: Props) {
+  const academicLevelId = params.classId;
 
-  let productsData: Product[] = [];
-  let categoriesData: Category[] = [];
-  let agentsData: Agent[] = [];
+  let pageData: StudentRosterPageData | null = null;
+  let fetchError: boolean = false;
 
   try {
-    // Fetch all products for this company
-    const productsRes = await fetch(
-      `${apiUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
+    const res = await fetch(
+      `${apiUrl}/teacher/academic-levels/${encodeURIComponent(academicLevelId)}/students`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
-    }
 
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
-      { cache: "no-store" }
-    );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
-    }
-
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
-    );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
-    }
-
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
+    if (res.ok) {
+      pageData = (await res.json()) as StudentRosterPageData;
+    } else {
+      console.error(`[StudentRosterPageServer] Failed to fetch student roster: ${res.status} ${res.statusText}`);
+      fetchError = true;
     }
   } catch (err: any) {
-    // console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
+    console.error("StudentRosterPageServer-fetch error:", err.message);
+    fetchError = true;
   }
 
-  // You need to determine how to get the classId; here we use a placeholder.
-  const classId = "CL101"; // TODO: Replace with actual classId value
+  // If fetch failed or data is missing, use sample data as fallback
+  if (fetchError || !pageData || !pageData.academicLevelInfo || !pageData.students) {
+    console.log("[StudentRosterPageServer] Using sample data as fallback.");
+    pageData = generateSampleStudentRosterData(academicLevelId);
+  }
 
   return (
     <StudentRosterPage
-      classId={classId}
+      academicLevelInfo={pageData.academicLevelInfo}
+      students={pageData.students}
+      themeSettings={pageData.themeSettings}
+      companyId={academicLevelId} // Pass companyId for navigation
     />
   );
 }

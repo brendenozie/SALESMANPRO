@@ -62,31 +62,29 @@ export default function ClassTeacherAcademicLevelsPage({
   );
 
   // --- Action Handlers for Academic Levels ---
-  // These actions are now per AcademicLevel (class/grade)
+  
   const handleViewRoster = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/student-roster`);
+    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/student-roster`);
   };
 
   const handleManageAcademicLevelEvents = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/events`);
+    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/events`);
   };
 
   const handleSendAcademicLevelAnnouncement = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/send-announcement`);
+    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/send-announcement`);
   };
 
   const handleViewAcademicLevelReports = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/reports`);
+    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/reports`);
   };
 
   const handleTakeAcademicLevelAttendance = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/take-attendance`);
+    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/take-attendance`);
   };
 
   const handleManageStudentsInLevel = (academicLevelId: string) => {
-    alert(`Functionality: Manage Students in this Academic Level (ID: ${academicLevelId})`);
-    // This would typically lead to a page where the teacher can add/remove students from this academic level.
-    // router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/manage-students`);
+    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/manage-students`);
   };
 
   // Framer Motion Variants
@@ -246,7 +244,7 @@ export default function ClassTeacherAcademicLevelsPage({
                 </div>
               </div>
 
-              <div className="mt-6 border-t border-gray-100 pt-4">
+              {/* <div className="mt-6 border-t border-gray-100 pt-4">
                 <button
                   onClick={() => handleViewRoster(level.id)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md shadow-sm
@@ -256,7 +254,7 @@ export default function ClassTeacherAcademicLevelsPage({
                 >
                   View Student Roster <ArrowRightIcon className="h-4 w-4" />
                 </button>
-              </div>
+              </div> */}
 
               {/* Quick Info: Events & Announcements */}
               <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-200">
