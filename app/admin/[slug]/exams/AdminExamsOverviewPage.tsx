@@ -367,7 +367,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/exams?companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
         cache: "no-store",
       });
       if (res.ok) {
@@ -384,12 +384,12 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     }
   }, [companyId]);
 
-  useEffect(() => {
-    // Only fetch if initial data is empty (meaning server fetch failed or was empty)
-    if (initialExams.length === 0 && !isLoading && !error) {
-      fetchExams();
-    }
-  }, [initialExams, isLoading, error, fetchExams]);
+  // useEffect(() => {
+  //   // Only fetch if initial data is empty (meaning server fetch failed or was empty)
+  //   if (initialExams.length === 0 && !isLoading && !error) {
+  //     fetchExams();
+  //   }
+  // }, [initialExams, isLoading, error, fetchExams]);
 
 
   const uniqueExamTypes = useMemo(() => Array.from(new Set(exams.map(e => e.type))).sort(), [exams]);
@@ -507,7 +507,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
 
     const isEdit = !!examData.id;
     const method = isEdit ? 'PATCH' : 'POST';
-    const url = isEdit ? `${apiUrl}/exams/${examData.id}` : `${apiUrl}/exams`;
+    const url = isEdit ? `${apiUrl}/admin/exams/${examData.id}` : `${apiUrl}/admin/exams`;
 
     try {
       const res = await fetch(url, {
@@ -539,7 +539,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/exams/${examId}`, {
+      const res = await fetch(`${apiUrl}/admin/exams/${examId}`, {
         method: 'DELETE',
       });
 
@@ -560,7 +560,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/exams/${examId}`, {
+      const res = await fetch(`${apiUrl}/admin/exams/${examId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !currentStatus }),

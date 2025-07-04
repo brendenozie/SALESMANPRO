@@ -170,7 +170,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
   try {
     // Fetch exams
-    const examsRes = await fetch(`${apiUrl}/exams?companyId=${encodeURIComponent(companyId)}`, {
+    const examsRes = await fetch(`${apiUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (examsRes.ok) {
@@ -181,7 +181,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses
-    const coursesRes = await fetch(`${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (coursesRes.ok) {
@@ -192,7 +192,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all educators
-    const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (educatorsRes.ok) {
@@ -203,7 +203,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all academic levels (for display in course options)
-    const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
+    const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (academicLevelsRes.ok) {
@@ -219,7 +219,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || initialExams.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0) {
+  if (fetchError && initialExams.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
     console.log("[ExamsManagerPage] Using sample data as fallback.");
     const { sampleExams, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleExamData(companyId);
     initialExams = sampleExams;
