@@ -41,7 +41,6 @@ interface TakeAttendancePageData {
 }
 
 interface TakeAttendancePageProps {
-  companyId: string;
   academicLevelId: string;
   educatorId: string; // The ID of the educator recording attendance
 }
@@ -52,7 +51,7 @@ interface TakeAttendancePageProps {
 // If your API is a separate Node.js app, adjust this URL.
 const API_BASE_URL =  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";; // Relative path for Next.js API routes
 
-export default function TakeAttendancePage({ companyId, academicLevelId, educatorId }: TakeAttendancePageProps) {
+export default function TakeAttendancePage({ academicLevelId, educatorId }: TakeAttendancePageProps) {
   const [academicLevelData, setAcademicLevelData] = useState<TakeAttendancePageData | null>(null);
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD format
   const [studentAttendance, setStudentAttendance] = useState<{ [studentId: string]: { status: AttendanceStatus; reason: string } }>({});
@@ -75,7 +74,7 @@ export default function TakeAttendancePage({ companyId, academicLevelId, educato
     setLoading(true);
     setError(null);
     try {
-      const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance?companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(attendanceDate)}&educatorId=${encodeURIComponent(educatorId)}`;
+      const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance?date=${encodeURIComponent(attendanceDate)}&educatorId=${encodeURIComponent(educatorId)}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -102,14 +101,14 @@ export default function TakeAttendancePage({ companyId, academicLevelId, educato
     } finally {
       setLoading(false);
     }
-  }, [academicLevelId, companyId, attendanceDate, educatorId]);
+  }, [academicLevelId, attendanceDate, educatorId]);
 
   // Effect to fetch data on component mount and when dependencies change
   useEffect(() => {
-    if (companyId && academicLevelId && educatorId) {
+    if (academicLevelId && educatorId) {
       fetchAttendanceData();
     }
-  }, [fetchAttendanceData, companyId, academicLevelId, educatorId]); // Re-run when these props change
+  }, [fetchAttendanceData, academicLevelId, educatorId]); // Re-run when these props change
 
   const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
     setStudentAttendance(prev => ({
@@ -145,14 +144,13 @@ export default function TakeAttendancePage({ companyId, academicLevelId, educato
         }
       });
 
-      const url = `${API_BASE_URL}/${academicLevelId}/attendance`;
+      const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          companyId,
           date: attendanceDate,
           educatorId,
           attendanceRecords: attendanceRecordsPayload,

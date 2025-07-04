@@ -24,16 +24,15 @@ export default async function AcademicLevelAttendancePage({ params }: Props) {
 
   // TODO: Replace with actual educatorId from your authentication system.
   // For demonstration, we use a placeholder.
-  const educatorId = slug; //"EDUCATOR_ID_PLACEHOLDER"; // Example: "60c72b2f9b1e8b001c8e4d1b"
+  // const educatorId = slug; //"EDUCATOR_ID_PLACEHOLDER"; // Example: "60c72b2f9b1e8b001c8e4d1b"
 
   // No need to fetch products, categories, agents here, as this page is
   // specifically for attendance and TakeAttendancePage will fetch its own data.
 
   return (
     <TakeAttendancePage
-      companyId={slug}
       academicLevelId={classId}
-      educatorId={educatorId}
+      educatorId={slug}
       // Pass apiUrl if your client component needs to know it
       // Though typically, client-side fetches would go to relative /api paths
       // or use a configured base URL if the API is external.
