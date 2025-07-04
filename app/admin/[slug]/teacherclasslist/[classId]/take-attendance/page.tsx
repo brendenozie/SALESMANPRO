@@ -33,10 +33,6 @@ export default async function AcademicLevelAttendancePage({ params }: Props) {
     <TakeAttendancePage
       academicLevelId={classId}
       educatorId={slug}
-      // Pass apiUrl if your client component needs to know it
-      // Though typically, client-side fetches would go to relative /api paths
-      // or use a configured base URL if the API is external.
-      // For this example, we'll keep API_BASE_URL defined within TakeAttendancePage.
     />
   );
 }

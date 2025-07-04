@@ -2193,27 +2193,6 @@ model AttendanceRecord {
   @@index([courseId]) // NEW INDEX
 }
 
-// model AttendanceRecord {
-//   id              String           @id @default(auto()) @map("_id") @db.ObjectId
-//   studentId       String           @db.ObjectId
-//   student         Student          @relation(fields: [studentId], references: [id])
-//   classScheduleId String?          @db.ObjectId // Optional: Link to a specific scheduled class session
-//   classSchedule   ClassSchedule?   @relation(fields: [classScheduleId], references: [id])
-//   date            DateTime // Date of the attendance record
-//   status          AttendanceStatus // Enum: PRESENT, ABSENT, TARDY, EXCUSED
-//   reason          String? // Optional: Reason for absence/tardy/excused
-//   recordedById    String           @db.ObjectId // User (Educator or Admin) who recorded attendance
-//   recordedBy      Educator         @relation("RecordedAttendance", fields: [recordedById], references: [id])
-//   createdAt       DateTime         @default(now())
-//   updatedAt       DateTime         @updatedAt
-//   User            User?            @relation(fields: [userId], references: [id])
-//   userId          String?          @db.ObjectId
-
-//   @@unique([studentId, date, recordedById]) // Ensure unique attendance per student per class session/day
-//   @@index([studentId, date])
-//   @@index([classScheduleId])
-// }
-
 // Exam Model
 // Defines a structured examination or assessment event.
 model Exam {

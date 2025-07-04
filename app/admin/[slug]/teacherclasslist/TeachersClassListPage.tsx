@@ -68,7 +68,7 @@ export default function ClassTeacherAcademicLevelsPage({
   };
 
   const handleManageAcademicLevelEvents = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/events`);
+    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/class-event`);
   };
 
   const handleSendAcademicLevelAnnouncement = (academicLevelId: string) => {
