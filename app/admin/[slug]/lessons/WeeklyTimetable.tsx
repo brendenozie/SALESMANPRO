@@ -293,7 +293,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setError(null);
     try {
       // Pass companyId to the API
-      const res = await fetch(`${apiUrl}/class-schedules?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: TimetableEntry[] = await res.json();
         setTimetable(data); // Data from API should already be flattened and include course/educator details
@@ -373,7 +373,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         setIsLoading(true);
         setError(null);
         try {
-          const res = await fetch(`${apiUrl}/class-schedules/${updatedLesson.id}`, {
+          const res = await fetch(`${apiUrl}/admin/class-schedules/${updatedLesson.id}`, {
             method: 'PATCH', // Use PATCH for updates
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -428,7 +428,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     const method = lessonData.id ? 'PATCH' : 'POST'; // Use PATCH for existing, POST for new
 
     try {
-      const url = lessonData.id ? `${apiUrl}/class-schedules/${lessonData.id}` : `${apiUrl}/class-schedules`;
+      const url = lessonData.id ? `${apiUrl}/admin/class-schedules/${lessonData.id}` : `${apiUrl}/admin/class-schedules`;
 
       const res = await fetch(url, {
         method: method,
@@ -464,7 +464,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/class-schedules/${entryId}`, {
+      const res = await fetch(`${apiUrl}/admin/class-schedules/${entryId}`, {
         method: 'DELETE',
       });
 

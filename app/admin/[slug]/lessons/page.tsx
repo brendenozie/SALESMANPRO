@@ -128,7 +128,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   try {
     // Fetch timetable entries with related course and educator info
     const timetableRes = await fetch(
-      `${apiUrl}/class-schedules?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // SSR on every request
     );
     if (timetableRes.ok) {
@@ -144,7 +144,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
 
     // Fetch all courses for dropdowns
     const coursesRes = await fetch(
-      `${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (coursesRes.ok) {
@@ -166,7 +166,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
 
     // Fetch all educators for dropdowns
     const educatorsRes = await fetch(
-      `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (educatorsRes.ok) {
@@ -187,7 +187,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
 
     // Fetch all academic levels (for display in course options)
     const academicLevelsRes = await fetch(
-      `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (academicLevelsRes.ok) {
@@ -206,7 +206,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   }
 
   // If no data was fetched from the API, generate and use sample data
-  if (fetchError || initialTimetable.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0) {
+  if (fetchError && initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
     console.log("[TimetableManagerPage] No data fetched, generating sample data...");
     const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(companyId);
     initialTimetable = sampleTimetableEntries;
