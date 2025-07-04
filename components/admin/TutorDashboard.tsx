@@ -210,6 +210,27 @@ export default function TeachersClient({
                 <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
               </div>
             ))}
+          </div>          
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
+              <RocketLaunchIcon className="h-5 w-5 text-red-500" /> Quick Actions
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {quickActions.map((action, idx) => (
+                <a
+                  key={idx}
+                  href={action.href}
+                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
+                             hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200
+                             focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+                >
+                  <div className="text-indigo-500 mb-2">{action.icon}</div>
+                  <span className="text-center text-sm font-medium">{action.label}</span>
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* Assignments Overview */}
@@ -253,27 +274,6 @@ export default function TeachersClient({
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
-              <RocketLaunchIcon className="h-5 w-5 text-red-500" /> Quick Actions
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {quickActions.map((action, idx) => (
-                <a
-                  key={idx}
-                  href={action.href}
-                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
-                             hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200
-                             focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-                >
-                  <div className="text-indigo-500 mb-2">{action.icon}</div>
-                  <span className="text-center text-sm font-medium">{action.label}</span>
-                </a>
-              ))}
             </div>
           </div>
 
