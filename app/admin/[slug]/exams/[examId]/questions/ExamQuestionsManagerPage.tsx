@@ -437,7 +437,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/exam-questions?examId=${encodeURIComponent(examDetails.id)}`, {
+      const res = await fetch(`${apiUrl}/admin/exam-questions?examId=${encodeURIComponent(examDetails.id)}`, {
         cache: "no-store",
       });
       if (res.ok) {
@@ -468,7 +468,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setError(null);
 
     const method = questionData.id ? 'PATCH' : 'POST';
-    const url = questionData.id ? `${apiUrl}/exam-questions/${questionData.id}` : `${apiUrl}/exam-questions`;
+    const url = questionData.id ? `${apiUrl}/admin/exam-questions/${questionData.id}` : `${apiUrl}/admin/exam-questions`;
 
     try {
       const res = await fetch(url, {
@@ -500,7 +500,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/exam-questions/${questionId}`, {
+      const res = await fetch(`${apiUrl}/admin/exam-questions/${questionId}`, {
         method: 'DELETE',
       });
 

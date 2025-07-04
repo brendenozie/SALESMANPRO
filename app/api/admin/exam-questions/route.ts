@@ -100,6 +100,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Options array is required for MULTIPLE_CHOICE questions." }, { status: 400 });
     }
 
+    const pointsValue = typeof points === 'number' ? points : parseFloat(points);
+    if (isNaN(pointsValue) || pointsValue < 0) {  
+      return NextResponse.json({ message: "Points must be a non-negative number." }, { status: 400 });
+    }
+
+    const orderValue = typeof order === 'number' ? order : parseInt(order, 10);
+    if (isNaN(orderValue) || orderValue < 0) {
+      return NextResponse.json({ message: "Order must be a non-negative number." }, { status: 400 });
+    }
+
     const newQuestion = await prisma.examQuestion.create({
       data: {
         examId,
@@ -109,8 +119,8 @@ export async function POST(request: Request) {
         questionType,
         options: options || [], // Ensure it's an array, even if empty
         correctAnswer,
-        points,
-        order,
+        points: pointsValue,
+        order: orderValue,
       },
       include: {
         exam: { select: { id: true, title: true, course: { select: { title: true } } } },

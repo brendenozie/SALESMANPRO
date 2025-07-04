@@ -108,7 +108,7 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
 
   try {
     // Fetch exam details
-    const examRes = await fetch(`${apiUrl}/exams/${examId}`, {
+    const examRes = await fetch(`${apiUrl}/admin/exams/${examId}`, {
       cache: "no-store",
     });
     if (examRes.ok) {
@@ -128,7 +128,7 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
     }
 
     // Fetch exam questions
-    const questionsRes = await fetch(`${apiUrl}/exam-questions?examId=${encodeURIComponent(examId)}`, {
+    const questionsRes = await fetch(`${apiUrl}/admin/exam-questions?examId=${encodeURIComponent(examId)}`, {
       cache: "no-store",
     });
     if (questionsRes.ok) {
@@ -144,7 +144,7 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || !initialExamDetails || initialQuestions.length === 0) {
+  if (fetchError && !initialExamDetails || initialQuestions.length === 0) {
     console.log("[ExamQuestionsPage] Using sample data as fallback.");
     const { sampleExamDetails, sampleQuestions } = generateSampleQuestionData(examId);
     initialExamDetails = sampleExamDetails;
