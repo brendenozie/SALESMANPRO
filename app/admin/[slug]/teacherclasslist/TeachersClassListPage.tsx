@@ -3,117 +3,50 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  AcademicCapIcon, // For classes/education
+  AcademicCapIcon, // For academic levels/classes
   CalendarDaysIcon, // For date
-  BookOpenIcon, // For classes list
-  UsersIcon, // For students enrolled
-  ClockIcon, // For schedule
-  MapPinIcon, // For room
+  UsersIcon, // For students count
+  BookOpenIcon, // For view roster
+  MegaphoneIcon, // For announcements
+  ChartBarIcon, // For reports
+  EllipsisVerticalIcon, // For dropdown actions
   ArrowRightIcon, // For view details
-  EllipsisVerticalIcon, // For class action dropdown
-  TrashIcon, // For Delete Class (request)
-  ClipboardDocumentListIcon, // For Manage Assignments
-  ChatBubbleBottomCenterTextIcon, // For Send Message
-  MagnifyingGlassIcon, // For search
-  ClipboardDocumentCheckIcon, // For Take Attendance
-  ChartBarIcon, // For Consolidated Grades/Reports
-  CloudArrowUpIcon, // For Upload Resources
-  PlusIcon, // For Add Class Event
+  PlusIcon, // For add event
+  ChatBubbleBottomCenterTextIcon, // For send message
+  ClipboardDocumentCheckIcon, // For attendance
+  ClockIcon,
+  MagnifyingGlassIcon, // For events
 } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
 
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo } from '@/app/api/teacher/academic-levels/route';
 
-// Mocking context data for demonstration purposes
-const useMockStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      accentColor: "#FFC107", // Amber Yellow, for consistency
-    },
-    teacherInfo: { // Mock teacher's own profile info
-      name: "Mr. John Doe",
-      role: "Mathematics Teacher",
-    },
-    teacherClasses: [ // Sample classes assigned to this teacher
-      {
-        id: '685018d708b38f9635fb3a03',
-        name: 'Grade 7',
-        grade: '7',
-        studentsEnrolled: 35,
-        schedule: 'Mon, Wed, Fri | 9:00 AM - 9:45 AM',
-        room: 'Room 101',
-        description: 'Foundational concepts of algebra and geometry, focusing on critical thinking and problem-solving skills.',
-        students: [
-          { studentId: 'S001', name: 'Alice Smith', email: 'alice.s@example.com', parentEmail: 'parent.alice@example.com' },
-          { studentId: 'S002', name: 'Bob Johnson', email: 'bob.j@example.com', parentEmail: 'parent.bob@example.com' },
-          { studentId: 'S003', name: 'Charlie Brown', email: 'charlie.b@example.com', parentEmail: 'parent.charlie@example.com' },
-          { studentId: 'S005', name: 'Fatuma Hassan', email: 'fatuma.h@example.com', parentEmail: 'parent.fatuma@example.com' },
-        ],
-        assignments: [{ id: 'A001', title: 'Algebra Worksheet 1', dueDate: '2025-07-10', status: 'pending' }],
-        resources: [{ id: 'R001', name: 'Math Syllabus', type: 'PDF' }],
-        events: [{ id: 'E001', name: 'Math Club Meeting', date: '2025-07-15', time: '3:00 PM' }],
-      },
-      {
-        id: '685018d708b38f9635fb3a03',
-        name: 'Grade 8',
-        grade: '8',
-        studentsEnrolled: 30,
-        schedule: 'Tue, Thu | 10:30 AM - 11:15 AM',
-        room: 'Room 102',
-        description: 'Developing critical reading, writing, and communication skills through literature analysis and essay writing.',
-        students: [
-          { studentId: 'S003', name: 'Charlie Brown', email: 'charlie.b@example.com', parentEmail: 'parent.charlie@example.com' },
-          { studentId: 'S004', name: 'Michael Njoroge', email: 'michael.n@example.com', parentEmail: 'parent.michael@example.com' },
-          { studentId: 'S006', name: 'Daniel Maina', email: 'daniel.m@example.com', parentEmail: 'parent.daniel@example.com' },
-        ],
-        assignments: [{ id: 'A002', title: 'Essay Outline', dueDate: '2025-07-12', status: 'completed' }],
-        resources: [{ id: 'R002', name: 'Grammar Guide', type: 'Doc' }],
-        events: [{ id: 'E002', name: 'Poetry Reading', date: '2025-07-20', time: '2:00 PM' }],
-      },
-      {
-        id: '685018d708b38f9635fb3a03',
-        name: 'Grade 9',
-        grade: '9',
-        studentsEnrolled: 28,
-        schedule: 'Mon, Wed | 1:00 PM - 1:45 PM',
-        room: 'Room 103',
-        description: 'Intermediate algebra topics and problem-solving strategies, preparing students for advanced mathematics.',
-        students: [
-          { studentId: 'S007', name: 'Olivia Davis', email: 'olivia.d@example.com', parentEmail: 'parent.olivia@example.com' },
-          { studentId: 'S008', name: 'Liam Wilson', email: 'liam.w@example.com', parentEmail: 'parent.liam@example.com' },
-        ],
-        assignments: [], resources: [], events: [],
-      },
-      {
-        id: '685018d708b38f9635fb3a03',
-        name: 'Grade 10',
-        grade: '10',
-        studentsEnrolled: 22,
-        schedule: 'Tue, Thu | 1:00 PM - 1:45 PM',
-        room: 'Room 205',
-        description: 'Exploration of geometric principles and theorems, including proofs and real-world applications.',
-        students: [], assignments: [], resources: [], events: [],
-      },
-    ]
-  },
-});
 
-export default function TeachersClassListPage() {
-  // IMPORTANT: In your actual application, use:
-  // const { storeFormData } = useStoreContext();
-  const { storeFormData } = useMockStoreContext(); // Using mock for consistent data and colors
+// Define props for the client component
+interface ClassTeacherAcademicLevelsPageProps {
+  classTeacherInfo: ClassTeacherInfo;
+  themeSettings: {
+    primaryColor: string;
+    accentColor: string;
+  };
+  assignedAcademicLevels: AssignedAcademicLevel[];
+  companyId: string; // Passed from server component for dynamic links
+}
 
+export default function ClassTeacherAcademicLevelsPage({
+  classTeacherInfo,
+  themeSettings,
+  assignedAcademicLevels,
+  companyId,
+}: ClassTeacherAcademicLevelsPageProps) {
   const router = useRouter();
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = storeFormData?.themeSettings?.accentColor || "#FFC107"; // Ensure accentColor is picked up
-
-  const teacherName = storeFormData?.teacherInfo?.name || "Teacher";
-  const teacherRole = storeFormData?.teacherInfo?.role || "Educator";
-  const teacherClasses = storeFormData?.teacherClasses || [];
+  const primaryColor = themeSettings.primaryColor;
+  const accentColor = themeSettings.accentColor;
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null); // State to manage which dropdown is open
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -121,82 +54,39 @@ export default function TeachersClassListPage() {
     day: 'numeric',
   });
 
-  // Filter classes based on search term
-  const filteredClasses = teacherClasses.filter(cls =>
-    cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cls.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cls.grade.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter academic levels based on search term
+  const filteredAcademicLevels = assignedAcademicLevels.filter(level =>
+    level.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    level.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    level.roleInLevel?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // --- Placeholder Functions for Class Management ---
-  const handleViewRoster = (companyId: string, classId: string, className: string, students: any[]) => {
-    console.log(`Navigating to roster for Class ID: ${classId} (${className})`);
-    // In a real app, use router.push(`/teacher/classes/${classId}/roster`);
-    // alert(`Functionality: View Roster for "${className}"\nStudents: ${students.map(s => s.name).join(', ')}\n(See console for full student details)`);
-    // console.log('Student Roster Details:', students);
-
-    //Navigate to Student Roster Page
-
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/student-roster`); // Adjust the path as needed
-
-
+  // --- Action Handlers for Academic Levels ---
+  // These actions are now per AcademicLevel (class/grade)
+  const handleViewRoster = (academicLevelId: string) => {
+    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/student-roster`);
   };
 
-  const handleTakeAttendance = (companyId: string, classId: string, className: string) => {
-    console.log(`Taking Attendance for Class ID: ${classId} (${className})`);
-    // In a real app, open an attendance marking interface
-    // alert(`Functionality: Take Attendance for "${className}"`);
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/take-attendance`); // Navigate to Attendance Page
+  const handleManageAcademicLevelEvents = (academicLevelId: string) => {
+    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/events`);
   };
 
-  const handleViewConsolidatedGrades = (companyId: string, classId: string, className: string) => {
-    console.log(`Viewing Consolidated Grades for Class ID: ${classId} (${className})`);
-    // In a real app, navigate to a consolidated grades view
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/consolidated-grades`); // Navigate to Consolidated Grades Page
+  const handleSendAcademicLevelAnnouncement = (academicLevelId: string) => {
+    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/send-announcement`);
   };
 
-  const handleManageAssignments = (companyId: string, classId: string, className: string) => {
-    console.log(`Managing Assignments for Class ID: ${classId} (${className})`);
-    // In a real app, navigate to an assignments management page for this class
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/manage-assignments`); // Navigate to Manage Assignments Page
+  const handleViewAcademicLevelReports = (academicLevelId: string) => {
+    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/reports`);
   };
 
-  const handleUploadResources = (companyId: string, classId: string, className: string) => {
-    console.log(`Uploading Resources for Class ID: ${classId} (${className})`);
-    // In a real app, open a file upload interface
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/upload-resources`); // Navigate to Upload Resources Page
+  const handleTakeAcademicLevelAttendance = (academicLevelId: string) => {
+    router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/take-attendance`);
   };
 
-  const handleViewClassSchedule = (companyId: string, classId: string, className: string) => {
-    console.log(`Viewing Class Schedule for Class ID: ${classId} (${className})`);
-    // In a real app, navigate to a class-specific schedule view
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/class-schedule`); // Navigate to Class Schedule Page
-  };
-
-  const handleAddClassEvent = (companyId: string, classId: string, className: string) => {
-    console.log(`Adding Class Event for Class ID: ${classId} (${className})`);
-    // In a real app, open a modal to add a new event to the class calendar
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/class-event`); // Navigate to Add Class Event Page
-  };
-
-  const handleSendMessage = (companyId: string, classId: string, className: string) => {
-    console.log(`Sending Message to Class ID: ${classId} (${className})`);
-    // In a real app, open a messaging interface pre-populated with class recipients
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/send-message`); // Navigate to Send Message Page
-  };
-
-  const handleGenerateReports = (companyId: string, classId: string, className: string) => {
-    console.log(`Generating Reports for Class ID: ${classId} (${className})`);
-    // In a real app, open a report generation interface
-    router.push(`/admin/${companyId}/teacherclasslist/${classId}/generate-reports`); // Navigate to Generate Reports Page
-  };
-
-  const handleDeleteClassRequest = (companyId: string, classId: string, className: string) => {
-    if (window.confirm(`Are you sure you want to request deletion of "${className}"? This will send a request to the admin.`)) {
-      console.log(`Requesting deletion of Class ID: ${classId} (${className})`);
-      // In a real app, send a deletion request to the admin
-      alert(`Functionality: Deletion Request for "${className}" sent to Admin (Simulated)`);
-    }
+  const handleManageStudentsInLevel = (academicLevelId: string) => {
+    alert(`Functionality: Manage Students in this Academic Level (ID: ${academicLevelId})`);
+    // This would typically lead to a page where the teacher can add/remove students from this academic level.
+    // router.push(`/admin/${companyId}/academic-levels/${academicLevelId}/manage-students`);
   };
 
   // Framer Motion Variants
@@ -231,9 +121,9 @@ export default function TeachersClassListPage() {
       >
         <motion.div variants={itemVariants}>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            My Classes <span style={{ color: primaryColor }}>📚</span>
+            My Assigned Classes <span style={{ color: primaryColor }}>🏫</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">Overview of all classes assigned to {teacherName}, {teacherRole}.</p>
+          <p className="text-sm text-gray-600 mt-1">Overview of academic levels managed by {classTeacherInfo.name}, {classTeacherInfo.role}.</p>
         </motion.div>
         <motion.div variants={itemVariants} className="flex items-center gap-4">
           <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
@@ -247,137 +137,155 @@ export default function TeachersClassListPage() {
       <motion.div variants={itemVariants} className="max-w-xl mx-auto relative">
         <input
           type="text"
-          placeholder="Search classes by name, grade, or description..."
-          className="w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
-                     focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
-                     text-gray-900 placeholder-gray-500 bg-white"
+          placeholder="Search academic levels by name or description..."
+          className={`w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
+                      focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
+                      text-gray-900 placeholder-gray-500 bg-white`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
       </motion.div>
 
-      {/* Classes List */}
+      {/* Assigned Academic Levels List */}
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        {filteredClasses.length > 0 ? (
-          filteredClasses.map((cls) => (
+        {filteredAcademicLevels.length > 0 ? (
+          filteredAcademicLevels.map((level) => (
             <motion.div
-              key={cls.id}
+              key={level.id}
               className="bg-white rounded-xl shadow-md border border-gray-200 p-6 flex flex-col justify-between
-                         hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out relative"
+                          hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out relative"
               variants={itemVariants}
             >
               {/* Action Dropdown */}
               <div className="absolute top-4 right-4 z-10">
                 <div className="relative">
                   <button
-                    className="p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]"
+                    className={`p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click from closing dropdown
-                      // Toggle dropdown visibility for this specific card
-                      const dropdown = e.currentTarget.nextElementSibling;
-                      if (dropdown) {
-                        dropdown.classList.toggle('hidden');
-                      }
+                      setOpenDropdownId(openDropdownId === level.id ? null : level.id); // Toggle dropdown
                     }}
                   >
                     <EllipsisVerticalIcon className="h-6 w-6" />
                   </button>
-                  <div className="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
-                    <button
-                      onClick={() => handleTakeAttendance("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <ClipboardDocumentCheckIcon className={`h-5 w-5 text-[${accentColor}]`} /> Take Attendance
-                    </button>
-                    <button
-                      onClick={() => handleViewConsolidatedGrades("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <ChartBarIcon className={`h-5 w-5 text-blue-500`} /> View Consolidated Grades
-                    </button>
-                    <button
-                      onClick={() => handleManageAssignments("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <ClipboardDocumentListIcon className={`h-5 w-5 text-green-500`} /> Manage Assignments
-                    </button>
-                    <button
-                      onClick={() => handleUploadResources("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <CloudArrowUpIcon className={`h-5 w-5 text-purple-500`} /> Upload Resources
-                    </button>
-                    <button
-                      onClick={() => handleViewClassSchedule("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <ClockIcon className={`h-5 w-5 text-indigo-500`} /> View Class Schedule
-                    </button>
-                    <button
-                      onClick={() => handleAddClassEvent("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <PlusIcon className={`h-5 w-5 text-orange-500`} /> Add Class Event
-                    </button>
-                    <button
-                      onClick={() => handleSendMessage("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <ChatBubbleBottomCenterTextIcon className={`h-5 w-5 text-pink-500`} /> Send Message
-                    </button>
-                    <button
-                      onClick={() => handleGenerateReports("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    >
-                      <ChartBarIcon className={`h-5 w-5 text-teal-500`} /> Generate Reports
-                    </button>
-                    <div className="border-t border-gray-100 my-1"></div> {/* Separator */}
-                    <button
-                      onClick={() => handleDeleteClassRequest("685018d708b38f9635fb3a03", cls.id, cls.name)}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <TrashIcon className="h-5 w-5" /> Request Class Deletion
-                    </button>
-                  </div>
+                  <AnimatePresence>
+                    {openDropdownId === level.id && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200 origin-top-right"
+                      >
+                        <button
+                          onClick={() => { handleViewRoster(level.id); setOpenDropdownId(null); }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          <BookOpenIcon className={`h-5 w-5 text-blue-500`} /> View Student Roster
+                        </button>
+                        <button
+                          onClick={() => { handleTakeAcademicLevelAttendance(level.id); setOpenDropdownId(null); }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          <ClipboardDocumentCheckIcon className={`h-5 w-5 text-green-500`} /> Take Attendance
+                        </button>
+                        <button
+                          onClick={() => { handleManageAcademicLevelEvents(level.id); setOpenDropdownId(null); }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          <CalendarDaysIcon className={`h-5 w-5 text-purple-500`} /> Manage Events
+                        </button>
+                        <button
+                          onClick={() => { handleSendAcademicLevelAnnouncement(level.id); setOpenDropdownId(null); }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          <MegaphoneIcon className={`h-5 w-5 text-orange-500`} /> Send Announcement
+                        </button>
+                        <button
+                          onClick={() => { handleViewAcademicLevelReports(level.id); setOpenDropdownId(null); }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          <ChartBarIcon className={`h-5 w-5 text-teal-500`} /> View Reports
+                        </button>
+                        <div className="border-t border-gray-100 my-1"></div> {/* Separator */}
+                        <button
+                          onClick={() => { handleManageStudentsInLevel(level.id); setOpenDropdownId(null); }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          <UsersIcon className="h-5 w-5 text-gray-500" /> Manage Students
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <BookOpenIcon className={`h-6 w-6 text-[${primaryColor}]`} /> {cls.name}
+                  <AcademicCapIcon className={`h-6 w-6`} style={{ color: primaryColor }} /> {level.name}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">{cls.description}</p>
+                <p className="text-sm text-gray-600 mb-3">{level.description || 'No description provided.'}</p>
 
                 <div className="space-y-2 text-sm text-gray-700">
                   <div className="flex items-center gap-2">
                     <UsersIcon className="h-5 w-5 text-gray-500" />
-                    <span>Grade {cls.grade} | {cls.studentsEnrolled} Students</span>
+                    <span>{level.studentsCount} Students Enrolled</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <ClockIcon className="h-5 w-5 text-gray-500" />
-                    <span>{cls.schedule}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPinIcon className="h-5 w-5 text-gray-500" />
-                    <span>{cls.room}</span>
-                  </div>
+                  {level.roleInLevel && (
+                    <div className="flex items-center gap-2">
+                      <AcademicCapIcon className="h-5 w-5 text-gray-500" />
+                      <span>Role: {level.roleInLevel}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="mt-6 border-t border-gray-100 pt-4">
                 <button
-                  onClick={() => handleViewRoster("685018d708b38f9635fb3a03", cls.id, cls.name, cls.students)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-[${accentColor}] text-gray-900 rounded-md shadow-sm
-                              hover:bg-[${accentColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+                  onClick={() => handleViewRoster(level.id)}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md shadow-sm
+                              bg-[${accentColor}] text-gray-900
+                              hover:opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+                  style={{ backgroundColor: accentColor }} // Apply accent color dynamically
                 >
                   View Student Roster <ArrowRightIcon className="h-4 w-4" />
                 </button>
+              </div>
+
+              {/* Quick Info: Events & Announcements */}
+              <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-200">
+                <h4 className="text-md font-semibold text-gray-800 mb-3">Quick Info</h4>
+                {level.academicLevelEvents.length > 0 && (
+                  <div className="mb-2">
+                    <h5 className="text-sm font-medium text-gray-700 flex items-center gap-1"><ClockIcon className="h-4 w-4 text-purple-500" /> Upcoming Events:</h5>
+                    <ul className="list-disc list-inside text-xs text-gray-600 ml-2">
+                      {level.academicLevelEvents.slice(0, 2).map(event => (
+                        <li key={event.id}>{event.name} on {new Date(event.date).toLocaleDateString()} at {event.time}</li>
+                      ))}
+                      {level.academicLevelEvents.length > 2 && <li>...and {level.academicLevelEvents.length - 2} more</li>}
+                    </ul>
+                  </div>
+                )}
+                {level.academicLevelAnnouncements.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium text-gray-700 flex items-center gap-1"><MegaphoneIcon className="h-4 w-4 text-orange-500" /> Latest Announcements:</h5>
+                    <ul className="list-disc list-inside text-xs text-gray-600 ml-2">
+                      {level.academicLevelAnnouncements.slice(0, 2).map(announcement => (
+                        <li key={announcement.id}>{announcement.text}</li>
+                      ))}
+                      {level.academicLevelAnnouncements.length > 2 && <li>...and {level.academicLevelAnnouncements.length - 2} more</li>}
+                    </ul>
+                  </div>
+                )}
+                {level.academicLevelEvents.length === 0 && level.academicLevelAnnouncements.length === 0 && (
+                  <p className="text-xs text-gray-500">No recent events or announcements for this class.</p>
+                )}
               </div>
             </motion.div>
           ))
@@ -387,7 +295,7 @@ export default function TeachersClassListPage() {
             variants={itemVariants}
           >
             <AcademicCapIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg">No classes found matching your search.</p>
+            <p className="text-lg">No academic levels assigned to you as a class teacher.</p>
             <p className="text-sm mt-2">If you believe this is incorrect, please contact your administrator.</p>
           </motion.div>
         )}
