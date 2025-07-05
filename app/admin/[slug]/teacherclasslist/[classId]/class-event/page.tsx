@@ -1,6 +1,6 @@
 // app/admin/[slug]/events/page.tsx
 import React from "react";
-import AdminEventsPage, {
+import AddClassEventPage, {
   EventData,
   AcademicLevelOption,
   CourseOption,
@@ -9,7 +9,7 @@ import AdminEventsPage, {
   DepartmentOption,
   ParentOption,
   OrganizerOption, // Renamed from AuthorOption for clarity in events context
-} from "./AdminEventsPage";
+} from "./AddClassEventPage";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -355,7 +355,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
   }
 
   return (
-    <AdminEventsPage
+    <AddClassEventPage
       initialEvents={initialEvents}
       allAcademicLevels={allAcademicLevels}
       allCourses={allCourses}
