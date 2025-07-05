@@ -89,7 +89,8 @@ interface AdminEventsPageProps {
   allDepartments: DepartmentOption[];
   allParents: ParentOption[];
   allOrganizers: OrganizerOption[];
-  companyId: string;
+  teacherId: string;
+  classId: string;
 }
 
 // Helper to get month name
@@ -595,7 +596,8 @@ export default function AddClassEventPage({
   allDepartments,
   allParents,
   allOrganizers,
-  companyId,
+  teacherId,
+  classId
 }: AdminEventsPageProps) {
   const [events, setEvents] = useState<EventData[]>(initialEvents);
   const [currentMonth, setCurrentMonth] = useState(new Date()); // Date object for calendar navigation
@@ -619,7 +621,7 @@ export default function AddClassEventPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/events?companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiUrl}/events?companyId=${encodeURIComponent(classId)}`, {
         cache: "no-store",
       });
       if (res.ok) {
@@ -634,7 +636,7 @@ export default function AddClassEventPage({
     } finally {
       setIsLoading(false);
     }
-  }, [companyId]);
+  }, [teacherId]);
 
   useEffect(() => {
     // Only fetch if initial data is empty (meaning server fetch failed or was empty)
@@ -725,7 +727,7 @@ export default function AddClassEventPage({
     setError(null);
 
     const method = eventData.id ? 'PATCH' : 'POST';
-    const url = eventData.id ? `${apiUrl}/events/${eventData.id}` : `${apiUrl}/events`;
+    const url = eventData.id ? `${apiUrl}/teacher/events/${eventData.id}` : `${apiUrl}/teacher/events`;
 
     try {
       const res = await fetch(url, {
@@ -757,7 +759,7 @@ export default function AddClassEventPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/events/${eventId}`, {
+      const res = await fetch(`${apiUrl}/teacher/events/${eventId}`, {
         method: 'DELETE',
       });
 
@@ -778,7 +780,7 @@ export default function AddClassEventPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/events/${eventId}`, {
+      const res = await fetch(`${apiUrl}/teacher/events/${eventId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),
@@ -1212,7 +1214,7 @@ export default function AddClassEventPage({
           isLoading={isLoading}
           error={error}
           resetError={() => setError(null)}
-          companyId={companyId}
+          companyId={teacherId}
           allAcademicLevels={allAcademicLevels}
           allCourses={allCourses}
           allEducators={allEducators}

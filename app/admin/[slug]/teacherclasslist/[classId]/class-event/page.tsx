@@ -16,6 +16,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 interface PageProps {
   params: {
     slug: string; // OrganizerId
+    classId: string;
   };
 }
 
@@ -219,7 +220,9 @@ const generateSampleEventData = (companyId: string): {
 
 
 export default async function EventsManagerPage({ params }: PageProps) {
-  const companyId = params.slug;
+
+  const teacherId = params.slug;
+  const classId = params.classId;
 
   let initialEvents: EventData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
@@ -231,9 +234,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
   let allOrganizers: OrganizerOption[] = [];
   let fetchError: boolean = false;
 
+  console.log(`teacher ${teacherId}`);
+  console.log(`class ${classId}`);
+
   try {
     // Fetch events
-    const eventsRes = await fetch(`${apiUrl}/events?companyId=${encodeURIComponent(companyId)}`, {
+    const eventsRes = await fetch(`${apiUrl}/teacher/events?academicLevelId=${encodeURIComponent(classId)}`, {
       cache: "no-store",
     });
     if (eventsRes.ok) {
@@ -244,7 +250,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all academic levels
-    const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
+    const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (academicLevelsRes.ok) {
@@ -255,7 +261,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses
-    const coursesRes = await fetch(`${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (coursesRes.ok) {
@@ -266,7 +272,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all educators
-    const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (educatorsRes.ok) {
@@ -278,7 +284,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all students
-    const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`, {
+    const studentsRes = await fetch(`${apiUrl}/admin/students?companyId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (studentsRes.ok) {
@@ -290,7 +296,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all departments (assuming a /api/departments endpoint exists)
-    const departmentsRes = await fetch(`${apiUrl}/departments?companyId=${encodeURIComponent(companyId)}`, {
+    const departmentsRes = await fetch(`${apiUrl}/admin/departments?companyId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (departmentsRes.ok) {
@@ -301,7 +307,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all parents (assuming a /api/parents endpoint exists)
-    const parentsRes = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`, {
+    const parentsRes = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (parentsRes.ok) {
@@ -313,7 +319,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
-    const organizersRes = await fetch(`${apiUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const organizersRes = await fetch(`${apiUrl}/admin/users?companyId=${encodeURIComponent(teacherId)}`, { // Assuming /api/users endpoint
       cache: "no-store",
     });
     if (organizersRes.ok) {
@@ -331,7 +337,10 @@ export default async function EventsManagerPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || initialEvents.length === 0 || allAcademicLevels.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allStudents.length === 0 || allDepartments.length === 0 || allParents.length === 0 || allOrganizers.length === 0) {
+  if (fetchError && initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0 
+    && allEducators.length === 0 && allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0 
+    && allOrganizers.length === 0) {
+
     console.log("[EventsManagerPage] Using sample data as fallback for events.");
     const {
       sampleEvents,
@@ -342,7 +351,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
       sampleDepartments,
       sampleParents,
       sampleOrganizers
-    } = generateSampleEventData(companyId);
+    } = generateSampleEventData(teacherId);
 
     initialEvents = sampleEvents;
     allAcademicLevels = sampleAcademicLevels;
@@ -364,7 +373,8 @@ export default async function EventsManagerPage({ params }: PageProps) {
       allDepartments={allDepartments}
       allParents={allParents}
       allOrganizers={allOrganizers}
-      companyId={companyId}
+      teacherId={teacherId}
+      classId={classId}
     />
   );
 }

@@ -2014,8 +2014,8 @@ model Event {
   organizer   User   @relation("OrganizedEvents", fields: [organizerId], references: [id])
 
   // Multi-tenancy
-  companyId String  @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   // Audience Targeting (similar to Announcements)
   audience               EventAudience @default(ALL)
