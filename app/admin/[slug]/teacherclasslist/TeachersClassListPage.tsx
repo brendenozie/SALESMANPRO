@@ -31,14 +31,14 @@ interface ClassTeacherAcademicLevelsPageProps {
     accentColor: string;
   };
   assignedAcademicLevels: AssignedAcademicLevel[];
-  companyId: string; // Passed from server component for dynamic links
+  teacherId: string; // Passed from server component for dynamic links
 }
 
 export default function ClassTeacherAcademicLevelsPage({
   classTeacherInfo,
   themeSettings,
   assignedAcademicLevels,
-  companyId,
+  teacherId,
 }: ClassTeacherAcademicLevelsPageProps) {
   const router = useRouter();
 
@@ -64,27 +64,27 @@ export default function ClassTeacherAcademicLevelsPage({
   // --- Action Handlers for Academic Levels ---
   
   const handleViewRoster = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/student-roster`);
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/student-roster`);
   };
 
   const handleManageAcademicLevelEvents = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/class-event`);
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-event`);
   };
 
   const handleSendAcademicLevelAnnouncement = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/send-announcement`);
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-announcements`);
   };
 
   const handleViewAcademicLevelReports = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/reports`);
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-reports`);
   };
 
   const handleTakeAcademicLevelAttendance = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/take-attendance`);
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-attendance`);
   };
 
   const handleManageStudentsInLevel = (academicLevelId: string) => {
-    router.push(`/admin/${companyId}/teacherclasslist/${academicLevelId}/manage-students`);
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/manage-students`);
   };
 
   // Framer Motion Variants

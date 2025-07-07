@@ -8,7 +8,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
   params: {
-    slug: string; // companyId
+    slug: string; // teacherId
   };
 }
 
@@ -86,7 +86,7 @@ const generateSampleClassTeacherAcademicLevelsData = (): ClassTeacherAcademicLev
  * then renders the Client Component below.
  */
 export default async function ClassTeacherAcademicLevelsPageServer({ params }: Props) {
-  const companyId = params.slug;
+  const teacherId = params.slug;
   const session = await getAuthSession();
 
   const teacherUserId = session?.user?.id || MOCK_CURRENT_TEACHER_USER_ID;
@@ -122,7 +122,7 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
       classTeacherInfo={generateSampleClassTeacherAcademicLevelsData().classTeacherInfo}
       themeSettings={generateSampleClassTeacherAcademicLevelsData().themeSettings}
       assignedAcademicLevels={pageData}
-      companyId={companyId} // Pass companyId for navigation
+      teacherId={teacherId} // Pass teacherId for navigation
     />
   );
 }

@@ -250,7 +250,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all academic levels
-    const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(teacherId)}`, {
+    const academicLevelsRes = await fetch(`${apiUrl}/teacher/academic-levels?teacherUserId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (academicLevelsRes.ok) {
@@ -261,7 +261,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses
-    const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(teacherId)}`, {
+    const coursesRes = await fetch(`${apiUrl}/teacher/subjects?teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (coursesRes.ok) {
@@ -284,7 +284,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all students
-    const studentsRes = await fetch(`${apiUrl}/admin/students?companyId=${encodeURIComponent(teacherId)}`, {
+    const studentsRes = await fetch(`${apiUrl}/teacher/academic-levels/${classId}/students`, {
       cache: "no-store",
     });
     if (studentsRes.ok) {

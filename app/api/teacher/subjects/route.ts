@@ -67,10 +67,10 @@ export type TeacherClassesPageData = {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
+    // const companyId = searchParams.get('companyId');
     const teacherId = searchParams.get('teacherId'); // This should be the Educator.userId
 
-    if (!companyId || !teacherId) {
+    if (!teacherId) {
       return NextResponse.json({ message: "Company ID and Teacher ID are required." }, { status: 400 });
     }
 
@@ -91,7 +91,7 @@ export async function GET(request: Request) {
       },
     });
 
-    if (!educator || educator.companyId !== companyId) {
+    if (!educator) {
       return NextResponse.json({ message: "Teacher not found or not associated with this company." }, { status: 404 });
     }
 
@@ -105,11 +105,10 @@ export async function GET(request: Request) {
     // 2. Fetch Classes (Courses) assigned to this teacher
     const courses = await prisma.course.findMany({
       where: {
-        companyId: companyId,
-        educatorId: educator.id, // Link to Educator model's ID
+        instructorId: educator.id, // Link to Educator model's ID
       },
       orderBy: {
-        name: 'asc', // Order by class name
+        title: 'asc', // Order by class name
       },
       // In a real app, you'd include relations for students, assignments, etc.
       // For now, we'll mock these nested arrays.
@@ -123,23 +122,23 @@ export async function GET(request: Request) {
         { studentId: 'S003', name: 'Charlie Brown', email: 'charlie.b@example.com', parentEmail: 'parent.charlie@example.com' },
       ];
       const mockAssignments: ClassAssignment[] = [
-        { id: 'A001', title: `Assignment for ${course.name}`, dueDate: new Date('2025-07-10').toISOString(), status: 'pending' },
+        { id: 'A001', title: `Assignment for ${course.title}`, dueDate: new Date('2025-07-10').toISOString(), status: 'pending' },
       ];
       const mockResources: ClassResource[] = [
-        { id: 'R001', name: `Syllabus for ${course.name}`, type: 'PDF', url: '#' },
+        { id: 'R001', name: `Syllabus for ${course.title}`, type: 'PDF', url: '#' },
       ];
       const mockEvents: ClassEvent[] = [
-        { id: 'E001', name: `Quiz for ${course.name}`, date: new Date('2025-07-15').toISOString(), time: '10:00 AM' },
+        { id: 'E001', name: `Quiz for ${course.title}`, date: new Date('2025-07-15').toISOString(), time: '10:00 AM' },
       ];
 
       return {
         id: course.id,
-        name: course.name,
-        grade: course.academicLevel, // Assuming academicLevel maps to 'grade'
+        name: course.title,
+        grade: course.academicLevelId, // Assuming academicLevel maps to 'grade'
         studentsEnrolled: mockStudents.length, // Or fetch real count if Enrollment model exists
-        schedule: course.schedule || 'Not set', // Assuming schedule field exists
-        room: course.room || 'N/A', // Assuming room field exists
-        description: course.description || `No description provided for ${course.name}.`,
+        schedule:  'Not set', // Assuming schedule field exists
+        room: 'N/A', // Assuming room field exists
+        description: course.description || `No description provided for ${course.title}.`,
         students: mockStudents,
         assignments: mockAssignments,
         resources: mockResources,
