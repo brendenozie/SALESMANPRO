@@ -23,7 +23,7 @@ import {
 
 import { useRouter } from "next/navigation";
 import Link from 'next/link'; // Import Link for navigation
-import { TeacherInfo } from '@/app/api/teacher/subjects/route';
+import { TeacherInfo } from '@/app/api/teacher/class-subjects/route';
 
 // Define props for the client component
 interface TeachersClassListPageProps {

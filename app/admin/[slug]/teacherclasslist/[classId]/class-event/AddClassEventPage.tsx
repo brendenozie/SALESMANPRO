@@ -2,34 +2,34 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  CalendarDaysIcon, // General calendar icon
-  SparklesIcon, // For general events
-  PlusCircleIcon, // For add event
-  PencilIcon, // For edit
-  MagnifyingGlassIcon, // For search
-  TrashIcon, // For delete
-  TagIcon, // For event type
-  UsersIcon, // For audience
-  ClockIcon, // For time
-  MapPinIcon, // For location
-  ArrowLeftIcon, // For calendar navigation
-  ArrowRightIcon, // For calendar navigation
-  XMarkIcon, // For closing modals/errors
-  CheckCircleIcon, // For scheduled/completed status
-  ExclamationTriangleIcon, // For postponed/cancelled status
-  UserCircleIcon, // For organizer
-  LinkIcon, // For online meeting link
-  PhotoIcon, // For image URL
-  VideoCameraIcon, // For video URL
-  CurrencyDollarIcon, // For paid events
-  UserGroupIcon, // For capacity
-  EnvelopeIcon, // For contact email
-  PhoneIcon, // For contact phone
-  AcademicCapIcon, // For academic level
-  BookOpenIcon, // For course
-  BriefcaseIcon, // For department
+  CalendarDaysIcon,
+  SparklesIcon,
+  PlusCircleIcon,
+  PencilIcon,
+  MagnifyingGlassIcon,
+  TrashIcon,
+  TagIcon,
+  UsersIcon,
+  ClockIcon,
+  MapPinIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  XMarkIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  UserCircleIcon,
+  LinkIcon,
+  PhotoIcon,
+  VideoCameraIcon,
+  CurrencyDollarIcon,
+  UserGroupIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  AcademicCapIcon,
+  BookOpenIcon,
+  BriefcaseIcon,
   UserIcon,
-  ArrowPathIcon, // For student/parent
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -46,13 +46,13 @@ export type EventData = {
   onlineMeetingLink: string | null;
   imageUrl: string | null;
   videoUrl: string | null;
-  eventType: 'GENERAL' | 'HOLIDAY'| 'ACADEMIC' | 'SPORTS' | 'CULTURAL' | 'MEETING' | 'WORKSHOP' | 'ORIENTATION' | 'FUNDRAISER' | 'OTHER';
+  eventType: 'GENERAL' | 'HOLIDAY' | 'ACADEMIC' | 'SPORTS' | 'CULTURAL' | 'MEETING' | 'WORKSHOP' | 'ORIENTATION' | 'FUNDRAISER' | 'OTHER';
   eventStatus: 'SCHEDULED' | 'POSTPONED' | 'CANCELLED' | 'COMPLETED';
   organizerId: string;
-  organizerName: string;
-  organizerEmail: string;
-  companyId: string;
-  companyName: string;
+  organizerName: string; // Populated from backend
+  organizerEmail: string; // Populated from backend
+  companyId: string; // Populated from backend
+  companyName: string; // Populated from backend
   audience: 'ALL' | 'ACADEMIC_LEVEL' | 'COURSE' | 'EDUCATOR' | 'STUDENT' | 'DEPARTMENT' | 'STAFF' | 'PARENT';
   targetAcademicLevelIds: string[];
   targetCourseIds: string[];
@@ -81,7 +81,7 @@ export type ParentOption = { id: string; name: string; email: string };
 export type OrganizerOption = { id: string; name: string; email: string };
 
 interface AdminEventsPageProps {
-  initialEvents: EventData[];
+  initialEvents: any[];
   allAcademicLevels: AcademicLevelOption[];
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
@@ -89,8 +89,9 @@ interface AdminEventsPageProps {
   allDepartments: DepartmentOption[];
   allParents: ParentOption[];
   allOrganizers: OrganizerOption[];
-  teacherId: string;
-  classId: string;
+  teacherId: string; // The ID of the current educator (params.slug)
+  classId: string;   // The ID of the academic level (params.classId)
+  companyId: string; // The company ID associated with the teacher
 }
 
 // Helper to get month name
@@ -115,11 +116,13 @@ const hasEventOnDate = (dateString: string, events: EventData[]) => {
 type EventFormModalProps = {
   eventData: EventData | null; // Null for new event
   onClose: () => void;
+  // The onSave function will now receive the full EventData (minus derived fields)
   onSave: (data: Omit<EventData, 'organizerName' | 'organizerEmail' | 'companyName' | 'createdAt' | 'updatedAt'>) => void;
   isLoading: boolean;
   error: string | null;
   resetError: () => void;
-  companyId: string;
+  currentEducatorId: string; // The ID of the educator currently logged in/managing
+  currentCompanyId: string; // The ID of the company this educator belongs to
   allAcademicLevels: AcademicLevelOption[];
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
@@ -136,7 +139,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
   isLoading,
   error,
   resetError,
-  companyId,
+  currentEducatorId, // Renamed from companyId for clarity
+  currentCompanyId, // New prop for the actual company ID
   allAcademicLevels,
   allCourses,
   allEducators,
@@ -159,8 +163,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       videoUrl: null,
       eventType: 'GENERAL',
       eventStatus: 'SCHEDULED',
-      organizerId: '', // Should be pre-filled with current user's ID in a real app
-      companyId: companyId,
+      organizerId: currentEducatorId, // Pre-fill with current educator's ID
+      companyId: currentCompanyId, // Pre-fill with current company's ID
       audience: 'ALL',
       targetAcademicLevelIds: [],
       targetCourseIds: [],
@@ -187,6 +191,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
   };
+
 
   const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, options } = e.target;
@@ -225,12 +230,12 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
     }
 
     // Validate price for paid events
-    if (formData.isPaid && (formData.price === null || isNaN(formData.price) || formData.price < 0)) {
+    if (formData.isPaid && (formData.price === null || isNaN(formData.price) || (formData.price as number) < 0)) {
       alert("Please enter a valid non-negative price for paid events.");
       return;
     }
     if (!formData.isPaid) {
-        formData.price = null; // Ensure price is null if not paid
+      formData.price = null; // Ensure price is null if not paid
     }
 
     // Validate audience-specific selections
@@ -425,83 +430,72 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
             <div className="md:col-span-2">
               <label htmlFor="targetAcademicLevelIds" className="block text-sm font-medium text-gray-700 mb-1">Target Academic Level(s) <span className="text-red-500">*</span></label>
               <select multiple name="targetAcademicLevelIds" id="targetAcademicLevelIds" value={formData.targetAcademicLevelIds} onChange={handleMultiSelectChange} required={formData.audience === 'ACADEMIC_LEVEL'}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32 overflow-y-auto"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32"
               >
                 {allAcademicLevels.map(level => (
                   <option key={level.id} value={level.id}>{level.name}</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple.</p>
             </div>
           )}
-
           {formData.audience === 'COURSE' && (
             <div className="md:col-span-2">
               <label htmlFor="targetCourseIds" className="block text-sm font-medium text-gray-700 mb-1">Target Course(s) <span className="text-red-500">*</span></label>
               <select multiple name="targetCourseIds" id="targetCourseIds" value={formData.targetCourseIds} onChange={handleMultiSelectChange} required={formData.audience === 'COURSE'}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32 overflow-y-auto"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32"
               >
                 {allCourses.map(course => (
                   <option key={course.id} value={course.id}>{course.title}</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple.</p>
             </div>
           )}
-
           {formData.audience === 'EDUCATOR' && (
             <div className="md:col-span-2">
               <label htmlFor="targetEducatorIds" className="block text-sm font-medium text-gray-700 mb-1">Target Educator(s) <span className="text-red-500">*</span></label>
               <select multiple name="targetEducatorIds" id="targetEducatorIds" value={formData.targetEducatorIds} onChange={handleMultiSelectChange} required={formData.audience === 'EDUCATOR'}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32 overflow-y-auto"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32"
               >
                 {allEducators.map(educator => (
                   <option key={educator.id} value={educator.id}>{educator.name} ({educator.email})</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple.</p>
             </div>
           )}
-
           {formData.audience === 'STUDENT' && (
             <div className="md:col-span-2">
               <label htmlFor="targetStudentIds" className="block text-sm font-medium text-gray-700 mb-1">Target Student(s) <span className="text-red-500">*</span></label>
               <select multiple name="targetStudentIds" id="targetStudentIds" value={formData.targetStudentIds} onChange={handleMultiSelectChange} required={formData.audience === 'STUDENT'}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32 overflow-y-auto"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32"
               >
                 {allStudents.map(student => (
                   <option key={student.id} value={student.id}>{student.name} ({student.email})</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple.</p>
             </div>
           )}
-
           {formData.audience === 'DEPARTMENT' && (
             <div className="md:col-span-2">
               <label htmlFor="targetDepartmentIds" className="block text-sm font-medium text-gray-700 mb-1">Target Department(s) <span className="text-red-500">*</span></label>
               <select multiple name="targetDepartmentIds" id="targetDepartmentIds" value={formData.targetDepartmentIds} onChange={handleMultiSelectChange} required={formData.audience === 'DEPARTMENT'}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32 overflow-y-auto"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32"
               >
-                {allDepartments.map(dept => (
-                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                {allDepartments.map(department => (
+                  <option key={department.id} value={department.id}>{department.name}</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple.</p>
             </div>
           )}
-
           {formData.audience === 'PARENT' && (
             <div className="md:col-span-2">
               <label htmlFor="targetParentIds" className="block text-sm font-medium text-gray-700 mb-1">Target Parent(s) <span className="text-red-500">*</span></label>
               <select multiple name="targetParentIds" id="targetParentIds" value={formData.targetParentIds} onChange={handleMultiSelectChange} required={formData.audience === 'PARENT'}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32 overflow-y-auto"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white h-32"
               >
                 {allParents.map(parent => (
                   <option key={parent.id} value={parent.id}>{parent.name} ({parent.email})</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple.</p>
             </div>
           )}
 
@@ -509,8 +503,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
             <div>
               <label htmlFor="isRegistrationRequired" className="flex items-center text-sm font-medium text-gray-700">
                 <input type="checkbox" name="isRegistrationRequired" id="isRegistrationRequired" checked={formData.isRegistrationRequired} onChange={handleChange}
-                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
-                <span className="ml-2">Registration Required?</span>
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2" />
+                Registration Required?
               </label>
             </div>
             {formData.isRegistrationRequired && (
@@ -520,17 +514,18 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
               </div>
             )}
+
             <div>
               <label htmlFor="isPaid" className="flex items-center text-sm font-medium text-gray-700">
                 <input type="checkbox" name="isPaid" id="isPaid" checked={formData.isPaid} onChange={handleChange}
-                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
-                <span className="ml-2">Paid Event?</span>
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2" />
+                Paid Event?
               </label>
             </div>
             {formData.isPaid && (
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Price <span className="text-red-500">*</span></label>
-                <input type="number" name="price" id="price" value={formData.price || ''} onChange={handleChange} min="0" step="0.01" required={formData.isPaid}
+                <input type="number" name="price" id="price" value={formData.price || ''} onChange={handleChange} step="0.01" min="0" required={formData.isPaid}
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
               </div>
             )}
@@ -554,29 +549,28 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               disabled={isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-indigo-600 border border-transparent rounded-lg text-base font-medium text-white shadow-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center gap-2"
+              className={`inline-flex justify-center py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isLoading}
             >
               {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Saving...
-                </>
-              ) : (isEdit ? 'Save Changes' : 'Create Event')}
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                isEdit ? 'Update Event' : 'Create Event'
+              )}
             </button>
           </div>
         </form>
@@ -586,7 +580,6 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 };
 
 
-// --- Main AdminEventsPage Component ---
 export default function AddClassEventPage({
   initialEvents,
   allAcademicLevels,
@@ -596,8 +589,9 @@ export default function AddClassEventPage({
   allDepartments,
   allParents,
   allOrganizers,
-  teacherId,
-  classId
+  teacherId, // Educator ID
+  classId, // AcademicLevel ID
+  companyId, // The actual company ID
 }: AdminEventsPageProps) {
   const [events, setEvents] = useState<EventData[]>(initialEvents);
   const [currentMonth, setCurrentMonth] = useState(new Date()); // Date object for calendar navigation
@@ -621,7 +615,8 @@ export default function AddClassEventPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/events?companyId=${encodeURIComponent(classId)}`, {
+      // Updated API call to match the new backend endpoint
+      const res = await fetch(`${apiUrl}/teacher/events?academicLevelId=${encodeURIComponent(classId)}&teacherId=${encodeURIComponent(teacherId)}`, {
         cache: "no-store",
       });
       if (res.ok) {
@@ -636,14 +631,13 @@ export default function AddClassEventPage({
     } finally {
       setIsLoading(false);
     }
-  }, [teacherId]);
+  }, [classId, teacherId]); // Dependencies: re-fetch if classId or teacherId changes
 
   useEffect(() => {
-    // Only fetch if initial data is empty (meaning server fetch failed or was empty)
-    if (initialEvents.length === 0 && !isLoading && !error) {
-      fetchEvents();
-    }
-  }, [initialEvents, isLoading, error, fetchEvents]);
+    // Always fetch events when component mounts or relevant IDs change
+    // This ensures the latest data is always displayed, not just on initial empty state
+    fetchEvents();
+  }, [fetchEvents]);
 
 
   // Calculate calendar days for the current month view
@@ -701,10 +695,10 @@ export default function AddClassEventPage({
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (event.summary || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (event.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (event.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            event.organizerName.toLowerCase().includes(searchTerm.toLowerCase());
+                              (event.summary || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              (event.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              (event.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              event.organizerName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesType = filterType === 'All' || event.eventType === filterType;
       const matchesAudience = filterAudience === 'All' || event.audience === filterAudience;
@@ -733,7 +727,13 @@ export default function AddClassEventPage({
       const res = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventData),
+        body: JSON.stringify({
+          ...eventData,
+          // Ensure organizerId and companyId are explicitly sent,
+          // even if pre-filled in the form, for robustness.
+          organizerId: eventData.organizerId || teacherId, // Use form value or fallback to current teacher
+          companyId: eventData.companyId || companyId,     // Use form value or fallback to current company
+        }),
       });
 
       if (res.ok) {
@@ -752,7 +752,8 @@ export default function AddClassEventPage({
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) { // Replace with custom modal
+    // IMPORTANT: Replace `confirm` with a custom modal for better UX and consistency
+    if (!window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
       return;
     }
 
@@ -958,7 +959,7 @@ export default function AddClassEventPage({
                     <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                       <MapPinIcon className="h-4 w-4" /> {event.location || 'Online'}
                       <span className="ml-2 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs">{event.eventType.replace(/_/g, ' ')}</span>
-                    </p>                  </div>
+                    </p>                   </div>
                 </li>
               ))
             ) : (
@@ -976,7 +977,7 @@ export default function AddClassEventPage({
             <SparklesIcon className="h-5 w-5 text-indigo-500" /> All Events
           </h3>
           <button
-            onClick={() => { setEditingEvent(null); setShowFormModal(true); setError(null); }} // Clear editing state for new
+            onClick={() => { setShowFormModal(true); setEditingEvent(null); setError(null); }} // Clear editing state for new
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm
                        hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
@@ -1164,7 +1165,7 @@ export default function AddClassEventPage({
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
-                          onClick={() => { setEditingEvent(event); setShowFormModal(true); setError(null); }}
+                          onClick={() => { setShowFormModal(true); setEditingEvent(event); setError(null); }}
                           className="text-indigo-600 hover:text-indigo-900 flex items-center"
                           title="Edit Event"
                         >
@@ -1214,7 +1215,8 @@ export default function AddClassEventPage({
           isLoading={isLoading}
           error={error}
           resetError={() => setError(null)}
-          companyId={teacherId}
+          currentEducatorId={teacherId} // Pass the current educator's ID
+          currentCompanyId={companyId} // Pass the actual company ID
           allAcademicLevels={allAcademicLevels}
           allCourses={allCourses}
           allEducators={allEducators}

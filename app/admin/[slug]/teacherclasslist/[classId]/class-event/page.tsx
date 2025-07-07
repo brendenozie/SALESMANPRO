@@ -1,26 +1,19 @@
 // app/admin/[slug]/events/page.tsx
 import React from "react";
-import AddClassEventPage, {
-  EventData,
-  AcademicLevelOption,
-  CourseOption,
-  EducatorOption,
-  StudentOption,
-  DepartmentOption,
-  ParentOption,
-  OrganizerOption, // Renamed from AuthorOption for clarity in events context
-} from "./AddClassEventPage";
+import AddClassEventPage, { AcademicLevelOption, CourseOption, EducatorOption, StudentOption, DepartmentOption, ParentOption, OrganizerOption, EventData } from "./AddClassEventPage";
+
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params: {
-    slug: string; // OrganizerId
-    classId: string;
+    slug: string; // This is the educatorId (teacherId)
+    classId: string; // This is the academicLevelId
   };
 }
 
 // --- Helper function to generate sample data (for fallback) ---
+// (Keep this function as is, it's good for development/fallback)
 const generateSampleEventData = (companyId: string): {
   sampleEvents: EventData[];
   sampleAcademicLevels: AcademicLevelOption[];
@@ -221,25 +214,25 @@ const generateSampleEventData = (companyId: string): {
 
 export default async function EventsManagerPage({ params }: PageProps) {
 
-  const teacherId = params.slug;
-  const classId = params.classId;
+  const teacherId = params.slug; // This is Educator ID
+  const academicLevelId = params.classId; // This is AcademicLevel ID
 
   let initialEvents: EventData[] = [];
-  let allAcademicLevels: AcademicLevelOption[] = [];
+  let allAcademicLevels: AcademicLevelOption[] = []; // Still useful for the form's audience targeting
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];
   let allStudents: StudentOption[] = [];
   let allDepartments: DepartmentOption[] = [];
   let allParents: ParentOption[] = [];
-  let allOrganizers: OrganizerOption[] = [];
+  let allOrganizers: OrganizerOption[] = []; // This will be the list of all possible organizers
   let fetchError: boolean = false;
 
-  console.log(`teacher ${teacherId}`);
-  console.log(`class ${classId}`);
+  console.log(`Educator ID (teacherId): ${teacherId}`);
+  console.log(`Academic Level ID (classId): ${academicLevelId}`);
 
   try {
-    // Fetch events
-    const eventsRes = await fetch(`${apiUrl}/teacher/events?academicLevelId=${encodeURIComponent(classId)}`, {
+    // Fetch events relevant to this academic level
+    const eventsRes = await fetch(`${apiUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (eventsRes.ok) {
@@ -249,8 +242,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
       fetchError = true;
     }
 
-    // Fetch all academic levels
-    const academicLevelsRes = await fetch(`${apiUrl}/teacher/academic-levels?teacherUserId=${encodeURIComponent(teacherId)}`, {
+    // Fetch all academic levels (for audience targeting in the form)
+    // You mentioned not needing this if pre-populated, but for a dynamic form, it's essential
+    // If you always create events for a *single* academic level, you might hardcode it.
+    // For now, I'll assume you might target other academic levels from this form.
+    // If not, you can remove this fetch and simplify the form's academic level selection.
+    const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (academicLevelsRes.ok) {
@@ -260,8 +257,9 @@ export default async function EventsManagerPage({ params }: PageProps) {
       fetchError = true;
     }
 
-    // Fetch all courses
-    const coursesRes = await fetch(`${apiUrl}/teacher/subjects?teacherId=${encodeURIComponent(teacherId)}`, {
+
+    // Fetch all courses/subjects for the specified academic level (classId)
+    const coursesRes = await fetch(`${apiUrl}/teacher/class-subjects?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (coursesRes.ok) {
@@ -271,32 +269,33 @@ export default async function EventsManagerPage({ params }: PageProps) {
       fetchError = true;
     }
 
-    // Fetch all educators
-    const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(teacherId)}`, {
+    // Fetch all educators associated with the specific academic level
+    const educatorsRes = await fetch(`${apiUrl}/teacher/class-educators?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()) as any[];
-      allEducators = fetchedEducators.map(e => ({ id: e.id, name: e.user?.name || 'N/A', email: e.user?.email || 'N/A' }));
+      allEducators = (await educatorsRes.json()) as EducatorOption[];
+      // Organizers list should include all educators who can organize events
+      // For simplicity, assuming all fetched educators can be organizers
+      allOrganizers = allEducators;
     } else {
       console.error(`[EventsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
       fetchError = true;
     }
 
-    // Fetch all students
-    const studentsRes = await fetch(`${apiUrl}/teacher/academic-levels/${classId}/students`, {
+    // Fetch all students for the specific academic level
+    const studentsRes = await fetch(`${apiUrl}/teacher/academic-levels/${academicLevelId}/students?teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (studentsRes.ok) {
-      const fetchedStudents = (await studentsRes.json()) as any[];
-      allStudents = fetchedStudents.map(s => ({ id: s.id, name: s.user?.name || 'N/A', email: s.user?.email || 'N/A' }));
+      allStudents = (await studentsRes.json()) as StudentOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`);
       fetchError = true;
     }
 
-    // Fetch all departments (assuming a /api/departments endpoint exists)
-    const departmentsRes = await fetch(`${apiUrl}/admin/departments?companyId=${encodeURIComponent(teacherId)}`, {
+    // Fetch all departments for the company
+    const departmentsRes = await fetch(`${apiUrl}/teacher/class-departments?teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (departmentsRes.ok) {
@@ -306,30 +305,16 @@ export default async function EventsManagerPage({ params }: PageProps) {
       fetchError = true;
     }
 
-    // Fetch all parents (assuming a /api/parents endpoint exists)
-    const parentsRes = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(teacherId)}`, {
+    // Fetch all parents for the company
+    const parentsRes = await fetch(`${apiUrl}/teacher/class-parents?teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (parentsRes.ok) {
-      const fetchedParents = (await parentsRes.json()) as any[];
-      allParents = fetchedParents.map(p => ({ id: p.id, name: p.user?.name || 'N/A', email: p.user?.email || 'N/A' }));
+      allParents = (await parentsRes.json()) as ParentOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`);
       fetchError = true;
     }
-
-    // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
-    const organizersRes = await fetch(`${apiUrl}/admin/users?companyId=${encodeURIComponent(teacherId)}`, { // Assuming /api/users endpoint
-      cache: "no-store",
-    });
-    if (organizersRes.ok) {
-      const fetchedOrganizers = (await organizersRes.json()) as any[];
-      allOrganizers = fetchedOrganizers.map(u => ({ id: u.id, name: u.name || 'N/A', email: u.email || 'N/A' }));
-    } else {
-      console.error(`[EventsManagerPage] Failed to fetch organizers: ${organizersRes.status} ${organizersRes.statusText}`);
-      fetchError = true;
-    }
-
 
   } catch (err: any) {
     console.error("[EventsManagerPage] Error fetching initial data →", err.message);
@@ -337,11 +322,15 @@ export default async function EventsManagerPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError && initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0 
-    && allEducators.length === 0 && allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0 
+  // This fallback logic is robust.
+  if (fetchError && initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0
+    && allEducators.length === 0 && allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0
     && allOrganizers.length === 0) {
 
     console.log("[EventsManagerPage] Using sample data as fallback for events.");
+    // In a real app, you'd get the companyId from the authenticated teacher's profile
+    // For sample, we'll use a placeholder or derive from teacherId if possible.
+    const sampleCompanyId = teacherId; // Placeholder: In reality, fetch this from educator profile
     const {
       sampleEvents,
       sampleAcademicLevels,
@@ -351,7 +340,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
       sampleDepartments,
       sampleParents,
       sampleOrganizers
-    } = generateSampleEventData(teacherId);
+    } = generateSampleEventData(sampleCompanyId);
 
     initialEvents = sampleEvents;
     allAcademicLevels = sampleAcademicLevels;
@@ -374,7 +363,8 @@ export default async function EventsManagerPage({ params }: PageProps) {
       allParents={allParents}
       allOrganizers={allOrganizers}
       teacherId={teacherId}
-      classId={classId}
+      classId={academicLevelId} // Renamed for clarity, still refers to academicLevelId
+      companyId={academicLevelId} // Renamed for clarity, still refers to academicLevelId
     />
   );
 }
