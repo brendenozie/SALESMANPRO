@@ -45,16 +45,16 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     // const companyId = searchParams.get('companyId');
-    const teacherUserId = searchParams.get('teacherUserId'); // This is the User.id linked to Educator
+    const teacherId = searchParams.get('teacherId'); // This is the User.id linked to Educator
 
-    if (!teacherUserId) {
+    if (!teacherId) {
       return NextResponse.json({ message: "Company ID and Teacher User ID are required." }, { status: 400 });
     }
 
     // 1. Fetch Educator Profile using teacherUserId
     const educator = await prisma.educator.findUnique({
       where: {
-        userId: teacherUserId,
+        userId: teacherId,
       },
       include: {
         user: {

@@ -1,6 +1,6 @@
 // app/api/admin/parents/route.ts
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb";  // Adjust path as per your project structure
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   try {
     // Derive companyId from the educator (teacherId)
     const educator = await prisma.educator.findUnique({
-      where: { id: teacherId },
+      where: { userId: teacherId },
       select: { companyId: true },
     });
 

@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   try {
     // Derive companyId from the educator (teacherId)
     const requestingEducator = await prisma.educator.findUnique({
-      where: { id: teacherId },
+      where: { userId: teacherId },
       select: { companyId: true },
     });
 

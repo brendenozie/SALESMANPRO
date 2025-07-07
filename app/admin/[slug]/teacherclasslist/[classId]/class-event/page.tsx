@@ -247,7 +247,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // If you always create events for a *single* academic level, you might hardcode it.
     // For now, I'll assume you might target other academic levels from this form.
     // If not, you can remove this fetch and simplify the form's academic level selection.
-    const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
+    const academicLevelsRes = await fetch(`${apiUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
     if (academicLevelsRes.ok) {

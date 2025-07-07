@@ -86,17 +86,17 @@ const generateSampleClassTeacherAcademicLevelsData = (): ClassTeacherAcademicLev
  * then renders the Client Component below.
  */
 export default async function ClassTeacherAcademicLevelsPageServer({ params }: Props) {
-  const teacherId = params.slug;
+  
   const session = await getAuthSession();
 
-  const teacherUserId = session?.user?.id || MOCK_CURRENT_TEACHER_USER_ID;
+  const teacherId = session?.user?.id || params.slug || MOCK_CURRENT_TEACHER_USER_ID;
 
   let pageData: AssignedAcademicLevel[] = [];
   let fetchError: boolean = false;
 
   try {
     const res = await fetch(
-      `${apiUrl}/teacher/academic-levels?teacherUserId=${encodeURIComponent(teacherUserId)}`,
+      `${apiUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
 
