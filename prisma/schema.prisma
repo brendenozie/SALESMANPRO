@@ -47,25 +47,39 @@ enum ROLE {
   STUDENT
   EDUCATOR
   HEADTEACHER
+  PARENT
 }
 
 model Session {
-  id                String      @id @default(auto()) @map("_id") @db.ObjectId
-  sessionToken      String      @unique
-  expires           DateTime
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId            String      @db.ObjectId
-  role              ROLE?       @default(USER)
-  Consumer          Consumer?   @relation(fields: [consumerId], references: [id])
-  consumerId        String?     @db.ObjectId
-  SalesAgent        SalesAgent? @relation(fields: [salesAgentId], references: [id])
-  salesAgentId      String?     @db.ObjectId
-  Client            Client?     @relation(fields: [clientId], references: [id])
-  clientId          String?     @db.ObjectId
-  Student           Student?    @relation(fields: [studentId], references: [id])
-  studentId         String?     @db.ObjectId
-  EducatorProfile   Educator?   @relation(fields: [educatorProfileId], references: [id])
-  educatorProfileId String?     @db.ObjectId
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String      @unique
+  expires      DateTime
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String      @db.ObjectId
+  role         ROLE?       @default(USER)
+  // Consumer          Consumer?   @relation(fields: [consumerId], references: [id])
+  // consumerId        String?     @db.ObjectId
+  // SalesAgent        SalesAgent? @relation(fields: [salesAgentId], references: [id])
+  // salesAgentId      String?     @db.ObjectId
+  // Client            Client?     @relation(fields: [clientId], references: [id])
+  // clientId          String?     @db.ObjectId
+  // Student           Student?    @relation(fields: [studentId], references: [id])
+  // studentId         String?     @db.ObjectId
+  // EducatorProfile   Educator?   @relation(fields: [educatorProfileId], references: [id])
+  // educatorProfileId String?     @db.ObjectId
+  // @@index([studentId])
+  Client       Client?     @relation(fields: [clientId], references: [id])
+  clientId     String?     @db.ObjectId
+  SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
+  salesAgentId String?     @db.ObjectId
+  Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
+  consumerId   String?     @db.ObjectId
+  Student      Student?    @relation(fields: [studentId], references: [id])
+  studentId    String?     @db.ObjectId
+  Educator     Educator?   @relation(fields: [educatorId], references: [id])
+  educatorId   String?     @db.ObjectId
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -83,6 +97,8 @@ model Notification {
   message   String
   createdAt DateTime @default(now())
   read      Boolean  @default(false)
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
 }
 
 model CompanyCategory {
@@ -138,6 +154,8 @@ model ProductCategory {
   Product            Product[]
   MarketplaceListing MarketplaceListing[]
   StoreCategory      StoreCategory[]
+  Company            Company?             @relation(fields: [companyId], references: [id])
+  companyId          String?              @db.ObjectId
 }
 
 /// Associates a Company with a ProductCategory,
@@ -181,21 +199,21 @@ model Company {
   category          String
   logoUrl           String?
   bannerUrl         String?
-  heroSlides        Banner[] // relational banners/slides
-  contactEmail      String
-  contactPhone      String?
-  site              String?          @default("default")
-  address           String?
-  geoLocation       Json? // { lat: number, lng: number }
-  openingHours      Json? // { mon: "9–5", tue: "...", … }
-  domain            String?          @unique
-  currency          String           @default("KES")
-  locale            String           @default("en-US")
-  socialLinks       SocialLink[] // structured social profiles
-  policies          Policy[] // structured, editable policies
-  faqs              FAQ[] // common questions
-  testimonials      Testimonial[] // customer quotes
-  promotions        Promotion[] // site-wide deals
+
+  contactEmail String
+  contactPhone String?
+  site         String?       @default("default")
+  address      String?
+  geoLocation  Json? // { lat: number, lng: number }
+  openingHours Json? // { mon: "9–5", tue: "...", … }
+  domain       String?       @unique
+  currency     String        @default("KES")
+  locale       String        @default("en-US")
+  socialLinks  SocialLink[] // structured social profiles
+  policies     Policy[] // structured, editable policies
+  faqs         FAQ[] // common questions
+  testimonials Testimonial[] // customer quotes
+  promotions   Promotion[] // site-wide deals
 
   pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
 
@@ -205,16 +223,18 @@ model Company {
   StoreCategory StoreCategory[]
 
   // existing relations
-  user            User?            @relation(fields: [userId], references: [id])
-  userId          String?          @db.ObjectId
-  salesAgents     SalesAgent[]
-  products        Product[]
-  inventory       InventoryItem[]
-  clients         Client[]
+  user   User?   @relation(name: "companyAdmin", fields: [userId], references: [id])
+  userId String? @db.ObjectId
+
+  // inventory InventoryItem[]
+
   productRequests Request[]
   Target          Target[]
   commissions     Commission[]
   commissionsRate CommissionRate[]
+
+  // adminUserId String? @db.ObjectId // Optional: Link to the initial admin user of the company
+  // adminUser   User?   @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -224,10 +244,10 @@ model Company {
   PageSection PageSection[]
   Collection  Collection[]
 
-  MarketplaceListing MarketplaceListing[]
+  // MarketplaceListing MarketplaceListing[]
 
-  analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
-  analyticsConfigId String?          @db.ObjectId
+  // analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
+  analyticsConfigId String? @db.ObjectId
 
   paymentSettings   PaymentSettings? @relation(fields: [paymentSettingsId], references: [id])
   paymentSettingsId String?          @db.ObjectId
@@ -235,22 +255,52 @@ model Company {
   shippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
   shippingSettingsId String?           @db.ObjectId
 
-  awards        Json?
-  metrics       Json?
-  stats         Json?
-  AppPromo      AppPromo[]
-  Blog          Blog[]
-  Department    Department[]
-  Student       Student[]
-  Educator      Educator[]
-  Parent        Parent[]
-  AcademicLevel AcademicLevel[]
-  Course        Course[]
-  ClassSchedule ClassSchedule[]
-  Exam          Exam[]
-  Announcement  Announcement[]
-  Event         Event[]
-  Conversation  Conversation[]
+  awards  Json?
+  metrics Json?
+  stats   Json?
+
+  Announcement Announcement[]
+
+  Conversation Conversation[]
+
+  // products        Product[]
+  productCategories   ProductCategory[]
+  marketplaceListings MarketplaceListing[]
+  customerOrders      CustomerOrder[]
+  inventoryItems      InventoryItem[]
+
+  salesAgents SalesAgent[]
+  clients     Client[]
+
+  consumers      Consumer[]
+  // users          User[]
+  educators      Educator[]
+  students       Student[]
+  parents        Parent[]
+  academicLevels AcademicLevel[]
+  courses        Course[]
+  departments    Department[]
+  blogs          Blog[]
+  seoBlogs       SeoBlog[]
+  notifications  Notification[]
+
+  banners Banner[]
+
+  appPromos AppPromo[]
+  // settings        CompanySettings[]
+
+  analyticsConfigs  AnalyticsConfig[]
+  events            Event[]
+  tasks             Task[]
+  locations         Locations[]
+  discussionTopics  DiscussionTopic[]
+  attendanceRecords AttendanceRecord[]
+  exams             Exam[]
+  grades            Grade[] // Grades are now directly linked to a company
+  classSchedules    ClassSchedule[]
+
+  Product     Product[]
+  HeadTeacher HeadTeacher[]
 }
 
 enum CategoryStatus {
@@ -297,9 +347,11 @@ model Testimonial {
 }
 
 model Banner {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  company         Company   @relation(fields: [companyId], references: [id])
-  companyId       String    @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
   imageUrl        String
   productImageUrl String?
   headline        String?
@@ -327,10 +379,17 @@ model Promotion {
 }
 
 model AnalyticsConfig {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @unique @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
   googleTag   String?
   facebookTag String?
-  Company     Company[]
+
+  hotjarSiteId String?
+
+  isActive Boolean @default(false)
 }
 
 model PaymentSettings {
@@ -400,8 +459,10 @@ enum PolicyType {
 }
 
 model Locations {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
 }
 
 model AppPromo {
@@ -546,6 +607,7 @@ model Product {
   Question       Question[]
   RecentlyViewed RecentlyViewed[]
   WishlistItem   WishlistItem[]
+  ProductMetrics ProductMetrics[]
 
   @@index([name])
   @@index([finalPrice])
@@ -630,6 +692,8 @@ model SeoBlog {
   keywords    String[]
   blogId      String   @unique @db.ObjectId
   blog        Blog     @relation(fields: [blogId], references: [id])
+  Company     Company? @relation(fields: [companyId], references: [id])
+  companyId   String?  @db.ObjectId
 }
 
 model SEO {
@@ -665,28 +729,61 @@ enum ListingStatus {
 }
 
 model Task {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  taskName    String
-  dueDate     DateTime  @db.Date
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String    @db.ObjectId
-  dueTime     String
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  taskName String
+
+  dueTime String
+
+  icon String?
+
   description String?
-  icon        String?
-  status      String?
-  createdAt   DateTime? @default(now())
-  updatedAt   DateTime? @updatedAt
+  dueDate     DateTime?
+  status      TaskStatus   @default(PENDING) // Enum: PENDING, IN_PROGRESS, COMPLETED, CANCELED
+  priority    TaskPriority @default(MEDIUM) // Enum: LOW, MEDIUM, HIGH
+
+  assignedToId String? @db.ObjectId // User assigned to the task
+  assignedTo   User?   @relation(name: "assignedTo", fields: [assignedToId], references: [id])
+
+  createdById String @db.ObjectId // User who created the task
+  createdBy   User   @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([companyId])
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 //One on One relationship with user
 model Client {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
-  name              String?
-  password          String?
-  email             String              @unique
-  phoneNumber       String?
-  companyId         String              @db.ObjectId
-  company           Company?            @relation(fields: [companyId], references: [id])
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String?
+  password    String?
+  email       String   @unique
+  phoneNumber String?
+  companyId   String   @db.ObjectId
+  company     Company? @relation(fields: [companyId], references: [id])
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation("ClientProfile", fields: [userId], references: [id])
+
   salesAgentId      String?             @db.ObjectId
   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
   createdAt         DateTime            @default(now())
@@ -703,6 +800,7 @@ model Client {
   role              ROLE?               @default(CLIENT)
   accounts          Account[]
   sessions          Session[]
+  Return            Return[]
 }
 
 // Conversation Model
@@ -796,17 +894,21 @@ enum MessageType {
 
 // One on One relationship with user
 model SalesAgent {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  name               String?
-  email              String               @unique
-  image              String?
-  accounts           Account[]
-  sessions           Session[]
-  phoneNumber        String?
-  companyId          String?              @db.ObjectId
-  company            Company?             @relation(fields: [companyId], references: [id])
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String?
+  email       String    @unique
+  image       String?
+  accounts    Account[]
+  sessions    Session[]
+  phoneNumber String?
+  companyId   String?   @db.ObjectId
+  company     Company?  @relation(fields: [companyId], references: [id])
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation("SalesAgentProfile", fields: [userId], references: [id])
+
   clients            Client[]
-  productRequests    Request[]
+  // productRequests    Request[]
   password           String?
   role               ROLE?                @default(AGENT)
   emailVerified      DateTime?
@@ -818,7 +920,7 @@ model SalesAgent {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   commissions        Commission[]
-  Return             Return[]
+  // Return             Return[]
   AgentInventory     AgentInventory[]
   Assignment         ProductAssignment[]
   Target             Target[]
@@ -836,10 +938,10 @@ model User {
   updatedAt      DateTime            @updatedAt
   accounts       Account[]
   sessions       Session[]
-  tasks          Task[]
+  // tasks          Task[]
   auditLogs      AuditLog[]
-  requests       Request[]
-  returns        Return[]
+  // requests       Request[]
+  // returns        Return[]
   Assignment     ProductAssignment[]
   emailVerified  DateTime?
   image          String?
@@ -854,7 +956,7 @@ model User {
   ProductReviewResponse ProductReviewResponse[]
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
-  Company               Company[]
+  // Company               Company[]
   Review                Review[]
   Question              Question[]
   RecentlyViewed        RecentlyViewed[]
@@ -863,27 +965,51 @@ model User {
   Appointment           Appointment[]
 
   // If an admin can also post announcements, link directly from User
-  announcements    Announcement[]     @relation("UserAnnouncements")
-  DiscussionTopic  DiscussionTopic[]
-  DiscussionPost   DiscussionPost[]
+  announcements Announcement[] @relation("UserAnnouncements")
+  // DiscussionTopic DiscussionTopic[]
+  // DiscussionPost  DiscussionPost[]
+
+  discussionPosts    DiscussionPost[]    @relation("CreatedDiscussionPost")
+  discussionComments DiscussionComment[] @relation("CreatedDiscussionComment")
+
   AttendanceRecord AttendanceRecord[]
 
-  // Opposite relation for DiscussionPost.createdBy
-  CreatedDiscussionPost DiscussionPost[] @relation("CreatedDiscussionPost")
-
   // Opposite relation for Event.organizer
-  OrganizedEvents Event[] @relation("OrganizedEvents")
-
-  Department        Department[]
-  Educator          Educator?
-  Student           Student?
-  Parent            Parent?
-  // Removed: Event      Event[]
+  OrganizedEvents   Event[]             @relation("OrganizedEvents")
   EventRegistration EventRegistration[] @relation("EventRegistrations")
 
   ConversationParticipant ConversationParticipant[]
 
   SentMessages Message[] @relation("SentMessages")
+
+  studentId     String? @db.ObjectId
+  educatorId    String? @db.ObjectId
+  parentId      String? @db.ObjectId
+  headTeacherId String? @db.ObjectId
+
+  UserActivity UserActivity[]
+
+  Department Department[]
+
+  CreatedTasks Task[] @relation("CreatedTasks")
+  assignedTo   Task[] @relation(name: "assignedTo")
+
+  returnedBy           Return[] @relation("returnedBy")
+  receivedBySalesAgent Return[] @relation("receivedBySalesAgent")
+
+  requester         Request[] @relation(name: "requester")
+  RequestApprovedBy Request[] @relation(name: "RequestApprovedBy")
+
+  ReturnApprovedBy Return[] @relation("ReturnApprovedBy")
+
+  HeadTeacher       HeadTeacher[] @relation(name: "headteacher")
+  consumerProfile   Consumer[]    @relation("ConsumerProfile")
+  salesAgentProfile SalesAgent[]  @relation("SalesAgentProfile")
+  clientProfile     Client[]      @relation("ClientProfile")
+  Parent            Parent[]      @relation(name: "parent")
+  Student           Student[]     @relation(name: "student")
+  Educator          Educator[]    @relation(name: "educator")
+  Company           Company[]     @relation(name: "companyAdmin")
 }
 
 enum Status {
@@ -893,18 +1019,53 @@ enum Status {
 }
 
 model Return {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  inventoryId   String        @db.ObjectId
-  inventoryItem InventoryItem @relation(fields: [inventoryId], references: [id])
-  returnedById  String        @db.ObjectId
-  returnedBy    SalesAgent    @relation(fields: [returnedById], references: [id])
-  ApprovedBy    User?         @relation(fields: [ApprovedById], references: [id])
-  ApprovedById  String?       @db.ObjectId
-  quantity      Int
-  reason        String?
-  status        Status        @default(PENDING)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  inventoryId String @db.ObjectId
+
+  // inventoryItem InventoryItem @relation(fields: [inventoryId], references: [id])
+
+  returnedById String @db.ObjectId
+  returnedBy   User   @relation("returnedBy", fields: [returnedById], references: [id])
+
+  ReturnApprovedBy   User?   @relation("ReturnApprovedBy", fields: [ReturnApprovedById], references: [id])
+  ReturnApprovedById String? @db.ObjectId
+  // quantity      Int
+  // reason        String?
+
+  status Status @default(PENDING)
+
+  refundAmount Float?
+  refundedTo   String? // e.g., "Client Wallet", "Original Payment Method"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItemId     String?        @db.ObjectId // Optional: If returning an item from a specific order
+  orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id])
+  inventoryItemId String?        @db.ObjectId // Optional: If returning a general inventory item
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  clientId        String?        @db.ObjectId // Client initiating the return
+  client          Client?        @relation(fields: [clientId], references: [id])
+
+  receivedBySalesAgentId String? @db.ObjectId // Sales agent receiving the return
+  receivedBySalesAgent   User?   @relation("receivedBySalesAgent", fields: [receivedBySalesAgentId], references: [id])
+
+  quantity   Int
+  returnDate DateTime @default(now())
+  reason     String?
+  // status          ReturnStatus   @default(PENDING) // Enum: PENDING, APPROVED, REJECTED, COMPLETED
+
+  @@index([orderItemId])
+  @@index([inventoryItemId])
+  @@index([clientId])
+  @@index([returnedById])
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
 }
 
 model ProductAssignment {
@@ -973,22 +1134,41 @@ model CommissionRate {
   createdAt      DateTime       @default(now())
   Company        Company?       @relation(fields: [companyId], references: [id])
   companyId      String?        @db.ObjectId
+
+  name      String
+  rate      Float // e.g., 0.10 for 10%
+  appliesTo String // e.g., "ALL_PRODUCTS", "CATEGORY_ID", "PRODUCT_ID"
+  targetId  String? @db.ObjectId // Optional: Category or Product ID if appliesTo is specific
+  isActive  Boolean @default(true)
+
+  commissions         Commission[]
+  marketplaceListings MarketplaceListing[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([targetId])
 }
 
 model Commission {
-  id               String           @id @default(auto()) @map("_id") @db.ObjectId
-  salesAgentId     String           @db.ObjectId
-  salesAgent       SalesAgent       @relation(fields: [salesAgentId], references: [id])
-  productId        String           @db.ObjectId
-  product          Product          @relation(fields: [productId], references: [id])
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId     String         @db.ObjectId
+  salesAgent       SalesAgent     @relation(fields: [salesAgentId], references: [id])
+  productId        String         @db.ObjectId
+  product          Product        @relation(fields: [productId], references: [id])
   commissionRate   Float // Rate (percentage or fixed) based on criteria
   commissionEarned Float // Calculated based on the chosen criteria
-  basedOn          CommissionType   @default(COST) // Define whether based on COST or QUANTITY
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  status           CommissionStatus @default(PENDING)
-  Company          Company?         @relation(fields: [companyId], references: [id])
-  companyId        String?          @db.ObjectId
+  basedOn          CommissionType @default(COST) // Define whether based on COST or QUANTITY
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  transactionDate DateTime         @default(now())
+  status          CommissionStatus @default(PENDING) // Enum: PENDING, PAID, CANCELLED
+  notes           String?
+
+  Company          Company?        @relation(fields: [companyId], references: [id])
+  companyId        String?         @db.ObjectId
+  CommissionRate   CommissionRate? @relation(fields: [commissionRateId], references: [id])
+  commissionRateId String?         @db.ObjectId
 
   @@unique([salesAgentId, productId]) // Composite unique constraint
   @@index([salesAgentId, status])
@@ -1015,25 +1195,34 @@ model CommissionLog {
 }
 
 model Target {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  salesAgentId  String       @db.ObjectId
-  salesAgent    SalesAgent   @relation(fields: [salesAgentId], references: [id])
-  productId     String       @db.ObjectId
-  product       Product      @relation(fields: [productId], references: [id])
-  targetType    TargetType   @default(COST) // Define whether target is based on COST or QUANTITY
-  targetValue   Float // Value to achieve (e.g., $5000 sales or 100 units sold)
-  achievedValue Float        @default(0) // Progress towards target
-  startDate     DateTime
-  endDate       DateTime
-  status        TargetStatus @default(ONGOING)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  Company       Company?     @relation(fields: [companyId], references: [id])
-  companyId     String?      @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  @@unique([salesAgentId, productId]) // Composite unique constraint
-  @@unique([salesAgentId, productId, startDate])
-  @@index([salesAgentId, status, startDate, endDate])
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+
+  targetType  TargetType @default(COST) // Define whether target is based on COST or QUANTITY
+  targetValue Float // Value to achieve (e.g., $5000 sales or 100 units sold)
+
+  achievedValue Float @default(0) // Progress towards target
+
+  agentId    String     @db.ObjectId
+  salesAgent SalesAgent @relation(fields: [agentId], references: [id])
+  metricType String // e.g., "SALES_VOLUME", "NUMBER_OF_CLIENTS"
+
+  periodStart DateTime
+  periodEnd   DateTime
+  isAchieved  Boolean  @default(false)
+  notes       String?
+
+  startDate DateTime
+  endDate   DateTime
+  status    TargetStatus @default(ONGOING)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  Company   Company?     @relation(fields: [companyId], references: [id])
+  companyId String?      @db.ObjectId
+
+  @@index([agentId])
 }
 
 enum TargetType {
@@ -1064,18 +1253,6 @@ enum SellerType {
   CONSUMER
   ADMIN
   COMPANY
-}
-
-model UserActivity {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  productId String   @db.ObjectId
-  action    String // "view", "purchase", "favorite"
-  createdAt DateTime @default(now())
-
-  product MarketplaceListing @relation(fields: [productId], references: [id])
-
-  @@index([userId, productId, createdAt])
 }
 
 model MarketplaceListing {
@@ -1219,33 +1396,21 @@ model MarketplaceListing {
   financingAvailable Boolean? @default(false)
   tradeIn            Boolean? @default(false)
 
-  Collection     Collection?      @relation(fields: [collectionId], references: [id])
-  collectionId   String?          @db.ObjectId
-  CollectionItem CollectionItem[]
-  Review         Review[]
-  Question       Question[]
-  RecentlyViewed RecentlyViewed[]
-  WishlistItem   WishlistItem[]
+  Collection       Collection?      @relation(fields: [collectionId], references: [id])
+  collectionId     String?          @db.ObjectId
+  CollectionItem   CollectionItem[]
+  Review           Review[]
+  Question         Question[]
+  RecentlyViewed   RecentlyViewed[]
+  WishlistItem     WishlistItem[]
+  CommissionRate   CommissionRate?  @relation(fields: [commissionRateId], references: [id])
+  commissionRateId String?          @db.ObjectId
 
   @@index([name])
   @@index([finalPrice])
   @@index([isFeatured])
   @@index([createdAt])
   @@index([status])
-}
-
-model ProductMetrics {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  productId String   @unique @db.ObjectId
-  views     Int      @default(0)
-  purchases Int      @default(0)
-  favorites Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  product MarketplaceListing @relation(fields: [productId], references: [id])
-
-  @@index([productId, updatedAt])
 }
 
 model ProductReview {
@@ -1367,22 +1532,31 @@ model EventLog {
 }
 
 model Request {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  productId       String        @db.ObjectId
-  product         Product       @relation(fields: [productId], references: [id], name: "ProductRequests")
-  requestedById   String        @db.ObjectId // References either a Client or a SalesAgent
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], name: "ProductRequests")
+
+  // requestedById   String        @db.ObjectId // References either a Client or a SalesAgent
   requestedByType RequesterType // Enum to indicate the type of requester
-  quantity        Int
-  totalPrice      Float         @default(0)
-  status          Status        @default(PENDING)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  salesAgentId    String?       @db.ObjectId // Optional, if a sales agent is involved
-  salesAgent      SalesAgent?   @relation(fields: [salesAgentId], references: [id])
-  companyId       String?       @db.ObjectId
-  company         Company?      @relation(fields: [companyId], references: [id])
-  ApprovedBy      User?         @relation(fields: [ApprovedById], references: [id])
-  ApprovedById    String?       @db.ObjectId
+
+  requesterId String @db.ObjectId // User ID of the requester (Client or SalesAgent)
+  requester   User   @relation(name: "requester", fields: [requesterId], references: [id])
+
+  quantity   Int
+  totalPrice Float    @default(0)
+  status     Status   @default(PENDING)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  companyId           String?  @db.ObjectId
+  company             Company? @relation(fields: [companyId], references: [id])
+  RequestApprovedBy   User?    @relation(name: "RequestApprovedBy", fields: [RequestApprovedById], references: [id])
+  RequestApprovedById String?  @db.ObjectId
+
+  notes String?
+
+  @@index([productId])
+  @@index([requesterId])
 }
 
 // Enum for requestedByType
@@ -1393,10 +1567,17 @@ enum RequesterType {
 
 //One on One relationship with user
 model Consumer {
-  id                   String                 @id @default(auto()) @map("_id") @db.ObjectId
-  name                 String?
-  email                String                 @unique
-  emailVerified        DateTime?
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation("ConsumerProfile", fields: [userId], references: [id])
+
+  companyId String?  @db.ObjectId // Optional: If consumers can be independent or affiliated
+  company   Company? @relation(fields: [companyId], references: [id])
+
   image                String?
   accounts             Account[]
   sessions             Session[]
@@ -1411,6 +1592,9 @@ model Consumer {
   updatedAt            DateTime               @updatedAt
   ConsumerInventory    ConsumerInventory[]
   ConsumerInventoryLog ConsumerInventoryLog[]
+
+  // @@index([userId])
+  @@index([companyId])
 }
 
 model ConsumerInventory {
@@ -1470,6 +1654,8 @@ model CustomerOrder {
   updatedAt             DateTime    @updatedAt
   deletedAt             DateTime?
   Payment               Payment[]
+  Company               Company?    @relation(fields: [companyId], references: [id])
+  companyId             String?     @db.ObjectId
 
   @@index([consumerId])
 }
@@ -1492,6 +1678,8 @@ model OrderItem {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Return Return[]
 
   @@index([marketplaceListingId])
 }
@@ -1627,11 +1815,32 @@ model WishlistItem {
   marketplaceListingId String?             @db.ObjectId
 }
 
+// HeadTeacher Profile Model (one-to-one with User)
+model HeadTeacher {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(name: "headteacher", fields: [userId], references: [id])
+
+  loginCode String @unique // Unique generated number for parent login
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Parent Profile Model (one-to-one with User, one-to-many with Student)
 model Parent {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(name: "parent", fields: [userId], references: [id])
 
   loginCode String @unique // Unique generated number for parent login
 
@@ -1647,13 +1856,17 @@ model Parent {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // User      User[]
+  // User      User[]
+  // User      User[]
 }
 
 // Student Profile Model (one-to-one with User)
 model Student {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
   userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(name: "student", fields: [userId], references: [id])
 
   loginCode String @unique // NEW: Unique generated number for login
 
@@ -1688,13 +1901,17 @@ model Student {
   Account           Account[]
   Session           Session[]
   EventRegistration EventRegistration[]
+
+  headTeacherId String? @db.ObjectId
+  Grade         Grade[]
 }
 
 // Educator Profile Model (one-to-one with User)
 model Educator {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
   userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(name: "educator", fields: [userId], references: [id])
 
   phone          String?
   bio            String?
@@ -1729,6 +1946,11 @@ model Educator {
   updatedAt DateTime  @updatedAt
   Account   Account[]
   Session   Session[]
+
+  Submission     Submission[]
+  ExamSubmission ExamSubmission[]
+
+  Grade Grade[] @relation("recordedBy")
 }
 
 // Academic Level Model
@@ -1747,6 +1969,8 @@ model AcademicLevel {
 
   // NEW: Junction table for many-to-many with Educator
   educatorAssignments EducatorAcademicLevelAssignment[]
+
+  grades Grade[] @relation("GradeAcademicLevel") // New relation for historical grades
 
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
@@ -1788,6 +2012,10 @@ model Course {
   description String?
   imageUrl    String?
 
+  credits Float?
+
+  code String? @unique // e.g., "MATH101"
+
   instructorId String?   @db.ObjectId // Made optional for flexibility
   instructor   Educator? @relation(fields: [instructorId], references: [id])
 
@@ -1812,12 +2040,15 @@ model Course {
   CourseMaterial  CourseMaterial[]
   DiscussionTopic DiscussionTopic[]
 
+  grades Grade[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   AcademicLevel    AcademicLevel?     @relation(fields: [academicLevelId], references: [id])
   academicLevelId  String?            @db.ObjectId
   AttendanceRecord AttendanceRecord[]
+  Submission       Submission[]
 
   @@unique([title, academicLevelId, companyId]) // A course name should be unique within an academic level and company
   @@index([academicLevelId])
@@ -1836,10 +2067,11 @@ model CourseAcademicLevel {
   academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
   academicLevelId String        @db.ObjectId
 
+  assignedAt DateTime @default(now())
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Ensures a course can only be associated with a specific academic level once
   @@unique([courseId, academicLevelId])
   @@index([courseId])
   @@index([academicLevelId])
@@ -1869,14 +2101,20 @@ model CourseEnrollment {
 // Assignment Model
 // Course Assignment Model
 model CourseAssignment {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   dueDate     DateTime
   maxGrade    Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
-  courseId    String       @db.ObjectId
-  course      Course       @relation(fields: [courseId], references: [id])
+  courseId    String   @db.ObjectId
+  course      Course   @relation(fields: [courseId], references: [id])
+
+  enrollDate     DateTime  @default(now())
+  completionDate DateTime?
+
   submissions Submission[] // Relation to AssignmentSubmission (or Submission) model
+
+  status EnrollmentStatus @default(ENROLLED) // Enum: ENROLLED, COMPLETED, DROPPED
 
   // assignedAt is implicitly handled by createdAt in your API,
   // but if you need a distinct field for when it's formally assigned/published
@@ -1887,20 +2125,41 @@ model CourseAssignment {
   updatedAt DateTime @updatedAt
 }
 
+enum EnrollmentStatus {
+  ENROLLED
+  COMPLETED
+  DROPPED
+}
+
 // Submission Model (Student's assignment submission)
 model Submission {
-  id                String           @id @default(auto()) @map("_id") @db.ObjectId
-  assignmentId      String           @db.ObjectId // Foreign key to CourseAssignment
-  assignment        CourseAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade) // CRITICAL: onDelete: Cascade
-  studentId         String           @db.ObjectId
-  student           Student          @relation(fields: [studentId], references: [id])
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId String           @db.ObjectId // Foreign key to CourseAssignment
+  assignment   CourseAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade) // CRITICAL: onDelete: Cascade
+  studentId    String           @db.ObjectId
+  student      Student          @relation(fields: [studentId], references: [id])
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
   grade             Float?
   gradedAt          DateTime?
   submissionContent String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  submissionUrl     String? // Link to file storage or online document
+  submittedAt       DateTime  @default(now())
+
+  comments     String?
+  reviewedById String?   @db.ObjectId // Educator who reviewed it
+  reviewedBy   Educator? @relation(fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([assignmentId, studentId])
+  @@index([studentId])
+  @@index([courseId])
+  @@index([reviewedById])
 }
 
 // Announcement Model
@@ -2181,8 +2440,11 @@ model AttendanceRecord {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   User      User?    @relation(fields: [userId], references: [id])
   userId    String?  @db.ObjectId
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
 
   @@unique([studentId, date, classScheduleId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
   @@index([studentId, date])
@@ -2221,6 +2483,8 @@ model Exam {
   company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
 
+  grades Grade[] // Grades associated with this exam
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2257,14 +2521,21 @@ model ExamQuestion {
 
 // ExamSubmission Model (Recommended Update for Online Exam Answers)
 model ExamSubmission {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  examId      String   @db.ObjectId
-  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade) // Ensure cascade delete
-  studentId   String   @db.ObjectId
-  student     Student  @relation(fields: [studentId], references: [id])
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  examId    String  @db.ObjectId
+  exam      Exam    @relation(fields: [examId], references: [id], onDelete: Cascade) // Ensure cascade delete
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
+
+  submissionUrl String? // Link to submitted file/document
+
   submittedAt DateTime @default(now())
   score       Float? // Final score for the submission
   feedback    String?
+
+  reviewedById String?   @db.ObjectId // Educator who reviewed it
+  reviewedBy   Educator? @relation(fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
 
   // Field for online exam answers
   answers Json? // Stores the student's answers in a flexible JSON format
@@ -2273,6 +2544,9 @@ model ExamSubmission {
   updatedAt DateTime @updatedAt
 
   @@unique([examId, studentId]) // A student can only submit one exam per exam
+  @@index([examId])
+  @@index([studentId])
+  @@index([reviewedById])
 }
 
 // Enums used in the models
@@ -2334,22 +2608,27 @@ model CourseMaterial {
 // Discussion Topic Model
 // Represents a discussion forum topic within a course or globally.
 model DiscussionTopic {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  courseId    String?  @db.ObjectId // Optional: if topic is specific to a course
-  course      Course?  @relation(fields: [courseId], references: [id])
-  title       String
-  content     String? // Initial post content
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  courseId String? @db.ObjectId // Optional: if topic is specific to a course
+  course   Course? @relation(fields: [courseId], references: [id])
+  title    String
+  content  String? // Initial post content
+
   createdById String   @db.ObjectId // User (Educator or Student) who created the topic
   createdBy   Educator @relation("CreatedDiscussionTopic", fields: [createdById], references: [id])
 
   posts     DiscussionPost[] // All posts within this topic
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
-  User      User?            @relation(fields: [userId], references: [id])
-  userId    String?          @db.ObjectId
+  // User      User?            @relation(fields: [userId], references: [id])
+  // userId    String?          @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
 
   @@index([courseId])
   @@index([createdById])
+  @@index([companyId])
 }
 
 // Discussion Post Model
@@ -2366,11 +2645,40 @@ model DiscussionPost {
   replies     DiscussionPost[] @relation("ReplyToPost") // Replies to this post
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-  User        User?            @relation(fields: [userId], references: [id])
-  userId      String?          @db.ObjectId
+
+  // User              User?               @relation(fields: [userId], references: [id])
+  // userId            String?             @db.ObjectId
+
+  DiscussionComment DiscussionComment[]
+  // @@index([userId])
 
   @@index([topicId])
   @@index([parentId])
+  @@index([createdById])
+}
+
+model DiscussionComment {
+  id     String         @id @default(auto()) @map("_id") @db.ObjectId
+  postId String         @db.ObjectId
+  post   DiscussionPost @relation(fields: [postId], references: [id])
+
+  // commentId    String?             @db.ObjectId // For replies to other comments
+  // comment      DiscussionComment?  @relation("ReplyToComment", fields: [commentId], references: [id])
+
+  content String
+
+  createdById String @db.ObjectId // User (Educator or Student) who created the comment
+  createdBy   User   @relation("CreatedDiscussionComment", fields: [createdById], references: [id])
+
+  // replies DiscussionComment[] @relation("ReplyToComment") // Replies to this comment
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  // DiscussionComment   DiscussionComment? @relation("ReplyToComment", fields: [discussionCommentId], references: [id])
+  discussionCommentId String?  @db.ObjectId
+
+  @@index([postId])
+  // @@index([commentId])
   @@index([createdById])
 }
 
@@ -2394,4 +2702,84 @@ model Department {
   userId    String?    @db.ObjectId
 
   @@index([name])
+}
+
+// Grade Model
+// Represents a student's grade for a specific course or exam.
+model Grade {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  examId String? @db.ObjectId // Optional: Grade might not be tied to a specific exam
+  exam   Exam?   @relation(fields: [examId], references: [id])
+
+  score       Float
+  gradeValue  String? // e.g., "A", "B+", "Pass"
+  gradeStatus GradeStatus? // Enum: PASSED, FAILED, PENDING
+  comments    String?
+
+  recordedById String?   @db.ObjectId // Educator who recorded this grade
+  recordedBy   Educator? @relation("recordedBy", fields: [recordedById], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // NEW FIELD: Link to the academic level the student was in when this grade was recorded
+  // This is crucial for historical reporting by academic level.
+  academicLevelAtTimeOfGradeId String        @db.ObjectId
+  academicLevelAtTimeOfGrade   AcademicLevel @relation("GradeAcademicLevel", fields: [academicLevelAtTimeOfGradeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([courseId])
+  @@index([examId])
+  @@index([recordedById])
+  @@index([companyId])
+  @@index([academicLevelAtTimeOfGradeId]) // Add index for efficient querying by academic level
+}
+
+enum GradeStatus {
+  PASSED
+  FAILED
+  PENDING
+}
+
+model UserActivity {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String              @db.ObjectId
+  user                 User                @relation(fields: [userId], references: [id])
+  activityType         String // e.g., "LOGIN", "PRODUCT_VIEW", "ORDER_PLACED"
+  details              Json? // JSON object for additional context
+  ipAddress            String?
+  userAgent            String?
+  createdAt            DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+
+  @@index([userId])
+  @@index([activityType])
+}
+
+model ProductMetrics {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id])
+  metricType String // e.g., "VIEW_COUNT", "ADD_TO_CART_COUNT", "PURCHASE_COUNT"
+  value      Float
+  date       DateTime // Date for which the metric is recorded
+
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+
+  @@index([productId])
+  @@index([metricType])
+  @@index([date])
 }

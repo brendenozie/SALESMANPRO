@@ -58,7 +58,7 @@ export async function GET(request: Request, { params }: { params: { academicLeve
       whereClause.examId = examId;
     }
 
-    const grades = await prisma.grade.findMany({
+    const grades = await prisma.academicLevel.findMany({
       where: whereClause,
       include: {
         student: {
