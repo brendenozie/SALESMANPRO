@@ -1,9 +1,9 @@
-// app/api/teacher/academic-levels/[classId]/students/route.ts
+// app/api/teacher/academic-levels/[academicLevelId]/students/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";  // Adjust path as per your project structure
 
-export async function GET(request: Request, { params }: { params: { classId: string } }) {
-  const academicLevelId = params.classId;
+export async function GET(request: Request, { params }: { params: { academicLevelId: string } }) {
+  const academicLevelId = params.academicLevelId;
   const { searchParams } = new URL(request.url);
   const teacherId = searchParams.get('teacherId'); // Used to derive companyId
 

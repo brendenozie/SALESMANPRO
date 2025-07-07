@@ -15,27 +15,37 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
-import { StudentRosterPageData, StudentRosterStudent } from '@/app/api/teacher/academic-levels/[academicLevelId]/students/route';
 
+export type StudentRosterStudent = {
+  id: string; // Student ID
+  userId: string; // User ID associated with the student
+  name: string; // Student's name (from User model)
+  email: string; // Student's email (from User model)
+  profilePicture: string | null; // Student's profile picture (from Student model)
+  parentId: string | null;
+  parentEmail: string | null; // Parent's email (from Parent.User model)
+  studentGrade: string | null; // From Student model
+  
+};
 
-interface StudentRosterPageProps extends StudentRosterPageData {
+interface StudentRosterPageProps {
+  students: StudentRosterStudent[];
   companyId: string; // Passed from server component for dynamic links
 }
 
 export default function StudentRosterPage({
-  academicLevelInfo,
   students,
-  themeSettings,
   companyId,
 }: StudentRosterPageProps) {
+  
   const router = useRouter();
 
-  const primaryColor = themeSettings.primaryColor;
-  const accentColor = themeSettings.accentColor;
+  const primaryColor = "#fd2121";
+  const accentColor = "#FFC107";
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredStudents = students.filter((student: StudentRosterStudent) =>
+  const filteredStudents = students?.filter((student: StudentRosterStudent) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.id.toLowerCase().includes(searchTerm.toLowerCase()) // Search by Student ID
   );
@@ -103,10 +113,12 @@ export default function StudentRosterPage({
           </button>
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Student Roster <span style={{ color: primaryColor }}>{academicLevelInfo.name}</span>
+              Student Roster 
+              {/* <span style={{ color: primaryColor }}>{academicLevelInfo.name}</span> */}
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Currently viewing {academicLevelInfo.studentsCount} students in {academicLevelInfo.name}.
+              Currently viewing 
+              {/* {academicLevelInfo.studentsCount} students in {academicLevelInfo.name}. */}
             </p>
           </div>
         </motion.div>
@@ -133,7 +145,7 @@ export default function StudentRosterPage({
         animate="visible"
         variants={containerVariants}
       >
-        {filteredStudents.length > 0 ? (
+        {filteredStudents && filteredStudents.length > 0 ? (
           filteredStudents.map((student: StudentRosterStudent) => (
             <motion.div
               key={student.id}
