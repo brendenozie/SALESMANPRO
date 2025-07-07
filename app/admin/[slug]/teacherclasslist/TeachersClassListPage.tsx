@@ -63,10 +63,6 @@ export default function ClassTeacherAcademicLevelsPage({
 
   // --- Action Handlers for Academic Levels ---
   
-  const handleViewRoster = (academicLevelId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/student-roster`);
-  };
-
   const handleManageAcademicLevelEvents = (academicLevelId: string) => {
     router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-event`);
   };
@@ -181,12 +177,6 @@ export default function ClassTeacherAcademicLevelsPage({
                         transition={{ duration: 0.15 }}
                         className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200 origin-top-right"
                       >
-                        <button
-                          onClick={() => { handleViewRoster(level.id); setOpenDropdownId(null); }}
-                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                        >
-                          <BookOpenIcon className={`h-5 w-5 text-blue-500`} /> View Student Roster
-                        </button>
                         <button
                           onClick={() => { handleTakeAcademicLevelAttendance(level.id); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
