@@ -822,10 +822,10 @@ export default function AddClassEventPage({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            School Calendar & Events
+            Class Calendar & Events
             <span className="ml-2 text-teal-600 text-base sm:text-xl">🗓️</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">Manage and publish all school-wide events and holidays.</p>
+          <p className="text-sm text-gray-600 mt-1">Manage and publish class events and holidays.</p>
         </div>
         <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
           <CalendarDaysIcon className="h-5 w-5 text-gray-500" />

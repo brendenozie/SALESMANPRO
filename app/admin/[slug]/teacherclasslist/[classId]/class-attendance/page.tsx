@@ -24,15 +24,12 @@ export default async function AcademicLevelAttendancePage({ params }: Props) {
 
   // TODO: Replace with actual educatorId from your authentication system.
   // For demonstration, we use a placeholder.
-  // const educatorId = slug; //"EDUCATOR_ID_PLACEHOLDER"; // Example: "60c72b2f9b1e8b001c8e4d1b"
-
-  // No need to fetch products, categories, agents here, as this page is
-  // specifically for attendance and TakeAttendancePage will fetch its own data.
-
+  const educatorId = slug; //"EDUCATOR_ID_PLACEHOLDER"; // Example: "60c72b2f9b1e8b001c8e4d1b"
+  
   return (
     <TakeAttendancePage
       academicLevelId={classId}
-      educatorId={slug}
+      educatorId={educatorId}
     />
   );
 }

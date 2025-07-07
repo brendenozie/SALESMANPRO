@@ -4,27 +4,30 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeftIcon,
-  UserCircleIcon, // For student avatar placeholder
-  MagnifyingGlassIcon, // For search
-  CalendarDaysIcon, // For date picker icon
-  CheckCircleIcon, // For success message
-  ExclamationCircleIcon, // For error message
+  UserCircleIcon,
+  MagnifyingGlassIcon,
+  CalendarDaysIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
+import Image from 'next/image'; // Recommended for Next.js image optimization
 
-// Assuming these types match your Next.js API route's response
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
+// --- Type Definitions (Keep as is, they are good) ---
 type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'TARDY' | 'EXCUSED';
 
 interface StudentForAttendance {
-  id: string; // Student ID (this is the Student model's ID)
-  userId: string; // User ID associated with the student
-  name: string; // Student's name (from User model)
-  profilePicture: string | null; // Student's profile picture (from Student model)
-  currentStatus: AttendanceStatus; // Current attendance status for the selected date
+  id: string;
+  userId: string;
+  name: string;
+  profilePicture: string | null;
+  currentStatus: AttendanceStatus;
 }
 
 interface AcademicLevelInfo {
-  id: string; // AcademicLevel ID
-  name: string; // e.g., "Grade 7"
+  id: string;
+  name: string;
   description: string | null;
   studentsCount: number;
 }
@@ -42,34 +45,33 @@ interface TakeAttendancePageData {
 
 interface TakeAttendancePageProps {
   academicLevelId: string;
-  educatorId: string; // The ID of the educator recording attendance
+  educatorId: string;
 }
 
-// Base URL for your API. This should point to your Next.js API route.
-// If your Next.js app is served from example.com, this would be /api.
-// For local development, it would be /api if the API route is within the same Next.js app.
-// If your API is a separate Node.js app, adjust this URL.
-const API_BASE_URL =  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";; // Relative path for Next.js API routes
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function TakeAttendancePage({ academicLevelId, educatorId }: TakeAttendancePageProps) {
   const [academicLevelData, setAcademicLevelData] = useState<TakeAttendancePageData | null>(null);
-  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD format
+  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [studentAttendance, setStudentAttendance] = useState<{ [studentId: string]: { status: AttendanceStatus; reason: string } }>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false); // New state for save button loading
 
-  // Theme colors from fetched data or defaults
-  const primaryColor = academicLevelData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = academicLevelData?.themeSettings?.accentColor || "#FFC107";
+  // Dynamic Tailwind JIT compilation with variables requires a workaround
+  // For production builds, you might need to safelist these colors in tailwind.config.js
+  // For development, inline styles work but dynamic classes are better for performance.
+  // Using inline styles for dynamic colors for simplicity here.
+  const primaryColor = academicLevelData?.themeSettings?.primaryColor || '#4F46E5'; // Default indigo
+  const accentColor = academicLevelData?.themeSettings?.accentColor || '#10B981'; // Default emerald
 
   const showStatus = useCallback((type: 'success' | 'error', message: string) => {
     setStatusMessage({ type, message });
-    setTimeout(() => setStatusMessage(null), 3000); // Clear after 3 seconds
+    setTimeout(() => setStatusMessage(null), 3000);
   }, []);
 
-  // Function to fetch attendance data
   const fetchAttendanceData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -85,12 +87,11 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       const data: TakeAttendancePageData = await response.json();
       setAcademicLevelData(data);
 
-      // Initialize studentAttendance from fetched data
       const initialAttendance: { [studentId: string]: { status: AttendanceStatus; reason: string } } = {};
       data.students.forEach(student => {
         initialAttendance[student.id] = {
           status: student.currentStatus,
-          reason: '' // Reason is not returned by GET, so initialize as empty
+          reason: ''
         };
       });
       setStudentAttendance(initialAttendance);
@@ -103,12 +104,11 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
     }
   }, [academicLevelId, attendanceDate, educatorId]);
 
-  // Effect to fetch data on component mount and when dependencies change
   useEffect(() => {
     if (academicLevelId && educatorId) {
       fetchAttendanceData();
     }
-  }, [fetchAttendanceData, academicLevelId, educatorId]); // Re-run when these props change
+  }, [fetchAttendanceData, academicLevelId, educatorId]);
 
   const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
     setStudentAttendance(prev => ({
@@ -126,11 +126,11 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
 
   const handleSaveAttendance = async () => {
     if (!academicLevelData) {
-      showStatus('error', 'No academic level data loaded.');
+      showStatus('error', 'No academic level data loaded to save attendance.');
       return;
     }
 
-    setLoading(true);
+    setIsSaving(true);
     setError(null);
     try {
       const attendanceRecordsPayload: { [studentId: string]: { status: AttendanceStatus; reason?: string | null } } = {};
@@ -139,7 +139,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
         if (record) {
           attendanceRecordsPayload[student.id] = {
             status: record.status,
-            reason: record.reason || null // Send null if empty string
+            reason: record.reason || null
           };
         }
       });
@@ -163,13 +163,13 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       }
 
       showStatus('success', `Attendance saved successfully for ${academicLevelData.academicLevelInfo.name} on ${attendanceDate}!`);
-      // Re-fetch data to update the UI with potentially new/updated records
-      fetchAttendanceData();
+      fetchAttendanceData(); // Re-fetch to confirm and update UI
     } catch (err: any) {
       console.error("Error saving attendance:", err);
       setError(err.message || "Failed to save attendance.");
+      showStatus('error', err.message || "Failed to save attendance.");
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -183,6 +183,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       };
     });
     setStudentAttendance(updatedAttendance);
+    showStatus('success', `All visible students marked as ${status}.`);
   };
 
   const filteredStudents = academicLevelData?.students?.filter(student =>
@@ -197,8 +198,8 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       opacity: 1,
       y: 0,
       transition: {
-        staggerChildren: 0.05,
-        delayChildren: 0.1,
+        staggerChildren: 0.07,
+        delayChildren: 0.2,
       },
     },
   };
@@ -211,15 +212,39 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
     },
   };
 
+  const getStatusColor = (status: AttendanceStatus) => {
+    switch (status) {
+      case 'PRESENT': return 'bg-green-100 text-green-800 border-green-300';
+      case 'ABSENT': return 'bg-red-100 text-red-800 border-red-300';
+      case 'TARDY': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'EXCUSED': return 'bg-blue-100 text-blue-800 border-blue-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getStatusButtonClass = (status: AttendanceStatus, currentStatus: AttendanceStatus) => {
+    const base = 'px-3 py-1 text-xs font-medium rounded-full transition-colors duration-200';
+    if (status === currentStatus) {
+      switch (status) {
+        case 'PRESENT': return `${base} bg-green-600 text-white shadow-md`;
+        case 'ABSENT': return `${base} bg-red-600 text-white shadow-md`;
+        case 'TARDY': return `${base} bg-yellow-600 text-white shadow-md`;
+        case 'EXCUSED': return `${base} bg-blue-600 text-white shadow-md`;
+      }
+    }
+    return `${base} bg-gray-100 text-gray-700 hover:bg-gray-200`;
+  };
+
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-700">
-        <div className="text-lg font-semibold flex items-center">
-          <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-700">
+        <div className="text-xl font-semibold flex flex-col items-center gap-4 p-8 bg-white rounded-lg shadow-xl">
+          <svg className="animate-spin h-10 w-10 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          Loading attendance data...
+          <p>Loading attendance data...</p>
         </div>
       </div>
     );
@@ -228,15 +253,15 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
   if (error) {
     return (
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
-        <ExclamationCircleIcon className="h-16 w-16 text-red-500 mb-4" />
-        <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Data</h2>
-        <p className="text-red-600 mb-6">{error}</p>
+        <ExclamationCircleIcon className="h-20 w-20 text-red-500 mb-6" />
+        <h2 className="text-3xl font-extrabold text-red-800 mb-4">Oops! Something Went Wrong</h2>
+        <p className="text-red-700 mb-8 max-w-md">{error}</p>
         <button
           onClick={fetchAttendanceData}
-          className={`inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
-                      hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400`}
+          className={`inline-flex items-center gap-2 px-8 py-3 bg-red-600 text-white rounded-lg shadow-md
+                      hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
         >
-          <i className="fas fa-sync-alt"></i> Try Again
+          <span className="fas fa-sync-alt"></span> Try Again
         </button>
       </div>
     );
@@ -245,14 +270,14 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
   if (!academicLevelData) {
     return (
       <div className="p-8 text-center bg-gray-50 min-h-screen flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">Academic Level Not Found</h2>
-        <p className="text-gray-500 mb-6">The academic level could not be loaded for attendance. Please check the URL or try again.</p>
+        <h2 className="text-3xl font-bold text-gray-700 mb-4">Academic Level Not Found</h2>
+        <p className="text-gray-600 mb-8 max-w-md">The academic level you are looking for could not be loaded. It might not exist or you might not have access.</p>
         <button
           onClick={() => window.history.back()}
-          className={`inline-flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-md shadow-sm
-                      hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400`}
+          className={`inline-flex items-center gap-2 px-8 py-3 bg-gray-600 text-white rounded-lg shadow-md
+                      hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500`}
         >
-          <ArrowLeftIcon className="h-5 w-5" /> Back
+          <ArrowLeftIcon className="h-6 w-6" /> Go Back
         </button>
       </div>
     );
@@ -260,10 +285,10 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 font-inter text-gray-800">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8">
+      <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl p-6 sm:p-10 border border-gray-100">
         {/* Header */}
         <motion.div
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200"
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-gray-200 mb-6"
           initial="hidden"
           animate="visible"
           variants={containerVariants}
@@ -271,25 +296,26 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
           <motion.div variants={itemVariants} className="flex items-center gap-4">
             <button
               onClick={() => window.history.back()}
-              className={`p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+              className={`p-3 rounded-full text-gray-600 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
               aria-label="Back to previous page"
             >
-              <ArrowLeftIcon className="h-6 w-6" />
+              <ArrowLeftIcon className="h-7 w-7" />
             </button>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                Take Attendance <span style={{ color: primaryColor }}>{academicLevelData.academicLevelInfo.name}</span>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                Attendance for <span style={{ color: primaryColor }}>{academicLevelData.academicLevelInfo.name}</span>
               </h1>
-              <p className="text-sm text-gray-600 mt-1">Mark attendance for {academicLevelData.academicLevelInfo.studentsCount} students.</p>
+              <p className="text-md text-gray-600 mt-2">Managing attendance for {academicLevelData.academicLevelInfo.studentsCount} students.</p>
             </div>
           </motion.div>
-          <motion.div variants={itemVariants} className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
-            <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
+          <motion.div variants={itemVariants} className="flex items-center gap-3 bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200">
+            <CalendarDaysIcon className="h-6 w-6 text-gray-500" />
             <input
               type="date"
-              className="bg-transparent text-gray-700 font-medium focus:outline-none cursor-pointer"
+              className="bg-transparent text-gray-700 font-semibold text-lg focus:outline-none cursor-pointer"
               value={attendanceDate}
               onChange={(e) => setAttendanceDate(e.target.value)}
+              aria-label="Select attendance date"
             />
           </motion.div>
         </motion.div>
@@ -301,14 +327,14 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`mb-6 p-3 rounded-md flex items-center gap-2 ${
-                statusMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              className={`mb-6 p-4 rounded-lg flex items-center gap-3 font-medium shadow-md ${
+                statusMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
               }`}
             >
               {statusMessage.type === 'success' ? (
-                <CheckCircleIcon className="h-5 w-5" />
+                <CheckCircleIcon className="h-6 w-6 text-green-500" />
               ) : (
-                <ExclamationCircleIcon className="h-5 w-5" />
+                <ExclamationCircleIcon className="h-6 w-6 text-red-500" />
               )}
               {statusMessage.message}
             </motion.div>
@@ -316,31 +342,32 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
         </AnimatePresence>
 
         {/* Search and Bulk Actions */}
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full sm:w-1/2">
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-between items-center mb-8">
+          <div className="relative w-full sm:w-1/2 md:w-2/5">
             <input
               type="text"
               placeholder="Search student by name or ID..."
-              className={`w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
+              className={`w-full p-3 pl-12 rounded-full border border-gray-300 shadow-sm
                           focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
-                          text-gray-900 placeholder-gray-500 bg-white`}
+                          text-gray-900 placeholder-gray-500 bg-white text-base`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Search students"
             />
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           </div>
-          <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+          <div className="flex flex-wrap gap-3 justify-center sm:justify-end w-full sm:w-auto">
             <button
               onClick={() => handleBulkAttendanceChange('PRESENT')}
-              className={`px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700
-                          hover:bg-green-50 hover:text-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400`}
+              className={`px-5 py-2 text-sm font-semibold rounded-lg border border-green-300 bg-green-50 text-green-700
+                          hover:bg-green-100 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400`}
             >
               Mark All Present
             </button>
             <button
               onClick={() => handleBulkAttendanceChange('ABSENT')}
-              className={`px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700
-                          hover:bg-red-50 hover:text-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400`}
+              className={`px-5 py-2 text-sm font-semibold rounded-lg border border-red-300 bg-red-50 text-red-700
+                          hover:bg-red-100 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400`}
             >
               Mark All Absent
             </button>
@@ -349,7 +376,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
 
         {/* Student Attendance List */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           initial="hidden"
           animate="visible"
           variants={containerVariants}
@@ -357,78 +384,104 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
           {filteredStudents.length > 0 ? (
             filteredStudents.map(student => (
               <motion.div
-                key={student.id} // Use student.id from API
-                className="bg-white rounded-xl shadow-md border border-gray-200 p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4
-                           hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out"
+                key={student.id}
+                className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 flex flex-col items-center text-center
+                           hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out cursor-pointer"
                 variants={itemVariants}
               >
-                {student.profilePicture ? (
-                  <img
-                    src={student.profilePicture} // Use profilePicture directly
-                    alt={student.name}
-                    className="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2 border-gray-100 shadow-sm"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = `https://placehold.co/80x80/${primaryColor.replace('#', '')}/FFFFFF?text=${student.name.split(' ').map((n: string) => n[0]).join('')}`;
-                    }}
-                  />
-                ) : (
-                  <UserCircleIcon className={`w-16 h-16 text-gray-300 flex-shrink-0`} />
-                )}
-                <div className="flex-grow text-center sm:text-left">
-                  <h3 className="text-lg font-bold text-gray-900">{student.name}</h3>
-                  <p className="text-sm text-gray-600">ID: {student.id}</p> {/* Use student.id */}
-                  <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-2">
-                    {['PRESENT', 'ABSENT', 'TARDY', 'EXCUSED'].map(status => (
-                      <label key={status} className="inline-flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name={`attendance-${student.id}`} // Use student.id
-                          value={status}
-                          checked={studentAttendance[student.id]?.status === status} // Check status from state
-                          onChange={() => handleAttendanceChange(student.id, status as AttendanceStatus)}
-                          className={`form-radio h-5 w-5 text-[${primaryColor}] border-gray-300 focus:ring-[${primaryColor}]`}
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{status}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <div className="mt-3">
-                    <label htmlFor={`reason-${student.id}`} className="block text-xs font-medium text-gray-600 mb-1">Reason (Optional)</label>
-                    <input
-                      type="text"
-                      id={`reason-${student.id}`}
-                      value={studentAttendance[student.id]?.reason || ''}
-                      onChange={(e) => handleReasonChange(student.id, e.target.value)}
-                      placeholder="Enter reason..."
-                      className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-400"
+                <div className="relative w-20 h-20 mb-4 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm">
+                  {student.profilePicture ? (
+                    <Image
+                      src={student.profilePicture}
+                      alt={student.name}
+                      loader={loader}
+                      layout="fill"
+                      objectFit="cover"
+                      className="absolute"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        // Fallback to initial letter avatar
+                        e.currentTarget.src = `https://placehold.co/80x80/${primaryColor.replace('#', '')}/FFFFFF?text=${student.name.split(' ').map((n: string) => n[0]).join('').substring(0,2)}`;
+                      }}
                     />
-                  </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <UserCircleIcon className="w-16 h-16 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">{student.name}</h3>
+                <p className="text-sm text-gray-500 mb-4">ID: {student.id}</p>
+
+                <div className="flex flex-wrap justify-center gap-2 mb-4 w-full">
+                  {['PRESENT', 'ABSENT', 'TARDY', 'EXCUSED'].map(status => (
+                    <button
+                      key={status}
+                      onClick={() => handleAttendanceChange(student.id, status as AttendanceStatus)}
+                      className={getStatusButtonClass(status as AttendanceStatus, studentAttendance[student.id]?.status)}
+                      aria-pressed={studentAttendance[student.id]?.status === status}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+                <div className="w-full">
+                  <label htmlFor={`reason-${student.id}`} className="sr-only">Reason for {student.name}</label>
+                  <input
+                    type="text"
+                    id={`reason-${student.id}`}
+                    value={studentAttendance[student.id]?.reason || ''}
+                    onChange={(e) => handleReasonChange(student.id, e.target.value)}
+                    placeholder="Add a reason (optional)"
+                    className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent transition-all duration-200"
+                  />
                 </div>
               </motion.div>
             ))
           ) : (
             <motion.div
-              className="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl shadow-md border border-gray-200"
+              className="col-span-full p-10 text-center bg-gray-50 rounded-xl shadow-md border border-gray-200"
               variants={itemVariants}
             >
-              <UserCircleIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg">No students found in this academic level or matching your search.</p>
-              <p className="text-sm mt-2">Please ensure the correct academic level is selected or adjust your search term.</p>
+              <UserCircleIcon className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+              <p className="text-xl font-semibold text-gray-700 mb-3">No students found!</p>
+              <p className="text-md text-gray-600">It seems there are no students in this academic level, or your search did not yield any results.</p>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="mt-6 px-6 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors"
+                >
+                  Clear Search
+                </button>
+              )}
             </motion.div>
           )}
         </motion.div>
 
         {/* Save Attendance Button */}
         {filteredStudents.length > 0 && (
-          <motion.div variants={itemVariants} className="mt-8 text-center">
+          <motion.div variants={itemVariants} className="mt-10 text-center">
             <button
               onClick={handleSaveAttendance}
-              className={`inline-flex items-center gap-2 px-8 py-3 bg-[${primaryColor}] text-white rounded-md shadow-lg font-semibold text-lg
-                          hover:bg-[${primaryColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]`}
+              disabled={isSaving}
+              className={`inline-flex items-center gap-3 px-10 py-4 bg-[${primaryColor}] text-white rounded-xl shadow-xl font-bold text-lg
+                          hover:opacity-90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]
+                          ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
-              Save Attendance
-              <CheckCircleIcon className="h-5 w-5" />
+              {isSaving ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Save Attendance
+                  <CheckCircleIcon className="h-6 w-6" />
+                </>
+              )}
             </button>
           </motion.div>
         )}
