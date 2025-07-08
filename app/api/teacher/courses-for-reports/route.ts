@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   // }
   // ----------------------------------------------------
 
-  if (!educatorId || !companyId) {
+  if (!educatorId) {
     return NextResponse.json({ message: 'Missing educatorId or companyId' }, { status: 400 });
   }
 
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     // Fetch courses taught by this educator within this company
     const courses = await prisma.course.findMany({
       where: {
-        companyId: companyId,
+        // companyId: companyId,
         instructorId: educatorId, // Assuming instructorId links to Educator's userId
       },
       select: {
