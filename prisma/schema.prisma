@@ -2430,6 +2430,7 @@ model AttendanceRecord {
   companyId String?  @db.ObjectId
 
   @@unique([studentId, date, classScheduleId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
+  @@unique([studentId, date, academicLevelId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
   @@index([studentId, date])
   @@index([classScheduleId])
   @@index([academicLevelId]) // NEW INDEX
@@ -2719,6 +2720,7 @@ model Grade {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([studentId, courseId, examId, academicLevelAtTimeOfGradeId])
   @@index([studentId])
   @@index([courseId])
   @@index([examId])
