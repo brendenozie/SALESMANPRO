@@ -1,3 +1,5 @@
+
+// app/admin/[slug]/teacher-classes/TeachersSubjectListPage.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -23,7 +25,62 @@ import {
 
 import { useRouter } from "next/navigation";
 import Link from 'next/link'; // Import Link for navigation
-import { TeacherInfo } from '@/app/api/teacher/class-subjects/route';
+
+// Re-import types from the parent page (or a shared types file)
+interface TeacherInfo {
+  id: string;
+  name: string;
+  email: string;
+  role: string; // e.g., "Educator"
+}
+
+interface AcademicLevelInfo {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+interface StudentInCourse {
+  studentId: string;
+  name: string;
+  email: string;
+  parentEmail: string | null;
+}
+
+interface AssignmentSummary {
+  id: string;
+  title: string;
+  dueDate: string; // ISO string
+  status: string; // e.g., 'pending', 'completed'
+}
+
+interface ResourceSummary {
+  id: string;
+  name: string;
+  type: string; // e.g., 'PDF', 'Video'
+}
+
+interface EventSummary {
+  id: string;
+  name: string;
+  date: string; // ISO string
+  time: string; // e.g., '3:00 PM'
+}
+
+interface TeacherAssignedCourse {
+  id: string; // Course ID
+  title: string;
+  description: string | null;
+  schedule: string; // Combined string, e.g., "Mon, Wed, Fri | 9:00 AM - 9:45 AM"
+  room: string;
+  studentsEnrolled: number;
+  academicLevel: AcademicLevelInfo; // The primary academic level this course is associated with
+  students: StudentInCourse[]; // Simplified for summary, might not need full list here
+  assignments: AssignmentSummary[];
+  resources: ResourceSummary[];
+  events: EventSummary[];
+}
+
 
 // Define props for the client component
 interface TeachersClassListPageProps {
@@ -33,14 +90,14 @@ interface TeachersClassListPageProps {
     accentColor: string;
   };
   teacherClasses: TeacherAssignedCourse[];
-  companyId: string; // Passed from server component for dynamic links
+  teacherUserId: string; // Passed from server component for dynamic links
 }
 
 export default function TeachersSubjectListPage({
   teacherInfo,
   themeSettings,
   teacherClasses,
-  companyId,
+  teacherUserId,
 }: TeachersClassListPageProps) {
   const router = useRouter();
 
@@ -69,41 +126,44 @@ export default function TeachersSubjectListPage({
   // For actions like "Delete Class Request", a simple alert is used as a placeholder.
 
   // All these actions are now per Course (subject)
-  const handleViewRoster = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/student-roster`);
-  };
+  // const handleViewRoster = (courseId: string) => {
+  //   router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-event`);
+  // };
 
   const handleTakeAttendance = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/take-attendance`);
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/take-course-attendance`);
   };
 
-  const handleViewConsolidatedGrades = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/consolidated-grades`);
+  // Renamed to be more specific to course-level grades
+  const handleViewCourseGrades = (courseId: string) => {
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-grades`);
   };
 
   const handleManageAssignments = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/manage-assignments`);
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/manage-course-assignments`);
   };
 
   const handleUploadResources = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/upload-resources`);
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/upload-course-resources`);
   };
 
   const handleViewClassSchedule = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/class-schedule`);
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-schedule`);
   };
 
   const handleAddClassEvent = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/class-event`);
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-event`);
   };
 
   const handleSendMessage = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/send-message`);
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/send-message`);
   };
 
-  const handleGenerateReports = (courseId: string) => {
-    router.push(`/admin/${companyId}/teacher-classes/${courseId}/generate-reports`);
+  // UPDATED: Link to the academic-level specific report page
+  const handleGenerateReports = (academicLevelId: string, courseId: string) => {
+    router.push(`/admin/${teacherUserId}/teacher/${teacherInfo.id}/academic-levels/${academicLevelId}/reports?courseId=${courseId}`);
   };
+
 
   const handleDeleteClassRequest = (courseId: string, courseTitle: string) => {
     if (window.confirm(`Are you sure you want to request deletion of "${courseTitle}"? This will send a request to the admin.`)) {
@@ -214,10 +274,10 @@ export default function TeachersSubjectListPage({
                           <ClipboardDocumentCheckIcon className={`h-5 w-5 text-[${accentColor}]`} /> Take Attendance
                         </button>
                         <button
-                          onClick={() => { handleViewConsolidatedGrades(cls.id); setOpenDropdownId(null); }}
+                          onClick={() => { handleViewCourseGrades(cls.id); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
-                          <ChartBarIcon className={`h-5 w-5 text-blue-500`} /> View Consolidated Grades
+                          <ChartBarIcon className={`h-5 w-5 text-blue-500`} /> View Course Grades
                         </button>
                         <button
                           onClick={() => { handleManageAssignments(cls.id); setOpenDropdownId(null); }}
@@ -250,10 +310,10 @@ export default function TeachersSubjectListPage({
                           <ChatBubbleBottomCenterTextIcon className={`h-5 w-5 text-pink-500`} /> Send Message
                         </button>
                         <button
-                          onClick={() => { handleGenerateReports(cls.id); setOpenDropdownId(null); }}
+                          onClick={() => { handleGenerateReports(cls.academicLevel.id, cls.id); setOpenDropdownId(null); }} // Pass academicLevel.id and course.id
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
-                          <ChartBarIcon className={`h-5 w-5 text-teal-500`} /> Generate Reports
+                          <ChartBarIcon className={`h-5 w-5 text-teal-500`} /> Generate Academic Level Report
                         </button>
                         <div className="border-t border-gray-100 my-1"></div> {/* Separator */}
                         <button
@@ -290,7 +350,7 @@ export default function TeachersSubjectListPage({
                 </div>
               </div>
 
-              <div className="mt-6 border-t border-gray-100 pt-4">
+              {/* <div className="mt-6 border-t border-gray-100 pt-4">
                 <button
                   onClick={() => handleViewRoster(cls.id)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md shadow-sm
@@ -300,7 +360,7 @@ export default function TeachersSubjectListPage({
                 >
                   View Student Roster <ArrowRightIcon className="h-4 w-4" />
                 </button>
-              </div>
+              </div> */}
             </motion.div>
           ))
         ) : (
