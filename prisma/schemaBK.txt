@@ -136,7 +136,7 @@ model ProductCategory {
   attributes Json
 
   Product            Product[]
-  MarketplaceListing MarketplaceListing[]
+  marketplaceListings marketplaceListings[]
   StoreCategory      StoreCategory[]
 }
 
@@ -224,7 +224,7 @@ model Company {
   PageSection PageSection[]
   Collection  Collection[]
 
-  MarketplaceListing MarketplaceListing[]
+  marketplaceListings marketplaceListings[]
 
   analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
   analyticsConfigId String?          @db.ObjectId
@@ -435,7 +435,7 @@ model Product {
   commissions        Commission[]
   Target             Target[]
   CommissionRate     CommissionRate?
-  MarketplaceListing MarketplaceListing[]
+  marketplaceListings marketplaceListings[]
 
   model     String?
   color     String[]
@@ -590,7 +590,7 @@ model PropertyType {
   products           Product[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
-  MarketplaceListing MarketplaceListing[]
+  marketplaceListings marketplaceListings[]
 }
 
 enum PaymentStatus {
@@ -1073,12 +1073,12 @@ model UserActivity {
   action    String // "view", "purchase", "favorite"
   createdAt DateTime @default(now())
 
-  product MarketplaceListing @relation(fields: [productId], references: [id])
+  product marketplaceListings @relation(fields: [productId], references: [id])
 
   @@index([userId, productId, createdAt])
 }
 
-model MarketplaceListing {
+model marketplaceListings {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
   companyId  String?     @db.ObjectId
   company    Company?    @relation(fields: [companyId], references: [id])
@@ -1243,7 +1243,7 @@ model ProductMetrics {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product MarketplaceListing @relation(fields: [productId], references: [id])
+  product marketplaceListings @relation(fields: [productId], references: [id])
 
   @@index([productId, updatedAt])
 }
@@ -1251,7 +1251,7 @@ model ProductMetrics {
 model ProductReview {
   id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
   productId             String                  @db.ObjectId
-  product               MarketplaceListing      @relation(fields: [productId], references: [id])
+  product               marketplaceListings      @relation(fields: [productId], references: [id])
   userId                String                  @db.ObjectId
   user                  User                    @relation(fields: [userId], references: [id])
   rating                Int
@@ -1479,7 +1479,7 @@ model OrderItem {
   orderId              String             @db.ObjectId
   order                CustomerOrder      @relation(fields: [orderId], references: [id])
   marketplaceListingId String             @db.ObjectId
-  marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListing   marketplaceListings @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
   price                Float
   appointment          Appointment?       @relation(fields: [appointmentId], references: [id])
@@ -1509,7 +1509,7 @@ model Location {
   state          String?
   city           String?
   products       Product[]
-  marketListings MarketplaceListing[]
+  marketListings marketplaceListings[]
 }
 
 enum OrderStatus {
@@ -1554,7 +1554,7 @@ model Collection {
   products           Product[]
   order              Int                  @default(0)
   CollectionItem     CollectionItem[]
-  MarketplaceListing MarketplaceListing[]
+  marketplaceListings marketplaceListings[]
 }
 
 model CollectionItem {
@@ -1564,7 +1564,7 @@ model CollectionItem {
   product              Product             @relation(fields: [productId], references: [id])
   productId            String              @db.ObjectId
   sortOrder            Int                 @default(0)
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListings   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?             @db.ObjectId
 }
 
@@ -1579,7 +1579,7 @@ model Review {
   body                 String
   photos               String[] // URLs
   createdAt            DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListings   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?             @db.ObjectId
 }
 
@@ -1592,7 +1592,7 @@ model Question {
   question             String
   answer               String?
   createdAt            DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListings   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?             @db.ObjectId
 }
 
@@ -1603,7 +1603,7 @@ model RecentlyViewed {
   product              Product             @relation(fields: [productId], references: [id])
   productId            String              @db.ObjectId
   viewedAt             DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListings   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?             @db.ObjectId
 }
 
@@ -1623,7 +1623,7 @@ model WishlistItem {
   product              Product             @relation(fields: [productId], references: [id])
   productId            String              @db.ObjectId
   addedAt              DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListings   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?             @db.ObjectId
 }
 

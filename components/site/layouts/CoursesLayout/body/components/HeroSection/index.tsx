@@ -100,7 +100,7 @@ export default function HeroSection() {
       analyticsConfig: {},
       paymentSettings: {},
       shippingSettings: {},
-      MarketplaceListing: [],
+      marketplaceListings: [],
       StoreCategory: [],
     },
   });

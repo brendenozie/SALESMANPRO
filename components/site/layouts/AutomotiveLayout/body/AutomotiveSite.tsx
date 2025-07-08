@@ -182,7 +182,7 @@ export default function AutomotiveSite() {
     // Pull promotions from storeFormData.promotions
     setPromos(storeFormData.promotions || []);
 
-    // MarketplaceListing from storeFormData → map to VehicleCardProps
+    // marketplaceListings from storeFormData → map to VehicleCardProps
     const listings = storeFormData.marketplaceListings || [];
     const formattedVehicles: VehicleCardProps[] = listings.map((listing: any) => ({
       id: listing.id,

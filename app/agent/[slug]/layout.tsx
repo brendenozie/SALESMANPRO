@@ -15,7 +15,7 @@ export default async function StoreLayout({
   const raw = await prisma.company.findUnique({
     where: { slug: String(params?.slug) },
     include: {
-      MarketplaceListing: {
+      marketplaceListings: {
         take: 8,
         select: {
           id: true,
@@ -101,7 +101,7 @@ export default async function StoreLayout({
       endsAt: "1/1/2001",//p.endsAt?.toISOString(),
       bannerUrl: "p.bannerUrl",// ?? undefined
     })),
-    products: raw.MarketplaceListing.map(p => ({
+    products: raw.marketplaceListings.map(p => ({
       id: p.id,
       name: p.title,
       price: p.finalPrice ?? 0,

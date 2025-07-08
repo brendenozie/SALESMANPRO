@@ -263,7 +263,7 @@ const AddToProductMarketModal = ({
 
   const handleCreateListing = async () => {
     if (window.confirm("Are you sure you want to create this listing?")) {
-      // Build a listing object conforming to the updated MarketplaceListing model
+      // Build a listing object conforming to the updated marketplaceListings model
 
       // 1) First, upload all images to S3 (in parallel).
       //    We map each File in imageFiles → a fetch("/api/upload", …) promise.

@@ -116,7 +116,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       sortOrder: sc.sortOrder,
       visible: sc.visible,
     })),
-    marketplaceListings: raw.MarketplaceListing.map((m:any) => ({
+    marketplaceListings: raw.marketplaceListings.map((m:any) => ({
       id: m.id,
       title: m.title,
       name: m.name,

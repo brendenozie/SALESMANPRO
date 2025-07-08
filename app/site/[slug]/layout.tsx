@@ -70,7 +70,7 @@ export default async function StoreLayout({
       analyticsConfig: true,
       paymentSettings: true,
       shippingSettings: true,
-      MarketplaceListing: {
+      marketplaceListings: {
         take: 12,
         select: {
           id: true,

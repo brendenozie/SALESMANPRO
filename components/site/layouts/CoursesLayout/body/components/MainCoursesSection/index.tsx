@@ -100,7 +100,7 @@ export default function CoursesSection() { // Renamed from HeroSection to Course
       analyticsConfig: {},
       paymentSettings: {},
       shippingSettings: {},
-      MarketplaceListing: [],
+      marketplaceListings: [],
       StoreCategory: [],
       // Adding a mock courses array to storeFormData for this section
       courses: [

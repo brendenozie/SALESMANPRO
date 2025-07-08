@@ -140,11 +140,11 @@ model ProductCategory {
   // Custom attributes
   attributes Json
 
-  Product            Product[]
-  MarketplaceListing MarketplaceListing[]
-  StoreCategory      StoreCategory[]
-  Company            Company?             @relation(fields: [companyId], references: [id])
-  companyId          String?              @db.ObjectId
+  Product             Product[]
+  marketplaceListings marketplaceListings[]
+  StoreCategory       StoreCategory[]
+  Company             Company?              @relation(fields: [companyId], references: [id])
+  companyId           String?               @db.ObjectId
 }
 
 /// Associates a Company with a ProductCategory,
@@ -191,25 +191,18 @@ model Company {
 
   contactEmail String
   contactPhone String?
-  site         String?       @default("default")
+  site         String? @default("default")
   address      String?
   geoLocation  Json? // { lat: number, lng: number }
   openingHours Json? // { mon: "9–5", tue: "...", … }
-  domain       String?       @unique
-  currency     String        @default("KES")
-  locale       String        @default("en-US")
-  socialLinks  SocialLink[] // structured social profiles
-  policies     Policy[] // structured, editable policies
-  faqs         FAQ[] // common questions
-  testimonials Testimonial[] // customer quotes
-  promotions   Promotion[] // site-wide deals
+  domain       String? @unique
+  currency     String  @default("KES")
+  locale       String  @default("en-US")
 
   pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
 
   themeSettings Json? // colors, fonts, layout toggles
   seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
-
-  StoreCategory StoreCategory[]
 
   // existing relations
   user   User?   @relation(name: "companyAdmin", fields: [userId], references: [id])
@@ -230,9 +223,6 @@ model Company {
   deletedAt DateTime?
   sEOId     String?   @db.ObjectId
 
-  PageSection PageSection[]
-  Collection  Collection[]
-
   analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
   analyticsConfigId String?          @db.ObjectId
 
@@ -246,45 +236,56 @@ model Company {
   metrics Json?
   stats   Json?
 
-  Announcement Announcement[]
+  StoreCategory StoreCategory[]
 
+  PageSection  PageSection[]
+  Collection   Collection[]
+  socialLinks  SocialLink[] // structured social profiles
+  policies     Policy[] // structured, editable policies
+  faqs         FAQ[] // common questions
+  testimonials Testimonial[] // customer quotes
+  promotions   Promotion[] // site-wide deals
+  Announcement Announcement[]
   Conversation Conversation[]
 
-  productCategories   ProductCategory[]
-  marketplaceListings MarketplaceListing[]
-  customerOrders      CustomerOrder[]
-  inventoryItems      InventoryItem[]
+  productCategories ProductCategory[]
+
+  marketplaceListings marketplaceListings[]
+  Product             Product[]
+
+  customerOrders CustomerOrder[]
+  inventoryItems InventoryItem[]
 
   salesAgents SalesAgent[]
   clients     Client[]
+  consumers   Consumer[]
+  educators   Educator[]
+  students    Student[]
+  parents     Parent[]
+  HeadTeacher HeadTeacher[]
 
-  consumers Consumer[]
-
-  educators      Educator[]
-  students       Student[]
-  parents        Parent[]
   academicLevels AcademicLevel[]
   courses        Course[]
   departments    Department[]
-  blogs          Blog[]
-  seoBlogs       SeoBlog[]
-  notifications  Notification[]
+
+  blogs    Blog[]
+  seoBlogs SeoBlog[]
+
+  notifications Notification[]
 
   heroSlides Banner[]
+  appPromos  AppPromo[]
 
-  appPromos AppPromo[]
+  events           Event[]
+  tasks            Task[]
+  locations        Locations[]
+  discussionTopics DiscussionTopic[]
 
-  events            Event[]
-  tasks             Task[]
-  locations         Locations[]
-  discussionTopics  DiscussionTopic[]
   attendanceRecords AttendanceRecord[]
-  exams             Exam[]
-  grades            Grade[] // Grades are now directly linked to a company
-  classSchedules    ClassSchedule[]
 
-  Product     Product[]
-  HeadTeacher HeadTeacher[]
+  exams          Exam[]
+  grades         Grade[] // Grades are now directly linked to a company
+  classSchedules ClassSchedule[]
 }
 
 enum CategoryStatus {
@@ -472,14 +473,14 @@ model Product {
   companyId    String?  @db.ObjectId
   company      Company? @relation(fields: [companyId], references: [id])
 
-  productCategoryId  String?              @db.ObjectId
-  productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
-  inventoryItems     InventoryItem[]
-  requests           Request[]            @relation("ProductRequests")
-  commissions        Commission[]
-  Target             Target[]
-  CommissionRate     CommissionRate?
-  MarketplaceListing MarketplaceListing[]
+  productCategoryId   String?               @db.ObjectId
+  productCategory     ProductCategory?      @relation(fields: [productCategoryId], references: [id])
+  inventoryItems      InventoryItem[]
+  requests            Request[]             @relation("ProductRequests")
+  commissions         Commission[]
+  Target              Target[]
+  CommissionRate      CommissionRate?
+  marketplaceListings marketplaceListings[]
 
   model     String?
   color     String[]
@@ -629,13 +630,13 @@ model Appointment {
 }
 
 model PropertyType {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  name               String               @unique
-  description        String?
-  products           Product[]
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  MarketplaceListing MarketplaceListing[]
+  id                  String                @id @default(auto()) @map("_id") @db.ObjectId
+  name                String                @unique
+  description         String?
+  products            Product[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  marketplaceListings marketplaceListings[]
 }
 
 enum PaymentStatus {
@@ -1125,7 +1126,7 @@ model CommissionRate {
   isActive  Boolean @default(true)
 
   commissions         Commission[]
-  marketplaceListings MarketplaceListing[]
+  marketplaceListings marketplaceListings[]
 
   @@unique([companyId, name])
   @@index([companyId])
@@ -1238,7 +1239,7 @@ enum SellerType {
   COMPANY
 }
 
-model MarketplaceListing {
+model marketplaceListings {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
   companyId  String?     @db.ObjectId
   company    Company?    @relation(fields: [companyId], references: [id])
@@ -1399,7 +1400,7 @@ model MarketplaceListing {
 model ProductReview {
   id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
   productId             String                  @db.ObjectId
-  product               MarketplaceListing      @relation(fields: [productId], references: [id])
+  product               marketplaceListings     @relation(fields: [productId], references: [id])
   userId                String                  @db.ObjectId
   user                  User                    @relation(fields: [userId], references: [id])
   rating                Int
@@ -1644,17 +1645,17 @@ model CustomerOrder {
 }
 
 model OrderItem {
-  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
-  orderId              String             @db.ObjectId
-  order                CustomerOrder      @relation(fields: [orderId], references: [id])
-  marketplaceListingId String             @db.ObjectId
-  marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  orderId              String              @db.ObjectId
+  order                CustomerOrder       @relation(fields: [orderId], references: [id])
+  marketplaceListingId String              @db.ObjectId
+  marketplaceListing   marketplaceListings @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
   price                Float
-  appointment          Appointment?       @relation(fields: [appointmentId], references: [id])
-  appointmentId        String?            @db.ObjectId
+  appointment          Appointment?        @relation(fields: [appointmentId], references: [id])
+  appointmentId        String?             @db.ObjectId
   riderId              String?
-  status               OrderStatus?       @default(PENDING)
+  status               OrderStatus?        @default(PENDING)
 
   date     String?
   timeSlot String? // e.g. "09:00"
@@ -1668,19 +1669,19 @@ model OrderItem {
 }
 
 model Location {
-  id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  id             String                @id @default(auto()) @map("_id") @db.ObjectId
   latitude       Float
   longitude      Float
   address        String
   description    String
-  userId         String?              @unique // Link to the user (optional).ObjectId
+  userId         String?               @unique // Link to the user (optional).ObjectId
   name           String?
   displayName    String?
   country        String?
   state          String?
   city           String?
   products       Product[]
-  marketListings MarketplaceListing[]
+  marketListings marketplaceListings[]
 }
 
 enum OrderStatus {
@@ -1715,67 +1716,67 @@ model Banners {
 }
 
 model Collection {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  company            Company              @relation(fields: [companyId], references: [id])
-  companyId          String               @db.ObjectId
-  name               String
-  slug               String               @unique
-  description        String?
-  image              String?
-  products           Product[]
-  order              Int                  @default(0)
-  CollectionItem     CollectionItem[]
-  MarketplaceListing MarketplaceListing[]
+  id                  String                @id @default(auto()) @map("_id") @db.ObjectId
+  company             Company               @relation(fields: [companyId], references: [id])
+  companyId           String                @db.ObjectId
+  name                String
+  slug                String                @unique
+  description         String?
+  image               String?
+  products            Product[]
+  order               Int                   @default(0)
+  CollectionItem      CollectionItem[]
+  marketplaceListings marketplaceListings[]
 }
 
 model CollectionItem {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  collection           Collection          @relation(fields: [collectionId], references: [id])
-  collectionId         String              @db.ObjectId
-  product              Product             @relation(fields: [productId], references: [id])
-  productId            String              @db.ObjectId
-  sortOrder            Int                 @default(0)
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
-  marketplaceListingId String?             @db.ObjectId
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  collection           Collection           @relation(fields: [collectionId], references: [id])
+  collectionId         String               @db.ObjectId
+  product              Product              @relation(fields: [productId], references: [id])
+  productId            String               @db.ObjectId
+  sortOrder            Int                  @default(0)
+  marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
 }
 
 model Review {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  product              Product             @relation(fields: [productId], references: [id])
-  productId            String              @db.ObjectId
-  user                 User?               @relation(fields: [userId], references: [id])
-  userId               String?             @db.ObjectId
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  product              Product              @relation(fields: [productId], references: [id])
+  productId            String               @db.ObjectId
+  user                 User?                @relation(fields: [userId], references: [id])
+  userId               String?              @db.ObjectId
   rating               Int // 1–5
   title                String?
   body                 String
   photos               String[] // URLs
-  createdAt            DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
-  marketplaceListingId String?             @db.ObjectId
+  createdAt            DateTime             @default(now())
+  marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
 }
 
 model Question {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  product              Product             @relation(fields: [productId], references: [id])
-  productId            String              @db.ObjectId
-  user                 User?               @relation(fields: [userId], references: [id])
-  userId               String?             @db.ObjectId
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  product              Product              @relation(fields: [productId], references: [id])
+  productId            String               @db.ObjectId
+  user                 User?                @relation(fields: [userId], references: [id])
+  userId               String?              @db.ObjectId
   question             String
   answer               String?
-  createdAt            DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
-  marketplaceListingId String?             @db.ObjectId
+  createdAt            DateTime             @default(now())
+  marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
 }
 
 model RecentlyViewed {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  user                 User                @relation(fields: [userId], references: [id])
-  userId               String              @db.ObjectId
-  product              Product             @relation(fields: [productId], references: [id])
-  productId            String              @db.ObjectId
-  viewedAt             DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
-  marketplaceListingId String?             @db.ObjectId
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  user                 User                 @relation(fields: [userId], references: [id])
+  userId               String               @db.ObjectId
+  product              Product              @relation(fields: [productId], references: [id])
+  productId            String               @db.ObjectId
+  viewedAt             DateTime             @default(now())
+  marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
 }
 
 model Wishlist {
@@ -1788,14 +1789,14 @@ model Wishlist {
 }
 
 model WishlistItem {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  wishlist             Wishlist            @relation(fields: [wishlistId], references: [id])
-  wishlistId           String              @db.ObjectId
-  product              Product             @relation(fields: [productId], references: [id])
-  productId            String              @db.ObjectId
-  addedAt              DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
-  marketplaceListingId String?             @db.ObjectId
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  wishlist             Wishlist             @relation(fields: [wishlistId], references: [id])
+  wishlistId           String               @db.ObjectId
+  product              Product              @relation(fields: [productId], references: [id])
+  productId            String               @db.ObjectId
+  addedAt              DateTime             @default(now())
+  marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
 }
 
 // HeadTeacher Profile Model (one-to-one with User)
@@ -2738,16 +2739,16 @@ enum GradeStatus {
 }
 
 model UserActivity {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  userId               String              @db.ObjectId
-  user                 User                @relation(fields: [userId], references: [id])
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String               @db.ObjectId
+  user                 User                 @relation(fields: [userId], references: [id])
   activityType         String // e.g., "LOGIN", "PRODUCT_VIEW", "ORDER_PLACED"
   details              Json? // JSON object for additional context
   ipAddress            String?
   userAgent            String?
-  createdAt            DateTime            @default(now())
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
-  marketplaceListingId String?             @db.ObjectId
+  createdAt            DateTime             @default(now())
+  marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
 
   @@index([userId])
   @@index([activityType])
@@ -2761,10 +2762,10 @@ model ProductMetrics {
   value      Float
   date       DateTime // Date for which the metric is recorded
 
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
-  marketplaceListingId String?             @db.ObjectId
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
 
   @@index([productId])
   @@index([metricType])
