@@ -71,7 +71,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 export default function ClassReportsPage({ params }: PageProps) {
 
   const { slug, classId } = params;
-  
+
   const educatorId = slug;
   const academicLevelId  = classId;
 
@@ -97,7 +97,7 @@ export default function ClassReportsPage({ params }: PageProps) {
       // Fetch Academic Level Info (assuming you have an API for this, e.g., /api/academic-levels/[id])
       // If not, you might need to add one or pass it as a prop from a parent page.
       // For now, let's mock it or assume it's fetched.
-      const academicLevelRes = await fetch(`${apiUrl}/teacher/academic-levels/${academicLevelId}?teacherId=${educatorId}`);
+      const academicLevelRes = await fetch(`${apiUrl}/teacher/academic-levels?teacherId=${educatorId}`);
       if (academicLevelRes.ok) {
         setAcademicLevelInfo(await academicLevelRes.json());
       } else {
