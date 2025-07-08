@@ -1,222 +1,199 @@
+// app/admin/[slug]/teacher-classes/[courseId]/manage-assignments/ManageAssignmentsPageClient.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeftIcon,
   MagnifyingGlassIcon,
-  PlusCircleIcon, // For Add New Assignment
-  PencilSquareIcon, // For Edit Assignment
-  TrashIcon, // For Delete Assignment
-  ClipboardDocumentListIcon, // Main icon for assignments
-  CalendarDaysIcon, // For due date
-  AcademicCapIcon, // For max points
-  CheckCircleIcon, // For success message
-  ExclamationCircleIcon, // For error message
-  ArrowUpTrayIcon, // For collect submissions
+  PlusCircleIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  ClipboardDocumentListIcon,
+  CalendarDaysIcon,
+  AcademicCapIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
+import { useRouter } from 'next/navigation';
 
-// Mocking context data for demonstration purposes
-const useMockStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      accentColor: "#FFC107", // Amber Yellow, for consistency
-    },
-    teacherClasses: [ // Sample classes with mock assignments
-      {
-        id: '6863daeef4ad17d957b92403',
-        name: 'Grade 7 Mathematics',
-        grade: '7',
-        studentsEnrolled: 35,
-        assignments: [
-          {
-            id: 'A001',
-            title: 'Algebra Worksheet 1',
-            description: 'Complete questions 1-10 from Chapter 3 worksheet.',
-            dueDate: '2025-07-10',
-            maxPoints: 100,
-            status: 'Published', // 'Draft', 'Published', 'Graded'
-            submissionCount: 28,
-          },
-          {
-            id: 'A002',
-            title: 'Geometry Project: Shapes in Nature',
-            description: 'Find and photograph geometric shapes in your environment. Submit a short report.',
-            dueDate: '2025-07-25',
-            maxPoints: 150,
-            status: 'Published',
-            submissionCount: 15,
-          },
-          {
-            id: 'A003',
-            title: 'Quiz Review Sheet',
-            description: 'Optional review sheet for upcoming Chapter 4 quiz.',
-            dueDate: '2025-07-08',
-            maxPoints: 0,
-            status: 'Draft',
-            submissionCount: 0,
-          },
-        ],
-      },
-      {
-        id: 'CL102',
-        name: 'Grade 8 English Language',
-        grade: '8',
-        studentsEnrolled: 30,
-        assignments: [
-          {
-            id: 'E001',
-            title: 'Literary Analysis Essay',
-            description: 'Write a 500-word essay analyzing themes in "The Outsiders".',
-            dueDate: '2025-07-18',
-            maxPoints: 200,
-            status: 'Published',
-            submissionCount: 25,
-          },
-        ],
-      },
-    ]
-  },
+// Import types from the server component file
+import type { AssignmentData, CourseAssignmentInfo } from './page';
+
+// Mocking context data for demonstration purposes (replace with actual context in your app)
+const useMockThemeSettings = () => ({
+  primaryColor: "#4F46E5", // Indigo-600
+  accentColor: "#818CF8", // Indigo-300
 });
 
-// Simplified loader for standard <img> tag
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+// Define assignment status types to match ExamType (or a subset you use for assignments)
+type AssignmentStatus = 'HOMEWORK' | 'PROJECT' | 'QUIZ' | 'OTHER'; // Corresponds to ExamType
 
-interface ManageAssignmentsPageProps {
-  classId: string; // The ID of the class for which to manage assignments
-  // onBack: () => void; // Callback to navigate back to the previous page (e.g., Class List)
+interface ManageAssignmentsPageClientProps {
+  course: CourseAssignmentInfo;
+  initialAssignments: AssignmentData[];
+  educatorId: string;
+  companyId: string;
 }
 
-export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPageProps) {
-  // IMPORTANT: In your actual application, use:
-  // const { storeFormData } = useStoreContext();
-  const { storeFormData } = useMockStoreContext();
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = storeFormData?.themeSettings?.accentColor || "#FFC107";
+export default function ManageAssignmentsPageClient({
+  course,
+  initialAssignments,
+  educatorId,
+  companyId,
+}: ManageAssignmentsPageClientProps) {
+  const router = useRouter();
+  const { primaryColor, accentColor } = useMockThemeSettings(); // Replace with actual context
 
-  const [currentClass, setCurrentClass] = useState<any | null>(null);
+  const [assignments, setAssignments] = useState<AssignmentData[]>(initialAssignments);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAssignment, setEditingAssignment] = useState<any | null>(null); // Null for add, object for edit
+  const [editingAssignment, setEditingAssignment] = useState<AssignmentData | null>(null); // Null for add, object for edit
+  const [loading, setLoading] = useState(false);
 
   // Form states for assignment modal
   const [assignmentTitle, setAssignmentTitle] = useState('');
   const [assignmentDescription, setAssignmentDescription] = useState('');
   const [assignmentDueDate, setAssignmentDueDate] = useState('');
   const [assignmentMaxPoints, setAssignmentMaxPoints] = useState('');
-  const [assignmentStatus, setAssignmentStatus] = useState<'Draft' | 'Published' | 'Graded'>('Draft');
+  const [assignmentStatus, setAssignmentStatus] = useState<AssignmentStatus>('HOMEWORK'); // Default to HOMEWORK
 
+  // Update assignments state when initialAssignments prop changes
   useEffect(() => {
-    const foundClass = storeFormData?.teacherClasses?.find(cls => cls.id === classId);
-    setCurrentClass(foundClass || null);
-  }, [classId, storeFormData?.teacherClasses]);
+    setAssignments(initialAssignments);
+  }, [initialAssignments]);
 
-  const showStatus = (type: 'success' | 'error', message: string) => {
+  const showStatus = useCallback((type: 'success' | 'error', message: string) => {
     setStatusMessage({ type, message });
-    setTimeout(() => setStatusMessage(null), 3000); // Clear after 3 seconds
-  };
+    setTimeout(() => setStatusMessage(null), 3000);
+  }, []);
 
   const filteredAssignments = useMemo(() => {
-    return currentClass?.assignments?.filter((assignment: any) =>
+    return assignments.filter(assignment =>
       assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.status.toLowerCase().includes(searchTerm.toLowerCase())
-    ).sort((a: any, b: any) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()) || [];
-  }, [currentClass, searchTerm]);
+      assignment.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assignment.status.toLowerCase().includes(searchTerm.toLowerCase()) // Filter by ExamType string
+    ).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }, [assignments, searchTerm]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setAssignmentTitle('');
     setAssignmentDescription('');
     setAssignmentDueDate('');
     setAssignmentMaxPoints('');
-    setAssignmentStatus('Draft');
+    setAssignmentStatus('HOMEWORK'); // Reset to default
     setEditingAssignment(null);
-  };
+  }, []);
 
-  const handleOpenModal = (assignmentToEdit: any | null = null) => {
+  const handleOpenModal = useCallback((assignmentToEdit: AssignmentData | null = null) => {
     if (assignmentToEdit) {
       setEditingAssignment(assignmentToEdit);
       setAssignmentTitle(assignmentToEdit.title);
-      setAssignmentDescription(assignmentToEdit.description);
+      setAssignmentDescription(assignmentToEdit.description || '');
       setAssignmentDueDate(assignmentToEdit.dueDate);
-      setAssignmentMaxPoints(assignmentToEdit.maxPoints !== 0 ? String(assignmentToEdit.maxPoints) : '');
-      setAssignmentStatus(assignmentToEdit.status);
+      setAssignmentMaxPoints(String(assignmentToEdit.maxPoints));
+      setAssignmentStatus(assignmentToEdit.status as AssignmentStatus); // Cast to AssignmentStatus
     } else {
       resetForm();
     }
     setIsModalOpen(true);
-  };
+  }, [resetForm]);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     resetForm();
-  };
+  }, [resetForm]);
 
-  const handleSaveAssignment = (e: React.FormEvent) => {
+  const handleSaveAssignment = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
 
-    if (!currentClass) {
-      showStatus('error', 'Class not loaded.');
-      return;
-    }
+    setLoading(true);
+    setStatusMessage(null);
 
-    const newAssignmentData = {
+    const payload = {
+      id: editingAssignment?.id || undefined, // Include ID for update
       title: assignmentTitle,
       description: assignmentDescription,
       dueDate: assignmentDueDate,
       maxPoints: assignmentMaxPoints ? parseInt(assignmentMaxPoints) : 0,
-      status: assignmentStatus,
+      status: assignmentStatus, // This will be ExamType
+      courseId: course.id,
+      educatorId: educatorId,
+      companyId: companyId,
     };
 
-    let updatedAssignments;
-    if (editingAssignment) {
-      // Edit existing assignment
-      updatedAssignments = currentClass.assignments.map((assign: any) =>
-        assign.id === editingAssignment.id ? { ...assign, ...newAssignmentData } : assign
-      );
-      showStatus('success', `Assignment "${newAssignmentData.title}" updated successfully!`);
-    } else {
-      // Add new assignment
-      const newId = `A${Date.now()}`; // Simple unique ID
-      updatedAssignments = [...currentClass.assignments, { id: newId, ...newAssignmentData, submissionCount: 0 }];
-      showStatus('success', `Assignment "${newAssignmentData.title}" created successfully!`);
+    try {
+      const res = await fetch(`${apiUrl}/teacher/assignments`, {
+        method: 'POST', // POST for upsert
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const savedAssignment: AssignmentData = await res.json();
+        setAssignments(prevAssignments => {
+          if (editingAssignment) {
+            // Update existing
+            return prevAssignments.map(assign =>
+              assign.id === savedAssignment.id ? savedAssignment : assign
+            );
+          } else {
+            // Add new
+            return [...prevAssignments, savedAssignment];
+          }
+        });
+        showStatus('success', `Assignment "${savedAssignment.title}" ${editingAssignment ? 'updated' : 'created'} successfully!`);
+        handleCloseModal();
+      } else {
+        const errorData = await res.json();
+        showStatus('error', errorData.message || 'Failed to save assignment.');
+      }
+    } catch (err: any) {
+      showStatus('error', `Network error: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
+  }, [editingAssignment, assignmentTitle, assignmentDescription, assignmentDueDate, assignmentMaxPoints, assignmentStatus, course.id, educatorId, companyId, handleCloseModal, showStatus, loading]);
 
-    // In a real app, send this to your backend and then refetch/update state
-    setCurrentClass((prevClass: any) => ({
-      ...prevClass,
-      assignments: updatedAssignments,
-    }));
+  const handleDeleteAssignment = useCallback(async (assignmentId: string, assignmentTitle: string) => {
+    if (loading) return;
 
-    handleCloseModal();
-  };
-
-  const handleDeleteAssignment = (assignmentId: string, assignmentTitle: string) => {
     if (window.confirm(`Are you sure you want to delete assignment "${assignmentTitle}"? This action cannot be undone.`)) {
-      if (!currentClass) return;
+      setLoading(true);
+      setStatusMessage(null);
+      try {
+        const res = await fetch(`${apiUrl}/teacher/assignments/${assignmentId}?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`, {
+          method: 'DELETE',
+        });
 
-      const updatedAssignments = currentClass.assignments.filter((assign: any) => assign.id !== assignmentId);
-
-      // In a real app, send delete request to backend
-      setCurrentClass((prevClass: any) => ({
-        ...prevClass,
-        assignments: updatedAssignments,
-      }));
-      showStatus('success', `Assignment "${assignmentTitle}" deleted successfully!`);
+        if (res.ok) {
+          setAssignments(prevAssignments => prevAssignments.filter(assign => assign.id !== assignmentId));
+          showStatus('success', `Assignment "${assignmentTitle}" deleted successfully!`);
+        } else {
+          const errorData = await res.json();
+          showStatus('error', errorData.message || 'Failed to delete assignment.');
+        }
+      } catch (err: any) {
+        showStatus('error', `Network error: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+  }, [educatorId, companyId, showStatus, loading]);
 
-  const handleCollectSubmissions = (assignmentId: string, assignmentTitle: string) => {
-    console.log(`Collecting submissions for: ${assignmentTitle} (ID: ${assignmentId})`);
-    // In a real app, this would navigate to a page to view/grade submissions
-    alert(`Functionality: Collect Submissions for "${assignmentTitle}"`);
-  };
+
+  const handleCollectSubmissions = useCallback((assignmentId: string, assignmentTitle: string) => {
+    console.log(`Navigating to submissions for: ${assignmentTitle} (ID: ${assignmentId})`);
+    // In a real app, this would navigate to a page to view/grade submissions for this assignment
+    router.push(`/admin/${companyId}/teacher-classes/${course.id}/assignments/${assignmentId}/submissions`);
+  }, [companyId, course.id, router]);
 
   // Framer Motion Variants
   const containerVariants = {
@@ -239,22 +216,6 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
     },
   };
 
-  if (!currentClass) {
-    return (
-      <div className="p-8 text-center bg-gray-50 min-h-screen flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">Class Not Found</h2>
-        <p className="text-gray-500 mb-6">The class with ID "{classId}" could not be loaded for assignments.</p>
-        <button
-          onClick={() => window.history.back()}
-          className={`inline-flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-md shadow-sm
-                      hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400`}
-        >
-          <ArrowLeftIcon className="h-5 w-5" /> Back to Class List
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
       {/* Header */}
@@ -266,18 +227,19 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
       >
         <motion.div variants={itemVariants} className="flex items-center gap-4">
           <button
-            onClick={() => window.history.back()}
+            onClick={() => router.back()}
             className={`p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
             aria-label="Back to Class List"
+            disabled={loading}
           >
             <ArrowLeftIcon className="h-6 w-6" />
           </button>
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Manage Assignments <span style={{ color: primaryColor }}>{currentClass.name}</span>
+              Manage Assignments <span style={{ color: primaryColor }}>{course.title}</span>
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Create, edit, and track assignments for this class.
+              Create, edit, and track assignments for {course.academicLevelName} - {course.title}.
             </p>
           </div>
         </motion.div>
@@ -285,7 +247,9 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
           <button
             onClick={() => handleOpenModal()}
             className={`inline-flex items-center gap-2 px-4 py-2 bg-[${primaryColor}] text-white rounded-md shadow-md
-                        hover:bg-[${primaryColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]`}
+                        hover:bg-[${primaryColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]
+                        ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={loading}
           >
             <PlusCircleIcon className="h-5 w-5" /> Add New Assignment
           </button>
@@ -313,16 +277,28 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
         )}
       </AnimatePresence>
 
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="flex items-center justify-center py-4">
+          <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="ml-3 text-lg text-gray-700">Loading assignments...</span>
+        </div>
+      )}
+
       {/* Search Bar */}
       <motion.div variants={itemVariants} className="max-w-xl mx-auto relative">
         <input
           type="text"
           placeholder="Search assignments by title or status..."
           className="w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
-                     focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
-                     text-gray-900 placeholder-gray-500 bg-white"
+                      focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
+                      text-gray-900 placeholder-gray-500 bg-white"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          disabled={loading}
         />
         <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
       </motion.div>
@@ -335,21 +311,21 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
         variants={containerVariants}
       >
         {filteredAssignments.length > 0 ? (
-          filteredAssignments.map((assignment: any) => (
+          filteredAssignments.map((assignment: AssignmentData) => (
             <motion.div
               key={assignment.id}
               className="bg-white rounded-xl shadow-md border border-gray-200 p-6 flex flex-col justify-between
-                         hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out"
+                          hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out"
               variants={itemVariants}
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xl font-bold text-gray-900">{assignment.title}</h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold
-                                    ${assignment.status === 'Published' ? 'bg-green-100 text-green-800' :
-                                      assignment.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
+                                    ${assignment.displayStatus === 'Published' ? 'bg-green-100 text-green-800' :
+                                      assignment.displayStatus === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
                                       'bg-blue-100 text-blue-800'}`}>
-                    {assignment.status}
+                    {assignment.displayStatus}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">{assignment.description}</p>
@@ -374,23 +350,29 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
                 <button
                   onClick={() => handleCollectSubmissions(assignment.id, assignment.title)}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[${accentColor}] text-gray-900 rounded-md text-sm font-medium
-                              hover:bg-[${accentColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+                              hover:bg-[${accentColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]
+                              ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={loading}
                 >
                   <ArrowUpTrayIcon className="h-4 w-4" /> Submissions
                 </button>
                 <button
                   onClick={() => handleOpenModal(assignment)}
                   className={`flex-shrink-0 p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors
-                              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]`}
+                              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]
+                              ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   aria-label="Edit Assignment"
+                  disabled={loading}
                 >
                   <PencilSquareIcon className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => handleDeleteAssignment(assignment.id, assignment.title)}
                   className={`flex-shrink-0 p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors
-                              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400`}
+                              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400
+                              ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   aria-label="Delete Assignment"
+                  disabled={loading}
                 >
                   <TrashIcon className="h-5 w-5" />
                 </button>
@@ -439,6 +421,7 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
                     value={assignmentTitle}
                     onChange={(e) => setAssignmentTitle(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
                 <div>
@@ -449,6 +432,7 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
                     className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[${accentColor}] focus:border-[${accentColor}] resize-y"
                     value={assignmentDescription}
                     onChange={(e) => setAssignmentDescription(e.target.value)}
+                    disabled={loading}
                   ></textarea>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -461,6 +445,7 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
                       value={assignmentDueDate}
                       onChange={(e) => setAssignmentDueDate(e.target.value)}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div>
@@ -472,20 +457,23 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
                       value={assignmentMaxPoints}
                       onChange={(e) => setAssignmentMaxPoints(e.target.value)}
                       placeholder="e.g., 100 (0 for non-graded)"
+                      disabled={loading}
                     />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="assignment-status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label htmlFor="assignment-status" className="block text-sm font-medium text-gray-700 mb-1">Type/Status</label>
                   <select
                     id="assignment-status"
                     className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[${accentColor}] focus:border-[${accentColor}]"
                     value={assignmentStatus}
-                    onChange={(e) => setAssignmentStatus(e.target.value as 'Draft' | 'Published' | 'Graded')}
+                    onChange={(e) => setAssignmentStatus(e.target.value as AssignmentStatus)}
+                    disabled={loading}
                   >
-                    <option value="Draft">Draft</option>
-                    <option value="Published">Published</option>
-                    <option value="Graded">Graded</option>
+                    <option value="HOMEWORK">Homework</option>
+                    <option value="PROJECT">Project</option>
+                    <option value="QUIZ">Quiz</option>
+                    <option value="OTHER">Other</option>
                   </select>
                 </div>
 
@@ -494,15 +482,23 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
                     type="button"
                     onClick={handleCloseModal}
                     className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+                    disabled={loading}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     className={`px-6 py-2 bg-[${primaryColor}] text-white font-semibold rounded-md shadow-md
-                                hover:bg-[${primaryColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]`}
+                                hover:bg-[${primaryColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]
+                                ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={loading}
                   >
-                    {editingAssignment ? 'Save Changes' : 'Create Assignment'}
+                    {loading ? (
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (editingAssignment ? 'Save Changes' : 'Create Assignment')}
                   </button>
                 </div>
               </form>

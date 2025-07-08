@@ -2535,6 +2535,8 @@ model ExamSubmission {
 
 // Enums used in the models
 enum ExamType {
+  HOMEWORK
+  PROJECT
   QUIZ
   UNIT_TEST
   MIDTERM

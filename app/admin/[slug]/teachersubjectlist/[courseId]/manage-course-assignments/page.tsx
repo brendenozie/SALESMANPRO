@@ -1,117 +1,98 @@
-// app/admin/[slug]/inventory/page.tsx
-
+// app/admin/[slug]/teacher-classes/[courseId]/manage-assignments/page.tsx
 import React from "react";
-import ManageAssignmentsPage from "./ManageAssignmentsPage";
+import ManageAssignmentsPageClient from "./ManageAssignmentsPageClient"; // Renamed client component
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: string;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
+// IMPORTANT: In a real application, the currentEducatorId would come from an authentication context (e.g., NextAuth.js session).
+// For this example, we'll use a hardcoded mock ID.
+const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
-
-interface Props {
+interface PageProps {
   params: {
     slug: string; // companyId
+    courseId: string;
   };
 }
 
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
-export default async function AdminInventoryPage({ params }: Props) {
-  const companyId = params.slug;
+// Define types for data fetched by the server component
+export interface AssignmentData {
+  id: string;
+  title: string;
+  description: string | null;
+  dueDate: string; // YYYY-MM-DD format
+  maxPoints: number;
+  status: string; // This will be the ExamType from Prisma
+  submissionCount: number;
+  displayStatus: string; // A more user-friendly status derived from ExamType
+}
 
-  let productsData: Product[] = [];
-  let categoriesData: Category[] = [];
-  let agentsData: Agent[] = [];
+export interface CourseAssignmentInfo {
+  id: string;
+  title: string;
+  academicLevelId: string;
+  academicLevelName: string;
+}
+
+export interface ManageAssignmentsPageData {
+  course: CourseAssignmentInfo;
+  assignments: AssignmentData[];
+  educatorId: string; // Pass educator ID to client for API calls
+  companyId: string; // Pass company ID to client for API calls
+}
+
+export default async function ManageAssignmentsServerPage({ params }: PageProps) {
+  const companyId = params.slug;
+  const courseId = params.courseId;
+  const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+
+  let assignmentsPageData: ManageAssignmentsPageData | null = null;
+  let fetchError: string | null = null;
 
   try {
-    // Fetch all products for this company
-    const productsRes = await fetch(
-      `${apiUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+    const res = await fetch(
+      `${apiUrl}/teacher/courses/${courseId}/assignments?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" } // Ensure fresh data
     );
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
-    }
 
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
-      { cache: "no-store" }
-    );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
-    }
-
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
-    );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
-    }
-
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
+    if (res.ok) {
+      assignmentsPageData = (await res.json()) as ManageAssignmentsPageData;
+      // Also pass down educatorId and companyId for client-side API calls
+      assignmentsPageData.educatorId = educatorId;
+      assignmentsPageData.companyId = companyId;
+    } else {
+      const errorData = await res.json();
+      fetchError = errorData.message || `Failed to fetch assignments data: ${res.status} ${res.statusText}`;
+      console.error("[ManageAssignmentsServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {
-    // console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
+    fetchError = `Network or server error: ${err.message}`;
+    console.error("[ManageAssignmentsServerPage] Catch error:", err);
   }
 
-  // You need to determine how to get the classId; here we use a placeholder.
-  const classId = "6863daeef4ad17d957b92403"; // TODO: Replace with actual classId value
+  if (fetchError || !assignmentsPageData || !assignmentsPageData.course) {
+    // Render an error state or a fallback with a message
+    return (
+      <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Assignments</h2>
+        <p className="text-red-600 mb-6">{fetchError || "Could not load assignments data for this course."}</p>
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
+                     hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <ManageAssignmentsPage
-      classId={classId}
+    <ManageAssignmentsPageClient
+      course={assignmentsPageData.course}
+      initialAssignments={assignmentsPageData.assignments}
+      educatorId={assignmentsPageData.educatorId}
+      companyId={assignmentsPageData.companyId}
     />
   );
 }
