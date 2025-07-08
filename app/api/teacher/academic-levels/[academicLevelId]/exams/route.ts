@@ -44,12 +44,12 @@ export async function GET(request: Request, { params }: { params: { academicLeve
       select: {
         id: true,
         title: true,
-        examType: true,
+        type: true,
         courseId: true, // Include courseId to link back
         course: { select: { title: true } }, // Include course title
       },
       orderBy: {
-        examDate: 'desc', // Order by most recent exams
+        date: 'desc', // Order by most recent exams
       },
     });
 
@@ -57,7 +57,7 @@ export async function GET(request: Request, { params }: { params: { academicLeve
     const formattedExams = exams.map(exam => ({
       id: exam.id,
       title: exam.title,
-      examType: exam.examType,
+      examType: exam.type,
       courseId: exam.courseId,
       courseTitle: exam.course.title,
     }));

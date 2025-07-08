@@ -44,7 +44,7 @@ export type ClassTeacherAcademicLevelsPageData = {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    // const companyId = searchParams.get('companyId');
+    
     const teacherId = searchParams.get('teacherId'); // This is the User.id linked to Educator
 
     if (!teacherId) {

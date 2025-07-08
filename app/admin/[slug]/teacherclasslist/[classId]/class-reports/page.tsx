@@ -61,15 +61,19 @@ interface AcademicLevelInfo {
 
 interface PageProps {
   params: {
-    educatorId: string; // Corresponds to `teacherId` in APIs
-    academicLevelId: string; // Corresponds to `classId` in previous context
+    slug: string; // Corresponds to `teacherId` in APIs
+    classId: string; // Corresponds to `classId` in previous context
   };
 }
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function ClassReportsPage({ params }: PageProps) {
-  const { educatorId, academicLevelId } = params;
+
+  const { slug, classId } = params;
+  
+  const educatorId = slug;
+  const academicLevelId  = classId;
 
   const [grades, setGrades] = useState<GradeReportData[]>([]);
   const [students, setStudents] = useState<StudentOption[]>([]);
@@ -93,12 +97,12 @@ export default function ClassReportsPage({ params }: PageProps) {
       // Fetch Academic Level Info (assuming you have an API for this, e.g., /api/academic-levels/[id])
       // If not, you might need to add one or pass it as a prop from a parent page.
       // For now, let's mock it or assume it's fetched.
-      const academicLevelRes = await fetch(`${apiUrl}/academic-levels/${academicLevelId}?teacherId=${educatorId}`);
+      const academicLevelRes = await fetch(`${apiUrl}/teacher/academic-levels/${academicLevelId}?teacherId=${educatorId}`);
       if (academicLevelRes.ok) {
         setAcademicLevelInfo(await academicLevelRes.json());
       } else {
         console.warn(`Could not fetch academic level info for ${academicLevelId}`);
-        setAcademicLevelInfo({ id: academicLevelId, name: `Academic Level ${academicLevelId.substring(0, 4)}`, description: null }); // Fallback
+        setAcademicLevelInfo({ id: academicLevelId, name: `${academicLevelId}`, description: null }); // Fallback
       }
 
       // Fetch Grades

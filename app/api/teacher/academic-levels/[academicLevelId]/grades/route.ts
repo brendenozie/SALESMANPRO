@@ -1,9 +1,9 @@
 // app/api/teacher/academic-levels/[academicLevelId]/grades/route.ts
 import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb";  // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
 
 export async function GET(request: Request, { params }: { params: { academicLevelId: string } }) {
-  const { academicLevelId } = params;
+  const { academicLevelId } = params; // This is the academic level for which we want historical grades
   const { searchParams } = new URL(request.url);
   const teacherId = searchParams.get('teacherId'); // Used for company context and authorization
   const courseId = searchParams.get('courseId'); // Optional filter
@@ -38,14 +38,10 @@ export async function GET(request: Request, { params }: { params: { academicLeve
     const companyId = educator.companyId;
 
     // Build the WHERE clause dynamically based on filters
+    // NOW, we filter directly on academicLevelAtTimeOfGradeId and companyId
     const whereClause: any = {
-      student: {
-        academicLevelId: academicLevelId,
-        companyId: companyId, // Ensure students belong to the same company
-      },
-      course: {
-        companyId: companyId, // Ensure courses belong to the same company
-      },
+      academicLevelAtTimeOfGradeId: academicLevelId, // Filter grades by the historical academic level
+      companyId: companyId, // Ensure grades belong to the same company
     };
 
     if (courseId) {
@@ -58,16 +54,17 @@ export async function GET(request: Request, { params }: { params: { academicLeve
       whereClause.examId = examId;
     }
 
-    const grades = await prisma.academicLevel.findMany({
+    // CRITICAL CHANGE: Query the `grade` model directly
+    const grades = await prisma.grade.findMany({
       where: whereClause,
       include: {
-        student: {
+        student: { // Include student details
           select: {
             id: true,
             user: { select: { name: true, email: true } },
           },
         },
-        course: {
+        course: { // Include course details
           select: {
             id: true,
             title: true,
@@ -77,7 +74,13 @@ export async function GET(request: Request, { params }: { params: { academicLeve
           select: {
             id: true,
             title: true,
-            examType: true,
+            type: true,
+          },
+        },
+        academicLevelAtTimeOfGrade: { // Include the academic level info for context
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
@@ -104,7 +107,9 @@ export async function GET(request: Request, { params }: { params: { academicLeve
       courseTitle: grade.course.title,
       examId: grade.exam?.id || null,
       examTitle: grade.exam?.title || null,
-      examType: grade.exam?.examType || null,
+      examType: grade.exam?.type || null,
+      // Include the academic level name for this grade record
+      academicLevelAtTimeOfGradeName: grade.academicLevelAtTimeOfGrade.name,
     }));
 
     return NextResponse.json(formattedGrades);
