@@ -210,6 +210,27 @@ export default function StudentDashboard({
               </div>
             ))}
           </div>
+          
+          {/* Quick Links (Bottom Section) */}
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
+              <LinkIcon className="h-5 w-5 text-violet-500" /> Quick Links & Resources
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {quickLinks.map((link, idx) => (
+                <a
+                  key={idx}
+                  href={link.href}
+                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
+                            hover:bg-violet-50 hover:text-violet-700 transition-colors duration-200
+                            focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2"
+                >
+                  <div className="text-violet-500 mb-2">{link.icon}</div>
+                  <span className="text-center text-sm font-medium">{link.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
 
           {/* Upcoming Assignments */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
@@ -367,26 +388,6 @@ export default function StudentDashboard({
         </div>
       </div>
 
-      {/* Quick Links (Bottom Section) */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
-          <LinkIcon className="h-5 w-5 text-violet-500" /> Quick Links & Resources
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {quickLinks.map((link, idx) => (
-            <a
-              key={idx}
-              href={link.href}
-              className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
-                         hover:bg-violet-50 hover:text-violet-700 transition-colors duration-200
-                         focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2"
-            >
-              <div className="text-violet-500 mb-2">{link.icon}</div>
-              <span className="text-center text-sm font-medium">{link.label}</span>
-            </a>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

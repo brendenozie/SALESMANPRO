@@ -1,112 +1,113 @@
-// app/admin/[slug]/inventory/page.tsx
-
+// app/student/[slug]/my-classes/[courseId]/assignments/page.tsx
 import React from "react";
-import StudentAssignmentsPage from "./StudentAssignmentsPage";
+import StudentAssignmentsPageClient from "./StudentAssignmentsPageClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: string;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
+// IMPORTANT: In a real application, the currentStudentId would come from an authentication context (e.g., NextAuth.js session).
+// For this example, we'll use a hardcoded mock ID.
+const MOCK_CURRENT_STUDENT_ID = "clx023j0d00003b6033877d9c"; // Example: Student ID
 
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
-
-interface Props {
+interface PageProps {
   params: {
     slug: string; // companyId
+    courseId?: string; // Optional: if viewing assignments for a specific course
   };
 }
 
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
-export default async function AdminInventoryPage({ params }: Props) {
-  const companyId = params.slug;
+// Define types for data fetched by the server component
+export interface AssignmentData {
+  id: string;
+  name: string; // Assignment title
+  classId: string; // Course ID
+  className: string; // Course title
+  teacher: string; // Teacher's name
+  dueDate: string; // ISO string
+  status: 'Pending Submission' | 'Submitted' | 'Graded' | 'Overdue' | 'Not Submitted'; // Frontend status
+  type: string; // ExamType (e.g., 'HOMEWORK', 'PROJECT', 'QUIZ')
+  totalPoints: number;
+  grade: number | null;
+  feedback: string | null;
+  submissionUrl: string | null;
+  description: string | null;
+  submittedAt: string | null; // ISO string
+}
 
-  let productsData: Product[] = [];
-  let categoriesData: Category[] = [];
-  let agentsData: Agent[] = [];
+export interface StudentAssignmentsPageData {
+  studentName: string;
+  studentGradeLevel: string;
+  assignments: AssignmentData[];
+  studentId: string;
+  companyId: string;
+  courseInfo?: { // Optional, if filtering by course
+    id: string;
+    title: string;
+  };
+}
+
+export default async function StudentAssignmentsServerPage({ params }: PageProps) {
+  const companyId = params.slug;
+  const courseId = params.courseId; // This will be undefined if not in the URL path
+  const studentId = MOCK_CURRENT_STUDENT_ID;
+
+  let assignmentsPageData: StudentAssignmentsPageData | null = null;
+  let fetchError: string | null = null;
 
   try {
-    // Fetch all products for this company
-    const productsRes = await fetch(
-      `${apiUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
-    );
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
+    const url = new URL(`${apiUrl}/student/assignments`);
+    url.searchParams.append('studentId', studentId);
+    url.searchParams.append('companyId', companyId);
+    if (courseId) {
+      url.searchParams.append('courseId', courseId);
     }
 
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
-      { cache: "no-store" }
-    );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
-    }
+    const res = await fetch(url.toString(), { cache: "no-store" });
 
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
-    );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
-    }
-
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
+    if (res.ok) {
+      assignmentsPageData = (await res.json()) as StudentAssignmentsPageData;
+      assignmentsPageData.studentId = studentId;
+      assignmentsPageData.companyId = companyId;
+      if (courseId) {
+        // If a specific course was requested, add its info for the client component header
+        assignmentsPageData.courseInfo = {
+          id: courseId,
+          title: assignmentsPageData.assignments[0]?.className || 'Unknown Course', // Use first assignment's class name or fallback
+        };
+      }
+    } else {
+      const errorData = await res.json();
+      fetchError = errorData.message || `Failed to fetch student assignments: ${res.status} ${res.statusText}`;
+      console.error("[StudentAssignmentsServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {
-    console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
+    fetchError = `Network or server error: ${err.message}`;
+    console.error("[StudentAssignmentsServerPage] Catch error:", err);
+  }
+
+  if (fetchError || !assignmentsPageData) {
+    return (
+      <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Assignments</h2>
+        <p className="text-red-600 mb-6">{fetchError || "Could not load student assignment data."}</p>
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
+                     hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+        >
+          Go Back
+        </button>
+      </div>
+    );
   }
 
   return (
-    <StudentAssignmentsPage />
+    <StudentAssignmentsPageClient
+      studentName={assignmentsPageData.studentName}
+      studentGradeLevel={assignmentsPageData.studentGradeLevel}
+      initialAssignments={assignmentsPageData.assignments}
+      studentId={assignmentsPageData.studentId}
+      companyId={assignmentsPageData.companyId}
+      courseInfo={assignmentsPageData.courseInfo}
+    />
   );
 }
