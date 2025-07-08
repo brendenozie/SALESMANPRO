@@ -349,18 +349,7 @@ export default function TeachersSubjectListPage({
                   </div>
                 </div>
               </div>
-
-              {/* <div className="mt-6 border-t border-gray-100 pt-4">
-                <button
-                  onClick={() => handleViewRoster(cls.id)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md shadow-sm
-                              bg-[${accentColor}] text-gray-900
-                              hover:opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-                  style={{ backgroundColor: accentColor }} // Apply accent color dynamically
-                >
-                  View Student Roster <ArrowRightIcon className="h-4 w-4" />
-                </button>
-              </div> */}
+              
             </motion.div>
           ))
         ) : (
