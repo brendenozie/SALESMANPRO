@@ -1,117 +1,95 @@
+// app/admin/[slug]/teacher-classes/[courseId]/class-schedule/ClassSchedulePageClient.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeftIcon,
-  CalendarDaysIcon, // For overall calendar view
-  ClockIcon, // For time slots
-  MapPinIcon, // For event location
-  ChevronLeftIcon, // For previous week
-  ChevronRightIcon, // For next week
-  BookOpenIcon, // For general lesson icon
-  SparklesIcon, // For special events
-  CheckCircleIcon, // Success message icon
-  ExclamationCircleIcon, // Error message icon
+  CalendarDaysIcon,
+  ClockIcon,
+  MapPinIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  BookOpenIcon,
+  SparklesIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  LinkIcon, // Added for meeting links
 } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
+import { useRouter } from 'next/navigation';
 
-// Mocking context data for demonstration purposes
-const useMockStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      accentColor: "#FFC107", // Amber Yellow, for consistency
-    },
-    teacherClasses: [ // Sample classes with detailed schedule and events
-      {
-        id: '6863daeef4ad17d957b92403',
-        name: 'Grade 7 Mathematics',
-        grade: '7',
-        studentsEnrolled: 35,
-        schedule: [ // Daily recurring schedule
-          { day: 'Monday', startTime: '09:00', endTime: '09:45', subject: 'Mathematics', topic: 'Algebra Basics', room: 'Room 101' },
-          { day: 'Monday', startTime: '10:00', endTime: '10:45', subject: 'Science', topic: 'Ecosystems', room: 'Lab 1' },
-          { day: 'Tuesday', startTime: '11:00', endTime: '11:45', subject: 'English', topic: 'Grammar & Composition', room: 'Room 102' },
-          { day: 'Wednesday', startTime: '09:00', endTime: '09:45', subject: 'Mathematics', topic: 'Geometry Introduction', room: 'Room 101' },
-          { day: 'Wednesday', startTime: '01:00', endTime: '01:45', subject: 'History', topic: 'Ancient Civilizations', room: 'Room 103' },
-          { day: 'Thursday', startTime: '10:30', endTime: '11:15', subject: 'Art', topic: 'Drawing Fundamentals', room: 'Art Studio' },
-          { day: 'Friday', startTime: '09:00', endTime: '09:45', subject: 'Mathematics', topic: 'Problem Solving', room: 'Room 101' },
-          { day: 'Friday', startTime: '02:00', endTime: '02:45', subject: 'Physical Education', topic: 'Team Sports', room: 'Gym' },
-        ],
-        events: [ // Specific events for this class (can override/add to schedule)
-          { id: 'EV001', title: 'Field Trip: Science Museum', date: '2025-07-18', startTime: '09:00', endTime: '15:00', location: 'Science Museum', type: 'Field Trip' },
-          { id: 'EV002', title: 'Guest Speaker: AI in Math', date: '2025-07-16', startTime: '10:00', endTime: '11:00', location: 'Auditorium', type: 'Guest Speaker' },
-          { id: 'EV003', title: 'Midterm Math Exam', date: '2025-07-17', startTime: '09:00', endTime: '10:30', location: 'Room 101', type: 'Exam' },
-        ],
-      },
-      {
-        id: 'CL102',
-        name: 'Grade 8 English Language',
-        grade: '8',
-        studentsEnrolled: 30,
-        schedule: [
-          { day: 'Tuesday', startTime: '09:00', endTime: '09:45', subject: 'English', topic: 'Literary Analysis', room: 'Room 201' },
-          { day: 'Thursday', startTime: '09:00', endTime: '09:45', subject: 'English', topic: 'Creative Writing', room: 'Room 201' },
-        ],
-        events: [],
-      },
-    ]
-  },
+// Import types from the server component file
+import type { ClassScheduleData, EventData, CourseScheduleInfo } from './page';
+
+// Mocking context data for demonstration purposes (replace with actual context in your app)
+const useMockThemeSettings = () => ({
+  primaryColor: "#4F46E5", // Indigo-600
+  accentColor: "#818CF8", // Indigo-300
 });
 
-interface ClassSchedulePageProps {
-  classId: string; // The ID of the class whose schedule to display
-  // onBack: () => void; // Callback to navigate back to the previous page (e.g., Class List)
+interface ClassSchedulePageClientProps {
+  course: CourseScheduleInfo;
+  initialSchedule: ClassScheduleData[];
+  initialEvents: EventData[];
+  educatorId: string; // Not directly used on this page, but good to pass down
+  companyId:  string;  // Not directly used on this page, but good to pass down
 }
 
-export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps) {
-  // IMPORTANT: In your actual application, use:
-  // const { storeFormData } = useStoreContext();
-  const { storeFormData } = useMockStoreContext();
+export default function ClassSchedulePageClient({
+  course,
+  initialSchedule,
+  initialEvents,
+  educatorId,
+  companyId,
+}: ClassSchedulePageClientProps) {
+  const router = useRouter();
+  const { primaryColor, accentColor } = useMockThemeSettings(); // Replace with actual context
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = storeFormData?.themeSettings?.accentColor || "#FFC107";
-
-  const [currentClass, setCurrentClass] = useState<any | null>(null);
+  const [schedule, setSchedule] = useState<ClassScheduleData[]>(initialSchedule);
+  const [events, setEvents] = useState<EventData[]>(initialEvents);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [currentWeekStart, setCurrentWeekStart] = useState(new Date()); // State to manage the start of the displayed week
 
+  // Update state when initial props change
   useEffect(() => {
-    const foundClass = storeFormData?.teacherClasses?.find(cls => cls.id === classId);
-    setCurrentClass(foundClass || null);
-  }, [classId, storeFormData?.teacherClasses]);
+    setSchedule(initialSchedule);
+    setEvents(initialEvents);
+  }, [initialSchedule, initialEvents]);
 
-  const showStatus = (type: 'success' | 'error', message: string) => {
+  const showStatus = useCallback((type: 'success' | 'error', message: string) => {
     setStatusMessage({ type, message });
-    setTimeout(() => setStatusMessage(null), 3000); // Clear after 3 seconds
-  };
+    setTimeout(() => setStatusMessage(null), 3000);
+  }, []);
 
   // Helper to get the start of the week (Monday)
-  const getStartOfWeek = (date: Date) => {
+  const getStartOfWeek = useCallback((date: Date) => {
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday (0) to be last day of prev week
-    return new Date(date.setDate(diff));
-  };
+    // Adjust for Sunday (0) to be last day of prev week, Monday (1) is 0 diff
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const start = new Date(date);
+    start.setDate(diff);
+    start.setHours(0, 0, 0, 0); // Normalize to start of day
+    return start;
+  }, []);
 
-  // Generate days of the current week
+  // Generate days of the current week (Monday to Friday)
   const weekDays = useMemo(() => {
     const startOfWeek = getStartOfWeek(new Date(currentWeekStart));
     const days = [];
-    for (let i = 0; i < 5; i++) { // Monday to Friday
+    for (let i = 0; i < 5; i++) { // Monday (0) to Friday (4) for diff
       const day = new Date(startOfWeek);
       day.setDate(startOfWeek.getDate() + i);
       days.push(day);
     }
     return days;
-  }, [currentWeekStart]);
+  }, [currentWeekStart, getStartOfWeek]);
 
   // Generate time slots (e.g., every 45 minutes from 8 AM to 4 PM)
   const timeSlots = useMemo(() => {
     const slots = [];
     for (let hour = 8; hour <= 16; hour++) { // 8 AM to 4 PM
       slots.push(`${String(hour).padStart(2, '0')}:00`);
-      if (hour < 16) { // Don't add 45 min slot after 4 PM
+      if (hour < 16) {
         slots.push(`${String(hour).padStart(2, '0')}:45`);
       }
     }
@@ -120,7 +98,7 @@ export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps)
 
   // Map schedule and events to the weekly grid
   const scheduleGrid = useMemo(() => {
-    const grid: { [day: string]: { [time: string]: any[] } } = {}; // day -> time -> items
+    const grid: { [day: string]: { [time: string]: any[] } } = {}; // dayName -> timeSlot -> items array
 
     weekDays.forEach(day => {
       const dayName = day.toLocaleDateString('en-US', { weekday: 'long' });
@@ -132,50 +110,58 @@ export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps)
       });
 
       // Add recurring schedule items
-      currentClass?.schedule?.forEach((lesson: any) => {
+      schedule.forEach((lesson: ClassScheduleData) => {
         if (lesson.day === dayName) {
-          grid[dayName][lesson.startTime]?.push({
-            type: 'lesson',
-            title: lesson.subject,
-            topic: lesson.topic,
-            time: `${lesson.startTime}-${lesson.endTime}`,
-            room: lesson.room,
-          });
+          // Check if the lesson's start time matches a slot
+          if (grid[dayName][lesson.startTime]) {
+            grid[dayName][lesson.startTime].push({
+              type: 'lesson',
+              title: course.title, // Use course title as subject
+              topic: lesson.topic,
+              time: `${lesson.startTime}-${lesson.endTime}`,
+              room: lesson.room, // This will be undefined if not in schema, handled gracefully below
+              meetingLink: lesson.meetingLink, // New
+            });
+          }
         }
       });
 
       // Add specific events for this date
-      currentClass?.events?.forEach((event: any) => {
+      events.forEach((event: EventData) => {
         if (event.date === dateString) {
-          grid[dayName][event.startTime]?.push({
-            type: 'event',
-            title: event.title,
-            description: event.description,
-            time: `${event.startTime}-${event.endTime}`,
-            location: event.location,
-            eventType: event.type,
-          });
+          // Check if the event's start time matches a slot
+          if (grid[dayName][event.startTime]) {
+            grid[dayName][event.startTime].push({
+              type: 'event',
+              title: event.title,
+              description: event.description,
+              time: `${event.startTime}-${event.endTime}`,
+              location: event.location,
+              onlineMeetingLink: event.onlineMeetingLink, // New
+              eventType: event.type,
+            });
+          }
         }
       });
     });
     return grid;
-  }, [currentClass, weekDays, timeSlots]);
+  }, [schedule, events, weekDays, timeSlots, course.title]);
 
-  const handlePreviousWeek = () => {
+  const handlePreviousWeek = useCallback(() => {
     setCurrentWeekStart(prev => {
       const newDate = new Date(prev);
       newDate.setDate(prev.getDate() - 7);
       return newDate;
     });
-  };
+  }, []);
 
-  const handleNextWeek = () => {
+  const handleNextWeek = useCallback(() => {
     setCurrentWeekStart(prev => {
       const newDate = new Date(prev);
       newDate.setDate(prev.getDate() + 7);
       return newDate;
     });
-  };
+  }, []);
 
   // Framer Motion Variants
   const containerVariants = {
@@ -198,22 +184,6 @@ export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps)
     },
   };
 
-  if (!currentClass) {
-    return (
-      <div className="p-8 text-center bg-gray-50 min-h-screen flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">Class Not Found</h2>
-        <p className="text-gray-500 mb-6">The class with ID "{classId}" could not be loaded for schedule.</p>
-        <button
-          onClick={() => window.history.back()}
-          className={`inline-flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-md shadow-sm
-                      hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400`}
-        >
-          <ArrowLeftIcon className="h-5 w-5" /> Back to Class List
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
       {/* Header */}
@@ -225,7 +195,7 @@ export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps)
       >
         <motion.div variants={itemVariants} className="flex items-center gap-4">
           <button
-            onClick={() => window.history.back()}
+            onClick={() => router.back()}
             className={`p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
             aria-label="Back to Class List"
           >
@@ -233,10 +203,10 @@ export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps)
           </button>
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Class Schedule <span style={{ color: primaryColor }}>{currentClass.name}</span>
+              Class Schedule <span style={{ color: primaryColor }}>{course.title}</span>
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              View the weekly timetable and upcoming events.
+              View the weekly timetable and upcoming events for {course.academicLevelName} - {course.title}.
             </p>
           </div>
         </motion.div>
@@ -329,15 +299,32 @@ export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps)
                             >
                               <p className="font-semibold">{item.title}</p>
                               <p className="text-gray-700">{item.time}</p>
-                              {item.type === 'lesson' && (
+                              {item.type === 'lesson' && item.room && ( // Only display room if it exists
                                 <p className="text-gray-600 flex items-center gap-1">
                                   <MapPinIcon className="h-3 w-3" /> {item.room}
                                 </p>
                               )}
+                              {item.type === 'lesson' && item.meetingLink && ( // Display meeting link for lessons
+                                <a href={item.meetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1">
+                                  <LinkIcon className="h-3 w-3" /> Join Online
+                                </a>
+                              )}
                               {item.type === 'event' && (
-                                <p className="text-gray-600 flex items-center gap-1">
-                                  <SparklesIcon className="h-3 w-3" /> {item.eventType}
-                                </p>
+                                <>
+                                  <p className="text-gray-600 flex items-center gap-1">
+                                    <SparklesIcon className="h-3 w-3" /> {item.eventType}
+                                  </p>
+                                  {item.location && (
+                                    <p className="text-gray-600 flex items-center gap-1">
+                                      <MapPinIcon className="h-3 w-3" /> {item.location}
+                                    </p>
+                                  )}
+                                  {item.onlineMeetingLink && ( // Display online meeting link for events
+                                    <a href={item.onlineMeetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1">
+                                      <LinkIcon className="h-3 w-3" /> Join Online
+                                    </a>
+                                  )}
+                                </>
                               )}
                             </div>
                           ))
@@ -352,7 +339,7 @@ export default function ClassSchedulePage({ classId,  }: ClassSchedulePageProps)
             ))}
           </tbody>
         </table>
-        {(currentClass?.schedule?.length === 0 && currentClass?.events?.length === 0) && (
+        {(schedule.length === 0 && events.length === 0) && (
           <div className="p-8 text-center text-gray-500">
             <CalendarDaysIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
             <p className="text-lg">No schedule or events found for this class.</p>

@@ -1,0 +1,2772 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-1.1.x", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// Necessary for Next auth
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user              User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Consumer          Consumer?   @relation(fields: [userId], references: [id])
+  SalesAgent        SalesAgent? @relation(fields: [userId], references: [id])
+  Client            Client?     @relation(fields: [userId], references: [id])
+  Student           Student?    @relation(fields: [studentId], references: [id])
+  studentId         String?     @db.ObjectId
+  EducatorProfile   Educator?   @relation(fields: [educatorProfileId], references: [id])
+  educatorProfileId String?     @db.ObjectId
+
+  @@unique([provider, providerAccountId])
+}
+
+enum ROLE {
+  USER
+  CONSUMER
+  AGENT
+  CLIENT
+  ADMIN
+  STUDENT
+  EDUCATOR
+  HEADTEACHER
+  PARENT
+}
+
+model Session {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String      @unique
+  expires      DateTime
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String      @db.ObjectId
+  role         ROLE?       @default(USER)
+  Client       Client?     @relation(fields: [clientId], references: [id])
+  clientId     String?     @db.ObjectId
+  SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
+  salesAgentId String?     @db.ObjectId
+  Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
+  consumerId   String?     @db.ObjectId
+  Student      Student?    @relation(fields: [studentId], references: [id])
+  studentId    String?     @db.ObjectId
+  Educator     Educator?   @relation(fields: [educatorId], references: [id])
+  educatorId   String?     @db.ObjectId
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  message   String
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+}
+
+model CompanyCategory {
+  id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  icon    String?
+  image   String?
+  status  String
+  Company Company[]
+}
+
+// Category model with self-relations for hierarchy (categories & subcategories)
+model ProductCategory {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  icon            String?
+  image           String?
+  slug            String   @unique
+  description     String
+  longDescription String
+  seoTitle        String
+  seoDescription  String
+  metaKeywords    String[]
+  sortOrder       Int
+  visible         Boolean
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
+  updatedBy       String
+  status          String
+  allBrands       String[]
+  tags            String[]
+
+  // Hierarchy pointers
+  subcategories Json // Store subcategories as a JSON array
+
+  // Media & SEO assets
+  imageAlt    String
+  thumbnail   String?
+  bannerImage String?
+
+  // Localization
+  localization Json
+
+  // Dynamic fields
+  productCount   Int
+  isFeatured     Boolean
+  showInHomepage Boolean
+
+  // Custom attributes
+  attributes Json
+
+  Product            Product[]
+  MarketplaceListing MarketplaceListing[]
+  StoreCategory      StoreCategory[]
+  Company            Company?             @relation(fields: [companyId], references: [id])
+  companyId          String?              @db.ObjectId
+}
+
+/// Associates a Company with a ProductCategory,
+/// plus any store-specific settings.
+model StoreCategory {
+  company    Company         @relation(fields: [companyId], references: [id])
+  companyId  String          @db.ObjectId
+  category   ProductCategory @relation(fields: [categoryId], references: [id])
+  categoryId String          @db.ObjectId
+
+  // Store-specific overrides:
+  displayName String? // e.g. “Gadgets” instead of “Tech Gadgets”
+  icon        String? // override the global icon
+  sortOrder   Int     @default(0)
+  visible     Boolean @default(true)
+
+  id String @id @default(auto()) @map("_id") @db.ObjectId // Add a single primary key
+  // createdAt DateTime @default(now())
+  // updatedAt DateTime @updatedAt
+
+  // You still store each category’s children in JSON:
+  items     Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
+  allBrands Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
+
+  // @@id([companyId, categoryId])
+  @@unique([companyId, categoryId]) // Use a unique constraint instead
+  @@index([companyId, sortOrder]) // speed up ordering queries
+}
+
+model Company {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String  @unique
+  tagline     String? // short marketing line
+  description String?
+
+  hasWebsite Boolean? @default(false)
+
+  companyCategoryId String?          @db.ObjectId
+  companyCategory   CompanyCategory? @relation(fields: [companyCategoryId], references: [id])
+  category          String
+  logoUrl           String?
+  bannerUrl         String?
+
+  contactEmail String
+  contactPhone String?
+  site         String?       @default("default")
+  address      String?
+  geoLocation  Json? // { lat: number, lng: number }
+  openingHours Json? // { mon: "9–5", tue: "...", … }
+  domain       String?       @unique
+  currency     String        @default("KES")
+  locale       String        @default("en-US")
+  socialLinks  SocialLink[] // structured social profiles
+  policies     Policy[] // structured, editable policies
+  faqs         FAQ[] // common questions
+  testimonials Testimonial[] // customer quotes
+  promotions   Promotion[] // site-wide deals
+
+  pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
+
+  themeSettings Json? // colors, fonts, layout toggles
+  seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
+
+  StoreCategory StoreCategory[]
+
+  // existing relations
+  user   User?   @relation(name: "companyAdmin", fields: [userId], references: [id])
+  userId String? @db.ObjectId
+
+  // inventory InventoryItem[]
+
+  productRequests Request[]
+  Target          Target[]
+  commissions     Commission[]
+  commissionsRate CommissionRate[]
+
+  // adminUserId String? @db.ObjectId // Optional: Link to the initial admin user of the company
+  // adminUser   User?   @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  sEOId     String?   @db.ObjectId
+
+  PageSection PageSection[]
+  Collection  Collection[]
+
+  analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
+  analyticsConfigId String?          @db.ObjectId
+
+  paymentSettings   PaymentSettings? @relation(fields: [paymentSettingsId], references: [id])
+  paymentSettingsId String?          @db.ObjectId
+
+  shippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
+  shippingSettingsId String?           @db.ObjectId
+
+  awards  Json?
+  metrics Json?
+  stats   Json?
+
+  Announcement Announcement[]
+
+  Conversation Conversation[]
+
+  productCategories   ProductCategory[]
+  marketplaceListings MarketplaceListing[]
+  customerOrders      CustomerOrder[]
+  inventoryItems      InventoryItem[]
+
+  salesAgents SalesAgent[]
+  clients     Client[]
+
+  consumers Consumer[]
+
+  educators      Educator[]
+  students       Student[]
+  parents        Parent[]
+  academicLevels AcademicLevel[]
+  courses        Course[]
+  departments    Department[]
+  blogs          Blog[]
+  seoBlogs       SeoBlog[]
+  notifications  Notification[]
+
+  heroSlides Banner[]
+
+  appPromos AppPromo[]
+
+  events            Event[]
+  tasks             Task[]
+  locations         Locations[]
+  discussionTopics  DiscussionTopic[]
+  attendanceRecords AttendanceRecord[]
+  exams             Exam[]
+  grades            Grade[] // Grades are now directly linked to a company
+  classSchedules    ClassSchedule[]
+
+  Product     Product[]
+  HeadTeacher HeadTeacher[]
+}
+
+enum CategoryStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+model SocialLink {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company       @relation(fields: [companyId], references: [id])
+  companyId String        @db.ObjectId
+  channel   SocialChannel
+  url       String
+}
+
+model Policy {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company    @relation(fields: [companyId], references: [id])
+  companyId String     @db.ObjectId
+  type      PolicyType
+  title     String?
+  content   String
+}
+
+model FAQ {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+  question  String
+  answer    String
+  order     Int     @default(0)
+}
+
+model Testimonial {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+  author    String
+  quote     String
+  avatarUrl String?
+  rating    Int? // 1–5 stars
+  order     Int     @default(0)
+}
+
+model Banner {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  imageUrl        String
+  productImageUrl String?
+  headline        String?
+  subline         String?
+  ctaText         String?
+  ctaLink         String?
+  badgeText       String?
+  price           String?
+  endsAt          DateTime?
+  order           Int       @default(0)
+}
+
+model Promotion {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  company     Company   @relation(fields: [companyId], references: [id])
+  companyId   String    @db.ObjectId
+  code        String?
+  title       String
+  description String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  ctaText     String?
+  ctaLink     String?
+  bannerUrl   String?
+}
+
+model AnalyticsConfig {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  googleTag   String?
+  facebookTag String?
+
+  hotjarSiteId String?
+
+  isActive Boolean @default(false)
+
+  Company Company[]
+}
+
+model PaymentSettings {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  stripeKey           String?
+  paypalKey           String?
+  mpesaShortcode      String?
+  mpesaConsumerKey    String?
+  mpesaConsumerSecret String?
+  mpesaCallbackUrl    String?
+  Company             Company[]
+}
+
+model ShippingSettings {
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  carrierName        String?
+  trackingUrl        String?
+  regions            Json?
+  enablePickup       Boolean?
+  pickupInstructions String?
+  Company            Company[]
+}
+
+model PageSection {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company     @relation(fields: [companyId], references: [id])
+  companyId String      @db.ObjectId
+  type      SectionType
+  order     Int         @default(0)
+  settings  Json // e.g. { background: "dark", padding: "xl" }
+  content   Json // e.g. { headline: "...", blocks: [ ... ] }
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+enum SectionType {
+  Hero
+  FeatureGrid
+  TestimonialCarousel
+  BlogPreview
+  CustomHtml
+  About
+  Services
+  Awards
+  HealthTips
+  Features
+  HowItWorks
+  Pricing
+  CTA
+  Metrics
+  Stats
+  // …add more as needed
+}
+
+enum SocialChannel {
+  TWITTER
+  INSTAGRAM
+  FACEBOOK
+  LINKEDIN
+}
+
+enum PolicyType {
+  SHIPPING
+  RETURNS
+  PRIVACY
+  TERMS
+}
+
+model Locations {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+}
+
+model AppPromo {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String?  @db.ObjectId
+  company     Company? @relation(fields: [companyId], references: [id])
+  headline    String
+  subheading  String
+  buttons     Json // e.g. [{ label: "Download", href: "...", icon: "apple" }]
+  screenshots String[] // array of image URLs
+}
+
+model Product {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  category     String?
+  subCategory  Json?
+  images       Json[]
+  video        String?
+  tags         String[]
+  profitMargin Float?   @default(0)
+  brand        String?
+  companyId    String?  @db.ObjectId
+  company      Company? @relation(fields: [companyId], references: [id])
+
+  productCategoryId  String?              @db.ObjectId
+  productCategory    ProductCategory?     @relation(fields: [productCategoryId], references: [id])
+  inventoryItems     InventoryItem[]
+  requests           Request[]            @relation("ProductRequests")
+  commissions        Commission[]
+  Target             Target[]
+  CommissionRate     CommissionRate?
+  MarketplaceListing MarketplaceListing[]
+
+  model     String?
+  color     String[]
+  size      String[]
+  weight    String?
+  condition String?
+  dimension String?
+  material  String[]
+
+  // New fields for category-specific details:
+  author    String? // For Books
+  publisher String? // For Books
+  isbn      String? // For Books
+
+  fabricComposition String? // For Clothing/Fashion
+  careInstructions  String? // For Clothing/Fashion
+
+  energyRating        String? // For Home Appliances
+  warrantyPeriod      String? // For Home Appliances
+  applianceDimensions String? // For Home Appliances – renamed to avoid conflict with 'dimension'
+
+  ingredients       String? // For Beauty Products
+  usageInstructions String? // For Beauty Products
+  expirationDate    DateTime? // For Beauty Products
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  discount Int? @default(0)
+
+  isAvailable  Boolean @default(true)
+  isOnOffer    Boolean @default(false)
+  isFlashDeal  Boolean @default(false)
+  isNewArrival Boolean @default(false)
+  isDiscounted Boolean @default(false)
+  isFeatured   Boolean @default(false)
+
+  startDealDate DateTime?
+  endDealDate   DateTime?
+
+  costPrice  Float
+  salesPrice Float
+  finalPrice Float? @default(0) //Price inclusive discount
+
+  contact   String?
+  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
+  amenities String[]
+
+  myLocation Location? @relation(fields: [locationId], references: [id])
+  locationId String?   @db.ObjectId
+
+  // 15. Property-specific
+  propertyType   PropertyType? @relation(fields: [propertyTypeId], references: [id])
+  propertyTypeId String?       @db.ObjectId
+
+  bathrooms String?
+  area      String?
+  bedrooms  Json? // Updated to support multiple bedroom types
+  studios   Json? // Updated to support multiple bedroom types
+
+  serviceSchedule String?
+  // Marketplace-specific
+  delivery        Boolean  @default(false)
+  paymentOption   String   @default("AT SHOP")
+  showOnGhuba     Boolean? @default(true)
+  subCategoryName String?
+  make            String?
+  trim            String?
+  type            String?
+  mileage         String?
+  engineType      String?
+  engineSize      String?
+  transmission    String?
+  drivetrain      String?
+  vin             String?
+  logbookStatus   String?
+  serviceHistory  String?
+
+  // 11. Digital-Goods-specific
+  digitalUrl  String?
+  autoDeliver Boolean? @default(false)
+
+  // 3. Vehicle Flags
+  negotiable         Boolean? @default(false)
+  financingAvailable Boolean? @default(false)
+  tradeIn            Boolean? @default(false)
+
+  // 5. Pricing Breakdown
+  tax          Float? @default(0)
+  shippingCost Float? @default(0)
+
+  // 6. Availability Scheduling
+  availabilityStart DateTime?
+  availabilityEnd   DateTime?
+
+  // 7. Structured Location / Contact
+  email        String?
+  locationName String?
+  latitude     Float?
+  longitude    Float?
+  contactName  String?
+
+  status         ListingStatus    @default(ACTIVE)
+  Collection     Collection?      @relation(fields: [collectionId], references: [id])
+  collectionId   String?          @db.ObjectId
+  CollectionItem CollectionItem[]
+  Review         Review[]
+  Question       Question[]
+  RecentlyViewed RecentlyViewed[]
+  WishlistItem   WishlistItem[]
+  ProductMetrics ProductMetrics[]
+
+  @@index([name])
+  @@index([finalPrice])
+  @@index([isFeatured])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model Payment {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  userId        String        @db.ObjectId
+  order         CustomerOrder @relation(fields: [orderId], references: [id])
+  orderId       String        @db.ObjectId
+  amount        Float
+  status        PaymentStatus
+  transactionId String        @unique
+  createdAt     DateTime      @default(now())
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+}
+
+model Appointment {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  user      User              @relation(fields: [userId], references: [id])
+  userId    String            @db.ObjectId
+  date      DateTime
+  status    AppointmentStatus
+  createdAt DateTime          @default(now())
+  OrderItem OrderItem[]
+}
+
+model PropertyType {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String               @unique
+  description        String?
+  products           Product[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  MarketplaceListing MarketplaceListing[]
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Blog {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  company     Company    @relation(fields: [companyId], references: [id])
+  companyId   String     @db.ObjectId
+  title       String     @unique
+  slug        String     @unique
+  content     String
+  isFeature   Boolean    @default(false)
+  excerpt     String? //@db.VarChar(300) // Short summary
+  coverImage  String? // URL to the blog's cover image
+  categories  String[] // Array of category names
+  tags        String[] // Array of relevant tags
+  author      Json? // name profileImage
+  seo         SeoBlog?
+  status      BlogStatus @default(DRAFT)
+  publishedAt DateTime?
+  views       Int        @default(0)
+  likes       Int        @default(0)
+  comments    Comment[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model SeoBlog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String?
+  description String?
+  keywords    String[]
+  blogId      String   @unique @db.ObjectId
+  blog        Blog     @relation(fields: [blogId], references: [id])
+  Company     Company? @relation(fields: [companyId], references: [id])
+  companyId   String?  @db.ObjectId
+}
+
+model SEO {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String?
+  description String?
+  keywords    String[]
+  Company     Company[]
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      String
+  comment   String
+  createdAt DateTime @default(now())
+  blogId    String   @db.ObjectId
+  blog      Blog     @relation(fields: [blogId], references: [id])
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ListingStatus {
+  BUY
+  RENT
+  SOLD
+  RENTED
+  ACTIVE
+  INACTIVE
+}
+
+model Task {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  taskName String
+
+  dueTime String
+
+  icon String?
+
+  description String?
+  dueDate     DateTime?
+  status      TaskStatus   @default(PENDING) // Enum: PENDING, IN_PROGRESS, COMPLETED, CANCELED
+  priority    TaskPriority @default(MEDIUM) // Enum: LOW, MEDIUM, HIGH
+
+  assignedToId String? @db.ObjectId // User assigned to the task
+  assignedTo   User?   @relation(name: "assignedTo", fields: [assignedToId], references: [id])
+
+  createdById String @db.ObjectId // User who created the task
+  createdBy   User   @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([companyId])
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+//One on One relationship with user
+model Client {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String?
+  password    String?
+  email       String   @unique
+  phoneNumber String?
+  companyId   String   @db.ObjectId
+  company     Company? @relation(fields: [companyId], references: [id])
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation("ClientProfile", fields: [userId], references: [id])
+
+  salesAgentId      String?             @db.ObjectId
+  salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  ClientInventory   ClientInventory[]
+  AgentInventoryLog AgentInventoryLog[]
+  emailVerified     DateTime?
+  image             String?
+  phone             String?
+  username          String?
+  bio               String?
+  address           String?
+  profilePicture    String?
+  role              ROLE?               @default(CLIENT)
+  accounts          Account[]
+  sessions          Session[]
+  Return            Return[]
+}
+
+// Conversation Model
+// Represents a message thread or chat between multiple participants.
+model Conversation {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  title         String? // Optional: For group chats, or subject of a direct conversation
+  companyId     String    @db.ObjectId // For multi-tenancy: Ensures conversations belong to a specific company
+  company       Company   @relation(fields: [companyId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt // Automatically updates on any change to the conversation or its messages
+  lastMessageAt DateTime? // Stores the timestamp of the most recent message for easy sorting in inbox views
+
+  // Relations
+  participants ConversationParticipant[] // Links to users participating in this conversation
+  messages     Message[] // Links to individual messages within this conversation
+
+  // Indexes for efficient querying
+  @@index([companyId])
+  @@index([updatedAt]) // Useful for sorting conversations by recent activity
+}
+
+// ConversationParticipant Model
+// This is a join table that links a User to a Conversation.
+// It also stores individual user-specific settings for that conversation,
+// such as read status and soft deletion/archiving.
+model ConversationParticipant {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade) // If conversation is deleted, so are its participants
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Individual status for this participant in this conversation
+  isArchived Boolean @default(false) // True if the user has archived this conversation from their inbox
+  isDeleted  Boolean @default(false) // True if the user has "deleted" this conversation from their view (soft delete)
+
+  // Tracks the last message ID this user has read in this conversation.
+  // This is efficient for calculating unread messages in a conversation.
+  lastReadMessageId String? @db.ObjectId
+
+  // Denormalized count of unread messages for quick display in inbox list.
+  // This would need to be updated via application logic (e.g., a background job or on message send/read).
+  unreadCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensures a user can only be a participant in a specific conversation once
+  @@unique([conversationId, userId])
+  // Indexes for efficient querying
+  @@index([userId])
+  @@index([conversationId])
+}
+
+// Message Model
+// Represents an individual message sent within a conversation.
+model Message {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade) // If conversation is deleted, its messages are deleted
+
+  senderId String @db.ObjectId
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id]) // Renamed relation for clarity
+
+  content        String // The actual message text
+  messageType    MessageType @default(TEXT) // Categorizes the content (e.g., text, image, file)
+  attachmentUrls String[] // Stores URLs to any attached files or images
+
+  createdAt DateTime @default(now()) // Timestamp when the message was sent
+
+  // Indexes for efficient querying
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt]) // Essential for ordering messages chronologically within a conversation
+}
+
+// --- Enums for Messaging System ---
+
+// Enum for Message Type
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  AUDIO
+  VIDEO
+  SYSTEM_NOTIFICATION // For automated messages (e.g., "User X joined the chat")
+  OTHER
+}
+
+// One on One relationship with user
+model SalesAgent {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String?
+  email       String    @unique
+  image       String?
+  accounts    Account[]
+  sessions    Session[]
+  phoneNumber String?
+  companyId   String?   @db.ObjectId
+  company     Company?  @relation(fields: [companyId], references: [id])
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation("SalesAgentProfile", fields: [userId], references: [id])
+
+  clients            Client[]
+  // productRequests    Request[]
+  password           String?
+  role               ROLE?                @default(AGENT)
+  emailVerified      DateTime?
+  phone              String?
+  username           String?
+  bio                String?
+  address            String?
+  profilePicture     String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  commissions        Commission[]
+  // Return             Return[]
+  AgentInventory     AgentInventory[]
+  Assignment         ProductAssignment[]
+  Target             Target[]
+  ClientInventory    ClientInventory[]
+  ClientInventoryLog ClientInventoryLog[]
+}
+
+model User {
+  id             String              @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String              @unique
+  password       String?
+  role           ROLE?               @default(ADMIN)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  // tasks          Task[]
+  auditLogs      AuditLog[]
+  // requests       Request[]
+  // returns        Return[]
+  Assignment     ProductAssignment[]
+  emailVerified  DateTime?
+  image          String?
+  phone          String?
+  username       String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  ProductReview         ProductReview[]
+  ProductReviewLog      ProductReviewLog[]
+  ProductReviewResponse ProductReviewResponse[]
+  ProductReviewLike     ProductReviewLike[]
+  ProductReviewDislike  ProductReviewDislike[]
+  // Company               Company[]
+  Review                Review[]
+  Question              Question[]
+  RecentlyViewed        RecentlyViewed[]
+  Wishlist              Wishlist[]
+  Payment               Payment[]
+  Appointment           Appointment[]
+
+  // If an admin can also post announcements, link directly from User
+  announcements Announcement[] @relation("UserAnnouncements")
+  // DiscussionTopic DiscussionTopic[]
+  // DiscussionPost  DiscussionPost[]
+
+  discussionPosts    DiscussionPost[]    @relation("CreatedDiscussionPost")
+  discussionComments DiscussionComment[] @relation("CreatedDiscussionComment")
+
+  AttendanceRecord AttendanceRecord[]
+
+  // Opposite relation for Event.organizer
+  OrganizedEvents   Event[]             @relation("OrganizedEvents")
+  EventRegistration EventRegistration[] @relation("EventRegistrations")
+
+  ConversationParticipant ConversationParticipant[]
+
+  SentMessages Message[] @relation("SentMessages")
+
+  studentId     String? @db.ObjectId
+  educatorId    String? @db.ObjectId
+  parentId      String? @db.ObjectId
+  headTeacherId String? @db.ObjectId
+
+  UserActivity UserActivity[]
+
+  Department Department[]
+
+  CreatedTasks Task[] @relation("CreatedTasks")
+  assignedTo   Task[] @relation(name: "assignedTo")
+
+  returnedBy           Return[] @relation("returnedBy")
+  receivedBySalesAgent Return[] @relation("receivedBySalesAgent")
+
+  requester         Request[] @relation(name: "requester")
+  RequestApprovedBy Request[] @relation(name: "RequestApprovedBy")
+
+  ReturnApprovedBy Return[] @relation("ReturnApprovedBy")
+
+  HeadTeacher       HeadTeacher[] @relation(name: "headteacher")
+  consumerProfile   Consumer[]    @relation("ConsumerProfile")
+  salesAgentProfile SalesAgent[]  @relation("SalesAgentProfile")
+  clientProfile     Client[]      @relation("ClientProfile")
+  Parent            Parent[]      @relation(name: "parent")
+  Student           Student[]     @relation(name: "student")
+  Educator          Educator[]    @relation(name: "educator")
+  Company           Company[]     @relation(name: "companyAdmin")
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+model Return {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  inventoryId String @db.ObjectId
+
+  // inventoryItem InventoryItem @relation(fields: [inventoryId], references: [id])
+
+  returnedById String @db.ObjectId
+  returnedBy   User   @relation("returnedBy", fields: [returnedById], references: [id])
+
+  ReturnApprovedBy   User?   @relation("ReturnApprovedBy", fields: [ReturnApprovedById], references: [id])
+  ReturnApprovedById String? @db.ObjectId
+  // quantity      Int
+  // reason        String?
+
+  status Status @default(PENDING)
+
+  refundAmount Float?
+  refundedTo   String? // e.g., "Client Wallet", "Original Payment Method"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItemId     String?        @db.ObjectId // Optional: If returning an item from a specific order
+  orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id])
+  inventoryItemId String?        @db.ObjectId // Optional: If returning a general inventory item
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  clientId        String?        @db.ObjectId // Client initiating the return
+  client          Client?        @relation(fields: [clientId], references: [id])
+
+  receivedBySalesAgentId String? @db.ObjectId // Sales agent receiving the return
+  receivedBySalesAgent   User?   @relation("receivedBySalesAgent", fields: [receivedBySalesAgentId], references: [id])
+
+  quantity   Int
+  returnDate DateTime @default(now())
+  reason     String?
+  // status          ReturnStatus   @default(PENDING) // Enum: PENDING, APPROVED, REJECTED, COMPLETED
+
+  @@index([orderItemId])
+  @@index([inventoryItemId])
+  @@index([clientId])
+  @@index([returnedById])
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model ProductAssignment {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  ApprovedBy       User?         @relation(fields: [ApprovedById], references: [id])
+  ApprovedById     String?       @db.ObjectId
+  salesAgentId     String        @db.ObjectId
+  salesAgent       SalesAgent    @relation(fields: [salesAgentId], references: [id])
+  inventoryItemId  String        @db.ObjectId
+  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  quantityAssigned Int
+  reason           String? // Optional reason for assignment
+  createdAt        DateTime      @default(now())
+}
+
+model InventoryItem {
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  productId        String              @db.ObjectId
+  product          Product             @relation(fields: [productId], references: [id])
+  companyId        String              @db.ObjectId
+  company          Company             @relation(fields: [companyId], references: [id])
+  quantity         Int
+  reorderThreshold Int?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  inventoryLogs    InventoryLog[]
+  returns          Return[]
+  AgentInventory   AgentInventory[]
+  Assignment       ProductAssignment[]
+  ClientInventory  ClientInventory[]
+}
+
+model InventoryLog {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  inventoryId   String        @db.ObjectId
+  inventoryItem InventoryItem @relation(fields: [inventoryId], references: [id])
+  damaged       Int           @default(0)
+  action        String
+  quantity      Int
+  createdAt     DateTime      @default(now())
+}
+
+model AgentInventory {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId      String              @db.ObjectId
+  salesAgent        SalesAgent          @relation(fields: [salesAgentId], references: [id])
+  inventoryItemId   String              @db.ObjectId
+  inventoryItem     InventoryItem       @relation(fields: [inventoryItemId], references: [id])
+  quantity          Int
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  AgentInventoryLog AgentInventoryLog[]
+  ClientInventory   ClientInventory[]
+}
+
+model CommissionRate {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  productId      String         @unique @db.ObjectId
+  product        Product        @relation(fields: [productId], references: [id])
+  salesAgentId   String? // Optional for agent-specific rates
+  teamId         String? // Optional for team-specific rates
+  commissionType CommissionType // Enum: FIXED or PERCENTAGE
+  commissionRate Float
+  startDate      DateTime       @default(now())
+  endDate        DateTime?
+  createdAt      DateTime       @default(now())
+  Company        Company?       @relation(fields: [companyId], references: [id])
+  companyId      String?        @db.ObjectId
+
+  name      String
+  rate      Float // e.g., 0.10 for 10%
+  appliesTo String // e.g., "ALL_PRODUCTS", "CATEGORY_ID", "PRODUCT_ID"
+  targetId  String? @db.ObjectId // Optional: Category or Product ID if appliesTo is specific
+  isActive  Boolean @default(true)
+
+  commissions         Commission[]
+  marketplaceListings MarketplaceListing[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([targetId])
+}
+
+model Commission {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId     String         @db.ObjectId
+  salesAgent       SalesAgent     @relation(fields: [salesAgentId], references: [id])
+  productId        String         @db.ObjectId
+  product          Product        @relation(fields: [productId], references: [id])
+  commissionRate   Float // Rate (percentage or fixed) based on criteria
+  commissionEarned Float // Calculated based on the chosen criteria
+  basedOn          CommissionType @default(COST) // Define whether based on COST or QUANTITY
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  transactionDate DateTime         @default(now())
+  status          CommissionStatus @default(PENDING) // Enum: PENDING, PAID, CANCELLED
+  notes           String?
+
+  Company          Company?        @relation(fields: [companyId], references: [id])
+  companyId        String?         @db.ObjectId
+  CommissionRate   CommissionRate? @relation(fields: [commissionRateId], references: [id])
+  commissionRateId String?         @db.ObjectId
+
+  @@unique([salesAgentId, productId]) // Composite unique constraint
+  @@index([salesAgentId, status])
+}
+
+enum CommissionType {
+  COST // Commission based on total sales value
+  QUANTITY // Commission based on quantity sold
+}
+
+enum CommissionStatus {
+  PENDING
+  COMPLETED
+  DENIED
+}
+
+model CommissionLog {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  commissionId String
+  oldStatus    CommissionStatus
+  newStatus    CommissionStatus
+  changedBy    String
+  changedAt    DateTime         @default(now())
+}
+
+model Target {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+
+  targetType  TargetType @default(COST) // Define whether target is based on COST or QUANTITY
+  targetValue Float // Value to achieve (e.g., $5000 sales or 100 units sold)
+
+  achievedValue Float @default(0) // Progress towards target
+
+  agentId    String     @db.ObjectId
+  salesAgent SalesAgent @relation(fields: [agentId], references: [id])
+  metricType String // e.g., "SALES_VOLUME", "NUMBER_OF_CLIENTS"
+
+  periodStart DateTime
+  periodEnd   DateTime
+  isAchieved  Boolean  @default(false)
+  notes       String?
+
+  startDate DateTime
+  endDate   DateTime
+  status    TargetStatus @default(ONGOING)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  Company   Company?     @relation(fields: [companyId], references: [id])
+  companyId String?      @db.ObjectId
+
+  @@index([agentId])
+}
+
+enum TargetType {
+  COST // Target based on total sales value
+  QUANTITY // Target based on quantity sold
+  REVENUE
+  UNITS
+  ORDERS
+}
+
+enum TargetStatus {
+  ONGOING
+  ACHIEVED
+  EXPIRED
+}
+
+model AuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  action    String
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  timestamp DateTime @default(now())
+  details   String?
+}
+
+enum SellerType {
+  CLIENT
+  CONSUMER
+  ADMIN
+  COMPANY
+}
+
+model MarketplaceListing {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  companyId  String?     @db.ObjectId
+  company    Company?    @relation(fields: [companyId], references: [id])
+  sellerId   String?     @db.ObjectId
+  sellerType SellerType?
+  productId  String?     @db.ObjectId
+  product    Product?    @relation(fields: [productId], references: [id])
+
+  productCategoryId String          @db.ObjectId
+  productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
+  category          String?
+  subCategory       Json
+  subCategoryName   String?
+  tags              String[]
+  brand             String?
+  model             String?
+  color             String[]
+  size              String[]
+  weight            String?
+  condition         String?
+  dimension         String?
+  material          String[]
+  name              String          @default("New Name")
+  description       String?         @default("New Description")
+  quantity          Int
+  images            Json[]
+  video             String?
+  profitMargin      Float?          @default(0)
+
+  // Category-specific fields
+  author              String?
+  publisher           String?
+  isbn                String?
+  fabricComposition   String?
+  careInstructions    String?
+  energyRating        String?
+  warrantyPeriod      String?
+  applianceDimensions String?
+  ingredients         String?
+  usageInstructions   String?
+  expirationDate      DateTime?
+
+  // Deal flags
+  discount     Int?    @default(0)
+  isAvailable  Boolean @default(true)
+  isOnOffer    Boolean @default(false)
+  isFlashDeal  Boolean @default(false)
+  isNewArrival Boolean @default(false)
+  isDiscounted Boolean @default(false)
+  isFeatured   Boolean @default(false)
+
+  // Product type-specific
+  bathrooms       String?
+  area            String?
+  bedrooms        Json?
+  studios         Json?
+  propertyTypeId  String?       @db.ObjectId
+  propertyType    PropertyType? @relation(fields: [propertyTypeId], references: [id])
+  serviceSchedule String?
+
+  digitalUrl  String?
+  autoDeliver Boolean? @default(false)
+
+  // Pricing
+  buyingPrice  Float
+  sellingPrice Float
+  finalPrice   Float? @default(0)
+  tax          Float? @default(0)
+  shippingCost Float? @default(0)
+
+  // Scheduling
+  startDealDate     DateTime?
+  endDealDate       DateTime?
+  availabilityStart DateTime?
+  availabilityEnd   DateTime?
+
+  bookingSlots    Json[] // [{ date: "2025-06-20", time: "10:00", capacity: 1 }, ...]
+  minNoticePeriod String?
+  maxBookingAhead String?
+  pricingTiers    Json[] // ServicePricingTier name, description, price, duration, features[]
+
+  requiredClientInfo String[] //(e.g., ["vehicle make", "pet type", "number of attendees"]
+  fulfillmentStatus  String? //(e.g., PENDING_CONFIRMATION, IN_PROGRESS, COMPLETED, CANCELLED_BY_CLIENT, CANCELLED_BY_PROVIDER
+
+  totalCapacity      Int? // (e.g., for a workshop with 20 seats).
+  currentBookedCount Int? // (how many seats are currently booked).
+
+  providerRating Float?
+
+  hourlyRate     Float?
+  minimumHours   Int?
+  deliveryMethod String? // (e.g., "On-site", "Remote/Virtual", "At Location")
+
+  // Contact & Location
+  contact      String?
+  email        String?
+  contactName  String?
+  location     Json?
+  locationName String?
+  latitude     Float?
+  longitude    Float?
+
+  amenities String[]
+
+  // Marketplace-specific
+  delivery      Boolean  @default(false)
+  paymentOption String   @default("AT SHOP")
+  showOnGhuba   Boolean? @default(true)
+
+  status    ListingStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Relations
+  OrderItem      OrderItem[]
+  UserActivity   UserActivity[]
+  ProductMetrics ProductMetrics[]
+  ProductReview  ProductReview[]
+
+  //product 
+  myLocation Location? @relation(fields: [locationId], references: [id])
+  locationId String?   @db.ObjectId
+
+  make           String?
+  trim           String?
+  type           String?
+  mileage        String?
+  engineType     String?
+  engineSize     String?
+  transmission   String?
+  drivetrain     String?
+  vin            String?
+  logbookStatus  String?
+  serviceHistory String?
+
+  // 3. Vehicle Flags
+  negotiable         Boolean? @default(false)
+  financingAvailable Boolean? @default(false)
+  tradeIn            Boolean? @default(false)
+
+  Collection       Collection?      @relation(fields: [collectionId], references: [id])
+  collectionId     String?          @db.ObjectId
+  CollectionItem   CollectionItem[]
+  Review           Review[]
+  Question         Question[]
+  RecentlyViewed   RecentlyViewed[]
+  WishlistItem     WishlistItem[]
+  CommissionRate   CommissionRate?  @relation(fields: [commissionRateId], references: [id])
+  commissionRateId String?          @db.ObjectId
+
+  @@index([name])
+  @@index([finalPrice])
+  @@index([isFeatured])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model ProductReview {
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  productId             String                  @db.ObjectId
+  product               MarketplaceListing      @relation(fields: [productId], references: [id])
+  userId                String                  @db.ObjectId
+  user                  User                    @relation(fields: [userId], references: [id])
+  rating                Int
+  comment               String?
+  createdAt             DateTime                @default(now())
+  ProductReviewLog      ProductReviewLog[]
+  ProductReviewResponse ProductReviewResponse[]
+  ProductReviewLike     ProductReviewLike[]
+  ProductReviewDislike  ProductReviewDislike[]
+}
+
+model ProductReviewLog {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  action    String // e.g., "added", "edited", "deleted"
+  createdAt DateTime      @default(now())
+}
+
+model ProductReviewResponse {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  response  String
+  createdAt DateTime      @default(now())
+}
+
+model ProductReviewLike {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+}
+
+model ProductReviewDislike {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  reviewId  String        @db.ObjectId
+  review    ProductReview @relation(fields: [reviewId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+}
+
+model ClientInventory {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  clientId         String               @db.ObjectId
+  rating           Float                @default(0)
+  availability     Boolean              @default(true)
+  client           Client               @relation(fields: [clientId], references: [id])
+  inventoryItemId  String               @db.ObjectId
+  inventoryItem    InventoryItem        @relation(fields: [inventoryItemId], references: [id])
+  agentInventoryId String               @db.ObjectId
+  agentInventory   AgentInventory       @relation(fields: [agentInventoryId], references: [id])
+  salesAgentId     String               @db.ObjectId
+  salesAgent       SalesAgent           @relation(fields: [salesAgentId], references: [id])
+  quantity         Int
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  logs             ClientInventoryLog[]
+
+  @@unique([clientId, inventoryItemId]) // Composite unique constraint
+}
+
+model ClientInventoryLog {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  clientInventoryId String          @db.ObjectId
+  clientInventory   ClientInventory @relation(fields: [clientInventoryId], references: [id])
+  action            String // e.g., "allocated", "returned-to-agent", "returned-to-company"
+  salesAgentId      String          @db.ObjectId
+  salesAgent        SalesAgent      @relation(fields: [salesAgentId], references: [id])
+  quantity          Int
+  price             Float
+  priceType         String // "buying" or "selling"
+  totalPrice        Float
+  status            String //completed, pending
+  damaged           Int             @default(0)
+  createdAt         DateTime        @default(now())
+}
+
+model AgentInventoryLog {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  agentInventoryId String         @db.ObjectId
+  agentInventory   AgentInventory @relation(fields: [agentInventoryId], references: [id])
+  totalPrice       Float
+  action           String // e.g., "client-return", "company-return"
+  clientId         String?        @db.ObjectId
+  client           Client?        @relation(fields: [clientId], references: [id])
+  quantity         Int
+  damaged          Int            @default(0)
+  createdAt        DateTime       @default(now())
+}
+
+model SalesSummary {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  salesAgentId    String
+  totalCommission Float
+  totalSales      Float
+  updatedAt       DateTime @updatedAt
+}
+
+model EventLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventType String
+  entityId  String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Request {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], name: "ProductRequests")
+
+  // requestedById   String        @db.ObjectId // References either a Client or a SalesAgent
+  requestedByType RequesterType // Enum to indicate the type of requester
+
+  requesterId String @db.ObjectId // User ID of the requester (Client or SalesAgent)
+  requester   User   @relation(name: "requester", fields: [requesterId], references: [id])
+
+  quantity   Int
+  totalPrice Float    @default(0)
+  status     Status   @default(PENDING)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  companyId           String?  @db.ObjectId
+  company             Company? @relation(fields: [companyId], references: [id])
+  RequestApprovedBy   User?    @relation(name: "RequestApprovedBy", fields: [RequestApprovedById], references: [id])
+  RequestApprovedById String?  @db.ObjectId
+
+  notes String?
+
+  @@index([productId])
+  @@index([requesterId])
+}
+
+// Enum for requestedByType
+enum RequesterType {
+  CLIENT
+  SALES_AGENT
+}
+
+//One on One relationship with user
+model Consumer {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation("ConsumerProfile", fields: [userId], references: [id])
+
+  companyId String?  @db.ObjectId // Optional: If consumers can be independent or affiliated
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  image                String?
+  accounts             Account[]
+  sessions             Session[]
+  phone                String?
+  password             String?
+  username             String?
+  bio                  String?
+  address              String?
+  profilePicture       String?
+  role                 ROLE?                  @default(USER)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  ConsumerInventory    ConsumerInventory[]
+  ConsumerInventoryLog ConsumerInventoryLog[]
+
+  // @@index([userId])
+  @@index([companyId])
+}
+
+model ConsumerInventory {
+  id           String                 @id @default(auto()) @map("_id") @db.ObjectId
+  consumerId   String                 @db.ObjectId
+  rating       Float                  @default(0)
+  availability Boolean                @default(true)
+  consumer     Consumer               @relation(fields: [consumerId], references: [id])
+  quantity     Int
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  logs         ConsumerInventoryLog[]
+}
+
+model ConsumerInventoryLog {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  clientInventoryId String            @db.ObjectId
+  clientInventory   ConsumerInventory @relation(fields: [clientInventoryId], references: [id])
+  action            String // e.g., "allocated", "returned-to-agent", "returned-to-company"
+  consumerId        String            @db.ObjectId
+  consumer          Consumer          @relation(fields: [consumerId], references: [id])
+  quantity          Int
+  price             Float
+  email             String?
+  name              String?
+  phone             String?
+  totalPrice        Float
+  status            String //completed, pending
+  damaged           Int               @default(0)
+  createdAt         DateTime          @default(now())
+}
+
+model CustomerOrder {
+  id                    String      @id @default(auto()) @map("_id") @db.ObjectId
+  consumerId            String      @db.ObjectId
+  name                  String?
+  email                 String?
+  phone                 String?
+  cardNumber            String?
+  cardExpiry            String?
+  cvv                   String?
+  promoCode             String?
+  paymentOption         String?
+  items                 OrderItem[] // Relationship to multiple order items
+  totalPrice            Float
+  orderSource           OrderSource @default(WEBSITE)
+  status                OrderStatus @default(PENDING)
+  delivery              Boolean?    @default(false)
+  trackingNumber        String? // Optional tracking number
+  estimatedArrival      DateTime? // Estimated delivery time
+  deliveryStatus        String? // "Order Placed", "Processing", "Shipped", etc.
+  deliveryPersonName    String? // Delivery person's name
+  deliveryPersonContact String? // Delivery person's contact info
+  shippingAddress       Json? // Shipping address
+  shippingMethod        String? // Shipping method (e.g., standard, express)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  deletedAt             DateTime?
+  Payment               Payment[]
+  Company               Company?    @relation(fields: [companyId], references: [id])
+  companyId             String?     @db.ObjectId
+
+  @@index([consumerId])
+}
+
+model OrderItem {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  orderId              String             @db.ObjectId
+  order                CustomerOrder      @relation(fields: [orderId], references: [id])
+  marketplaceListingId String             @db.ObjectId
+  marketplaceListing   MarketplaceListing @relation(fields: [marketplaceListingId], references: [id])
+  quantity             Int
+  price                Float
+  appointment          Appointment?       @relation(fields: [appointmentId], references: [id])
+  appointmentId        String?            @db.ObjectId
+  riderId              String?
+  status               OrderStatus?       @default(PENDING)
+
+  date     String?
+  timeSlot String? // e.g. "09:00"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Return Return[]
+
+  @@index([marketplaceListingId])
+}
+
+model Location {
+  id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  latitude       Float
+  longitude      Float
+  address        String
+  description    String
+  userId         String?              @unique // Link to the user (optional).ObjectId
+  name           String?
+  displayName    String?
+  country        String?
+  state          String?
+  city           String?
+  products       Product[]
+  marketListings MarketplaceListing[]
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  RECURRING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  CANCELLED
+}
+
+enum OrderSource {
+  WEBSITE
+  IN_PERSON
+  MOBILE
+}
+
+model Banners {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String?
+  imageUrl     String
+  productImage String?
+  bannerType   String // e.g., "homepage", "category", "product"
+  link         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  status       String    @default("active") // e.g., "active", "inactive"
+  startDate    DateTime?
+  endDate      DateTime?
+  tags         String[]
+}
+
+model Collection {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  company            Company              @relation(fields: [companyId], references: [id])
+  companyId          String               @db.ObjectId
+  name               String
+  slug               String               @unique
+  description        String?
+  image              String?
+  products           Product[]
+  order              Int                  @default(0)
+  CollectionItem     CollectionItem[]
+  MarketplaceListing MarketplaceListing[]
+}
+
+model CollectionItem {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  collection           Collection          @relation(fields: [collectionId], references: [id])
+  collectionId         String              @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  sortOrder            Int                 @default(0)
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+}
+
+model Review {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  user                 User?               @relation(fields: [userId], references: [id])
+  userId               String?             @db.ObjectId
+  rating               Int // 1–5
+  title                String?
+  body                 String
+  photos               String[] // URLs
+  createdAt            DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+}
+
+model Question {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  user                 User?               @relation(fields: [userId], references: [id])
+  userId               String?             @db.ObjectId
+  question             String
+  answer               String?
+  createdAt            DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+}
+
+model RecentlyViewed {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  user                 User                @relation(fields: [userId], references: [id])
+  userId               String              @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  viewedAt             DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+}
+
+model Wishlist {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String         @db.ObjectId
+  name         String
+  // products Product[] @relation(references: [id], through: WishlistItem)
+  WishlistItem WishlistItem[]
+}
+
+model WishlistItem {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  wishlist             Wishlist            @relation(fields: [wishlistId], references: [id])
+  wishlistId           String              @db.ObjectId
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String              @db.ObjectId
+  addedAt              DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+}
+
+// HeadTeacher Profile Model (one-to-one with User)
+model HeadTeacher {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(name: "headteacher", fields: [userId], references: [id])
+
+  loginCode String @unique // Unique generated number for parent login
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Parent Profile Model (one-to-one with User, one-to-many with Student)
+model Parent {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(name: "parent", fields: [userId], references: [id])
+
+  loginCode String @unique // Unique generated number for parent login
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  children Student[] // One-to-many relation: a parent can have many children
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // User      User[]
+  // User      User[]
+  // User      User[]
+}
+
+// Student Profile Model (one-to-one with User)
+model Student {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(name: "student", fields: [userId], references: [id])
+
+  loginCode String @unique // NEW: Unique generated number for login
+
+  // Student-specific contact/profile details (if different from User model)
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String? // If different from User.image
+
+  parentId String? @db.ObjectId // NEW: Link to Parent model
+  parent   Parent? @relation(fields: [parentId], references: [id]) // NEW: Relation to Parent
+
+  academicLevelId String?        @db.ObjectId // NEW: Link to AcademicLevel model
+  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id]) // NEW: Relation
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Keep optional if students can be independent
+
+  studentGrade       String?
+  totalCourses       Int     @default(0) // Consider calculating on demand
+  completedCourses   Int     @default(0) // Consider calculating on demand
+  certificatesEarned Int     @default(0) // Consider calculating on demand
+  averageProgress    Float   @default(0.0) // Consider calculating on demand
+
+  enrolledCourses  CourseEnrollment[]
+  submissions      Submission[]
+  AttendanceRecord AttendanceRecord[]
+  ExamSubmission   ExamSubmission[]
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  Account           Account[]
+  Session           Session[]
+  EventRegistration EventRegistration[]
+
+  headTeacherId String? @db.ObjectId
+  Grade         Grade[]
+}
+
+// Educator Profile Model (one-to-one with User)
+model Educator {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(name: "educator", fields: [userId], references: [id])
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  loginCode String @unique // NEW: Unique generated number for login
+
+  Company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  totalStudents      Int                @default(0)
+  totalCoursesTaught Int                @default(0)
+  coursesCreated     Course[]
+  classesScheduled   ClassSchedule[]
+  Exam               Exam[]
+  CourseMaterial     CourseMaterial[]
+  AttendanceRecord   AttendanceRecord[] @relation("RecordedAttendance")
+
+  createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
+
+  uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
+  headedDepartments Department[]     @relation("DepartmentHead")
+
+  // NEW: Junction table for many-to-many with AcademicLevel
+  academicLevelAssignments EducatorAcademicLevelAssignment[]
+
+  Department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?     @db.ObjectId
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Account   Account[]
+  Session   Session[]
+
+  Submission     Submission[]
+  ExamSubmission ExamSubmission[]
+
+  Grade Grade[] @relation("recordedBy")
+}
+
+// Academic Level Model
+// Defines the different educational levels or "classes" students can belong to.
+model AcademicLevel {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String // e.g., "Playgroup", "Grade 1", "High School - Freshman", "University - Year 1"
+  description String?
+  sortOrder   Int     @default(0) // For ordering display (e.g., Grade 1 before Grade 2)
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId // Academic levels are specific to a company/school
+
+  courses  Course[] // Courses offered at this academic level
+  students Student[] // One-to-many relation: many students can be in one academic level
+
+  // NEW: Junction table for many-to-many with Educator
+  educatorAssignments EducatorAcademicLevelAssignment[]
+
+  grades Grade[] @relation("GradeAcademicLevel") // New relation for historical grades
+
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  CourseAcademicLevel CourseAcademicLevel[]
+  AttendanceRecord    AttendanceRecord[]
+
+  @@unique([companyId, name]) // A company cannot have two academic levels with the same name
+  @@index([companyId, sortOrder]) // For efficient querying and ordering
+}
+
+// NEW JUNCTION MODEL: EducatorAcademicLevelAssignment
+// This model represents the many-to-many relationship between Educator and AcademicLevel.
+model EducatorAcademicLevelAssignment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  educator   Educator @relation(fields: [educatorId], references: [id], onDelete: Cascade)
+  educatorId String   @db.ObjectId
+
+  academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
+  academicLevelId String        @db.ObjectId
+
+  // Optional: You could add more fields here relevant to the assignment,
+  // e.g., 'assignedDate', 'isActive', 'roleInLevel' (e.g., 'Lead Teacher', 'Assistant')
+  roleInLevel String? // e.g., "Lead Educator", "Assistant Educator"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensures that an educator can only be assigned to a specific academic level once
+  @@unique([educatorId, academicLevelId])
+  @@index([educatorId])
+  @@index([academicLevelId])
+}
+
+// Course Model Can also be known as Subject Model
+model Course {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String?
+
+  credits Float?
+
+  code String? @unique // e.g., "MATH101"
+
+  instructorId String?   @db.ObjectId // Made optional for flexibility
+  instructor   Educator? @relation(fields: [instructorId], references: [id])
+
+  // REMOVED: totalLessons (will be calculated)
+  // REMOVED: studentsEnrolled (will be calculated)
+  rating Float? // Can still be stored as an average, or calculated from a separate Rating model
+
+  // NEW: Company relation for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  departmentId String?     @db.ObjectId
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  // NEW JUNCTION TABLE: For many-to-many with AcademicLevel
+  academicLevels CourseAcademicLevel[]
+
+  assignments     CourseAssignment[]
+  classSchedules  ClassSchedule[]
+  enrollments     CourseEnrollment[]
+  Exam            Exam[]
+  CourseMaterial  CourseMaterial[]
+  DiscussionTopic DiscussionTopic[]
+
+  grades Grade[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  AcademicLevel    AcademicLevel?     @relation(fields: [academicLevelId], references: [id])
+  academicLevelId  String?            @db.ObjectId
+  AttendanceRecord AttendanceRecord[]
+  Submission       Submission[]
+
+  @@unique([title, academicLevelId, companyId]) // A course name should be unique within an academic level and company
+  @@index([academicLevelId])
+  @@index([instructorId])
+  @@index([companyId])
+}
+
+// NEW JUNCTION MODEL: CourseAcademicLevel
+// This model represents the many-to-many relationship between Course and AcademicLevel.
+model CourseAcademicLevel {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String @db.ObjectId
+
+  academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
+  academicLevelId String        @db.ObjectId
+
+  assignedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, academicLevelId])
+  @@index([courseId])
+  @@index([academicLevelId])
+}
+
+// Course Enrollment Model (No changes needed, it's well-structured)
+model CourseEnrollment {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentId        String
+  student          Student  @relation(fields: [studentId], references: [id])
+  courseId         String
+  course           Course   @relation(fields: [courseId], references: [id])
+  grade            Float? // Numeric grade for this enrollment (e.g., 85.5)
+  progress         Int      @default(0) // Percentage 0-100
+  lessonsCompleted Int      @default(0)
+  enrolledAt       DateTime @default(now())
+
+  status    String   @default("ENROLLED") // e.g., "ENROLLED", "COMPLETED", "DROPPED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, courseId])
+  @@index([studentId])
+  @@index([courseId])
+}
+
+// Assignment Model
+// Course Assignment Model
+model CourseAssignment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  dueDate     DateTime
+  maxGrade    Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
+  courseId    String   @db.ObjectId
+  course      Course   @relation(fields: [courseId], references: [id])
+
+  enrollDate     DateTime  @default(now())
+  completionDate DateTime?
+
+  submissions Submission[] // Relation to AssignmentSubmission (or Submission) model
+
+  status EnrollmentStatus @default(ENROLLED) // Enum: ENROLLED, COMPLETED, DROPPED
+
+  // assignedAt is implicitly handled by createdAt in your API,
+  // but if you need a distinct field for when it's formally assigned/published
+  // vs. just created, you could add:
+  // assignedAt  DateTime   @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum EnrollmentStatus {
+  ENROLLED
+  COMPLETED
+  DROPPED
+}
+
+// Submission Model (Student's assignment submission)
+model Submission {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId String           @db.ObjectId // Foreign key to CourseAssignment
+  assignment   CourseAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade) // CRITICAL: onDelete: Cascade
+  studentId    String           @db.ObjectId
+  student      Student          @relation(fields: [studentId], references: [id])
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  grade             Float?
+  gradedAt          DateTime?
+  submissionContent String?
+  submissionUrl     String? // Link to file storage or online document
+  submittedAt       DateTime  @default(now())
+
+  comments     String?
+  reviewedById String?   @db.ObjectId // Educator who reviewed it
+  reviewedBy   Educator? @relation(fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([assignmentId, studentId])
+  @@index([studentId])
+  @@index([courseId])
+  @@index([reviewedById])
+}
+
+// Announcement Model
+// Defines a structured announcement event.
+// Announcement Model
+// Defines a structured announcement event.
+model Announcement {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  title   String
+  summary String? // A short summary of the announcement
+  content String? // Full content of the announcement
+
+  // publishedAt: When the announcement becomes visible. No default if it can be scheduled.
+  publishedAt DateTime
+
+  // expiresAt: When the announcement is no longer visible. Made nullable to allow permanent announcements.
+  expiresAt DateTime?
+
+  authorId String @db.ObjectId // User (Admin or Educator) who created the announcement
+  author   User   @relation("UserAnnouncements", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String  @db.ObjectId // Link to Company for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+
+  status AnnouncementStatus @default(PENDING) // Current status of the announcement
+
+  // NEW: Announcement Type (e.g., General, Event, Policy Update)
+  type AnnouncementType @default(GENERAL)
+
+  // NEW: Announcement Audience (e.g., ALL, ACADEMIC_LEVEL, STUDENT)
+  audience AnnouncementAudience @default(ALL)
+
+  // Audience Targeting Fields (arrays of IDs - populated based on 'audience' selection)
+  // These are optional and will be used by application logic to filter visibility.
+  targetAcademicLevelIds String[] @db.ObjectId // IDs of AcademicLevels targeted (if audience is ACADEMIC_LEVEL)
+  targetCourseIds        String[] @db.ObjectId // IDs of Courses targeted (if audience is COURSE)
+  targetEducatorIds      String[] @db.ObjectId // IDs of Educators targeted (if audience is EDUCATOR)
+  targetStudentIds       String[] @db.ObjectId // IDs of specific Students targeted (if audience is STUDENT)
+  targetDepartmentIds    String[] @db.ObjectId // NEW: IDs of Departments targeted (if audience is DEPARTMENT)
+  targetParentIds        String[] @db.ObjectId // NEW: IDs of Parents targeted (if audience is PARENT)
+
+  // Indexes for common queries
+  @@index([companyId])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([expiresAt])
+  @@index([type])
+  @@index([audience]) // New index for filtering by audience
+}
+
+// Enum for Announcement Status
+enum AnnouncementStatus {
+  PENDING // Draft or scheduled
+  PUBLISHED // Actively visible
+  ARCHIVED // No longer visible, but kept for historical records
+}
+
+// NEW: Enum for Announcement Type
+enum AnnouncementType {
+  GENERAL // For general announcements
+  ACADEMIC // Related to academic matters (e.g., exams, curriculum)
+  EVENT // For school events (e.g., sports day, parent-teacher meeting)
+  HOLIDAY // For holiday announcements
+  ALERT // For urgent notifications (e.g., school closure, emergency)
+  NEWS // For company/school news or updates
+  POLICY_UPDATE // For updates to school policies
+  FEEDBACK // For collecting feedback from users
+  SURVEY // For conducting surveys among users
+  OTHER // For any other type of announcement not covered above
+}
+
+// NEW: Enum for Announcement Audience
+enum AnnouncementAudience {
+  ALL // Visible to all users in the company
+  ACADEMIC_LEVEL // Visible to all students and educators in specific academic levels
+  COURSE // Visible to all students and educators in specific courses
+  EDUCATOR // Visible only to specific educators
+  STUDENT // Visible only to specific students
+  DEPARTMENT // Visible to all users in specific departments
+  STAFF // Visible only to staff members (e.g., admins, educators)
+  PARENT // Visible to parents of students
+}
+
+// Event Model
+// Represents a scheduled event within the company/school.
+model Event {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  summary     String? // A short summary of the event
+  description String? // Full detailed description of the event
+
+  startDateTime DateTime // Start date and time of the event
+  endDateTime   DateTime? // End date and time of the event (nullable for single-point events)
+
+  location          String? // Physical location or "Online"
+  onlineMeetingLink String? // URL for online meetings (e.g., Zoom, Google Meet)
+
+  imageUrl String? // URL to an image for the event
+  videoUrl String? // URL to a video for the event
+
+  eventType   EventType   @default(GENERAL) // Categorization of the event
+  eventStatus EventStatus @default(SCHEDULED) // Current status of the event
+
+  // Organizer/Author of the event (can be a User like Admin or Educator)
+  organizerId String @db.ObjectId
+  organizer   User   @relation("OrganizedEvents", fields: [organizerId], references: [id])
+
+  // Multi-tenancy
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Audience Targeting (similar to Announcements)
+  audience               EventAudience @default(ALL)
+  targetAcademicLevelIds String[]      @db.ObjectId // IDs of AcademicLevels targeted
+  targetCourseIds        String[]      @db.ObjectId // IDs of Courses targeted
+  targetEducatorIds      String[]      @db.ObjectId // IDs of Educators targeted
+  targetStudentIds       String[]      @db.ObjectId // IDs of specific Students targeted
+  targetDepartmentIds    String[]      @db.ObjectId // IDs of Departments targeted
+  targetParentIds        String[]      @db.ObjectId // IDs of Parents targeted
+
+  // Registration & Capacity
+  isRegistrationRequired Boolean @default(false)
+  maxCapacity            Int? // Maximum number of attendees
+  // currentAttendees: This would typically be a count from a separate 'EventRegistration' model
+  // or a computed field, not directly stored here to avoid race conditions.
+
+  // Cost/Payment
+  isPaid Boolean @default(false)
+  price  Float? // Price of the event if isPaid is true
+
+  // Contact Information
+  contactPerson String?
+  contactEmail  String?
+  contactPhone  String?
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  EventRegistration EventRegistration[]
+
+  // Indexes for efficient querying
+  @@index([companyId])
+  @@index([organizerId])
+  @@index([startDateTime])
+  @@index([eventStatus])
+  @@index([eventType])
+  @@index([audience])
+}
+
+// Enum for Event Type
+enum EventType {
+  GENERAL // General school event, not specific to academics/sports
+  ACADEMIC // Related to academic activities (e.g., study groups, academic competitions)
+  SPORTS // Sports events (e.g., games, tryouts)
+  CULTURAL // Cultural events (e.g., plays, concerts, art exhibitions)
+  MEETING // Staff meetings, parent meetings, etc.
+  WORKSHOP // Training sessions, skill-building workshops
+  ORIENTATION // New student/parent orientation
+  FUNDRAISER // Fundraising events
+  OTHER // Any other type not covered
+}
+
+// Enum for Event Status
+enum EventStatus {
+  SCHEDULED // Event is planned and active
+  POSTPONED // Event has been delayed to a later date/time
+  CANCELLED // Event has been cancelled
+  COMPLETED // Event has already occurred
+}
+
+// Enum for Event Audience (similar to AnnouncementAudience)
+enum EventAudience {
+  ALL // Visible to all users in the company
+  ACADEMIC_LEVEL // Visible to all students and educators in specific academic levels
+  COURSE // Visible to all students and educators in specific courses
+  EDUCATOR // Visible only to specific educators
+  STUDENT // Visible only to specific students
+  DEPARTMENT // Visible to all users in specific departments
+  STAFF // Visible only to staff members (e.g., admins, educators)
+  PARENT // Visible to parents of students
+}
+
+// EventRegistration Model
+// Tracks individual user registrations for events.
+model EventRegistration {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  eventId String @db.ObjectId
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade) // Cascade delete if event is removed
+
+  userId String @db.ObjectId // The user who registered (can be Student, Parent, Educator, etc.)
+  user   User   @relation("EventRegistrations", fields: [userId], references: [id])
+
+  registeredAt DateTime           @default(now())
+  status       RegistrationStatus @default(REGISTERED) // e.g., REGISTERED, ATTENDED, CANCELLED
+
+  // Optional: If you need to track specific student for a parent registration
+  studentId String?  @db.ObjectId
+  student   Student? @relation(fields: [studentId], references: [id])
+
+  // Add more fields as needed, e.g., paymentStatus, notes, etc.
+
+  @@unique([eventId, userId]) // A user can only register for an event once
+  @@index([eventId])
+  @@index([userId])
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  ATTENDED
+  CANCELLED
+  WAITLISTED
+}
+
+// Class Schedule Model (for educator's classes/lectures and school timetabling)
+model ClassSchedule {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId    String   @db.ObjectId
+  course      Course   @relation(fields: [courseId], references: [id])
+  educatorId  String   @db.ObjectId
+  educator    Educator @relation(fields: [educatorId], references: [id])
+  dayOfWeek   String // Date of the class (e.g., '2025-07-01T00:00:00.000Z' for the specific day)
+  startTime   DateTime // Time of the class (e.g., '1970-01-01T10:00:00.000Z' - only time component matters, date part is ignored)
+  endTime     DateTime // End time of the class (e.g., '1970-01-01T11:30:00.000Z' - only time component matters, date part is ignored)
+  topic       String?
+  meetingLink String? // Link to video conferencing (e.g., Zoom, Google Meet)
+
+  // NEW: Link to Company for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  AttendanceRecord AttendanceRecord[]
+
+  // Unique constraint: An educator can only have one class scheduled at a specific date and time within a company.
+  // This helps prevent accidental double-booking for the same educator.
+  @@unique([companyId, educatorId, dayOfWeek, startTime])
+  @@index([courseId]) // For efficient lookup of schedules by course
+  @@index([companyId]) // For efficient lookup of all schedules for a company
+  @@index([dayOfWeek])
+}
+
+// Enum for Attendance Status
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  TARDY
+  EXCUSED
+}
+
+// Attendance Record Model
+// Records a student's attendance for a specific class schedule session or a general day.
+
+// Class Attendance Model
+model AttendanceRecord {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
+
+  classScheduleId String?        @db.ObjectId // Optional: Link to a specific scheduled class session
+  classSchedule   ClassSchedule? @relation(fields: [classScheduleId], references: [id])
+
+  academicLevelId String?        @db.ObjectId // NEW: Optional: Link to a specific Academic Level if not tied to a ClassSchedule
+  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id])
+
+  courseId String? @db.ObjectId // NEW: Optional: Link to a specific Course if not tied to a ClassSchedule
+  course   Course? @relation(fields: [courseId], references: [id])
+
+  date   DateTime // Date of the attendance record (consider making it specific to a point in time if needed)
+  status AttendanceStatus // Enum: PRESENT, ABSENT, TARDY, EXCUSED
+  reason String? // Optional: Reason for absence/tardy/excused
+
+  recordedById String   @db.ObjectId // User (Educator or Admin) who recorded attendance
+  recordedBy   Educator @relation("RecordedAttendance", fields: [recordedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  @@unique([studentId, date, classScheduleId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
+  @@unique([studentId, date, academicLevelId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
+  @@index([studentId, date])
+  @@index([classScheduleId])
+  @@index([academicLevelId]) // NEW INDEX
+  @@index([courseId]) // NEW INDEX
+}
+
+// Exam Model
+// Defines a structured examination or assessment event.
+model Exam {
+  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
+  title               String
+  description         String?
+  courseId            String           @db.ObjectId
+  course              Course           @relation(fields: [courseId], references: [id])
+  date                DateTime // Date of the exam (e.g., '2025-07-01T00:00:00.000Z' for the specific day)
+  startTime           DateTime? // Time of the exam (e.g., '1970-01-01T09:00:00.000Z')
+  endTime             DateTime? // End time of the exam (e.g., '1970-01-01T10:30:00.000Z')
+  location            String? // e.g., "School Hall A", "Online" - can be used for physical location or "Online"
+  notes               String? // Special instructions for students
+  type                ExamType         @default(UNIT_TEST) // Enum: QUIZ, MIDTERM, FINAL, etc.
+  totalPoints         Float            @default(100)
+  isPublished         Boolean          @default(false) // If results are visible to students
+  createdByEducatorId String           @db.ObjectId // Educator who created the exam
+  createdByEducator   Educator         @relation(fields: [createdByEducatorId], references: [id])
+  submissions         ExamSubmission[]
+
+  // Fields for online exams
+  isOnline        Boolean        @default(false) // Whether this is an online exam
+  durationMinutes Int? // Duration of the exam once started (in minutes)
+  autoGrade       Boolean        @default(false) // Whether the exam can be automatically graded (e.g., for MCQs)
+  questions       ExamQuestion[] // Relation to ExamQuestion model
+
+  // Link to Company for multi-tenancy
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  grades Grade[] // Grades associated with this exam
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Suggested unique constraint: One exam per course at a specific date and start time within a company
+  @@unique([companyId, courseId, date, startTime])
+  @@index([createdByEducatorId])
+  @@index([companyId]) // For efficient lookup of all exams for a company
+}
+
+// ExamQuestion Model
+// Represents a single question within an online examination.
+model ExamQuestion {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  examId       String @db.ObjectId
+  exam         Exam   @relation(fields: [examId], references: [id], onDelete: Cascade) // Cascade delete questions with exam
+  questionText String
+
+  // NEW FIELDS for image and video
+  imageUrl String? // URL to an image associated with the question
+  videoUrl String? // URL to a video associated with the question
+
+  questionType  QuestionType // Enum: MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER, ESSAY
+  options       String[] // For multiple choice: array of possible answers (JSON string array)
+  correctAnswer String? // For auto-grading: stores the correct answer(s) as a string (e.g., "option_A_id", or a JSON string for complex answers)
+  points        Float        @default(1)
+  order         Int // Order of the question in the exam
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([examId])
+  @@index([order])
+}
+
+// ExamSubmission Model (Recommended Update for Online Exam Answers)
+model ExamSubmission {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  examId    String  @db.ObjectId
+  exam      Exam    @relation(fields: [examId], references: [id], onDelete: Cascade) // Ensure cascade delete
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
+
+  submissionUrl String? // Link to submitted file/document
+
+  submittedAt DateTime @default(now())
+  score       Float? // Final score for the submission
+  feedback    String?
+
+  reviewedById String?   @db.ObjectId // Educator who reviewed it
+  reviewedBy   Educator? @relation(fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+
+  // Field for online exam answers
+  answers Json? // Stores the student's answers in a flexible JSON format
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([examId, studentId]) // A student can only submit one exam per exam
+  @@index([examId])
+  @@index([studentId])
+  @@index([reviewedById])
+}
+
+// Enums used in the models
+enum ExamType {
+  HOMEWORK
+  PROJECT
+  QUIZ
+  UNIT_TEST
+  MIDTERM
+  FINAL
+  ASSIGNMENT_BASED // If some assignments are considered exams
+  PRACTICE
+  PRACTICAL
+  ESSAY_SUBMISSION // For exams that are primarily essay submissions
+  PROJECT_ASSESSMENT // For exams that are project-based
+  OTHER
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+  FILL_IN_THE_BLANK
+  MATCHING
+  NUMERIC
+}
+
+// Enum for Course Material Type
+enum CourseMaterialType {
+  DOCUMENT // PDF, DOC, PPT
+  VIDEO
+  LINK // External website
+  IMAGE
+  AUDIO
+  OTHER
+}
+
+// Course Material Model
+// Stores links to various educational resources for a course.
+model CourseMaterial {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  courseId     String             @db.ObjectId
+  course       Course             @relation(fields: [courseId], references: [id])
+  title        String
+  description  String?
+  fileUrl      String? // URL for downloadable files (PDFs, docs)
+  linkUrl      String? // URL for external links (videos, websites)
+  type         CourseMaterialType @default(DOCUMENT) // Enum: DOCUMENT, VIDEO, LINK, IMAGE, AUDIO
+  uploadedById String             @db.ObjectId // Educator who uploaded the material
+  uploadedBy   Educator           @relation("UploadedMaterial", fields: [uploadedById], references: [id])
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  Educator     Educator?          @relation(fields: [educatorId], references: [id])
+  educatorId   String?            @db.ObjectId
+
+  @@index([courseId, type])
+  @@index([uploadedById])
+}
+
+// Discussion Topic Model
+// Represents a discussion forum topic within a course or globally.
+model DiscussionTopic {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  courseId String? @db.ObjectId // Optional: if topic is specific to a course
+  course   Course? @relation(fields: [courseId], references: [id])
+  title    String
+  content  String? // Initial post content
+
+  createdById String   @db.ObjectId // User (Educator or Student) who created the topic
+  createdBy   Educator @relation("CreatedDiscussionTopic", fields: [createdById], references: [id])
+
+  posts     DiscussionPost[] // All posts within this topic
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  // User      User?            @relation(fields: [userId], references: [id])
+  // userId    String?          @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([courseId])
+  @@index([createdById])
+  @@index([companyId])
+}
+
+// Discussion Post Model
+// Represents an individual post or reply within a discussion topic.
+model DiscussionPost {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  topicId     String           @db.ObjectId
+  topic       DiscussionTopic  @relation(fields: [topicId], references: [id])
+  parentId    String?          @db.ObjectId // Optional: For replies to other posts
+  parent      DiscussionPost?  @relation("ReplyToPost", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction) // Self-referencing
+  content     String
+  createdById String           @db.ObjectId // User (Educator or Student) who created the post
+  createdBy   User             @relation("CreatedDiscussionPost", fields: [createdById], references: [id])
+  replies     DiscussionPost[] @relation("ReplyToPost") // Replies to this post
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // User              User?               @relation(fields: [userId], references: [id])
+  // userId            String?             @db.ObjectId
+
+  DiscussionComment DiscussionComment[]
+  // @@index([userId])
+
+  @@index([topicId])
+  @@index([parentId])
+  @@index([createdById])
+}
+
+model DiscussionComment {
+  id     String         @id @default(auto()) @map("_id") @db.ObjectId
+  postId String         @db.ObjectId
+  post   DiscussionPost @relation(fields: [postId], references: [id])
+
+  // commentId    String?             @db.ObjectId // For replies to other comments
+  // comment      DiscussionComment?  @relation("ReplyToComment", fields: [commentId], references: [id])
+
+  content String
+
+  createdById String @db.ObjectId // User (Educator or Student) who created the comment
+  createdBy   User   @relation("CreatedDiscussionComment", fields: [createdById], references: [id])
+
+  // replies DiscussionComment[] @relation("ReplyToComment") // Replies to this comment
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  // DiscussionComment   DiscussionComment? @relation("ReplyToComment", fields: [discussionCommentId], references: [id])
+  discussionCommentId String?  @db.ObjectId
+
+  @@index([postId])
+  // @@index([commentId])
+  @@index([createdById])
+}
+
+// Department Model
+// Represents an academic or administrative department within the school.
+model Department {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String // e.g., "Mathematics", "English", "Administration"
+  description String?
+
+  headId String?   @db.ObjectId // Optional: Link to the User (Educator/Admin) who heads the department
+  head   Educator? @relation("DepartmentHead", fields: [headId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  educators Educator[] // Educators belonging to this department
+  courses   Course[] // Courses offered by this department
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Company   Company?   @relation(fields: [companyId], references: [id])
+  companyId String?    @db.ObjectId
+  User      User?      @relation(fields: [userId], references: [id])
+  userId    String?    @db.ObjectId
+
+  @@index([name])
+}
+
+// Grade Model
+// Represents a student's grade for a specific course or exam.
+model Grade {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  examId String? @db.ObjectId // Optional: Grade might not be tied to a specific exam
+  exam   Exam?   @relation(fields: [examId], references: [id])
+
+  score       Float
+  gradeValue  String? // e.g., "A", "B+", "Pass"
+  gradeStatus GradeStatus? // Enum: PASSED, FAILED, PENDING
+  comments    String?
+
+  recordedById String?   @db.ObjectId // Educator who recorded this grade
+  recordedBy   Educator? @relation("recordedBy", fields: [recordedById], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // NEW FIELD: Link to the academic level the student was in when this grade was recorded
+  // This is crucial for historical reporting by academic level.
+  academicLevelAtTimeOfGradeId String        @db.ObjectId
+  academicLevelAtTimeOfGrade   AcademicLevel @relation("GradeAcademicLevel", fields: [academicLevelAtTimeOfGradeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, courseId, examId, academicLevelAtTimeOfGradeId])
+  @@index([studentId])
+  @@index([courseId])
+  @@index([examId])
+  @@index([recordedById])
+  @@index([companyId])
+  @@index([academicLevelAtTimeOfGradeId]) // Add index for efficient querying by academic level
+}
+
+enum GradeStatus {
+  PASSED
+  FAILED
+  PENDING
+}
+
+model UserActivity {
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String              @db.ObjectId
+  user                 User                @relation(fields: [userId], references: [id])
+  activityType         String // e.g., "LOGIN", "PRODUCT_VIEW", "ORDER_PLACED"
+  details              Json? // JSON object for additional context
+  ipAddress            String?
+  userAgent            String?
+  createdAt            DateTime            @default(now())
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+
+  @@index([userId])
+  @@index([activityType])
+}
+
+model ProductMetrics {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id])
+  metricType String // e.g., "VIEW_COUNT", "ADD_TO_CART_COUNT", "PURCHASE_COUNT"
+  value      Float
+  date       DateTime // Date for which the metric is recorded
+
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  MarketplaceListing   MarketplaceListing? @relation(fields: [marketplaceListingId], references: [id])
+  marketplaceListingId String?             @db.ObjectId
+
+  @@index([productId])
+  @@index([metricType])
+  @@index([date])
+}
