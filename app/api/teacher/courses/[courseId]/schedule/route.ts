@@ -6,7 +6,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
   const educatorId = searchParams.get('educatorId'); // The educator viewing the schedule
-  const companyId = searchParams.get('companyId');   // For multi-tenancy
+  // const companyId = searchParams.get('companyId');   // For multi-tenancy
 
   // --- Authentication & Authorization (Placeholder) ---
   // In a real application, you would:
@@ -91,7 +91,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
         targetCourseIds: {
           has: courseId, // Find events where targetCourseIds array contains the specific courseId
         },
-        companyId: companyId,
+        // companyId: companyId,
       },
       select: {
         id: true,
