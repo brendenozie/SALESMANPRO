@@ -74,7 +74,7 @@ export default function HeroSection() {
         }
       ],
       socialLinks: [],
-      Blog: [],
+      blogs: [],
       policies: [],
       faqs: [],
       testimonials: [],

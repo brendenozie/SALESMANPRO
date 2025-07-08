@@ -74,7 +74,7 @@ export default function CoursesSection() { // Renamed from HeroSection to Course
         }
       ],
       socialLinks: [],
-      Blog: [],
+      blogs: [],
       policies: [],
       faqs: [],
       testimonials: [],

@@ -19,7 +19,7 @@ const fallbackNews = [
 
 export default function LatestNewsSection() {
   const { storeFormData } = useStoreContext() || {};
-  const { Blog: dynamicNews, themeSettings: { primaryColor = 'blue' } = {} } = storeFormData || {};
+  const { blogs: dynamicNews, themeSettings: { primaryColor = 'blue' } = {} } = storeFormData || {};
 
   // Map dynamic blog posts to our news item shape
   const newsItems = Array.isArray(dynamicNews) && dynamicNews.length > 0

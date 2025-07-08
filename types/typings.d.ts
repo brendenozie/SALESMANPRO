@@ -217,7 +217,7 @@ type StoreForm = {
   marketplaceListings: MarketplaceListingForm[];
   storeCategories: StoreCategoryEntry[];
   pricingTiers: PricingTier[];
-  Blog:any[];
+  blogs:any[];
 };
 
 export interface PricingTier {

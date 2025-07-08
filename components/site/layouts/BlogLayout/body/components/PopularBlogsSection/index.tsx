@@ -21,7 +21,7 @@ const fallbackBlogs = [
 
 export default function PopularBlogsSection() {
   const { storeFormData } = useStoreContext() || {};
-  const { Blog: dynamicBlogs, themeSettings: { primaryColor = 'blue' } = {} } = storeFormData || {};
+  const { blogs: dynamicBlogs, themeSettings: { primaryColor = 'blue' } = {} } = storeFormData || {};
 
   // Map dynamic blog posts to our blog item shape
   const blogItems = Array.isArray(dynamicBlogs) && dynamicBlogs.length > 0

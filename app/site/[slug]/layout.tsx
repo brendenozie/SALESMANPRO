@@ -60,7 +60,7 @@ export default async function StoreLayout({
     where: { slug: params.slug },
     include: {
       socialLinks: true,
-      Blog:true,
+      blogs:true,
       policies: true,
       faqs: true,
       testimonials: true,
@@ -93,8 +93,6 @@ export default async function StoreLayout({
     },
   });
 
-  console.log(raw);
-
   if (!raw) return notFound();
 
   // Transform the raw data into the StoreForm shape
@@ -106,7 +104,7 @@ export default async function StoreLayout({
   const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
 
   return (
-    <StoreContextProvider initialStore={storeFormData}>
+    <StoreContextProvider initialStore={storeFormData} userRole='ADMIN' userId={``}>
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
         {/* You can wrap in Suspense if you used dynamic imports for LayoutComponent */}
         <Suspense fallback={<div>Loading layout…</div>}>
