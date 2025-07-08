@@ -57,17 +57,6 @@ model Session {
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String      @db.ObjectId
   role         ROLE?       @default(USER)
-  // Consumer          Consumer?   @relation(fields: [consumerId], references: [id])
-  // consumerId        String?     @db.ObjectId
-  // SalesAgent        SalesAgent? @relation(fields: [salesAgentId], references: [id])
-  // salesAgentId      String?     @db.ObjectId
-  // Client            Client?     @relation(fields: [clientId], references: [id])
-  // clientId          String?     @db.ObjectId
-  // Student           Student?    @relation(fields: [studentId], references: [id])
-  // studentId         String?     @db.ObjectId
-  // EducatorProfile   Educator?   @relation(fields: [educatorProfileId], references: [id])
-  // educatorProfileId String?     @db.ObjectId
-  // @@index([studentId])
   Client       Client?     @relation(fields: [clientId], references: [id])
   clientId     String?     @db.ObjectId
   SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
@@ -244,10 +233,8 @@ model Company {
   PageSection PageSection[]
   Collection  Collection[]
 
-  // MarketplaceListing MarketplaceListing[]
-
-  // analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
-  analyticsConfigId String? @db.ObjectId
+  analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
+  analyticsConfigId String?          @db.ObjectId
 
   paymentSettings   PaymentSettings? @relation(fields: [paymentSettingsId], references: [id])
   paymentSettingsId String?          @db.ObjectId
@@ -263,7 +250,6 @@ model Company {
 
   Conversation Conversation[]
 
-  // products        Product[]
   productCategories   ProductCategory[]
   marketplaceListings MarketplaceListing[]
   customerOrders      CustomerOrder[]
@@ -272,8 +258,8 @@ model Company {
   salesAgents SalesAgent[]
   clients     Client[]
 
-  consumers      Consumer[]
-  // users          User[]
+  consumers Consumer[]
+
   educators      Educator[]
   students       Student[]
   parents        Parent[]
@@ -284,12 +270,10 @@ model Company {
   seoBlogs       SeoBlog[]
   notifications  Notification[]
 
-  banners Banner[]
+  heroSlides Banner[]
 
   appPromos AppPromo[]
-  // settings        CompanySettings[]
 
-  analyticsConfigs  AnalyticsConfig[]
   events            Event[]
   tasks             Task[]
   locations         Locations[]
@@ -381,15 +365,14 @@ model Promotion {
 model AnalyticsConfig {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  companyId String  @unique @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
-
   googleTag   String?
   facebookTag String?
 
   hotjarSiteId String?
 
   isActive Boolean @default(false)
+
+  Company Company[]
 }
 
 model PaymentSettings {

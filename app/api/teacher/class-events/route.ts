@@ -183,7 +183,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
-      companyId,
+      // companyId,
       title,
       summary,
       description,
@@ -229,20 +229,29 @@ export async function POST(request: Request) {
     }
 
     // Validate organizerId exists
-    const existingOrganizer = await prisma.user.findUnique({
-      where: { id: organizerId },
+    const existingOrganizer = await prisma.educator.findUnique({
+      where: { id: organizerId },  
+      select: { companyId: true, userId: true },
     });
+
+    if (!existingOrganizer || !existingOrganizer.companyId) {
+      return NextResponse.json({ message: 'Educator not found or not associated with a company' }, { status: 404 });
+    }
+
+    const companyId = existingOrganizer.companyId;
+    const userId = existingOrganizer.userId;
+
     if (!existingOrganizer) {
       return NextResponse.json({ message: "Provided organizerId does not exist." }, { status: 400 });
     }
 
     // Validate companyId exists
-    const existingCompany = await prisma.company.findUnique({
-      where: { id: companyId },
-    });
-    if (!existingCompany) {
-      return NextResponse.json({ message: "Provided companyId does not exist." }, { status: 400 });
-    }
+    // const existingCompany = await prisma.company.findUnique({
+    //   where: { id: companyId },
+    // });
+    // if (!existingCompany) {
+    //   return NextResponse.json({ message: "Provided companyId does not exist." }, { status: 400 });
+    // }
 
     // Parse date fields
     const parsedStartDateTime = new Date(startDateTime);
@@ -286,7 +295,7 @@ export async function POST(request: Request) {
       videoUrl,
       eventType,
       eventStatus,
-      organizerId,
+      organizerId: userId,
       audience,
       targetAcademicLevelIds: Array.isArray(targetAcademicLevelIds) ? targetAcademicLevelIds : [],
       targetCourseIds: Array.isArray(targetCourseIds) ? targetCourseIds : [],

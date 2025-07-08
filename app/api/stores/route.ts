@@ -163,6 +163,7 @@ export async function POST(req: Request) {
         awards: data.awards,
         metrics: data.metrics,
         stats: data.stats,
+
         user: {
           connect: { id: data.userId }
         },

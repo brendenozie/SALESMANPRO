@@ -9,7 +9,6 @@ import {
   MagnifyingGlassIcon,
   TrashIcon,
   TagIcon,
-  UsersIcon,
   ClockIcon,
   MapPinIcon,
   ArrowLeftIcon,
@@ -17,18 +16,8 @@ import {
   XMarkIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  UserCircleIcon,
   LinkIcon,
-  PhotoIcon,
-  VideoCameraIcon,
   CurrencyDollarIcon,
-  UserGroupIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  AcademicCapIcon,
-  BookOpenIcon,
-  BriefcaseIcon,
-  UserIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import EventFormModal from './EventFormModal';
@@ -113,29 +102,6 @@ const hasEventOnDate = (dateString: string, events: EventData[]) => {
   });
 };
 
-// --- Event Form Modal Component ---
-type EventFormModalProps = {
-  eventData: EventData | null; // Null for new event
-  onClose: () => void;
-  // The onSave function will now receive the full EventData (minus derived fields)
-  onSave: (data: Omit<EventData, 'organizerName' | 'organizerEmail' | 'companyName' | 'createdAt' | 'updatedAt'>) => void;
-  isLoading: boolean;
-  error: string | null;
-  resetError: () => void;
-  currentEducatorId: string; // The ID of the educator currently logged in/managing
-  currentCompanyId: string; // The ID of the company this educator belongs to
-  allAcademicLevels: AcademicLevelOption[];
-  allCourses: CourseOption[];
-  allEducators: EducatorOption[];
-  allStudents: StudentOption[];
-  allDepartments: DepartmentOption[];
-  allParents: ParentOption[];
-  allOrganizers: OrganizerOption[];
-};
-
-
-
-
 export default function AddClassEventPage({
   initialEvents,
   allAcademicLevels,
@@ -171,10 +137,12 @@ export default function AddClassEventPage({
     setIsLoading(true);
     setError(null);
     try {
+
       // Updated API call to match the new backend endpoint
-      const res = await fetch(`${apiUrl}/teacher/events?academicLevelId=${encodeURIComponent(classId)}&teacherId=${encodeURIComponent(teacherId)}`, {
+      const res = await fetch(`${apiUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(classId)}&teacherId=${encodeURIComponent(teacherId)}`, {
         cache: "no-store",
       });
+
       if (res.ok) {
         const data: EventData[] = await res.json();
         setEvents(data.sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())); // Sort by upcoming
@@ -277,7 +245,7 @@ export default function AddClassEventPage({
     setError(null);
 
     const method = eventData.id ? 'PATCH' : 'POST';
-    const url = eventData.id ? `${apiUrl}/teacher/events/${eventData.id}` : `${apiUrl}/teacher/events`;
+    const url = eventData.id ? `${apiUrl}/teacher/class-events/${eventData.id}` : `${apiUrl}/teacher/class-events`;
 
     try {
       const res = await fetch(url, {
