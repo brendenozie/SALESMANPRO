@@ -123,7 +123,7 @@ export default function AdminLayout({
       >
         <div className="flex flex-col items-center p-6 pt-8 border-b border-blue-800/50">
           <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">
-            {userRole || storeFormData?.name?.substring(0, 10).toUpperCase() || "ADMIN"}
+            {userRole.toLowerCase() == "consumer" ? "ADMIN" : userRole || storeFormData?.name?.substring(0, 10).toUpperCase() || "ADMIN"}
           </h1>
         </div>
 

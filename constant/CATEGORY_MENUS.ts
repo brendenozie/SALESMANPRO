@@ -314,7 +314,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
     // { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
 
-  "Students": [
+  "Student": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "My Classes", href: `/admin/${adminSlug}/studentclasses`, icon: ClipboardDocumentListIcon },
     { label: "Assignments", href: `/admin/${adminSlug}/studentassignments`, icon: DocumentTextIcon },
