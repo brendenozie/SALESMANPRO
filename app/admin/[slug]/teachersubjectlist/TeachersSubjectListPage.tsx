@@ -160,8 +160,9 @@ export default function TeachersSubjectListPage({
   };
 
   // UPDATED: Link to the academic-level specific report page
-  const handleGenerateReports = (academicLevelId: string, courseId: string) => {
-    router.push(`/admin/${teacherUserId}/teacher/${teacherInfo.id}/academic-levels/${academicLevelId}/reports?courseId=${courseId}`);
+  const handleGenerateReports = (academicLevelId: string, courseId: string) => {    
+    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-reports`);
+    // router.push(`/admin/${teacherUserId}/teacher/${teacherInfo.id}/academic-levels/${academicLevelId}/reports?courseId=${courseId}`);
   };
 
 
