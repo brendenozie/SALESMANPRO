@@ -10,11 +10,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const course = await prisma.course.findUnique({
       where: { id },
       include: {
-        instructor: {
-          select: {
-            id: true,
-            user: {
-              select: { name: true, email: true },
+        // REMOVED: direct 'instructor' include as per new schema
+        CourseEducatorAssignment: { // NEW: Include the junction table for educators
+          include: {
+            educator: { // Include the actual Educator details
+              select: {
+                id: true,
+                user: {
+                  select: { name: true, email: true },
+                },
+              },
             },
           },
         },
@@ -39,6 +44,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
           select: {
             enrollments: true,
             CourseMaterial: true,
+            assignmentSubmission: true, // Renamed from 'submissions'
           },
         },
       },
@@ -57,21 +63,30 @@ export async function GET(request: Request, { params }: { params: { id: string }
       .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
       .map(level => ({ id: level!.id, name: level!.name }));
 
+    // NEW: Extract assigned educators
+    const assignedEducators = course.CourseEducatorAssignment
+      .map(assignment => ({
+        id: assignment.educator.id,
+        name: assignment.educator.user?.name || 'N/A',
+        email: assignment.educator.user?.email || 'N/A',
+        roleInCourse: assignment.roleInCourse || null, // Include the role
+      }));
+
     const responseData = {
       id: course.id,
       title: course.title,
       description: course.description,
       imageUrl: course.imageUrl,
-      instructorId: course.instructorId,
-      instructorName: course.instructor?.user?.name || 'N/A',
-      instructorEmail: course.instructor?.user?.email || 'N/A',
-      totalLessons: totalLessons,
+      credits: course.credits, // NEW: Include credits
+      code: course.code, // NEW: Include code
       rating: course.rating,
+      totalLessons: totalLessons,
       studentsEnrolled: studentsEnrolled,
       companyId: course.companyId,
       departmentId: course.departmentId,
       departmentName: course.department?.name || 'N/A',
       academicLevels: assignedAcademicLevels,
+      educators: assignedEducators, // NEW: Array of assigned educators
       createdAt: course.createdAt,
       updatedAt: course.updatedAt,
     };
@@ -84,13 +99,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PATCH /api/courses/[id]
-// Updates an existing Course, including its academic level assignments.
+// Updates an existing Course, including its academic level and educator assignments.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
     const body = await request.json();
-    const { title, description, imageUrl, instructorId, departmentId, rating, academicLevelIds, ...rest } = body;
+    // NEW: 'code' and 'credits' are now direct fields. 'educatorIds' replaces 'instructorId'.
+    const { title, description, imageUrl, code, credits, departmentId, rating, academicLevelIds, educatorIds, ...rest } = body;
 
     if (Object.keys(rest).length > 0) {
       console.warn("Unexpected fields in PATCH request for course:", rest);
@@ -104,30 +120,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ message: "Course not found" }, { status: 404 });
     }
 
-    // Check for uniqueness of course title if it's being updated
-    if (title !== undefined && title !== existingCourse.title) {
+    // Check for uniqueness of course code if it's being updated
+    if (code !== undefined && code !== existingCourse.code) {
       const duplicateCheck = await prisma.course.findUnique({
-        where: {
-          companyId_title: {
-            companyId: existingCourse.companyId,
-            title: title,
-          },
-        },
+        where: { code: code },
       });
       if (duplicateCheck) {
-        return NextResponse.json({ message: `A course with the title '${title}' already exists for this company.` }, { status: 409 });
-      }
-    }
-
-    // Validate instructorId if provided and it's changing
-    if (instructorId !== undefined && instructorId !== existingCourse.instructorId) {
-      if (instructorId !== null) { // Allow setting to null to unassign instructor
-        const existingInstructor = await prisma.educator.findUnique({
-          where: { id: instructorId },
-        });
-        if (!existingInstructor) {
-          return NextResponse.json({ message: "Provided instructorId does not exist." }, { status: 400 });
-        }
+        return NextResponse.json({ message: `A course with the code '${code}' already exists.` }, { status: 409 });
       }
     }
 
@@ -143,12 +142,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
     }
 
-    // Use a transaction for atomicity: update course and its academic level assignments
-    const result = await prisma.$transaction(async (prisma) => {
+    // Use a transaction for atomicity: update course and its assignments
+    const result = await prisma.$transaction(async (tx) => {
       // Handle Academic Level Assignments
       if (academicLevelIds !== undefined) {
         // Validate all provided academicLevelIds exist and belong to the same company
-        const existingAcademicLevels = await prisma.academicLevel.findMany({
+        const existingAcademicLevels = await tx.academicLevel.findMany({
           where: {
             id: { in: academicLevelIds },
             companyId: existingCourse.companyId,
@@ -162,19 +161,55 @@ export async function PATCH(request: Request, { params }: { params: { id: string
           throw new Error(`One or more academic levels not found or do not belong to this company: ${notFoundIds.join(', ')}. Please ensure all provided academicLevelIds are valid.`);
         }
 
-        // Delete existing assignments for this course
-        await prisma.courseAcademicLevel.deleteMany({
+        // Delete existing academic level assignments for this course
+        await tx.courseAcademicLevel.deleteMany({
           where: { courseId: id },
         });
 
-        // Create new assignments
+        // Create new academic level assignments
         if (academicLevelIds.length > 0) {
-          const newAssignments = academicLevelIds.map((academicLevelId: string) => ({
+          const newAcademicAssignments = academicLevelIds.map((academicLevelId: string) => ({
             courseId: id,
             academicLevelId: academicLevelId,
           }));
-          await prisma.courseAcademicLevel.createMany({
-            data: newAssignments,
+          await tx.courseAcademicLevel.createMany({
+            data: newAcademicAssignments,
+          });
+        }
+      }
+
+      // NEW: Handle Educator Assignments
+      if (educatorIds !== undefined) {
+        // Validate all provided educatorIds exist
+        const existingEducators = await tx.educator.findMany({
+          where: {
+            id: { in: educatorIds },
+            // Add companyId filter here if educators are also tied to a company
+            // companyId: existingCourse.companyId,
+          },
+          select: { id: true },
+        });
+
+        if (existingEducators.length !== educatorIds.length) {
+          const foundIds = new Set(existingEducators.map(e => e.id));
+          const notFoundIds = educatorIds.filter((id: string) => !foundIds.has(id));
+          throw new Error(`One or more educators not found: ${notFoundIds.join(', ')}. Please ensure all provided educatorIds are valid.`);
+        }
+
+        // Delete existing educator assignments for this course
+        await tx.courseEducatorAssignment.deleteMany({
+          where: { courseId: id },
+        });
+
+        // Create new educator assignments
+        if (educatorIds.length > 0) {
+          const newEducatorAssignments = educatorIds.map((educatorId: string) => ({
+            courseId: id,
+            educatorId: educatorId,
+            // roleInCourse: "Lead Educator", // You might want to pass this from frontend
+          }));
+          await tx.courseEducatorAssignment.createMany({
+            data: newEducatorAssignments,
           });
         }
       }
@@ -184,11 +219,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       if (title !== undefined) courseUpdateData.title = title;
       if (description !== undefined) courseUpdateData.description = description;
       if (imageUrl !== undefined) courseUpdateData.imageUrl = imageUrl;
-      if (instructorId !== undefined) courseUpdateData.instructorId = instructorId;
+      if (code !== undefined) courseUpdateData.code = code; // NEW: Update code
+      if (credits !== undefined) courseUpdateData.credits = credits; // NEW: Update credits
+      // REMOVED: instructorId from direct update
       if (departmentId !== undefined) courseUpdateData.departmentId = departmentId;
       if (rating !== undefined) courseUpdateData.rating = rating;
 
-      const updatedCourse = await prisma.course.update({
+      const updatedCourse = await tx.course.update({
         where: { id },
         data: courseUpdateData,
       });
@@ -200,10 +237,20 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const finalCourse = await prisma.course.findUnique({
       where: { id },
       include: {
-        instructor: { select: { id: true, user: { select: { name: true, email: true } } } },
+        CourseEducatorAssignment: { // NEW: Include junction table for final response
+          include: {
+            educator: { select: { id: true, user: { select: { name: true, email: true } } } },
+          },
+        },
         department: { select: { id: true, name: true } },
         academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } },
-        _count: { select: { enrollments: true, CourseMaterial: true } },
+        _count: {
+          select: {
+            enrollments: true,
+            CourseMaterial: true,
+            assignmentSubmission: true, // Renamed
+          },
+        },
       },
     });
 
@@ -211,30 +258,36 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       throw new Error("Failed to retrieve updated course with relations.");
     }
 
-    const totalLessons = finalCourse._count.CourseMaterial;
-    const studentsEnrolled = finalCourse._count.enrollments;
-
-    const assignedAcademicLevels = finalCourse.academicLevels
+    // Transform the final data for the response
+    const finalAssignedAcademicLevels = finalCourse.academicLevels
       .map(assignment => assignment.academicLevel)
       .filter(Boolean)
       .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
       .map(level => ({ id: level!.id, name: level!.name }));
+
+    const finalAssignedEducators = finalCourse.CourseEducatorAssignment
+      .map(assignment => ({
+        id: assignment.educator.id,
+        name: assignment.educator.user?.name || 'N/A',
+        email: assignment.educator.user?.email || 'N/A',
+        roleInCourse: assignment.roleInCourse || null,
+      }));
 
     const responseData = {
       id: finalCourse.id,
       title: finalCourse.title,
       description: finalCourse.description,
       imageUrl: finalCourse.imageUrl,
-      instructorId: finalCourse.instructorId,
-      instructorName: finalCourse.instructor?.user?.name || 'N/A',
-      instructorEmail: finalCourse.instructor?.user?.email || 'N/A',
-      totalLessons: totalLessons,
+      credits: finalCourse.credits, // NEW: Include credits
+      code: finalCourse.code, // NEW: Include code
       rating: finalCourse.rating,
-      studentsEnrolled: studentsEnrolled,
+      totalLessons: finalCourse._count.CourseMaterial,
+      studentsEnrolled: finalCourse._count.enrollments,
       companyId: finalCourse.companyId,
       departmentId: finalCourse.departmentId,
       departmentName: finalCourse.department?.name || 'N/A',
-      academicLevels: assignedAcademicLevels,
+      academicLevels: finalAssignedAcademicLevels,
+      educators: finalAssignedEducators, // NEW: Array of educators
       createdAt: finalCourse.createdAt,
       updatedAt: finalCourse.updatedAt,
     };
@@ -242,7 +295,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json(responseData, { status: 200 });
   } catch (error: any) {
     console.error(`Error updating course with ID ${id}:`, error);
-    if (error.message.includes("already exists for this company")) {
+    // Updated error message for unique 'code' instead of 'title'
+    if (error.message.includes("A course with the code")) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
     return NextResponse.json({ message: "Failed to update course", error: error.message }, { status: 500 });
@@ -263,11 +317,13 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: "Course not found" }, { status: 404 });
     }
 
-    // When deleting a Course, the onDelete: Cascade on CourseAcademicLevel
+    // When deleting a Course, the onDelete: Cascade on CourseAcademicLevel and CourseEducatorAssignment
     // will automatically delete associated assignment records.
-    // However, other relations (CourseAssignment, ClassSchedule, CourseEnrollment, Exam, CourseMaterial, DiscussionTopic)
+    // Other relations (CourseAssignment, ClassSchedule, CourseEnrollment, Exam, CourseMaterial, DiscussionTopic)
     // might prevent deletion if not configured with onDelete actions in your schema.
     // Prisma will throw a P2003 error if linked records exist and onDelete is not set.
+
+    // No explicit deletion of junction tables needed here due to onDelete: Cascade in schema
 
     const deletedCourse = await prisma.course.delete({
       where: { id },

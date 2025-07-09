@@ -3,21 +3,22 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import {
-  AcademicCapIcon, // General for courses/curriculum
-  CalendarDaysIcon, // For date
-  BookOpenIcon, // For courses list
-  PlusCircleIcon, // For add course
-  PencilIcon, // For edit
-  TrashIcon, // For delete
-  MagnifyingGlassIcon, // For search
-  CubeTransparentIcon, // For subjects/levels
-  UsersIcon, // For students enrolled
-  StarIcon, // For rating
-  TagIcon, // For academic levels
-  UserIcon, // For instructor
-  BuildingOffice2Icon, // For department
-  XMarkIcon, // For error close button
-  EnvelopeIcon, // For instructor email
+  AcademicCapIcon,
+  CalendarDaysIcon,
+  BookOpenIcon,
+  PlusCircleIcon,
+  PencilIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+  CubeTransparentIcon,
+  UsersIcon,
+  StarIcon,
+  TagIcon,
+  UserIcon,
+  BuildingOffice2Icon,
+  XMarkIcon,
+  EnvelopeIcon,
+  CreditCardIcon, // For credits
 } from '@heroicons/react/24/outline';
 
 import CourseFormModal from './CourseFormModal'; // Import the new modal component
@@ -37,6 +38,14 @@ export type EducatorOption = {
   email: string;
 };
 
+// NEW: Type for educators in CourseType, including role
+export type CourseEducator = {
+  id: string;
+  name: string;
+  email?: string;
+  roleInCourse?: string | null;
+}
+
 export type DepartmentOption = {
   id: string;
   name: string;
@@ -47,16 +56,16 @@ export type CourseType = {
   title: string;
   description?: string;
   imageUrl?: string;
-  instructorId?: string | null;
-  instructorName?: string;
-  instructorEmail?: string;
-  totalLessons: number; // Calculated on backend
+  credits?: number | null; // NEW
+  code: string; // NEW: Required unique code
   rating?: number | null;
+  totalLessons: number; // Calculated on backend
   studentsEnrolled: number; // Calculated on backend
   companyId: string;
   departmentId?: string | null;
   departmentName?: string;
   academicLevels: AcademicLevelOption[]; // Array of assigned academic levels
+  educators: CourseEducator[]; // NEW: Array of assigned educators with roles
   createdAt: string;
   updatedAt: string;
 };
@@ -158,7 +167,11 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     return courses.filter(course => {
       const matchesSearch = (course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (course.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (course.instructorName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+                            (course.code?.toLowerCase().includes(searchTerm.toLowerCase()) || '') || // NEW: Search by code
+                            course.educators.some(e =>
+                              e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              (e.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
+                            ) || // UPDATED: Search through educators array
                             (course.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             course.academicLevels.some(level => level.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -170,18 +183,18 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
   }, [courses, searchTerm, filterDepartment, filterAcademicLevel]);
 
   // --- API Interaction Functions ---
-  const handleSaveCourse = async (courseData: Omit<CourseType, 'id' | 'totalLessons' | 'studentsEnrolled' | 'createdAt' | 'updatedAt' | 'instructorName' | 'instructorEmail' | 'departmentName' | 'academicLevels'> & { id?: string; academicLevelIds?: string[] | null }) => {
+  const handleSaveCourse = async (courseData: Omit<CourseType, 'id' | 'totalLessons' | 'studentsEnrolled' | 'createdAt' | 'updatedAt' | 'departmentName' | 'academicLevels' | 'educators'> & { id?: string; academicLevelIds?: string[] | null; educatorIds?: string[] | null; }) => {
     setIsLoading(true);
     setError(null);
     const method = courseData.id ? 'PATCH' : 'POST';
 
     try {
-
       const url = courseData.id ? `${apiUrl}/admin/courses/${courseData.id}` : `${apiUrl}/admin/courses`;
 
       const payload = {
         ...courseData,
         companyId: companyId, // Ensure companyId is always included
+        // academicLevelIds and educatorIds will be handled by the backend
       };
 
       const res = await fetch(url, {
@@ -317,7 +330,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
           <button
             onClick={() => { setEditingCourse(null); setShowFormModal(true); }}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md
-                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
+                         hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
           >
             <PlusCircleIcon className="h-5 w-5" /> Add New Course
           </button>
@@ -331,7 +344,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
             </div>
             <input
               type="text"
-              placeholder="Search by title, instructor, department, or academic level..."
+              placeholder="Search by title, code, instructor, department, or academic level..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500
@@ -370,7 +383,9 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Course Title</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th> {/* NEW */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th> {/* NEW */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructors</th> {/* Changed from Instructor */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Levels</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
@@ -405,14 +420,26 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {course.code} {/* NEW */}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center gap-1">
-                        <UserIcon className="h-4 w-4 text-gray-500" /> {course.instructorName || 'Unassigned'}
+                        <CreditCardIcon className="h-4 w-4 text-gray-400" /> {course.credits || 'N/A'} {/* NEW */}
                       </div>
-                      {course.instructorEmail && (
-                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <EnvelopeIcon className="h-3 w-3 text-gray-400" /> {course.instructorEmail}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {course.educators && course.educators.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {course.educators.map((edu, index) => (
+                            <div key={edu.id || index} className="flex items-center gap-1">
+                              <UserIcon className="h-4 w-4 text-gray-500" /> {edu.name}
+                              {edu.roleInCourse && <span className="text-xs text-gray-500">({edu.roleInCourse})</span>}
+                            </div>
+                          ))}
                         </div>
+                      ) : (
+                        <span className="text-gray-400">Unassigned</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -468,7 +495,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500"> {/* Updated colspan */}
                     <BookOpenIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                     <p className="text-lg">No courses found matching your criteria.</p>
                     <p className="text-sm mt-2">Try adjusting your filters or add a new course.</p>
@@ -483,6 +510,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
       {/* Modals */}
       {showFormModal && (
         <CourseFormModal
+          isOpen={showFormModal}
           courseData={editingCourse}
           onClose={() => { setShowFormModal(false); setEditingCourse(null); }}
           onSave={handleSaveCourse}

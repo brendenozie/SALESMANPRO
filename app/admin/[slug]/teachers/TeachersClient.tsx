@@ -20,6 +20,10 @@ import {
   KeyIcon,
   XMarkIcon,
   TagIcon, // New icon for academic levels
+  ChatBubbleBottomCenterTextIcon, // For Discussion Topics
+  ClipboardDocumentCheckIcon, // For Assignment Submissions
+  ClipboardDocumentListIcon, // For Exam Submissions
+  ClipboardDocumentIcon, // For Grades Recorded
 } from '@heroicons/react/24/outline';
 
 import EducatorFormModal from './EducatorFormModal'; // Import the new modal component
@@ -44,14 +48,20 @@ export type EducatorType = {
   bio?: string;
   address?: string;
   companyId: string;
-  departmentId?: string;
+  departmentId?: string | null; // Can be null
   departmentName?: string;
-  assignedAcademicLevels: AcademicLevelOption[]; // NEW: Array of assigned academic levels
-  totalStudents: number;
-  totalCoursesTaught: number;
+  academicLevels: AcademicLevelOption[]; // Renamed from assignedAcademicLevels
+  totalStudents: number; // Now calculated in API response
+  totalCoursesTaught: number; // Now calculated in API response
   totalClassesScheduled: number;
   totalExamsCreated: number;
   totalMaterialsUploaded: number;
+  totalAttendanceRecords: number; // Added new calculated fields
+  totalDiscussionTopics: number; // Added new calculated fields
+  totalUploadedMaterials: number; // Added new calculated fields
+  totalAssignmentSubmissions: number; // Added new calculated fields
+  totalExamSubmissions: number; // Added new calculated fields
+  totalGradesRecorded: number; // Added new calculated fields
   createdAt: string;
   updatedAt: string;
 };
@@ -64,7 +74,7 @@ export type DepartmentOption = {
 interface TeachersClientProps {
   initialEducators: EducatorType[];
   allDepartments: DepartmentOption[];
-  allAcademicLevels: AcademicLevelOption[]; // NEW: Pass all academic levels
+  allAcademicLevels: AcademicLevelOption[]; // Pass all academic levels
   companyId: string;
   apiUrl: string;
 }
@@ -87,11 +97,12 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
   });
 
   // --- Data Fetching and Management ---
-  const fetchEducatorsAndAcademicLevels = useCallback(async () => {
+  const fetchEducatorsAndDependencies = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
+      const departmentsRes = await fetch(`${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`); // Fetch departments here
       const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (educatorsRes.ok) {
@@ -101,6 +112,15 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
         const errorData = await educatorsRes.json();
         setError(errorData.message || "Failed to fetch educators.");
         setEducators(initialEducators);
+      }
+
+      if (departmentsRes.ok) {
+        const data: DepartmentOption[] = await departmentsRes.json();
+        setDepartments(data);
+      } else {
+        const errorData = await departmentsRes.json();
+        setError(errorData.message || "Failed to fetch departments.");
+        setDepartments(allDepartments);
       }
 
       if (academicLevelsRes.ok) {
@@ -115,18 +135,19 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
       setEducators(initialEducators);
+      setDepartments(allDepartments);
       setAcademicLevels(allAcademicLevels);
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, initialEducators, allAcademicLevels]);
+  }, [apiUrl, companyId, initialEducators, allDepartments, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialEducators.length === 0 || allAcademicLevels.length === 0) {
-      fetchEducatorsAndAcademicLevels();
+    if (initialEducators.length === 0 || allDepartments.length === 0 || allAcademicLevels.length === 0) {
+      fetchEducatorsAndDependencies();
     }
-  }, [fetchEducatorsAndAcademicLevels, initialEducators, allAcademicLevels]);
+  }, [fetchEducatorsAndDependencies, initialEducators, allDepartments, allAcademicLevels]);
 
 
   const filteredEducators = useMemo(() => {
@@ -135,24 +156,26 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
                             (educator.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (educator.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (educator.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            educator.assignedAcademicLevels.some(level => level.name.toLowerCase().includes(searchTerm.toLowerCase())); // Search by assigned academic level name
+                            educator.academicLevels.some(level => level.name.toLowerCase().includes(searchTerm.toLowerCase())); // Search by assigned academic level name
       const matchesDepartment = filterDepartment === 'All' || educator.departmentId === filterDepartment;
       return matchesSearch && matchesDepartment;
     }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
   }, [educators, searchTerm, filterDepartment]);
 
   // --- API Interaction Functions ---
-  const handleSaveEducator = async (educatorData: Omit<EducatorType, 'id' | 'userId' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'createdAt' | 'updatedAt' | 'departmentName' | 'assignedAcademicLevels'> & { id?: string; userId?: string; assignedAcademicLevelIds?: string[] }) => {
+  // Updated onSave signature to match the new EducatorType and expected payload
+  const handleSaveEducator = async (educatorData: Omit<EducatorType, 'id' | 'userId' | 'loginCode' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'totalAttendanceRecords' | 'totalDiscussionTopics' | 'totalUploadedMaterials' | 'totalAssignmentSubmissions' | 'totalExamSubmissions' | 'totalGradesRecorded' | 'createdAt' | 'updatedAt' | 'departmentName' | 'academicLevels'> & { id?: string; userId?: string; academicLevelIds?: string[] | null }) => {
     setIsLoading(true);
     setError(null);
     const method = educatorData.id ? 'PATCH' : 'POST';
     try {
 
-      const url = educatorData.id ? `${apiUrl}/admin/educators/${educatorData.id}` : `${apiUrl}/admin/educators`;
+      const url = educatorData.id ? `${apiUrl}/admin/educators/${educatorData.id}` : `${apiUrl}/admin/educators`; // Corrected API path
 
       const payload = {
         ...educatorData,
         companyId: companyId,
+        // academicLevelIds will be handled by the backend
       };
 
       const res = await fetch(url, {
@@ -162,7 +185,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
       });
 
       if (res.ok) {
-        await fetchEducatorsAndAcademicLevels(); // Re-fetch to get the latest data with calculated counts
+        await fetchEducatorsAndDependencies(); // Re-fetch to get the latest data with calculated counts
         setShowFormModal(false);
         setEditingEducator(null);
       } else {
@@ -184,12 +207,12 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/educators/${educatorId}`, {
+      const res = await fetch(`${apiUrl}/admin/educators/${educatorId}`, { // Corrected API path
         method: 'DELETE',
       });
 
       if (res.ok) {
-        await fetchEducatorsAndAcademicLevels();
+        await fetchEducatorsAndDependencies();
       } else {
         const errorData = await res.json();
         setError(errorData.message || "Failed to delete educator.");
@@ -298,7 +321,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
           <button
             onClick={() => { setEditingEducator(null); setShowFormModal(true); }}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md
-                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
+                         hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
           >
             <UserPlusIcon className="h-5 w-5" /> Add New Teacher
           </button>
@@ -400,9 +423,9 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
                       <div className="text-xs text-gray-500 mt-1">Joined: {new Date(educator.createdAt).toLocaleDateString()}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {educator.assignedAcademicLevels && educator.assignedAcademicLevels.length > 0 ? (
+                      {educator.academicLevels && educator.academicLevels.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {educator.assignedAcademicLevels.map(level => (
+                          {educator.academicLevels.map(level => (
                             <span key={level.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                               <TagIcon className="h-3 w-3 mr-1" /> {level.name}
                             </span>
@@ -414,7 +437,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center gap-1">
-                        <BookOpenIcon className="h-4 w-4 text-gray-400" /> Courses: {educator.totalCoursesTaught}
+                        <BookOpenIcon className="h-4 w-4 text-gray-400" /> Courses Taught: {educator.totalCoursesTaught}
                       </div>
                       <div className="flex items-center gap-1 mt-1">
                         <UsersIcon className="h-4 w-4 text-gray-400" /> Students: {educator.totalStudents}
@@ -424,6 +447,21 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
                       </div>
                       <div className="flex items-center gap-1 mt-1">
                         <DocumentTextIcon className="h-4 w-4 text-gray-400" /> Exams: {educator.totalExamsCreated}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <ClipboardDocumentCheckIcon className="h-4 w-4 text-gray-400" /> Assignments: {educator.totalAssignmentSubmissions}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <ClipboardDocumentListIcon className="h-4 w-4 text-gray-400" /> Exam Submissions: {educator.totalExamSubmissions}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <ClipboardDocumentIcon className="h-4 w-4 text-gray-400" /> Grades Recorded: {educator.totalGradesRecorded}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <ChatBubbleBottomCenterTextIcon className="h-4 w-4 text-gray-400" /> Discussions: {educator.totalDiscussionTopics}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <DocumentTextIcon className="h-4 w-4 text-gray-400" /> Materials Uploaded: {educator.totalUploadedMaterials}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -463,11 +501,12 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
       {/* Modals */}
       {showFormModal && (
         <EducatorFormModal
+          isOpen={showFormModal} // Pass isOpen prop
           educatorData={editingEducator}
           onClose={() => { setShowFormModal(false); setEditingEducator(null); }}
           onSave={handleSaveEducator}
           allDepartments={departments}
-          allAcademicLevels={academicLevels} // NEW: Pass all academic levels
+          allAcademicLevels={academicLevels} // Pass all academic levels
           isLoading={isLoading}
           companyId={companyId}
         />

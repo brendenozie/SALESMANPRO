@@ -2,7 +2,6 @@
 
 import React from "react";
 import TeachersClient, { EducatorType, DepartmentOption, AcademicLevelOption } from "./TeachersClient";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -51,15 +50,21 @@ const generateSampleEducatorsData = (companyId: string): {
       companyId: companyId,
       departmentId: 'D001',
       departmentName: 'Mathematics',
-      assignedAcademicLevels: [
+      academicLevels: [ // Renamed from assignedAcademicLevels
         { id: 'AL004', name: 'Grade 7' },
         { id: 'AL005', name: 'Grade 8' },
       ],
-      totalStudents: 120,
-      totalCoursesTaught: 5,
+      totalStudents: 120, // These are now calculated and returned by API, not direct model fields
+      totalCoursesTaught: 5, // These are now calculated and returned by API, not direct model fields
       totalClassesScheduled: 15,
       totalExamsCreated: 20,
       totalMaterialsUploaded: 50,
+      totalAttendanceRecords: 300, // Placeholder
+      totalDiscussionTopics: 10, // Placeholder
+      totalUploadedMaterials: 50, // Placeholder
+      totalAssignmentSubmissions: 120, // Placeholder
+      totalExamSubmissions: 80, // Placeholder
+      totalGradesRecorded: 500, // Placeholder
       createdAt: new Date('2015-08-01').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -76,7 +81,7 @@ const generateSampleEducatorsData = (companyId: string): {
       companyId: companyId,
       departmentId: 'D002',
       departmentName: 'English',
-      assignedAcademicLevels: [
+      academicLevels: [ // Renamed from assignedAcademicLevels
         { id: 'AL004', name: 'Grade 7' },
         { id: 'AL005', name: 'Grade 8' },
         { id: 'AL007', name: 'High School - Freshman' },
@@ -86,6 +91,12 @@ const generateSampleEducatorsData = (companyId: string): {
       totalClassesScheduled: 12,
       totalExamsCreated: 18,
       totalMaterialsUploaded: 45,
+      totalAttendanceRecords: 250, // Placeholder
+      totalDiscussionTopics: 8, // Placeholder
+      totalUploadedMaterials: 45, // Placeholder
+      totalAssignmentSubmissions: 100, // Placeholder
+      totalExamSubmissions: 70, // Placeholder
+      totalGradesRecorded: 400, // Placeholder
       createdAt: new Date('2018-09-01').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -102,7 +113,7 @@ const generateSampleEducatorsData = (companyId: string): {
       companyId: companyId,
       departmentId: 'D003',
       departmentName: 'Science',
-      assignedAcademicLevels: [
+      academicLevels: [ // Renamed from assignedAcademicLevels
         { id: 'AL006', name: 'Grade 9' },
         { id: 'AL007', name: 'High School - Freshman' },
       ],
@@ -111,6 +122,12 @@ const generateSampleEducatorsData = (companyId: string): {
       totalClassesScheduled: 18,
       totalExamsCreated: 25,
       totalMaterialsUploaded: 60,
+      totalAttendanceRecords: 350, // Placeholder
+      totalDiscussionTopics: 12, // Placeholder
+      totalUploadedMaterials: 60, // Placeholder
+      totalAssignmentSubmissions: 150, // Placeholder
+      totalExamSubmissions: 100, // Placeholder
+      totalGradesRecorded: 600, // Placeholder
       createdAt: new Date('2020-01-15').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -127,7 +144,7 @@ const generateSampleEducatorsData = (companyId: string): {
       companyId: companyId,
       departmentId: 'D004',
       departmentName: 'History',
-      assignedAcademicLevels: [
+      academicLevels: [ // Renamed from assignedAcademicLevels
         { id: 'AL005', name: 'Grade 8' },
         { id: 'AL007', name: 'High School - Freshman' },
       ],
@@ -136,6 +153,12 @@ const generateSampleEducatorsData = (companyId: string): {
       totalClassesScheduled: 10,
       totalExamsCreated: 15,
       totalMaterialsUploaded: 30,
+      totalAttendanceRecords: 200, // Placeholder
+      totalDiscussionTopics: 7, // Placeholder
+      totalUploadedMaterials: 30, // Placeholder
+      totalAssignmentSubmissions: 90, // Placeholder
+      totalExamSubmissions: 60, // Placeholder
+      totalGradesRecorded: 350, // Placeholder
       createdAt: new Date('2017-03-10').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -156,48 +179,55 @@ export default async function TeachersManagementPage({ params }: PageProps) {
 
   let initialEducators: EducatorType[] = [];
   let allDepartments: DepartmentOption[] = [];
-  let allAcademicLevels: AcademicLevelOption[] = []; // NEW
+  let allAcademicLevels: AcademicLevelOption[] = [];
   let fetchError: boolean = false;
 
   try {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
-      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (educatorsRes.ok) {
       initialEducators = (await educatorsRes.json()) as EducatorType[];
     } else {
-      // console.error(
-      //   `[TeachersManagementPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
-      // );
+      console.error(
+        `[TeachersManagementPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
+      );
       fetchError = true;
     }
 
     // Fetch all departments for this company (or globally if not company-specific)
-    const departmentsFromDb = await prisma.department.findMany({
-      where: { companyId: companyId }, // Assuming departments are company-specific
-      select: { id: true, name: true },
-      orderBy: { name: 'asc' },
-    });
-    allDepartments = departmentsFromDb as DepartmentOption[];
+    const departmentsRes = await fetch( // Fetch departments via API instead of direct prisma call
+      `${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, // Assuming departments API exists
+      { cache: "no-store" }
+    );
+    if (departmentsRes.ok) {
+      allDepartments = (await departmentsRes.json()) as DepartmentOption[];
+    } else {
+      console.error(
+        `[TeachersManagementPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
+      );
+      fetchError = true;
+    }
+
 
     // NEW: Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { cache: "no-store" }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
     } else {
-      // console.error(
-      //   `[TeachersManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      // );
+      console.error(
+        `[TeachersManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      );
       fetchError = true;
     }
 
   } catch (err: any) {
-    // console.error("[TeachersManagementPage] Error fetching initial data:", err.message);
+    console.error("[TeachersManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
@@ -214,7 +244,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     <TeachersClient
       initialEducators={initialEducators}
       allDepartments={allDepartments}
-      allAcademicLevels={allAcademicLevels} // NEW: Pass academic levels
+      allAcademicLevels={allAcademicLevels} // Pass academic levels
       companyId={companyId}
       apiUrl={apiUrl}
     />

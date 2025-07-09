@@ -972,8 +972,6 @@ model User {
 
   UserActivity UserActivity[]
 
-  Department Department[]
-
   CreatedTasks Task[] @relation("CreatedTasks")
   assignedTo   Task[] @relation(name: "assignedTo")
 
@@ -1880,6 +1878,27 @@ model Student {
   updatedAt DateTime @updatedAt
 }
 
+// NEW JUNCTION MODEL: CourseAcademicLevel
+// This model represents the many-to-many relationship between Course and AcademicLevel.
+model StudentAcademicLevel {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String  @db.ObjectId
+
+  academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
+  academicLevelId String        @db.ObjectId
+
+  assignedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, academicLevelId])
+  @@index([studentId])
+  @@index([academicLevelId])
+}
+
 // Educator Profile Model (one-to-one with User)
 model Educator {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -1897,13 +1916,10 @@ model Educator {
   Company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
 
-  totalStudents      Int                @default(0)
-  totalCoursesTaught Int                @default(0)
-  coursesCreated     Course[]
-  classesScheduled   ClassSchedule[]
-  Exam               Exam[]
-  CourseMaterial     CourseMaterial[]
-  AttendanceRecord   AttendanceRecord[] @relation("RecordedAttendance")
+  classesScheduled ClassSchedule[]
+  Exam             Exam[]
+  CourseMaterial   CourseMaterial[]
+  AttendanceRecord AttendanceRecord[] @relation("RecordedAttendance")
 
   createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
 
@@ -1922,7 +1938,8 @@ model Educator {
   assignmentSubmission AssignmentSubmission[]
   examSubmission       ExamSubmission[]
 
-  Grade Grade[] @relation("recordedBy")
+  Grade                    Grade[]                    @relation("recordedBy")
+  CourseEducatorAssignment CourseEducatorAssignment[]
 }
 
 // Academic Level Model
@@ -1941,12 +1958,13 @@ model AcademicLevel {
 
   gradesEarned Grade[] @relation("gradesEarned") // New relation for historical grades
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  AttendanceRecord AttendanceRecord[]
 
   CourseAcademicLevel  CourseAcademicLevel[]
-  AttendanceRecord     AttendanceRecord[]
   StudentAcademicLevel StudentAcademicLevel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
@@ -1987,11 +2005,6 @@ model Course {
 
   code String @unique // e.g., "MATH101"
 
-  instructorId String?   @db.ObjectId // Made optional for flexibility
-  instructor   Educator? @relation(fields: [instructorId], references: [id])
-
-  // REMOVED: totalLessons (will be calculated)
-  // REMOVED: studentsEnrolled (will be calculated)
   rating Float? // Can still be stored as an average, or calculated from a separate Rating model
 
   // NEW: Company relation for multi-tenancy
@@ -2001,10 +2014,10 @@ model Course {
   departmentId String?     @db.ObjectId
   department   Department? @relation(fields: [departmentId], references: [id])
 
-  // NEW JUNCTION TABLE: For many-to-many with AcademicLevel
   academicLevels CourseAcademicLevel[]
 
-  assignments    CourseAssignment[]
+  assignments CourseAssignment[]
+
   classSchedules ClassSchedule[]
   enrollments    CourseEnrollment[]
 
@@ -2020,31 +2033,33 @@ model Course {
   AttendanceRecord     AttendanceRecord[]
   assignmentSubmission AssignmentSubmission[]
 
-  // @@unique([code, companyId]) // A course name should be unique within an academic level and company
+  CourseEducatorAssignment CourseEducatorAssignment[]
 
-  @@index([instructorId])
   @@index([companyId])
 }
 
-// NEW JUNCTION MODEL: CourseAcademicLevel
-// This model represents the many-to-many relationship between Course and AcademicLevel.
-model StudentAcademicLevel {
+// NEW JUNCTION MODEL: CourseEducatorAssignment
+// This model represents the many-to-many relationship between Educator and Course.
+model CourseEducatorAssignment {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId String  @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String @db.ObjectId
 
-  academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
-  academicLevelId String        @db.ObjectId
+  educator   Educator @relation(fields: [educatorId], references: [id], onDelete: Cascade)
+  educatorId String   @db.ObjectId
 
-  assignedAt DateTime @default(now())
+  // Optional: You could add more fields here relevant to the assignment,
+  // e.g., 'assignedDate', 'isActive', 'roleInLevel' (e.g., 'Lead Teacher', 'Assistant')
+  roleInCourse String? // e.g., "Lead Educator", "Assistant Educator"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([studentId, academicLevelId])
-  @@index([studentId])
-  @@index([academicLevelId])
+  // Ensures that an educator can only be assigned to a specific academic level once
+  @@unique([educatorId, courseId])
+  @@index([educatorId])
+  @@index([courseId])
 }
 
 // NEW JUNCTION MODEL: CourseAcademicLevel
@@ -2702,13 +2717,14 @@ model Department {
 
   educators Educator[] // Educators belonging to this department
   courses   Course[] // Courses offered by this department
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Company   Company?   @relation(fields: [companyId], references: [id])
-  companyId String?    @db.ObjectId
-  User      User?      @relation(fields: [userId], references: [id])
-  userId    String?    @db.ObjectId
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  @@unique([companyId, name])
   @@index([name])
 }
 
@@ -2744,7 +2760,6 @@ model Grade {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([studentId, courseId, examId, academicLevelAtTimeOfGradingId])
   @@index([studentId])
   @@index([courseId])
   @@index([examId])

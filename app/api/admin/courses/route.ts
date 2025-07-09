@@ -15,11 +15,17 @@ export async function GET(request: Request) {
     const courses = await prisma.course.findMany({
       where: { companyId },
       include: {
-        instructor: { // Include instructor (Educator) details
-          select: {
-            id: true,
-            user: {
-              select: { name: true, email: true },
+        // REMOVED: direct 'instructor' include
+        CourseEducatorAssignment: { // NEW: Include the junction table for educators
+          include: {
+            educator: { // Include the actual Educator details
+              select: {
+                id: true,
+                user: {
+                  select: { name: true, email: true },
+                },
+                // You might want to select other educator fields here if needed
+              },
             },
           },
         },
@@ -29,7 +35,7 @@ export async function GET(request: Request) {
             name: true,
           },
         },
-        academicLevels: { // Include the junction table
+        academicLevels: { // Include the junction table for academic levels
           include: {
             academicLevel: { // Include the actual AcademicLevel details
               select: {
@@ -60,25 +66,34 @@ export async function GET(request: Request) {
       // Extract and sort assigned academic levels
       const assignedAcademicLevels = course.academicLevels
         .map(assignment => assignment.academicLevel)
-        .filter(Boolean) // Remove any nulls
+        .filter(Boolean) // Remove any nulls if academicLevel could be null (though unlikely with onDelete: Cascade)
         .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
         .map(level => ({ id: level!.id, name: level!.name }));
+
+      // NEW: Extract assigned educators
+      const assignedEducators = course.CourseEducatorAssignment
+        .map(assignment => ({
+          id: assignment.educator.id,
+          name: assignment.educator.user?.name || 'N/A',
+          email: assignment.educator.user?.email || 'N/A',
+          roleInCourse: assignment.roleInCourse || null, // Include the role
+        }));
 
       return {
         id: course.id,
         title: course.title,
         description: course.description,
         imageUrl: course.imageUrl,
-        instructorId: course.instructorId,
-        instructorName: course.instructor?.user?.name || 'N/A',
-        instructorEmail: course.instructor?.user?.email || 'N/A',
-        totalLessons: totalLessons, // Calculated
+        credits: course.credits, // Include credits
+        code: course.code, // NEW: Include course code
         rating: course.rating,
+        totalLessons: totalLessons, // Calculated
         studentsEnrolled: studentsEnrolled, // Calculated
         companyId: course.companyId,
         departmentId: course.departmentId,
         departmentName: course.department?.name || 'N/A',
         academicLevels: assignedAcademicLevels, // Array of assigned academic levels
+        educators: assignedEducators, // NEW: Array of assigned educators
         createdAt: course.createdAt,
         updatedAt: course.updatedAt,
       };
@@ -92,39 +107,25 @@ export async function GET(request: Request) {
 }
 
 // POST /api/courses
-// Creates a new Course, with optional instructor, department, and academic level assignments.
+// Creates a new Course, with optional department, academic level, and educator assignments.
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, imageUrl, instructorId, departmentId, companyId, rating, academicLevelIds } = body;
+    // NEW: 'code' is required, 'educatorIds' replaces 'instructorId'
+    const { title, description, imageUrl, code, credits, rating, departmentId, companyId, academicLevelIds, educatorIds } = body;
 
     // Basic validation
-    if (!title || !companyId) {
-      return NextResponse.json({ message: "Title and Company ID are required to create a course." }, { status: 400 });
+    if (!title || !companyId || !code) {
+      return NextResponse.json({ message: "Title, Company ID, and Code are required to create a course." }, { status: 400 });
     }
 
-    // Check for uniqueness of course title within the company
-    const existingCourse = await prisma.course.findUnique({
-      where: {
-        companyId_title: { // Using the @@unique compound index
-          companyId: companyId,
-          title: title,
-        },
-      },
+    // Check for uniqueness of course code within the database
+    const existingCourseByCode = await prisma.course.findUnique({
+      where: { code: code },
     });
 
-    if (existingCourse) {
-      return NextResponse.json({ message: `A course with the title '${title}' already exists for this company.` }, { status: 409 });
-    }
-
-    // Validate instructorId if provided
-    if (instructorId) {
-      const existingInstructor = await prisma.educator.findUnique({
-        where: { id: instructorId },
-      });
-      if (!existingInstructor) {
-        return NextResponse.json({ message: "Provided instructorId does not exist." }, { status: 400 });
-      }
+    if (existingCourseByCode) {
+      return NextResponse.json({ message: `A course with the code '${code}' already exists.` }, { status: 409 });
     }
 
     // Validate departmentId if provided
@@ -153,27 +154,59 @@ export async function POST(request: Request) {
       }
     }
 
-    // Use a transaction for atomicity: create course and its academic level assignments
-    const newCourse = await prisma.$transaction(async (prisma) => {
-      const course = await prisma.course.create({
+    // NEW: Validate educatorIds if provided
+    if (educatorIds && educatorIds.length > 0) {
+      const existingEducators = await prisma.educator.findMany({
+        where: {
+          id: { in: educatorIds },
+          // Assuming educators are also linked to a company, add companyId filter if applicable
+          // companyId: companyId,
+        },
+        select: { id: true },
+      });
+      if (existingEducators.length !== educatorIds.length) {
+        const foundIds = new Set(existingEducators.map(e => e.id));
+        const notFoundIds = educatorIds.filter((id: string) => !foundIds.has(id));
+        return NextResponse.json({ message: `One or more provided educatorIds are invalid: ${notFoundIds.join(', ')}` }, { status: 400 });
+      }
+    }
+
+    // Use a transaction for atomicity: create course and its assignments
+    const newCourse = await prisma.$transaction(async (tx) => {
+      const course = await tx.course.create({
         data: {
           title,
           description,
           imageUrl,
-          instructorId,
+          code, // NEW: Add code
+          credits, // Add credits
           rating,
           companyId,
           departmentId,
+          // REMOVED: instructorId
         },
       });
 
+      // Create CourseAcademicLevel assignments
       if (academicLevelIds && academicLevelIds.length > 0) {
-        const assignmentsData = academicLevelIds.map((academicLevelId: string) => ({
+        const academicAssignmentsData = academicLevelIds.map((academicLevelId: string) => ({
           courseId: course.id,
           academicLevelId: academicLevelId,
         }));
-        await prisma.courseAcademicLevel.createMany({
-          data: assignmentsData,
+        await tx.courseAcademicLevel.createMany({
+          data: academicAssignmentsData,
+        });
+      }
+
+      // NEW: Create CourseEducatorAssignment entries
+      if (educatorIds && educatorIds.length > 0) {
+        const educatorAssignmentsData = educatorIds.map((educatorId: string) => ({
+          courseId: course.id,
+          educatorId: educatorId,
+          // roleInCourse: "Lead Educator", // Optional: set a default role or pass from frontend
+        }));
+        await tx.courseEducatorAssignment.createMany({
+          data: educatorAssignmentsData,
         });
       }
 
@@ -184,7 +217,11 @@ export async function POST(request: Request) {
     const createdCourseWithRelations = await prisma.course.findUnique({
       where: { id: newCourse.id },
       include: {
-        instructor: { select: { id: true, user: { select: { name: true, email: true } } } },
+        CourseEducatorAssignment: { // NEW: Include junction table
+          include: {
+            educator: { select: { id: true, user: { select: { name: true, email: true } } } },
+          },
+        },
         department: { select: { id: true, name: true } },
         academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } },
         _count: { select: { enrollments: true, CourseMaterial: true } },
@@ -195,25 +232,36 @@ export async function POST(request: Request) {
       throw new Error("Failed to retrieve created course with relations.");
     }
 
+    // Transform the response data
+    const assignedAcademicLevelsResponse = createdCourseWithRelations.academicLevels
+      .map(assignment => assignment.academicLevel)
+      .filter(Boolean)
+      .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+      .map(level => ({ id: level!.id, name: level!.name }));
+
+    const assignedEducatorsResponse = createdCourseWithRelations.CourseEducatorAssignment
+      .map(assignment => ({
+        id: assignment.educator.id,
+        name: assignment.educator.user?.name || 'N/A',
+        email: assignment.educator.user?.email || 'N/A',
+        roleInCourse: assignment.roleInCourse || null,
+      }));
+
     const responseData = {
       id: createdCourseWithRelations.id,
       title: createdCourseWithRelations.title,
       description: createdCourseWithRelations.description,
       imageUrl: createdCourseWithRelations.imageUrl,
-      instructorId: createdCourseWithRelations.instructorId,
-      instructorName: createdCourseWithRelations.instructor?.user?.name || 'N/A',
-      instructorEmail: createdCourseWithRelations.instructor?.user?.email || 'N/A',
-      totalLessons: createdCourseWithRelations._count.CourseMaterial,
+      credits: createdCourseWithRelations.credits, // Include credits
+      code: createdCourseWithRelations.code, // NEW: Include code
       rating: createdCourseWithRelations.rating,
+      totalLessons: createdCourseWithRelations._count.CourseMaterial,
       studentsEnrolled: createdCourseWithRelations._count.enrollments,
       companyId: createdCourseWithRelations.companyId,
       departmentId: createdCourseWithRelations.departmentId,
       departmentName: createdCourseWithRelations.department?.name || 'N/A',
-      academicLevels: createdCourseWithRelations.academicLevels
-        .map(assignment => assignment.academicLevel)
-        .filter(Boolean)
-        .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
-        .map(level => ({ id: level!.id, name: level!.name })),
+      academicLevels: assignedAcademicLevelsResponse,
+      educators: assignedEducatorsResponse, // NEW: Array of educators
       createdAt: createdCourseWithRelations.createdAt,
       updatedAt: createdCourseWithRelations.updatedAt,
     };
@@ -221,8 +269,9 @@ export async function POST(request: Request) {
     return NextResponse.json(responseData, { status: 201 });
   } catch (error: any) {
     console.error("Error creating course:", error);
-    if (error.code === 'P2002' && error.meta?.target?.includes('title')) {
-      return NextResponse.json({ message: `A course with this title already exists for this company.` }, { status: 409 });
+    // Updated error code check for unique 'code'
+    if (error.code === 'P2002' && error.meta?.target?.includes('code')) {
+      return NextResponse.json({ message: `A course with the code already exists.` }, { status: 409 });
     }
     return NextResponse.json({ message: "Failed to create course", error: error.message }, { status: 500 });
   }

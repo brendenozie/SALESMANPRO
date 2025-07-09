@@ -49,16 +49,16 @@ const generateSampleCoursesData = (companyId: string): {
       title: 'Algebra I',
       description: 'Foundational course in algebraic concepts, including linear equations, inequalities, and functions.',
       imageUrl: 'https://placehold.co/100x100/ADD8E6/00008B?text=Alg',
-      instructorId: 'EDU001',
-      instructorName: 'Mr. John Doe',
-      instructorEmail: 'john.doe@school.com',
-      totalLessons: 25,
+      code: 'MATH101', // NEW
+      credits: 3, // NEW
       rating: 4.5,
+      totalLessons: 45,
       studentsEnrolled: 120,
       companyId: companyId,
       departmentId: 'D001',
       departmentName: 'Mathematics',
       academicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
       createdAt: new Date('2023-01-15').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -67,16 +67,16 @@ const generateSampleCoursesData = (companyId: string): {
       title: 'Literary Analysis',
       description: 'Exploration of various literary genres and critical analysis techniques, focusing on classic and contemporary works.',
       imageUrl: 'https://placehold.co/100x100/FFB6C1/A52A2A?text=Lit',
-      instructorId: 'EDU002',
-      instructorName: 'Mrs. Jane Smith',
-      instructorEmail: 'jane.smith@school.com',
-      totalLessons: 20,
+      code: 'ENG201', // NEW
+      credits: 3, // NEW
       rating: 4.7,
+      totalLessons: 45,
       studentsEnrolled: 95,
       companyId: companyId,
       departmentId: 'D002',
       departmentName: 'English',
       academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
+      educators: [{ id: 'EDU002', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
       createdAt: new Date('2023-02-01').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -85,10 +85,9 @@ const generateSampleCoursesData = (companyId: string): {
       title: 'Introduction to Programming',
       description: 'Fundamentals of programming logic and Python, covering basic data structures and algorithms.',
       imageUrl: 'https://placehold.co/100x100/98FB98/006400?text=Code',
-      instructorId: 'EDU003',
-      instructorName: 'Dr. Emily White',
-      instructorEmail: 'emily.white@school.com',
-      totalLessons: 30,
+      code: 'CS101', // NEW
+      credits: 4, // NEW
+      totalLessons: 45,
       rating: 4.8,
       studentsEnrolled: 150,
       companyId: companyId,
@@ -98,6 +97,10 @@ const generateSampleCoursesData = (companyId: string): {
         { id: 'AL006', name: 'Grade 9' },
         { id: 'AL007', name: 'High School - Freshman' },
       ],
+      educators: [
+        { id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com', roleInCourse: 'Lead Instructor' },
+        { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Assistant' },
+      ], // NEW: multiple educators
       createdAt: new Date('2023-03-10').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -106,11 +109,10 @@ const generateSampleCoursesData = (companyId: string): {
       title: 'Elementary Science',
       description: 'Basic scientific concepts for younger students, including nature, simple experiments, and the environment.',
       imageUrl: 'https://placehold.co/100x100/B0E0E6/4682B4?text=Sci',
-      instructorId: 'EDU003',
-      instructorName: 'Dr. Emily White',
-      instructorEmail: 'emily.white@school.com',
-      totalLessons: 15,
+      code: 'SCI100', // NEW
+      credits: 2, // NEW
       rating: 4.2,
+      totalLessons: 45,
       studentsEnrolled: 80,
       companyId: companyId,
       departmentId: 'D003',
@@ -120,6 +122,7 @@ const generateSampleCoursesData = (companyId: string): {
         { id: 'AL002', name: 'Kindergarten' },
         { id: 'AL003', name: 'Grade 1' },
       ],
+      educators: [{ id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
       createdAt: new Date('2023-04-05').toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -147,15 +150,15 @@ export default async function AdminCoursesPage({ params }: PageProps) {
   try {
     // Fetch all courses for this company
     const coursesRes = await fetch(
-      `${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" } // equivalent to SSR on every request
     );
     if (coursesRes.ok) {
       initialCourses = (await coursesRes.json()) as CourseType[];
     } else {
-      // console.error(
-      //   `[AdminCoursesPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
-      // );
+      console.error(
+        `[AdminCoursesPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
+      );
       fetchError = true;
     }
 
@@ -172,9 +175,9 @@ export default async function AdminCoursesPage({ params }: PageProps) {
         email: e.email,
       }));
     } else {
-      // console.error(
-      //   `[AdminCoursesPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
-      // );
+      console.error(
+        `[AdminCoursesPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
+      );
       fetchError = true;
     }
 
@@ -186,9 +189,9 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     if (departmentsRes.ok) {
       allDepartments = (await departmentsRes.json()) as DepartmentOption[];
     } else {
-      // console.error(
-      //   `[AdminCoursesPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
-      // );
+      console.error(
+        `[AdminCoursesPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
+      );
       fetchError = true;
     }
 
@@ -200,14 +203,14 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
     } else {
-      // console.error(
-      //   `[AdminCoursesPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      // );
+      console.error(
+        `[AdminCoursesPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      );
       fetchError = true;
     }
 
   } catch (err: any) {
-    // console.error("[AdminCoursesPage] Error fetching initial data:", err.message);
+    console.error("[AdminCoursesPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
