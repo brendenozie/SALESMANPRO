@@ -26,14 +26,14 @@ model Account {
   id_token          String?
   session_state     String?
 
-  user              User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Consumer          Consumer?   @relation(fields: [userId], references: [id])
-  SalesAgent        SalesAgent? @relation(fields: [userId], references: [id])
-  Client            Client?     @relation(fields: [userId], references: [id])
-  Student           Student?    @relation(fields: [studentId], references: [id])
-  studentId         String?     @db.ObjectId
-  EducatorProfile   Educator?   @relation(fields: [educatorProfileId], references: [id])
-  educatorProfileId String?     @db.ObjectId
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Consumer          Consumer?   @relation(fields: [userId], references: [id])
+  // SalesAgent        SalesAgent? @relation(fields: [userId], references: [id])
+  // Client            Client?     @relation(fields: [userId], references: [id])
+  // Student           Student?    @relation(fields: [studentId], references: [id])
+  // studentId         String?     @db.ObjectId
+  // EducatorProfile   Educator?   @relation(fields: [educatorProfileId], references: [id])
+  // educatorProfileId String?     @db.ObjectId
 
   @@unique([provider, providerAccountId])
 }
@@ -51,22 +51,23 @@ enum ROLE {
 }
 
 model Session {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  sessionToken String      @unique
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
   expires      DateTime
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String      @db.ObjectId
-  role         ROLE?       @default(USER)
-  Client       Client?     @relation(fields: [clientId], references: [id])
-  clientId     String?     @db.ObjectId
-  SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
-  salesAgentId String?     @db.ObjectId
-  Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
-  consumerId   String?     @db.ObjectId
-  Student      Student?    @relation(fields: [studentId], references: [id])
-  studentId    String?     @db.ObjectId
-  Educator     Educator?   @relation(fields: [educatorId], references: [id])
-  educatorId   String?     @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @db.ObjectId
+  role         ROLE?    @default(USER)
+
+  // Client       Client?     @relation(fields: [clientId], references: [id])
+  // clientId     String?     @db.ObjectId
+  // SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
+  // salesAgentId String?     @db.ObjectId
+  // Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
+  // consumerId   String?     @db.ObjectId
+  // Student      Student?    @relation(fields: [studentId], references: [id])
+  // studentId    String?     @db.ObjectId
+  // Educator     Educator?   @relation(fields: [educatorId], references: [id])
+  // educatorId   String?     @db.ObjectId
 
   @@index([userId])
 }
@@ -782,8 +783,8 @@ model Client {
   address           String?
   profilePicture    String?
   role              ROLE?               @default(CLIENT)
-  accounts          Account[]
-  sessions          Session[]
+  // accounts          Account[]
+  // sessions          Session[]
   Return            Return[]
 }
 
@@ -878,15 +879,15 @@ enum MessageType {
 
 // One on One relationship with user
 model SalesAgent {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String?
-  email       String    @unique
+  email       String   @unique
   image       String?
-  accounts    Account[]
-  sessions    Session[]
+  // accounts    Account[]
+  // sessions    Session[]
   phoneNumber String?
-  companyId   String?   @db.ObjectId
-  company     Company?  @relation(fields: [companyId], references: [id])
+  companyId   String?  @db.ObjectId
+  company     Company? @relation(fields: [companyId], references: [id])
 
   userId String @unique @db.ObjectId // Link to User model
   user   User   @relation("SalesAgentProfile", fields: [userId], references: [id])
@@ -955,8 +956,6 @@ model User {
 
   discussionPosts    DiscussionPost[]    @relation("CreatedDiscussionPost")
   discussionComments DiscussionComment[] @relation("CreatedDiscussionComment")
-
-  AttendanceRecord AttendanceRecord[]
 
   // Opposite relation for Event.organizer
   OrganizedEvents   Event[]             @relation("OrganizedEvents")
@@ -1563,8 +1562,8 @@ model Consumer {
   company   Company? @relation(fields: [companyId], references: [id])
 
   image                String?
-  accounts             Account[]
-  sessions             Session[]
+  // accounts             Account[]
+  // sessions             Session[]
   phone                String?
   password             String?
   username             String?
@@ -1863,31 +1862,22 @@ model Student {
   parentId String? @db.ObjectId // NEW: Link to Parent model
   parent   Parent? @relation(fields: [parentId], references: [id]) // NEW: Relation to Parent
 
-  academicLevelId String?        @db.ObjectId // NEW: Link to AcademicLevel model
-  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id]) // NEW: Relation
-
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Keep optional if students can be independent
-
-  studentGrade       String?
-  totalCourses       Int     @default(0) // Consider calculating on demand
-  completedCourses   Int     @default(0) // Consider calculating on demand
-  certificatesEarned Int     @default(0) // Consider calculating on demand
-  averageProgress    Float   @default(0.0) // Consider calculating on demand
 
   enrolledCourses  CourseEnrollment[]
   submissions      Submission[]
   AttendanceRecord AttendanceRecord[]
   ExamSubmission   ExamSubmission[]
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  Account           Account[]
-  Session           Session[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   EventRegistration EventRegistration[]
 
-  headTeacherId String? @db.ObjectId
-  Grade         Grade[]
+  headTeacherId        String?                @db.ObjectId
+  Grade                Grade[]
+  StudentAcademicLevel StudentAcademicLevel[]
 }
 
 // Educator Profile Model (one-to-one with User)
@@ -1926,10 +1916,8 @@ model Educator {
   Department   Department? @relation(fields: [departmentId], references: [id])
   departmentId String?     @db.ObjectId
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Account   Account[]
-  Session   Session[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   Submission     Submission[]
   ExamSubmission ExamSubmission[]
@@ -1948,18 +1936,17 @@ model AcademicLevel {
   company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId // Academic levels are specific to a company/school
 
-  courses  Course[] // Courses offered at this academic level
-  students Student[] // One-to-many relation: many students can be in one academic level
-
   // NEW: Junction table for many-to-many with Educator
   educatorAssignments EducatorAcademicLevelAssignment[]
 
-  grades Grade[] @relation("GradeAcademicLevel") // New relation for historical grades
+  gradesEarned Grade[] @relation("gradesEarned") // New relation for historical grades
 
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  CourseAcademicLevel CourseAcademicLevel[]
-  AttendanceRecord    AttendanceRecord[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  CourseAcademicLevel  CourseAcademicLevel[]
+  AttendanceRecord     AttendanceRecord[]
+  StudentAcademicLevel StudentAcademicLevel[]
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
@@ -1998,7 +1985,7 @@ model Course {
 
   credits Float?
 
-  code String? @unique // e.g., "MATH101"
+  code String @unique // e.g., "MATH101"
 
   instructorId String?   @db.ObjectId // Made optional for flexibility
   instructor   Educator? @relation(fields: [instructorId], references: [id])
@@ -2029,15 +2016,37 @@ model Course {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  AcademicLevel    AcademicLevel?     @relation(fields: [academicLevelId], references: [id])
-  academicLevelId  String?            @db.ObjectId
+  // AcademicLevel    AcademicLevel?     @relation(fields: [academicLevelId], references: [id])
+  // academicLevelId  String?            @db.ObjectId
+
   AttendanceRecord AttendanceRecord[]
   Submission       Submission[]
 
-  @@unique([title, academicLevelId, companyId]) // A course name should be unique within an academic level and company
-  @@index([academicLevelId])
+  // @@unique([code, companyId]) // A course name should be unique within an academic level and company
+
   @@index([instructorId])
   @@index([companyId])
+}
+
+// NEW JUNCTION MODEL: CourseAcademicLevel
+// This model represents the many-to-many relationship between Course and AcademicLevel.
+model StudentAcademicLevel {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String  @db.ObjectId
+
+  academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
+  academicLevelId String        @db.ObjectId
+
+  assignedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, academicLevelId])
+  @@index([studentId])
+  @@index([academicLevelId])
 }
 
 // NEW JUNCTION MODEL: CourseAcademicLevel
@@ -2063,56 +2072,68 @@ model CourseAcademicLevel {
 
 // Course Enrollment Model (No changes needed, it's well-structured)
 model CourseEnrollment {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  studentId        String
-  student          Student  @relation(fields: [studentId], references: [id])
-  courseId         String
-  course           Course   @relation(fields: [courseId], references: [id])
-  grade            Float? // Numeric grade for this enrollment (e.g., 85.5)
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  grade Float? // Numeric grade for this enrollment (e.g., 85.5)
+
   progress         Int      @default(0) // Percentage 0-100
   lessonsCompleted Int      @default(0)
   enrolledAt       DateTime @default(now())
 
-  status    String   @default("ENROLLED") // e.g., "ENROLLED", "COMPLETED", "DROPPED"
+  status EnrollmentStatus @default(ENROLLED) // Current status (e.g., ENROLLED, COMPLETED, DROPPED)
+
+  // status    String   @default("ENROLLED") // e.g., "ENROLLED", "COMPLETED", "DROPPED"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([studentId, courseId])
+  // Removed `@@unique([studentId, courseId])` to allow for multiple enrollments in the same course
+  // (e.g., student retakes a course, or enrolls in different terms/semesters).
+  // Uniqueness for a specific term or class instance should be managed by application logic
+  // or a more specific unique constraint if a 'termId' is added to this model.
   @@index([studentId])
   @@index([courseId])
+}
+
+// Add this enum definition to your schema.txt
+enum EnrollmentStatus {
+  ENROLLED
+  COMPLETED
+  DROPPED
+  IN_PROGRESS
+}
+
+enum AssignmentStatus {
+  Draft
+  Published
+  Archived
 }
 
 // Assignment Model
 // Course Assignment Model
 model CourseAssignment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
-  dueDate     DateTime
-  maxGrade    Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
-  courseId    String   @db.ObjectId
-  course      Course   @relation(fields: [courseId], references: [id])
 
-  enrollDate     DateTime  @default(now())
-  completionDate DateTime?
+  dueDate DateTime
+
+  maxGrade Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
 
   submissions Submission[] // Relation to AssignmentSubmission (or Submission) model
 
-  status EnrollmentStatus @default(ENROLLED) // Enum: ENROLLED, COMPLETED, DROPPED
+  status AssignmentStatus @default(Draft)
 
-  // assignedAt is implicitly handled by createdAt in your API,
-  // but if you need a distinct field for when it's formally assigned/published
-  // vs. just created, you could add:
-  // assignedAt  DateTime   @default(now())
+  publishedAt DateTime @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-enum EnrollmentStatus {
-  ENROLLED
-  COMPLETED
-  DROPPED
 }
 
 // Submission Model (Student's assignment submission)
@@ -2361,14 +2382,18 @@ enum RegistrationStatus {
 
 // Class Schedule Model (for educator's classes/lectures and school timetabling)
 model ClassSchedule {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  courseId    String   @db.ObjectId
-  course      Course   @relation(fields: [courseId], references: [id])
-  educatorId  String   @db.ObjectId
-  educator    Educator @relation(fields: [educatorId], references: [id])
-  dayOfWeek   String // Date of the class (e.g., '2025-07-01T00:00:00.000Z' for the specific day)
-  startTime   DateTime // Time of the class (e.g., '1970-01-01T10:00:00.000Z' - only time component matters, date part is ignored)
-  endTime     DateTime // End time of the class (e.g., '1970-01-01T11:30:00.000Z' - only time component matters, date part is ignored)
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  educatorId String   @db.ObjectId
+  educator   Educator @relation(fields: [educatorId], references: [id])
+
+  dayOfWeek String
+  startTime DateTime // Time of the class (e.g., '1970-01-01T10:00:00.000Z' - only time component matters, date part is ignored)
+  endTime   DateTime // End time of the class (e.g., '1970-01-01T11:30:00.000Z' - only time component matters, date part is ignored)
+
   topic       String?
   meetingLink String? // Link to video conferencing (e.g., Zoom, Google Meet)
 
@@ -2425,13 +2450,9 @@ model AttendanceRecord {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?  @db.ObjectId
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
 
-  @@unique([studentId, date, classScheduleId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
-  @@unique([studentId, date, academicLevelId]) // Ensures a student has only one record for a specific scheduled class or general day (if classScheduleId is null) on a given date.
   @@index([studentId, date])
   @@index([classScheduleId])
   @@index([academicLevelId]) // NEW INDEX
@@ -2717,19 +2738,19 @@ model Grade {
 
   // NEW FIELD: Link to the academic level the student was in when this grade was recorded
   // This is crucial for historical reporting by academic level.
-  academicLevelAtTimeOfGradeId String        @db.ObjectId
-  academicLevelAtTimeOfGrade   AcademicLevel @relation("GradeAcademicLevel", fields: [academicLevelAtTimeOfGradeId], references: [id])
+  academicLevelAtTimeOfGradingId String        @db.ObjectId
+  academicLevelAtTimeOfGrading   AcademicLevel @relation("gradesEarned", fields: [academicLevelAtTimeOfGradingId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([studentId, courseId, examId, academicLevelAtTimeOfGradeId])
+  @@unique([studentId, courseId, examId, academicLevelAtTimeOfGradingId])
   @@index([studentId])
   @@index([courseId])
   @@index([examId])
   @@index([recordedById])
   @@index([companyId])
-  @@index([academicLevelAtTimeOfGradeId]) // Add index for efficient querying by academic level
+  @@index([academicLevelAtTimeOfGradingId]) // Add index for efficient querying by academic level
 }
 
 enum GradeStatus {

@@ -5,7 +5,7 @@ import prisma from "@/server/db/prismadb"; // Adjust path as per your project st
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get('studentId'); // The student whose classes are being viewed
-  const companyId = searchParams.get('companyId');   // For multi-tenancy
+  // const companyId = searchParams.get('companyId');   // For multi-tenancy
 
   // --- Authentication & Authorization (Placeholder) ---
   // In a real application, you would:
@@ -18,14 +18,14 @@ export async function GET(request: Request) {
   // }
   // ----------------------------------------------------
 
-  if (!studentId || !companyId) {
+  if (!studentId ) {
     return NextResponse.json({ message: 'Missing studentId or companyId' }, { status: 400 });
   }
 
   try {
     // 1. Fetch Student details
     const student = await prisma.student.findUnique({
-      where: { id: studentId, companyId: companyId },
+      where: { userId: studentId, },
       select: {
         id: true,
         user: {
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       },
     });
 
-    if (!student || !student.user) {
+    if (!student || !student.user ) {
       return NextResponse.json({ message: 'Student not found or not associated with this company' }, { status: 404 });
     }
 
@@ -81,13 +81,13 @@ export async function GET(request: Request) {
                 { startTime: 'asc' },
               ],
             },
-            assignments: { // Fetch assignments for the course
+            Exam: { // Fetch assignments for the course
               select: {
                 id: true,
                 title: true,
                 date: true, // Due date
-                examType: true, // To filter by assignment types
-                maxScore: true,
+                type: true, // To filter by assignment types
+                totalPoints: true,
               },
               where: {
                 // Filter for assignments that are not yet graded or are published
@@ -95,8 +95,8 @@ export async function GET(request: Request) {
                 // For simplicity, let's consider HOMEWORK and PROJECT as assignments
                 OR: [
                   { type: 'HOMEWORK' },
-                  { examType: 'PROJECT' },
-                  { examType: 'QUIZ' },
+                  { type: 'PROJECT' },
+                  { type: 'QUIZ' },
                 ],
               },
             },
@@ -135,16 +135,16 @@ export async function GET(request: Request) {
 
       // Calculate upcoming assignments
       const now = new Date();
-      const upcomingAssignments = course.assignments.filter(assignment => {
+      const upcomingAssignments = course.Exam.filter(assignment => {
         // Consider assignments due in the future and not yet submitted/graded by the student
         // This requires fetching student's submissions for each assignment, which is complex for this API.
         // For simplicity, we'll just filter by future due dates for "upcoming".
-        return assignment.examDate > now;
-      }).sort((a, b) => a.examDate.getTime() - b.examDate.getTime());
+        return assignment.date > now;
+      }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
       const upcomingAssignmentsCount = upcomingAssignments.length;
       const nextAssignmentDue = upcomingAssignments.length > 0
-        ? upcomingAssignments[0].examDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        ? upcomingAssignments[0].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         : 'None';
 
       studentEnrolledClasses.push({

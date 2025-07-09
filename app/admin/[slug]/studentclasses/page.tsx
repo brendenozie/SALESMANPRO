@@ -10,7 +10,7 @@ const MOCK_CURRENT_STUDENT_ID = "clx023j0d00003b6033877d9c"; // Example: Student
 
 interface PageProps {
   params: {
-    slug: string; // companyId
+    slug: string; // studentId
   };
 }
 
@@ -35,22 +35,22 @@ export interface StudentClassesPageData {
 }
 
 export default async function StudentClassesServerPage({ params }: PageProps) {
-  const companyId = params.slug;
-  const studentId = MOCK_CURRENT_STUDENT_ID;
+
+  const studentId = params.slug || MOCK_CURRENT_STUDENT_ID;
 
   let classesPageData: StudentClassesPageData | null = null;
   let fetchError: string | null = null;
 
   try {
     const res = await fetch(
-      `${apiUrl}/student/classes?studentId=${encodeURIComponent(studentId)}&companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/student/classes?studentId=${encodeURIComponent(studentId)}`,
       { cache: "no-store" } // Ensure fresh data
     );
 
     if (res.ok) {
       classesPageData = (await res.json()) as StudentClassesPageData;
       classesPageData.studentId = studentId; // Ensure studentId is passed down
-      classesPageData.companyId = companyId; // Ensure companyId is passed down
+      // classesPageData.companyId = companyId; // Ensure companyId is passed down
     } else {
       const errorData = await res.json();
       fetchError = errorData.message || `Failed to fetch student classes: ${res.status} ${res.statusText}`;
