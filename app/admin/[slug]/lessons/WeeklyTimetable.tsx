@@ -8,6 +8,8 @@ import {
   UsersIcon, // For educator
   LinkIcon, // For meeting link
   XMarkIcon, // For academic levels
+  TagIcon, // For academic levels in card
+  BookOpenIcon, // For course code
 } from '@heroicons/react/24/outline';
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
@@ -23,13 +25,14 @@ export type TimetableEntry = {
   id: string;
   courseId: string;
   courseTitle: string; // Flattened from course relation
+  courseCode: string; // NEW: Flattened from course relation
   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[]; // Flattened from course relation
   educatorId: string;
   educatorName: string; // Flattened from educator relation
   educatorEmail: string; // Flattened from educator relation
   dayOfWeek: string; // e.g., "Monday", "Tuesday"
   startTime: string; // ISO string for time (e.g., "1970-01-01T08:00:00.000Z")
-  endTime: string;   // ISO string for time
+  endTime: string;   // ISO string for time
   topic?: string | null;
   meetingLink?: string | null;
   companyId: string;
@@ -40,8 +43,8 @@ export type TimetableEntry = {
 export type CourseOption = {
   id: string;
   title: string;
+  code: string; // NEW: Course code
   academicLevels: { id: string; name: string; sortOrder?: number }[];
-  instructorName?: string; // Optional, if courses have a default instructor
 };
 
 export type EducatorOption = {
@@ -91,9 +94,9 @@ const generateSampleTimetableData = (companyId: string): {
   ];
 
   const courses: CourseOption[] = [
-    { id: 'CRS001', title: 'Algebra I', instructorName: 'Mr. John Doe', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
-    { id: 'CRS002', title: 'Literary Analysis', instructorName: 'Ms. Jane Smith', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
-    { id: 'CRS003', title: 'Elementary Math', instructorName: 'Dr. Alex Lee', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
+    { id: 'CRS001', title: 'Algebra I', code: 'MATH101', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
+    { id: 'CRS002', title: 'Literary Analysis', code: 'ENG203', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
+    { id: 'CRS003', title: 'Elementary Math', code: 'MATH100', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
   ];
 
   const dummyDate = '1970-01-01T'; // For storing time components as Date objects
@@ -103,6 +106,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH001',
       courseId: 'CRS001',
       courseTitle: 'Algebra I',
+      courseCode: 'MATH101',
       courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
@@ -120,6 +124,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH002',
       courseId: 'CRS002',
       courseTitle: 'Literary Analysis',
+      courseCode: 'ENG203',
       courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
@@ -137,6 +142,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH003',
       courseId: 'CRS001',
       courseTitle: 'Algebra I',
+      courseCode: 'MATH101',
       courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
@@ -154,6 +160,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH004',
       courseId: 'CRS003',
       courseTitle: 'Elementary Math',
+      courseCode: 'MATH100',
       courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
@@ -170,6 +177,20 @@ const generateSampleTimetableData = (companyId: string): {
   ];
 
   return { sampleTimetableEntries: timetableEntries, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels };
+};
+
+
+// Helper to format Date object to HH:MM string (UTC)
+const formatTimeToHHMM = (isoString: string): string => {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) {
+    console.warn("Invalid date string passed to formatTimeToHHMM:", isoString);
+    return '00:00'; // Return a default valid time or handle error appropriately
+  }
+  // Use UTC methods to ensure no timezone conversion
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
 
 
@@ -216,12 +237,20 @@ const SortableLessonCard: React.FC<SortableLessonCardProps> = ({ entry, onClick,
       <div className="flex-grow">
         <p className="font-bold text-base truncate">{entry.courseTitle}</p>
         <p className="text-xs text-gray-700 flex items-center mt-0.5">
+          <BookOpenIcon className="h-3 w-3 mr-1" /> {entry.courseCode}
+        </p>
+        <p className="text-xs text-gray-700 flex items-center mt-0.5">
           <UsersIcon className="h-3 w-3 mr-1" /> {entry.educatorName || 'N/A'}
         </p>
         {entry.courseAcademicLevels && entry.courseAcademicLevels.length > 0 && (
-          <p className="text-xs text-gray-700 flex items-center mt-0.5">
-            <AcademicCapIcon className="h-3 w-3 mr-1" /> {entry.courseAcademicLevels.map(al => al.name).join(', ')}
-          </p>
+          <div className="flex flex-wrap items-center mt-0.5">
+            <TagIcon className="h-3 w-3 mr-1 text-gray-700" />
+            {entry.courseAcademicLevels.map((al, index) => (
+              <span key={al.id} className="text-xs text-gray-700">
+                {al.name}{index < entry.courseAcademicLevels.length - 1 ? ', ' : ''}
+              </span>
+            ))}
+          </div>
         )}
         {entry.topic && (
           <p className="text-xs text-gray-600 mt-1 line-clamp-2">Topic: {entry.topic}</p>
@@ -256,30 +285,30 @@ const SortableLessonCard: React.FC<SortableLessonCardProps> = ({ entry, onClick,
 };
 
 
-
-
-
-
-
 // --- Main WeeklyTimetable Component ---
 interface WeeklyTimetableProps {
   initialTimetable: TimetableEntry[];
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
-  allAcademicLevels: AcademicLevelOption[]; // Corrected: Added here
+  allAcademicLevels: AcademicLevelOption[];
   companyId: string; // Pass companyId for API calls
 }
 
 export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, companyId }: WeeklyTimetableProps) {
   const [timetable, setTimetable] = useState<TimetableEntry[]>(initialTimetable);
-  
-  const [selectedClassId, setSelectedClassId] = useState(allAcademicLevels[0]?.id || 'All'); // Default to first class or 'All'
-  const [selectedCourseId, setSelectedCourseId] = useState('All'); // Renamed from selectedClassId
-  const [selectedEducatorId, setSelectedEducatorId] = useState('All'); // New filter for educator
+
+  // Renamed selectedClassId to selectedAcademicLevelId for clarity
+  const [selectedAcademicLevelId, setSelectedAcademicLevelId] = useState(allAcademicLevels[0]?.id || 'All');
+  const [selectedCourseId, setSelectedCourseId] = useState('All');
+  const [selectedEducatorId, setSelectedEducatorId] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimetableEntry | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For API operations
   const [error, setError] = useState<string | null>(null);
+
+  // New state variables to hold the day and time for a new lesson being added
+  const [newLessonDay, setNewLessonDay] = useState<string>('');
+  const [newLessonTime, setNewLessonTime] = useState<string>('');
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -337,9 +366,12 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     () => timetable.filter(entry => {
       const matchesCourse = selectedCourseId === 'All' || entry.courseId === selectedCourseId;
       const matchesEducator = selectedEducatorId === 'All' || entry.educatorId === selectedEducatorId;
-      return matchesCourse && matchesEducator;
+      // Filter by academic level: check if any of the course's academic levels match the selected filter
+      const matchesAcademicLevel = selectedAcademicLevelId === 'All' ||
+                                   entry.courseAcademicLevels.some(al => al.id === selectedAcademicLevelId);
+      return matchesCourse && matchesEducator && matchesAcademicLevel;
     }),
-    [timetable, selectedCourseId, selectedEducatorId]
+    [timetable, selectedCourseId, selectedEducatorId, selectedAcademicLevelId]
   );
 
   // DnD Handlers
@@ -357,35 +389,32 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         const originalEndTimeObj = new Date(draggedLesson.endTime);
         const originalDurationMs = originalEndTimeObj.getTime() - originalStartTimeObj.getTime();
 
+        // Ensure targetTime is in HH:MM format for new Date() constructor with dummy date
         const [hours, minutes] = targetTime.split(':').map(Number);
-        const newStartDate = new Date('1970-01-01T00:00:00Z');
+        const newStartDate = new Date('1970-01-01T00:00:00Z'); // Use UTC to avoid timezone issues
         newStartDate.setUTCHours(hours, minutes, 0, 0);
 
         const newEndTimeObj = new Date(newStartDate.getTime() + originalDurationMs);
 
-        const updatedLesson = {
-          ...draggedLesson,
-          dayOfWeek: targetDayOfWeek, // Update the day of week
-          startTime: newStartDate.toISOString(), // Store as ISO string
-          endTime: newEndTimeObj.toISOString(),   // Store as ISO string
-        };
+        // API expects HH:MM strings for startTime and endTime
+        const apiStartTime = newStartDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const apiEndTime = newEndTimeObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
         setIsLoading(true);
         setError(null);
         try {
-          const res = await fetch(`${apiUrl}/admin/class-schedules/${updatedLesson.id}`, {
+          const res = await fetch(`${apiUrl}/admin/class-schedules/${draggedLesson.id}`, { // Corrected API path
             method: 'PATCH', // Use PATCH for updates
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              courseId: updatedLesson.courseId,
-              educatorId: updatedLesson.educatorId,
-              dayOfWeek: updatedLesson.dayOfWeek,
-              // Send HH:MM strings to the API
-              startTime: new Date(updatedLesson.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-              endTime: new Date(updatedLesson.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-              topic: updatedLesson.topic,
-              meetingLink: updatedLesson.meetingLink,
-              companyId: updatedLesson.companyId,
+              courseId: draggedLesson.courseId,
+              educatorId: draggedLesson.educatorId,
+              dayOfWeek: targetDayOfWeek,
+              startTime: apiStartTime, // Send HH:MM string
+              endTime: apiEndTime,   // Send HH:MM string
+              topic: draggedLesson.topic,
+              meetingLink: draggedLesson.meetingLink,
+              companyId: draggedLesson.companyId, // Ensure companyId is sent for validation
             }),
           });
 
@@ -415,29 +444,34 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     return daysOfWeekOrder.map((dayName, index) => {
       const date = new Date(monday);
       date.setDate(monday.getDate() + index);
-      return date.toISOString().split('T')[0]; // YYYY-MM-DD
+      return date.toISOString().split('T')[0]; //YYYY-MM-DD
     });
   }, []); // Recalculate only once or when a "week" navigation is added
-  
+
 
   // Modal Save Handler (for Add/Edit)
-  const handleSave = async (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => {
+  const handleSave = async (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     setError(null);
 
     const method = lessonData.id ? 'PATCH' : 'POST'; // Use PATCH for existing, POST for new
 
     try {
-      const url = lessonData.id ? `${apiUrl}/admin/class-schedules/${lessonData.id}` : `${apiUrl}/admin/class-schedules`;
+      const url = lessonData.id ? `${apiUrl}/admin/class-schedules/${lessonData.id}` : `${apiUrl}/admin/class-schedules`; // Corrected API path
+
+      // Ensure times are sent as HH:MM strings to the API
+      const apiStartTime = formatTimeToHHMM(lessonData.startTime);
+      const apiEndTime = formatTimeToHHMM(lessonData.endTime);
+
 
       const res = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
-        // Ensure times are sent as HH:MM strings to the API
         body: JSON.stringify({
           ...lessonData,
-          startTime: new Date(lessonData.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-          endTime: new Date(lessonData.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          startTime: apiStartTime,
+          endTime: apiEndTime,
+          companyId: companyId, // Ensure companyId is always sent
         }),
       });
 
@@ -464,7 +498,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/class-schedules/${entryId}`, {
+      const res = await fetch(`${apiUrl}/admin/class-schedules/${entryId}`, { // Corrected API path
         method: 'DELETE',
       });
 
@@ -489,19 +523,25 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
 
       <TimetableHeader
         today={today}
-        selectedClassId={selectedClassId}
+        selectedAcademicLevelId={selectedAcademicLevelId} // Renamed prop
+        selectedCourseId={selectedCourseId} // Added course filter
         selectedEducatorId={selectedEducatorId}
-        onChangeClass={setSelectedClassId}
+        onChangeAcademicLevel={setSelectedAcademicLevelId} // Renamed handler
+        onChangeCourse={setSelectedCourseId} // Added handler
         onChangeEducator={setSelectedEducatorId}
         allAcademicLevels={allAcademicLevels}
+        allCourses={allCourses} // Pass all courses
         allEducators={allEducators}
         onAddLesson={() => {
           setEditingEntry(null);
+          // When "Add Lesson" button is clicked, set default day and time for new lesson
+          setNewLessonDay('Monday'); // Or current day, depending on desired default
+          setNewLessonTime('08:00'); // Or current time
           setShowFormModal(true);
         }}
       />
 
-    
+
       {/* Loading and Error Indicators */}
       {isLoading && (
         <div className="flex items-center justify-center py-4 text-blue-700 font-medium text-lg">
@@ -538,23 +578,10 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
           handleDelete(id);
         }}
         onAddLesson={(dayOfWeek: string, time: string) => {
-          setEditingEntry({
-            id: '',
-            courseId: selectedCourseId === 'All' ? '' : selectedCourseId,
-            courseTitle: '', // Will be populated on save
-            courseAcademicLevels: [], // Will be populated on save
-            educatorId: selectedEducatorId === 'All' ? '' : selectedEducatorId,
-            educatorName: '', // Will be populated on save
-            educatorEmail: '', // Will be populated on save
-            dayOfWeek,
-            startTime: new Date(`1970-01-01T${time}:00.000Z`).toISOString(),
-            endTime: new Date(`1970-01-01T${time}:00.000Z`).toISOString(), // Default to same time for now
-            topic: '',
-            meetingLink: '',
-            companyId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
+          // When an empty cell is clicked, set the day and time for the new lesson
+          setNewLessonDay(dayOfWeek);
+          setNewLessonTime(time);
+          setEditingEntry(null); // Ensure no existing entry is being edited
           setShowFormModal(true);
         }}
         activeId={activeId}
@@ -562,10 +589,11 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         onDragEnd={handleDragEnd}
         filteredLessons={filteredLessons} // Pass filtered lessons to the grid
       />
-      
+
       {/* Modals */}
       {showFormModal && (
         <LessonFormModal
+          isOpen={showFormModal} // Pass isOpen prop
           entryData={editingEntry}
           onClose={() => { setShowFormModal(false); setEditingEntry(null); }}
           onSave={handleSave}
@@ -573,8 +601,12 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
           allCourses={allCourses}
           allEducators={allEducators}
           companyId={companyId}
-          selectedDayOfWeek={editingEntry?.dayOfWeek || (editingEntry === null ? (activeId ? (timetable.find(l => l.id === activeId)?.dayOfWeek || '') : '') : '')} // Pass day from clicked cell or dragged item
-          selectedTimeSlot={editingEntry?.startTime ? new Date(editingEntry.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : (editingEntry === null ? (activeId ? (new Date(timetable.find(l => l.id === activeId)?.startTime || '').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) || '') : '') : '')} // Pass time from clicked cell or dragged item
+          selectedDayOfWeek={editingEntry?.dayOfWeek || newLessonDay} // Use newLessonDay for new entries
+          selectedTimeSlot={
+            editingEntry?.startTime
+              ? formatTimeToHHMM(editingEntry.startTime)
+              : newLessonTime // Use newLessonTime for new entries
+          }
         />
       )}
     </div>

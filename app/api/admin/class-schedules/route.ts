@@ -41,7 +41,8 @@ export async function GET(request: Request) {
           select: {
             id: true,
             title: true,
-            academicLevels: { // Include academic levels through the course
+            code: true, // Include course code
+            academicLevels: { // Include academic levels through the CourseAcademicLevel junction
               include: {
                 academicLevel: {
                   select: { id: true, name: true, sortOrder: true },
@@ -60,16 +61,15 @@ export async function GET(request: Request) {
         },
       },
       orderBy: [
-        { dayOfWeek: 'asc' }, // Order by day of week (needs custom sorting on frontend if not enum)
-        { startTime: 'asc' }, // Then by start time
+        { startTime: 'asc' }, // Order by start time first
       ],
     });
 
     // Custom sort by day of week if you want a specific order (e.g., Mon-Sun)
+    const dayOrder: { [key: string]: number } = {
+      "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6, "Sunday": 7
+    };
     const sortedClassSchedules = classSchedules.sort((a, b) => {
-      const dayOrder: { [key: string]: number } = {
-        "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6, "Sunday": 7
-      };
       return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
     });
 
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
     // Transform the data to include flattened relations
     const response = sortedClassSchedules.map((schedule) => {
       const courseAcademicLevels = schedule.course?.academicLevels
-        .map(al => al.academicLevel)
+        .map(cal => cal.academicLevel) // Access academicLevel through the junction
         .filter(Boolean)
         .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
         .map(level => ({ id: level!.id, name: level!.name }));
@@ -86,13 +86,14 @@ export async function GET(request: Request) {
         id: schedule.id,
         courseId: schedule.courseId,
         courseTitle: schedule.course?.title || 'N/A',
+        courseCode: schedule.course?.code || 'N/A', // Include course code
         courseAcademicLevels: courseAcademicLevels || [],
         educatorId: schedule.educatorId,
         educatorName: schedule.educator?.user?.name || 'N/A',
         educatorEmail: schedule.educator?.user?.email || 'N/A',
         dayOfWeek: schedule.dayOfWeek,
         startTime: schedule.startTime, // Still a Date object, frontend will format
-        endTime: schedule.endTime,     // Still a Date object, frontend will format
+        endTime: schedule.endTime,     // Still a Date object, frontend will format
         topic: schedule.topic,
         meetingLink: schedule.meetingLink,
         companyId: schedule.companyId,
@@ -125,37 +126,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: `Invalid dayOfWeek: ${dayOfWeek}. Must be one of ${VALID_DAYS_OF_WEEK.join(', ')}.` }, { status: 400 });
     }
 
-    // Validate courseId exists
+    // Validate courseId exists and belongs to the company
     const existingCourse = await prisma.course.findUnique({
-      where: { id: courseId },
+      where: { id: courseId, companyId: companyId },
     });
     if (!existingCourse) {
-      return NextResponse.json({ message: "Provided courseId does not exist." }, { status: 400 });
+      return NextResponse.json({ message: "Provided courseId does not exist or does not belong to this company." }, { status: 400 });
     }
 
-    // Validate educatorId exists
+    // Validate educatorId exists and belongs to the company
     const existingEducator = await prisma.educator.findUnique({
-      where: { id: educatorId },
+      where: { id: educatorId, companyId: companyId },
     });
     if (!existingEducator) {
-      return NextResponse.json({ message: "Provided educatorId does not exist." }, { status: 400 });
+      return NextResponse.json({ message: "Provided educatorId does not exist or does not belong to this company." }, { status: 400 });
     }
 
     // Parse time strings into Date objects. Use a dummy date (e.g., 1970-01-01) for the date part.
     // Frontend should send times in a format like "HH:MM" or "YYYY-MM-DDTHH:MM:SSZ"
     const parsedStartTime = new Date(`1970-01-01T${startTime}:00Z`); // Assuming startTime is "HH:MM"
-    const parsedEndTime = new Date(`1970-01-01T${endTime}:00Z`);     // Assuming endTime is "HH:MM"
+    const parsedEndTime = new Date(`1970-01-01T${endTime}:00Z`); // Assuming endTime is "HH:MM"
 
     if (isNaN(parsedStartTime.getTime()) || isNaN(parsedEndTime.getTime())) {
-      return NextResponse.json({ message: "Invalid startTime or endTime format. Expected HH:MM." }, { status: 400 });
+      return NextResponse.json({ message: "Invalid startTime or endTime format. Expected HH:MM (e.g., '09:00')." }, { status: 400 });
     }
 
     if (parsedStartTime >= parsedEndTime) {
       return NextResponse.json({ message: "Start time must be before end time." }, { status: 400 });
     }
 
-    // Check for educator schedule conflict using the unique constraint
-    // Prisma's `create` will throw P2002 if the unique constraint is violated.
+    // Check if the educator is assigned to the course (optional but good practice for consistency)
+    const isEducatorAssignedToCourse = await prisma.courseEducatorAssignment.findUnique({
+      where: {
+        educatorId_courseId: {
+          educatorId: educatorId,
+          courseId: courseId,
+        },
+      },
+    });
+
+    if (!isEducatorAssignedToCourse) {
+      // This is a soft validation. You might allow scheduling if not strictly assigned,
+      // but it's good to flag potential inconsistencies.
+      console.warn(`Educator ${educatorId} is not formally assigned to course ${courseId} via CourseEducatorAssignment, but is being scheduled.`);
+      // return NextResponse.json({ message: "Educator is not assigned to this course. Please assign the educator to the course first." }, { status: 400 });
+    }
+
 
     const newSchedule = await prisma.classSchedule.create({
       data: {
@@ -169,7 +185,7 @@ export async function POST(request: Request) {
         companyId,
       },
       include: {
-        course: { select: { id: true, title: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
+        course: { select: { id: true, title: true, code: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
         educator: { select: { id: true, user: { select: { name: true, email: true } } } },
       },
     });
@@ -179,8 +195,9 @@ export async function POST(request: Request) {
       id: newSchedule.id,
       courseId: newSchedule.courseId,
       courseTitle: newSchedule.course?.title || 'N/A',
+      courseCode: newSchedule.course?.code || 'N/A',
       courseAcademicLevels: newSchedule.course?.academicLevels
-        .map(al => al.academicLevel)
+        .map(cal => cal.academicLevel)
         .filter(Boolean)
         .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
         .map(level => ({ id: level!.id, name: level!.name })) || [],
@@ -201,8 +218,9 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error creating class schedule:", error);
     if (error.code === 'P2002') {
-      return NextResponse.json({ message: "A class schedule already exists for this educator at the specified day and time." }, { status: 409 });
+      return NextResponse.json({ message: "A class schedule already exists for this educator at the specified day and time within this company." }, { status: 409 });
     }
     return NextResponse.json({ message: "Failed to create class schedule", error: error.message }, { status: 500 });
   }
 }
+

@@ -6,6 +6,10 @@ const VALID_DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 
 // GET /api/class-schedules/[id]
 // Fetches a single ClassSchedule by its ID.
+
+
+// GET /api/class-schedules/[id]
+// Fetches a single class schedule by ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
@@ -17,6 +21,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
           select: {
             id: true,
             title: true,
+            code: true, // Include course code
             academicLevels: {
               include: {
                 academicLevel: {
@@ -41,16 +46,18 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: "Class schedule not found" }, { status: 404 });
     }
 
-    // Transform response
+    const courseAcademicLevels = schedule.course?.academicLevels
+      .map(cal => cal.academicLevel)
+      .filter(Boolean)
+      .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+      .map(level => ({ id: level!.id, name: level!.name }));
+
     const responseData = {
       id: schedule.id,
       courseId: schedule.courseId,
       courseTitle: schedule.course?.title || 'N/A',
-      courseAcademicLevels: schedule.course?.academicLevels
-        .map(al => al.academicLevel)
-        .filter(Boolean)
-        .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
-        .map(level => ({ id: level!.id, name: level!.name })) || [],
+      courseCode: schedule.course?.code || 'N/A',
+      courseAcademicLevels: courseAcademicLevels || [],
       educatorId: schedule.educatorId,
       educatorName: schedule.educator?.user?.name || 'N/A',
       educatorEmail: schedule.educator?.user?.email || 'N/A',
@@ -72,17 +79,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PATCH /api/class-schedules/[id]
-// Updates an existing ClassSchedule by ID.
+// Updates an existing ClassSchedule.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
     const body = await request.json();
-    const { courseId, educatorId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId, ...rest } = body;
-
-    if (Object.keys(rest).length > 0) {
-      console.warn("Unexpected fields in PATCH request for class schedule:", rest);
-    }
+    const { courseId, educatorId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } = body;
 
     const existingSchedule = await prisma.classSchedule.findUnique({
       where: { id },
@@ -92,70 +95,88 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ message: "Class schedule not found" }, { status: 404 });
     }
 
+    // Validate companyId if provided and it's changing (shouldn't typically change)
+    if (companyId && existingSchedule.companyId !== companyId) {
+      return NextResponse.json({ message: "Cannot change companyId for an existing class schedule." }, { status: 400 });
+    }
+
     // Validate dayOfWeek if provided
-    if (dayOfWeek !== undefined && !VALID_DAYS_OF_WEEK.includes(dayOfWeek)) {
+    if (dayOfWeek && !VALID_DAYS_OF_WEEK.includes(dayOfWeek)) {
       return NextResponse.json({ message: `Invalid dayOfWeek: ${dayOfWeek}. Must be one of ${VALID_DAYS_OF_WEEK.join(', ')}.` }, { status: 400 });
     }
 
     // Validate courseId if provided
-    if (courseId !== undefined && courseId !== existingSchedule.courseId) {
-      const newCourse = await prisma.course.findUnique({
-        where: { id: courseId },
+    if (courseId) {
+      const existingCourse = await prisma.course.findUnique({
+        where: { id: courseId, companyId: existingSchedule.companyId },
       });
-      if (!newCourse) {
-        return NextResponse.json({ message: "Provided courseId does not exist for reassignment." }, { status: 400 });
+      if (!existingCourse) {
+        return NextResponse.json({ message: "Provided courseId does not exist or does not belong to this company." }, { status: 400 });
       }
     }
 
     // Validate educatorId if provided
-    if (educatorId !== undefined && educatorId !== existingSchedule.educatorId) {
-      const newEducator = await prisma.educator.findUnique({
-        where: { id: educatorId },
+    if (educatorId) {
+      const existingEducator = await prisma.educator.findUnique({
+        where: { id: educatorId, companyId: existingSchedule.companyId },
       });
-      if (!newEducator) {
-        return NextResponse.json({ message: "Provided educatorId does not exist for reassignment." }, { status: 400 });
+      if (!existingEducator) {
+        return NextResponse.json({ message: "Provided educatorId does not exist or does not belong to this company." }, { status: 400 });
+      }
+
+      // Check if the new educator is assigned to the course (optional but good practice for consistency)
+      if (courseId) { // Only check if courseId is also provided or already exists
+        const currentCourseId = courseId || existingSchedule.courseId;
+        const isEducatorAssignedToCourse = await prisma.courseEducatorAssignment.findUnique({
+          where: {
+            educatorId_courseId: {
+              educatorId: educatorId,
+              courseId: currentCourseId,
+            },
+          },
+        });
+
+        if (!isEducatorAssignedToCourse) {
+          console.warn(`Educator ${educatorId} is not formally assigned to course ${currentCourseId} via CourseEducatorAssignment, but is being scheduled.`);
+          // return NextResponse.json({ message: "Educator is not assigned to this course. Please assign the educator to the course first." }, { status: 400 });
+        }
       }
     }
 
-    // Handle startTime and endTime parsing
-    let parsedStartTime: Date | undefined;
-    let parsedEndTime: Date | undefined;
+    let parsedStartTime = existingSchedule.startTime;
+    let parsedEndTime = existingSchedule.endTime;
 
-    if (startTime !== undefined) {
+    if (startTime) {
       parsedStartTime = new Date(`1970-01-01T${startTime}:00Z`);
       if (isNaN(parsedStartTime.getTime())) {
         return NextResponse.json({ message: "Invalid startTime format. Expected HH:MM." }, { status: 400 });
       }
     }
-    if (endTime !== undefined) {
+
+    if (endTime) {
       parsedEndTime = new Date(`1970-01-01T${endTime}:00Z`);
       if (isNaN(parsedEndTime.getTime())) {
         return NextResponse.json({ message: "Invalid endTime format. Expected HH:MM." }, { status: 400 });
       }
     }
 
-    // Validate start/end time relationship if both are provided or one is updated
-    const finalStartTime = parsedStartTime || existingSchedule.startTime;
-    const finalEndTime = parsedEndTime || existingSchedule.endTime;
-
-    if (finalStartTime && finalEndTime && finalStartTime >= finalEndTime) {
+    if (parsedStartTime >= parsedEndTime) {
       return NextResponse.json({ message: "Start time must be before end time." }, { status: 400 });
     }
 
     const updatedSchedule = await prisma.classSchedule.update({
       where: { id },
       data: {
-        courseId,
-        educatorId,
-        dayOfWeek,
-        startTime: parsedStartTime,
-        endTime: parsedEndTime,
-        topic,
-        meetingLink,
-        companyId, // companyId should ideally not be changed after creation
+        courseId: courseId || existingSchedule.courseId,
+        educatorId: educatorId || existingSchedule.educatorId,
+        dayOfWeek: dayOfWeek || existingSchedule.dayOfWeek,
+        startTime: startTime ? parsedStartTime : existingSchedule.startTime,
+        endTime: endTime ? parsedEndTime : existingSchedule.endTime,
+        topic: topic !== undefined ? topic : existingSchedule.topic, // Allow null/empty string for topic
+        meetingLink: meetingLink !== undefined ? meetingLink : existingSchedule.meetingLink, // Allow null/empty string for meetingLink
       },
       include: {
-        course: { select: { id: true, title: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
+        course: { select: { id: true, title: true, code: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
         educator: { select: { id: true, user: { select: { name: true, email: true } } } },
       },
     });
@@ -165,8 +186,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       id: updatedSchedule.id,
       courseId: updatedSchedule.courseId,
       courseTitle: updatedSchedule.course?.title || 'N/A',
+      courseCode: updatedSchedule.course?.code || 'N/A',
       courseAcademicLevels: updatedSchedule.course?.academicLevels
-        .map(al => al.academicLevel)
+        .map(cal => cal.academicLevel)
         .filter(Boolean)
         .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
         .map(level => ({ id: level!.id, name: level!.name })) || [],
@@ -187,14 +209,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   } catch (error: any) {
     console.error(`Error updating class schedule with ID ${id}:`, error);
     if (error.code === 'P2002') {
-      return NextResponse.json({ message: "A class schedule already exists for this educator at the specified day and time." }, { status: 409 });
+      return NextResponse.json({ message: "A class schedule already exists for this educator at the specified day and time within this company." }, { status: 409 });
     }
     return NextResponse.json({ message: "Failed to update class schedule", error: error.message }, { status: 500 });
   }
 }
 
 // DELETE /api/class-schedules/[id]
-// Deletes a ClassSchedule by ID.
+// Deletes a class schedule by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
@@ -207,8 +229,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: "Class schedule not found" }, { status: 404 });
     }
 
-    // If AttendanceRecord has onDelete: Cascade, records will be deleted automatically.
-    // Otherwise, you might get a P2003 error if attendance records exist.
+    // Note: If AttendanceRecord has a strict onDelete: Restrict on classScheduleId,
+    // you might need to delete related AttendanceRecords first or configure cascade delete.
     const deletedSchedule = await prisma.classSchedule.delete({
       where: { id },
     });
@@ -217,7 +239,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   } catch (error: any) {
     console.error(`Error deleting class schedule with ID ${id}:`, error);
     if (error.code === 'P2003') {
-      return NextResponse.json({ message: "Cannot delete class schedule: It has associated attendance records. Please delete attendance records first." }, { status: 409 });
+      return NextResponse.json({ message: "Cannot delete class schedule: It is linked to existing attendance records. Please delete associated records first." }, { status: 409 });
     }
     return NextResponse.json({ message: "Failed to delete class schedule", error: error.message }, { status: 500 });
   }

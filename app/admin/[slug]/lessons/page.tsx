@@ -33,9 +33,9 @@ const generateSampleTimetableData = (companyId: string): {
   ];
 
   const courses: CourseOption[] = [
-    { id: 'CRS001', title: 'Algebra I', instructorName: 'Mr. John Doe', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
-    { id: 'CRS002', title: 'Literary Analysis', instructorName: 'Ms. Jane Smith', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
-    { id: 'CRS003', title: 'Elementary Math', instructorName: 'Dr. Alex Lee', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
+    { id: 'CRS001', title: 'Algebra I', code: 'MATH101', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
+    { id: 'CRS002', title: 'Literary Analysis', code: 'ENG203', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
+    { id: 'CRS003', title: 'Elementary Math', code: 'MATH100', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
   ];
 
   const dummyDate = '1970-01-01T'; // For storing time components as Date objects
@@ -45,6 +45,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH001',
       courseId: 'CRS001',
       courseTitle: 'Algebra I',
+      courseCode: 'MATH101', // Added courseCode
       courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
@@ -62,6 +63,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH002',
       courseId: 'CRS002',
       courseTitle: 'Literary Analysis',
+      courseCode: 'ENG203', // Added courseCode
       courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
@@ -79,6 +81,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH003',
       courseId: 'CRS001',
       courseTitle: 'Algebra I',
+      courseCode: 'MATH101', // Added courseCode
       courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
@@ -96,6 +99,7 @@ const generateSampleTimetableData = (companyId: string): {
       id: 'SCH004',
       courseId: 'CRS003',
       courseTitle: 'Elementary Math',
+      courseCode: 'MATH100', // Added courseCode
       courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
@@ -128,23 +132,23 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   try {
     // Fetch timetable entries with related course and educator info
     const timetableRes = await fetch(
-      `${apiUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { cache: "no-store" } // SSR on every request
     );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()) as TimetableEntry[];
     } else {
-      // console.error(
-      //   "[TimetableManagerPage] Failed to fetch timetable →",
-      //   timetableRes.status,
-      //   timetableRes.statusText
-      // );
+      console.error(
+        "[TimetableManagerPage] Failed to fetch timetable →",
+        timetableRes.status,
+        timetableRes.statusText
+      );
       fetchError = true;
     }
 
     // Fetch all courses for dropdowns
     const coursesRes = await fetch(
-      `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { cache: "no-store" }
     );
     if (coursesRes.ok) {
@@ -152,21 +156,21 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
-        instructorName: c.instructorName,
-        academicLevels: c.academicLevels,
+        code: c.code, // Include course code
+        academicLevels: c.academicLevels, // This should now be an array of {id, name}
       }));
     } else {
-      // console.error(
-      //   "[TimetableManagerPage] Failed to fetch courses →",
-      //   coursesRes.status,
-      //   coursesRes.statusText
-      // );
+      console.error(
+        "[TimetableManagerPage] Failed to fetch courses →",
+        coursesRes.status,
+        coursesRes.statusText
+      );
       fetchError = true;
     }
 
     // Fetch all educators for dropdowns
     const educatorsRes = await fetch(
-      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { cache: "no-store" }
     );
     if (educatorsRes.ok) {
@@ -177,31 +181,31 @@ export default async function TimetableManagerPage({ params }: PageProps) {
         email: e.email,
       }));
     } else {
-      // console.error(
-      //   "[TimetableManagerPage] Failed to fetch educators →",
-      //   educatorsRes.status,
-      //   educatorsRes.statusText
-      // );
+      console.error(
+        "[TimetableManagerPage] Failed to fetch educators →",
+        educatorsRes.status,
+        educatorsRes.statusText
+      );
       fetchError = true;
     }
 
     // Fetch all academic levels (for display in course options)
     const academicLevelsRes = await fetch(
-      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { cache: "no-store" }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
     } else {
-      // console.error(
-      //   `[TimetableManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      // );
+      console.error(
+        `[TimetableManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      );
       fetchError = true;
     }
 
 
   } catch (err: any) {
-    // console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
+    console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
     fetchError = true;
   }
 
@@ -220,7 +224,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       initialTimetable={initialTimetable}
       allCourses={allCourses}
       allEducators={allEducators}
-      allAcademicLevels={allAcademicLevels} // Corrected: Passing the prop here
+      allAcademicLevels={allAcademicLevels}
       companyId={companyId}
     />
   );

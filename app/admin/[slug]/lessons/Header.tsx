@@ -6,26 +6,34 @@ import {
   UsersIcon,
   AcademicCapIcon,
   PlusIcon,
+  BookOpenIcon, // Added for Course filter icon
 } from '@heroicons/react/24/outline';
+import { AcademicLevelOption, CourseOption, EducatorOption } from './WeeklyTimetable'; // Import types
 
 interface TimetableHeaderProps {
   today: string;
-  selectedClassId: string;
+  selectedAcademicLevelId: string; // Renamed from selectedClassId
+  selectedCourseId: string; // New prop for course filter
   selectedEducatorId: string;
-  onChangeClass: (value: string) => void;
+  onChangeAcademicLevel: (value: string) => void; // Renamed from onChangeClass
+  onChangeCourse: (value: string) => void; // New handler for course filter
   onChangeEducator: (value: string) => void;
-  allAcademicLevels: { id: string; name: string }[];
-  allEducators: { id: string; name: string }[];
+  allAcademicLevels: AcademicLevelOption[]; // Use imported type
+  allCourses: CourseOption[]; // New prop for all courses
+  allEducators: EducatorOption[]; // Use imported type
   onAddLesson: () => void;
 }
 
 export default function TimetableHeader({
   today,
-  selectedClassId,
+  selectedAcademicLevelId, // Renamed
+  selectedCourseId, // New
   selectedEducatorId,
-  onChangeClass,
+  onChangeAcademicLevel, // Renamed
+  onChangeCourse, // New
   onChangeEducator,
   allAcademicLevels,
+  allCourses, // New
   allEducators,
   onAddLesson,
 }: TimetableHeaderProps) {
@@ -38,7 +46,7 @@ export default function TimetableHeader({
             Weekly Timetable 📅
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Manage class schedules by level and educator.
+            Manage class schedules by level, course, and educator.
           </p>
         </div>
 
@@ -54,14 +62,31 @@ export default function TimetableHeader({
         <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 shadow-sm">
           <AcademicCapIcon className="h-5 w-5 text-indigo-500" />
           <select
-            value={selectedClassId}
-            onChange={(e) => onChangeClass(e.target.value)}
+            value={selectedAcademicLevelId} // Renamed
+            onChange={(e) => onChangeAcademicLevel(e.target.value)} // Renamed
             className="flex-1 bg-transparent text-sm text-gray-700 focus:outline-none"
           >
-            <option value="All">All Levels</option>
+            <option value="All">All Academic Levels</option>
             {allAcademicLevels.map((level) => (
               <option key={level.id} value={level.id}>
                 {level.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Course Filter (NEW) */}
+        <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 shadow-sm">
+          <BookOpenIcon className="h-5 w-5 text-indigo-500" />
+          <select
+            value={selectedCourseId}
+            onChange={(e) => onChangeCourse(e.target.value)}
+            className="flex-1 bg-transparent text-sm text-gray-700 focus:outline-none"
+          >
+            <option value="All">All Courses</option>
+            {allCourses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.title} ({course.code})
               </option>
             ))}
           </select>
