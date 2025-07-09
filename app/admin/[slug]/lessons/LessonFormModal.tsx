@@ -110,6 +110,8 @@ export default function LessonFormModal({
     const date = new Date(`1970-01-01T${value}:00Z`);
     setFormData((prev) => ({ ...prev, [name]: date.toISOString() }));
   };
+  
+  const makeISO = (hhmm: string) => new Date(`1970-01-01T${hhmm}:00Z`).toISOString();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,8 +125,10 @@ export default function LessonFormModal({
       courseId: formData.courseId,
       educatorId: formData.educatorId,
       dayOfWeek: formData.dayOfWeek,
-      startTime: formatTimeToHHMM(formData.startTime),
-      endTime: formatTimeToHHMM(formData.endTime),
+      // startTime: formatTimeToHHMM(formData.startTime),
+      // endTime: formatTimeToHHMM(formData.endTime),
+      startTime: makeISO(formatTimeToHHMM(formData.startTime)),
+      endTime:   makeISO(formatTimeToHHMM(formData.endTime)),
       topic: formData.topic,
       meetingLink: formData.meetingLink,
       companyId: formData.companyId,

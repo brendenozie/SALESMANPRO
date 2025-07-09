@@ -193,98 +193,6 @@ const formatTimeToHHMM = (isoString: string): string => {
   return `${hours}:${minutes}`;
 };
 
-
-// --- Sortable Lesson Card Component ---
-interface SortableLessonCardProps {
-  entry: TimetableEntry;
-  onClick: (entry: TimetableEntry) => void;
-  onDelete: (id: string) => void;
-}
-
-const SortableLessonCard: React.FC<SortableLessonCardProps> = ({ entry, onClick, onDelete }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: entry.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 10 : 1, // Bring dragged item to front
-    opacity: isDragging ? 0.7 : 1,
-    boxShadow: isDragging ? '0px 8px 20px rgba(0, 0, 0, 0.2)' : '0px 2px 5px rgba(0, 0, 0, 0.05)',
-  };
-
-  const formatTime = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`relative p-3 rounded-lg border flex flex-col justify-between h-full
-                  ${LESSON_COLORS.default} ${FONT} cursor-grab active:cursor-grabbing
-                  hover:shadow-md transition-shadow duration-200 ease-in-out`}
-    >
-      <div className="flex-grow">
-        <p className="font-bold text-base truncate">{entry.courseTitle}</p>
-        <p className="text-xs text-gray-700 flex items-center mt-0.5">
-          <BookOpenIcon className="h-3 w-3 mr-1" /> {entry.courseCode}
-        </p>
-        <p className="text-xs text-gray-700 flex items-center mt-0.5">
-          <UsersIcon className="h-3 w-3 mr-1" /> {entry.educatorName || 'N/A'}
-        </p>
-        {entry.courseAcademicLevels && entry.courseAcademicLevels.length > 0 && (
-          <div className="flex flex-wrap items-center mt-0.5">
-            <TagIcon className="h-3 w-3 mr-1 text-gray-700" />
-            {entry.courseAcademicLevels.map((al, index) => (
-              <span key={al.id} className="text-xs text-gray-700">
-                {al.name}{index < entry.courseAcademicLevels.length - 1 ? ', ' : ''}
-              </span>
-            ))}
-          </div>
-        )}
-        {entry.topic && (
-          <p className="text-xs text-gray-600 mt-1 line-clamp-2">Topic: {entry.topic}</p>
-        )}
-      </div>
-      <div className="flex justify-between items-center text-xs text-gray-700 mt-2 pt-2 border-t border-gray-200">
-        <span>{formatTime(entry.startTime)} - {formatTime(entry.endTime)}</span>
-        <div className="flex items-center gap-1">
-          {entry.meetingLink && (
-            <a href={entry.meetingLink} target="_blank" rel="noopener noreferrer" className="p-1 rounded-full hover:bg-gray-100 text-blue-700" title="Join Meeting">
-              <LinkIcon className="h-4 w-4" />
-            </a>
-          )}
-          <button
-            onClick={(e) => { e.stopPropagation(); onClick(entry); }}
-            className="p-1 rounded-full hover:bg-indigo-50 text-indigo-600"
-            title="Edit Entry"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}
-            className="p-1 rounded-full hover:bg-red-50 text-red-600"
-            title="Delete Entry"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
 // --- Main WeeklyTimetable Component ---
 interface WeeklyTimetableProps {
   initialTimetable: TimetableEntry[];
@@ -433,21 +341,6 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     }
     setActiveId(null);
   };
-
-  // Generate dates for the current week (Monday to Friday)
-  const currentWeekDays = useMemo(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 for Sunday, 1 for Monday
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to get Monday of current week
-    const monday = new Date(today.setDate(diff));
-
-    return daysOfWeekOrder.map((dayName, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return date.toISOString().split('T')[0]; //YYYY-MM-DD
-    });
-  }, []); // Recalculate only once or when a "week" navigation is added
-
 
   // Modal Save Handler (for Add/Edit)
   const handleSave = async (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => {
