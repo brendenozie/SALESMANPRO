@@ -1,5 +1,7 @@
 // app/admin/[slug]/class-teacher-academic-levels/page.tsx
+// import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo, StudentInAcademicLevel } from "@/app/api/class-teacher-academic-levels/route";
 import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo, StudentInAcademicLevel } from "@/app/api/teacher/academic-levels/route";
+
 import React from "react";
 import ClassTeacherAcademicLevelsPage from "./TeachersClassListPage";
 import { getAuthSession } from "@/lib/auth";
@@ -91,17 +93,17 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
 
   const teacherId = session?.user?.id || params.slug || MOCK_CURRENT_TEACHER_USER_ID;
 
-  let pageData: AssignedAcademicLevel[] = [];
+  let pageData: ClassTeacherAcademicLevelsPageData | null = null; // Changed type to ClassTeacherAcademicLevelsPageData
   let fetchError: boolean = false;
 
   try {
     const res = await fetch(
-      `${apiUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`,
+      `${apiUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, // Updated API path
       { cache: "no-store" } // equivalent to SSR on every request
     );
 
     if (res.ok) {
-      pageData = (await res.json()) as AssignedAcademicLevel[];
+      pageData = (await res.json()) as ClassTeacherAcademicLevelsPageData; // Cast to the new type
     } else {
       console.error(`[ClassTeacherAcademicLevelsPageServer] Failed to fetch data: ${res.status} ${res.statusText}`);
       fetchError = true;
@@ -112,16 +114,16 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
   }
 
   // If fetch failed or data is missing, use sample data as fallback
-  if (fetchError || !pageData ) {
+  if (fetchError || !pageData || !pageData.assignedAcademicLevels) {
     console.log("[ClassTeacherAcademicLevelsPageServer] Using sample data as fallback.");
-    pageData = generateSampleClassTeacherAcademicLevelsData().assignedAcademicLevels;
+    pageData = generateSampleClassTeacherAcademicLevelsData(); // Assign the full sample data
   }
 
   return (
     <ClassTeacherAcademicLevelsPage
-      classTeacherInfo={generateSampleClassTeacherAcademicLevelsData().classTeacherInfo}
-      themeSettings={generateSampleClassTeacherAcademicLevelsData().themeSettings}
-      assignedAcademicLevels={pageData}
+      classTeacherInfo={pageData.classTeacherInfo}
+      themeSettings={pageData.themeSettings}
+      assignedAcademicLevels={pageData.assignedAcademicLevels}
       teacherId={teacherId} // Pass teacherId for navigation
     />
   );

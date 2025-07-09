@@ -1,3 +1,6 @@
+
+// Client Component: TeachersClassListPage.tsx (renamed for clarity)
+// This component should be in a separate file: app/admin/[slug]/class-teacher-academic-levels/TeachersClassListPage.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -6,21 +9,18 @@ import {
   AcademicCapIcon, // For academic levels/classes
   CalendarDaysIcon, // For date
   UsersIcon, // For students count
-  BookOpenIcon, // For view roster
   MegaphoneIcon, // For announcements
   ChartBarIcon, // For reports
   EllipsisVerticalIcon, // For dropdown actions
-  ArrowRightIcon, // For view details
-  PlusIcon, // For add event
-  ChatBubbleBottomCenterTextIcon, // For send message
   ClipboardDocumentCheckIcon, // For attendance
   ClockIcon,
   MagnifyingGlassIcon, // For events
 } from '@heroicons/react/24/outline';
 
 import { useRouter } from "next/navigation";
-import Link from 'next/link';
-import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo } from '@/app/api/teacher/academic-levels/route';
+
+import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo, StudentInAcademicLevel } from "@/app/api/teacher/academic-levels/route";
+
 
 
 // Define props for the client component
@@ -42,8 +42,9 @@ export default function ClassTeacherAcademicLevelsPage({
 }: ClassTeacherAcademicLevelsPageProps) {
   const router = useRouter();
 
-  const primaryColor = themeSettings.primaryColor;
-  const accentColor = themeSettings.accentColor;
+  // Use state for colors to ensure Tailwind JIT can process them correctly
+  const [primaryColor] = useState(themeSettings.primaryColor);
+  const [accentColor] = useState(themeSettings.accentColor);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null); // State to manage which dropdown is open
@@ -160,7 +161,8 @@ export default function ClassTeacherAcademicLevelsPage({
               <div className="absolute top-4 right-4 z-10">
                 <div className="relative">
                   <button
-                    className={`p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+                    className={`p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                    // style={{ '--tw-ring-color': accentColor }} // Use style for dynamic ring color
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click from closing dropdown
                       setOpenDropdownId(openDropdownId === level.id ? null : level.id); // Toggle dropdown
@@ -233,18 +235,6 @@ export default function ClassTeacherAcademicLevelsPage({
                   )}
                 </div>
               </div>
-
-              {/* <div className="mt-6 border-t border-gray-100 pt-4">
-                <button
-                  onClick={() => handleViewRoster(level.id)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md shadow-sm
-                              bg-[${accentColor}] text-gray-900
-                              hover:opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-                  style={{ backgroundColor: accentColor }} // Apply accent color dynamically
-                >
-                  View Student Roster <ArrowRightIcon className="h-4 w-4" />
-                </button>
-              </div> */}
 
               {/* Quick Info: Events & Announcements */}
               <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-200">
