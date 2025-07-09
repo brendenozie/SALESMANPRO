@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { EnrollmentStatus } from "@prisma/client";
 
 // Helper function to generate a unique 6-digit login code (admission number)
 async function generateUniqueLoginCode(): Promise<string> {
@@ -22,7 +23,7 @@ async function generateUniqueLoginCode(): Promise<string> {
 
 // GET /api/students
 // Fetches all student profiles, including their associated User data, calculated counts,
-// and linked academic level.
+// and linked academic level(s) via the StudentAcademicLevel junction.
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -46,7 +47,6 @@ export async function GET(request: Request) {
           },
         },
         parent: {
-          // Corrected structure: Use 'select' for parent, and within it, specify 'user'
           select: {
             id: true,
             phone: true,
@@ -60,16 +60,21 @@ export async function GET(request: Request) {
             },
           },
         },
-        academicLevel: { // NEW: Include academic level details
-          select: {
-            id: true,
-            name: true,
+        // Include StudentAcademicLevel to get academic level details
+        StudentAcademicLevel: {
+          include: {
+            academicLevel: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         _count: {
           select: {
             enrolledCourses: true,
-            submissions: true,
+            assignmentSubmission: true,
             AttendanceRecord: true,
             ExamSubmission: true,
           },
@@ -84,6 +89,12 @@ export async function GET(request: Request) {
 
     // Transform the data to include calculated counts and flattened user/parent/academic level info
     const response = students.map((student) => {
+      // Extract academic levels from the junction table
+      const academicLevels = student.StudentAcademicLevel.map(sal => ({
+        id: sal.academicLevel.id,
+        name: sal.academicLevel.name,
+      }));
+
       return {
         id: student.id,
         userId: student.userId,
@@ -99,13 +110,13 @@ export async function GET(request: Request) {
         parentName: student.parent?.user.name,
         parentEmail: student.parent?.user.email,
         parentPhone: student.parent?.phone,
-        academicLevelId: student.academicLevelId, // NEW: Include academicLevelId
-        academicLevelName: student.academicLevel?.name, // NEW: Flatten academic level name
+        academicLevels: academicLevels,
+        // Calculated fields are derived or set to 0/0.0 as they are no longer stored directly
         totalCourses: student._count.enrolledCourses,
-        completedCourses: student.completedCourses,
-        certificatesEarned: student.certificatesEarned,
-        averageProgress: student.averageProgress,
-        totalSubmissions: student._count.submissions,
+        completedCourses: 0, // This would need a more complex aggregation on CourseEnrollment
+        certificatesEarned: 0, // This would need a separate Certificate model or aggregation
+        averageProgress: 0.0, // This would need aggregation on CourseEnrollment
+        totalAssignmentSubmissions: student._count.assignmentSubmission,
         totalAttendanceRecords: student._count.AttendanceRecord,
         totalExamSubmissions: student._count.ExamSubmission,
         createdAt: student.createdAt,
@@ -115,13 +126,14 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
-    // console.error("Error fetching students:", error);
+    console.error("Error fetching students:", error);
     return NextResponse.json({ message: "Failed to fetch students", error: error.message }, { status: 500 });
   }
 }
 
 // POST /api/students
-// Creates a new Student profile, linking to an existing User and optionally an existing Parent and AcademicLevel.
+// Creates a new Student profile, linking to an existing User and optionally an existing Parent.
+// It also creates an initial StudentAcademicLevel entry and enrolls the student in relevant courses.
 export async function POST(request: Request) {
   if (request.method !== "POST") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
@@ -129,7 +141,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { email, name, companyId, phone, bio, address, profilePicture, studentGrade, parentId, academicLevelId } = body; // studentGrade is now academicLevelId
+    const { email, name, companyId, phone, bio, address, profilePicture, parentId, academicLevelId } = body;
 
     if (!email || !name) {
       return NextResponse.json({ message: "Email and Name are required to create a student." }, { status: 400 });
@@ -165,9 +177,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // NEW: Validate academicLevelId if provided
+    // Validate academicLevelId if provided, as it will be used to create a StudentAcademicLevel entry
+    let existingAcademicLevel = null;
     if (academicLevelId) {
-      const existingAcademicLevel = await prisma.academicLevel.findUnique({
+      existingAcademicLevel = await prisma.academicLevel.findUnique({
         where: { id: academicLevelId },
       });
       if (!existingAcademicLevel) {
@@ -183,19 +196,16 @@ export async function POST(request: Request) {
         loginCode,
         companyId,
         parentId,
-        academicLevelId, // NEW: Assign academicLevelId
         phone,
         bio,
         address,
         profilePicture,
-        studentGrade: studentGrade, // Keep for now if you still use it for other purposes, but academicLevelId is the primary
       },
       include: {
         user: {
           select: { id: true, name: true, email: true, image: true },
         },
         parent: {
-          // Corrected structure for POST as well
           select: {
             id: true,
             phone: true,
@@ -209,11 +219,58 @@ export async function POST(request: Request) {
             },
           },
         },
-        academicLevel: { // NEW: Include academic level for response
-          select: { id: true, name: true },
-        },
       },
     });
+
+    let createdStudentAcademicLevel = null;
+    if (academicLevelId && existingAcademicLevel) {
+      createdStudentAcademicLevel = await prisma.studentAcademicLevel.create({
+        data: {
+          studentId: newStudent.id,
+          academicLevelId: academicLevelId,
+        },
+        include: {
+          academicLevel: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+
+      // NEW LOGIC: Auto-enroll student into courses for the joined academic level
+      try {
+        const coursesInAcademicLevel = await prisma.courseAcademicLevel.findMany({
+          where: {
+            academicLevelId: academicLevelId,
+          },
+          select: {
+            courseId: true,
+          },
+        });
+
+        if (coursesInAcademicLevel.length > 0) {
+
+          const enrollmentData = coursesInAcademicLevel.map((cal) => ({
+            studentId: newStudent.id,
+            courseId: cal.courseId,
+            status: EnrollmentStatus.ENROLLED, // Default status
+          }));
+
+          await prisma.courseEnrollment.createMany({
+            data: enrollmentData,
+          });
+          console.log(`Student ${newStudent.id} auto-enrolled in ${enrollmentData.length} courses.`);
+        } else {
+          console.log(`No courses found for academic level ${academicLevelId} to auto-enroll student ${newStudent.id}.`);
+        }
+        
+      } catch (enrollmentError: any) {
+        console.error(`Error during auto-enrollment for student ${newStudent.id}:`, enrollmentError);
+        // Decide how to handle this error:
+        // 1. Rollback student creation (requires Prisma transactions, more complex)
+        // 2. Log and continue (student created, but enrollment failed - might need manual fix)
+        // For now, it logs and continues, ensuring student creation isn't blocked by enrollment issues.
+      }
+    }
 
     const responseData = {
       id: newStudent.id,
@@ -226,18 +283,20 @@ export async function POST(request: Request) {
       bio: newStudent.bio,
       address: newStudent.address,
       companyId: newStudent.companyId,
-      studentGrade: newStudent.studentGrade,
       parentId: newStudent.parentId,
       parentName: newStudent.parent?.user.name,
       parentEmail: newStudent.parent?.user.email,
       parentPhone: newStudent.parent?.phone,
-      academicLevelId: newStudent.academicLevelId,
-      academicLevelName: newStudent.academicLevel?.name,
-      totalCourses: 0,
+      academicLevels: createdStudentAcademicLevel ? [{
+        id: createdStudentAcademicLevel.academicLevel.id,
+        name: createdStudentAcademicLevel.academicLevel.name
+      }] : [],
+      // Calculated fields are initialized to 0 or 0.0
+      totalCourses: 0, // This will be updated by a subsequent GET request's _count
       completedCourses: 0,
       certificatesEarned: 0,
       averageProgress: 0.0,
-      totalSubmissions: 0,
+      totalAssignmentSubmissions: 0,
       totalAttendanceRecords: 0,
       totalExamSubmissions: 0,
       createdAt: newStudent.createdAt,

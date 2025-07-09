@@ -2,7 +2,8 @@
 
 import React from "react";
 import StudentsClient, { StudentType, ParentOption, AcademicLevelOption } from "./StudentsClient";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+// prisma import is not needed in this server component for fetching data via API
+// import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -49,8 +50,7 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Enthusiastic learner with a passion for science.',
       address: '123 Nairobi St, Nairobi',
       companyId: companyId,
-      academicLevelId: 'AL004', // Linked to Grade 7
-      academicLevelName: 'Grade 7',
+      academicLevels: [{ id: 'AL004', name: 'Grade 7' }], // Updated to array
       parentId: 'PAR001',
       parentName: 'Mercy Wanjiru',
       parentEmail: 'mercy.w@example.com',
@@ -59,7 +59,7 @@ const generateSampleStudentsData = (companyId: string): {
       completedCourses: 1,
       certificatesEarned: 0,
       averageProgress: 33.3,
-      totalSubmissions: 5,
+      totalAssignmentSubmissions: 5, // Renamed
       totalAttendanceRecords: 20,
       totalExamSubmissions: 2,
       createdAt: new Date('2020-09-01').toISOString(),
@@ -76,8 +76,7 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Loves mathematics and coding.',
       address: '456 Mombasa Rd, Nairobi',
       companyId: companyId,
-      academicLevelId: 'AL004', // Linked to Grade 7
-      academicLevelName: 'Grade 7',
+      academicLevels: [{ id: 'AL004', name: 'Grade 7' }], // Updated to array
       parentId: 'PAR002',
       parentName: 'David Otieno',
       parentEmail: 'david.o@example.com',
@@ -86,7 +85,7 @@ const generateSampleStudentsData = (companyId: string): {
       completedCourses: 0,
       certificatesEarned: 0,
       averageProgress: 10.5,
-      totalSubmissions: 3,
+      totalAssignmentSubmissions: 3, // Renamed
       totalAttendanceRecords: 18,
       totalExamSubmissions: 1,
       createdAt: new Date('2021-09-01').toISOString(),
@@ -103,8 +102,7 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Aspiring artist with a keen interest in history.',
       address: '789 Kisumu St, Nairobi',
       companyId: companyId,
-      academicLevelId: 'AL006', // Linked to Grade 9
-      academicLevelName: 'Grade 9',
+      academicLevels: [{ id: 'AL006', name: 'Grade 9' }], // Updated to array
       parentId: 'PAR003',
       parentName: 'Elizabeth Kimani',
       parentEmail: 'elizabeth.k@example.com',
@@ -113,7 +111,7 @@ const generateSampleStudentsData = (companyId: string): {
       completedCourses: 2,
       certificatesEarned: 1,
       averageProgress: 75.0,
-      totalSubmissions: 8,
+      totalAssignmentSubmissions: 8, // Renamed
       totalAttendanceRecords: 25,
       totalExamSubmissions: 3,
       createdAt: new Date('2019-09-01').toISOString(),
@@ -130,8 +128,7 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Strong in physics and problem-solving.',
       address: '101 Eldoret Ave, Nairobi',
       companyId: companyId,
-      academicLevelId: 'AL005', // Linked to Grade 8
-      academicLevelName: 'Grade 8',
+      academicLevels: [{ id: 'AL005', name: 'Grade 8' }], // Updated to array
       parentId: 'PAR004',
       parentName: 'Ruth Njoroge',
       parentEmail: 'ruth.n@example.com',
@@ -140,7 +137,7 @@ const generateSampleStudentsData = (companyId: string): {
       completedCourses: 3,
       certificatesEarned: 2,
       averageProgress: 90.0,
-      totalSubmissions: 10,
+      totalAssignmentSubmissions: 10, // Renamed
       totalAttendanceRecords: 22,
       totalExamSubmissions: 4,
       createdAt: new Date('2020-09-01').toISOString(),
@@ -163,7 +160,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
 
   let initialStudents: StudentType[] = [];
   let allParents: ParentOption[] = [];
-  let allAcademicLevels: AcademicLevelOption[] = []; // NEW
+  let allAcademicLevels: AcademicLevelOption[] = [];
   let fetchError: boolean = false;
 
   try {
@@ -175,9 +172,9 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     if (studentsRes.ok) {
       initialStudents = (await studentsRes.json()) as StudentType[];
     } else {
-      // console.error(
-      //   `[StudentsManagementPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`
-      // );
+      console.error(
+        `[StudentsManagementPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`
+      );
       fetchError = true;
     }
 
@@ -196,13 +193,13 @@ export default async function StudentsManagementPage({ params }: PageProps) {
         loginCode: p.loginCode
       }));
     } else {
-      // console.error(
-      //   `[StudentsManagementPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`
-      // );
+      console.error(
+        `[StudentsManagementPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`
+      );
       fetchError = true;
     }
 
-    // NEW: Fetch all academic levels for this company
+    // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
@@ -210,14 +207,14 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
     } else {
-      // console.error(
-      //   `[StudentsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      // );
+      console.error(
+        `[StudentsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      );
       fetchError = true;
     }
 
   } catch (err: any) {
-    // console.error("[StudentsManagementPage] Error fetching initial data:", err.message);
+    console.error("[StudentsManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
@@ -234,7 +231,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     <StudentsClient
       initialStudents={initialStudents}
       allParents={allParents}
-      allAcademicLevels={allAcademicLevels} // NEW: Pass academic levels
+      allAcademicLevels={allAcademicLevels}
       companyId={companyId}
       apiUrl={apiUrl}
     />

@@ -13,14 +13,13 @@ import {
   CalendarDaysIcon,
   PhoneIcon,
   EnvelopeIcon,
-  MapPinIcon,
   BookOpenIcon,
   TrophyIcon,
   CheckCircleIcon,
   KeyIcon,
   UserGroupIcon,
-  TagIcon, // New icon for academic levels
-  XMarkIcon, // For error close button
+  TagIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 import StudentFormModal from './StudentFormModal'; // Import the new modal component
@@ -45,18 +44,16 @@ export type StudentType = {
   bio?: string;
   address?: string;
   companyId?: string;
-  studentGrade?: string; // Kept for backward compatibility if needed, but academicLevelName is preferred
   parentId?: string;
   parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
-  academicLevelId?: string; // NEW
-  academicLevelName?: string; // NEW
+  academicLevels: AcademicLevelOption[]; // CHANGED: Now an array of academic levels
   totalCourses: number;
   completedCourses: number;
   certificatesEarned: number;
   averageProgress: number;
-  totalSubmissions: number;
+  totalAssignmentSubmissions: number; // Renamed from totalSubmissions
   totalAttendanceRecords: number;
   totalExamSubmissions: number;
   createdAt: string;
@@ -75,7 +72,7 @@ export type ParentOption = {
 interface StudentsClientProps {
   initialStudents: StudentType[];
   allParents: ParentOption[];
-  allAcademicLevels: AcademicLevelOption[]; // NEW: Pass all academic levels
+  allAcademicLevels: AcademicLevelOption[];
   companyId: string;
   apiUrl: string;
 }
@@ -83,7 +80,7 @@ interface StudentsClientProps {
 export default function StudentsClient({ initialStudents, allParents, allAcademicLevels, companyId, apiUrl }: StudentsClientProps) {
   const [students, setStudents] = useState<StudentType[]>(initialStudents);
   const [parents, setParents] = useState<ParentOption[]>(allParents);
-  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels); // State for academic levels
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAcademicLevel, setFilterAcademicLevel] = useState('All'); // Filter by academic level ID
   const [showFormModal, setShowFormModal] = useState(false);
@@ -104,7 +101,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     try {
       const studentsRes = await fetch(`${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`);
       const parentsRes = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`); // NEW fetch
+      const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (studentsRes.ok) {
         const studentsData: StudentType[] = await studentsRes.json();
@@ -124,7 +121,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
         setParents(allParents);
       }
 
-      if (academicLevelsRes.ok) { // NEW academic levels update
+      if (academicLevelsRes.ok) {
         const academicLevelsData: AcademicLevelOption[] = await academicLevelsRes.json();
         setAcademicLevels(academicLevelsData);
       } else {
@@ -161,10 +158,12 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                             (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.academicLevelName?.toLowerCase().includes(searchTerm.toLowerCase()) || ''); // Search by academic level name
+                            (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+      
+      // Check if any of the student's academic levels match the filter
+      const matchesAcademicLevel = filterAcademicLevel === 'All' || 
+                                   student.academicLevels.some(al => al.id === filterAcademicLevel);
 
-      const matchesAcademicLevel = filterAcademicLevel === 'All' || student.academicLevelId === filterAcademicLevel; // Filter by academic level ID
       return matchesSearch && matchesAcademicLevel;
     }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
   }, [students, searchTerm, filterAcademicLevel]);
@@ -173,13 +172,13 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   const getAcademicLevelStats = useMemo(() => {
     const levels: { [levelId: string]: { name: string; count: number } } = {};
     students.forEach(student => {
-      if (student.academicLevelId && student.academicLevelName) {
-        if (levels[student.academicLevelId]) {
-          levels[student.academicLevelId].count++;
+      student.academicLevels.forEach(al => { // Iterate through each academic level a student belongs to
+        if (levels[al.id]) {
+          levels[al.id].count++;
         } else {
-          levels[student.academicLevelId] = { name: student.academicLevelName, count: 1 };
+          levels[al.id] = { name: al.name, count: 1 };
         }
-      }
+      });
     });
     // Convert to array and sort by academic level sortOrder
     return Object.entries(levels)
@@ -192,19 +191,20 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   }, [students, academicLevels]);
 
   // --- API Interaction Functions ---
-  const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevelName'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => {
+  const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalAssignmentSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevels'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => {
     setIsLoading(true);
     setError(null);
     
     const method = studentData.id ? 'PATCH' : 'POST';
 
     try {
-
       const url = studentData.id ? `${apiUrl}/admin/students/${studentData.id}` : `${apiUrl}/admin/students`;
 
       const payload = {
         ...studentData,
         companyId: companyId,
+        // academicLevelId is now part of the payload for POST/PATCH
+        // It's used to create the StudentAcademicLevel junction entry on the backend
       };
 
       const res = await fetch(url, {
@@ -255,6 +255,9 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
 
   // --- Calculated Stats ---
   const totalStudents = students.length;
+  // Note: totalCourses, completedCourses, certificatesEarned, averageProgress
+  // are now derived from the API's _count or are 0/0.0 as they are not directly stored.
+  // The API response now provides these as aggregated counts.
   const avgCoursesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.totalCourses, 0) / totalStudents).toFixed(1) : '0';
   const avgProgressPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.averageProgress, 0) / totalStudents).toFixed(1) : '0';
   const avgCertificatesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.certificatesEarned, 0) / totalStudents).toFixed(1) : '0';
@@ -350,7 +353,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
           <button
             onClick={() => { setEditingStudent(null); setShowFormModal(true); }}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md
-                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
+                         hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
           >
             <UserPlusIcon className="h-5 w-5" /> Add New Student
           </button>
@@ -392,7 +395,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Student</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission #</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Level</th> {/* Updated column header */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Level(s)</th> {/* Updated column header */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                 <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
@@ -433,7 +436,11 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="font-medium flex items-center gap-1">
-                        <TagIcon className="h-4 w-4 text-gray-500" /> {student.academicLevelName || 'N/A'}
+                        <TagIcon className="h-4 w-4 text-gray-500" />
+                        {/* Display all academic levels, or 'N/A' if none */}
+                        {student.academicLevels && student.academicLevels.length > 0
+                          ? student.academicLevels.map(al => al.name).join(', ')
+                          : 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">Enrolled: {new Date(student.createdAt).toLocaleDateString()}</div>
                     </td>
@@ -494,10 +501,8 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    <UsersIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg">No students found matching your criteria.</p>
-                    <p className="text-sm mt-2">Try adjusting your filters or add a new student.</p>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                    No students found matching your criteria.
                   </td>
                 </tr>
               )}
@@ -506,16 +511,17 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Student Form Modal */}
       {showFormModal && (
         <StudentFormModal
-          studentData={editingStudent}
+          isOpen={showFormModal}
           onClose={() => { setShowFormModal(false); setEditingStudent(null); }}
           onSave={handleSaveStudent}
-          isLoading={isLoading}
-          companyId={companyId}
+          editingStudent={editingStudent}
           allParents={parents}
-          allAcademicLevels={academicLevels} // NEW: Pass all academic levels
+          allAcademicLevels={academicLevels} // Pass academic levels to the modal
+          isLoading={isLoading}
+          companyId={""}
         />
       )}
     </div>

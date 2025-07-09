@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 // GET /api/students/[id]
-// Fetches a single student by ID, including associated User data and calculated counts.
+// Fetches a single student by ID, including associated User data, academic levels, and calculated counts.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
@@ -19,12 +19,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
             emailVerified: true,
           },
         },
-        parent: { // NEW: Include parent details
+        parent: {
           select: {
             id: true,
             phone: true,
-          },
-          include: {
             user: {
               select: {
                 id: true,
@@ -35,16 +33,21 @@ export async function GET(request: Request, { params }: { params: { id: string }
             },
           },
         },
-        academicLevel: { // NEW: Include academic level details
-          select: {
-            id: true,
-            name: true,
+        // NEW: Include StudentAcademicLevel to get academic level details via the junction table
+        StudentAcademicLevel: {
+          include: {
+            academicLevel: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         _count: {
           select: {
             enrolledCourses: true,
-            submissions: true,
+            assignmentSubmission: true, // Renamed from 'submissions'
             AttendanceRecord: true,
             ExamSubmission: true,
           },
@@ -56,7 +59,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: "Student not found" }, { status: 404 });
     }
 
-    // Transform the data
+    // Transform the data to match the UI's StudentType
+    const academicLevelsResponse = student.StudentAcademicLevel.map(sal => ({
+      id: sal.academicLevel.id,
+      name: sal.academicLevel.name,
+    }));
+
     const responseData = {
       id: student.id,
       userId: student.userId,
@@ -68,18 +76,17 @@ export async function GET(request: Request, { params }: { params: { id: string }
       bio: student.bio,
       address: student.address,
       companyId: student.companyId,
-      studentGrade: student.studentGrade,
-      parentId: student.parentId, // NEW: Include parentId
-      parentName: student.parent?.user.name, // NEW: Flatten parent name
-      parentEmail: student.parent?.user.email, // NEW: Flatten parent email
-      parentPhone: student.parent?.phone, // NEW: Flatten parent phone      
-      academicLevelId: student.academicLevelId, // NEW: Include academicLevelId
-      academicLevelName: student.academicLevel?.name, // NEW: Flatten academic level name
+      // studentGrade removed as it's no longer a direct field
+      parentId: student.parentId,
+      parentName: student.parent?.user.name,
+      parentEmail: student.parent?.user.email,
+      parentPhone: student.parent?.phone,
+      academicLevels: academicLevelsResponse, // Changed to array
       totalCourses: student._count.enrolledCourses,
-      completedCourses: student.completedCourses,
-      certificatesEarned: student.certificatesEarned,
-      averageProgress: student.averageProgress,
-      totalSubmissions: student._count.submissions,
+      completedCourses: 0, // Not stored directly in model, set to 0 for consistency with GET /students
+      certificatesEarned: 0, // Not stored directly in model, set to 0 for consistency with GET /students
+      averageProgress: 0.0, // Not stored directly in model, set to 0.0 for consistency with GET /students
+      totalAssignmentSubmissions: student._count.assignmentSubmission, // Renamed
       totalAttendanceRecords: student._count.AttendanceRecord,
       totalExamSubmissions: student._count.ExamSubmission,
       createdAt: student.createdAt,
@@ -94,13 +101,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PATCH /api/students/[id]
-// Updates an existing Student profile by ID.
+// Updates an existing Student profile by ID, including managing academic level assignments.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
     const body = await request.json();
-    const { phone, bio, address, profilePicture, studentGrade, name, email, loginCode, parentId, academicLevelId, ...rest } = body; // NEW: parentId
+    // Removed studentGrade from destructuring as it's no longer a direct field
+    const { phone, bio, address, profilePicture, name, email, loginCode, parentId, academicLevelId, ...rest } = body;
 
     if (Object.keys(rest).length > 0) {
       console.warn("Unexpected fields in PATCH request for student:", rest);
@@ -126,28 +134,48 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
     }
 
-    // NEW: Validate academicLevelId if provided and it's changing
-    if (academicLevelId !== undefined && academicLevelId !== existingStudent.academicLevelId) {
-      if (academicLevelId !== null) {
+    // Handle academicLevelId update via StudentAcademicLevel junction
+    if (academicLevelId !== undefined) {
+      // If a new academicLevelId is provided (not null/empty string)
+      if (academicLevelId) {
         const existingAcademicLevel = await prisma.academicLevel.findUnique({
           where: { id: academicLevelId },
         });
         if (!existingAcademicLevel) {
           return NextResponse.json({ message: "Provided academicLevelId does not exist." }, { status: 400 });
         }
+
+        // Use a transaction for atomicity: delete existing links, then create new one
+        await prisma.$transaction(async (tx) => {
+          // Delete all existing academic level links for this student
+          await tx.studentAcademicLevel.deleteMany({
+            where: { studentId: existingStudent.id },
+          });
+          // Create the new link
+          await tx.studentAcademicLevel.create({
+            data: {
+              studentId: existingStudent.id,
+              academicLevelId: academicLevelId,
+            },
+          });
+        });
+      } else { // academicLevelId is null or empty string, meaning unassign all academic levels
+        await prisma.studentAcademicLevel.deleteMany({
+          where: { studentId: existingStudent.id },
+        });
       }
     }
 
-    // Prepare data for Student update
+    // Prepare data for Student update (only direct fields on Student model)
     const studentUpdateData: any = {};
     if (phone !== undefined) studentUpdateData.phone = phone;
     if (bio !== undefined) studentUpdateData.bio = bio;
     if (address !== undefined) studentUpdateData.address = address;
     if (profilePicture !== undefined) studentUpdateData.profilePicture = profilePicture;
-    if (studentGrade !== undefined) studentUpdateData.studentGrade = studentGrade;
-    if (parentId !== undefined) studentUpdateData.parentId = parentId; // NEW: Allow updating parentId
-    if (academicLevelId !== undefined) studentUpdateData.academicLevelId = academicLevelId; // NEW: Allow updating academicLevelId
+    if (parentId !== undefined) studentUpdateData.parentId = parentId;
 
+    // Perform the student update for direct fields
+    // Note: academicLevelId is handled separately via the junction table logic above
     const updatedStudent = await prisma.student.update({
       where: { id },
       data: studentUpdateData,
@@ -155,26 +183,29 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         user: {
           select: { id: true, name: true, email: true, image: true },
         },
-        parent: { // NEW: Include parent for response
-          select: { id: true, phone: true },
-          include: {
+        parent: { // Include parent for response
+          select: {
+            id: true, phone: true,
             user: {
               select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-              },
-            },
+                id: true, name: true, email: true, phone: true
+              }
+            }
           },
         },
-        academicLevel: { // NEW: Include academic level for response
-          select: { id: true, name: true },
+        // Include the junction table for academic levels in the response
+        StudentAcademicLevel: {
+          include: {
+            academicLevel: {
+              select: { id: true, name: true },
+            },
+          },
         },
       },
     });
 
-    if (name !== undefined || email !== undefined) {
+    // Handle User model updates (name, email, profilePicture)
+    if (name !== undefined || email !== undefined || profilePicture !== undefined) {
       const userUpdateData: any = {};
       if (name !== undefined) userUpdateData.name = name;
       if (email !== undefined) {
@@ -186,7 +217,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         }
         userUpdateData.email = email;
       }
-      if (profilePicture !== undefined) userUpdateData.image = profilePicture;
+      if (profilePicture !== undefined) userUpdateData.image = profilePicture; // Update user's image if profilePicture is provided
 
       if (Object.keys(userUpdateData).length > 0) {
         await prisma.user.update({
@@ -196,38 +227,47 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
     }
 
+    // Fetch the final student data with all relations for the response
+    // This re-fetches to ensure consistency after all updates (Student, User, StudentAcademicLevel)
     const finalStudent = await prisma.student.findUnique({
       where: { id },
       include: {
         user: {
           select: { id: true, name: true, email: true, image: true },
         },
-        parent: { // NEW: Include parent for final response
-          select: { id: true, phone: true },
-          include: {
+        parent: {
+          select: {
+            id: true, phone: true,
             user: {
               select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-              },
-            },
+                id: true, name: true, email: true, phone: true
+              }
+            }
           },
         },
-        academicLevel: { // NEW: Include academic level for final response
-          select: { id: true, name: true },
+        StudentAcademicLevel: { // Include the junction table for final response
+          include: {
+            academicLevel: { // And the academic level through it
+              select: { id: true, name: true },
+            },
+          },
         },
         _count: {
           select: {
             enrolledCourses: true,
-            submissions: true,
+            assignmentSubmission: true, // Renamed
             AttendanceRecord: true,
             ExamSubmission: true,
           },
         },
       },
     });
+
+    // Transform the final data for the response
+    const finalAcademicLevelsResponse = finalStudent?.StudentAcademicLevel.map(sal => ({
+      id: sal.academicLevel.id,
+      name: sal.academicLevel.name,
+    })) || [];
 
     const responseData = {
       id: finalStudent!.id,
@@ -240,18 +280,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       bio: finalStudent!.bio,
       address: finalStudent!.address,
       companyId: finalStudent!.companyId,
-      studentGrade: finalStudent!.studentGrade,
+      // studentGrade removed
       parentId: finalStudent!.parentId,
       parentName: finalStudent!.parent?.user.name,
       parentEmail: finalStudent!.parent?.user.email,
       parentPhone: finalStudent!.parent?.phone,
-      academicLevelId: finalStudent!.academicLevelId,
-      academicLevelName: finalStudent!.academicLevel?.name,
+      academicLevels: finalAcademicLevelsResponse, // Changed to array
       totalCourses: finalStudent!._count.enrolledCourses,
-      completedCourses: finalStudent!.completedCourses,
-      certificatesEarned: finalStudent!.certificatesEarned,
-      averageProgress: finalStudent!.averageProgress,
-      totalSubmissions: finalStudent!._count.submissions,
+      completedCourses: 0, // Not stored directly
+      certificatesEarned: 0, // Not stored directly
+      averageProgress: 0.0, // Not stored directly
+      totalAssignmentSubmissions: finalStudent!._count.assignmentSubmission, // Renamed
       totalAttendanceRecords: finalStudent!._count.AttendanceRecord,
       totalExamSubmissions: finalStudent!._count.ExamSubmission,
       createdAt: finalStudent!.createdAt,
@@ -278,6 +317,11 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (!existingStudent) {
       return NextResponse.json({ message: "Student not found" }, { status: 404 });
     }
+
+    // Before deleting the student, delete all associated StudentAcademicLevel entries
+    await prisma.studentAcademicLevel.deleteMany({
+      where: { studentId: id },
+    });
 
     const deletedStudent = await prisma.student.delete({
       where: { id },

@@ -1865,19 +1865,19 @@ model Student {
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Keep optional if students can be independent
 
-  enrolledCourses  CourseEnrollment[]
-  submissions      Submission[]
+  enrolledCourses      CourseEnrollment[]
+  assignmentSubmission AssignmentSubmission[]
+
   AttendanceRecord AttendanceRecord[]
   ExamSubmission   ExamSubmission[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
   EventRegistration EventRegistration[]
 
-  headTeacherId        String?                @db.ObjectId
   Grade                Grade[]
   StudentAcademicLevel StudentAcademicLevel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Educator Profile Model (one-to-one with User)
@@ -1919,8 +1919,8 @@ model Educator {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Submission     Submission[]
-  ExamSubmission ExamSubmission[]
+  assignmentSubmission AssignmentSubmission[]
+  examSubmission       ExamSubmission[]
 
   Grade Grade[] @relation("recordedBy")
 }
@@ -2004,9 +2004,10 @@ model Course {
   // NEW JUNCTION TABLE: For many-to-many with AcademicLevel
   academicLevels CourseAcademicLevel[]
 
-  assignments     CourseAssignment[]
-  classSchedules  ClassSchedule[]
-  enrollments     CourseEnrollment[]
+  assignments    CourseAssignment[]
+  classSchedules ClassSchedule[]
+  enrollments    CourseEnrollment[]
+
   Exam            Exam[]
   CourseMaterial  CourseMaterial[]
   DiscussionTopic DiscussionTopic[]
@@ -2016,11 +2017,8 @@ model Course {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // AcademicLevel    AcademicLevel?     @relation(fields: [academicLevelId], references: [id])
-  // academicLevelId  String?            @db.ObjectId
-
-  AttendanceRecord AttendanceRecord[]
-  Submission       Submission[]
+  AttendanceRecord     AttendanceRecord[]
+  assignmentSubmission AssignmentSubmission[]
 
   // @@unique([code, companyId]) // A course name should be unique within an academic level and company
 
@@ -2126,7 +2124,7 @@ model CourseAssignment {
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
 
-  submissions Submission[] // Relation to AssignmentSubmission (or Submission) model
+  submissions AssignmentSubmission[] // Relation to AssignmentSubmission (or Submission) model
 
   status AssignmentStatus @default(Draft)
 
@@ -2137,12 +2135,14 @@ model CourseAssignment {
 }
 
 // Submission Model (Student's assignment submission)
-model Submission {
-  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+model AssignmentSubmission {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
   assignmentId String           @db.ObjectId // Foreign key to CourseAssignment
   assignment   CourseAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade) // CRITICAL: onDelete: Cascade
-  studentId    String           @db.ObjectId
-  student      Student          @relation(fields: [studentId], references: [id])
+
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id])
 
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])

@@ -5,6 +5,8 @@ import { XMarkIcon, UserCircleIcon, PhoneIcon, MapPinIcon, AcademicCapIcon, User
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Assuming StudentType, ParentOption, AcademicLevelOption are imported from StudentsClient.tsx
+// Re-defining here for self-containment of the immersive, but in a real app
+// these would be imported from a shared types file or directly from StudentsClient.
 export type AcademicLevelOption = {
   id: string;
   name: string;
@@ -22,18 +24,16 @@ export type StudentType = {
   bio?: string;
   address?: string;
   companyId?: string;
-  studentGrade?: string; // Kept for backward compatibility if needed
   parentId?: string;
   parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
-  academicLevelId?: string; // NEW
-  academicLevelName?: string; // NEW
+  academicLevels: AcademicLevelOption[]; // CHANGED: Now an array of academic levels
   totalCourses: number;
   completedCourses: number;
   certificatesEarned: number;
   averageProgress: number;
-  totalSubmissions: number;
+  totalAssignmentSubmissions: number; // Renamed
   totalAttendanceRecords: number;
   totalExamSubmissions: number;
   createdAt: string;
@@ -49,52 +49,55 @@ export type ParentOption = {
 };
 
 interface StudentFormModalProps {
-  studentData?: StudentType | null;
+  isOpen: boolean; // Added isOpen prop for modal control
+  editingStudent?: StudentType | null;
   onClose: () => void;
-  onSave: (data: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevelName'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => Promise<void>;
+  // Updated onSave signature to match the new StudentType and expected payload
+  onSave: (data: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalAssignmentSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevels'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => Promise<void>;
   isLoading: boolean;
   companyId: string;
   allParents: ParentOption[];
-  allAcademicLevels: AcademicLevelOption[]; // NEW: All available academic levels
+  allAcademicLevels: AcademicLevelOption[]; // All available academic levels
 }
 
-const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClose, onSave, isLoading, companyId, allParents, allAcademicLevels }) => {
+const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStudent, onClose, onSave, isLoading, companyId, allParents, allAcademicLevels }) => {
   const [formData, setFormData] = useState({
-    id: studentData?.id || '',
-    userId: studentData?.userId || '',
-    name: studentData?.name || '',
-    email: studentData?.email || '',
-    profilePicture: studentData?.profilePicture || '',
-    phone: studentData?.phone || '',
-    bio: studentData?.bio || '',
-    address: studentData?.address || '',
-    studentGrade: studentData?.studentGrade || '', // Still keep for form if needed, but academicLevelId is primary
-    parentId: studentData?.parentId || '',
-    academicLevelId: studentData?.academicLevelId || '', // Initialize with existing academicLevelId
+    id: editingStudent?.id || '',
+    userId: editingStudent?.userId || '',
+    name: editingStudent?.name || '',
+    email: editingStudent?.email || '',
+    profilePicture: editingStudent?.profilePicture || '',
+    phone: editingStudent?.phone || '',
+    bio: editingStudent?.bio || '',
+    address: editingStudent?.address || '',
+    parentId: editingStudent?.parentId || '',
+    // Initialize academicLevelId from the first academic level in the array, if available
+    academicLevelId: editingStudent?.academicLevels?.[0]?.id || '',
   });
 
+  // Effect to update form data when editingStudent changes
   useEffect(() => {
-    if (studentData) {
+    if (editingStudent) {
       setFormData({
-        id: studentData.id,
-        userId: studentData.userId,
-        name: studentData.name,
-        email: studentData.email,
-        profilePicture: studentData.profilePicture || '',
-        phone: studentData.phone || '',
-        bio: studentData.bio || '',
-        address: studentData.address || '',
-        studentGrade: studentData.studentGrade || '',
-        parentId: studentData.parentId || '',
-        academicLevelId: studentData.academicLevelId || '',
+        id: editingStudent.id,
+        userId: editingStudent.userId,
+        name: editingStudent.name,
+        email: editingStudent.email,
+        profilePicture: editingStudent.profilePicture || '',
+        phone: editingStudent.phone || '',
+        bio: editingStudent.bio || '',
+        address: editingStudent.address || '',
+        parentId: editingStudent.parentId || '',
+        academicLevelId: editingStudent.academicLevels?.[0]?.id || '', // Use the first academic level's ID
       });
     } else {
+      // Reset form for new student
       setFormData({
         id: '', userId: '', name: '', email: '', profilePicture: '',
-        phone: '', bio: '', address: '', studentGrade: '', parentId: '', academicLevelId: ''
+        phone: '', bio: '', address: '', parentId: '', academicLevelId: ''
       });
     }
-  }, [studentData]);
+  }, [editingStudent]);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -104,23 +107,34 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Build payload, omitting parentId/academicLevelId if empty
+    
+    // Build payload, omitting parentId/academicLevelId if empty string
     const payload: any = {
       ...formData,
       companyId,
     };
-    if (formData.parentId !== '') {
-      payload.parentId = formData.parentId;
-    } else {
-      delete payload.parentId;
+
+    // Clean up empty strings to send null or undefined for optional fields
+    if (payload.parentId === '') {
+      payload.parentId = null;
     }
-    if (formData.academicLevelId !== '') {
-      payload.academicLevelId = formData.academicLevelId;
-    } else {
-      delete payload.academicLevelId;
+    if (payload.academicLevelId === '') {
+      payload.academicLevelId = null;
     }
+    // Remove id and userId from payload if it's a new student creation
+    if (!editingStudent) {
+      delete payload.id;
+      delete payload.userId;
+    }
+
+    // Explicitly remove studentGrade if it was somehow still in formData
+    delete payload.studentGrade;
+
     await onSave(payload);
   };
+
+  // Only render the modal if isOpen is true
+  if (!isOpen) return null;
 
   const defaultProfilePic = `https://placehold.co/100x100/E0F2F7/0288D1?text=${formData.name?.charAt(0) || '?'}`;
 
@@ -137,7 +151,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
         </button>
 
         <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-4 border-gray-200">
-          {studentData ? `Edit Student: ${studentData.name}` : 'Add New Student'}
+          {editingStudent ? `Edit Student: ${editingStudent.name}` : 'Add New Student'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -279,7 +293,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ studentData, onClos
                   </svg>
                   Saving...
                 </>
-              ) : (studentData ? 'Save Changes' : 'Add Student')}
+              ) : (editingStudent ? 'Save Changes' : 'Add Student')}
             </button>
           </div>
         </form>
