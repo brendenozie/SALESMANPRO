@@ -9,6 +9,39 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import Link from "next/link";
 import { ChevronDownIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
+type Role = 'STUDENT' | 'EDUCATOR' | string;
+type CategoryType = string;
+type MenuMap = Record<string, MenuItem[]>;
+
+// define once, reuse
+const fallback = "Other";
+
+const isPrincipalCategory = (cat: CategoryType) => ['Educational & Online Courses', 'Head Teacher', 'School Head'].includes(cat);
+
+function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategoryMenus: MenuMap): MenuItem[] {
+  switch (userRole) {
+    case 'STUDENT':
+      // student menu, or fallback
+      return allCategoryMenus.Student ?? fallback;
+
+    case 'EDUCATOR':
+      if (isPrincipalCategory(categoryType)) {
+        // principal → educator → fallback
+        return allCategoryMenus.Principal 
+            ?? allCategoryMenus.Educator 
+            ?? fallback;
+      }
+      // educator → tutor → fallback
+      return allCategoryMenus.Educator 
+          ?? allCategoryMenus.Tutor 
+          ?? allCategoryMenus.Other;
+
+    default:
+      // try category-specific key, else fallback
+      return allCategoryMenus[categoryType] ?? fallback;
+  }
+}
+
 interface MenuItem {
   label: string;
   href?: string;
@@ -16,22 +49,25 @@ interface MenuItem {
   subItems?: MenuItem[];
 }
 
+// utils/string.ts
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { storeFormData, userRole, userId } = useStoreContext();
   const pathname = usePathname();
 
-  const companyId =
-    userRole === "STUDENT" || userRole === "EDUCATOR"
-      ? `${userId}`
-      : storeFormData?.id || "default-company-id";
+  const companyId =  userRole === "STUDENT" || userRole === "EDUCATOR" ? `${userId}` : storeFormData?.id || "default-company-id";
 
-  const rawCat = storeFormData?.category
-    ? storeFormData.category.charAt(0).toUpperCase() + storeFormData.category.slice(1)
-    : userRole || "Other";
+  const categoryType = storeFormData?.category ? capitalize(storeFormData.category) : "Other";
 
+  // 2. Grab your menus map as before
   const menus = getCategoryMenus(companyId);
-  const menuItems: MenuItem[] =
-    menus[rawCat as keyof typeof menus] || menus["Other"];
+
+  // 3. Delegate to our helper
+  const menuItems: MenuItem[] = getMenuItemsFor(userRole, categoryType, menus);
 
   const initialOpen = useMemo<string | null>(() => {
     for (const item of menuItems) {
@@ -56,9 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {mobileOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
         </button>
         <span className="font-bold text-lg uppercase text-indigo-800 truncate">
-          {userRole.toLowerCase() === "consumer"
-            ? "ADMIN"
-            : userRole || storeFormData?.name?.substring(0, 10).toUpperCase() || "ADMIN"}
+          {userRole.toLowerCase() === "consumer" ? "ADMIN" : userRole || storeFormData?.name?.substring(0, 10).toUpperCase() || "ADMIN"}
         </span>
       </header>
 
