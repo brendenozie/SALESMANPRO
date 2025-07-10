@@ -1,6 +1,6 @@
 // app/api/teacher/academic-levels/[academicLevelId]/students/route.ts
 import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb";  // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
 
 export async function GET(request: Request, { params }: { params: { academicLevelId: string } }) {
   const academicLevelId = params.academicLevelId;
@@ -34,43 +34,57 @@ export async function GET(request: Request, { params }: { params: { academicLeve
     }
     const companyId = educator.companyId;
 
-    const students = await prisma.student.findMany({
+    // Query the StudentAcademicLevel junction table to get students for the academic level.
+    const studentAcademicLevels = await prisma.studentAcademicLevel.findMany({
       where: {
         academicLevelId: academicLevelId,
-        companyId: companyId, // Ensure multi-tenancy
+        // Ensure the student associated with this academic level belongs to the same company
+        student: {
+          companyId: companyId,
+        }
       },
       include: {
-        user: {
-          select: { name: true, email: true }, // Include user details for student name/email
-        },
-        parent: { // Include the related Parent and its User model for parent email
-          include: {
-            user: {
-              select: { name: true, email: true, },
+        student: { // Include the related Student model
+          select: { // Select only necessary student fields
+            id: true,
+            parentId: true,
+            user: { // Include User details for student name/email
+              select: { name: true, email: true },
+            },
+            parent: { // Include the related Parent and its User model for parent email
+              select: {
+                user: {
+                  select: { name: true, email: true },
+                },
+              },
             },
           },
         },
       },
+      // Order by student name
       orderBy: {
-        user: {
-          name: 'asc',
+        student: {
+          user: {
+            name: 'asc',
+          },
         },
       },
     });
 
-    // Map to the StudentOption type expected by the frontend
-    const studentOptions = students.map(student => ({
-      id: student.id,
-      name: student.user?.name || 'N/A',
-      email: student.user?.email || 'N/A',
-      parentId: student.parentId,
-      parentName: student.parent?.user?.name || null,
-      parentEmail: student.parent?.user?.email || null,
+    // Map the results from StudentAcademicLevel to the desired StudentOption type
+    // studentAcademicLevels will be an array of { id: ..., student: { ... } }
+    const studentOptions = studentAcademicLevels.map(sal => ({
+      id: sal.student.id, // This is the Student's actual ID
+      name: sal.student.user?.name || 'N/A',
+      email: sal.student.user?.email || 'N/A',
+      parentId: sal.student.parentId,
+      parentName: sal.student.parent?.user?.name || null,
+      parentEmail: sal.student.parent?.user?.email || null,
     }));
 
     return NextResponse.json(studentOptions);
   } catch (error) {
     console.error('Error fetching students for academic level:', error);
-    return NextResponse.json({ message: 'Failed to fetch students' }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch students', error: (error as Error).message }, { status: 500 });
   }
 }

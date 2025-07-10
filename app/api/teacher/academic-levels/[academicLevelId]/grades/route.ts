@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: { params: { academicLeve
     // Build the WHERE clause dynamically based on filters
     // NOW, we filter directly on academicLevelAtTimeOfGradeId and companyId
     const whereClause: any = {
-      academicLevelAtTimeOfGradeId: academicLevelId, // Filter grades by the historical academic level
+      academicLevelAtTimeOfGradingId: academicLevelId, // Filter grades by the historical academic level
       companyId: companyId, // Ensure grades belong to the same company
     };
 
@@ -77,7 +77,7 @@ export async function GET(request: Request, { params }: { params: { academicLeve
             type: true,
           },
         },
-        academicLevelAtTimeOfGrade: { // Include the academic level info for context
+        academicLevelAtTimeOfGrading:{ // Include the academic level info for context
           select: {
             id: true,
             name: true,
@@ -109,7 +109,7 @@ export async function GET(request: Request, { params }: { params: { academicLeve
       examTitle: grade.exam?.title || null,
       examType: grade.exam?.type || null,
       // Include the academic level name for this grade record
-      academicLevelAtTimeOfGradeName: grade.academicLevelAtTimeOfGrade.name,
+      academicLevelAtTimeOfGradeName: grade.academicLevelAtTimeOfGrading.name,
     }));
 
     return NextResponse.json(formattedGrades);
