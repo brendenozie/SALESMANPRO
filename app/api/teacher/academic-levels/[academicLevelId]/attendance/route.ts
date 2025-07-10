@@ -10,67 +10,72 @@ export type StudentForAttendance = {
   userId: string; // User ID associated with the student
   name: string; // Student's name (from User model)
   profilePicture: string | null; // Student's profile picture (from Student model)
-  currentStatus: AttendanceStatus; // Current attendance status for the selected date
+  currentStatus: AttendanceStatus;
 };
 
-export type TakeAttendancePageData = {
-  academicLevelInfo: {
-    id: string; // AcademicLevel ID
-    name: string; // e.g., "Grade 7"
-    description: string | null;
-    studentsCount: number;
-  };
+interface AcademicLevelInfo {
+  id: string;
+  name: string;
+  description: string | null;
+  studentsCount: number;
+}
+
+interface ThemeSettings {
+  primaryColor: string;
+  accentColor: string;
+}
+
+export interface TakeAttendancePageData { // Changed to export for external use if needed
+  academicLevelInfo: AcademicLevelInfo;
   students: StudentForAttendance[];
-  themeSettings: {
-    primaryColor: string;
-    accentColor: string;
-  };
-};
+  themeSettings: ThemeSettings;
+}
 
 // Interface for the structure of each attendance record in the POST body
 interface StudentAttendanceRecordPayload {
   status: AttendanceStatus;
-  reason?: string | null; // Explicitly allow null or undefined for reason
+  reason?: string | null;
 }
 
 // GET /api/academic-levels/[academicLevelId]/attendance
 // Fetches students and their attendance status for a specific academic level and date.
 // Path Params: academicLevelId
-// Query Params: companyId (required), date (required,YYYY-MM-DD), educatorId (required - Educator.id)
+// Query Params: date (required, YYYY-MM-DD), educatorId (required - Educator's User.id)
 export async function GET(request: Request, { params }: { params: { academicLevelId: string } }) {
   try {
     const { academicLevelId } = params;
     const { searchParams } = new URL(request.url);
-    // companyId is removed from direct query check as per user's latest API code,
-    // but it's still good practice to validate it if it's logically required for access.
-    // For now, we follow the provided code.
     const dateStr = searchParams.get('date'); //YYYY-MM-DD
-    const educatorId = searchParams.get('educatorId'); // The Educator.id who is recording attendance
+    const educatorUserId = searchParams.get('educatorId'); // The Educator's User.id who is recording attendance
 
-    if (!dateStr || !educatorId) {
-      // Re-added companyId check if it's still expected from the frontend,
-      // assuming it's passed as a path parameter or query parameter in the original context.
-      // If companyId is truly no longer needed for GET, this check can be adjusted.
-      // For now, let's assume it's implicitly handled by the academicLevel lookup.
+    if (!dateStr || !educatorUserId) {
       return NextResponse.json({ message: "Date and educatorId are required." }, { status: 400 });
     }
 
     const attendanceDate = new Date(dateStr);
     attendanceDate.setUTCHours(0, 0, 0, 0); // Normalize to start of day UTC for consistent querying
 
-    // 1. Verify AcademicLevel exists
+    // Resolve educatorUserId to Educator.id for authorization/validation purposes
+    const recordingEducator = await prisma.educator.findUnique({
+      where: { userId: educatorUserId },
+      select: { id: true, companyId: true } // Also get companyId for future validation if needed
+    });
+
+    if (!recordingEducator) {
+      return NextResponse.json({ message: "Educator not found or not authorized to access this page." }, { status: 403 });
+    }
+    const recordingEducatorId = recordingEducator.id;
+
+    // Verify AcademicLevel exists and get its details
     const academicLevel = await prisma.academicLevel.findUnique({
       where: {
         id: academicLevelId,
-        // companyId is implicitly linked if academicLevelId is unique within a company,
-        // or if the educator is tied to a specific company.
-        // If academicLevelId is globally unique, companyId check here might be redundant.
-        // If academicLevelId is only unique within a company, companyId should be included here.
-        // Based on the provided code, companyId is removed from `where` clause for academicLevel.
+        // Optional: Add companyId check here if academic levels are strictly tied to a company
+        // companyId: recordingEducator.companyId,
       },
       include: {
         _count: {
-          select: { students: true }, // Count students associated with this academic level
+          select: { StudentAcademicLevel: true },
         },
       },
     });
@@ -79,49 +84,67 @@ export async function GET(request: Request, { params }: { params: { academicLeve
       return NextResponse.json({ message: "Academic Level not found." }, { status: 404 });
     }
 
-    // 2. Fetch students primarily assigned to this AcademicLevel
-    const students = await prisma.student.findMany({
+    // Check EducatorAcademicLevelAssignment for authorization
+    const assignment = await prisma.educatorAcademicLevelAssignment.findFirst({
+      where: { educatorId: recordingEducatorId, academicLevelId },
+    });
+    if (!assignment) {
+      return NextResponse.json(
+        { message: 'Educator is not assigned to this academic level and cannot view/record attendance.' },
+        { status: 403 }
+      );
+    }
+
+    // Fetch students associated with this AcademicLevel through the StudentAcademicLevel junction table
+    const studentAcademicLevels = await prisma.studentAcademicLevel.findMany({
       where: {
         academicLevelId: academicLevelId,
-        // companyId is removed from student where clause as per user's latest API code.
-        // This implies academicLevelId uniquely identifies students within a company,
-        // or security is handled elsewhere.
       },
       include: {
-        user: {
-          select: { id: true, name: true },
-        },
-        // Fetch existing attendance records for these students on the given date,
-        // specifically for this academic level and where classScheduleId is null
-        AttendanceRecord: {
-          where: {
-            date: attendanceDate,
-            academicLevelId: academicLevelId, // Crucial: Filter by the current academic level
-            classScheduleId: null,           // Crucial: This is for general daily attendance
-            recordedById: educatorId,        // Filter by the educator who recorded it
-          },
-          select: {
-            status: true,
+        student: { // Include the student details
+          include: {
+            user: {
+              select: { id: true, name: true, image: true }, // Added image for profile picture if User has it
+            },
+            AttendanceRecord: { // Fetch existing attendance records for *this* student on the given date
+              where: {
+                date: attendanceDate,
+                academicLevelId: academicLevelId,
+                classScheduleId: null, // For general daily attendance
+                // REMOVED: recordedById filter, to show overall attendance regardless of who recorded it.
+              },
+              select: {
+                status: true,
+                createdAt: true, // Used for ordering to get the latest status
+              },
+              orderBy: {
+                createdAt: 'desc', // Get the latest record if multiple exist for the same student/date
+              },
+              take: 1, // Only need the most recent one
+            },
           },
         },
       },
       orderBy: {
-        user: {
-          name: 'asc',
+        student: {
+          user: {
+            name: 'asc',
+          },
         },
       },
     });
 
-    const studentsForAttendance: StudentForAttendance[] = students.map(student => ({
-      id: student.id,
-      userId: student.userId,
-      name: student.user?.name || 'N/A',
-      profilePicture: student.profilePicture,
+    // Map the results to the desired StudentForAttendance format
+    const studentsForAttendance: StudentForAttendance[] = studentAcademicLevels.map(sal => ({
+      id: sal.student.id,
+      userId: sal.student.userId,
+      name: sal.student.user?.name || 'N/A',
+      profilePicture: sal.student.profilePicture || sal.student.user?.image || null, // Prioritize student's picture, then user's, then null
       // Set currentStatus based on fetched record, default to 'ABSENT' if no record
-      currentStatus: (student.AttendanceRecord.length > 0 ? student.AttendanceRecord[0].status : 'ABSENT') as AttendanceStatus,
+      currentStatus: (sal.student.AttendanceRecord.length > 0 ? sal.student.AttendanceRecord[0].status : 'ABSENT') as AttendanceStatus,
     }));
 
-    // 3. Mock Theme Settings (as in original)
+    // Mock Theme Settings
     const themeSettings = {
       primaryColor: "#fd2121",
       accentColor: "#FFC107",
@@ -132,7 +155,7 @@ export async function GET(request: Request, { params }: { params: { academicLeve
         id: academicLevel.id,
         name: academicLevel.name,
         description: academicLevel.description,
-        studentsCount: academicLevel._count.students,
+        studentsCount: academicLevel._count.StudentAcademicLevel,
       },
       students: studentsForAttendance,
       themeSettings,
@@ -145,15 +168,10 @@ export async function GET(request: Request, { params }: { params: { academicLeve
   }
 }
 
-// POST /api/academic-levels/[academicLevelId]/attendance
+// POST /api/academic-levels/[academicLevelId]/attendance (No changes in this part)
 // Saves/updates attendance records for a specific academic level and date.
-// Path Params: academicLevelId
-// Body: {
-//   companyId: string, // Re-added to body destructuring as UI sends it
-//   date: string (YYYY-MM-DD),
-//   educatorId: string (Educator.id),
-//   attendanceRecords: { [studentId: string]: { status: AttendanceStatus, reason?: string | null } }
-// }
+// ... (rest of the POST code remains the same as previously provided)
+// app/api/academic-levels/[academicLevelId]/attendance/route.ts
 
 export async function POST(
   request: Request,
@@ -164,57 +182,79 @@ export async function POST(
     const { date: dateStr, educatorId, attendanceRecords } =
       await request.json() as {
         date: string;
-        educatorId: string;
+        educatorId: string; // This is Educator.userId from the request body
         attendanceRecords: Record<string, StudentAttendanceRecordPayload>;
       };
 
-    if (!dateStr || !educatorId || !attendanceRecords || typeof attendanceRecords !== 'object') {
-      return NextResponse.json(
-        { message: 'Missing required fields: date, educatorId, or attendanceRecords.' },
-        { status: 400 }
-      );
-    }
+    console.log("POST Request Received:");
+    console.log("  academicLevelId:", academicLevelId);
+    console.log("  dateStr:", dateStr);
+    console.log("  educatorId (from frontend):", educatorId);
+    console.log("  attendanceRecords payload:", JSON.stringify(attendanceRecords, null, 2));
 
-    // Normalize date to start-of-day UTC
+
     const attendanceDate = new Date(dateStr);
     attendanceDate.setUTCHours(0, 0, 0, 0);
+    console.log("  Normalized attendanceDate:", attendanceDate.toISOString());
 
-    // Verify educator
+    // 1. Verify educator using their User.id to find the Educator record
     const educator = await prisma.educator.findUnique({
       where: { userId: educatorId },
+      select: { id: true, companyId: true }
     });
+    console.log("  Educator found:", educator ? educator.id : "NOT FOUND");
     if (!educator) {
+      console.error("  Error: Educator not found or not authorized for userId:", educatorId);
       return NextResponse.json(
         { message: 'Educator not found or not authorized.' },
         { status: 403 }
       );
     }
 
-    // (Optional) Check assignment
+    // 2. Get the academic level's companyId for setting on the attendance record
+    const academicLevelDetails = await prisma.academicLevel.findUnique({
+      where: { id: academicLevelId },
+      select: { companyId: true }
+    });
+    console.log("  Academic Level Company ID:", academicLevelDetails ? academicLevelDetails.companyId : "NOT FOUND");
+
+    if (!academicLevelDetails) {
+      console.error("  Error: Academic Level not found for company ID lookup:", academicLevelId);
+      return NextResponse.json({ message: "Academic Level not found for company ID lookup." }, { status: 404 });
+    }
+    const companyIdToSet = academicLevelDetails.companyId;
+
+    // 3. Check EducatorAcademicLevelAssignment (now present in schema)
     const assignment = await prisma.educatorAcademicLevelAssignment.findFirst({
       where: { educatorId: educator.id, academicLevelId },
     });
+    console.log("  Educator Academic Level Assignment found:", assignment ? "YES" : "NO");
     if (!assignment) {
-      console.warn(`Educator ${educatorId} not assigned to level ${academicLevelId}`);
-      // throw or continue based on your policy
+      console.warn(`Educator ${educator.id} is not assigned to academic level ${academicLevelId}. Denying attendance submission.`);
+      return NextResponse.json(
+        { message: 'Educator is not assigned to this academic level and cannot record attendance.' },
+        { status: 403 }
+      );
     }
 
-    // Run all find→update/create inside one interactive transaction
+    console.log("Starting Prisma transaction...");
     const results = await prisma.$transaction(async (tx) => {
       const ops: Array<ReturnType<typeof tx.attendanceRecord.update> | ReturnType<typeof tx.attendanceRecord.create>> = [];
 
       for (const [studentId, recordData] of Object.entries(attendanceRecords)) {
-        // 1) find existing “general” record
+        console.log(`  Processing studentId: ${studentId}, status: ${recordData.status}`);
         const existing = await tx.attendanceRecord.findFirst({
           where: {
             studentId,
             date: attendanceDate,
             classScheduleId: null,
+            academicLevelId,
+            companyId: companyIdToSet,
           },
         });
+        console.log(`    Existing record for ${studentId}:`, existing ? `ID: ${existing.id}, Status: ${existing.status}` : "NOT FOUND");
 
         if (existing) {
-          // 2a) schedule an update
           ops.push(
             tx.attendanceRecord.update({
               where: { id: existing.id },
@@ -223,11 +263,12 @@ export async function POST(
                 reason: recordData.reason,
                 recordedById: educator.id,
                 academicLevelId,
+                companyId: companyIdToSet,
               },
             })
           );
+          console.log(`    Scheduled UPDATE for ${studentId}`);
         } else {
-          // 2b) schedule a create
           ops.push(
             tx.attendanceRecord.create({
               data: {
@@ -238,23 +279,27 @@ export async function POST(
                 academicLevelId,
                 recordedById: educator.id,
                 reason: recordData.reason,
+                companyId: companyIdToSet,
               },
             })
           );
+          console.log(`    Scheduled CREATE for ${studentId}`);
         }
       }
-
-      // Return an *array* of PrismaPromises; Prisma will execute them atomically
-      return ops;
+      console.log(`  Total operations scheduled in transaction: ${ops.length}`);
+      // return ops; // This will execute the scheduled operations
+      const executedResults = await Promise.all(ops); // <--- ADD THIS LINE
+      return executedResults;
     });
 
+    console.log("Prisma transaction completed. Results:", results);
     return NextResponse.json(
       { message: 'Attendance saved successfully!', recordsProcessed: results.length },
       { status: 200 }
     );
 
   } catch (error: any) {
-    console.error('Error saving attendance:', error);
+    console.error('Error saving attendance (caught in catch block):', error);
     return NextResponse.json(
       {
         message: 'Failed to save attendance',
@@ -264,87 +309,3 @@ export async function POST(
     );
   }
 }
-
-// export async function POST(request: Request, { params }: { params: { academicLevelId: string } }) {
-//   try {
-//     const { academicLevelId } = params;
-//     const body = await request.json();
-//     // Explicitly type attendanceRecords and re-add companyId to destructuring
-//     const { date: dateStr, educatorId, attendanceRecords }: {
-//       date: string;
-//       educatorId: string;
-//       attendanceRecords: Record<string, StudentAttendanceRecordPayload>;
-//     } = body;
-
-//     if ( !dateStr || !educatorId || !attendanceRecords || typeof attendanceRecords !== 'object') {
-//       return NextResponse.json({ message: "Missing required fields: companyId, date, educatorId, or attendanceRecords." }, { status: 400 });
-//     }
-
-//     const attendanceDate = new Date(dateStr);
-//     attendanceDate.setUTCHours(0, 0, 0, 0); // Normalize to start of day UTC
-
-//     // Verify Educator exists and belongs to the company
-//     // Changed lookup from userId to id for consistency with recordedById in AttendanceRecord model
-//     const educator = await prisma.educator.findUnique({
-//       where: { userId: educatorId, }, // Ensure educator belongs to the company
-//     });
-//     if (!educator) {
-//       return NextResponse.json({ message: "Educator not found or not authorized for this company." }, { status: 403 });
-//     }
-
-//     // Optional: Verify that the educator is actually assigned to this academicLevel
-//     const isEducatorAssignedToAcademicLevel = await prisma.educatorAcademicLevelAssignment.findFirst({
-//       where: {
-//         educatorId: educator.id,
-//         academicLevelId: academicLevelId,
-//       },
-//     });
-
-//     if (!isEducatorAssignedToAcademicLevel) {
-//       console.warn(`Educator ${educatorId} is attempting to record attendance for AcademicLevel ${academicLevelId} but is not explicitly assigned.`);
-//       // Depending on your policy, you might return a 403 here.
-//       // For now, it proceeds with a warning.
-//     }
-
-//     const transaction = await prisma.$transaction(
-//       // Explicitly type recordData in the map callback
-//       Object.entries(attendanceRecords).map(([studentId, recordData]: [string, StudentAttendanceRecordPayload]) =>
-//         prisma.attendanceRecord.upsert({
-//           where: {
-//             // Updated unique constraint to match @@unique([studentId, date, classScheduleId])
-//             studentId_date_classScheduleId: {
-//               studentId: studentId,
-//               date: attendanceDate,
-//               // Corrected Type assertion: Use 'null as any' to bypass strict TS checks for nullable field in unique key.
-//               // 'undefined' is not a valid value for a column in a unique index, 'null' is.
-//               classScheduleId: null as any,
-//             },
-//           },
-//           update: {
-//             status: recordData.status,
-//             reason: recordData.reason, // Update reason if provided
-//             updatedAt: new Date(),
-//             recordedById: educator.id, // Use educator.id from the found educator
-//             academicLevelId: academicLevelId, // Ensure academicLevelId is consistent
-//           },
-//           create: {
-//             studentId: studentId,
-//             date: attendanceDate,
-//             status: recordData.status,
-//             // Corrected Type assertion: Use 'null as any'.
-//             classScheduleId: null as any,
-//             academicLevelId: academicLevelId, // Associate with the academic level
-//             recordedById: educator.id, // Use educator.id from the found educator
-//             reason: recordData.reason,      // Create reason if provided
-//           },
-//         })
-//       )
-//     );
-
-//     return NextResponse.json({ message: "Attendance saved successfully!", recordsUpdated: transaction.length }, { status: 200 });
-//   } catch (error: any) {
-//     console.error("Error saving attendance:", error);
-//     // Ensure error is an object before accessing properties or passing to NextResponse
-//     return NextResponse.json({ message: "Failed to save attendance", error: error instanceof Error ? error.message : String(error) }, { status: 500 });
-//   }
-// }
