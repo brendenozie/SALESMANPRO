@@ -65,7 +65,7 @@ export default function CourseReportsPageClient({
 
     try {
       const res = await fetch(
-        `${apiUrl}/teacher/reports/course/${courseId}?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`
+        `${apiUrl}/teacher/courses/${courseId}/reports?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`
       );
 
       if (res.ok) {

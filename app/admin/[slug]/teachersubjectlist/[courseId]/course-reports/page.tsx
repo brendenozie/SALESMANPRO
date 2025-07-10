@@ -4,13 +4,11 @@ import CourseReportsPageClient from "./CourseReportsPageClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// IMPORTANT: In a real application, the currentEducatorId would come from an authentication context (e.g., NextAuth.js session).
-// For this example, we'll use a hardcoded mock ID.
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator User ID
 
 interface PageProps {
   params: {
-    slug: string; // companyId
+    slug: string; // educatorId
   };
 }
 
@@ -53,11 +51,11 @@ export interface CourseReportDetails {
 export interface CourseReportsPageData {
   courses: CourseOption[];
   educatorId: string;
-  companyId: string;
+  companyId: string; // This will now come directly from the API response
 }
 
 export default async function CourseReportsServerPage({ params }: PageProps) {
-  
+  // As clarified, params.slug is the educatorId
   const educatorId = params.slug || MOCK_CURRENT_EDUCATOR_ID;
 
   let reportsPageData: CourseReportsPageData | null = null;
@@ -70,11 +68,12 @@ export default async function CourseReportsServerPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      const courses = (await res.json()) as CourseOption[];
+      // Destructure both courses and companyId from the API response
+      const { courses, companyId: fetchedCompanyId } = await res.json();
       reportsPageData = {
         courses: courses,
         educatorId: educatorId,
-        companyId: educatorId,
+        companyId: fetchedCompanyId, // Assign the companyId fetched from the API
       };
     } else {
       const errorData = await res.json();
@@ -94,7 +93,7 @@ export default async function CourseReportsServerPage({ params }: PageProps) {
         <button
           onClick={() => window.history.back()}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
-                     hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+                       hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
         </button>

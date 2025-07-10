@@ -4,44 +4,46 @@ import prisma from "@/server/db/prismadb"; // Adjust path as per your project st
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  // educatorId is assumed to be the unique identifier (_id) of the Educator document
   const educatorId = searchParams.get('educatorId');
-  const companyId = searchParams.get('companyId');
 
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'educatorId'.
-  // 3. Ensure the educator is authorized for this company.
-  // const session = await auth();
-  // if (!session || session.user.id !== educatorId || session.user.role !== 'EDUCATOR') {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
+  if (!educatorId) {
+    return NextResponse.json({ message: 'Missing educatorId' }, { status: 400 });
+  }
 
-  // Ensure both educatorId and companyId are provided for proper filtering
-  if (!educatorId || !companyId) {
-    return NextResponse.json({ message: 'Missing educatorId or companyId' }, { status: 400 });
+  const educator = await prisma.educator.findUnique({
+    where: { userId: educatorId }, // Find educator using their associated User.id
+    select: {
+      id: true,
+      companyId: true, // Select companyId from the educator
+      user: {
+        select: {
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
+  });
+
+  if (!educator) {
+    return NextResponse.json({ message: 'Educator not found or not associated with this company' }, { status: 404 });
   }
 
   try {
-    // Fetch courses taught by this educator within this company.
-    // The relationship is now through the CourseEducatorAssignment junction table.
     const courses = await prisma.course.findMany({
       where: {
-        companyId: companyId, // Filter courses by companyId for multi-tenancy
-        CourseEducatorAssignment: { // Use the new junction table for educator-course assignments
+        CourseEducatorAssignment: {
           some: {
-            educatorId: educatorId, // Filter by the specific educator's ID
+            educatorId: educator.id, // Filter by the specific educator's ID
           },
         },
       },
       select: {
         id: true,
-        title: true, // Use 'title' as per your updated Course model
-        academicLevels: { // Access academic levels via the CourseAcademicLevel junction table
+        title: true,
+        academicLevels: {
           select: {
-            academicLevel: { // Select the actual AcademicLevel details
+            academicLevel: {
               select: {
                 name: true,
               },
@@ -60,7 +62,11 @@ export async function GET(request: Request) {
       academicLevelName: course.academicLevels[0]?.academicLevel?.name || 'N/A',
     }));
 
-    return NextResponse.json(formattedCourses);
+    // Return an object containing both courses and the educator's companyId
+    return NextResponse.json({
+      courses: formattedCourses,
+      companyId: educator.companyId, // Include the companyId here
+    });
 
   } catch (error) {
     console.error('Error fetching courses for reports:', error);
