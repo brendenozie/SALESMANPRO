@@ -16,9 +16,12 @@ import {
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 
+import { useSession, signOut } from 'next-auth/react';
+
 // Mocking context data for demonstration purposes
 const useMockStoreContext = () => ({
   storeFormData: {
+    category:"test",
     themeSettings: {
       primaryColor: "#fd2121", // Red from your sample
       accentColor: "#FFC107", // Amber Yellow, for consistency
@@ -81,11 +84,12 @@ const useMockUserContext = () => {
     });
   };
 
-  const logoutUser = () => {
+  const logoutUser = (path:string) => {
     return new Promise((resolve) => {
       setTimeout(() => {
         alert('Logged out successfully!');
         // In a real app, this would clear session, redirect to login page etc.
+          signOut({ callbackUrl: `/${path}` });
         resolve({ success: true, message: 'Logged out.' });
       }, 500);
     });
@@ -213,7 +217,7 @@ export default function UserSettingsPage() {
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to log out?')) {
       try {
-        await logoutUser();
+        await logoutUser(storeFormData.category);
         // In a real application, you would redirect to the login page
         // window.location.href = '/login';
       } catch (error: any) {
