@@ -284,9 +284,18 @@ model Company {
 
   attendanceRecords AttendanceRecord[]
 
-  exams          Exam[]
-  grades         Grade[] // Grades are now directly linked to a company
-  classSchedules ClassSchedule[]
+  exams                           Exam[]
+  grades                          Grade[] // Grades are now directly linked to a company
+  classSchedules                  ClassSchedule[]
+  EducatorAcademicLevelAssignment EducatorAcademicLevelAssignment[]
+  CourseEducatorAssignment        CourseEducatorAssignment[]
+  CourseAcademicLevel             CourseAcademicLevel[]
+  CourseEnrollment                CourseEnrollment[]
+  CourseAssignment                CourseAssignment[]
+  AssignmentSubmission            AssignmentSubmission[]
+  EventRegistration               EventRegistration[]
+  DiscussionPost                  DiscussionPost[]
+  DiscussionComment               DiscussionComment[]
 }
 
 enum CategoryStatus {
@@ -1940,6 +1949,7 @@ model Educator {
 
   Grade                    Grade[]                    @relation("recordedBy")
   CourseEducatorAssignment CourseEducatorAssignment[]
+  CourseAssignment         CourseAssignment[]
 }
 
 // Academic Level Model
@@ -1984,6 +1994,9 @@ model EducatorAcademicLevelAssignment {
   // Optional: You could add more fields here relevant to the assignment,
   // e.g., 'assignedDate', 'isActive', 'roleInLevel' (e.g., 'Lead Teacher', 'Assistant')
   roleInLevel String? // e.g., "Lead Educator", "Assistant Educator"
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2053,6 +2066,9 @@ model CourseEducatorAssignment {
   // e.g., 'assignedDate', 'isActive', 'roleInLevel' (e.g., 'Lead Teacher', 'Assistant')
   roleInCourse String? // e.g., "Lead Educator", "Assistant Educator"
 
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2074,6 +2090,9 @@ model CourseAcademicLevel {
   academicLevelId String        @db.ObjectId
 
   assignedAt DateTime @default(now())
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2099,6 +2118,9 @@ model CourseEnrollment {
   enrolledAt       DateTime @default(now())
 
   status EnrollmentStatus @default(ENROLLED) // Current status (e.g., ENROLLED, COMPLETED, DROPPED)
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   // status    String   @default("ENROLLED") // e.g., "ENROLLED", "COMPLETED", "DROPPED"
   createdAt DateTime @default(now())
@@ -2126,6 +2148,21 @@ enum AssignmentStatus {
   Archived
 }
 
+enum AssignmentType {
+  HOMEWORK
+  PROJECT
+  QUIZ
+  UNIT_TEST
+  MIDTERM
+  FINAL
+  ASSIGNMENT_BASED // If some assignments are considered exams
+  PRACTICE
+  PRACTICAL
+  ESSAY_SUBMISSION // For exams that are primarily essay submissions
+  PROJECT_ASSESSMENT // For exams that are project-based
+  OTHER
+}
+
 // Assignment Model
 // Course Assignment Model
 model CourseAssignment {
@@ -2134,6 +2171,10 @@ model CourseAssignment {
   description String?
 
   dueDate DateTime
+  type    AssignmentType @default(HOMEWORK)
+
+  createdById String   @db.ObjectId
+  createdBy   Educator @relation(fields: [createdById], references: [id])
 
   maxGrade Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
   courseId String @db.ObjectId
@@ -2145,8 +2186,12 @@ model CourseAssignment {
 
   publishedAt DateTime @default(now())
 
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Grade     Grade[]
 }
 
 // Submission Model (Student's assignment submission)
@@ -2175,6 +2220,9 @@ model AssignmentSubmission {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   @@unique([assignmentId, studentId])
   @@index([studentId])
@@ -2380,6 +2428,9 @@ model EventRegistration {
   // Optional: If you need to track specific student for a parent registration
   studentId String?  @db.ObjectId
   student   Student? @relation(fields: [studentId], references: [id])
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   // Add more fields as needed, e.g., paymentStatus, notes, etc.
 
@@ -2643,8 +2694,6 @@ model DiscussionTopic {
   posts     DiscussionPost[] // All posts within this topic
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
-  // User      User?            @relation(fields: [userId], references: [id])
-  // userId    String?          @db.ObjectId
 
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id])
@@ -2669,11 +2718,10 @@ model DiscussionPost {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  // User              User?               @relation(fields: [userId], references: [id])
-  // userId            String?             @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   DiscussionComment DiscussionComment[]
-  // @@index([userId])
 
   @@index([topicId])
   @@index([parentId])
@@ -2699,6 +2747,9 @@ model DiscussionComment {
   updatedAt           DateTime @updatedAt
   // DiscussionComment   DiscussionComment? @relation("ReplyToComment", fields: [discussionCommentId], references: [id])
   discussionCommentId String?  @db.ObjectId
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   @@index([postId])
   // @@index([commentId])
@@ -2740,6 +2791,9 @@ model Grade {
 
   examId String? @db.ObjectId // Optional: Grade might not be tied to a specific exam
   exam   Exam?   @relation(fields: [examId], references: [id])
+
+  courseAssignmentId String?           @db.ObjectId // Optional: Grade might not be tied to a specific exam
+  courseAssignment   CourseAssignment? @relation(fields: [courseAssignmentId], references: [id])
 
   score       Float
   gradeValue  String? // e.g., "A", "B+", "Pass"

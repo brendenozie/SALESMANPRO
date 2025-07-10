@@ -4,7 +4,7 @@ import prisma from "@/server/db/prismadb"; // Adjust path as per your project st
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const studentId = searchParams.get('studentId'); // The student whose classes are being viewed
+  const studentId = searchParams.get('studentId'); // This is the User.id associated with the Student
   // const companyId = searchParams.get('companyId');   // For multi-tenancy
 
   // --- Authentication & Authorization (Placeholder) ---
@@ -18,39 +18,52 @@ export async function GET(request: Request) {
   // }
   // ----------------------------------------------------
 
-  if (!studentId ) {
-    return NextResponse.json({ message: 'Missing studentId or companyId' }, { status: 400 });
+  if (!studentId) {
+    return NextResponse.json({ message: 'Missing studentId (User ID) or companyId' }, { status: 400 });
   }
 
   try {
-    // 1. Fetch Student details
+    // 1. Fetch Student details, filtering by userId (which is studentId from query) and companyId
     const student = await prisma.student.findUnique({
-      where: { userId: studentId, },
+      where: {
+        userId: studentId, // Query Student by their associated User ID
+        // companyId: companyId, // Filter by companyId for multi-tenancy
+      },
       select: {
-        id: true,
+        id: true, // Crucial: Get the actual Student model's ID
+        companyId: true,
         user: {
           select: {
             name: true,
             email: true,
           },
         },
-        academicLevel: {
+        // NEW: Fetch academic level through the StudentAcademicLevel junction table
+        StudentAcademicLevel: {
           select: {
-            name: true,
+            academicLevel: {
+              select: {
+                name: true,
+              },
+            },
           },
+          // Assuming a student has one primary academic level for display, take the first one.
+          take: 1,
+          orderBy: { assignedAt: 'desc' } // Optionally order to get the most recent if multiple exist
         },
       },
     });
 
-    if (!student || !student.user ) {
+    if (!student || !student.user) {
       return NextResponse.json({ message: 'Student not found or not associated with this company' }, { status: 404 });
     }
 
-    // 2. Fetch all CourseEnrollments for this student
+    // 2. Fetch all CourseEnrollments for this student, filtering by companyId on the enrollment itself
     const enrollments = await prisma.courseEnrollment.findMany({
       where: {
-        studentId: studentId,
+        studentId: student.id, // Use the actual Student.id from the fetched student object
         status: 'ENROLLED', // Only active enrollments
+        companyId: student.companyId, // NEW: Filter directly on CourseEnrollment by companyId
       },
       select: {
         courseId: true,
@@ -60,13 +73,20 @@ export async function GET(request: Request) {
           select: {
             id: true,
             title: true,
-            instructor: { // Fetch teacher details
+            // NEW: Fetch educator through the CourseEducatorAssignment junction table
+            CourseEducatorAssignment: {
               select: {
-                id: true,
-                user: {
-                  select: { name: true },
+                educator: {
+                  select: {
+                    user: {
+                      select: { name: true },
+                    },
+                  },
                 },
               },
+              // Assuming one primary educator for display, take the first.
+              take: 1,
+              orderBy: { createdAt: 'asc' } // Or by a role field if available
             },
             classSchedules: { // Fetch recurring schedule for the course
               select: {
@@ -81,7 +101,7 @@ export async function GET(request: Request) {
                 { startTime: 'asc' },
               ],
             },
-            Exam: { // Fetch assignments for the course
+            Exam: { // Fetch exams/assignments for the course
               select: {
                 id: true,
                 title: true,
@@ -90,9 +110,6 @@ export async function GET(request: Request) {
                 totalPoints: true,
               },
               where: {
-                // Filter for assignments that are not yet graded or are published
-                // You might need more sophisticated logic here based on your ExamType/ExamStatus
-                // For simplicity, let's consider HOMEWORK and PROJECT as assignments
                 OR: [
                   { type: 'HOMEWORK' },
                   { type: 'PROJECT' },
@@ -116,8 +133,9 @@ export async function GET(request: Request) {
 
       course.classSchedules.forEach(cs => {
         const dayName = cs.dayOfWeek;
-        const startTime = cs.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        const endTime = cs.endTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        // Ensure startTime and endTime are Date objects before calling toLocaleTimeString
+        const startTime = new Date(cs.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const endTime = new Date(cs.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
         if (!daysMap[dayName]) {
           daysMap[dayName] = [];
         }
@@ -136,26 +154,23 @@ export async function GET(request: Request) {
       // Calculate upcoming assignments
       const now = new Date();
       const upcomingAssignments = course.Exam.filter(assignment => {
-        // Consider assignments due in the future and not yet submitted/graded by the student
-        // This requires fetching student's submissions for each assignment, which is complex for this API.
-        // For simplicity, we'll just filter by future due dates for "upcoming".
-        return assignment.date > now;
-      }).sort((a, b) => a.date.getTime() - b.date.getTime());
+        // Ensure assignment.date is a Date object
+        return new Date(assignment.date) > now;
+      }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       const upcomingAssignmentsCount = upcomingAssignments.length;
       const nextAssignmentDue = upcomingAssignments.length > 0
-        ? upcomingAssignments[0].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        ? new Date(upcomingAssignments[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         : 'None';
 
       studentEnrolledClasses.push({
         id: course.id,
         name: course.title,
-        teacher: course.instructor?.user?.name || 'N/A',
+        // NEW: Access educator name through CourseEducatorAssignment junction table
+        teacher: course.CourseEducatorAssignment[0]?.educator?.user?.name || 'N/A',
         schedule: formattedSchedule || 'No regular schedule',
-        // 'room' is not directly on Course or ClassSchedule in your schema,
-        // so we'll omit it or derive it from ClassSchedule.topic if that's the intent.
-        // For now, let's omit 'room' as it's not a direct field.
         currentGrade: enrollment.grade !== null ? enrollment.grade.toFixed(2) : 'N/A',
+        progress: enrollment.progress, // Added progress from enrollment
         upcomingAssignmentsCount: upcomingAssignmentsCount,
         nextAssignmentDue: nextAssignmentDue,
       });
@@ -163,12 +178,13 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       studentName: student.user.name || student.user.email,
-      studentGradeLevel: student.academicLevel?.name || 'N/A',
+      // NEW: Access academic level name through StudentAcademicLevel junction table
+      studentGradeLevel: student.StudentAcademicLevel[0]?.academicLevel?.name || 'N/A',
       enrolledClasses: studentEnrolledClasses,
     });
 
   } catch (error) {
     console.error('Error fetching student classes:', error);
-    return NextResponse.json({ message: 'Failed to fetch student classes' }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch student classes Unknown error' }, { status: 500 });
   }
 }

@@ -4,14 +4,18 @@ import StudentAssignmentsPageClient from "./StudentAssignmentsPageClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// IMPORTANT: In a real application, the currentStudentId would come from an authentication context (e.g., NextAuth.js session).
-// For this example, we'll use a hardcoded mock ID.
-const MOCK_CURRENT_STUDENT_ID = "clx023j0d00003b6033877d9c"; // Example: Student ID
+// IMPORTANT: In a real application, these IDs would come from an authentication context (e.g., NextAuth.js session).
+// For this example, we'll use hardcoded mock IDs.
+const MOCK_CURRENT_STUDENT_USER_ID = "clx023j0d00003b6033877d9c"; // Example: Student User ID (User.id)
+const MOCK_COMPANY_ID = "clx021j3f00003b6033877d9a"; // Example: Company ID (replace with actual if available)
 
 interface PageProps {
   params: {
-    slug: string; // companyId
+    slug: string; // studentId (which is actually the User.id associated with the Student)
     courseId?: string; // Optional: if viewing assignments for a specific course
+  };
+  searchParams: {
+    companyId?: string; // Expect companyId as a query parameter
   };
 }
 
@@ -24,31 +28,35 @@ export interface AssignmentData {
   teacher: string; // Teacher's name
   dueDate: string; // ISO string
   status: 'Pending Submission' | 'Submitted' | 'Graded' | 'Overdue' | 'Not Submitted'; // Frontend status
-  type: string; // ExamType (e.g., 'HOMEWORK', 'PROJECT', 'QUIZ')
-  totalPoints: number;
+  type: string; // AssignmentType (e.g., 'HOMEWORK', 'PROJECT', 'QUIZ')
+  totalPoints: number; // This will map to maxGrade from the API
   grade: number | null;
-  feedback: string | null;
+  feedback: string | null; // This will map to 'comments' from the API
   submissionUrl: string | null;
+  submissionContent: string | null; // NEW: For text-based submissions
   description: string | null;
   submittedAt: string | null; // ISO string
+}
+
+export interface CourseInfo {
+  id: string;
+  title: string;
 }
 
 export interface StudentAssignmentsPageData {
   studentName: string;
   studentGradeLevel: string;
   assignments: AssignmentData[];
-  studentId: string;
-  companyId: string;
-  courseInfo?: { // Optional, if filtering by course
-    id: string;
-    title: string;
-  };
+  studentId: string; // Pass student ID (User.id) to client for API calls
+  companyId: string; // Pass company ID to client for API calls
+  courseInfo?: CourseInfo; // Optional, if filtering by course
 }
 
-export default async function StudentAssignmentsServerPage({ params }: PageProps) {
-  const companyId = params.slug;
+export default async function StudentAssignmentsServerPage({ params, searchParams }: PageProps) {
+
   const courseId = params.courseId; // This will be undefined if not in the URL path
-  const studentId = MOCK_CURRENT_STUDENT_ID;
+  const studentId = params.slug || MOCK_CURRENT_STUDENT_USER_ID;
+  // const companyId = searchParams.companyId || MOCK_COMPANY_ID; // Get companyId from search params or use mock
 
   let assignmentsPageData: StudentAssignmentsPageData | null = null;
   let fetchError: string | null = null;
@@ -56,7 +64,7 @@ export default async function StudentAssignmentsServerPage({ params }: PageProps
   try {
     const url = new URL(`${apiUrl}/student/assignments`);
     url.searchParams.append('studentId', studentId);
-    url.searchParams.append('companyId', companyId);
+    // url.searchParams.append('companyId', companyId); // Always append companyId
     if (courseId) {
       url.searchParams.append('courseId', courseId);
     }
@@ -64,9 +72,15 @@ export default async function StudentAssignmentsServerPage({ params }: PageProps
     const res = await fetch(url.toString(), { cache: "no-store" });
 
     if (res.ok) {
-      assignmentsPageData = (await res.json()) as StudentAssignmentsPageData;
-      assignmentsPageData.studentId = studentId;
-      assignmentsPageData.companyId = companyId;
+      const data = await res.json();
+      assignmentsPageData = {
+        studentName: data.studentName,
+        studentGradeLevel: data.studentGradeLevel,
+        assignments: data.assignments,
+        studentId: studentId, // Ensure studentId is passed down
+        companyId: "companyId", // Ensure companyId is passed down
+      };
+
       if (courseId) {
         // If a specific course was requested, add its info for the client component header
         assignmentsPageData.courseInfo = {
@@ -84,7 +98,7 @@ export default async function StudentAssignmentsServerPage({ params }: PageProps
     console.error("[StudentAssignmentsServerPage] Catch error:", err);
   }
 
-  if (fetchError || !assignmentsPageData) {
+  if (fetchError || !assignmentsPageData || !assignmentsPageData.assignments) {
     return (
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Assignments</h2>
@@ -92,7 +106,7 @@ export default async function StudentAssignmentsServerPage({ params }: PageProps
         <button
           onClick={() => window.history.back()}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
-                     hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+                       hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
         </button>

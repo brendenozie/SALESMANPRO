@@ -17,6 +17,7 @@ import {
   LinkIcon, // For submission link
   MagnifyingGlassIcon, // For search input
   ArrowLeftIcon, // For back button
+  DocumentTextIcon, // For text submission content
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
@@ -59,7 +60,7 @@ export default function StudentAssignmentsPageClient({
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentData | null>(null);
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [submissionUrlInput, setSubmissionUrlInput] = useState('');
-  const [submissionTextInput, setSubmissionTextInput] = useState('');
+  const [submissionContentInput, setSubmissionContentInput] = useState(''); // Updated from submissionTextInput
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -107,11 +108,11 @@ export default function StudentAssignmentsPageClient({
 
   const allClassesForFilter = useMemo(() => {
     const classes = new Map<string, string>(); // Map<classId, className>
-    enrolledClasses.forEach(assignment => {
+    initialAssignments.forEach(assignment => { // Use initialAssignments to get all classes
       classes.set(assignment.classId, assignment.className);
     });
     return Array.from(classes.entries()).map(([id, name]) => ({ id, name }));
-  }, [enrolledClasses]);
+  }, [initialAssignments]);
 
 
   const filteredAssignments = useMemo(() => {
@@ -138,7 +139,7 @@ export default function StudentAssignmentsPageClient({
   const handleOpenSubmissionModal = useCallback((assignment: AssignmentData) => {
     setSelectedAssignment(assignment);
     setSubmissionUrlInput(assignment.submissionUrl || '');
-    setSubmissionTextInput(''); // Assuming text submission is separate or not pre-filled
+    setSubmissionContentInput(assignment.submissionContent || ''); // Initialize with existing content
     setShowSubmissionModal(true);
     setShowDetailModal(false); // Close detail modal if open
   }, []);
@@ -154,9 +155,15 @@ export default function StudentAssignmentsPageClient({
       studentId: studentId,
       assignmentId: selectedAssignment.id,
       submissionUrl: submissionUrlInput.trim() || null,
-      submissionText: submissionTextInput.trim() || null,
+      submissionContent: submissionContentInput.trim() || null, // Updated field name
       companyId: companyId,
     };
+
+    if (!payload.submissionUrl && !payload.submissionContent) {
+      showStatus('error', 'Please provide either a URL or text for your submission.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch(`${apiUrl}/student/submit-assignment`, {
@@ -168,15 +175,24 @@ export default function StudentAssignmentsPageClient({
       });
 
       if (res.ok) {
-        const updatedSubmission = await res.json();
+        const responseData = await res.json(); // Get the full response data
+        const submittedAssignment = responseData.submission; // Access the submission object
+
         setAssignments(prev => prev.map(a =>
-          a.id === selectedAssignment.id ? { ...a, status: 'Submitted', submissionUrl: updatedSubmission.submission.submissionUrl, submittedAt: updatedSubmission.submission.submittedAt } : a
+          a.id === selectedAssignment.id ? {
+            ...a,
+            status: 'Submitted', // Update status to 'Submitted'
+            submissionUrl: submittedAssignment.submissionUrl,
+            submissionContent: submittedAssignment.submissionContent, // Update with new content
+            submittedAt: submittedAssignment.submittedAt,
+            // Keep grade and feedback as they are not updated on submission
+          } : a
         ));
         showStatus('success', `Assignment "${selectedAssignment.name}" submitted successfully!`);
         setShowSubmissionModal(false);
         setSelectedAssignment(null);
         setSubmissionUrlInput('');
-        setSubmissionTextInput('');
+        setSubmissionContentInput(''); // Clear content input
       } else {
         const errorData = await res.json();
         showStatus('error', errorData.message || 'Failed to submit assignment.');
@@ -186,7 +202,7 @@ export default function StudentAssignmentsPageClient({
     } finally {
       setLoading(false);
     }
-  }, [loading, selectedAssignment, studentId, companyId, submissionUrlInput, submissionTextInput, showStatus]);
+  }, [loading, selectedAssignment, studentId, companyId, submissionUrlInput, submissionContentInput, showStatus]);
 
 
   // --- Assignment Detail Modal Component ---
@@ -234,9 +250,17 @@ export default function StudentAssignmentsPageClient({
 
             {assignment.submissionUrl && (
               <p>
-                <span className="font-semibold">Your Submission:</span> <a href={assignment.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                <span className="font-semibold">Your Submission URL:</span> <a href={assignment.submissionUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
                   <LinkIcon className="h-4 w-4" /> View Submitted File
                 </a>
+              </p>
+            )}
+            {assignment.submissionContent && (
+              <p>
+                <span className="font-semibold">Your Text Submission:</span>
+                <span className="block mt-1 p-2 bg-gray-50 rounded-md border border-gray-200 text-sm whitespace-pre-wrap">
+                  {assignment.submissionContent}
+                </span>
               </p>
             )}
           </div>
@@ -299,18 +323,18 @@ export default function StudentAssignmentsPageClient({
               />
             </div>
             <div>
-              <label htmlFor="submission-text" className="block text-sm font-medium text-gray-700 mb-1">Or Text Submission (Optional)</label>
+              <label htmlFor="submission-content" className="block text-sm font-medium text-gray-700 mb-1">Or Text Submission (Optional)</label>
               <textarea
-                id="submission-text"
+                id="submission-content" // Updated ID
                 rows={4}
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[${accentColor}] focus:border-[${accentColor}] resize-y"
-                value={submissionTextInput}
-                onChange={(e) => setSubmissionTextInput(e.target.value)}
+                value={submissionContentInput} // Updated state variable
+                onChange={(e) => setSubmissionContentInput(e.target.value)} // Updated setter
                 placeholder="Type your submission directly here..."
                 disabled={loading}
               ></textarea>
             </div>
-            {(submissionUrlInput.trim() === '' && submissionTextInput.trim() === '') && (
+            {(submissionUrlInput.trim() === '' && submissionContentInput.trim() === '') && ( // Updated check
                 <p className="text-red-500 text-sm">Please provide either a URL or text for your submission.</p>
             )}
             <div className="flex justify-end gap-3 mt-6">
@@ -325,8 +349,8 @@ export default function StudentAssignmentsPageClient({
               <button
                 type="submit"
                 className={`px-6 py-2 bg-[${primaryColor}] text-white rounded-md shadow-sm hover:bg-[${primaryColor}D0] transition
-                            ${loading || (submissionUrlInput.trim() === '' && submissionTextInput.trim() === '') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={loading || (submissionUrlInput.trim() === '' && submissionTextInput.trim() === '')}
+                                 ${loading || (submissionUrlInput.trim() === '' && submissionContentInput.trim() === '') ? 'opacity-50 cursor-not-allowed' : ''}`} // Updated check
+                disabled={loading || (submissionUrlInput.trim() === '' && submissionContentInput.trim() === '')} // Updated check
               >
                 {loading ? (
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -350,9 +374,11 @@ export default function StudentAssignmentsPageClient({
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200"
         initial="hidden"
         animate="visible"
-        variants={containerVariants}
+        // variants={containerVariants}
       >
-        <motion.div variants={itemVariants} className="flex items-center gap-4">
+        <motion.div 
+        // variants={itemVariants} 
+        className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
             className={`p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
@@ -368,7 +394,9 @@ export default function StudentAssignmentsPageClient({
             <p className="text-sm text-gray-600 mt-1">Track all your assignments and deadlines, {studentName}.</p>
           </div>
         </motion.div>
-        <motion.div variants={itemVariants} className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
+        <motion.div 
+        // variants={itemVariants} 
+        className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
           <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
           <span>{today}</span>
         </motion.div>
@@ -400,9 +428,11 @@ export default function StudentAssignmentsPageClient({
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         initial="hidden"
         animate="visible"
-        variants={containerVariants}
+        // variants={containerVariants}
       >
-        <motion.div variants={itemVariants} className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50">
+        <motion.div 
+        // variants={itemVariants} 
+        className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50">
           <div className="flex items-center mb-3">
             <div className="p-2 bg-white rounded-full shadow-sm mr-3">
               <ClipboardDocumentListIcon className="h-7 w-7 text-blue-600" />
@@ -413,7 +443,9 @@ export default function StudentAssignmentsPageClient({
             </div>
           </div>
         </motion.div>
-        <motion.div variants={itemVariants} className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50">
+        <motion.div 
+        // variants={itemVariants} 
+        className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50">
           <div className="flex items-center mb-3">
             <div className="p-2 bg-white rounded-full shadow-sm mr-3">
               <ClockIcon className="h-7 w-7 text-yellow-600" />
@@ -424,7 +456,9 @@ export default function StudentAssignmentsPageClient({
             </div>
           </div>
         </motion.div>
-        <motion.div variants={itemVariants} className="p-5 rounded-xl shadow-md border border-gray-200 bg-red-50">
+        <motion.div 
+        // variants={itemVariants} 
+        className="p-5 rounded-xl shadow-md border border-gray-200 bg-red-50">
           <div className="flex items-center mb-3">
             <div className="p-2 bg-white rounded-full shadow-sm mr-3">
               <ExclamationCircleIcon className="h-7 w-7 text-red-600" />
@@ -435,7 +469,9 @@ export default function StudentAssignmentsPageClient({
             </div>
           </div>
         </motion.div>
-        <motion.div variants={itemVariants} className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50">
+        <motion.div 
+        // variants={itemVariants} 
+        className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50">
           <div className="flex items-center mb-3">
             <div className="p-2 bg-white rounded-full shadow-sm mr-3">
               <ChartBarIcon className="h-7 w-7 text-green-600" />
@@ -449,12 +485,13 @@ export default function StudentAssignmentsPageClient({
       </motion.div>
 
       {/* Assignments List Section */}
-      <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+      <motion.div 
+      // variants={itemVariants} 
+      className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <ClipboardDocumentListIcon className="h-5 w-5 text-indigo-500" /> All Assignments
           </h3>
-          {/* Add quick actions like "View Calendar" or "Contact Teacher" here if desired */}
         </div>
 
         {/* Search and Filter */}
@@ -472,7 +509,7 @@ export default function StudentAssignmentsPageClient({
                           focus:outline-none focus:ring-[${accentColor}] focus:border-[${accentColor}] sm:text-sm"
             />
           </div>
-          {!courseInfo && ( // Only show class filter if not already filtered by course
+          {!courseInfo && (
             <div className="flex-shrink-0">
               <select
                 value={filterClass}
@@ -520,7 +557,9 @@ export default function StudentAssignmentsPageClient({
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredAssignments.length > 0 ? (
                 filteredAssignments.map((assignment) => (
-                  <motion.tr key={assignment.id} variants={itemVariants}>
+                  <motion.tr key={assignment.id} 
+                  // variants={itemVariants}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{assignment.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {assignment.className} <br />
@@ -573,13 +612,14 @@ export default function StudentAssignmentsPageClient({
         </div>
       </motion.div>
 
-      {/* Modals */}
-      {showDetailModal && selectedAssignment && (
-        <AssignmentDetailModal assignment={selectedAssignment} onClose={() => setShowDetailModal(false)} />
-      )}
-      {showSubmissionModal && selectedAssignment && (
-        <SubmissionModal assignment={selectedAssignment} onClose={() => setShowSubmissionModal(false)} />
-      )}
+      <AnimatePresence>
+        {showDetailModal && selectedAssignment && (
+          <AssignmentDetailModal assignment={selectedAssignment} onClose={() => setShowDetailModal(false)} />
+        )}
+        {showSubmissionModal && selectedAssignment && (
+          <SubmissionModal assignment={selectedAssignment} onClose={() => setShowSubmissionModal(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
