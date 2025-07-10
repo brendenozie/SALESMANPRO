@@ -24,7 +24,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
   }
 
   try {
-    // 1. Fetch Course details
+    // 1. Fetch Course details, including assignments and exams
     const course = await prisma.course.findUnique({
       where: { id: courseId, companyId: companyId },
       select: {
@@ -44,7 +44,16 @@ export async function GET(request: Request, { params }: { params: { courseId: st
           select: {
             id: true,
             title: true,
-            maxGrade: true,
+            maxGrade: true, // Use maxPoints from CourseAssignment
+          },
+        },
+        Exam: { // NEW: Select exams for this course
+          select: {
+            id: true,
+            title: true,
+            totalPoints: true,
+            date: true,
+            type: true,
           },
         },
       },
@@ -64,7 +73,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       select: {
         studentId: true,
         progress: true,
-        grade: true, // Enrollment grade
+        grade: true, // Enrollment grade (if applicable)
         student: {
           select: {
             id: true, // Student model ID
@@ -80,9 +89,16 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       },
     });
 
+    // Extract student IDs for efficient filtering of submissions and attendance
+    const studentIds = enrollments.map(e => e.studentId);
+    const courseExamIds = course.Exam.map(exam => exam.id);
+
     // 3. Fetch all submissions for assignments in this course
-    const submissions = await prisma.submission.findMany({
-      where: { courseId: courseId },
+    const assignmentSubmissions = await prisma.assignmentSubmission.findMany({
+      where: {
+        courseId: courseId,
+        studentId: { in: studentIds } // Filter by enrolled students
+      },
       select: {
         assignmentId: true,
         studentId: true,
@@ -91,9 +107,26 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       },
     });
 
-    // 4. Fetch all attendance records for this course
+    // 4. Fetch all exam submissions for exams in this course
+    const examSubmissions = await prisma.examSubmission.findMany({ // NEW: Fetch ExamSubmissions
+      where: {
+        examId: { in: courseExamIds }, // Filter by exams in this course
+        studentId: { in: studentIds } // Filter by enrolled students
+      },
+      select: {
+        examId: true,
+        studentId: true,
+        score: true,
+        submittedAt: true,
+      },
+    });
+
+    // 5. Fetch all attendance records for this course
     const attendanceRecords = await prisma.attendanceRecord.findMany({
-      where: { courseId: courseId },
+      where: {
+        courseId: courseId,
+        studentId: { in: studentIds } // Filter by enrolled students
+      },
       select: {
         studentId: true,
         date: true,
@@ -107,15 +140,30 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       const student = enrollment.student;
       if (!student || !student.user) continue;
 
-      const studentSubmissions = submissions.filter(sub => sub.studentId === student.id);
+      const studentAssignmentSubmissions = assignmentSubmissions.filter(sub => sub.studentId === student.id);
+      const studentExamSubmissions = examSubmissions.filter(sub => sub.studentId === student.id); // Filter exam submissions
       const studentAttendance = attendanceRecords.filter(att => att.studentId === student.id);
 
       // Calculate assignment summary
       const totalAssignments = course.assignments.length;
-      const submittedAssignments = new Set(studentSubmissions.map(s => s.assignmentId)).size;
-      const averageAssignmentGrade = studentSubmissions.length > 0
-        ? studentSubmissions.reduce((sum, sub) => sum + (sub.grade || 0), 0) / studentSubmissions.length
+      const submittedAssignments = new Set(studentAssignmentSubmissions.map(s => s.assignmentId)).size;
+      const averageAssignmentGrade = studentAssignmentSubmissions.length > 0
+        ? studentAssignmentSubmissions.reduce((sum, sub) => sum + (sub.grade || 0), 0) / studentAssignmentSubmissions.length
         : null;
+
+      // Calculate exam summary (NEW)
+      const totalExams = course.Exam.length;
+      const submittedExamsCount = studentExamSubmissions.length;
+      const averageExamScore = studentExamSubmissions.length > 0
+        ? studentExamSubmissions.reduce((sum, sub) => sum + (sub.score || 0), 0) / studentExamSubmissions.length
+        : null;
+
+      // Optionally, include individual exam scores if needed
+      const individualExamScores: { [examId: string]: number | null } = {};
+      studentExamSubmissions.forEach(sub => {
+        individualExamScores[sub.examId] = sub.score;
+      });
+
 
       // Calculate attendance summary
       const totalAttendanceDays = studentAttendance.length;
@@ -141,6 +189,12 @@ export async function GET(request: Request, { params }: { params: { courseId: st
           absent: absentCount,
           tardy: tardyCount,
         },
+        examSummary: { // NEW: Add exam summary
+          totalExams: totalExams,
+          submittedCount: submittedExamsCount,
+          averageScore: averageExamScore,
+          individualExamScores: individualExamScores, // Optional: for detailed view
+        },
       });
     }
 
@@ -155,6 +209,6 @@ export async function GET(request: Request, { params }: { params: { courseId: st
 
   } catch (error) {
     console.error('Error generating course report:', error);
-    return NextResponse.json({ message: 'Failed to generate course report' }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to generate course report', error: (error as Error).message }, { status: 500 });
   }
 }
