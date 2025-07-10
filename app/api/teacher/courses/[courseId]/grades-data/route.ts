@@ -42,7 +42,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
   const educatorUserId = searchParams.get('educatorId'); // The educator viewing/managing grades
-  const companyId = searchParams.get('companyId');     // For multi-tenancy
+  // const companyId = searchParams.get('companyId');     // For multi-tenancy
 
   // --- Authentication & Authorization (Placeholder) ---
   // In a real application, you would:
@@ -55,7 +55,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
   // }
   // ----------------------------------------------------
 
-  if (!courseId || !educatorUserId || !companyId) {
+  if (!courseId || !educatorUserId) {
     return NextResponse.json({ message: 'Missing courseId, educatorId, or companyId' }, { status: 400 });
   }
 
@@ -66,13 +66,13 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       select: { id: true, companyId: true }
     });
 
-    if (!educatorProfile || educatorProfile.companyId !== companyId) {
+    if (!educatorProfile ) {
       return NextResponse.json({ message: 'Educator not found or not authorized for this company.' }, { status: 403 });
     }
 
     // 1. Fetch Course details and its associated academic levels
     const course = await prisma.course.findUnique({
-      where: { id: courseId, companyId: companyId }, // Filter by companyId for multi-tenancy
+      where: { id: courseId, companyId: educatorProfile.companyId }, // Filter by companyId for multi-tenancy
       select: {
         id: true,
         title: true,
@@ -104,7 +104,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       where: {
         courseId: courseId,
         student: { // Ensure student belongs to this company if multi-tenancy is strict on students
-          companyId: companyId,
+          companyId: educatorProfile.companyId,
         }
       },
       select: {
@@ -190,7 +190,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
     const grades = await prisma.grade.findMany({
       where: {
         courseId: courseId,
-        companyId: companyId,
+        companyId: educatorProfile.companyId,
         studentId: { in: studentIdsInCourse }, // Only get grades for students in this course
       },
       select: {

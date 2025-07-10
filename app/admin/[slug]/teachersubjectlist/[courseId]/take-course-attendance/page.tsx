@@ -41,7 +41,7 @@ export interface AttendancePageData {
 export default async function TakeAttendanceServerPage({ params }: PageProps) {
   const companyId = params.slug;
   const courseId = params.courseId;
-  const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+  const educatorId = params.slug || MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
 
   let attendancePageData: AttendancePageData | null = null;
   let fetchError: string | null = null;

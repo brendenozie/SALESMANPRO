@@ -6,22 +6,25 @@ import prisma from "@/server/db/prismadb"; // Adjust path as per your project st
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'TARDY' | 'EXCUSED';
 
 // Define types for API request/response (adjust as needed for frontend)
-interface StudentAttendanceData {
+export interface StudentAttendanceData {
   studentId: string;
   name: string;
   email: string;
   avatarUrl: string | null;
-  currentStatus: AttendanceStatus; // For GET response
 }
 
-interface CourseAttendancePageData {
-  course: {
-    id: string;
-    title: string;
-    academicLevelId?: string; // Optional if a course can have multiple
-    academicLevelName?: string; // Optional
-  };
+export interface CourseAttendanceInfo {
+  id: string;
+  title: string;
+  academicLevelId?: string; // Optional if a course can have multiple
+  academicLevelName?: string; // Optional
+}
+
+// Updated interface for the GET response to match frontend expectations
+export interface AttendancePageDataAPI {
+  course: CourseAttendanceInfo;
   students: StudentAttendanceData[];
+  existingAttendance: { [studentId: string]: AttendanceStatus }; // Map of studentId to their attendance status
 }
 
 
@@ -29,8 +32,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
   const educatorUserId = searchParams.get('educatorId'); // The educator's User.id
-  const companyId = searchParams.get('companyId');     // For multi-tenancy
-  const dateStr = searchParams.get('date');           // Optional: specific date for existing records
+  const dateStr = searchParams.get('date'); // Optional: specific date for existing records
 
   // --- Authentication & Authorization (Placeholder) ---
   // In a real application, you would:
@@ -43,8 +45,8 @@ export async function GET(request: Request, { params }: { params: { courseId: st
   // }
   // ----------------------------------------------------
 
-  if (!courseId || !educatorUserId || !companyId) {
-    return NextResponse.json({ message: 'Missing courseId, educatorId, or companyId' }, { status: 400 });
+  if (!courseId || !educatorUserId) {
+    return NextResponse.json({ message: 'Missing courseId or educatorId' }, { status: 400 });
   }
 
   try {
@@ -54,18 +56,17 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       select: { id: true, companyId: true }
     });
 
-    if (!educatorProfile || educatorProfile.companyId !== companyId) {
+    if (!educatorProfile) {
       return NextResponse.json({ message: 'Educator not found or not authorized for this company.' }, { status: 403 });
     }
-    // const educatorDbId = educatorProfile.id; // Not directly used in GET, but good for context
 
     // 1. Fetch Course details
     const course = await prisma.course.findUnique({
-      where: { id: courseId, companyId: companyId }, // Filter by companyId for multi-tenancy
+      where: { id: courseId, companyId: educatorProfile.companyId }, // Filter by companyId for multi-tenancy
       select: {
         id: true,
         title: true,
-        academicLevels: { // Include academic levels associated with the course
+        academicLevels: { // Include academic levels associated with the course via CourseAcademicLevel
           select: {
             academicLevel: {
               select: {
@@ -83,7 +84,6 @@ export async function GET(request: Request, { params }: { params: { courseId: st
     }
 
     // Determine a primary academic level for display purposes if needed.
-    // Note: A course can be linked to multiple academic levels.
     const primaryAcademicLevel = course.academicLevels.length > 0
       ? course.academicLevels[0].academicLevel
       : undefined; // Use undefined if no academic level is found
@@ -92,6 +92,9 @@ export async function GET(request: Request, { params }: { params: { courseId: st
     const studentsInCourse = await prisma.courseEnrollment.findMany({
       where: {
         courseId: courseId,
+        student: { // Ensure enrolled students belong to the same company
+          companyId: educatorProfile.companyId,
+        },
       },
       select: {
         student: {
@@ -130,7 +133,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
           studentId: { in: studentIdsInCourse }, // Only fetch for students in this course
           courseId: courseId, // Filter by course
           date: normalizedAttendanceDate, // Filter by normalized date
-          companyId: companyId, // Filter by company
+          companyId: educatorProfile.companyId, // Filter by company
           classScheduleId: null, // As this is for general course attendance, not a specific class session
         },
         select: {
@@ -145,7 +148,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       records.forEach(record => {
         // If multiple records exist for student/course/date, pick the most recent one (due to orderBy)
         if (!existingAttendanceRecords[record.studentId]) {
-            existingAttendanceRecords[record.studentId] = record.status as AttendanceStatus;
+          existingAttendanceRecords[record.studentId] = record.status as AttendanceStatus;
         }
       });
     }
@@ -157,7 +160,6 @@ export async function GET(request: Request, { params }: { params: { courseId: st
         name: student.user?.name || 'Unknown Student',
         email: student.user?.email || 'N/A',
         avatarUrl: student.profilePicture || student.user?.image || null, // Prioritize student's specific picture
-        currentStatus: existingAttendanceRecords[student.id] || 'ABSENT', // Default to ABSENT if no record
       };
     });
 
@@ -169,7 +171,8 @@ export async function GET(request: Request, { params }: { params: { courseId: st
         academicLevelName: primaryAcademicLevel?.name,
       },
       students: formattedStudents,
-    });
+      existingAttendance: existingAttendanceRecords, // Return this as a separate map
+    } as AttendancePageDataAPI); // Cast to the defined interface for clarity
 
   } catch (error) {
     console.error('Error fetching course attendance data:', error);

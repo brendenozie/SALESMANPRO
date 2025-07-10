@@ -1,4 +1,5 @@
 // app/admin/[slug]/teacher-classes/[courseId]/consolidated-grades/ConsolidatedGradesPageClient.tsx
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -15,22 +16,28 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
-// Import types from the server component file
 import type { StudentGradeData, AssessmentData, GradeRecord, CourseGradesInfo } from './page';
 
-// Mocking context data for demonstration purposes (replace with actual context in your app)
 const useMockThemeSettings = () => ({
   primaryColor: "#4F46E5", // Indigo-600
   accentColor: "#818CF8", // Indigo-300
 });
 
-type GradeStatus = 'PASSED' | 'FAILED' | 'PENDING'; // Match Prisma enum
+type GradeStatus = 'PASSED' | 'FAILED' | 'PENDING';
+
+// NEW INTERFACE: To hold assessmentType during editing
+interface EditingGradeState {
+  studentId: string;
+  assessmentId: string;
+  assessmentType: string; // Add this field
+  currentRecord: GradeRecord | null;
+}
 
 interface ConsolidatedGradesPageClientProps {
   course: CourseGradesInfo;
   students: StudentGradeData[];
   assessments: AssessmentData[];
-  initialGrades: { [studentId: string]: { [examId: string]: GradeRecord } };
+  initialGrades: { [studentId: string]: { [assessmentKey: string]: GradeRecord } }; // Updated type
   educatorId: string;
   companyId: string;
 }
@@ -46,18 +53,17 @@ export default function ConsolidatedGradesPageClient({
   companyId,
 }: ConsolidatedGradesPageClientProps) {
   const router = useRouter();
-  const { primaryColor, accentColor } = useMockThemeSettings(); // Replace with actual context
+  const { primaryColor, accentColor } = useMockThemeSettings();
 
-  const [studentGrades, setStudentGrades] = useState<{ [studentId: string]: { [examId: string]: GradeRecord } }>(initialGrades);
+  const [studentGrades, setStudentGrades] = useState<{ [studentId: string]: { [assessmentKey: string]: GradeRecord } }>(initialGrades); // Updated type
   const [searchTerm, setSearchTerm] = useState('');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [editingGrade, setEditingGrade] = useState<{ studentId: string; assessmentId: string; currentRecord: GradeRecord | null } | null>(null);
+  const [editingGrade, setEditingGrade] = useState<EditingGradeState | null>(null); // Updated state type
   const [newGradeValue, setNewGradeValue] = useState<string>('');
   const [newGradeStatus, setNewGradeStatus] = useState<GradeStatus | ''>('');
   const [newGradeComments, setNewGradeComments] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  // Update studentGrades when initialGrades prop changes (e.g., on initial load or re-fetch)
   useEffect(() => {
     setStudentGrades(initialGrades);
   }, [initialGrades]);
@@ -74,7 +80,6 @@ export default function ConsolidatedGradesPageClient({
     );
   }, [students, searchTerm]);
 
-  // Function to calculate average grade (simple average for now, can be weighted)
   const calculateAverage = useCallback((studentId: string) => {
     const gradesForStudent = studentGrades[studentId];
     if (!gradesForStudent) return 'N/A';
@@ -83,7 +88,7 @@ export default function ConsolidatedGradesPageClient({
     let count = 0;
 
     assessments.forEach(assessment => {
-      const gradeRecord = gradesForStudent[assessment.id];
+      const gradeRecord = gradesForStudent[assessment.id]; // Access using assessment.id
       if (gradeRecord && typeof gradeRecord.score === 'number') {
         totalScore += gradeRecord.score;
         count++;
@@ -122,9 +127,9 @@ export default function ConsolidatedGradesPageClient({
     showStatus('success', `Grades exported successfully for ${course.title}!`);
   }, [students, assessments, studentGrades, calculateAverage, course.title, showStatus, filteredStudents]);
 
-
-  const handleEditGradeClick = useCallback((studentId: string, assessmentId: string, currentRecord: GradeRecord | null) => {
-    setEditingGrade({ studentId, assessmentId, currentRecord });
+  // CORRECTED: Add assessmentType to the arguments
+  const handleEditGradeClick = useCallback((studentId: string, assessmentId: string, assessmentType: string, currentRecord: GradeRecord | null) => {
+    setEditingGrade({ studentId, assessmentId, assessmentType, currentRecord });
     setNewGradeValue(currentRecord?.score !== null && currentRecord?.score !== undefined ? String(currentRecord.score) : '');
     setNewGradeStatus(currentRecord?.gradeStatus as GradeStatus || '');
     setNewGradeComments(currentRecord?.comments || '');
@@ -136,7 +141,7 @@ export default function ConsolidatedGradesPageClient({
     setLoading(true);
     setStatusMessage(null);
 
-    const { studentId, assessmentId, currentRecord } = editingGrade;
+    const { studentId, assessmentId, assessmentType, currentRecord } = editingGrade; // Destructure assessmentType
     const parsedScore = parseFloat(newGradeValue);
 
     if (isNaN(parsedScore)) {
@@ -146,21 +151,40 @@ export default function ConsolidatedGradesPageClient({
     }
 
     try {
-      const payload = {
+      const payload: any = { // Use 'any' for the payload to allow conditional properties
         studentId: studentId,
         courseId: course.id,
-        examId: assessmentId, // This is the exam ID
         score: parsedScore,
-        gradeValue: newGradeValue, // Keep as string for display if needed
+        gradeValue: newGradeValue,
         gradeStatus: newGradeStatus,
         comments: newGradeComments,
         recordedById: educatorId,
         companyId: companyId,
-        academicLevelAtTimeOfGradeId: course.academicLevelId, // Crucial for historical context
+        academicLevelAtTimeOfGradingId: course.academicLevelId,
       };
 
-      const res = await fetch(`${apiUrl}/teacher/grades`, {
-        method: 'POST', // Use POST for upsert
+      // CORRECTED LOGIC: Conditionally set examId or courseAssignmentId
+      if (assessmentType === 'Exam' || assessmentType === 'Quiz' || assessmentType === 'Test') {
+        payload.examId = assessmentId;
+        payload.courseAssignmentId = null; // Explicitly nullify the other
+      } else if (assessmentType === 'Assignment' || assessmentType === 'Project' || assessmentType === 'Homework') {
+        payload.courseAssignmentId = assessmentId;
+        payload.examId = null; // Explicitly nullify the other
+      } else {
+        // Fallback for general course grades not tied to a specific exam or assignment
+        // Ensure your API can handle this case (both examId and courseAssignmentId being null)
+        payload.examId = null;
+        payload.courseAssignmentId = null;
+      }
+
+      // NOTE: The API route is at /api/teacher/courses/[courseId]/grades-data,
+      // but the POST request here goes to /api/teacher/grades.
+      // Assuming /api/teacher/grades is an existing or intended endpoint for grade saving,
+      // or this POST should be directed to the same API route that has POST method:
+      // `${apiUrl}/teacher/courses/${course.id}/grades-data`
+      // For now, keeping the current path as per the original code.
+      const res = await fetch(`${apiUrl}/teacher/grades`, { // Verify this endpoint is correct for POST
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -169,18 +193,18 @@ export default function ConsolidatedGradesPageClient({
 
       if (res.ok) {
         const updatedGradeRecord = await res.json();
-        // Update local state with the new/updated grade
         setStudentGrades(prevGrades => ({
           ...prevGrades,
           [studentId]: {
             ...prevGrades[studentId],
+            // Use assessmentId as the key for consistency with API response structure
             [assessmentId]: {
-              gradeId: updatedGradeRecord.id, // Ensure to get the actual grade ID from backend
+              gradeId: updatedGradeRecord.id,
               score: updatedGradeRecord.score,
               gradeValue: updatedGradeRecord.gradeValue,
               gradeStatus: updatedGradeRecord.gradeStatus,
               comments: updatedGradeRecord.comments,
-              academicLevelAtTimeOfGradeId: updatedGradeRecord.academicLevelAtTimeOfGradeId,
+              academicLevelAtTimeOfGradeId: updatedGradeRecord.academicLevelAtTimeOfGradingId, // Note API uses academicLevelAtTimeOfGradingId
             },
           },
         }));
@@ -193,15 +217,13 @@ export default function ConsolidatedGradesPageClient({
       showStatus('error', `Network error: ${err.message}`);
     } finally {
       setLoading(false);
-      setEditingGrade(null); // Close modal/editing state
+      setEditingGrade(null);
       setNewGradeValue('');
       setNewGradeStatus('');
       setNewGradeComments('');
     }
   }, [editingGrade, newGradeValue, newGradeStatus, newGradeComments, course.id, course.academicLevelId, educatorId, companyId, assessments, showStatus, loading]);
 
-
-  // Framer Motion Variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -252,7 +274,7 @@ export default function ConsolidatedGradesPageClient({
           <button
             onClick={handleExportGrades}
             className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-800 rounded-md shadow-sm border border-gray-200
-                        hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
+                         hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
             disabled={loading}
           >
             <DocumentArrowDownIcon className="h-5 w-5" /> Export Grades
@@ -298,8 +320,8 @@ export default function ConsolidatedGradesPageClient({
           type="text"
           placeholder="Search student by name or ID..."
           className="w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
-                      focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
-                      text-gray-900 placeholder-gray-500 bg-white"
+                       focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
+                       text-gray-900 placeholder-gray-500 bg-white"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           disabled={loading}
@@ -368,7 +390,8 @@ export default function ConsolidatedGradesPageClient({
                             {displayScore}
                           </span>
                           <button
-                            onClick={() => handleEditGradeClick(student.studentId, assessment.id, gradeRecord || null)}
+                            // CORRECTED: Pass assessment.type
+                            onClick={() => handleEditGradeClick(student.studentId, assessment.id, assessment.type, gradeRecord || null)}
                             className={`p-1 rounded-full text-gray-400 hover:bg-gray-100 hover:text-[${accentColor}] transition-colors`}
                             aria-label={`Edit grade for ${student.name} in ${assessment.name}`}
                             disabled={loading}
@@ -403,14 +426,14 @@ export default function ConsolidatedGradesPageClient({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            onClick={() => setEditingGrade(null)} // Close on overlay click
+            onClick={() => setEditingGrade(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md"
-              onClick={(e: React.MouseEvent) => e.stopPropagation()} // Prevent click from closing modal
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Edit Grade</h3>
               <div className="space-y-4">
@@ -423,13 +446,13 @@ export default function ConsolidatedGradesPageClient({
                 <div>
                   <label htmlFor="new-grade" className="block text-sm font-medium text-gray-700 mb-1">Score</label>
                   <input
-                    type="number" // Use number type for score
+                    type="number"
                     id="new-grade"
                     className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[${accentColor}] focus:border-[${accentColor}]"
                     value={newGradeValue}
                     onChange={(e) => setNewGradeValue(e.target.value)}
                     autoFocus
-                    step="0.01" // Allow decimal grades
+                    step="0.01"
                   />
                 </div>
                 <div>
@@ -470,8 +493,8 @@ export default function ConsolidatedGradesPageClient({
                   type="button"
                   onClick={handleSaveEditedGrade}
                   className={`px-6 py-2 bg-[${primaryColor}] text-white font-semibold rounded-md shadow-md
-                              hover:bg-[${primaryColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]
-                              ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                   hover:bg-[${primaryColor}D0] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]
+                                   ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={loading}
                 >
                   {loading ? (

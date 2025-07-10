@@ -1,11 +1,10 @@
 // app/admin/[slug]/teacher-classes/[courseId]/consolidated-grades/page.tsx
+
 import React from "react";
-import ConsolidatedGradesPageClient from "./ConsolidatedGradesPageClient"; // Renamed client component
+import ConsolidatedGradesPageClient from "./ConsolidatedGradesPageClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// IMPORTANT: In a real application, the currentEducatorId would come from an authentication context (e.g., NextAuth.js session).
-// For this example, we'll use a hardcoded mock ID.
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
 interface PageProps {
@@ -15,7 +14,6 @@ interface PageProps {
   };
 }
 
-// Define types for data fetched by the server component
 export interface StudentGradeData {
   studentId: string;
   name: string;
@@ -24,18 +22,18 @@ export interface StudentGradeData {
 }
 
 export interface AssessmentData {
-  id: string; // Exam ID
-  name: string; // Exam title
-  type: string; // ExamType enum value
+  id: string; // Exam or Course Assignment ID
+  name: string; // Exam or Assignment title
+  type: string; // ExamType or AssignmentType enum value (e.g., 'Exam', 'Assignment', 'Quiz')
   maxScore: number;
-  examDate: string; // ISO string
+  examDate: string | null; // ISO string (using examDate for consistency, can be dueDate for assignments)
 }
 
 export interface GradeRecord {
-  gradeId: string; // The actual Grade record ID
+  gradeId: string;
   score: number;
   gradeValue: string | null;
-  gradeStatus: string | null;
+  gradeStatus: string | null; // This should match GradeStatus enum: 'PASSED' | 'FAILED' | 'PENDING'
   comments: string | null;
   academicLevelAtTimeOfGradeId: string;
 }
@@ -52,23 +50,23 @@ export interface ConsolidatedGradesPageData {
   course: CourseGradesInfo;
   students: StudentGradeData[];
   assessments: AssessmentData[];
-  grades: { [studentId: string]: { [examId: string]: GradeRecord } }; // Nested structure
-  educatorId: string; // Pass educator ID to client for API calls
-  companyId: string; // Pass company ID to client for API calls
+  // CORRECTED: Allow assessmentKey to be either examId or courseAssignmentId
+  grades: { [studentId: string]: { [assessmentKey: string]: GradeRecord } };
+  educatorId: string;
+  companyId: string;
 }
 
 export default async function ConsolidatedGradesServerPage({ params }: PageProps) {
-  const companyId = params.slug;
   const courseId = params.courseId;
-  const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+  const educatorId = params.slug || MOCK_CURRENT_EDUCATOR_ID;
 
   let gradesPageData: ConsolidatedGradesPageData | null = null;
   let fetchError: string | null = null;
 
   try {
     const res = await fetch(
-      `${apiUrl}/teacher/courses/${courseId}/grades-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // Ensure fresh data
+      `${apiUrl}/teacher/courses/${courseId}/grades-data?educatorId=${encodeURIComponent(educatorId)}`,
+      { cache: "no-store" }
     );
 
     if (res.ok) {
@@ -79,7 +77,7 @@ export default async function ConsolidatedGradesServerPage({ params }: PageProps
         assessments: data.assessments,
         grades: data.grades,
         educatorId: educatorId,
-        companyId: companyId,
+        companyId: data.companyId, // Ensure companyId is passed from the API response
       };
     } else {
       const errorData = await res.json();
@@ -92,7 +90,6 @@ export default async function ConsolidatedGradesServerPage({ params }: PageProps
   }
 
   if (fetchError || !gradesPageData) {
-    // Render an error state or a fallback with a message
     return (
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Grades</h2>
@@ -100,7 +97,7 @@ export default async function ConsolidatedGradesServerPage({ params }: PageProps
         <button
           onClick={() => window.history.back()}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
-                     hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+                       hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
         </button>
