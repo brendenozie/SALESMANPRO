@@ -23,13 +23,13 @@ export async function GET(request: Request) {
   // ----------------------------------------------------
 
   if (!teacherUserId) {
-    return NextResponse.json({ message: 'Missing companyId or teacherUserId' }, { status: 400 });
+    return NextResponse.json({ message: 'Missing teacherUserId' }, { status: 400 });
   }
 
   try {
     // 1. Find the Educator profile linked to the teacherUserId
     const educator = await prisma.educator.findUnique({
-      where: { userId: teacherUserId },
+      where: { userId: teacherUserId }, // Find educator using their associated User.id
       select: {
         id: true,
         companyId: true,
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
           select: {
             name: true,
             email: true,
-            role: true, // Assuming role is on User model
+            role: true, // Now fetching role directly from Educator model
           },
         },
       },
@@ -51,22 +51,32 @@ export async function GET(request: Request) {
       id: educator.id, // Educator ID
       name: educator.user?.name || 'N/A',
       email: educator.user?.email || 'N/A',
-      role: educator.user?.role || 'Educator',
+      role: educator.user?.role, // Use role directly from Educator model
     };
 
-    // 2. Fetch courses where this educator is the instructor OR where they are assigned to the academic level the course is linked to.
-    // This query is a bit complex due to the many-to-many relationships.
-    // We'll fetch courses where the educator is the direct instructor,
-    // and courses linked to academic levels the educator is assigned to.
-
+    // 2. Fetch courses relevant to this educator.
+    // A course is relevant if:
+    // a) The educator is assigned to the course via CourseEducatorAssignment
+    // OR
+    // b) The course is linked to an academic level that the educator is assigned to.
     const assignedCourses = await prisma.course.findMany({
       where: {
-           instructorId: educator.id , // Courses where this educator is the direct instructor
-          
-            academicLevels: { // Courses linked to academic levels the educator is assigned to
+        companyId: educator.companyId, // Ensure multi-tenancy: courses must belong to the same company
+        OR: [
+          {
+            // Condition 1: Educator is assigned to this course via CourseEducatorAssignment
+            CourseEducatorAssignment: { // Relation on Course model to CourseEducatorAssignment
               some: {
-                academicLevel: {
-                  educatorAssignments: {
+                educatorId: educator.id, // Filter by the current educator's ID
+              },
+            },
+          },
+          {
+            // Condition 2: Course is linked to an AcademicLevel which the educator is assigned to
+            academicLevels: { // This is the CourseAcademicLevel[] relation on Course
+              some: {
+                academicLevel: { // This is the AcademicLevel on CourseAcademicLevel
+                  educatorAssignments: { // This is the EducatorAcademicLevelAssignment[] relation on AcademicLevel
                     some: {
                       educatorId: educator.id,
                     },
@@ -74,11 +84,13 @@ export async function GET(request: Request) {
                 },
               },
             },
+          },
+        ],
       },
       include: {
-        academicLevels: { // Include the academic levels associated with the course
+        academicLevels: { // Include the academic levels associated with the course via CourseAcademicLevel
           select: {
-            academicLevel: {
+            academicLevel: { // Select the actual AcademicLevel details
               select: {
                 id: true,
                 name: true,
@@ -101,7 +113,7 @@ export async function GET(request: Request) {
           },
           orderBy: { dueDate: 'asc' },
         },
-        CourseMaterial: { // Basic resource info
+        CourseMaterial: { // Basic resource info (assuming it's named CourseMaterial as per schema)
           select: {
             id: true,
             title: true,
@@ -109,12 +121,8 @@ export async function GET(request: Request) {
           },
           orderBy: { createdAt: 'desc' },
         },
-        // Assuming events are linked to courses or academic levels, you might fetch them separately
-        // or refine this to include events directly related to the course.
-        // For now, we'll keep events as a placeholder/mock on the client side for simplicity
-        // as fetching all events and filtering them here might be too heavy.
       },
-      orderBy: { title: 'asc' },
+      orderBy: { title: 'asc' }, // Order by course title
     });
 
     const teacherClasses = assignedCourses.map(course => {
@@ -126,14 +134,15 @@ export async function GET(request: Request) {
         : { id: 'N/A', name: 'No Academic Level', description: null };
 
       // Mock schedule and room for now, as these are not directly on Course model in schema
-      // You'd typically get this from ClassSchedule model.
+      // You'd typically get this from ClassSchedule model linked to the course.
       const mockSchedule = "Mon, Wed, Fri | 9:00 AM - 9:45 AM"; // Placeholder
       const mockRoom = "Room 101"; // Placeholder
 
       return {
         id: course.id,
-        title: course.title,
+        title: course.title, // Use 'title' as per new Course model
         description: course.description,
+        code: course.code, // Include course code as per new Course model
         schedule: mockSchedule, // Replace with actual schedule from ClassSchedule
         room: mockRoom, // Replace with actual room from ClassSchedule
         studentsEnrolled: course.enrollments.length,
@@ -146,7 +155,7 @@ export async function GET(request: Request) {
           dueDate: a.dueDate.toISOString(),
           status: a.status,
         })),
-        resources: course.CourseMaterial.map(m => ({
+        resources: course.CourseMaterial.map(m => ({ // Use CourseMaterial as per schema
           id: m.id,
           name: m.title,
           type: m.type,

@@ -2,31 +2,77 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
 
+// Define GradeStatus enum for validation (must match your Prisma schema enum)
+export enum GradeStatus {
+  PASSED = 'PASSED',
+  FAILED = 'FAILED',
+  PENDING = 'PENDING',
+}
+
+// Define types for API request/response (adjust as needed for frontend)
+interface StudentGradeData {
+  studentId: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
+interface CourseAssessmentData {
+  id: string;
+  name: string;
+  type: string;
+  maxScore: number;
+  examDate: string;
+}
+
+interface StructuredGrades {
+  [studentId: string]: {
+    [assessmentKey: string]: { // assessmentKey can be examId or courseAssignmentId or a general key
+      gradeId: string;
+      score: number;
+      gradeValue: string | null;
+      gradeStatus: GradeStatus | null;
+      comments: string | null;
+      academicLevelAtTimeOfGradingId: string;
+    };
+  };
+}
+
 export async function GET(request: Request, { params }: { params: { courseId: string } }) {
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
-  const educatorId = searchParams.get('educatorId'); // The educator viewing/managing grades
-  const companyId = searchParams.get('companyId');   // For multi-tenancy
+  const educatorUserId = searchParams.get('educatorId'); // The educator viewing/managing grades
+  const companyId = searchParams.get('companyId');     // For multi-tenancy
 
   // --- Authentication & Authorization (Placeholder) ---
   // In a real application, you would:
   // 1. Get the authenticated user's session.
-  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'educatorId'.
-  // 3. Ensure the 'educatorId' is authorized to manage grades for this 'courseId' and 'companyId'.
+  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'educatorUserId'.
+  // 3. Ensure the 'educatorUserId' is authorized to manage grades for this 'courseId' and 'companyId'.
   // const session = await auth();
-  // if (!session || session.user.id !== educatorId || session.user.role !== 'EDUCATOR') {
+  // if (!session || session.user.id !== educatorUserId || session.user.role !== 'EDUCATOR') {
   //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   // }
   // ----------------------------------------------------
 
-  if (!courseId || !educatorId ) {
+  if (!courseId || !educatorUserId || !companyId) {
     return NextResponse.json({ message: 'Missing courseId, educatorId, or companyId' }, { status: 400 });
   }
 
   try {
+    // Resolve educatorUserId to Educator._id for authorization
+    const educatorProfile = await prisma.educator.findUnique({
+      where: { userId: educatorUserId },
+      select: { id: true, companyId: true }
+    });
+
+    if (!educatorProfile || educatorProfile.companyId !== companyId) {
+      return NextResponse.json({ message: 'Educator not found or not authorized for this company.' }, { status: 403 });
+    }
+
     // 1. Fetch Course details and its associated academic levels
     const course = await prisma.course.findUnique({
-      where: { id: courseId,},
+      where: { id: courseId, companyId: companyId }, // Filter by companyId for multi-tenancy
       select: {
         id: true,
         title: true,
@@ -45,47 +91,54 @@ export async function GET(request: Request, { params }: { params: { courseId: st
     });
 
     if (!course) {
-      return NextResponse.json({ message: 'Course not found or not associated with this company' }, { status: 404 });
+      return NextResponse.json({ message: 'Course not found or not associated with this company.' }, { status: 404 });
     }
 
-    // Determine the primary academic level for the course.
-    // Assuming a course is primarily tied to one academic level for student roster.
-    const academicLevel = course.academicLevels.length > 0
+    // Determine the primary academic level for the course (for display/context, not direct student filtering)
+    const primaryAcademicLevel = course.academicLevels.length > 0
       ? course.academicLevels[0].academicLevel
-      : null;
+      : undefined;
 
-    if (!academicLevel) {
-      // A course must be linked to an academic level to fetch students
-      return NextResponse.json({ message: 'Course is not linked to an academic level. Cannot fetch students for grades.' }, { status: 400 });
-    }
-
-    // 2. Fetch Students enrolled in this course's academic level
-    const students = await prisma.student.findMany({
+    // 2. Fetch Students enrolled in this specific course
+    const studentsInCourse = await prisma.courseEnrollment.findMany({
       where: {
-        academicLevelId: academicLevel.id,
-        companyId: companyId,
+        courseId: courseId,
+        student: { // Ensure student belongs to this company if multi-tenancy is strict on students
+          companyId: companyId,
+        }
       },
       select: {
-        id: true,
-        user: {
+        student: {
           select: {
-            name: true,
-            email: true,
-            image: true, // For avatarUrl
+            id: true,
+            profilePicture: true, // Student's specific profile picture
+            user: {
+              select: {
+                name: true,
+                email: true,
+                image: true, // User's general profile picture (fallback)
+              },
+            },
           },
         },
       },
-      orderBy: { user: { name: 'asc' } },
+      orderBy: { student: { user: { name: 'asc' } } },
     });
 
-    const formattedStudents = students.map(student => ({
-      studentId: student.id,
-      name: student.user?.name || 'Unknown Student',
-      email: student.user?.email || 'N/A',
-      avatarUrl: student.user?.image || null,
-    }));
+    const formattedStudents: StudentGradeData[] = studentsInCourse.map(ce => {
+      const student = ce.student;
+      return {
+        studentId: student.id,
+        name: student.user?.name || 'Unknown Student',
+        email: student.user?.email || 'N/A',
+        avatarUrl: student.profilePicture || student.user?.image || null, // Prioritize student's specific picture
+      };
+    });
 
-    // 3. Fetch Exams/Assessments for this course
+    const studentIdsInCourse = formattedStudents.map(s => s.studentId);
+
+
+    // 3. Fetch Exams/Assessments and Course Assignments for this course
     const exams = await prisma.exam.findMany({
       where: {
         courseId: courseId,
@@ -97,10 +150,10 @@ export async function GET(request: Request, { params }: { params: { courseId: st
         totalPoints: true,
         date: true,
       },
-      orderBy: { date: 'asc' }, // Order assessments by date
+      orderBy: { date: 'asc' },
     });
 
-    const formattedExams = exams.map(exam => ({
+    const formattedExams: CourseAssessmentData[] = exams.map(exam => ({
       id: exam.id,
       name: exam.title,
       type: exam.type,
@@ -108,41 +161,77 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       examDate: exam.date.toISOString(),
     }));
 
-    // 4. Fetch existing Grades for this course and its students
+    const courseAssignments = await prisma.courseAssignment.findMany({
+      where: {
+        courseId: courseId,
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        maxGrade: true, // Assuming CourseAssignment has maxPoints
+        dueDate: true,
+      },
+      orderBy: { dueDate: 'asc' },
+    });
+
+    const formattedAssignments = courseAssignments.map(assignment => ({
+      id: assignment.id,
+      name: assignment.title,
+      type: assignment.type || 'Assignment', // Default type if not present
+      maxScore: assignment.maxGrade,
+      examDate: assignment.dueDate ? assignment.dueDate.toISOString() : null, // Use examDate for consistency
+    }));
+
+    const allAssessments = [...formattedExams, ...formattedAssignments];
+
+
+    // 4. Fetch existing Grades for this course and its enrolled students
     const grades = await prisma.grade.findMany({
       where: {
         courseId: courseId,
-        student: {
-          academicLevelId: academicLevel.id, // Ensure we only get grades for students in this academic level
-        },
+        companyId: companyId,
+        studentId: { in: studentIdsInCourse }, // Only get grades for students in this course
       },
       select: {
         id: true,
         studentId: true,
         examId: true,
+        courseAssignmentId: true, // Include new field
         score: true,
         gradeValue: true,
         gradeStatus: true,
         comments: true,
-        academicLevelAtTimeOfGradeId: true, // Crucial for historical context
+        academicLevelAtTimeOfGradingId: true, // Crucial for historical context
       },
     });
 
-    // Structure grades for easy frontend consumption: { studentId: { examId: gradeData } }
-    const structuredGrades: { [studentId: string]: { [examId: string]: any } } = {};
+    // Structure grades for easy frontend consumption: { studentId: { assessmentKey: gradeData } }
+    const structuredGrades: StructuredGrades = {};
     grades.forEach(grade => {
       if (!structuredGrades[grade.studentId]) {
         structuredGrades[grade.studentId] = {};
       }
-      // If grade is linked to an exam, use examId as key. Otherwise, use a generic key.
-      const gradeKey = grade.examId || `course_grade_${grade.id}`; // Fallback for general course grades not tied to a specific exam
+      let gradeKey: string;
+      if (grade.examId) {
+        gradeKey = grade.examId;
+      } else if (grade.courseAssignmentId) {
+        gradeKey = grade.courseAssignmentId;
+      } else {
+        // Fallback for general course grades not tied to a specific exam or assignment
+        // A unique key is important here to avoid overwriting if multiple general grades exist for a student.
+        // If only one "general" course grade is expected, ensure your frontend handles it.
+        // For simplicity, we'll use a combination of student and course ID.
+        gradeKey = `general_course_grade_${grade.id}`;
+      }
+
       structuredGrades[grade.studentId][gradeKey] = {
-        gradeId: grade.id, // The actual Grade record ID
+        gradeId: grade.id,
         score: grade.score,
         gradeValue: grade.gradeValue,
-        gradeStatus: grade.gradeStatus,
+        gradeStatus: grade.gradeStatus as GradeStatus,
         comments: grade.comments,
-        academicLevelAtTimeOfGradeId: grade.academicLevelAtTimeOfGradeId,
+        academicLevelAtTimeOfGradingId: grade.academicLevelAtTimeOfGradingId,
       };
     });
 
@@ -151,43 +240,34 @@ export async function GET(request: Request, { params }: { params: { courseId: st
         id: course.id,
         title: course.title,
         description: course.description,
-        academicLevelId: academicLevel.id,
-        academicLevelName: academicLevel.name,
+        academicLevelId: primaryAcademicLevel?.id,
+        academicLevelName: primaryAcademicLevel?.name,
       },
       students: formattedStudents,
-      assessments: formattedExams, // Renamed to assessments for frontend clarity
+      assessments: allAssessments, // Combined exams and assignments
       grades: structuredGrades,
     });
 
   } catch (error) {
     console.error('Error fetching course grades data:', error);
-    return NextResponse.json({ message: 'Failed to fetch course grades data' }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch course grades data', error: (error as Error).message }, { status: 500 });
   }
 }
 
-// app/api/teacher/grades/route.ts
-// import { NextResponse } from 'next/server';
-// import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
-
-// Define GradeStatus enum for validation
-enum GradeStatus {
-  PASSED = 'PASSED',
-  FAILED = 'FAILED',
-  PENDING = 'PENDING',
-}
 
 export async function POST(request: Request) {
   const {
     studentId,
     courseId,
     examId, // Optional
+    courseAssignmentId, // Optional, new field
     score,
     gradeValue, // Optional
     gradeStatus, // Optional
-    comments,   // Optional
-    recordedById, // Educator ID
+    comments,   // Optional
+    recordedById, // Educator ID (User.id)
     companyId,
-    academicLevelAtTimeOfGradeId, // Crucial for historical context
+    academicLevelAtTimeOfGradingId, // Crucial for historical context
   } = await request.json();
 
   // --- Authentication & Authorization (Placeholder) ---
@@ -201,8 +281,9 @@ export async function POST(request: Request) {
   // }
   // ----------------------------------------------------
 
-  if (!studentId || !courseId || score === undefined || score === null || !recordedById || !companyId || !academicLevelAtTimeOfGradeId) {
-    return NextResponse.json({ message: 'Missing required grade data: studentId, courseId, score, recordedById, companyId, academicLevelAtTimeOfGradeId' }, { status: 400 });
+  // Basic input validation
+  if (!studentId || !courseId || score === undefined || score === null || !recordedById || !companyId || !academicLevelAtTimeOfGradingId) {
+    return NextResponse.json({ message: 'Missing required grade data: studentId, courseId, score, recordedById, companyId, academicLevelAtTimeOfGradingId' }, { status: 400 });
   }
 
   // Validate score as a number
@@ -217,100 +298,101 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Determine unique identifier for upsert.
-    // If examId is provided, the combination of studentId, courseId, and examId should be unique.
-    // If no examId, we might need a different strategy, or assume a grade is always tied to an exam/assessment.
-    // For simplicity, let's assume if examId is present, it's the unique key.
-    // If not, we might need to create a new grade or update a "general" course grade.
-    // The schema allows examId to be optional, so we need a robust upsert strategy.
-    // A common pattern for non-exam specific grades is to have a single grade record per student per course.
+    // Resolve recordedById (User.id) to Educator._id for recordedBy and authorization
+    const educatorProfile = await prisma.educator.findUnique({
+      where: { userId: recordedById },
+      select: { id: true, companyId: true }
+    });
 
-    const whereClause: any = {
-      studentId: studentId,
-      courseId: courseId,
-      companyId: companyId,
-      academicLevelAtTimeOfGradeId: academicLevelAtTimeOfGradeId, // Ensure we're targeting the correct historical context
-    };
+    if (!educatorProfile || educatorProfile.companyId !== companyId) {
+      return NextResponse.json({ message: 'Educator not found or not authorized for this company.' }, { status: 403 });
+    }
+    const educatorDbId = educatorProfile.id;
 
-    if (examId) {
-      whereClause.examId = examId;
-    } else {
-      // If no examId, ensure we're not trying to upsert on a non-existent unique constraint.
-      // For general course grades, you might need to find an existing one or create a new one.
-      // For this implementation, we'll allow creating a new grade if no examId is provided
-      // and no existing grade matches studentId, courseId, companyId, and academicLevelAtTimeOfGradeId without an examId.
-      // This is a simplified approach. A more robust system might have a specific "overall course grade" examType.
-      const existingGeneralGrade = await prisma.grade.findFirst({
-        where: {
-          ...whereClause,
-          examId: null, // Look for grades specifically not tied to an exam
-        }
+    // Optional: Verify educator is assigned to this course or academic level for additional authorization
+    const isAssignedToCourse = await prisma.courseEducatorAssignment.findFirst({
+      where: {
+        educatorId: educatorDbId,
+        courseId: courseId,
+      },
+    });
+
+    const isAssignedToAcademicLevel = await prisma.educatorAcademicLevelAssignment.findFirst({
+      where: {
+        educatorId: educatorDbId,
+        academicLevelId: academicLevelAtTimeOfGradingId,
+      },
+    });
+
+    if (!isAssignedToCourse && !isAssignedToAcademicLevel) {
+      return NextResponse.json({ message: 'Educator is not assigned to this course or its academic level, or lacks permission.' }, { status: 403 });
+    }
+
+    // Use Prisma transaction for atomicity, especially because we need to findFirst before update/create
+    const grade = await prisma.$transaction(async (tx) => {
+      // Construct the where clause to find a specific grade record.
+      // This logic defines what constitutes a "unique" grade for upsert purposes.
+      const findWhereClause: any = {
+        studentId: studentId,
+        courseId: courseId,
+        companyId: companyId,
+        academicLevelAtTimeOfGradingId: academicLevelAtTimeOfGradingId,
+      };
+
+      if (examId) {
+        findWhereClause.examId = examId;
+        findWhereClause.courseAssignmentId = null; // Ensure it's explicitly not a course assignment grade
+      } else if (courseAssignmentId) {
+        findWhereClause.courseAssignmentId = courseAssignmentId;
+        findWhereClause.examId = null; // Ensure it's explicitly not an exam grade
+      } else {
+        // This handles "general" course grades not tied to a specific exam or assignment
+        findWhereClause.examId = null;
+        findWhereClause.courseAssignmentId = null;
+      }
+
+      const existingGrade = await tx.grade.findFirst({
+        where: findWhereClause,
       });
 
-      if (existingGeneralGrade) {
-        // If a general grade exists, update it
-        const updatedGrade = await prisma.grade.update({
-          where: { id: existingGeneralGrade.id },
+      if (existingGrade) {
+        // Update the existing grade record
+        return tx.grade.update({
+          where: { id: existingGrade.id },
           data: {
             score: parsedScore,
             gradeValue: gradeValue,
             gradeStatus: gradeStatus as GradeStatus,
             comments: comments,
-            recordedById: recordedById,
+            recordedById: educatorDbId, // Use the resolved educator ID
             updatedAt: new Date(),
           },
         });
-        return NextResponse.json(updatedGrade, { status: 200 });
+      } else {
+        // Create a new grade record
+        return tx.grade.create({
+          data: {
+            studentId: studentId,
+            courseId: courseId,
+            examId: examId,
+            courseAssignmentId: courseAssignmentId, // Include new field
+            score: parsedScore,
+            gradeValue: gradeValue,
+            gradeStatus: gradeStatus as GradeStatus,
+            comments: comments,
+            recordedById: educatorDbId, // Use the resolved educator ID
+            companyId: companyId,
+            academicLevelAtTimeOfGradingId: academicLevelAtTimeOfGradingId,
+          },
+        });
       }
-      // If no examId and no existing general grade, proceed to create a new one.
-    }
-
-    const grade = await prisma.grade.upsert({
-      where: {
-        // This unique constraint is for grades tied to an exam.
-        // Prisma doesn't support partial unique constraints directly on `where` for `upsert`
-        // that depend on whether `examId` is null or not.
-        // So, we use a findFirst and then update/create.
-        // The unique constraint in schema is `@@unique([studentId, courseId, examId])` if you had one.
-        // But your schema has `@@index([studentId])`, `@@index([courseId])`, `@@index([examId])`.
-        // To ensure uniqueness for exam-specific grades, we manually check.
-        // For simplicity, we'll try to find an existing one first.
-        studentId_courseId_examId_academicLevelAtTimeOfGradeId: { // This needs to be a unique compound index in your schema for upsert to work like this
-          studentId: studentId,
-          courseId: courseId,
-          examId: examId || "", // Provide a default for unique constraint if examId is null
-          academicLevelAtTimeOfGradeId: academicLevelAtTimeOfGradeId,
-        },
-      },
-      update: {
-        score: parsedScore,
-        gradeValue: gradeValue,
-        gradeStatus: gradeStatus as GradeStatus,
-        comments: comments,
-        recordedById: recordedById,
-        updatedAt: new Date(),
-      },
-      create: {
-        studentId: studentId,
-        courseId: courseId,
-        examId: examId,
-        score: parsedScore,
-        gradeValue: gradeValue,
-        gradeStatus: gradeStatus as GradeStatus,
-        comments: comments,
-        recordedById: recordedById,
-        companyId: companyId,
-        academicLevelAtTimeOfGradeId: academicLevelAtTimeOfGradeId,
-      },
     });
 
     return NextResponse.json(grade, { status: 200 });
   } catch (error: any) {
-    // Handle unique constraint violation specifically if applicable
-    if (error.code === 'P2002') { // Prisma unique constraint violation code
-      return NextResponse.json({ message: 'A grade for this student, course, and assessment already exists.' }, { status: 409 });
-    }
     console.error('Error saving grade:', error);
+    // You might want to handle specific Prisma errors like 'P2002' (Unique constraint violation)
+    // if you add @@unique constraints to your Grade model in the future.
     return NextResponse.json({ message: 'Failed to save grade', error: error.message }, { status: 500 });
   }
 }

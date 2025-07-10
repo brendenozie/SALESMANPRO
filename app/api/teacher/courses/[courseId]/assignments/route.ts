@@ -49,7 +49,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
     }
 
     // Fetch Exams (assignments) for this course
-    const assignments = await prisma.exam.findMany({
+    const assignments = await prisma.courseAssignment.findMany({
       where: {
         courseId: courseId,
         // companyId: companyId,
@@ -67,15 +67,16 @@ export async function GET(request: Request, { params }: { params: { courseId: st
           select: { submissions: true }, // Count submissions for each assignment
         },
       },
-      orderBy: { date: 'asc' }, // Order by due date
+      orderBy: { publishedAt: 'asc' }, // Order by due date
     });
 
     const formattedAssignments = assignments.map(assignment => ({
       id: assignment.id,
       title: assignment.title,
       description: assignment.description,
-      dueDate: assignment.date.toISOString().split('T')[0], // Format to YYYY-MM-DD
-      maxPoints: assignment.totalPoints,
+      dueDate: assignment.dueDate.toISOString().split('T')[0], // Format to YYYY-MM-DD
+      publishedAt: assignment.publishedAt.toISOString().split('T')[0], // Format to YYYY-MM-DD
+      maxPoints: assignment.maxGrade,
       status: assignment.type, // Using examType as status for simplicity, you might map this
       submissionCount: assignment._count.submissions,
       // You might need a more sophisticated status logic (e.g., 'Draft', 'Published', 'Graded')
@@ -165,7 +166,7 @@ export async function POST(request: Request) {
     const assignmentData = {
       title: title,
       description: description,
-      examDate: parsedDueDate, // Using examDate as dueDate for assignments
+      dueDate: parsedDueDate, // Using examDate as dueDate for assignments
       maxScore: maxPoints,
       examType: examType,
       courseId: courseId,
@@ -176,7 +177,7 @@ export async function POST(request: Request) {
     let assignment;
     if (id) {
       // Update existing assignment (Exam)
-      assignment = await prisma.exam.update({
+      assignment = await prisma.courseAssignment.update({
         where: { id: id },
         data: {
           ...assignmentData,
@@ -185,7 +186,7 @@ export async function POST(request: Request) {
       });
     } else {
       // Create new assignment (Exam)
-      assignment = await prisma.exam.create({
+      assignment = await prisma.courseAssignment.create({
         data: assignmentData,
       });
     }
@@ -195,9 +196,10 @@ export async function POST(request: Request) {
       id: assignment.id,
       title: assignment.title,
       description: assignment.description,
-      dueDate: assignment.date.toISOString().split('T')[0],
-      maxPoints: assignment.totalPoints,
-      status: assignment.type, // Use ExamType as status
+      dueDate: assignment.dueDate.toISOString().split('T')[0],
+      maxPoints: assignment.maxGrade,
+      publishedAt: assignment.publishedAt,
+      status: assignment.status, // Use ExamType as status
       // For submissionCount, we'd need to fetch it separately or count on client if not critical for response
       submissionCount: 0, // Placeholder, will be accurate on GET
       displayStatus: assignment.type === 'HOMEWORK' ? 'Published' :
@@ -240,12 +242,12 @@ export async function DELETE(request: Request, { params }: { params: { assignmen
 
   try {
     // Optional: Verify the assignment belongs to the correct course/company and was created by this educator
-    const assignmentToDelete = await prisma.exam.findUnique({
+    const assignmentToDelete = await prisma.courseAssignment.findUnique({
       where: { id: assignmentId },
-      select: { courseId: true, companyId: true, createdByEducatorId: true },
+      select: { courseId: true, companyId: true, createdById: true },
     });
 
-    if (!assignmentToDelete || assignmentToDelete.companyId !== companyId || assignmentToDelete.createdByEducatorId !== educatorId) {
+    if (!assignmentToDelete || assignmentToDelete.companyId !== companyId || assignmentToDelete.createdById !== educatorId) {
       return NextResponse.json({ message: 'Assignment not found or unauthorized to delete' }, { status: 404 });
     }
 

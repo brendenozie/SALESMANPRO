@@ -4,6 +4,7 @@ import prisma from "@/server/db/prismadb"; // Adjust path as per your project st
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  // educatorId is assumed to be the unique identifier (_id) of the Educator document
   const educatorId = searchParams.get('educatorId');
   const companyId = searchParams.get('companyId');
 
@@ -18,23 +19,29 @@ export async function GET(request: Request) {
   // }
   // ----------------------------------------------------
 
-  if (!educatorId) {
+  // Ensure both educatorId and companyId are provided for proper filtering
+  if (!educatorId || !companyId) {
     return NextResponse.json({ message: 'Missing educatorId or companyId' }, { status: 400 });
   }
 
   try {
-    // Fetch courses taught by this educator within this company
+    // Fetch courses taught by this educator within this company.
+    // The relationship is now through the CourseEducatorAssignment junction table.
     const courses = await prisma.course.findMany({
       where: {
-        // companyId: companyId,
-        instructorId: educatorId, // Assuming instructorId links to Educator's userId
+        companyId: companyId, // Filter courses by companyId for multi-tenancy
+        CourseEducatorAssignment: { // Use the new junction table for educator-course assignments
+          some: {
+            educatorId: educatorId, // Filter by the specific educator's ID
+          },
+        },
       },
       select: {
         id: true,
-        title: true,
-        academicLevels: {
+        title: true, // Use 'title' as per your updated Course model
+        academicLevels: { // Access academic levels via the CourseAcademicLevel junction table
           select: {
-            academicLevel: {
+            academicLevel: { // Select the actual AcademicLevel details
               select: {
                 name: true,
               },
@@ -42,12 +49,14 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: { title: 'asc' },
+      orderBy: { title: 'asc' }, // Order the results by course title
     });
 
     const formattedCourses = courses.map(course => ({
       id: course.id,
       title: course.title,
+      // Safely access academic level name. If a course is linked to multiple
+      // academic levels, this will pick the name of the first one found.
       academicLevelName: course.academicLevels[0]?.academicLevel?.name || 'N/A',
     }));
 

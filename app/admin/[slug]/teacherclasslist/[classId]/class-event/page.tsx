@@ -247,16 +247,22 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // If you always create events for a *single* academic level, you might hardcode it.
     // For now, I'll assume you might target other academic levels from this form.
     // If not, you can remove this fetch and simplify the form's academic level selection.
+    
     const academicLevelsRes = await fetch(`${apiUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
       cache: "no-store",
     });
+    
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      // Parse the full JSON response first
+      const responseData = await academicLevelsRes.json();
+    
+      // Then access the 'assignedAcademicLevels' property
+      allAcademicLevels = responseData.assignedAcademicLevels as AcademicLevelOption[];
+    
     } else {
       console.error(`[EventsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
       fetchError = true;
     }
-
 
     // Fetch all courses/subjects for the specified academic level (classId)
     const coursesRes = await fetch(`${apiUrl}/teacher/class-subjects?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
