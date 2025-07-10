@@ -63,7 +63,7 @@ export async function GET(request: Request) {
     const assignedCourses = await prisma.course.findMany({
       where: {
         companyId: educator.companyId, // Ensure multi-tenancy: courses must belong to the same company
-        OR: [
+        
           {
             // Condition 1: Educator is assigned to this course via CourseEducatorAssignment
             CourseEducatorAssignment: { // Relation on Course model to CourseEducatorAssignment

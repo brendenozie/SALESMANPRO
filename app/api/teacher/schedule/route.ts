@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   // educatorId is expected to be the User.id associated with the Educator profile
   const educatorUserId = searchParams.get('educatorId'); 
-  const companyId = searchParams.get('companyId');   // For multi-tenancy
+  // const companyId = searchParams.get('companId');   // For multi-tenancy
 
   // --- Authentication & Authorization (Placeholder) ---
   // In a real application, you would:
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   // ----------------------------------------------------
 
   // Ensure both educatorUserId and companyId are provided for proper filtering
-  if (!educatorUserId || !companyId) {
+  if (!educatorUserId) {
     return NextResponse.json({ message: 'Missing educatorId or companyId' }, { status: 400 });
   }
 
@@ -30,6 +30,7 @@ export async function GET(request: Request) {
       where: { userId: educatorUserId },
       select: {
         id: true, // This is the Educator's _id, which will be used for relations
+        companyId:true,
         user: {
           select: {
             name: true,
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
     // 2. Fetch ClassSchedule entries assigned to this educator
     const classSchedules = await prisma.classSchedule.findMany({
       where: {
-        companyId: companyId, // Filter by company for multi-tenancy
+        // companyId: companyId, // Filter by company for multi-tenancy
         educatorId: educator.id, // Directly filter by the Educator's _id
       },
       select: {
@@ -57,6 +58,7 @@ export async function GET(request: Request) {
         endTime: true,
         topic: true,
         meetingLink: true,
+        companyId: true,
         course: { // Include course details
           select: {
             id: true,
@@ -92,7 +94,7 @@ export async function GET(request: Request) {
     // 3. Fetch Event entries where this educator is the organizer or a target
     const events = await prisma.event.findMany({
       where: {
-        companyId: companyId, // Filter by company for multi-tenancy
+        companyId: educator.companyId, // Filter by company for multi-tenancy
         OR: [
           { organizerId: educator.id }, // Events organized by this educator's _id
           { targetEducatorIds: { has: educator.id } }, // Events explicitly targeting this educator's _id

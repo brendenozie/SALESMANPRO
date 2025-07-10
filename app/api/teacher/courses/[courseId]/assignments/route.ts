@@ -6,7 +6,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
   const educatorId = searchParams.get('educatorId'); // The educator viewing/managing assignments
-  const companyId = searchParams.get('companyId');   // For multi-tenancy
+  // const companyId = searchParams.get('companyId');   // For multi-tenancy
 
   // --- Authentication & Authorization (Placeholder) ---
   // In a real application, you would:
@@ -23,7 +23,27 @@ export async function GET(request: Request, { params }: { params: { courseId: st
     return NextResponse.json({ message: 'Missing courseId, educatorId, or companyId' }, { status: 400 });
   }
 
+  
   try {
+    const educator = await prisma.educator.findUnique({
+          where: { userId: educatorId },
+          select: {
+            id: true, // This is the Educator's _id, which will be used for relations
+            companyId:true,
+            user: {
+              select: {
+                name: true,
+                email: true,            
+                role: true, // Fetch the role from the Educator model
+              },
+            },
+          },
+        });
+    
+        if (!educator || !educator.user) {
+          return NextResponse.json({ message: 'Educator not found' }, { status: 404 });
+        }
+
     // Verify the educator is linked to the company and course (optional but good practice)
     const course = await prisma.course.findUnique({
       where: { id: courseId,},
@@ -52,7 +72,7 @@ export async function GET(request: Request, { params }: { params: { courseId: st
     const assignments = await prisma.courseAssignment.findMany({
       where: {
         courseId: courseId,
-        // companyId: companyId,
+        companyId: educator.companyId,
         // Filter by relevant exam types that represent assignments
         // You might want to add a specific 'ASSIGNMENT' ExamType if 'HOMEWORK'/'PROJECT' isn't sufficient
         OR: [
