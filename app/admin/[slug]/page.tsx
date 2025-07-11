@@ -29,6 +29,7 @@ import TutorDashboard, { TutorDashboardData } from '@/components/admin/TutorDash
 import StudentDashboard, { StudentDashboardData } from '@/components/admin/StudentDashboard';
 import PrincipalDashboard, { PrincipalDashboardData } from '@/components/admin/PrincipalDashboard';
 import UncategorizedDashboard from '../../../components/admin/AdminDashClient'; // Assuming this is a generic fallback
+import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
 
 
 export const dynamic = 'force-dynamic';
@@ -239,7 +240,8 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
 
   // 5. Render appropriate client component based on user role and category
   if (userRole === 'STUDENT') {
-    return <StudentDashboard {...(studentDashboardData as StudentDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
+    // return <StudentDashboard {...(studentDashboardData as StudentDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
+    return <PlaygroupDashboard/>
   } else if (userRole === 'EDUCATOR' || userRole === 'TEACHER' || userRole === 'LECTURER' || userRole === 'TUTOR' || userRole === 'HEAD_TEACHER' ||
       userRole == 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD' || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' ||
       userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' ||
