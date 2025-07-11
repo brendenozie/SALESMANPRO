@@ -61,8 +61,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { storeFormData, userRole, userId } = useStoreContext();
   const pathname = usePathname();
   const router = useRouter();
-
-  // const categoryType = storeFormData?.category ? capitalize(storeFormData.category)    : undefined;
   
   const categoryType = storeFormData?.category ? capitalize(storeFormData.category) : "Other";
 
