@@ -97,7 +97,7 @@ export default function StoryTimePage() {
     }
 
     // Navigate to the specific story's view page using its slug
-    router.push(`/play/story-time/${story.slug}`);
+    router.push(`${"tome"}/play/story-time/${story.slug}`);
   };
 
   return (

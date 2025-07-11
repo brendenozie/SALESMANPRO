@@ -79,7 +79,7 @@ export default function MakeFriendsPage() {
       audioRef.current.play().catch(e => console.error("Error playing activity sound:", e));
     }
     // Navigate to the dedicated activity view page using the activity's slug
-    router.push(`/play/make-friends/${activity.slug}`);
+    router.push(`${"tome"}/play/make-friends/${activity.slug}`);
   };
 
   return (

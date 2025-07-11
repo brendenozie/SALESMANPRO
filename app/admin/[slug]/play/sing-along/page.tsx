@@ -64,7 +64,7 @@ export default function SingAlongPage() {
         console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
         setSongs(sampleSongs);
       }
-      
+
       } catch (e: any) {
         console.error("Failed to fetch songs:", e);
         setError("Failed to load songs. Displaying sample data.");
@@ -84,7 +84,7 @@ export default function SingAlongPage() {
       audioRef.current.play().catch(e => console.error("Error playing sound:", e));
     }
     // Navigate to the dedicated song view page using the song's slug
-    router.push(`/play/sing-along/${song.slug}`);
+    router.push(`${"tome"}/play/sing-along/${song.slug}`);
   };
 
   return (

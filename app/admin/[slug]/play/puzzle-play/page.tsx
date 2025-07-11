@@ -72,7 +72,7 @@ export default function PlayHomePage() {
       audioRef.current.src = '/audio/puzzle-click.mp3'; // Ensure this audio file exists in public/audio
       audioRef.current.play().catch(e => console.error("Error playing sound:", e));
     }
-    router.push(`/play/puzzle-game/${puzzleSlug}`); // Navigate to the puzzle game page
+    router.push(`${"tome"}/play/puzzle-game/${puzzleSlug}`); // Navigate to the puzzle game page
   };
 
   return (
