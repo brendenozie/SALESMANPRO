@@ -80,7 +80,7 @@ export default function DrawingPage() {
       audioRef.current.play().catch(e => console.error("Error playing drawing sound:", e));
     }
     // Navigate to the dynamic drawing canvas page
-    router.push(`${"tome"}/play/drawing/${prompt.slug}`);
+    router.push(`drawing/${prompt.slug}`);
   };
 
   return (

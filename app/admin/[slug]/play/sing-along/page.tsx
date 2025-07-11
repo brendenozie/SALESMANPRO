@@ -84,7 +84,7 @@ export default function SingAlongPage() {
       audioRef.current.play().catch(e => console.error("Error playing sound:", e));
     }
     // Navigate to the dedicated song view page using the song's slug
-    router.push(`${"tome"}/play/sing-along/${song.slug}`);
+    router.push(`sing-along/${song.slug}`);
   };
 
   return (
