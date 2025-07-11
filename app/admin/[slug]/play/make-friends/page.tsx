@@ -32,31 +32,34 @@ export default function MakeFriendsPage() {
         // Fetch courses from your API, filtering by the playgroup academic level
         const response = await fetch(`/api/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (response.ok) {
+          // throw new Error(`HTTP error! status: ${response.status}`);
+        
         const data = await response.json();
 
         if (data && data.length > 0) {
           // Filter for courses that are likely friendship activities (e.g., based on audioUrl and description)
           // You might want to add a 'type' field (e.g., 'SOCIAL_SKILL') to your Course model
           // to make this filtering more robust.
-          const mappedActivities = data
-            .filter((course: any) => course.audioUrl && course.description) // Ensure it has audio and description
-            .map((course: any) => ({
-              id: course.id,
-              slug: course.code, // Assuming 'code' can be used as a unique slug for activities
-              title: course.title,
-              icon: course.imageUrl || '🤝', // Use imageUrl for icon, fallback to handshake emoji
-              introAudio: course.audioUrl,
-              description: course.description, // Map Course.description to activity.description
-            }));
-          setFriendActivities(mappedActivities);
-        } else {
-          console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
-          setFriendActivities(sampleFriendActivities);
-        }
+            const mappedActivities = data
+                .filter((course: any) => course.audioUrl && course.description) // Ensure it has audio and description
+                .map((course: any) => ({
+                  id: course.id,
+                  slug: course.code, // Assuming 'code' can be used as a unique slug for activities
+                  title: course.title,
+                  icon: course.imageUrl || '🤝', // Use imageUrl for icon, fallback to handshake emoji
+                  introAudio: course.audioUrl,
+                  description: course.description, // Map Course.description to activity.description
+                }));
+              setFriendActivities(mappedActivities);
+            } else {
+              console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
+              setFriendActivities(sampleFriendActivities);
+            }
+          } else {
+            console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
+            setFriendActivities(sampleFriendActivities);
+          }
       } catch (e: any) {
         console.error("Failed to fetch friendship activities:", e);
         setError("Failed to load activities. Displaying sample data.");

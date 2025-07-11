@@ -33,10 +33,9 @@ export default function SingAlongPage() {
         // Fetch courses from your API, filtering by the playgroup academic level
         const response = await fetch(`/api/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (response.ok) {
+          // throw new Error(`HTTP error! status: ${response.status}`);
+        
         const data = await response.json();
 
         if (data && data.length > 0) {
@@ -59,6 +58,13 @@ export default function SingAlongPage() {
           console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
           setSongs(sampleSongs);
         }
+      }
+      else {
+        // No data from API, use sample data
+        console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
+        setSongs(sampleSongs);
+      }
+      
       } catch (e: any) {
         console.error("Failed to fetch songs:", e);
         setError("Failed to load songs. Displaying sample data.");

@@ -70,31 +70,40 @@ export default function StoryViewPage() {
       try {
         const response = await fetch(`/api/courses/${storyId}`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (response.ok) {
+          // throw new Error(`HTTP error! status: ${response.status}`);
 
-        const courseData = await response.json();
+          const courseData = await response.json();
 
-        if (courseData) {
-          // Map Course data to your story view format
-          // Assuming CourseMaterial represents pages
-          const mappedPages = courseData.CourseMaterial
-            ?.sort((a: any, b: any) => a.order - b.order) // Sort pages by order
-            .map((material: any) => ({
-              id: material.id,
-              image: material.fileUrl || `https://placehold.co/800x600/CCCCCC/000000?text=Page+${material.order}`, // Use fileUrl for image
-              text: material.content, // Use content for page text
-              // You could add page-specific audio here if CourseMaterial had an audioUrl field
-            })) || [];
+          if (courseData) {
+            // Map Course data to your story view format
+            // Assuming CourseMaterial represents pages
+            const mappedPages = courseData.CourseMaterial
+              ?.sort((a: any, b: any) => a.order - b.order) // Sort pages by order
+              .map((material: any) => ({
+                id: material.id,
+                image: material.fileUrl || `https://placehold.co/800x600/CCCCCC/000000?text=Page+${material.order}`, // Use fileUrl for image
+                text: material.content, // Use content for page text
+                // You could add page-specific audio here if CourseMaterial had an audioUrl field
+              })) || [];
 
-          setCurrentStoryData({
-            title: courseData.title,
-            pages: mappedPages.length > 0 ? mappedPages : sampleStoryData[storyId as keyof typeof sampleStoryData]?.pages || [], // Fallback to sample pages if no materials
-            audio: {
-              fullStory: courseData.audioUrl || sampleStoryData[storyId as keyof typeof sampleStoryData]?.audio?.fullStory, // Assuming audioUrl exists on Course
+            setCurrentStoryData({
+              title: courseData.title,
+              pages: mappedPages.length > 0 ? mappedPages : sampleStoryData[storyId as keyof typeof sampleStoryData]?.pages || [], // Fallback to sample pages if no materials
+              audio: {
+                fullStory: courseData.audioUrl || sampleStoryData[storyId as keyof typeof sampleStoryData]?.audio?.fullStory, // Assuming audioUrl exists on Course
+              }
+            });
+          } else {
+            // No data from API, try to use specific sample data or generic fallback
+            console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
+            setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
+            if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
+              setError("Story not found. Redirecting...");
+              router.replace('/play/story-time');
+              return;
             }
-          });
+          }
         } else {
           // No data from API, try to use specific sample data or generic fallback
           console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);

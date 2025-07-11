@@ -73,10 +73,8 @@ export default function SingAlongViewPage() {
         // For this example, we'll use the GET /api/courses and filter.
         const response = await fetch(`/api/student/courses`); // Fetch all to find by code
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (response.ok) {
+          
         const allCourses = await response.json();
         const courseData = allCourses.find((course: any) => course.code === songSlug);
 
@@ -97,6 +95,16 @@ export default function SingAlongViewPage() {
             return;
           }
         }
+      }else {
+        // No data from API, try to use specific sample data or generic fallback
+        console.warn(`No course found for slug: ${songSlug}. Displaying sample data.`);
+        setCurrentSongData(sampleSongsData[songSlug as keyof typeof sampleSongsData] || null);
+        if (!sampleSongsData[songSlug as keyof typeof sampleSongsData]) {
+          setError("Song not found. Redirecting...");
+          router.replace('/play/sing-along');
+          return;
+        }
+      }
       } catch (e: any) {
         console.error("Failed to fetch song:", e);
         setError("Failed to load song. Displaying sample data.");

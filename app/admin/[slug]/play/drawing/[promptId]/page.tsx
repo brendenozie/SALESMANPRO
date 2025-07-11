@@ -67,35 +67,42 @@ export default function DrawingCanvasPage() {
         // Fetch all courses and find by 'code' (slug)
         const response = await fetch(`/api/student/courses`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (response.ok) {
+              const allCourses = await response.json();
+              const courseData = allCourses.find((course: any) => course.code === promptSlug);
 
-        const allCourses = await response.json();
-        const courseData = allCourses.find((course: any) => course.code === promptSlug);
-
-        if (courseData) {
-          setCurrentPromptData({
-            title: courseData.title,
-            icon: courseData.imageUrl || '🎨', // Use imageUrl for icon, fallback to palette
-            guidance: courseData.description, // Map Course.description to guidance
-            audio: courseData.audioUrl,
-            // backgroundGradient and promptImage are UI-specific.
-            // If you want these dynamic, you'd need to add fields to your Course model (e.g., `themeGradient: String?`, `outlineImageUrl: String?`)
-            // For now, we'll use hardcoded values from sample data if not provided by API.
-            backgroundGradient: sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]?.backgroundGradient || 'from-blue-200 to-cyan-300',
-            promptImage: sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]?.promptImage || null,
-          });
-        } else {
-          // No data from API, try to use specific sample data or generic fallback
-          console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
-          setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
-          if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
-            setError("Drawing prompt not found. Redirecting...");
-            router.replace('/play/drawing');
-            return;
-          }
-        }
+              if (courseData) {
+                setCurrentPromptData({
+                  title: courseData.title,
+                  icon: courseData.imageUrl || '🎨', // Use imageUrl for icon, fallback to palette
+                  guidance: courseData.description, // Map Course.description to guidance
+                  audio: courseData.audioUrl,
+                  // backgroundGradient and promptImage are UI-specific.
+                  // If you want these dynamic, you'd need to add fields to your Course model (e.g., `themeGradient: String?`, `outlineImageUrl: String?`)
+                  // For now, we'll use hardcoded values from sample data if not provided by API.
+                  backgroundGradient: sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]?.backgroundGradient || 'from-blue-200 to-cyan-300',
+                  promptImage: sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]?.promptImage || null,
+                });
+              } else {
+                // No data from API, try to use specific sample data or generic fallback
+                console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
+                setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
+                if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
+                  setError("Drawing prompt not found. Redirecting...");
+                  router.replace('/play/drawing');
+                  return;
+                }
+              }
+          } else {
+              // No data from API, try to use specific sample data or generic fallback
+              console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
+              setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
+              if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
+                setError("Drawing prompt not found. Redirecting...");
+                router.replace('/play/drawing');
+                return;
+              }
+            }
       } catch (e: any) {
         console.error("Failed to fetch drawing prompt:", e);
         setError("Failed to load drawing prompt. Displaying sample data.");

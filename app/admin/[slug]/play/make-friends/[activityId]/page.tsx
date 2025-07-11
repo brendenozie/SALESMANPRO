@@ -54,32 +54,42 @@ export default function FriendActivityViewPage() {
         // Fetch all courses and find by 'code' (slug)
         const response = await fetch(`/api/student/courses`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (response.ok) {
+          // throw new Error(`HTTP error! status: ${response.status}`);
 
-        const allCourses = await response.json();
-        const courseData = allCourses.find((course: any) => course.code === activitySlug);
+            const allCourses = await response.json();
+            const courseData = allCourses.find((course: any) => course.code === activitySlug);
 
-        if (courseData) {
-          setCurrentActivityData({
-            title: courseData.title,
-            icon: courseData.imageUrl || '🤝', // Use imageUrl for icon, fallback to handshake
-            description: courseData.description,
-            audio: courseData.audioUrl,
-            // backgroundGradient is UI-specific. Use hardcoded from sample or add to Course model.
-            backgroundGradient: sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]?.backgroundGradient || 'from-pink-200 to-red-300',
-          });
-        } else {
-          // No data from API, try to use specific sample data or generic fallback
-          console.warn(`No course found for slug: ${activitySlug}. Displaying sample data.`);
-          setCurrentActivityData(sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData] || null);
-          if (!sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]) {
-            setError("Activity not found. Redirecting...");
-            router.replace('/play/make-friends');
-            return;
+            if (courseData) {
+              setCurrentActivityData({
+                title: courseData.title,
+                icon: courseData.imageUrl || '🤝', // Use imageUrl for icon, fallback to handshake
+                description: courseData.description,
+                audio: courseData.audioUrl,
+                // backgroundGradient is UI-specific. Use hardcoded from sample or add to Course model.
+                backgroundGradient: sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]?.backgroundGradient || 'from-pink-200 to-red-300',
+              });
+            } else {
+              // No data from API, try to use specific sample data or generic fallback
+              console.warn(`No course found for slug: ${activitySlug}. Displaying sample data.`);
+              setCurrentActivityData(sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData] || null);
+              if (!sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]) {
+                setError("Activity not found. Redirecting...");
+                router.replace('/play/make-friends');
+                return;
+              }
+            }
+          } else {
+            // No data from API, try to use specific sample data or generic fallback
+            console.warn(`No course found for slug: ${activitySlug}. Displaying sample data.`);
+            setCurrentActivityData(sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData] || null);
+            if (!sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]) {
+              setError("Activity not found. Redirecting...");
+              router.replace('/play/make-friends');
+              return;
+            }
           }
-        }
+          
       } catch (e: any) {
         console.error("Failed to fetch activity:", e);
         setError("Failed to load activity. Displaying sample data.");
@@ -207,7 +217,7 @@ export default function FriendActivityViewPage() {
 
         {/* Main interactive content for the activity */}
         <div className="w-full flex-grow flex items-center justify-center">
-          {renderMainContent(activitySlug)}
+          {renderMainContent(activitySlug!)}
         </div>
 
         {/* "Great job" or encouraging message */}

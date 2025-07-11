@@ -34,27 +34,29 @@ export default function DrawingPage() {
         const response = await fetch(`/api/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+          
+          const data = await response.json();
 
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-          // Filter for courses that are likely drawing prompts (e.g., based on audioUrl or description content)
-          // You might want to add a 'type' field (e.g., 'STORY', 'SONG', 'PUZZLE', 'DRAWING') to your Course model
-          // to make this filtering more robust. For now, we'll assume any course with an audioUrl and description
-          // could be a drawing prompt.
-          const mappedPrompts = data
-            .filter((course: any) => course.audioUrl && course.description) // Ensure it has audio and description for guidance
-            .map((course: any) => ({
-              id: course.id,
-              slug: course.code, // Assuming 'code' can be used as a unique slug for prompts
-              title: course.title,
-              icon: course.imageUrl || '🎨', // Use imageUrl for icon, fallback to palette emoji
-              introAudio: course.audioUrl,
-              description: course.description, // Map Course.description to prompt.description
-            }));
-          setDrawingPrompts(mappedPrompts);
+          if (data && data.length > 0) {
+            // Filter for courses that are likely drawing prompts (e.g., based on audioUrl or description content)
+            // You might want to add a 'type' field (e.g., 'STORY', 'SONG', 'PUZZLE', 'DRAWING') to your Course model
+            // to make this filtering more robust. For now, we'll assume any course with an audioUrl and description
+            // could be a drawing prompt.
+            const mappedPrompts = data
+              .filter((course: any) => course.audioUrl && course.description) // Ensure it has audio and description for guidance
+              .map((course: any) => ({
+                id: course.id,
+                slug: course.code, // Assuming 'code' can be used as a unique slug for prompts
+                title: course.title,
+                icon: course.imageUrl || '🎨', // Use imageUrl for icon, fallback to palette emoji
+                introAudio: course.audioUrl,
+                description: course.description, // Map Course.description to prompt.description
+              }));
+            setDrawingPrompts(mappedPrompts);
+          } else {
+            console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
+            setDrawingPrompts(sampleDrawingPrompts);
+          }
         } else {
           console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
           setDrawingPrompts(sampleDrawingPrompts);

@@ -51,27 +51,32 @@ export default function StoryTimePage() {
         // Fetch courses from your API, filtering by the playgroup academic level
         const response = await fetch(`/api/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (response.ok) {
+          // throw new Error(`HTTP error! status: ${response.status}`);
+    
+            const data = await response.json();
 
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-          // Map API Course data to the format expected by your UI
-          const mappedStories = data.map((course: any) => ({
-            id: course.id,
-            slug: course.code, // Assuming 'code' can be used as a unique slug for stories
-            title: course.title,
-            cover: course.imageUrl || `https://placehold.co/400x300/A78BFA/ffffff?text=${encodeURIComponent(course.title)}`, // Use imageUrl from API, fallback to placeholder
-            audio: course.audioUrl || `/audio/${course.code}-full.mp3`, // Assuming audioUrl exists or can be derived
-          }));
-          setStories(mappedStories);
-        } else {
-          // No data from API, use sample data
-          console.warn("No courses found for Playgroup academic level. Displaying sample data.");
-          setStories(sampleStories);
-        }
+            if (data && data.length > 0) {
+              // Map API Course data to the format expected by your UI
+              const mappedStories = data.map((course: any) => ({
+                id: course.id,
+                slug: course.code, // Assuming 'code' can be used as a unique slug for stories
+                title: course.title,
+                cover: course.imageUrl || `https://placehold.co/400x300/A78BFA/ffffff?text=${encodeURIComponent(course.title)}`, // Use imageUrl from API, fallback to placeholder
+                audio: course.audioUrl || `/audio/${course.code}-full.mp3`, // Assuming audioUrl exists or can be derived
+              }));
+              setStories(mappedStories);
+            } else {
+              // No data from API, use sample data
+              console.warn("No courses found for Playgroup academic level. Displaying sample data.");
+              setStories(sampleStories);
+            }
+          }
+          else{
+            // No data from API, use sample data
+            console.warn("No courses found for Playgroup academic level. Displaying sample data.");
+            setStories(sampleStories);
+          }
       } catch (e: any) {
         console.error("Failed to fetch stories:", e);
         setError("Failed to load stories. Displaying sample data.");

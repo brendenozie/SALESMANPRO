@@ -50,34 +50,43 @@ export default function PuzzleGamePage() {
       setCurrentPuzzleData(null); // Clear previous data
 
       try {
-        // Fetch all courses and find by 'code' (slug)
-        const response = await fetch(`/api/student/courses`);
+          // Fetch all courses and find by 'code' (slug)
+          const response = await fetch(`/api/student/courses`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+          if (response.ok) {
+                // throw new Error(`HTTP error! status: ${response.status}`);
 
-        const allCourses = await response.json();
-        const courseData = allCourses.find((course: any) => course.code === puzzleSlug);
+              const allCourses = await response.json();
+              const courseData = allCourses.find((course: any) => course.code === puzzleSlug);
 
-        if (courseData) {
-          setCurrentPuzzleData({
-            title: courseData.title,
-            icon: courseData.imageUrl || '🧩', // Use imageUrl for icon, fallback to puzzle piece
-            description: courseData.description,
-            gameContent: courseData.description, // Mapping description to gameContent for now
-            audio: courseData.audioUrl,
-          });
-        } else {
-          // No data from API, try to use specific sample data or generic fallback
-          console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
-          setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
-          if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {
-            setError("Puzzle not found. Redirecting...");
-            router.replace('/play');
-            return;
-          }
-        }
+              if (courseData) {
+                setCurrentPuzzleData({
+                  title: courseData.title,
+                  icon: courseData.imageUrl || '🧩', // Use imageUrl for icon, fallback to puzzle piece
+                  description: courseData.description,
+                  gameContent: courseData.description, // Mapping description to gameContent for now
+                  audio: courseData.audioUrl,
+                });
+              } else {
+                // No data from API, try to use specific sample data or generic fallback
+                console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
+                setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
+                if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {
+                  setError("Puzzle not found. Redirecting...");
+                  router.replace('/play');
+                  return;
+                }
+              }
+            } else {
+              // No data from API, try to use specific sample data or generic fallback
+              console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
+              setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
+              if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {
+                setError("Puzzle not found. Redirecting...");
+                router.replace('/play');
+                return;
+              }
+            }
       } catch (e: any) {
         console.error("Failed to fetch puzzle:", e);
         setError("Failed to load puzzle. Displaying sample data.");

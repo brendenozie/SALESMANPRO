@@ -28,27 +28,29 @@ export default function PlayHomePage() {
       setIsLoading(true);
       setError(null);
       try {
-        // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`/api/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
+          // Fetch courses from your API, filtering by the playgroup academic level
+          const response = await fetch(`/api/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+          if (response.ok) {
+            
+          const data = await response.json();
 
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-          // Filter for courses that are likely puzzles (e.g., based on a naming convention or a specific tag/type if added to schema)
-          // For now, we'll assume any course in 'PLAYGROUP_ACADEMIC_LEVEL_ID' could be a puzzle.
-          // You might want to add a 'type' field (e.g., 'STORY', 'SONG', 'PUZZLE') to your Course model
-          // to make this filtering more robust.
-          const mappedPuzzles = data.map((course: any) => ({
-            id: course.id,
-            slug: course.code, // Assuming 'code' can be used as a unique slug for puzzles
-            type: course.title, // Use title as the puzzle type/name
-            icon: course.imageUrl || '🧩', // Use imageUrl for icon, fallback to puzzle piece emoji
-          }));
-          setPuzzles(mappedPuzzles);
+          if (data && data.length > 0) {
+            // Filter for courses that are likely puzzles (e.g., based on a naming convention or a specific tag/type if added to schema)
+            // For now, we'll assume any course in 'PLAYGROUP_ACADEMIC_LEVEL_ID' could be a puzzle.
+            // You might want to add a 'type' field (e.g., 'STORY', 'SONG', 'PUZZLE') to your Course model
+            // to make this filtering more robust.
+            const mappedPuzzles = data.map((course: any) => ({
+              id: course.id,
+              slug: course.code, // Assuming 'code' can be used as a unique slug for puzzles
+              type: course.title, // Use title as the puzzle type/name
+              icon: course.imageUrl || '🧩', // Use imageUrl for icon, fallback to puzzle piece emoji
+            }));
+            setPuzzles(mappedPuzzles);
+          } else {
+            console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
+            setPuzzles(samplePuzzles);
+          }
         } else {
           console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
           setPuzzles(samplePuzzles);
