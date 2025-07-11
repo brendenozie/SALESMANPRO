@@ -5,13 +5,8 @@ import "./globals.css";
 import Header from "../components/shop/header/Header";
 import Footer from "../components/shop/footer/Footer";
 import Providers from "./providers";
-import LocationModal from "../components/locationManager";
-import Cart from "../components/shop/cart";
-import SignInModal from "../components/shop/SignInModal/SignInModal";
 import siteMetadata from '../data/siteMetadata';
 import { Metadata } from 'next';
-import CookieConsentBar from "@/components/site/CookieConsentBar";
-import ClientCookieWrapper from "@/components/site/ClientCookieWrapper";
 
 
 export const metadata: Metadata = {
@@ -96,10 +91,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main>{children}</main>
           <Footer />
-          <Cart />
-          <LocationModal />
-          <SignInModal />
-          <ClientCookieWrapper />
         </Providers>
       </body>
     </html>
