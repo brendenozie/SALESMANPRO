@@ -28,6 +28,13 @@ const fallback = "Other";
 
 function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategoryMenus: MenuMap): MenuItem[] {
   switch (userRole) {
+    case 'JUNIOR':
+      // student menu, or fallback
+      return allCategoryMenus.Student ?? fallback;
+    case 'SENIOR':
+      // student menu, or fallback
+      return allCategoryMenus.Student ?? fallback;
+
     case 'STUDENT':
       // student menu, or fallback
       return allCategoryMenus.Student ?? fallback;
@@ -59,11 +66,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   
   const categoryType = storeFormData?.category ? capitalize(storeFormData.category) : "Other";
 
-  const companyId =
-    userRole === 'STUDENT' || userRole === 'EDUCATOR'
-      ? userId
-      : storeFormData?.id || 'default-company-id';
+  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR' || userRole === 'JUNIOR' || userRole === 'SENIOR'  ? userId : storeFormData?.id || 'default-company-id';
 
+  if(userRole === 'JUNIOR') return (
+    <main className="flex-1 pt-20 lg:pt-0 overflow-auto">
+        {children}
+      </main>
+  );
+  
   const menus = getCategoryMenus(companyId);
   const menuItems = getMenuItemsFor(userRole, categoryType, menus);
 

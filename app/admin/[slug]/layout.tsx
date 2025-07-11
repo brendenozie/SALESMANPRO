@@ -24,7 +24,9 @@ export default async function AdminStoreLayout({
   // This check should ideally mirror the one in page.tsx for consistency
   if (!session?.user?.id ||
       (session.user.role?.toLowerCase() !== 'admin' &&
-       session.user.role?.toLowerCase() !== 'student' &&
+      session.user.role?.toLowerCase() !== 'junior' &&
+      session.user.role?.toLowerCase() !== 'senior' &&
+      session.user.role?.toLowerCase() !== 'student' &&
        session.user.role?.toLowerCase() !== 'educator' &&
        session.user.role?.toLowerCase() !== 'consumer')) {
         console.log(`Unauthorized access attempt by user ID: ${session?.user?.id} with role: ${session?.user?.role}`);

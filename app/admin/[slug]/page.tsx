@@ -43,17 +43,21 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
 
   const userRole = session.user?.role?.toUpperCase() || 'ADMIN'; // Default to ADMIN if role is not set
 
+  console.log(userRole);
+
   // 1. Authentication and Authorization Check
   // Allow 'ADMIN', 'STUDENT', and 'EDUCATOR' roles to access admin dashboards
   if (!session?.user?.id ||
       (session.user.role?.toLowerCase() !== 'admin' &&
        session.user.role?.toLowerCase() !== 'student' &&
        session.user.role?.toLowerCase() !== 'educator'&&
-       session.user.role?.toLowerCase() !== 'consumer')) {
+       session.user.role?.toLowerCase() !== 'consumer'&&
+       session.user.role?.toLowerCase() !== 'junior'&&
+       session.user.role?.toLowerCase() !== 'senior')) {
     redirect('/'); // Redirect if not authorized
   }
 
-  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR' ? session.user.id : params.slug; // Use user ID for student/educator, company ID for admin
+  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR'  || userRole === 'JUNIOR'  || userRole === 'SENIOR' ? session.user.id : params.slug; // Use user ID for student/educator, company ID for admin
 
 
   const currentUserId = session.user.id; // Get current user ID from session
@@ -64,7 +68,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     select: { category: true },
   });
 
-  if (userRole !== 'STUDENT' && !company && userRole !== 'EDUCATOR') {
+  if (userRole !== 'STUDENT' && !company && userRole !== 'EDUCATOR' && userRole !== 'JUNIOR' && userRole !== 'SENIOR') {
     // If company not found, redirect to a generic dashboard or error page
     // console.error(`Company with ID ${companyId} not found.`);
     redirect('/dashboard'); // Or show a 404 page

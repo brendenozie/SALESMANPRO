@@ -26,7 +26,7 @@ async function findUserByLoginCode(loginCode: string) {
     include: { user: true }, // Include the associated User model
   });
   if (student) {
-    return { user: student.user, role: 'STUDENT' };
+    return { user: student.user, role: student.levelStatus || 'STUDENT' };
   }
 
   const educator = await prisma.educator.findUnique({

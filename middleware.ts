@@ -58,8 +58,14 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
       return NextResponse.redirect(url);
     }
     // Role-based rewrite
-    const role = token.role;
+    const role = token.role?.toLocaleLowerCase();
     if (role === 'admin') {
+      return NextResponse.next();
+    }
+    if (role === 'junior') {
+      return NextResponse.next();
+    }
+    if (role === 'senior') {
       return NextResponse.next();
     }
     if (role === 'agent' && pathname.startsWith('/agents')) {
