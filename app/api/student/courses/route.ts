@@ -8,18 +8,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";  // Adjust path if your prisma.ts is elsewhere
 
 /**
- * GET /api/courses
- * Fetches all courses.
- *
- * Query Parameters:
- * - companyId (optional): Filters courses by a specific company.
- * - academicLevelId (optional): Filters courses by a specific academic level (e.g., 'playgroup').
- *
- * Example Usage:
- * - Fetch all courses: GET /api/courses
- * - Fetch courses for a specific company: GET /api/courses?companyId=your_company_id
- * - Fetch playgroup courses: GET /api/courses?academicLevelId=playgroup_level_id
- */
+//  * GET /api/courses
+//  * Fetches all courses.
+//  *
+//  * Query Parameters:
+//  * - companyId (optional): Filters courses by a specific company.
+//  * - academicLevelId (optional): Filters courses by a specific academic level (e.g., 'playgroup').
+//  *
+//  * Example Usage:
+//  * - Fetch all courses: GET /api/courses
+//  * - Fetch courses for a specific company: GET /api/courses?companyId=your_company_id
+//  * - Fetch playgroup courses: GET /api/courses?academicLevelId=playgroup_level_id
+//  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

@@ -31,7 +31,7 @@ export default function DrawingPage() {
       setError(null);
       try {
         // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`/api/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
+        const response = await fetch(`/api/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

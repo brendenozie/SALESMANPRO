@@ -71,7 +71,7 @@ export default function SingAlongViewPage() {
         // For now, we'll fetch all courses and find by code.
         // A dedicated API route like /api/courses/by-code/[code] would be more efficient.
         // For this example, we'll use the GET /api/courses and filter.
-        const response = await fetch(`/api/courses`); // Fetch all to find by code
+        const response = await fetch(`/api/student/courses`); // Fetch all to find by code
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

@@ -33,6 +33,8 @@ export default async function AdminStoreLayout({
     notFound(); // Using notFound instead of redirect for layout, or redirect to a more appropriate unauthorized page
   }
 
+  let companyId = params.slug || session?.user?.id;
+
   const raw = await prisma.company.findUnique({
     where: { id: params.slug },
     include: {

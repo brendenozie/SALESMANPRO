@@ -51,7 +51,7 @@ export default function PuzzleGamePage() {
 
       try {
         // Fetch all courses and find by 'code' (slug)
-        const response = await fetch(`/api/courses`);
+        const response = await fetch(`/api/student/courses`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

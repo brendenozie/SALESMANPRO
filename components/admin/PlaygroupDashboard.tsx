@@ -3,18 +3,23 @@
 import React from 'react';
 import Link from 'next/link'; // Import the Link component
 import { useRouter } from 'next/navigation'; // Import useRouter for navigation
+import { useStoreContext } from '@/contexts/StoreContext';
 
-// Playful icons and assets (ideally, replace with actual animated GIFs or SVGs for better engagement)
-const activityAssets = {
-  story: { icon: '📚', animation: 'animate-bounce', sound: '/audio/story-sound.mp3', path: '/play/story-time' },
-  song: { icon: '🎵', animation: 'animate-spin', sound: '/audio/song-sound.mp3', path: '/play/sing-along' },
-  game: { icon: '🧩', animation: 'animate-pulse', sound: '/audio/game-sound.mp3', path: '/play/puzzle-play' },
-  drawing: { icon: '🖍️', animation: 'animate-wiggle', sound: '/audio/draw-sound.mp3', path: '/play/drawing' },
-  friend: { icon: '🤝', animation: 'animate-jiggle', sound: '/audio/friend-sound.mp3', path: '/play/make-friends' },
-};
+
 
 export default function PlaygroupDashboard() {
   const router = useRouter(); // Initialize the router
+  const { storeFormData, userRole, userId } = useStoreContext();
+
+// Playful icons and assets (ideally, replace with actual animated GIFs or SVGs for better engagement)
+const activityAssets = {
+  story: { icon: '📚', animation: 'animate-bounce', sound: '/audio/story-sound.mp3', path: `${userId}/play/story-time` },
+  song: { icon: '🎵', animation: 'animate-spin', sound: '/audio/song-sound.mp3', path: `${userId}/play/sing-along` },
+  game: { icon: '🧩', animation: 'animate-pulse', sound: '/audio/game-sound.mp3', path: `${userId}/play/puzzle-play` },
+  drawing: { icon: '🖍️', animation: 'animate-wiggle', sound: '/audio/draw-sound.mp3', path: `${userId}/play/drawing` },
+  friend: { icon: '🤝', animation: 'animate-jiggle', sound: '/audio/friend-sound.mp3', path: `${userId}/play/make-friends` },
+};
+
 
   const activities = [
     { id: 1, label: 'Story Time', asset: activityAssets.story, bg: 'bg-pink-100' },
