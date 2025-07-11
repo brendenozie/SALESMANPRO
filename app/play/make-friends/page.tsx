@@ -1,20 +1,73 @@
 // app/play/make-friends/page.tsx
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Import useRouter for navigation
+import { useRouter } from 'next/navigation';
 
-// Friendship activities with a 'slug' for clean URLs
-const friendActivities = [
-  { id: 1, slug: 'learn-sharing', title: 'Learn About Sharing', icon: '🍎', introAudio: '/audio/sharing-intro.mp3' },
-  { id: 2, slug: 'practice-hello', title: 'Practice Saying Hello', icon: '👋', introAudio: '/audio/hello-intro.mp3' },
-  { id: 3, slug: 'play-together', title: 'Play a Game Together', icon: '🎲', introAudio: '/audio/game-intro.mp3' },
+// --- Sample Data (Used if API fails or returns no data) ---
+const sampleFriendActivities = [
+  { id: 'sample-1', slug: 'learn-sharing', title: 'Learn About Sharing (Sample)', icon: '🍎', introAudio: '/audio/sharing-intro.mp3' },
+  { id: 'sample-2', slug: 'practice-hello', title: 'Practice Saying Hello (Sample)', icon: '👋', introAudio: '/audio/hello-intro.mp3' },
+  { id: 'sample-3', slug: 'play-together', title: 'Play a Game Together (Sample)', icon: '🎲', introAudio: '/audio/game-intro.mp3' },
 ];
+
+// --- IMPORTANT: Replace this with the actual ID of your "Playgroup" AcademicLevel from your database ---
+// Or create a specific "Social Skills" AcademicLevel if you want to categorize them separately.
+const PLAYGROUP_ACADEMIC_LEVEL_ID = 'YOUR_PLAYGROUP_ACADEMIC_LEVEL_ID'; // e.g., '65e7b2f3a4c5d6e7f8a9b0c1'
 
 export default function MakeFriendsPage() {
   const router = useRouter();
-  const audioRef = useRef<HTMLAudioElement | null>(null); // For an optional click/preview sound
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [friendActivities, setFriendActivities] = useState<typeof sampleFriendActivities>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Fetch courses from your API, filtering by the playgroup academic level
+        const response = await fetch(`/api/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          // Filter for courses that are likely friendship activities (e.g., based on audioUrl and description)
+          // You might want to add a 'type' field (e.g., 'SOCIAL_SKILL') to your Course model
+          // to make this filtering more robust.
+          const mappedActivities = data
+            .filter((course: any) => course.audioUrl && course.description) // Ensure it has audio and description
+            .map((course: any) => ({
+              id: course.id,
+              slug: course.code, // Assuming 'code' can be used as a unique slug for activities
+              title: course.title,
+              icon: course.imageUrl || '🤝', // Use imageUrl for icon, fallback to handshake emoji
+              introAudio: course.audioUrl,
+              description: course.description, // Map Course.description to activity.description
+            }));
+          setFriendActivities(mappedActivities);
+        } else {
+          console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
+          setFriendActivities(sampleFriendActivities);
+        }
+      } catch (e: any) {
+        console.error("Failed to fetch friendship activities:", e);
+        setError("Failed to load activities. Displaying sample data.");
+        setFriendActivities(sampleFriendActivities); // Fallback to sample data on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleActivitySelect = (activity: any) => {
     // Optional: Play a short click sound effect or activity-specific intro sound
@@ -31,7 +84,6 @@ export default function MakeFriendsPage() {
       {/* Background elements for playfulness */}
       <div className="absolute top-10 left-10 w-28 h-28 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow"></div>
       <div className="absolute bottom-10 right-10 w-36 h-36 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow animation-delay-1000"></div>
-      
 
       {/* Back to Home Button */}
       <Link href="/play" className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
@@ -42,22 +94,28 @@ export default function MakeFriendsPage() {
         💖 Let's Be Friends! 💖
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full relative z-10">
-        {friendActivities.map((activity) => (
-          <button
-            key={activity.id}
-            onClick={() => handleActivitySelect(activity)}
-            className="rounded-3xl p-5 bg-white shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out flex flex-col items-center justify-between border-4 border-white border-opacity-50 group"
-          >
-            <div className={`text-7xl mb-4 group-hover:animate-heartbeat animate-pop`}>
-              {activity.icon}
-            </div>
-            <p className="text-3xl font-bold text-red-800 text-center leading-tight group-hover:text-red-600 transition-colors px-2">
-              {activity.title}
-            </p>
-          </button>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="text-white text-4xl font-bold animate-pulse">Loading friendship activities...</div>
+      ) : error ? (
+        <div className="text-red-700 text-3xl font-bold mb-4">{error}</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full relative z-10">
+          {friendActivities.map((activity) => (
+            <button
+              key={activity.id}
+              onClick={() => handleActivitySelect(activity)}
+              className="rounded-3xl p-5 bg-white shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out flex flex-col items-center justify-between border-4 border-white border-opacity-50 group"
+            >
+              <div className={`text-7xl mb-4 group-hover:animate-heartbeat animate-pop`}>
+                {activity.icon}
+              </div>
+              <p className="text-3xl font-bold text-red-800 text-center leading-tight group-hover:text-red-600 transition-colors px-2">
+                {activity.title}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Audio Element for optional selection sound */}
       <audio ref={audioRef} className="hidden"></audio>

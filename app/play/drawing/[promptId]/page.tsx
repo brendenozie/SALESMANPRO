@@ -1,43 +1,43 @@
-// app/play/drawing-canvas/[promptId]/page.tsx
+// app/play/drawing/[promptId]/page.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
-// Mock Drawing Prompt Data (In a real app, you'd fetch this or use a more robust data structure)
-const allDrawingPromptsData = {
+// --- Sample Data (Used if API fails or prompt not found) ---
+const sampleDrawingPromptsData = {
   'happy-sun': {
-    title: 'Draw a Happy Sun!',
+    title: 'Draw a Happy Sun! (Sample)',
     icon: '☀️',
-    guidance: "Let's draw a bright, happy sun! Start with a big circle, then add some wavy rays and a big smile!",
-    audio: '/audio/sun-drawing-guidance.mp3', // Audio for guidance on this specific prompt
+    guidance: "Let's draw a bright, happy sun! Start with a big circle, then add some wavy rays and a big smile! (Sample Guidance)",
+    audio: '/audio/sun-drawing-guidance.mp3',
     backgroundGradient: 'from-yellow-200 to-orange-300',
-    promptImage: '/images/sun-outline.png' // Optional: an outline image to draw over
+    promptImage: 'https://placehold.co/800x450/FFFFFF/000000?text=Sun+Outline', // Placeholder outline image
   },
   'favorite-animal': {
-    title: 'Draw Your Favorite Animal!',
+    title: 'Draw Your Favorite Animal! (Sample)',
     icon: '🦁',
-    guidance: "Think of your favorite animal! Is it a fluffy cat, a mighty lion, or a playful dolphin? Draw its shape first, then add details!",
+    guidance: "Think of your favorite animal! Is it a fluffy cat, a mighty lion, or a playful dolphin? Draw its shape first, then add details! (Sample Guidance)",
     audio: '/audio/animal-drawing-guidance.mp3',
     backgroundGradient: 'from-green-200 to-teal-300',
-    promptImage: null // No specific outline for this one
+    promptImage: null,
   },
   'rainbow': {
-    title: 'Draw a Rainbow!',
+    title: 'Draw a Rainbow! (Sample)',
     icon: '🌈',
-    guidance: "A rainbow has many colors! Red, orange, yellow, green, blue, indigo, violet. Draw big arcs across the sky!",
+    guidance: "A rainbow has many colors! Red, orange, yellow, green, blue, indigo, violet. Draw big arcs across the sky! (Sample Guidance)",
     audio: '/audio/rainbow-drawing-guidance.mp3',
     backgroundGradient: 'from-purple-200 to-pink-300',
-    promptImage: '/images/rainbow-outline.png'
+    promptImage: 'https://placehold.co/800x450/FFFFFF/000000?text=Rainbow+Outline', // Placeholder outline image
   },
   'free-draw': {
-    title: 'Free Draw!',
+    title: 'Free Draw! (Sample)',
     icon: '🖍️',
-    guidance: "Let your imagination soar! Draw anything you want. There are no rules, just fun!",
+    guidance: "Let your imagination soar! Draw anything you want. There are no rules, just fun! (Sample Guidance)",
     audio: '/audio/free-draw-guidance.mp3',
-    backgroundGradient: 'from-gray-200 to-white-300', // A more neutral background for free draw
-    promptImage: null
+    backgroundGradient: 'from-gray-200 to-white-300',
+    promptImage: null,
   },
 };
 
@@ -45,7 +45,10 @@ export default function DrawingCanvasPage() {
   const params = useParams();
   const router = useRouter();
   const promptSlug = Array.isArray(params.promptId) ? params.promptId[0] : params.promptId;
-  const promptData = allDrawingPromptsData[promptSlug as keyof typeof allDrawingPromptsData];
+
+  const [currentPromptData, setCurrentPromptData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -53,17 +56,66 @@ export default function DrawingCanvasPage() {
   const [brushColor, setBrushColor] = useState('#000000'); // Default to black
   const [brushSize, setBrushSize] = useState(5); // Default brush size
 
-  // Redirect if prompt data not found
+  // Fetch prompt data based on promptSlug (which maps to Course.code)
   useEffect(() => {
-    if (!promptData) {
-      router.replace('/play/drawing'); // Redirect to drawing selection if slug is invalid
-    }
-  }, [promptData, router]);
+    const fetchPrompt = async () => {
+      setIsLoading(true);
+      setError(null);
+      setCurrentPromptData(null); // Clear previous data
 
-  // Play prompt-specific guidance audio when page loads
+      try {
+        // Fetch all courses and find by 'code' (slug)
+        const response = await fetch(`/api/courses`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const allCourses = await response.json();
+        const courseData = allCourses.find((course: any) => course.code === promptSlug);
+
+        if (courseData) {
+          setCurrentPromptData({
+            title: courseData.title,
+            icon: courseData.imageUrl || '🎨', // Use imageUrl for icon, fallback to palette
+            guidance: courseData.description, // Map Course.description to guidance
+            audio: courseData.audioUrl,
+            // backgroundGradient and promptImage are UI-specific.
+            // If you want these dynamic, you'd need to add fields to your Course model (e.g., `themeGradient: String?`, `outlineImageUrl: String?`)
+            // For now, we'll use hardcoded values from sample data if not provided by API.
+            backgroundGradient: sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]?.backgroundGradient || 'from-blue-200 to-cyan-300',
+            promptImage: sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]?.promptImage || null,
+          });
+        } else {
+          // No data from API, try to use specific sample data or generic fallback
+          console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
+          setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
+          if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
+            setError("Drawing prompt not found. Redirecting...");
+            router.replace('/play/drawing');
+            return;
+          }
+        }
+      } catch (e: any) {
+        console.error("Failed to fetch drawing prompt:", e);
+        setError("Failed to load drawing prompt. Displaying sample data.");
+        setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
+        if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
+          router.replace('/play/drawing');
+          return;
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPrompt();
+  }, [promptSlug, router]); // Re-fetch if promptSlug changes
+
+  // Play prompt-specific guidance audio when page loads or promptData changes
   useEffect(() => {
-    if (audioRef.current && promptData?.audio) {
-      audioRef.current.src = promptData.audio;
+    if (audioRef.current && currentPromptData?.audio) {
+      audioRef.current.src = currentPromptData.audio;
       audioRef.current.play().catch(e => console.error("Error playing drawing guidance audio:", e));
     }
     // Cleanup on unmount
@@ -73,33 +125,80 @@ export default function DrawingCanvasPage() {
         audioRef.current.currentTime = 0;
       }
     };
-  }, [promptData]);
+  }, [currentPromptData]);
 
   // Canvas drawing logic
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return; // Add null check for canvas
+    if (!canvas) return;
+
+    // Set canvas dimensions dynamically based on its container or a fixed ratio
+    const resizeCanvas = () => {
+      // For responsiveness, set internal resolution and then scale with CSS
+      // Or, set canvas.width/height to match clientWidth/clientHeight of its parent
+      // For simplicity, keeping fixed internal resolution for drawing quality
+      // and letting CSS handle display size.
+      // If you want pixel-perfect responsiveness, you'd adjust width/height here
+      // and then clear/redraw content.
+    };
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas(); // Initial resize
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return; // Add null check for context
+    if (!ctx) return;
 
-    // Set initial canvas properties
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
     // Optional: Load prompt image if available
-    if (promptData?.promptImage) {
+    if (currentPromptData?.promptImage) {
       const img = new Image();
-      img.src = promptData.promptImage;
+      img.src = currentPromptData.promptImage;
       img.onload = () => {
+        // Clear canvas before drawing new image
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         // Draw image stretched to fit canvas
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       };
+      img.onerror = (e) => {
+        console.error("Error loading prompt image:", e);
+        // Optionally display a fallback or error message on canvas
+      };
+    } else {
+      // If no prompt image, ensure canvas is clear
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-  }, [promptData]); // Depend on promptData to redraw if prompt changes
 
-  const startDrawing = ({ nativeEvent }: React.MouseEvent<HTMLCanvasElement>) => {
-    const { offsetX, offsetY } = nativeEvent;
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, [currentPromptData]); // Depend on currentPromptData to redraw if prompt changes
+
+  const getCanvasCoordinates = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if ('touches' in event) { // Handle touch events
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else { // Handle mouse events
+      clientX = event.clientX;
+      clientY = event.clientY;
+    }
+
+    // Scale coordinates from display size to internal canvas resolution
+    const x = (clientX - rect.left) * (canvas.width / rect.width);
+    const y = (clientY - rect.top) * (canvas.height / rect.height);
+    return { x, y };
+  };
+
+  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    event.preventDefault(); // Prevent scrolling on touch devices
+    const { x, y } = getCanvasCoordinates(event);
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -107,20 +206,21 @@ export default function DrawingCanvasPage() {
 
     setIsDrawing(true);
     ctx.beginPath();
-    ctx.moveTo(offsetX, offsetY);
+    ctx.moveTo(x, y);
     ctx.strokeStyle = brushColor;
     ctx.lineWidth = brushSize;
   };
 
-  const draw = ({ nativeEvent }: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
-    const { offsetX, offsetY } = nativeEvent;
+    event.preventDefault(); // Prevent scrolling on touch devices
+    const { x, y } = getCanvasCoordinates(event);
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.lineTo(offsetX, offsetY);
+    ctx.lineTo(x, y);
     ctx.stroke();
   };
 
@@ -140,9 +240,9 @@ export default function DrawingCanvasPage() {
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // Re-draw prompt image after clearing if applicable
-    if (promptData?.promptImage) {
+    if (currentPromptData?.promptImage) {
       const img = new Image();
-      img.src = promptData.promptImage;
+      img.src = currentPromptData.promptImage;
       img.onload = () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       };
@@ -155,17 +255,18 @@ export default function DrawingCanvasPage() {
     const image = canvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.href = image;
-    link.download = `${promptData?.title.replace(/[^a-zA-Z0-9]/g, '_') || 'my_drawing'}.png`;
+    link.download = `${currentPromptData?.title.replace(/[^a-zA-Z0-9]/g, '_') || 'my_drawing'}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    alert('Your masterpiece is saved!'); // Fun confirmation
+    // Replaced alert() with a console log for better practice in iframes
+    console.log('Your masterpiece is saved!');
   };
 
-  if (!promptData) {
+  if (isLoading || !currentPromptData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-200 to-red-300 text-white text-3xl font-bold">
-        Oops! Drawing prompt not found... heading back!
+        {isLoading ? "Loading drawing prompt..." : "Oops! Drawing prompt not found... heading back!"}
       </div>
     );
   }
@@ -173,7 +274,7 @@ export default function DrawingCanvasPage() {
   const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FFA500', '#800080', '#FFC0CB', '#A52A2A', '#FFFFFF'];
 
   return (
-    <div className={`min-h-screen ${promptData.backgroundGradient} p-6 flex flex-col items-center justify-center relative overflow-hidden`}>
+    <div className={`min-h-screen bg-gradient-to-br ${currentPromptData.backgroundGradient} p-6 flex flex-col items-center justify-center relative overflow-hidden`}>
       {/* Background Shapes */}
       <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-white rounded-full mix-blend-overlay opacity-30 animate-blob-slow animation-delay-500"></div>
       <div className="absolute bottom-1/4 right-1/4 w-52 h-52 bg-white rounded-full mix-blend-overlay opacity-30 animate-blob-slow animation-delay-1500"></div>
@@ -184,26 +285,29 @@ export default function DrawingCanvasPage() {
       </Link>
 
       <h1 className="text-6xl font-extrabold text-white mb-6 drop-shadow-lg animate-fadeInDown text-center px-4 z-10">
-        {promptData.title} {promptData.icon}
+        {currentPromptData.title} {currentPromptData.icon}
       </h1>
 
       <div className="relative bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-6xl w-full flex flex-col items-center justify-center min-h-[70vh] z-10">
         <p className="text-3xl md:text-4xl font-semibold text-gray-700 text-center mb-6 animate-fadeInUp leading-relaxed">
-          {promptData.guidance}
+          {currentPromptData.guidance}
         </p>
 
         {/* Drawing Canvas */}
         <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden border-4 border-dashed border-gray-300 shadow-inner flex items-center justify-center">
-            <canvas
-              ref={canvasRef}
-              width={800} // Set a fixed internal resolution for better quality
-              height={450}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseOut={stopDrawing} // Stop drawing if mouse leaves canvas
-              className="w-full h-full cursor-crosshair bg-white" // Actual display size controlled by Tailwind
-            ></canvas>
+          <canvas
+            ref={canvasRef}
+            width={800} // Set a fixed internal resolution for better quality
+            height={450}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseOut={stopDrawing} // Stop drawing if mouse leaves canvas
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+            className="w-full h-full cursor-crosshair bg-white touch-none" // Actual display size controlled by Tailwind
+          ></canvas>
         </div>
 
         {/* Drawing Tools */}

@@ -1,14 +1,15 @@
-// app/play/sing-along-view/[songId]/page.tsx
+// app/play/sing-along/[songId]/page.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
-// Mock Song Data (In a real app, you'd fetch this from a database/API based on slug)
-const allSongsData = {
+// --- Sample Data (Used if API fails or song not found) ---
+// This structure mimics what we'd map from your Course model
+const sampleSongsData = {
   'twinkle-twinkle': {
-    title: 'Twinkle, Twinkle Little Star',
+    title: 'Twinkle, Twinkle Little Star (Sample)',
     icon: '🌟',
     audio: '/audio/twinkle.mp3',
     lyrics: [
@@ -21,7 +22,7 @@ const allSongsData = {
     ]
   },
   'wheels-on-the-bus': {
-    title: 'Wheels on the Bus',
+    title: 'Wheels on the Bus (Sample)',
     icon: '🚌',
     audio: '/audio/wheels.mp3',
     lyrics: [
@@ -32,7 +33,7 @@ const allSongsData = {
     ]
   },
   'old-macdonald': {
-    title: 'Old MacDonald',
+    title: 'Old MacDonald (Sample)',
     icon: '🐷',
     audio: '/audio/macdonald.mp3',
     lyrics: [
@@ -49,29 +50,80 @@ export default function SingAlongViewPage() {
   const params = useParams();
   const router = useRouter();
   const songSlug = Array.isArray(params.songId) ? params.songId[0] : params.songId;
-  const songData = allSongsData[songSlug as keyof typeof allSongsData];
+
+  const [currentSongData, setCurrentSongData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Redirect if song data not found
+  // Fetch song data based on songSlug (which maps to Course.code)
   useEffect(() => {
-    if (!songData) {
-      router.replace('/play/sing-along'); // Redirect to song selection if slug is invalid
-    }
-  }, [songData, router]);
+    const fetchSong = async () => {
+      setIsLoading(true);
+      setError(null);
+      setCurrentSongData(null); // Clear previous data
+
+      try {
+        // Fetch course by its 'code' (slug)
+        // Note: Your current API only fetches by 'id'. We need to adjust this.
+        // For now, we'll fetch all courses and find by code.
+        // A dedicated API route like /api/courses/by-code/[code] would be more efficient.
+        // For this example, we'll use the GET /api/courses and filter.
+        const response = await fetch(`/api/courses`); // Fetch all to find by code
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const allCourses = await response.json();
+        const courseData = allCourses.find((course: any) => course.code === songSlug);
+
+        if (courseData) {
+          setCurrentSongData({
+            title: courseData.title,
+            icon: courseData.imageUrl || '🎵', // Use imageUrl for icon, fallback to music note
+            audio: courseData.audioUrl,
+            lyrics: courseData.lyrics || [], // Use lyrics from API, fallback to empty array
+          });
+        } else {
+          // No data from API, try to use specific sample data or generic fallback
+          console.warn(`No course found for slug: ${songSlug}. Displaying sample data.`);
+          setCurrentSongData(sampleSongsData[songSlug as keyof typeof sampleSongsData] || null);
+          if (!sampleSongsData[songSlug as keyof typeof sampleSongsData]) {
+            setError("Song not found. Redirecting...");
+            router.replace('/play/sing-along');
+            return;
+          }
+        }
+      } catch (e: any) {
+        console.error("Failed to fetch song:", e);
+        setError("Failed to load song. Displaying sample data.");
+        setCurrentSongData(sampleSongsData[songSlug as keyof typeof sampleSongsData] || null);
+        if (!sampleSongsData[songSlug as keyof typeof sampleSongsData]) {
+          router.replace('/play/sing-along');
+          return;
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSong();
+  }, [songSlug, router]); // Re-fetch if songSlug changes
 
   // Handle audio playback when isPlaying changes
   useEffect(() => {
-    if (audioRef.current && songData?.audio) {
-      audioRef.current.src = songData.audio; // Set audio source
+    if (audioRef.current && currentSongData?.audio) {
+      audioRef.current.src = currentSongData.audio; // Set audio source
       if (isPlaying) {
         audioRef.current.play().catch(e => console.error("Error playing song audio:", e));
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, songData]);
+  }, [isPlaying, currentSongData]);
 
   // Ensure audio stops if component unmounts (e.g., user navigates away)
   useEffect(() => {
@@ -83,10 +135,10 @@ export default function SingAlongViewPage() {
     };
   }, []);
 
-  if (!songData) {
+  if (isLoading || !currentSongData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-200 to-red-300 text-white text-3xl font-bold">
-        Oops! Song not found... heading back!
+        {isLoading ? "Loading song..." : "Oops! Song not found... heading back!"}
       </div>
     );
   }
@@ -115,22 +167,28 @@ export default function SingAlongViewPage() {
       </Link>
 
       <h1 className="text-6xl font-extrabold text-white mb-6 drop-shadow-lg animate-fadeInDown text-center px-4 z-10">
-        {songData.title}
+        {currentSongData.title}
       </h1>
 
       <div className="relative bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-4xl w-full flex flex-col items-center justify-center min-h-[60vh] z-10">
         {/* Song Icon (Animated when playing) */}
         <div className={`text-9xl mb-6 animate-pop ${isPlaying ? 'animate-spin-fast' : ''}`}>
-          {songData.icon}
+          {currentSongData.icon}
         </div>
 
         {/* Lyrics Display */}
         <div className="text-center mb-8 px-4 max-h-[30vh] overflow-y-auto custom-scrollbar">
-          {songData.lyrics.map((line, index) => (
-            <p key={index} className="text-3xl md:text-4xl font-semibold text-gray-700 leading-relaxed mb-2 animate-fadeInUp delay-50ms" style={{ animationDelay: `${index * 50}ms` }}>
-              {line}
+          {currentSongData.lyrics && currentSongData.lyrics.length > 0 ? (
+            currentSongData.lyrics.map((line: string, index: number) => (
+              <p key={index} className="text-3xl md:text-4xl font-semibold text-gray-700 leading-relaxed mb-2 animate-fadeInUp delay-50ms" style={{ animationDelay: `${index * 50}ms` }}>
+                {line}
+              </p>
+            ))
+          ) : (
+            <p className="text-3xl md:text-4xl font-semibold text-gray-500 leading-relaxed mb-2">
+              No lyrics available for this song.
             </p>
-          ))}
+          )}
         </div>
 
         {/* Playback Controls */}

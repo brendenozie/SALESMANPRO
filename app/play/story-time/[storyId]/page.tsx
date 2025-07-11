@@ -5,51 +5,44 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
-// Mock Story Data (In a real app, you'd fetch this from a database/API)
-const allStoriesData = {
+// --- Sample Data (Used if API fails or story not found) ---
+// This structure mimics what we'd map from your Course and CourseMaterial models
+const sampleStoryData = {
   'the-little-bear': {
-    title: 'The Little Bear Who Lost His Roar',
+    title: 'The Little Bear Who Lost His Roar (Sample)',
     pages: [
-      { id: 1, image: '/images/story-bear-page1.png', text: 'Once upon a time, in a big green forest, lived a little bear named Barnaby. But Barnaby had a secret...' },
-      { id: 2, image: '/images/story-bear-page2.png', text: 'He had lost his ROAR! All the other bears roared loudly, but Barnaby\'s roar was just a tiny squeak.' },
-      { id: 3, image: '/images/story-bear-page3.png', text: 'He asked his friend, the wise old owl, "How can I find my roar?"' },
-      { id: 4, image: '/images/story-bear-page4.png', text: 'The owl hooted, "Look inside, brave Barnaby!" And with a deep breath, Barnaby found his BIGGEST roar yet!' },
+      { id: 'page-1', image: 'https://placehold.co/800x600/FFD700/000000?text=Bear+Page+1', text: 'Once upon a time, in a big green forest, lived a little bear named Barnaby. But Barnaby had a secret...' },
+      { id: 'page-2', image: 'https://placehold.co/800x600/FFA07A/000000?text=Bear+Page+2', text: 'He had lost his ROAR! All the other bears roared loudly, but Barnaby\'s roar was just a tiny squeak.' },
+      { id: 'page-3', image: 'https://placehold.co/800x600/98FB98/000000?text=Bear+Page+3', text: 'He asked his friend, the wise old owl, "How can I find my roar?"' },
+      { id: 'page-4', image: 'https://placehold.co/800x600/ADD8E6/000000?text=Bear+Page+4', text: 'The owl hooted, "Look inside, brave Barnaby!" And with a deep breath, Barnaby found his BIGGEST roar yet!' },
     ],
     audio: {
-      fullStory: '/audio/bear-roar-full.mp3', // Full story audio for auto-play
-      pageAudios: { // Optional: individual page audios
-        1: '/audio/bear-roar-page1.mp3',
-        2: '/audio/bear-roar-page2.mp3',
-        3: '/audio/bear-roar-page3.mp3',
-        4: '/audio/bear-roar-page4.mp3',
-      }
+      fullStory: '/audio/bear-roar-full.mp3', // Sample full story audio
+      // pageAudios: { /* ... */ } // Can be implemented if CourseMaterial has individual audio links
     }
   },
-  // Add other stories here, e.g., 'brave-princess-lily', 'the-giggle-monster'
   'brave-princess-lily': {
-    title: 'Brave Princess Lily',
+    title: 'Brave Princess Lily (Sample)',
     pages: [
-      { id: 1, image: '/images/story-princess-page1.png', text: 'In a land of sparkling castles, lived Princess Lily. She loved adventures more than gowns!' },
-      { id: 2, image: '/images/story-princess-page2.png', text: 'One day, a tiny dragon cried for help. His sparkle had gone missing!' },
-      { id: 3, image: '/images/story-princess-page3.png', text: 'Lily bravely followed clues through the whispering woods.' },
-      { id: 4, image: '/images/story-princess-page4.png', text: 'She found the sparkle, deep inside a gloomy cave. Lily cheered, and the dragon sparkled brighter than ever!' },
+      { id: 'page-1', image: 'https://placehold.co/800x600/FFB6C1/000000?text=Princess+Page+1', text: 'In a land of sparkling castles, lived Princess Lily. She loved adventures more than gowns!' },
+      { id: 'page-2', image: 'https://placehold.co/800x600/DA70D6/000000?text=Princess+Page+2', text: 'One day, a tiny dragon cried for help. His sparkle had gone missing!' },
+      { id: 'page-3', image: 'https://placehold.co/800x600/BA55D3/000000?text=Princess+Page+3', text: 'Lily bravely followed clues through the whispering woods.' },
+      { id: 'page-4', image: 'https://placehold.co/800x600/8A2BE2/000000?text=Princess+Page+4', text: 'She found the sparkle, deep inside a gloomy cave. Lily cheered, and the dragon sparkled brighter than ever!' },
     ],
     audio: {
       fullStory: '/audio/princess-lily-full.mp3',
-      pageAudios: { /* ... */ }
     }
   },
   'the-giggle-monster': {
-    title: 'The Giggle Monster',
+    title: 'The Giggle Monster (Sample)',
     pages: [
-      { id: 1, image: '/images/story-monster-page1.png', text: 'Meet Giggles, the silliest monster! He loved to make everyone giggle.' },
-      { id: 2, image: '/images/story-monster-page2.png', text: 'He tickled toes, told funny jokes, and made funny faces.' },
-      { id: 3, image: '/images/story-monster-page3.png', text: 'But sometimes, Giggles felt sad when he was all alone.' },
-      { id: 4, image: '/images/story-monster-page4.png', text: 'Then he learned, sharing giggles with friends makes everyone happy!' },
+      { id: 'page-1', image: 'https://placehold.co/800x600/40E0D0/000000?text=Monster+Page+1', text: 'Meet Giggles, the silliest monster! He loved to make everyone giggle.' },
+      { id: 'page-2', image: 'https://placehold.co/800x600/48D1CC/000000?text=Monster+Page+2', text: 'He tickled toes, told funny jokes, and made funny faces.' },
+      { id: 'page-3', image: 'https://placehold.co/800x600/20B2AA/000000?text=Monster+Page+3', text: 'But sometimes, Giggles felt sad when he was all alone.' },
+      { id: 'page-4', image: 'https://placehold.co/800x600/008B8B/000000?text=Monster+Page+4', text: 'Then he learned, sharing giggles with friends makes everyone happy!' },
     ],
     audio: {
       fullStory: '/audio/giggle-monster-full.mp3',
-      pageAudios: { /* ... */ }
     }
   },
 };
@@ -57,32 +50,89 @@ const allStoriesData = {
 export default function StoryViewPage() {
   const params = useParams();
   const router = useRouter();
-  const storyId = Array.isArray(params.storyId) ? params.storyId[0] : params.storyId; // Handle potential array for dynamic routes
-  const storyData = allStoriesData[storyId as keyof typeof allStoriesData];
+  const storyId = Array.isArray(params.storyId) ? params.storyId[0] : params.storyId;
+
+  const [currentStoryData, setCurrentStoryData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [isReadingAloud, setIsReadingAloud] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // If storyData is not found, redirect or show error
+  // Fetch story data based on storyId
   useEffect(() => {
-    if (!storyData) {
-      router.replace('/play/story-time'); // Redirect to story selection if ID is invalid
-    }
-  }, [storyData, router]);
+    const fetchStory = async () => {
+      setIsLoading(true);
+      setError(null);
+      setCurrentStoryData(null); // Clear previous data
+
+      try {
+        const response = await fetch(`/api/courses/${storyId}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const courseData = await response.json();
+
+        if (courseData) {
+          // Map Course data to your story view format
+          // Assuming CourseMaterial represents pages
+          const mappedPages = courseData.CourseMaterial
+            ?.sort((a: any, b: any) => a.order - b.order) // Sort pages by order
+            .map((material: any) => ({
+              id: material.id,
+              image: material.fileUrl || `https://placehold.co/800x600/CCCCCC/000000?text=Page+${material.order}`, // Use fileUrl for image
+              text: material.content, // Use content for page text
+              // You could add page-specific audio here if CourseMaterial had an audioUrl field
+            })) || [];
+
+          setCurrentStoryData({
+            title: courseData.title,
+            pages: mappedPages.length > 0 ? mappedPages : sampleStoryData[storyId as keyof typeof sampleStoryData]?.pages || [], // Fallback to sample pages if no materials
+            audio: {
+              fullStory: courseData.audioUrl || sampleStoryData[storyId as keyof typeof sampleStoryData]?.audio?.fullStory, // Assuming audioUrl exists on Course
+            }
+          });
+        } else {
+          // No data from API, try to use specific sample data or generic fallback
+          console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
+          setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
+          if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
+            setError("Story not found. Redirecting...");
+            router.replace('/play/story-time');
+            return;
+          }
+        }
+      } catch (e: any) {
+        console.error("Failed to fetch story:", e);
+        setError("Failed to load story. Displaying sample data.");
+        setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
+        if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
+          router.replace('/play/story-time');
+          return;
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStory();
+  }, [storyId, router]); // Re-fetch if storyId changes
 
   // Handle audio playback for the full story
   useEffect(() => {
-    if (audioRef.current && storyData?.audio?.fullStory) {
+    if (audioRef.current && currentStoryData?.audio?.fullStory) {
       if (isReadingAloud) {
-        audioRef.current.src = storyData.audio.fullStory;
+        audioRef.current.src = currentStoryData.audio.fullStory;
         audioRef.current.currentTime = 0; // Start from beginning
         audioRef.current.play().catch(e => console.error("Error playing full story audio:", e));
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isReadingAloud, storyData]);
+  }, [isReadingAloud, currentStoryData]);
 
   // Reset current page when storyData changes (e.g., if a user manually changes URL storyId)
   useEffect(() => {
@@ -92,29 +142,26 @@ export default function StoryViewPage() {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-  }, [storyId]);
+  }, [currentStoryData]); // Depend on currentStoryData to reset when a new story is loaded
 
-
-  if (!storyData) {
-    // This will be shown briefly before redirecting
+  if (isLoading || !currentStoryData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-200 to-red-300 text-white text-3xl font-bold">
-        Oops! Story not found... heading back!
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200 to-green-300 text-white text-3xl font-bold">
+        {isLoading ? "Loading story..." : "Oops! Story not found... heading back!"}
       </div>
     );
   }
 
-  const currentPage = storyData.pages[currentPageIndex];
+  const currentPage = currentStoryData.pages[currentPageIndex];
   const isFirstPage = currentPageIndex === 0;
-  const isLastPage = currentPageIndex === storyData.pages.length - 1;
+  const isLastPage = currentPageIndex === currentStoryData.pages.length - 1;
 
   const goToNextPage = () => {
     if (!isLastPage) {
       setCurrentPageIndex((prev) => prev + 1);
-      // If reading aloud, restart audio for the new page if page-specific audios exist
-      // or simply continue the full story audio
+      // If reading aloud, you might want to restart audio for the new page if page-specific audios exist
+      // For now, it will continue playing the full story audio or stop if it ends.
     } else {
-      // Optional: Show "Story Finished" animation/message
       console.log("Story finished!");
       setIsReadingAloud(false); // Stop reading when done
       if (audioRef.current) audioRef.current.pause();
@@ -143,14 +190,14 @@ export default function StoryViewPage() {
       </Link>
 
       <h1 className="text-5xl font-extrabold text-white mb-6 drop-shadow-lg animate-fadeInDown text-center px-4 z-10">
-        {storyData.title}
+        {currentStoryData.title}
       </h1>
 
       <div className="relative bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-4xl w-full flex flex-col items-center justify-center min-h-[60vh] z-10">
         {/* Story Image */}
         <img
           src={currentPage.image}
-          alt={`Page ${currentPageIndex + 1} of ${storyData.title}`}
+          alt={`Page ${currentPageIndex + 1} of ${currentStoryData.title}`}
           className="w-full h-auto max-h-[40vh] object-contain rounded-2xl shadow-lg mb-6 animate-scaleIn"
         />
 
@@ -207,7 +254,7 @@ export default function StoryViewPage() {
       {/* Hidden Audio Player */}
       <audio ref={audioRef} onEnded={() => setIsReadingAloud(false)}></audio>
 
-      {/* Custom Tailwind CSS animations (add these to your global CSS or tailwind.config.js) */}
+      {/* Custom Tailwind CSS animations */}
       <style jsx>{`
         @keyframes blob-slow { /* Same as previous, but included for completeness */
           0%, 100% { transform: translate(0, 0) scale(1); }

@@ -1,27 +1,76 @@
 // app/play/page.tsx
 "use client";
 
-import React, { useRef } from 'react'; // Added useRef for optional sound
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 
-// Define puzzles directly here, or import them from a shared data file
-const puzzles = [
-  { id: 1, slug: 'shape-match', type: 'Shape Match', icon: '🔺' },
-  { id: 2, slug: 'animal-shadows', type: 'Animal Shadows', icon: '🦊' },
-  { id: 3, slug: 'number-order', type: 'Number Order', icon: '🔢' },
+// --- Sample Data (Used if API fails or returns no data) ---
+const samplePuzzles = [
+  { id: 'sample-1', slug: 'shape-match', type: 'Shape Match (Sample)', icon: '🔺' },
+  { id: 'sample-2', slug: 'animal-shadows', type: 'Animal Shadows (Sample)', icon: '🦊' },
+  { id: 'sample-3', slug: 'number-order', type: 'Number Order (Sample)', icon: '🔢' },
 ];
+
+// --- IMPORTANT: Replace this with the actual ID of your "Playgroup" AcademicLevel from your database ---
+const PLAYGROUP_ACADEMIC_LEVEL_ID = 'YOUR_PLAYGROUP_ACADEMIC_LEVEL_ID'; // e.g., '65e7b2f3a4c5d6e7f8a9b0c1'
 
 export default function PlayHomePage() {
   const router = useRouter();
-  const audioRef = useRef<HTMLAudioElement | null>(null); // For an optional click sound
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [puzzles, setPuzzles] = useState<typeof samplePuzzles>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPuzzles = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Fetch courses from your API, filtering by the playgroup academic level
+        const response = await fetch(`/api/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          // Filter for courses that are likely puzzles (e.g., based on a naming convention or a specific tag/type if added to schema)
+          // For now, we'll assume any course in 'PLAYGROUP_ACADEMIC_LEVEL_ID' could be a puzzle.
+          // You might want to add a 'type' field (e.g., 'STORY', 'SONG', 'PUZZLE') to your Course model
+          // to make this filtering more robust.
+          const mappedPuzzles = data.map((course: any) => ({
+            id: course.id,
+            slug: course.code, // Assuming 'code' can be used as a unique slug for puzzles
+            type: course.title, // Use title as the puzzle type/name
+            icon: course.imageUrl || '🧩', // Use imageUrl for icon, fallback to puzzle piece emoji
+          }));
+          setPuzzles(mappedPuzzles);
+        } else {
+          console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
+          setPuzzles(samplePuzzles);
+        }
+      } catch (e: any) {
+        console.error("Failed to fetch puzzles:", e);
+        setError("Failed to load puzzles. Displaying sample data.");
+        setPuzzles(samplePuzzles); // Fallback to sample data on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPuzzles();
+  }, []); // Empty dependency array means this runs once on mount
 
   const handlePuzzleClick = (puzzleSlug: string) => {
     if (audioRef.current) {
-      audioRef.current.src = '/audio/puzzle-click.mp3'; // Ensure this audio file exists
+      audioRef.current.src = '/audio/puzzle-click.mp3'; // Ensure this audio file exists in public/audio
       audioRef.current.play().catch(e => console.error("Error playing sound:", e));
     }
-    router.push(`/play/puzzle-play/${puzzleSlug}`); // Navigate to the puzzle game page
+    router.push(`/play/puzzle-game/${puzzleSlug}`); // Navigate to the puzzle game page
   };
 
   return (
@@ -37,32 +86,38 @@ export default function PlayHomePage() {
       </Link>
 
       <h1 className="text-7xl font-extrabold text-white mb-12 drop-shadow-lg animate-fadeInDown text-center px-4">
-      Pick a Puzzle! 🤔
+        Pick a Puzzle! 🤔
       </h1>
 
-      {/* Direct Puzzle Selection Grid */}
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full relative z-10">
-        {puzzles.map((puzzle) => (
-          <button
-            key={puzzle.id}
-            onClick={() => handlePuzzleClick(puzzle.slug)}
-            className="rounded-3xl p-5 bg-white shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out flex flex-col items-center justify-between border-4 border-white border-opacity-50 group"
-          >
-            <div className={`text-7xl mb-4 group-hover:animate-wiggle-strong animate-pop`}>
-              {puzzle.icon}
-            </div>
-            <p className="text-3xl font-bold text-green-800 text-center leading-tight group-hover:text-green-600 transition-colors px-2">
-              {puzzle.type}
-            </p>
-          </button>
-        ))}
-      </div>
-
+      {isLoading ? (
+        <div className="text-white text-4xl font-bold animate-pulse">Loading puzzles...</div>
+      ) : error ? (
+        <div className="text-red-700 text-3xl font-bold mb-4">{error}</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full relative z-10">
+          {puzzles.map((puzzle) => (
+            <button
+              key={puzzle.id}
+              onClick={() => handlePuzzleClick(puzzle.slug)}
+              className="rounded-3xl p-5 bg-white shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300 ease-out flex flex-col items-center justify-between border-4 border-white border-opacity-50 group"
+            >
+              <div className={`text-7xl mb-4 group-hover:animate-wiggle-strong animate-pop`}>
+                {puzzle.icon}
+              </div>
+              <p className="text-3xl font-bold text-green-800 text-center leading-tight group-hover:text-green-600 transition-colors px-2">
+                {puzzle.type}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
 
       <p className="mt-16 text-3xl text-white opacity-90 animate-fadeInUp text-center px-4">
         Choose an adventure and let's have fun! 🎉
       </p>
+
+      {/* Audio Element for optional click sound */}
+      <audio ref={audioRef} className="hidden"></audio>
 
       {/* Custom Tailwind CSS animations */}
       <style jsx>{`

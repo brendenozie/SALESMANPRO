@@ -5,27 +5,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
-// Mock Puzzle Data (In a real app, you'd fetch this from a database/API)
-const allPuzzlesData = {
+// --- Sample Data (Used if API fails or puzzle not found) ---
+const samplePuzzlesData = {
   'shape-match': {
-    title: 'Shape Match Fun',
+    title: 'Shape Match Fun (Sample)',
     icon: '🔺',
-    description: 'Drag the shapes to match their outlines!',
-    gameContent: 'This is where your interactive Shape Match game UI would go!',
+    description: 'Drag the shapes to match their outlines! (Sample Content)',
+    gameContent: 'This is where your interactive Shape Match game UI would go! (Sample)',
     audio: '/audio/puzzle-match.mp3' // Specific audio for this puzzle
   },
   'animal-shadows': {
-    title: 'Animal Shadow Challenge',
+    title: 'Animal Shadow Challenge (Sample)',
     icon: '🦊',
-    description: 'Can you match the animals to their shadows?',
-    gameContent: 'This is where your interactive Animal Shadows game UI would go!',
+    description: 'Can you match the animals to their shadows? (Sample Content)',
+    gameContent: 'This is where your interactive Animal Shadows game UI would go! (Sample)',
     audio: '/audio/puzzle-shadows.mp3'
   },
   'number-order': {
-    title: 'Number Order Quest',
+    title: 'Number Order Quest (Sample)',
     icon: '🔢',
-    description: 'Put the numbers in the right order!',
-    gameContent: 'This is where your interactive Number Order game UI would go!',
+    description: 'Put the numbers in the right order! (Sample Content)',
+    gameContent: 'This is where your interactive Number Order game UI would go! (Sample)',
     audio: '/audio/puzzle-numbers.mp3'
   },
 };
@@ -34,22 +34,70 @@ export default function PuzzleGamePage() {
   const params = useParams();
   const router = useRouter();
   const puzzleSlug = Array.isArray(params.puzzleId) ? params.puzzleId[0] : params.puzzleId;
-  const puzzleData = allPuzzlesData[puzzleSlug as keyof typeof allPuzzlesData];
+
+  const [currentPuzzleData, setCurrentPuzzleData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlayingSound, setIsPlayingSound] = useState(false); // State to control game-specific sound
 
-  // Redirect if puzzle data not found
+  // Fetch puzzle data based on puzzleSlug (which maps to Course.code)
   useEffect(() => {
-    if (!puzzleData) {
-      router.replace('/play'); // Redirect to main play page if slug is invalid
-    }
-  }, [puzzleData, router]);
+    const fetchPuzzle = async () => {
+      setIsLoading(true);
+      setError(null);
+      setCurrentPuzzleData(null); // Clear previous data
 
-  // Play puzzle-specific introductory sound when page loads
+      try {
+        // Fetch all courses and find by 'code' (slug)
+        const response = await fetch(`/api/courses`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const allCourses = await response.json();
+        const courseData = allCourses.find((course: any) => course.code === puzzleSlug);
+
+        if (courseData) {
+          setCurrentPuzzleData({
+            title: courseData.title,
+            icon: courseData.imageUrl || '🧩', // Use imageUrl for icon, fallback to puzzle piece
+            description: courseData.description,
+            gameContent: courseData.description, // Mapping description to gameContent for now
+            audio: courseData.audioUrl,
+          });
+        } else {
+          // No data from API, try to use specific sample data or generic fallback
+          console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
+          setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
+          if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {
+            setError("Puzzle not found. Redirecting...");
+            router.replace('/play');
+            return;
+          }
+        }
+      } catch (e: any) {
+        console.error("Failed to fetch puzzle:", e);
+        setError("Failed to load puzzle. Displaying sample data.");
+        setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
+        if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {
+          router.replace('/play');
+          return;
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPuzzle();
+  }, [puzzleSlug, router]); // Re-fetch if puzzleSlug changes
+
+  // Play puzzle-specific introductory sound when page loads or puzzleData changes
   useEffect(() => {
-    if (audioRef.current && puzzleData?.audio) {
-      audioRef.current.src = puzzleData.audio;
+    if (audioRef.current && currentPuzzleData?.audio) {
+      audioRef.current.src = currentPuzzleData.audio;
       audioRef.current.play().then(() => setIsPlayingSound(true)).catch(e => console.error("Error playing puzzle intro audio:", e));
     }
     // Cleanup on unmount
@@ -59,12 +107,12 @@ export default function PuzzleGamePage() {
         audioRef.current.currentTime = 0;
       }
     };
-  }, [puzzleData]); // Re-run if puzzleData changes
+  }, [currentPuzzleData]); // Re-run if currentPuzzleData changes
 
-  if (!puzzleData) {
+  if (isLoading || !currentPuzzleData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-200 to-red-300 text-white text-3xl font-bold">
-        Oops! Puzzle not found... heading back!
+        {isLoading ? "Loading puzzle..." : "Oops! Puzzle not found... heading back!"}
       </div>
     );
   }
@@ -81,17 +129,17 @@ export default function PuzzleGamePage() {
       </Link>
 
       <h1 className="text-6xl font-extrabold text-white mb-6 drop-shadow-lg animate-fadeInDown text-center px-4 z-10">
-        {puzzleData.title} {puzzleData.icon}
+        {currentPuzzleData.title} {currentPuzzleData.icon}
       </h1>
 
       <div className="relative bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-5xl w-full flex flex-col items-center justify-center min-h-[60vh] z-10">
         <p className="text-3xl md:text-4xl font-semibold text-gray-700 text-center mb-8 animate-fadeInUp leading-relaxed">
-          {puzzleData.description}
+          {currentPuzzleData.description}
         </p>
 
         {/* This is the main area for the actual interactive puzzle game */}
         <div className="w-full h-[40vh] md:h-[50vh] bg-gray-100 rounded-2xl border-4 border-dashed border-gray-300 flex items-center justify-center text-gray-500 text-4xl font-bold animate-pulse-light">
-          {puzzleData.gameContent}
+          {currentPuzzleData.gameContent}
         </div>
 
         {/* Optional: Controls specific to the puzzle, e.g., Reset, Hint */}
