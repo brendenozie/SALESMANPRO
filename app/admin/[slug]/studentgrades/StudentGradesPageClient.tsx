@@ -1,27 +1,26 @@
-// app/student/[slug]/my-grades/StudentGradesPageClient.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  AcademicCapIcon, // For overall academic/grades
-  CalendarDaysIcon, // For date
-  ChartBarIcon, // For grades/performance
-  BookOpenIcon, // For courses
-  ClipboardDocumentCheckIcon, // For individual assignments
-  SparklesIcon, // For feedback
-  EyeIcon, // For view details
-  MagnifyingGlassIcon, // For search input
-  ArrowLeftIcon, // For back button
-  CheckCircleIcon, // Success message icon
-  ExclamationCircleIcon, // Error message icon
+  AcademicCapIcon,
+  CalendarDaysIcon,
+  ChartBarIcon,
+  BookOpenIcon,
+  ClipboardDocumentCheckIcon,
+  SparklesIcon,
+  EyeIcon,
+  MagnifyingGlassIcon,
+  ArrowLeftIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
-// Import types from the server component file
-import type { CourseGradeData, AssignmentGradeData, CourseInfo } from './page';
+// Import the updated types from the server component file
+import type { CourseGradeData, DetailedGradeData, CourseInfo } from './page';
 
-// Mocking context data for demonstration purposes (replace with actual context in your app)
+// Mocking context data for demonstration purposes
 const useMockThemeSettings = () => ({
   primaryColor: "#4F46E5", // Indigo-600
   accentColor: "#818CF8", // Indigo-300
@@ -33,10 +32,10 @@ interface StudentGradesPageClientProps {
   overallGPA: string;
   overallAverage: string;
   initialCourseGrades: CourseGradeData[];
-  initialAssignmentGrades: AssignmentGradeData[];
+  initialDetailedGrades: DetailedGradeData[];
   studentId: string;
   companyId: string;
-  courseInfo?: CourseInfo; // Optional: if filtering by a specific course
+  courseInfo?: CourseInfo;
 }
 
 export default function StudentGradesPageClient({
@@ -45,7 +44,7 @@ export default function StudentGradesPageClient({
   overallGPA,
   overallAverage,
   initialCourseGrades,
-  initialAssignmentGrades,
+  initialDetailedGrades,
   studentId,
   companyId,
   courseInfo,
@@ -54,22 +53,20 @@ export default function StudentGradesPageClient({
   const { primaryColor, accentColor } = useMockThemeSettings();
 
   const [courseGrades, setCourseGrades] = useState<CourseGradeData[]>(initialCourseGrades);
-  const [assignmentGrades, setAssignmentGrades] = useState<AssignmentGradeData[]>(initialAssignmentGrades);
+  const [detailedGrades, setDetailedGrades] = useState<DetailedGradeData[]>(initialDetailedGrades);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCourse, setFilterCourse] = useState(courseInfo?.id || 'All'); // Pre-select if courseId is provided
+  const [filterCourse, setFilterCourse] = useState(courseInfo?.title || 'All');
   const [filterType, setFilterType] = useState('All');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState<string | null>(null);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Update states when initial props change
   useEffect(() => {
     setCourseGrades(initialCourseGrades);
-    setAssignmentGrades(initialAssignmentGrades);
-    if (courseInfo?.id) {
-      setFilterCourse(courseInfo.id); // Ensure filter is set if coming from a course-specific link
+    setDetailedGrades(initialDetailedGrades);
+    if (courseInfo?.title) {
+      setFilterCourse(courseInfo.title);
     }
-  }, [initialCourseGrades, initialAssignmentGrades, courseInfo]);
+  }, [initialCourseGrades, initialDetailedGrades, courseInfo]);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -77,12 +74,8 @@ export default function StudentGradesPageClient({
     day: 'numeric',
   });
 
-  const showStatus = useCallback((type: 'success' | 'error', message: string) => {
-    setStatusMessage({ type, message });
-    setTimeout(() => setStatusMessage(null), 3000);
-  }, []);
-
-  const getGradeColor = useCallback((gradePercentage: number) => {
+  const getGradeColor = useCallback((gradePercentage: number | null) => {
+    if (gradePercentage === null) return 'bg-gray-100 text-gray-800';
     if (gradePercentage >= 90) return 'bg-green-100 text-green-800';
     if (gradePercentage >= 80) return 'bg-blue-100 text-blue-800';
     if (gradePercentage >= 70) return 'bg-yellow-100 text-yellow-800';
@@ -90,85 +83,72 @@ export default function StudentGradesPageClient({
   }, []);
 
   const allClassesForFilter = useMemo(() => {
-    const classes = new Map<string, string>(); // Map<courseId, courseName>
-    courseGrades.forEach(course => {
-      classes.set(course.id, course.name);
+    const classes = new Set<string>();
+    detailedGrades.forEach(grade => {
+      classes.add(grade.courseName);
     });
-    return Array.from(classes.entries()).map(([id, name]) => ({ id, name }));
-  }, [courseGrades]);
+    return Array.from(classes);
+  }, [detailedGrades]);
 
-  const allAssignmentTypesForFilter = useMemo(() => {
+  const allItemTypesForFilter = useMemo(() => {
     const types = new Set<string>();
-    assignmentGrades.forEach(grade => {
-      types.add(grade.type);
+    detailedGrades.forEach(grade => {
+      types.add(grade.itemType);
     });
     return Array.from(types);
-  }, [assignmentGrades]);
+  }, [detailedGrades]);
 
-  const filteredAssignmentGrades = useMemo(() => {
-    return assignmentGrades.filter(grade => {
-      const matchesSearch = grade.assignmentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            grade.className.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCourse = filterCourse === 'All' || grade.classId === filterCourse;
-      const matchesType = filterType === 'All' || grade.type === filterType;
+  const filteredDetailedGrades = useMemo(() => {
+    return detailedGrades.filter(grade => {
+      const matchesSearch = grade.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            grade.courseName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCourse = filterCourse === 'All' || grade.courseName === filterCourse;
+      const matchesType = filterType === 'All' || grade.itemType === filterType;
       return matchesSearch && matchesCourse && matchesType;
-    }).sort((a, b) => new Date(b.gradedDate).getTime() - new Date(a.gradedDate).getTime()); // Sort by most recent graded date
-  }, [assignmentGrades, searchTerm, filterCourse, filterType]);
+    }).sort((a, b) => new Date(b.gradedDate).getTime() - new Date(a.gradedDate).getTime());
+  }, [detailedGrades, searchTerm, filterCourse, filterType]);
 
-
-  // --- Feedback Modal Component ---
-  const FeedbackModal = ({ feedback, onClose }: { feedback: string; onClose: () => void }) => {
-    if (!feedback) return null;
-    return (
+  const FeedbackModal = ({ feedback, onClose }: { feedback: string; onClose: () => void }) => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md"
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md"
-          onClick={(e: React.MouseEvent) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Feedback</h2>
-          <p className="text-gray-700 leading-relaxed">{feedback}</p>
-          <div className="flex justify-end mt-6">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Close
-            </button>
-          </div>
-        </motion.div>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Feedback</h2>
+        <p className="text-gray-700 leading-relaxed">{feedback}</p>
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Close
+          </button>
+        </div>
       </motion.div>
-    );
-  };
-  // --- End Feedback Modal ---
+    </motion.div>
+  );
 
-  // Framer Motion Variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.08, delayChildren: 0.1 },
     },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-    },
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
@@ -202,27 +182,6 @@ export default function StudentGradesPageClient({
         </motion.div>
       </motion.div>
 
-      {/* Status Message */}
-      <AnimatePresence>
-        {statusMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`mb-6 p-3 rounded-md flex items-center gap-2 ${
-              statusMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}
-          >
-            {statusMessage.type === 'success' ? (
-              <CheckCircleIcon className="h-5 w-5" />
-            ) : (
-              <ExclamationCircleIcon className="h-5 w-5" />
-            )}
-            {statusMessage.message}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Overall Performance Stats */}
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -231,7 +190,7 @@ export default function StudentGradesPageClient({
         variants={containerVariants}
       >
         <motion.div variants={itemVariants} className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50">
-          <div className="flex items-center mb-3">
+          <div className="flex items-center">
             <div className="p-2 bg-white rounded-full shadow-sm mr-3">
               <AcademicCapIcon className="h-7 w-7 text-blue-600" />
             </div>
@@ -242,7 +201,7 @@ export default function StudentGradesPageClient({
           </div>
         </motion.div>
         <motion.div variants={itemVariants} className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50">
-          <div className="flex items-center mb-3">
+          <div className="flex items-center">
             <div className="p-2 bg-white rounded-full shadow-sm mr-3">
               <ChartBarIcon className="h-7 w-7 text-green-600" />
             </div>
@@ -253,12 +212,12 @@ export default function StudentGradesPageClient({
           </div>
         </motion.div>
         <motion.div variants={itemVariants} className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50">
-          <div className="flex items-center mb-3">
+          <div className="flex items-center">
             <div className="p-2 bg-white rounded-full shadow-sm mr-3">
               <BookOpenIcon className="h-7 w-7 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Enrolled Classes</p>
+              <p className="text-sm font-medium text-gray-600">Enrolled Courses</p>
               <h2 className="text-3xl font-bold text-gray-800">{courseGrades.length}</h2>
             </div>
           </div>
@@ -268,7 +227,7 @@ export default function StudentGradesPageClient({
       {/* Grades by Course Section */}
       <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h3 className="text-xl font-semibold mb-5 text-gray-800 flex items-center gap-2">
-          <BookOpenIcon className="h-5 w-5 text-indigo-500" /> Grades by Course
+          <BookOpenIcon className="h-5 w-5 text-indigo-500" /> Course Summaries
         </h3>
         {courseGrades.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -281,17 +240,19 @@ export default function StudentGradesPageClient({
                 <h4 className="font-semibold text-gray-800 text-lg mb-2">{course.name}</h4>
                 <p className="text-sm text-gray-600">Teacher: {course.teacher}</p>
                 <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-600">Current Grade:</p>
-                  <span className={`px-4 py-2 rounded-full text-xl font-bold ${getGradeColor(course.averageScore || 0)}`}>
-                    {course.currentGrade} {course.averageScore !== null && `(${course.averageScore.toFixed(1)}%)`}
+                  <p className="text-sm font-medium text-gray-600">Final Grade:</p>
+                  <span className={`px-4 py-2 rounded-full text-xl font-bold ${getGradeColor(course.finalNumericGrade)}`}>
+                    {course.finalLetterGrade} {course.finalNumericGrade !== null && `(${course.finalNumericGrade.toFixed(1)}%)`}
                   </span>
                 </div>
-                <button
-                  onClick={() => router.push(`/student/${companyId}/my-grades/${course.id}`)}
-                  className="mt-4 text-sm text-blue-600 hover:underline flex items-center gap-1"
-                >
-                  View Detailed Grades <EyeIcon className="h-4 w-4" />
-                </button>
+                {!courseInfo && (
+                  <button
+                    onClick={() => router.push(`/student/${studentId}/my-grades?courseId=${course.id}`)}
+                    className="mt-4 text-sm text-blue-600 hover:underline flex items-center gap-1"
+                  >
+                    View Detailed Grades <EyeIcon className="h-4 w-4" />
+                  </button>
+                )}
               </motion.div>
             ))}
           </div>
@@ -299,15 +260,14 @@ export default function StudentGradesPageClient({
           <div className="p-8 text-center text-gray-500">
             <BookOpenIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
             <p className="text-lg">No course grades available yet.</p>
-            <p className="text-sm mt-2">Enroll in courses to see your progress here.</p>
           </div>
         )}
       </motion.div>
 
-      {/* All Graded Assignments Section */}
+      {/* All Graded Items Section */}
       <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-5">
-          <ClipboardDocumentCheckIcon className="h-5 w-5 text-teal-500" /> All Graded Assignments
+          <ClipboardDocumentCheckIcon className="h-5 w-5 text-teal-500" /> Detailed Grades
         </h3>
 
         {/* Search and Filter */}
@@ -318,23 +278,22 @@ export default function StudentGradesPageClient({
             </div>
             <input
               type="text"
-              placeholder="Search by assignment or class name..."
+              placeholder="Search by item or course name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500
-                          focus:outline-none focus:ring-[${accentColor}] focus:border-[${accentColor}] sm:text-sm"
+              className={`block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[${accentColor}] focus:border-[${accentColor}] sm:text-sm`}
             />
           </div>
-          {!courseInfo && ( // Only show course filter if not already filtered by course
+          {!courseInfo && (
             <div className="flex-shrink-0">
               <select
                 value={filterCourse}
                 onChange={(e) => setFilterCourse(e.target.value)}
-                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-[${accentColor}] focus:border-[${accentColor}] sm:text-sm"
+                className={`block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[${accentColor}] focus:border-[${accentColor}] sm:text-sm`}
               >
                 <option value="All">All Courses</option>
                 {allClassesForFilter.map(cls => (
-                  <option key={cls.id} value={cls.id}>{cls.name}</option>
+                  <option key={cls} value={cls}>{cls}</option>
                 ))}
               </select>
             </div>
@@ -343,65 +302,55 @@ export default function StudentGradesPageClient({
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-[${accentColor}] focus:border-[${accentColor}] sm:text-sm"
+              className={`block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[${accentColor}] focus:border-[${accentColor}] sm:text-sm`}
             >
               <option value="All">All Types</option>
-              {allAssignmentTypesForFilter.map(type => (
+              {allItemTypesForFilter.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Assignments Grades Table */}
+        {/* Grades Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignment</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Graded On</th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
+                <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAssignmentGrades.length > 0 ? (
-                filteredAssignmentGrades.map((assignment) => (
-                  <motion.tr key={assignment.id} variants={itemVariants}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{assignment.assignmentName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assignment.className}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assignment.type}</td>
+              {filteredDetailedGrades.length > 0 ? (
+                filteredDetailedGrades.map((item) => (
+                  <motion.tr key={item.id} variants={itemVariants}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.itemName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.courseName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.itemType}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {(() => {
-                        const percent = assignment.totalPoints === 0 ? 0 : (assignment.grade / assignment.totalPoints) * 100;
+                        const percent = item.totalPoints && item.totalPoints > 0 ? (item.score / item.totalPoints) * 100 : null;
                         return (
                           <span className={`px-2 inline-flex text-sm leading-5 font-semibold rounded-full ${getGradeColor(percent)}`}>
-                            {assignment.grade}/{assignment.totalPoints} ({percent.toFixed(0)}%)
+                            {item.score}/{item.totalPoints || 'N/A'} {percent !== null && `(${percent.toFixed(0)}%)`}
                           </span>
                         );
                       })()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(assignment.gradedDate).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(item.gradedDate).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {assignment.feedback && (
-                        <button
-                          onClick={() => { setSelectedFeedback(assignment.feedback); setShowFeedbackModal(true); }}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center justify-end"
-                          title="View Feedback"
-                        >
-                          <SparklesIcon className="h-4 w-4 mr-1" /> Feedback
-                        </button>
-                      )}
+                      {/* Placeholder for feedback button if feedback is added to DetailedGradeData */}
                     </td>
                   </motion.tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No graded assignments found matching your criteria.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No graded items found matching your criteria.</td>
                 </tr>
               )}
             </tbody>

@@ -6,65 +6,69 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // IMPORTANT: In a real application, the currentStudentId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
-const MOCK_CURRENT_STUDENT_ID = "clx023j0d00003b6033877d9c"; // Example: Student ID
+const MOCK_CURRENT_USER_ID = "clx023j0d00003b6033877d9c"; // This is the User ID
 
 interface PageProps {
   params: {
-    slug: string; // companyId
+    slug: string; // This is now the student's USER ID from the URL
     courseId?: string; // Optional: if viewing grades for a specific course
   };
 }
 
-// Define types for data fetched by the server component
+// --- NEW DATA TYPES TO MATCH THE UPDATED API RESPONSE ---
+
 export interface CourseGradeData {
   id: string;
-  name: string; // Course title
-  teacher: string; // Teacher's name
-  currentGrade: string; // Letter grade (e.g., "A-", "B+")
-  averageScore: number | null; // Percentage average from assignments
-  enrollmentGradeValue: number | null; // Raw numerical grade from enrollment
+  name: string;
+  teacher: string;
+  finalNumericGrade: number | null;
+  finalLetterGrade: string;
 }
 
-export interface AssignmentGradeData {
-  id: string; // Submission ID
-  assignmentId: string; // Exam ID
-  assignmentName: string;
-  className: string; // Course title
-  type: string; // ExamType (e.g., 'HOMEWORK', 'QUIZ', 'PROJECT')
-  grade: number;
-  totalPoints: number;
-  feedback: string | null;
+export interface DetailedGradeData {
+  id: string;
+  itemName: string;
+  itemType: string;
+  courseName: string;
+  score: number;
+  totalPoints: number | null;
+  gradeValue: string | null; // e.g., "A", "B+"
+  status: string | null; // e.g., "PASSED", "FAILED"
   gradedDate: string; // ISO string
-  description: string | null;
+}
+
+export interface CourseInfo {
+  id: string;
+  title: string;
 }
 
 export interface StudentGradesPageData {
   studentName: string;
   studentGradeLevel: string;
   overallGPA: string;
-  overallAverage: string; // Percentage string
+  overallAverage: string;
   courseGrades: CourseGradeData[];
-  assignmentGrades: AssignmentGradeData[];
-  studentId: string;
-  companyId: string;
-  courseInfo?: { // Optional, if filtering by course
-    id: string;
-    title: string;
-  };
+  detailedGrades: DetailedGradeData[];
+  studentId: string; // The User ID
+  companyId: string; // This should be part of the response or context
+  courseInfo?: CourseInfo;
 }
 
+// Server Component: Fetches data and passes it to the client
 export default async function StudentGradesServerPage({ params }: PageProps) {
-  const companyId = params.slug;
-  const courseId = params.courseId; // This will be undefined if not in the URL path
-  const studentId = MOCK_CURRENT_STUDENT_ID;
+  
+  // The 'slug' from the URL is the student's User ID
+  const studentId = params.slug || MOCK_CURRENT_USER_ID; 
+  const courseId = params.courseId;
 
   let gradesPageData: StudentGradesPageData | null = null;
   let fetchError: string | null = null;
 
   try {
     const url = new URL(`${apiUrl}/student/grades`);
-    url.searchParams.append('studentId', studentId);
-    url.searchParams.append('companyId', companyId);
+    // The API expects `studentId` which is the User ID
+    url.searchParams.append('studentId', studentId); 
+    
     if (courseId) {
       url.searchParams.append('courseId', courseId);
     }
@@ -72,14 +76,19 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
     const res = await fetch(url.toString(), { cache: "no-store" });
 
     if (res.ok) {
-      gradesPageData = (await res.json()) as StudentGradesPageData;
-      gradesPageData.studentId = studentId;
-      gradesPageData.companyId = companyId;
-      if (courseId) {
-        // If a specific course was requested, add its info for the client component header
+      // The API response structure is now different
+      const data = (await res.json());
+      gradesPageData = {
+        ...data,
+        studentId: studentId,
+        companyId: params.slug, // Assuming companyId is the slug for routing purposes
+      };
+      
+      if (gradesPageData && courseId && data.courseGrades.length > 0) {
+        // If filtering by course, find its name from the fetched data
         gradesPageData.courseInfo = {
           id: courseId,
-          title: gradesPageData.courseGrades[0]?.name || 'Unknown Course', // Use first course's name or fallback
+          title: data.courseGrades[0]?.name || 'Course',
         };
       }
     } else {
@@ -97,13 +106,13 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Grades</h2>
         <p className="text-red-600 mb-6">{fetchError || "Could not load student grade data."}</p>
-        <button
-          onClick={() => window.history.back()}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
-                     hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.history.back(); }}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
-        </button>
+        </a>
       </div>
     );
   }
@@ -115,7 +124,7 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
       overallGPA={gradesPageData.overallGPA}
       overallAverage={gradesPageData.overallAverage}
       initialCourseGrades={gradesPageData.courseGrades}
-      initialAssignmentGrades={gradesPageData.assignmentGrades}
+      initialDetailedGrades={gradesPageData.detailedGrades}
       studentId={gradesPageData.studentId}
       companyId={gradesPageData.companyId}
       courseInfo={gradesPageData.courseInfo}

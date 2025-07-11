@@ -1,150 +1,105 @@
-// app/api/student/schedule/route.ts
-import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const studentId = searchParams.get('studentId'); // The student whose schedule is being viewed
-  const companyId = searchParams.get('companyId');   // For multi-tenancy
+const prisma = new PrismaClient();
 
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Resolve the student's ID from the session (e.g., session.user.studentId).
-  // 3. Verify the student is authorized to view their schedule for this company.
-  // const session = await auth();
-  // if (!session || session.user.studentId !== studentId || session.user.role !== 'STUDENT') {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
-
-  if (!studentId || !companyId) {
-    return NextResponse.json({ message: 'Missing studentId or companyId' }, { status: 400 });
-  }
-
+export async function GET(request: NextRequest) {
   try {
-    // 1. Fetch Student details
-    const student = await prisma.student.findUnique({
-      where: { id: studentId, companyId: companyId },
-      select: {
-        id: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-        academicLevel: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
+    const { searchParams } = new URL(request.url);
+    const studentId = searchParams.get('studentId');
 
-    if (!student || !student.user) {
-      return NextResponse.json({ message: 'Student not found or not associated with this company' }, { status: 404 });
+    if (!studentId) {
+      return NextResponse.json(
+        { message: 'Missing studentId or companyId parameter' },
+        { status: 400 }
+      );
     }
 
-    // 2. Fetch ClassSchedule entries for courses the student is enrolled in
-    const enrolledCourseIds = (await prisma.courseEnrollment.findMany({
-      where: {
-        studentId: studentId,
-        status: 'ENROLLED',
-      },
-      select: {
-        courseId: true,
-      },
-    })).map(e => e.courseId);
+    // Fetch student and latest academic level for this company
+    const student = await prisma.student.findUnique({
+      where: { userId: studentId },
+      include: {
+        user: { select: { id: true, name: true } },
+        StudentAcademicLevel: {
+          // where: { companyId },
+          orderBy: { assignedAt: 'desc' },
+          take: 1,
+          include: { academicLevel: { select: { id: true, name: true } } }
+        }
+      }
+    });
 
+    if (!student) {
+      return NextResponse.json({ message: 'Student not found' }, { status: 404 });
+    }
+
+    const levelEntry = student.StudentAcademicLevel[0];
+    const academicLevelId = levelEntry?.academicLevel.id;
+    const studentInfo = {
+      id: student.id,
+      name: student.user.name,
+      gradeLevel: levelEntry?.academicLevel.name || 'N/A'
+    };
+
+    // Find courses available for this academic level
+    const courseLevels = await prisma.courseAcademicLevel.findMany({
+      where: { academicLevelId, companyId: student.companyId },
+      select: { courseId: true }
+    });
+    const courseIds = courseLevels.map(cl => cl.courseId);
+
+    // Recurring class schedules for these courses
     const classSchedules = await prisma.classSchedule.findMany({
       where: {
-        companyId: companyId,
-        courseId: {
-          in: enrolledCourseIds, // Filter by courses the student is enrolled in
-        },
+        // companyId: student.companyId ,
+        courseId: { in: courseIds }
       },
-      select: {
-        id: true,
-        dayOfWeek: true,
-        startTime: true,
-        endTime: true,
-        topic: true,
-        meetingLink: true,
-        course: {
-          select: {
-            id: true,
-            title: true,
-            instructor: {
-              select: {
-                user: {
-                  select: { name: true },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: [
-        { dayOfWeek: 'asc' },
-        { startTime: 'asc' },
-      ],
+      include: {
+        course: { select: { title: true } },
+        educator: { include: { user: { select: { name: true } } } }
+      }
     });
 
-    const formattedSchedules = classSchedules.map(schedule => ({
-      id: schedule.id,
-      day: schedule.dayOfWeek,
-      startTime: schedule.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      endTime: schedule.endTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      title: `${schedule.course?.title || 'N/A Course'} (Teacher: ${schedule.course?.instructor?.user?.name || 'N/A'})`,
-      topic: schedule.topic,
-      meetingLink: schedule.meetingLink,
-      type: 'class', // Custom type for frontend display
+    const schedule = classSchedules.map(cs => ({
+      id: cs.id,
+      day: cs.dayOfWeek,
+      startTime: cs.startTime.toISOString().slice(11, 16),
+      endTime: cs.endTime.toISOString().slice(11, 16),
+      title: `${cs.course.title} - ${cs.educator.user.name}`,
+      topic: cs.topic || null,
+      meetingLink: cs.meetingLink || null,
+      type: 'class'
     }));
 
-    // 3. Fetch Event entries where this student is a target
-    const events = await prisma.event.findMany({
-      where: {
-        companyId: companyId,
-        targetStudentIds: { has: studentId }, // Events explicitly targeting this student
-      },
-      select: {
-        id: true,
-        title: true,
-        summary: true,
-        startDateTime: true,
-        endDateTime: true,
-        location: true,
-        onlineMeetingLink: true,
-        eventType: true,
-      },
-      orderBy: { startDateTime: 'asc' },
+    // One-off events: fetch registrations by userId
+    const registrations = await prisma.eventRegistration.findMany({
+      where: { userId: student.user.id },
+      include: { event: true }
     });
 
-    const formattedEvents = events.map(event => ({
-      id: event.id,
-      title: event.title,
-      summary: event.summary,
-      date: event.startDateTime.toISOString().split('T')[0], // YYYY-MM-DD
-      startTime: event.startDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      endTime: event.endDateTime?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) || '',
-      location: event.location,
-      onlineMeetingLink: event.onlineMeetingLink,
-      type: event.eventType, // Use eventType as type for frontend display
-    }));
+    const events = registrations.map(reg => {
+      const e = reg.event;
+      return {
+        id: e.id,
+        title: e.title,
+        summary: e.summary || null,
+        date: e.startDateTime.toISOString().slice(0, 10),
+        startTime: e.startDateTime.toISOString().slice(11, 16),
+        endTime: e.endDateTime?.toISOString().slice(11, 16) || '',
+        location: e.location || null,
+        onlineMeetingLink: e.onlineMeetingLink || null,
+        type: e.eventType
+      };
+    });
 
     return NextResponse.json({
-      student: {
-        id: student.id,
-        name: student.user.name || student.user.email,
-        gradeLevel: student.academicLevel?.name || 'N/A',
-      },
-      schedule: formattedSchedules,
-      events: formattedEvents,
+      student: studentInfo,
+      schedule,
+      events,
+      companyId: student.companyId 
     });
-
-  } catch (error) {
-    console.error('Error fetching student schedule:', error);
-    return NextResponse.json({ message: 'Failed to fetch student schedule' }, { status: 500 });
+  } catch (err: any) {
+    console.error('[GET /api/student/schedule] Error:', err);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
