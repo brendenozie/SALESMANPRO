@@ -1,16 +1,24 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { XMarkIcon, UserCircleIcon, PhoneIcon, MapPinIcon, AcademicCapIcon, UserGroupIcon, TagIcon } from '@heroicons/react/24/outline';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Assuming StudentType, ParentOption, AcademicLevelOption are imported from StudentsClient.tsx
-// Re-defining here for self-containment of the immersive, but in a real app
-// these would be imported from a shared types file or directly from StudentsClient.
+// Assuming StudentType, ParentOption, AcademicLevelOption, StudentLevelStatusOption
+// are imported from StudentsClient.tsx or a shared types file.
+// Redefining here for completeness, but in a real app, import them.
 export type AcademicLevelOption = {
   id: string;
-  name: string;
+  name: string; // e.g., "Junior (Playgroup)", "Senior (Grade 1-3)"
   sortOrder?: number;
+};
+
+// NEW: Type for StudentLevelStatus
+export type StudentLevelStatusOption = {
+  value: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN'; // Match your Prisma enum
+  label: string;
 };
 
 export type StudentType = {
@@ -29,6 +37,7 @@ export type StudentType = {
   parentEmail?: string;
   parentPhone?: string;
   academicLevels: AcademicLevelOption[]; // CHANGED: Now an array of academic levels
+  levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | null; // ADDED: levelStatus field
   totalCourses: number;
   completedCourses: number;
   certificatesEarned: number;
@@ -36,8 +45,8 @@ export type StudentType = {
   totalAssignmentSubmissions: number; // Renamed
   totalAttendanceRecords: number;
   totalExamSubmissions: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 };
 
 export type ParentOption = {
@@ -48,57 +57,78 @@ export type ParentOption = {
   loginCode?: string;
 };
 
+// interface StudentFormModalProps {
+//   isOpen: boolean;
+//   initialData?: StudentType | null;
+//   onClose: () => void;
+//   onSave: (data: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalAssignmentSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevels' | 'levelStatus'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null; levelStatus?: StudentType['levelStatus'] }) => Promise<void>;
+//   isLoading: boolean;
+//   companyId: string;
+//   allParents: ParentOption[];
+//   allAcademicLevels: AcademicLevelOption[];
+//   allStudentLevelStatusOptions: StudentLevelStatusOption[]; // NEW PROP
+// }
+
+// StudentFormModal.tsx
+
 interface StudentFormModalProps {
-  isOpen: boolean; // Added isOpen prop for modal control
-  editingStudent?: StudentType | null;
+  isOpen: boolean;
   onClose: () => void;
-  // Updated onSave signature to match the new StudentType and expected payload
-  onSave: (data: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalAssignmentSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevels'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => Promise<void>;
-  isLoading: boolean;
-  companyId: string;
+  onSave: (data: Omit<StudentType, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'academicLevels' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalAssignmentSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'parentName' | 'parentEmail' | 'parentPhone'> & {
+    id?: string;
+    userId?: string;
+    parentId?: string | null;
+    academicLevelId?: string | null;
+    levelStatus?: StudentType['levelStatus']; // Corrected type
+  }) => Promise<void>;
+  initialData: StudentType | null;
   allParents: ParentOption[];
-  allAcademicLevels: AcademicLevelOption[]; // All available academic levels
+  allAcademicLevels: AcademicLevelOption[];
+  allStudentLevelStatusOptions: StudentLevelStatusOption[];
+  companyId: string;
+  isLoading: boolean;
+  error: string | null;
 }
 
-const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStudent, onClose, onSave, isLoading, companyId, allParents, allAcademicLevels }) => {
+// ... rest of your StudentFormModal component
+
+const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData, onClose, onSave, isLoading, companyId, allParents, allAcademicLevels, allStudentLevelStatusOptions }) => {
   const [formData, setFormData] = useState({
-    id: editingStudent?.id || '',
-    userId: editingStudent?.userId || '',
-    name: editingStudent?.name || '',
-    email: editingStudent?.email || '',
-    profilePicture: editingStudent?.profilePicture || '',
-    phone: editingStudent?.phone || '',
-    bio: editingStudent?.bio || '',
-    address: editingStudent?.address || '',
-    parentId: editingStudent?.parentId || '',
-    // Initialize academicLevelId from the first academic level in the array, if available
-    academicLevelId: editingStudent?.academicLevels?.[0]?.id || '',
+    id: initialData?.id || '',
+    userId: initialData?.userId || '',
+    name: initialData?.name || '',
+    email: initialData?.email || '',
+    profilePicture: initialData?.profilePicture || '',
+    phone: initialData?.phone || '',
+    bio: initialData?.bio || '',
+    address: initialData?.address || '',
+    parentId: initialData?.parentId || '',
+    academicLevelId: initialData?.academicLevels?.[0]?.id || '',
+    levelStatus: initialData?.levelStatus || '', // Initialize levelStatus
   });
 
-  // Effect to update form data when editingStudent changes
   useEffect(() => {
-    if (editingStudent) {
+    if (initialData) {
       setFormData({
-        id: editingStudent.id,
-        userId: editingStudent.userId,
-        name: editingStudent.name,
-        email: editingStudent.email,
-        profilePicture: editingStudent.profilePicture || '',
-        phone: editingStudent.phone || '',
-        bio: editingStudent.bio || '',
-        address: editingStudent.address || '',
-        parentId: editingStudent.parentId || '',
-        academicLevelId: editingStudent.academicLevels?.[0]?.id || '', // Use the first academic level's ID
+        id: initialData.id,
+        userId: initialData.userId,
+        name: initialData.name,
+        email: initialData.email,
+        profilePicture: initialData.profilePicture || '',
+        phone: initialData.phone || '',
+        bio: initialData.bio || '',
+        address: initialData.address || '',
+        parentId: initialData.parentId || '',
+        academicLevelId: initialData.academicLevels?.[0]?.id || '',
+        levelStatus: initialData.levelStatus || '', // Update levelStatus from initialData
       });
     } else {
-      // Reset form for new student
       setFormData({
         id: '', userId: '', name: '', email: '', profilePicture: '',
-        phone: '', bio: '', address: '', parentId: '', academicLevelId: ''
+        phone: '', bio: '', address: '', parentId: '', academicLevelId: '', levelStatus: '' // Reset for new student
       });
     }
-  }, [editingStudent]);
-
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -107,41 +137,44 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStud
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Build payload, omitting parentId/academicLevelId if empty string
+
     const payload: any = {
       ...formData,
       companyId,
     };
 
-    // Clean up empty strings to send null or undefined for optional fields
     if (payload.parentId === '') {
       payload.parentId = null;
     }
     if (payload.academicLevelId === '') {
       payload.academicLevelId = null;
     }
-    // Remove id and userId from payload if it's a new student creation
-    if (!editingStudent) {
+    // Set levelStatus to null if it's an empty string
+    if (payload.levelStatus === '') {
+      payload.levelStatus = null;
+    }
+
+    if (!initialData) {
       delete payload.id;
       delete payload.userId;
     }
 
-    // Explicitly remove studentGrade if it was somehow still in formData
-    delete payload.studentGrade;
+    delete payload.studentGrade; // Ensure this is removed if it's leftover from previous versions
 
     await onSave(payload);
   };
 
-  // Only render the modal if isOpen is true
   if (!isOpen) return null;
 
   const defaultProfilePic = `https://placehold.co/100x100/E0F2F7/0288D1?text=${formData.name?.charAt(0) || '?'}`;
 
+  // Filter academic levels for "Junior" and "Senior" categories
+  const juniorAcademicLevels = allAcademicLevels.filter(level => level.name.toLowerCase().includes('junior') || level.name.toLowerCase().includes('playgroup') || level.name.toLowerCase().includes('kindergarten'));
+  const seniorAcademicLevels = allAcademicLevels.filter(level => level.name.toLowerCase().includes('senior') || level.name.toLowerCase().includes('grade'));
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl transform transition-all duration-300 scale-100 opacity-100 relative max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors duration-200"
@@ -151,11 +184,10 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStud
         </button>
 
         <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-4 border-gray-200">
-          {editingStudent ? `Edit Student: ${editingStudent.name}` : 'Add New Student'}
+          {initialData ? `Edit Student: ${initialData.name}` : 'Add New Student'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
             <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <UserCircleIcon className="h-6 w-6 text-indigo-500" /> Personal Information
@@ -201,23 +233,67 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStud
             </div>
           </div>
 
-          {/* Contact & Academic Information */}
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
             <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <AcademicCapIcon className="h-6 w-6 text-blue-500" /> Academic & Contact
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="academicLevelId" className="block text-sm font-medium text-gray-700 mb-1">Academic Level</label>
+              <div className="md:col-span-2">
+                <label htmlFor="academicLevelId" className="block text-sm font-medium text-gray-700 mb-1">
+                  Student Role (Academic Level)
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Assign "Junior" for playgroup/kindergarten, "Senior" for older children.
+                </p>
                 <div className="relative mt-1">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <TagIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   <select name="academicLevelId" id="academicLevelId" value={formData.academicLevelId} onChange={handleChange}
                     className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white">
-                    <option value="">-- Select Academic Level (Optional) --</option>
-                    {allAcademicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                    <option value="">-- Select Role --</option>
+                    {juniorAcademicLevels.length > 0 && (
+                      <optgroup label="✨ Junior Levels ✨">
+                        {juniorAcademicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                          <option key={level.id} value={level.id}>{level.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {seniorAcademicLevels.length > 0 && (
+                      <optgroup label="🚀 Senior Levels 🚀">
+                        {seniorAcademicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                          <option key={level.id} value={level.id}>{level.name}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {allAcademicLevels.filter(level =>
+                      !(level.name.toLowerCase().includes('junior') || level.name.toLowerCase().includes('playgroup') || level.name.toLowerCase().includes('kindergarten') ||
+                        level.name.toLowerCase().includes('senior') || level.name.toLowerCase().includes('grade'))
+                    ).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
                       <option key={level.id} value={level.id}>{level.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {/* NEW: Student Level Status dropdown */}
+              <div>
+                <label htmlFor="levelStatus" className="block text-sm font-medium text-gray-700 mb-1">Student Level Status</label>
+                <div className="relative mt-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <AcademicCapIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <select
+                    name="levelStatus"
+                    id="levelStatus"
+                    value={formData.levelStatus || ''} // Use '' for null/undefined to select default option
+                    onChange={handleChange}
+                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                  >
+                    <option value="">-- Select Student Level Status (Optional) --</option>
+                    {allStudentLevelStatusOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -245,7 +321,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStud
             </div>
           </div>
 
-          {/* Parent Information */}
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
             <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <UserGroupIcon className="h-6 w-6 text-purple-500" /> Parent/Guardian Information
@@ -270,7 +345,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStud
             </p>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
@@ -293,7 +367,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, editingStud
                   </svg>
                   Saving...
                 </>
-              ) : (editingStudent ? 'Save Changes' : 'Add Student')}
+              ) : (initialData ? 'Save Changes' : 'Add Student')}
             </button>
           </div>
         </form>

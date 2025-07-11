@@ -27,13 +27,6 @@ model Account {
   session_state     String?
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Consumer          Consumer?   @relation(fields: [userId], references: [id])
-  // SalesAgent        SalesAgent? @relation(fields: [userId], references: [id])
-  // Client            Client?     @relation(fields: [userId], references: [id])
-  // Student           Student?    @relation(fields: [studentId], references: [id])
-  // studentId         String?     @db.ObjectId
-  // EducatorProfile   Educator?   @relation(fields: [educatorProfileId], references: [id])
-  // educatorProfileId String?     @db.ObjectId
 
   @@unique([provider, providerAccountId])
 }
@@ -48,6 +41,17 @@ enum ROLE {
   EDUCATOR
   HEADTEACHER
   PARENT
+  JUNIOR
+  SENIOR
+  SOPHOMORE
+  FRESHMAN
+}
+
+enum StudentLevelStatus {
+  JUNIOR
+  SENIOR
+  SOPHOMORE
+  FRESHMAN
 }
 
 model Session {
@@ -57,17 +61,6 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String   @db.ObjectId
   role         ROLE?    @default(USER)
-
-  // Client       Client?     @relation(fields: [clientId], references: [id])
-  // clientId     String?     @db.ObjectId
-  // SalesAgent   SalesAgent? @relation(fields: [salesAgentId], references: [id])
-  // salesAgentId String?     @db.ObjectId
-  // Consumer     Consumer?   @relation(fields: [consumerId], references: [id])
-  // consumerId   String?     @db.ObjectId
-  // Student      Student?    @relation(fields: [studentId], references: [id])
-  // studentId    String?     @db.ObjectId
-  // Educator     Educator?   @relation(fields: [educatorId], references: [id])
-  // educatorId   String?     @db.ObjectId
 
   @@index([userId])
 }
@@ -82,13 +75,13 @@ model VerificationToken {
 }
 
 model Notification {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   message   String
-  createdAt DateTime @default(now())
-  read      Boolean  @default(false)
-  Company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?  @db.ObjectId
+  createdAt DateTime? @default(now())
+  read      Boolean   @default(false)
+  Company   Company?  @relation(fields: [companyId], references: [id])
+  companyId String?   @db.ObjectId
 }
 
 model CompanyCategory {
@@ -102,11 +95,11 @@ model CompanyCategory {
 
 // Category model with self-relations for hierarchy (categories & subcategories)
 model ProductCategory {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
   name            String
   icon            String?
   image           String?
-  slug            String   @unique
+  slug            String    @unique
   description     String
   longDescription String
   seoTitle        String
@@ -114,8 +107,8 @@ model ProductCategory {
   metaKeywords    String[]
   sortOrder       Int
   visible         Boolean
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @updatedAt
   createdBy       String
   updatedBy       String
   status          String
@@ -163,8 +156,9 @@ model StoreCategory {
   visible     Boolean @default(true)
 
   id String @id @default(auto()) @map("_id") @db.ObjectId // Add a single primary key
-  // createdAt DateTime @default(now())
-  // updatedAt DateTime @updatedAt
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   // You still store each category’s children in JSON:
   items     Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
@@ -219,8 +213,9 @@ model Company {
   // adminUserId String? @db.ObjectId // Optional: Link to the initial admin user of the company
   // adminUser   User?   @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
   deletedAt DateTime?
   sEOId     String?   @db.ObjectId
 
@@ -415,8 +410,8 @@ model PageSection {
   order     Int         @default(0)
   settings  Json // e.g. { background: "dark", padding: "xl" }
   content   Json // e.g. { headline: "...", blocks: [ ... ] }
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime?   @default(now())
+  updatedAt DateTime?   @updatedAt
 }
 
 enum SectionType {
@@ -516,8 +511,8 @@ model Product {
   usageInstructions String? // For Beauty Products
   expirationDate    DateTime? // For Beauty Products
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   discount Int? @default(0)
 
@@ -619,7 +614,7 @@ model Payment {
   amount        Float
   status        PaymentStatus
   transactionId String        @unique
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime?     @default(now())
 }
 
 enum AppointmentStatus {
@@ -635,7 +630,7 @@ model Appointment {
   userId    String            @db.ObjectId
   date      DateTime
   status    AppointmentStatus
-  createdAt DateTime          @default(now())
+  createdAt DateTime?         @default(now())
   OrderItem OrderItem[]
 }
 
@@ -644,8 +639,8 @@ model PropertyType {
   name                String                @unique
   description         String?
   products            Product[]
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  createdAt           DateTime?             @default(now())
+  updatedAt           DateTime?             @updatedAt
   marketplaceListings marketplaceListings[]
 }
 
@@ -675,8 +670,8 @@ model Blog {
   views       Int        @default(0)
   likes       Int        @default(0)
   comments    Comment[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime?  @default(now())
+  updatedAt   DateTime?  @updatedAt
 }
 
 model SeoBlog {
@@ -699,12 +694,12 @@ model SEO {
 }
 
 model Comment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   user      String
   comment   String
-  createdAt DateTime @default(now())
-  blogId    String   @db.ObjectId
-  blog      Blog     @relation(fields: [blogId], references: [id])
+  createdAt DateTime? @default(now())
+  blogId    String    @db.ObjectId
+  blog      Blog      @relation(fields: [blogId], references: [id])
 }
 
 enum BlogStatus {
@@ -780,8 +775,8 @@ model Client {
 
   salesAgentId      String?             @db.ObjectId
   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt         DateTime?           @default(now())
+  updatedAt         DateTime?           @updatedAt
   ClientInventory   ClientInventory[]
   AgentInventoryLog AgentInventoryLog[]
   emailVerified     DateTime?
@@ -804,8 +799,8 @@ model Conversation {
   title         String? // Optional: For group chats, or subject of a direct conversation
   companyId     String    @db.ObjectId // For multi-tenancy: Ensures conversations belong to a specific company
   company       Company   @relation(fields: [companyId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt // Automatically updates on any change to the conversation or its messages
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt // Automatically updates on any change to the conversation or its messages
   lastMessageAt DateTime? // Stores the timestamp of the most recent message for easy sorting in inbox views
 
   // Relations
@@ -841,8 +836,8 @@ model ConversationParticipant {
   // This would need to be updated via application logic (e.g., a background job or on message send/read).
   unreadCount Int @default(0)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   // Ensures a user can only be a participant in a specific conversation once
   @@unique([conversationId, userId])
@@ -865,7 +860,7 @@ model Message {
   messageType    MessageType @default(TEXT) // Categorizes the content (e.g., text, image, file)
   attachmentUrls String[] // Stores URLs to any attached files or images
 
-  createdAt DateTime @default(now()) // Timestamp when the message was sent
+  createdAt DateTime? @default(now()) // Timestamp when the message was sent
 
   // Indexes for efficient querying
   @@index([conversationId])
@@ -911,8 +906,8 @@ model SalesAgent {
   bio                String?
   address            String?
   profilePicture     String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  createdAt          DateTime?            @default(now())
+  updatedAt          DateTime?            @updatedAt
   commissions        Commission[]
   // Return             Return[]
   AgentInventory     AgentInventory[]
@@ -928,8 +923,8 @@ model User {
   email          String              @unique
   password       String?
   role           ROLE?               @default(ADMIN)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  createdAt      DateTime?           @default(now())
+  updatedAt      DateTime?           @updatedAt
   accounts       Account[]
   sessions       Session[]
   // tasks          Task[]
@@ -1027,8 +1022,8 @@ model Return {
   refundAmount Float?
   refundedTo   String? // e.g., "Client Wallet", "Original Payment Method"
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   orderItemId     String?        @db.ObjectId // Optional: If returning an item from a specific order
   orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id])
@@ -1068,7 +1063,7 @@ model ProductAssignment {
   inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id])
   quantityAssigned Int
   reason           String? // Optional reason for assignment
-  createdAt        DateTime      @default(now())
+  createdAt        DateTime?     @default(now())
 }
 
 model InventoryItem {
@@ -1079,8 +1074,8 @@ model InventoryItem {
   company          Company             @relation(fields: [companyId], references: [id])
   quantity         Int
   reorderThreshold Int?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  createdAt        DateTime?           @default(now())
+  updatedAt        DateTime?           @updatedAt
   inventoryLogs    InventoryLog[]
   returns          Return[]
   AgentInventory   AgentInventory[]
@@ -1095,7 +1090,7 @@ model InventoryLog {
   damaged       Int           @default(0)
   action        String
   quantity      Int
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime?     @default(now())
 }
 
 model AgentInventory {
@@ -1105,8 +1100,8 @@ model AgentInventory {
   inventoryItemId   String              @db.ObjectId
   inventoryItem     InventoryItem       @relation(fields: [inventoryItemId], references: [id])
   quantity          Int
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt         DateTime?           @default(now())
+  updatedAt         DateTime?           @updatedAt
   AgentInventoryLog AgentInventoryLog[]
   ClientInventory   ClientInventory[]
 }
@@ -1121,7 +1116,7 @@ model CommissionRate {
   commissionRate Float
   startDate      DateTime       @default(now())
   endDate        DateTime?
-  createdAt      DateTime       @default(now())
+  createdAt      DateTime?      @default(now())
   Company        Company?       @relation(fields: [companyId], references: [id])
   companyId      String?        @db.ObjectId
 
@@ -1148,8 +1143,8 @@ model Commission {
   commissionRate   Float // Rate (percentage or fixed) based on criteria
   commissionEarned Float // Calculated based on the chosen criteria
   basedOn          CommissionType @default(COST) // Define whether based on COST or QUANTITY
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime?      @default(now())
+  updatedAt        DateTime?      @updatedAt
 
   transactionDate DateTime         @default(now())
   status          CommissionStatus @default(PENDING) // Enum: PENDING, PAID, CANCELLED
@@ -1207,8 +1202,8 @@ model Target {
   startDate DateTime
   endDate   DateTime
   status    TargetStatus @default(ONGOING)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime?    @default(now())
+  updatedAt DateTime?    @updatedAt
   Company   Company?     @relation(fields: [companyId], references: [id])
   companyId String?      @db.ObjectId
 
@@ -1356,8 +1351,8 @@ model marketplaceListings {
   showOnGhuba   Boolean? @default(true)
 
   status    ListingStatus @default(ACTIVE)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt DateTime?     @default(now())
+  updatedAt DateTime?     @updatedAt
 
   // Relations
   OrderItem      OrderItem[]
@@ -1411,7 +1406,7 @@ model ProductReview {
   user                  User                    @relation(fields: [userId], references: [id])
   rating                Int
   comment               String?
-  createdAt             DateTime                @default(now())
+  createdAt             DateTime?               @default(now())
   ProductReviewLog      ProductReviewLog[]
   ProductReviewResponse ProductReviewResponse[]
   ProductReviewLike     ProductReviewLike[]
@@ -1425,7 +1420,7 @@ model ProductReviewLog {
   userId    String        @db.ObjectId
   user      User          @relation(fields: [userId], references: [id])
   action    String // e.g., "added", "edited", "deleted"
-  createdAt DateTime      @default(now())
+  createdAt DateTime?     @default(now())
 }
 
 model ProductReviewResponse {
@@ -1435,7 +1430,7 @@ model ProductReviewResponse {
   userId    String        @db.ObjectId
   user      User          @relation(fields: [userId], references: [id])
   response  String
-  createdAt DateTime      @default(now())
+  createdAt DateTime?     @default(now())
 }
 
 model ProductReviewLike {
@@ -1444,7 +1439,7 @@ model ProductReviewLike {
   review    ProductReview @relation(fields: [reviewId], references: [id])
   userId    String        @db.ObjectId
   user      User          @relation(fields: [userId], references: [id])
-  createdAt DateTime      @default(now())
+  createdAt DateTime?     @default(now())
 }
 
 model ProductReviewDislike {
@@ -1453,7 +1448,7 @@ model ProductReviewDislike {
   review    ProductReview @relation(fields: [reviewId], references: [id])
   userId    String        @db.ObjectId
   user      User          @relation(fields: [userId], references: [id])
-  createdAt DateTime      @default(now())
+  createdAt DateTime?     @default(now())
 }
 
 model ClientInventory {
@@ -1469,8 +1464,8 @@ model ClientInventory {
   salesAgentId     String               @db.ObjectId
   salesAgent       SalesAgent           @relation(fields: [salesAgentId], references: [id])
   quantity         Int
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  createdAt        DateTime?            @default(now())
+  updatedAt        DateTime?            @updatedAt
   logs             ClientInventoryLog[]
 
   @@unique([clientId, inventoryItemId]) // Composite unique constraint
@@ -1489,7 +1484,7 @@ model ClientInventoryLog {
   totalPrice        Float
   status            String //completed, pending
   damaged           Int             @default(0)
-  createdAt         DateTime        @default(now())
+  createdAt         DateTime?       @default(now())
 }
 
 model AgentInventoryLog {
@@ -1502,23 +1497,23 @@ model AgentInventoryLog {
   client           Client?        @relation(fields: [clientId], references: [id])
   quantity         Int
   damaged          Int            @default(0)
-  createdAt        DateTime       @default(now())
+  createdAt        DateTime?      @default(now())
 }
 
 model SalesSummary {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
   salesAgentId    String
   totalCommission Float
   totalSales      Float
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime? @updatedAt
 }
 
 model EventLog {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   eventType String
   entityId  String
   message   String
-  createdAt DateTime @default(now())
+  createdAt DateTime? @default(now())
 }
 
 model Request {
@@ -1533,10 +1528,10 @@ model Request {
   requester   User   @relation(name: "requester", fields: [requesterId], references: [id])
 
   quantity   Int
-  totalPrice Float    @default(0)
-  status     Status   @default(PENDING)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  totalPrice Float     @default(0)
+  status     Status    @default(PENDING)
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
 
   companyId           String?  @db.ObjectId
   company             Company? @relation(fields: [companyId], references: [id])
@@ -1578,8 +1573,8 @@ model Consumer {
   address              String?
   profilePicture       String?
   role                 ROLE?                  @default(USER)
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  createdAt            DateTime?              @default(now())
+  updatedAt            DateTime?              @updatedAt
   ConsumerInventory    ConsumerInventory[]
   ConsumerInventoryLog ConsumerInventoryLog[]
 
@@ -1594,8 +1589,8 @@ model ConsumerInventory {
   availability Boolean                @default(true)
   consumer     Consumer               @relation(fields: [consumerId], references: [id])
   quantity     Int
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
+  createdAt    DateTime?              @default(now())
+  updatedAt    DateTime?              @updatedAt
   logs         ConsumerInventoryLog[]
 }
 
@@ -1614,7 +1609,7 @@ model ConsumerInventoryLog {
   totalPrice        Float
   status            String //completed, pending
   damaged           Int               @default(0)
-  createdAt         DateTime          @default(now())
+  createdAt         DateTime?         @default(now())
 }
 
 model CustomerOrder {
@@ -1640,8 +1635,8 @@ model CustomerOrder {
   deliveryPersonContact String? // Delivery person's contact info
   shippingAddress       Json? // Shipping address
   shippingMethod        String? // Shipping method (e.g., standard, express)
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  createdAt             DateTime?   @default(now())
+  updatedAt             DateTime?   @updatedAt
   deletedAt             DateTime?
   Payment               Payment[]
   Company               Company?    @relation(fields: [companyId], references: [id])
@@ -1666,8 +1661,8 @@ model OrderItem {
   date     String?
   timeSlot String? // e.g. "09:00"
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   Return Return[]
 
@@ -1713,8 +1708,8 @@ model Banners {
   productImage String?
   bannerType   String // e.g., "homepage", "category", "product"
   link         String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt
   status       String    @default("active") // e.g., "active", "inactive"
   startDate    DateTime?
   endDate      DateTime?
@@ -1756,7 +1751,7 @@ model Review {
   title                String?
   body                 String
   photos               String[] // URLs
-  createdAt            DateTime             @default(now())
+  createdAt            DateTime?            @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
 }
@@ -1769,7 +1764,7 @@ model Question {
   userId               String?              @db.ObjectId
   question             String
   answer               String?
-  createdAt            DateTime             @default(now())
+  createdAt            DateTime?            @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
 }
@@ -1822,8 +1817,8 @@ model HeadTeacher {
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 // Parent Profile Model (one-to-one with User, one-to-many with Student)
@@ -1844,11 +1839,8 @@ model Parent {
 
   children Student[] // One-to-many relation: a parent can have many children
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  // User      User[]
-  // User      User[]
-  // User      User[]
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 // Student Profile Model (one-to-one with User)
@@ -1869,6 +1861,8 @@ model Student {
   parentId String? @db.ObjectId // NEW: Link to Parent model
   parent   Parent? @relation(fields: [parentId], references: [id]) // NEW: Relation to Parent
 
+  levelStatus StudentLevelStatus? // NEW FIELD: Junior/Senior role for the student
+
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Keep optional if students can be independent
 
@@ -1883,8 +1877,8 @@ model Student {
   Grade                Grade[]
   StudentAcademicLevel StudentAcademicLevel[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 // NEW JUNCTION MODEL: CourseAcademicLevel
@@ -1900,8 +1894,8 @@ model StudentAcademicLevel {
 
   assignedAt DateTime @default(now())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@unique([studentId, academicLevelId])
   @@index([studentId])
@@ -1922,8 +1916,8 @@ model Educator {
 
   loginCode String @unique // NEW: Unique generated number for login
 
-  Company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
 
   classesScheduled ClassSchedule[]
   Exam             Exam[]
@@ -1941,8 +1935,8 @@ model Educator {
   Department   Department? @relation(fields: [departmentId], references: [id])
   departmentId String?     @db.ObjectId
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   assignmentSubmission AssignmentSubmission[]
   examSubmission       ExamSubmission[]
@@ -1960,8 +1954,8 @@ model AcademicLevel {
   description String?
   sortOrder   Int     @default(0) // For ordering display (e.g., Grade 1 before Grade 2)
 
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId // Academic levels are specific to a company/school
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   // NEW: Junction table for many-to-many with Educator
   educatorAssignments EducatorAcademicLevelAssignment[]
@@ -1973,8 +1967,8 @@ model AcademicLevel {
   CourseAcademicLevel  CourseAcademicLevel[]
   StudentAcademicLevel StudentAcademicLevel[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
@@ -1998,8 +1992,8 @@ model EducatorAcademicLevelAssignment {
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   // Ensures that an educator can only be assigned to a specific academic level once
   @@unique([educatorId, academicLevelId])
@@ -2040,8 +2034,8 @@ model Course {
 
   grades Grade[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   AttendanceRecord     AttendanceRecord[]
   assignmentSubmission AssignmentSubmission[]
@@ -2069,8 +2063,8 @@ model CourseEducatorAssignment {
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   // Ensures that an educator can only be assigned to a specific academic level once
   @@unique([educatorId, courseId])
@@ -2094,8 +2088,8 @@ model CourseAcademicLevel {
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@unique([courseId, academicLevelId])
   @@index([courseId])
@@ -2123,8 +2117,8 @@ model CourseEnrollment {
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
   // status    String   @default("ENROLLED") // e.g., "ENROLLED", "COMPLETED", "DROPPED"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   // Removed `@@unique([studentId, courseId])` to allow for multiple enrollments in the same course
   // (e.g., student retakes a course, or enrolls in different terms/semesters).
@@ -2189,8 +2183,8 @@ model CourseAssignment {
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
   Grade     Grade[]
 }
 
@@ -2218,8 +2212,8 @@ model AssignmentSubmission {
   reviewedBy   Educator? @relation(fields: [reviewedById], references: [id])
   reviewedAt   DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
@@ -2249,8 +2243,8 @@ model Announcement {
   authorId String @db.ObjectId // User (Admin or Educator) who created the announcement
   author   User   @relation("UserAnnouncements", fields: [authorId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   companyId String  @db.ObjectId // Link to Company for multi-tenancy
   company   Company @relation(fields: [companyId], references: [id])
@@ -2366,8 +2360,8 @@ model Event {
   contactEmail  String?
   contactPhone  String?
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt         DateTime?           @default(now())
+  updatedAt         DateTime?           @updatedAt
   EventRegistration EventRegistration[]
 
   // Indexes for efficient querying
@@ -2467,8 +2461,8 @@ model ClassSchedule {
   company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   AttendanceRecord AttendanceRecord[]
 
@@ -2513,8 +2507,8 @@ model AttendanceRecord {
   recordedById String   @db.ObjectId // User (Educator or Admin) who recorded attendance
   recordedBy   Educator @relation("RecordedAttendance", fields: [recordedById], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
@@ -2557,8 +2551,8 @@ model Exam {
 
   grades Grade[] // Grades associated with this exam
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   // Suggested unique constraint: One exam per course at a specific date and start time within a company
   @@unique([companyId, courseId, date, startTime])
@@ -2584,8 +2578,8 @@ model ExamQuestion {
   points        Float        @default(1)
   order         Int // Order of the question in the exam
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([examId])
   @@index([order])
@@ -2612,8 +2606,8 @@ model ExamSubmission {
   // Field for online exam answers
   answers Json? // Stores the student's answers in a flexible JSON format
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@unique([examId, studentId]) // A student can only submit one exam per exam
   @@index([examId])
@@ -2670,8 +2664,8 @@ model CourseMaterial {
   type         CourseMaterialType @default(DOCUMENT) // Enum: DOCUMENT, VIDEO, LINK, IMAGE, AUDIO
   uploadedById String             @db.ObjectId // Educator who uploaded the material
   uploadedBy   Educator           @relation("UploadedMaterial", fields: [uploadedById], references: [id])
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  createdAt    DateTime?          @default(now())
+  updatedAt    DateTime?          @updatedAt
   Educator     Educator?          @relation(fields: [educatorId], references: [id])
   educatorId   String?            @db.ObjectId
 
@@ -2692,8 +2686,8 @@ model DiscussionTopic {
   createdBy   Educator @relation("CreatedDiscussionTopic", fields: [createdById], references: [id])
 
   posts     DiscussionPost[] // All posts within this topic
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  createdAt DateTime?        @default(now())
+  updatedAt DateTime?        @updatedAt
 
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id])
@@ -2715,8 +2709,8 @@ model DiscussionPost {
   createdById String           @db.ObjectId // User (Educator or Student) who created the post
   createdBy   User             @relation("CreatedDiscussionPost", fields: [createdById], references: [id])
   replies     DiscussionPost[] @relation("ReplyToPost") // Replies to this post
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime?        @default(now())
+  updatedAt   DateTime?        @updatedAt
 
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
@@ -2743,10 +2737,10 @@ model DiscussionComment {
 
   // replies DiscussionComment[] @relation("ReplyToComment") // Replies to this comment
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime? @default(now())
+  updatedAt           DateTime? @updatedAt
   // DiscussionComment   DiscussionComment? @relation("ReplyToComment", fields: [discussionCommentId], references: [id])
-  discussionCommentId String?  @db.ObjectId
+  discussionCommentId String?   @db.ObjectId
 
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
@@ -2769,8 +2763,8 @@ model Department {
   educators Educator[] // Educators belonging to this department
   courses   Course[] // Courses offered by this department
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   Company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
@@ -2811,8 +2805,8 @@ model Grade {
   academicLevelAtTimeOfGradingId String        @db.ObjectId
   academicLevelAtTimeOfGrading   AcademicLevel @relation("gradesEarned", fields: [academicLevelAtTimeOfGradingId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([studentId])
   @@index([courseId])
@@ -2836,7 +2830,7 @@ model UserActivity {
   details              Json? // JSON object for additional context
   ipAddress            String?
   userAgent            String?
-  createdAt            DateTime             @default(now())
+  createdAt            DateTime?            @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
 
@@ -2852,8 +2846,8 @@ model ProductMetrics {
   value      Float
   date       DateTime // Date for which the metric is recorded
 
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  createdAt            DateTime?            @default(now())
+  updatedAt            DateTime?            @updatedAt
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
 

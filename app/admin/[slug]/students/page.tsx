@@ -1,9 +1,7 @@
 // app/admin/[slug]/students/page.tsx
 
 import React from "react";
-import StudentsClient, { StudentType, ParentOption, AcademicLevelOption } from "./StudentsClient";
-// prisma import is not needed in this server component for fetching data via API
-// import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import StudentsClient, { StudentType, ParentOption, AcademicLevelOption, StudentLevelStatusOption } from "./StudentsClient"; // Import StudentLevelStatusOption
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -50,16 +48,17 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Enthusiastic learner with a passion for science.',
       address: '123 Nairobi St, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL004', name: 'Grade 7' }], // Updated to array
+      academicLevels: [{ id: 'AL004', name: 'Grade 7' }],
       parentId: 'PAR001',
       parentName: 'Mercy Wanjiru',
       parentEmail: 'mercy.w@example.com',
       parentPhone: '+254711223344',
+      levelStatus: 'JUNIOR', // ADDED: Sample levelStatus
       totalCourses: 3,
       completedCourses: 1,
       certificatesEarned: 0,
       averageProgress: 33.3,
-      totalAssignmentSubmissions: 5, // Renamed
+      totalAssignmentSubmissions: 5,
       totalAttendanceRecords: 20,
       totalExamSubmissions: 2,
       createdAt: new Date('2020-09-01').toISOString(),
@@ -76,16 +75,17 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Loves mathematics and coding.',
       address: '456 Mombasa Rd, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL004', name: 'Grade 7' }], // Updated to array
+      academicLevels: [{ id: 'AL004', name: 'Grade 7' }],
       parentId: 'PAR002',
       parentName: 'David Otieno',
       parentEmail: 'david.o@example.com',
       parentPhone: '+254722334455',
+      levelStatus: 'SENIOR', // ADDED: Sample levelStatus
       totalCourses: 2,
       completedCourses: 0,
       certificatesEarned: 0,
       averageProgress: 10.5,
-      totalAssignmentSubmissions: 3, // Renamed
+      totalAssignmentSubmissions: 3,
       totalAttendanceRecords: 18,
       totalExamSubmissions: 1,
       createdAt: new Date('2021-09-01').toISOString(),
@@ -102,16 +102,17 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Aspiring artist with a keen interest in history.',
       address: '789 Kisumu St, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL006', name: 'Grade 9' }], // Updated to array
+      academicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       parentId: 'PAR003',
       parentName: 'Elizabeth Kimani',
       parentEmail: 'elizabeth.k@example.com',
       parentPhone: '+254733445566',
+      levelStatus: 'SENIOR', // ADDED: Sample levelStatus
       totalCourses: 4,
       completedCourses: 2,
       certificatesEarned: 1,
       averageProgress: 75.0,
-      totalAssignmentSubmissions: 8, // Renamed
+      totalAssignmentSubmissions: 8,
       totalAttendanceRecords: 25,
       totalExamSubmissions: 3,
       createdAt: new Date('2019-09-01').toISOString(),
@@ -128,16 +129,17 @@ const generateSampleStudentsData = (companyId: string): {
       bio: 'Strong in physics and problem-solving.',
       address: '101 Eldoret Ave, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL005', name: 'Grade 8' }], // Updated to array
+      academicLevels: [{ id: 'AL005', name: 'Grade 8' }],
       parentId: 'PAR004',
       parentName: 'Ruth Njoroge',
       parentEmail: 'ruth.n@example.com',
       parentPhone: '+254744556677',
+      levelStatus: 'JUNIOR', // ADDED: Sample levelStatus
       totalCourses: 3,
       completedCourses: 3,
       certificatesEarned: 2,
       averageProgress: 90.0,
-      totalAssignmentSubmissions: 10, // Renamed
+      totalAssignmentSubmissions: 10,
       totalAttendanceRecords: 22,
       totalExamSubmissions: 4,
       createdAt: new Date('2020-09-01').toISOString(),
@@ -161,6 +163,12 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   let initialStudents: StudentType[] = [];
   let allParents: ParentOption[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
+  // Define StudentLevelStatus options
+  const allStudentLevelStatusOptions: StudentLevelStatusOption[] = [
+    { value: 'JUNIOR', label: 'Junior' },
+    { value: 'SENIOR', label: 'Senior' },
+  ];
+
   let fetchError: boolean = false;
 
   try {
@@ -232,6 +240,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
       initialStudents={initialStudents}
       allParents={allParents}
       allAcademicLevels={allAcademicLevels}
+      allStudentLevelStatusOptions={allStudentLevelStatusOptions} // Pass the new prop
       companyId={companyId}
       apiUrl={apiUrl}
     />

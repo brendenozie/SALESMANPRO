@@ -239,9 +239,14 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
   }
 
   // 5. Render appropriate client component based on user role and category
-  if (userRole === 'STUDENT') {
-    // return <StudentDashboard {...(studentDashboardData as StudentDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
+  if (userRole === 'JUNIOR') {
     return <PlaygroupDashboard/>
+  } 
+  else if (userRole === 'EDUCATOR') {    
+
+    return <StudentDashboard {...(studentDashboardData as StudentDashboardData)} 
+                      companyId={companyId} currentUserId={currentUserId} />;
+
   } else if (userRole === 'EDUCATOR' || userRole === 'TEACHER' || userRole === 'LECTURER' || userRole === 'TUTOR' || userRole === 'HEAD_TEACHER' ||
       userRole == 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD' || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' ||
       userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' ||

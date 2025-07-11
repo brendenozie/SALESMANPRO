@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -33,6 +34,12 @@ export type AcademicLevelOption = {
   sortOrder?: number;
 };
 
+// NEW: Type for StudentLevelStatus
+export type StudentLevelStatusOption = {
+  value: 'JUNIOR' | 'SENIOR'; // Adjust if you have more levels
+  label: string;
+};
+
 export type StudentType = {
   id: string;
   userId: string;
@@ -48,12 +55,13 @@ export type StudentType = {
   parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
-  academicLevels: AcademicLevelOption[]; // CHANGED: Now an array of academic levels
+  academicLevels: AcademicLevelOption[];
+  levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' |null; // ADDED: levelStatus field
   totalCourses: number;
   completedCourses: number;
   certificatesEarned: number;
   averageProgress: number;
-  totalAssignmentSubmissions: number; // Renamed from totalSubmissions
+  totalAssignmentSubmissions: number;
   totalAttendanceRecords: number;
   totalExamSubmissions: number;
   createdAt: string;
@@ -68,21 +76,22 @@ export type ParentOption = {
   loginCode?: string;
 };
 
-
 interface StudentsClientProps {
   initialStudents: StudentType[];
   allParents: ParentOption[];
   allAcademicLevels: AcademicLevelOption[];
+  allStudentLevelStatusOptions: StudentLevelStatusOption[]; // NEW PROP
   companyId: string;
   apiUrl: string;
 }
 
-export default function StudentsClient({ initialStudents, allParents, allAcademicLevels, companyId, apiUrl }: StudentsClientProps) {
+export default function StudentsClient({ initialStudents, allParents, allAcademicLevels, allStudentLevelStatusOptions, companyId, apiUrl }: StudentsClientProps) {
   const [students, setStudents] = useState<StudentType[]>(initialStudents);
   const [parents, setParents] = useState<ParentOption[]>(allParents);
   const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAcademicLevel, setFilterAcademicLevel] = useState('All'); // Filter by academic level ID
+  const [filterLevelStatus, setFilterLevelStatus] = useState('All'); // NEW: Filter by Junior/Senior status
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,6 +118,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       } else {
         const errorData = await studentsRes.json();
         setError(errorData.message || "Failed to fetch students.");
+        // Fallback to initial data if fetch fails
         setStudents(initialStudents);
       }
 
@@ -118,6 +128,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       } else {
         const errorData = await parentsRes.json();
         setError(errorData.message || "Failed to fetch parents.");
+        // Fallback to initial data if fetch fails
         setParents(allParents);
       }
 
@@ -127,11 +138,13 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       } else {
         const errorData = await academicLevelsRes.json();
         setError(errorData.message || "Failed to fetch academic levels.");
+        // Fallback to initial data if fetch fails
         setAcademicLevels(allAcademicLevels);
       }
 
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
+      // Ensure state is reset to initial if network error occurs
       setStudents(initialStudents);
       setParents(allParents);
       setAcademicLevels(allAcademicLevels);
@@ -150,29 +163,32 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
-      const matchesSearch = (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.address?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
-      
+      const matchesSearch =
+        (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.address?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+
       // Check if any of the student's academic levels match the filter
-      const matchesAcademicLevel = filterAcademicLevel === 'All' || 
-                                   student.academicLevels.some(al => al.id === filterAcademicLevel);
+      const matchesAcademicLevel = filterAcademicLevel === 'All' ||  student.academicLevels.some(al => al.id === filterAcademicLevel);
 
-      return matchesSearch && matchesAcademicLevel;
+      // NEW: Check if student's levelStatus matches the filter
+      const matchesLevelStatus = filterLevelStatus === 'All' || student.levelStatus === filterLevelStatus;
+
+      return matchesSearch && matchesAcademicLevel && matchesLevelStatus; // Combine all filters
     }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
-  }, [students, searchTerm, filterAcademicLevel]);
+  }, [students, searchTerm, filterAcademicLevel, filterLevelStatus]); // Add filterLevelStatus to dependencies
 
-  // Helper function to get unique academic levels and count students per level
+  // Helper function to get unique academic levels and count students per level (unchanged logic)
   const getAcademicLevelStats = useMemo(() => {
     const levels: { [levelId: string]: { name: string; count: number } } = {};
     students.forEach(student => {
-      student.academicLevels.forEach(al => { // Iterate through each academic level a student belongs to
+      student.academicLevels.forEach(al => {
         if (levels[al.id]) {
           levels[al.id].count++;
         } else {
@@ -180,7 +196,6 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
         }
       });
     });
-    // Convert to array and sort by academic level sortOrder
     return Object.entries(levels)
       .map(([id, data]) => ({ id, name: data.name, count: data.count }))
       .sort((a, b) => {
@@ -194,7 +209,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalAssignmentSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevels'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => {
     setIsLoading(true);
     setError(null);
-    
+
     const method = studentData.id ? 'PATCH' : 'POST';
 
     try {
@@ -214,6 +229,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       });
 
       if (res.ok) {
+        // Re-fetch all data to ensure the table is updated with the new academic levels
         await fetchStudentsAndParentsAndAcademicLevels();
         setShowFormModal(false);
         setEditingStudent(null);
@@ -255,13 +271,9 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
 
   // --- Calculated Stats ---
   const totalStudents = students.length;
-  // Note: totalCourses, completedCourses, certificatesEarned, averageProgress
-  // are now derived from the API's _count or are 0/0.0 as they are not directly stored.
-  // The API response now provides these as aggregated counts.
   const avgCoursesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.totalCourses, 0) / totalStudents).toFixed(1) : '0';
   const avgProgressPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.averageProgress, 0) / totalStudents).toFixed(1) : '0';
   const avgCertificatesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.certificatesEarned, 0) / totalStudents).toFixed(1) : '0';
-
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen font-sans antialiased">
@@ -353,7 +365,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
           <button
             onClick={() => { setEditingStudent(null); setShowFormModal(true); }}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md
-                         hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
+                    hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
           >
             <UserPlusIcon className="h-5 w-5" /> Add New Student
           </button>
@@ -371,7 +383,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
+                          focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             />
           </div>
           <div className="flex-shrink-0">
@@ -381,8 +393,34 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
               className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             >
               <option value="All">All Academic Levels</option>
-              {academicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
-                <option key={level.id} value={level.id}>{level.name}</option>
+              {/* Categorize options here for filtering */}
+              {academicLevels.filter(level => level.name.toLowerCase().includes('junior') || level.name.toLowerCase().includes('playgroup') || level.name.toLowerCase().includes('kindergarten'))
+                .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                  <option key={level.id} value={level.id}>✨ Junior: {level.name}</option>
+                ))}
+              {academicLevels.filter(level => level.name.toLowerCase().includes('senior') || level.name.toLowerCase().includes('grade'))
+                .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                  <option key={level.id} value={level.id}>🚀 Senior: {level.name}</option>
+                ))}
+              {/* Add any other levels not explicitly categorized */}
+              {academicLevels.filter(level =>
+                  !(level.name.toLowerCase().includes('junior') || level.name.toLowerCase().includes('playgroup') || level.name.toLowerCase().includes('kindergarten') ||
+                    level.name.toLowerCase().includes('senior') || level.name.toLowerCase().includes('grade'))
+                ).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                  <option key={level.id} value={level.id}>{level.name}</option>
+              ))}
+            </select>
+          </div>
+          {/* NEW: Filter by Level Status */}
+          <div className="flex-shrink-0">
+            <select
+              value={filterLevelStatus}
+              onChange={(e) => setFilterLevelStatus(e.target.value)}
+              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
+            >
+              <option value="All">All Student Levels</option>
+              {allStudentLevelStatusOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
           </div>
@@ -395,7 +433,8 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Student</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission #</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Level(s)</th> {/* Updated column header */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Level(s)</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Level</th> {/* NEW COLUMN */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                 <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
@@ -439,10 +478,26 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                         <TagIcon className="h-4 w-4 text-gray-500" />
                         {/* Display all academic levels, or 'N/A' if none */}
                         {student.academicLevels && student.academicLevels.length > 0
-                          ? student.academicLevels.map(al => al.name).join(', ')
+                          ? student.academicLevels.map(al => (
+                              <span key={al.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mr-1 mb-1">
+                                {al.name}
+                              </span>
+                            ))
                           : 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">Enrolled: {new Date(student.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    {/* NEW: Student Level Status Cell */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {student.levelStatus ? (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          student.levelStatus === 'JUNIOR' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                        }`}>
+                          {student.levelStatus.charAt(0) + student.levelStatus.slice(1).toLowerCase()} {/* Displays "Junior" or "Senior" */}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">N/A</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {student.parentName ? (
@@ -462,35 +517,34 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                           )}
                         </>
                       ) : (
-                        <span>N/A</span>
+                        <span className="text-gray-500">No parent assigned</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <BookOpenIcon className="h-4 w-4 text-gray-400" /> Courses: {student.totalCourses}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex items-center">
+                        <div className="relative w-24 h-2 bg-gray-200 rounded-full">
+                          <div
+                            className="absolute h-full rounded-full bg-indigo-500"
+                            style={{ width: `${student.averageProgress}%` }}
+                          ></div>
+                        </div>
+                        <span className="ml-2 text-xs font-medium text-gray-700">{student.averageProgress.toFixed(1)}%</span>
                       </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <CheckCircleIcon className="h-4 w-4 text-gray-400" /> Completed: {student.completedCourses}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <TrophyIcon className="h-4 w-4 text-gray-400" /> Certificates: {student.certificatesEarned}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <ChartBarIcon className="h-4 w-4 text-gray-400" /> Avg. Progress: {student.averageProgress}%
-                      </div>
+                      <div className="text-xs text-gray-500 mt-1">Courses: {student.completedCourses}/{student.totalCourses}</div>
+                      <div className="text-xs text-gray-500">Certificates: {student.certificatesEarned}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                      <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => { setEditingStudent(student); setShowFormModal(true); }}
-                          className="p-2 rounded-full text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition-colors duration-200"
+                          className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-full hover:bg-indigo-100 transition-colors duration-200"
                           title="Edit Student"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteStudent(student.id)}
-                          className="p-2 rounded-full text-red-600 hover:bg-red-50 hover:text-red-800 transition-colors duration-200"
+                          className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-full hover:bg-red-100 transition-colors duration-200"
                           title="Delete Student"
                         >
                           <TrashIcon className="h-5 w-5" />
@@ -501,8 +555,12 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                    No students found matching your criteria.
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <AcademicCapIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No students found</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Get started by adding a new student or adjusting your filters.
+                    </p>
                   </td>
                 </tr>
               )}
@@ -517,11 +575,13 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
           isOpen={showFormModal}
           onClose={() => { setShowFormModal(false); setEditingStudent(null); }}
           onSave={handleSaveStudent}
-          editingStudent={editingStudent}
+          initialData={editingStudent}
           allParents={parents}
-          allAcademicLevels={academicLevels} // Pass academic levels to the modal
+          allAcademicLevels={academicLevels}
+          allStudentLevelStatusOptions={allStudentLevelStatusOptions} // Pass to modal
+          companyId={companyId}
           isLoading={isLoading}
-          companyId={""}
+          error={error}
         />
       )}
     </div>
