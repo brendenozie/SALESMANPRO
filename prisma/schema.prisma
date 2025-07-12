@@ -291,6 +291,7 @@ model Company {
   EventRegistration               EventRegistration[]
   DiscussionPost                  DiscussionPost[]
   DiscussionComment               DiscussionComment[]
+  Project                         Project[]
 }
 
 enum CategoryStatus {
@@ -733,6 +734,9 @@ model Task {
   assignedToId String? @db.ObjectId // User assigned to the task
   assignedTo   User?   @relation(name: "assignedTo", fields: [assignedToId], references: [id])
 
+  projectId String?  @db.ObjectId
+  project   Project? @relation(fields: [projectId], references: [id])
+
   createdById String @db.ObjectId // User who created the task
   createdBy   User   @relation("CreatedTasks", fields: [createdById], references: [id])
 
@@ -987,14 +991,16 @@ model User {
 
   ReturnApprovedBy Return[] @relation("ReturnApprovedBy")
 
-  HeadTeacher       HeadTeacher[] @relation(name: "headteacher")
-  consumerProfile   Consumer[]    @relation("ConsumerProfile")
-  salesAgentProfile SalesAgent[]  @relation("SalesAgentProfile")
-  clientProfile     Client[]      @relation("ClientProfile")
-  Parent            Parent[]      @relation(name: "parent")
-  Student           Student[]     @relation(name: "student")
-  Educator          Educator[]    @relation(name: "educator")
-  Company           Company[]     @relation(name: "companyAdmin")
+  HeadTeacher       HeadTeacher[]   @relation(name: "headteacher")
+  consumerProfile   Consumer[]      @relation("ConsumerProfile")
+  salesAgentProfile SalesAgent[]    @relation("SalesAgentProfile")
+  clientProfile     Client[]        @relation("ClientProfile")
+  Parent            Parent[]        @relation(name: "parent")
+  Student           Student[]       @relation(name: "student")
+  Educator          Educator[]      @relation(name: "educator")
+  Company           Company[]       @relation(name: "companyAdmin")
+  ProjectMember     ProjectMember[]
+  Donation          Donation[]
 }
 
 enum Status {
@@ -2325,6 +2331,9 @@ model Event {
   imageUrl String? // URL to an image for the event
   videoUrl String? // URL to a video for the event
 
+  projectId String?  @db.ObjectId
+  project   Project? @relation(fields: [projectId], references: [id])
+
   eventType   EventType   @default(GENERAL) // Categorization of the event
   eventStatus EventStatus @default(SCHEDULED) // Current status of the event
 
@@ -2854,4 +2863,109 @@ model ProductMetrics {
   @@index([productId])
   @@index([metricType])
   @@index([date])
+}
+
+// New model for managing Projects
+model Project {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      ProjectStatus @default(ONGOING) // Define ProjectStatus enum below
+  budget      Float?
+  companyId   String?       @db.ObjectId // Link to Company if projects are company-specific
+  company     Company?      @relation(fields: [companyId], references: [id])
+
+  // Relationships
+  tasks     Task[]
+  events    Event[]
+  donations Donation[] // Link donations to projects
+  members   ProjectMember[] // Many-to-many relationship with Users for project members
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Enum for Project Status
+enum ProjectStatus {
+  PLANNING
+  ONGOING
+  COMPLETED
+  ARCHIVED
+  CANCELLED
+}
+
+// Join table for Project Members (Many-to-Many between Project and User)
+model ProjectMember {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  projectId String @db.ObjectId
+  userId    String @db.ObjectId
+  role      String // e.g., "Manager", "Contributor", "Viewer"
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId]) // Ensures a user can only have one role per project
+}
+
+// New model for managing Donation Campaigns
+model Campaign {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String?
+  startDate     DateTime?
+  endDate       DateTime?
+  goalAmount    Float?
+  currentAmount Float?         @default(0) // Track how much has been raised
+  status        CampaignStatus @default(ACTIVE) // Define CampaignStatus enum below
+
+  donations Donation[] // Link donations to campaigns
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Enum for Campaign Status
+enum CampaignStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+// New model for managing Donations
+model Donation {
+  id                 String         @id @default(auto()) @map("_id") @db.ObjectId
+  donorId            String         @db.ObjectId
+  donor              User           @relation(fields: [donorId], references: [id])
+  amount             Float
+  currency           String         @default("USD")
+  donationDate       DateTime       @default(now())
+  paymentMethod      String? // e.g., "Credit Card", "M-Pesa", "Bank Transfer"
+  notes              String?
+  status             DonationStatus @default(SUCCESS) // Define DonationStatus enum below
+  acknowledgmentSent Boolean        @default(false)
+
+  // Optional relationships to projects and campaigns
+  projectId String?  @db.ObjectId
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  campaignId String?   @db.ObjectId
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+
+  transactionId String? @unique // Optional: ID from payment gateway
+
+  createdAt DateTime @default(now())
+}
+
+// Enum for Donation Status
+enum DonationStatus {
+  SUCCESS
+  PENDING
+  FAILED
+  REFUNDED
 }

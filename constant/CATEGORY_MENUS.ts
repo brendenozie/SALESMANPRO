@@ -16,6 +16,7 @@ import {
   AcademicCapIcon,
   FilmIcon,
   CreditCardIcon,
+  MegaphoneIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -141,11 +142,12 @@ export const getCategoryMenus = (adminSlug: string) => ({
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
-
+  
   "Nonprofit & Community": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
     { label: "Donations", href: `/admin/${adminSlug}/donations`, icon: HeartIcon },
+    { label: "Campaigns", href: `/admin/${adminSlug}/campaigns`, icon: MegaphoneIcon }, // Added Campaigns link
     { label: "Members", href: `/admin/${adminSlug}/members`, icon: UsersIcon },
   ],
 

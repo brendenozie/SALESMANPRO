@@ -1,10 +1,10 @@
 // app/[slug]/layout.tsx
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
-import prisma from '../../../server/db/prismadb';
-import { StoreContextProvider,} from '../../../contexts/StoreContext';
+import prisma from '@/server/db/prismadb';
+import { StoreContextProvider,} from '@/contexts/StoreContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
-import { transformCompanyToStoreForm } from '../../../utils/transformPrismaToStoreForm';
+import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
 
 export const dynamic = 'force-dynamic';
 

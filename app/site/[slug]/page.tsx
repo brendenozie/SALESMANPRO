@@ -3,7 +3,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import { useStoreContext } from '../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 import categoryBodyLayoutMap from '@/components/site/layouts/StoreBody';
 
 
