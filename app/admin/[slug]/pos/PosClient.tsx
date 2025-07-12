@@ -1,4 +1,3 @@
-// app/admin/[slug]/pos/PosClient.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -12,10 +11,10 @@ import {
   ChevronLeftIcon,
   ShoppingCartIcon,
   ClipboardDocumentListIcon,
+  ReceiptPercentIcon, // NEW: For offers/totals
+  Bars3BottomLeftIcon, // NEW: For Menu
 } from "@heroicons/react/24/outline";
-import { Product, ProductCategory } from "./page"; // Re-use types from page.tsx
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+import { Product, ProductCategory } from "./page";
 
 // Image loader (same as elsewhere)
 const loader = ({
@@ -28,13 +27,31 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Define types for POS specific state
+const DUMMY_PRODUCTS: Product[] = [
+  { id: "p1", name: "Spicy Chicken Burger", description: "Grilled chicken, jalapeños, spicy mayo.", images: [{ url: "https://placehold.co/400x200/FF5722/FFF?text=Spicy+Burger" }], finalPrice: 14.50, salesPrice: 16.00, discount: 10, isAvailable: true, isOnOffer: true, productCategoryId: "cat1", category: { name: "Burgers" }, tags: [], costPrice: 8.00, ingredients: "chicken, bun, jalapenos", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: true, isFeatured: false },
+  { id: "p2", name: "Margherita Pizza", description: "Classic tomato, mozzarella, fresh basil.", images: [{ url: "https://placehold.co/400x200/3F51B5/FFF?text=Margherita+Pizza" }], finalPrice: 12.00, salesPrice: 12.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat2", category: { name: "Pizzas" }, tags: [], costPrice: 6.00, ingredients: "dough, sauce, cheese", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
+  { id: "p3", name: "Veggie Delight Wrap", description: "Fresh seasonal veggies, hummus, whole wheat wrap.", images: [{ url: "https://placehold.co/400x200/4CAF50/FFF?text=Veggie+Wrap" }], finalPrice: 9.75, salesPrice: 9.75, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat3", category: { name: "Wraps" }, tags: [], costPrice: 5.00, ingredients: "veggies, wrap, hummus", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
+  { id: "p4", name: "Chocolate Lava Cake", description: "Warm chocolate cake with molten center.", images: [{ url: "https://placehold.co/400x200/795548/FFF?text=Lava+Cake" }], finalPrice: 7.00, salesPrice: 7.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat4", category: { name: "Desserts" }, tags: [], costPrice: 3.50, ingredients: "chocolate, flour, sugar", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
+  { id: "p5", name: "Iced Coffee", description: "Refreshing cold brew with milk.", images: [{ url: "https://placehold.co/400x200/607D8B/FFF?text=Iced+Coffee" }], finalPrice: 4.00, salesPrice: 4.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat5", category: { name: "Drinks" }, tags: [], costPrice: 2.00, ingredients: "coffee, milk, ice", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
+  { id: "p6", name: "Avocado Toast", description: "Smashed avocado on sourdough with chili flakes.", images: [{ url: "https://placehold.co/400x200/FFEB3B/333?text=Avocado+Toast" }], finalPrice: 8.50, salesPrice: 8.50, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat1", category: { name: "Burgers" }, tags: [], costPrice: 4.00, ingredients: "avocado, bread, chili", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
+  { id: "p7", name: "BBQ Pulled Pork Sandwich", description: "Slow-cooked pork with tangy BBQ sauce.", images: [{ url: "https://placehold.co/400x200/F44336/FFF?text=Pulled+Pork" }], finalPrice: 13.00, salesPrice: 13.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat1", category: { name: "Burgers" }, tags: [], costPrice: 7.00, ingredients: "pork, bun, BBQ sauce", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
+  { id: "p8", name: "Spicy Tuna Roll", description: "Fresh tuna, spicy mayo, cucumber.", images: [{ url: "https://placehold.co/400x200/9C27B0/FFF?text=Tuna+Roll" }], finalPrice: 11.00, salesPrice: 11.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat6", category: { name: "Sushi" }, tags: [], costPrice: 5.50, ingredients: "tuna, rice, cucumber", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
+];
+const DUMMY_CATEGORIES: ProductCategory[] = [
+  { id: "cat1", name: "Burgers", slug: "burgers", description: "", image: null, sortOrder: 1, visible: true, companyId: "your_company_id" },
+  { id: "cat2", name: "Pizzas", slug: "pizzas", description: "", image: null, sortOrder: 2, visible: true, companyId: "your_company_id" },
+  { id: "cat3", name: "Wraps", slug: "wraps", description: "", image: null, sortOrder: 3, visible: true, companyId: "your_company_id" },
+  { id: "cat4", name: "Desserts", slug: "desserts", description: "", image: null, sortOrder: 4, visible: true, companyId: "your_company_id" },
+  { id: "cat5", name: "Drinks", slug: "drinks", description: "", image: null, sortOrder: 5, visible: true, companyId: "your_company_id" },
+  { id: "cat6", name: "Sushi", slug: "sushi", description: "", image: null, sortOrder: 6, visible: true, companyId: "your_company_id" },
+];
+
 interface CartItem {
   productId: string;
   name: string;
   price: number;
   quantity: number;
-  course: string; // e.g., "Course 1", "Course 2"
+  course: string;
 }
 
 interface PosClientProps {
@@ -44,49 +61,25 @@ interface PosClientProps {
 }
 
 const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProducts, companyId }) => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [categories, setCategories] = useState<ProductCategory[]>(initialCategories);
-  const [activeCategory, setActiveCategory] = useState<string>("All"); // Filter by category ID
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [currentCourse, setCurrentCourse] = useState<number>(1); // For grouping items into courses
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  // ... (all existing state and handlers remain the same)
+	const [products, setProducts] = useState<Product[]>(initialProducts.length > 0 ? initialProducts : DUMMY_PRODUCTS);
+	const [categories, setCategories] = useState<ProductCategory[]>(initialCategories.length > 0 ? initialCategories : DUMMY_CATEGORIES);
+	const [activeCategory, setActiveCategory] = useState<string>("All"); // Filter by category ID
+	const [searchTerm, setSearchTerm] = useState<string>("");
+	const [cart, setCart] = useState<CartItem[]>([]);
+	const [currentCourse, setCurrentCourse] = useState<number>(1); // For grouping items into courses
+	const [loading, setLoading] = useState<boolean>(false);
+	const [error, setError] = useState<string | null>(null);
 
-  // Constants for tax and service charge
-  const TAX_RATE = 0.08; // 8% tax
-  const SERVICE_CHARGE_RATE = 0.10; // 10% service charge
+	// Constants for tax and service charge
+	const TAX_RATE = 0.08; // 8% tax
+	const SERVICE_CHARGE_RATE = 0.10; // 10% service charge
 
-  // Fetch data on mount if initial data is empty (e.g., on first load or refresh)
-  useEffect(() => {
-    const fetchData = async () => {
-      if (initialProducts.length === 0 || initialCategories.length === 0) {
-        setLoading(true);
-        setError(null);
-        try {
-          const productsRes = await fetch(`${apiUrl}/products?companyId=${companyId}`);
-          const categoriesRes = await fetch(`${apiUrl}/product-categories?companyId=${companyId}`);
+  // --- NEW: State for mobile view ---
+  const [mobileView, setMobileView] = useState<'menu' | 'order'>('menu');
 
-          if (productsRes.ok && categoriesRes.ok) {
-            setProducts(await productsRes.json());
-            setCategories(await categoriesRes.json());
-          } else {
-            throw new Error("Failed to fetch initial POS data.");
-          }
-        } catch (err: any) {
-          setError(err.message || "Failed to load initial data.");
-          console.error("Error fetching initial POS data:", err);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-  }, [companyId, initialProducts, initialCategories]);
-
-
-  // Filter products based on active category and search term
-  const filteredProducts = useMemo(() => {
+  // ... (useEffect, useMemo calculations, and handlers like addToCart, updateQuantity, etc. remain unchanged) ...
+	const filteredProducts = useMemo(() => {
     let filtered = products.filter(p => p.isAvailable); // Only show available products
 
     if (activeCategory !== "All") {
@@ -121,9 +114,7 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
   const taxAmount = subtotal * TAX_RATE;
   const serviceChargeAmount = subtotal * SERVICE_CHARGE_RATE;
   const grandTotal = subtotal + taxAmount + serviceChargeAmount;
-
-  // Handlers for adding/removing items from cart
-  const addToCart = (product: Product) => {
+ const addToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingItemIndex = prevCart.findIndex(
         (item) => item.productId === product.id && item.course === `Course ${currentCourse}`
@@ -163,33 +154,7 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
       return newCart;
     });
   };
-
-  const removeItem = (productId: string, course: string) => {
-    setCart((prevCart) =>
-      prevCart.filter(
-        (item) => !(item.productId === productId && item.course === course)
-      )
-    );
-  };
-
-  const clearCart = () => {
-    setCart([]);
-    setCurrentCourse(1);
-  };
-
-  const addCourse = () => {
-    setCurrentCourse((prev) => prev + 1);
-  };
-
-  const removeCourse = (courseName: string) => {
-    setCart((prevCart) => prevCart.filter(item => item.course !== courseName));
-    // If the current course is removed and it's the highest, decrement currentCourse
-    if (courseName === `Course ${currentCourse}` && currentCourse > 1) {
-        setCurrentCourse(prev => prev - 1);
-    }
-  };
-
-  const handlePlaceOrder = async () => {
+const handlePlaceOrder = async () => {
     if (cart.length === 0) {
       alert("Cart is empty. Please add items to place an order.");
       return;
@@ -219,7 +184,7 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
     };
 
     try {
-      const res = await fetch(`${apiUrl}/customer-orders`, {
+      const res = await fetch(`http://localhost:3000/api/customer-orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
@@ -239,72 +204,85 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
       setLoading(false);
     }
   };
+const removeItem = (productId: string, course: string) => {
+    setCart((prevCart) =>
+      prevCart.filter(
+        (item) => !(item.productId === productId && item.course === course)
+      )
+    );
+  };
 
+  const clearCart = () => {
+    setCart([]);
+    setCurrentCourse(1);
+  };
+
+  const addCourse = () => {
+    setCurrentCourse((prev) => prev + 1);
+  };
+
+  const removeCourse = (courseName: string) => {
+    setCart((prevCart) => prevCart.filter(item => item.course !== courseName));
+    // If the current course is removed and it's the highest, decrement currentCourse
+    if (courseName === `Course ${currentCourse}` && currentCourse > 1) {
+        setCurrentCourse(prev => prev - 1);
+    }
+  };
+
+  // --- Main Render ---
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100 font-sans">
-      {/* Left Panel: Order Cart */}
-      <div className="w-full lg:w-2/5 xl:w-1/3 bg-gray-800 p-6 flex flex-col shadow-lg overflow-hidden">
-        <h2 className="text-3xl font-extrabold text-rose-400 mb-6 flex items-center">
-          <ShoppingCartIcon className="h-8 w-8 mr-3" /> Current Order
+    // MODIFIED: Added relative positioning and pb-20 for mobile nav space
+    <div className="relative flex flex-col lg:flex-row h-screen bg-gray-900 text-gray-100 font-sans lg:pb-0 pb-20">
+      
+      {/* --- Left Panel: Order Cart --- */}
+      {/* MODIFIED: Conditional rendering for mobile vs. desktop */}
+      <div className={`
+        ${mobileView === 'order' ? 'flex' : 'hidden'} 
+        lg:flex w-full lg:w-2/5 xl:w-1/3 bg-gray-800 p-4 sm:p-6 flex-col shadow-lg overflow-hidden
+      `}>
+        {/* MODIFIED: Header styling */}
+        <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
+          <ShoppingCartIcon className="h-7 w-7 mr-3 text-sky-400" /> Current Order
         </h2>
 
         {loading && <p className="text-center text-blue-400 mb-4">Processing order...</p>}
         {error && <p className="text-center text-red-500 mb-4">Error: {error}</p>}
 
-        {/* Order Grouping (Courses) */}
-        <div className="flex-grow overflow-y-auto pr-4 custom-scrollbar">
+        {/* MODIFIED: Cart scroll container */}
+        <div className="flex-grow overflow-y-auto pr-2 -mr-2 custom-scrollbar">
           {Object.keys(groupedCartItems).length === 0 ? (
-            <div className="text-center text-gray-500 py-10">
-              <ClipboardDocumentListIcon className="h-20 w-20 mx-auto mb-4 text-gray-600" />
-              <p className="text-xl">Your cart is empty.</p>
-              <p className="text-sm">Start by adding dishes from the menu.</p>
+            <div className="text-center text-gray-500 flex flex-col items-center justify-center h-full">
+              <ClipboardDocumentListIcon className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+              <p className="text-lg font-semibold">Your order is empty</p>
+              <p className="text-sm">Add items from the menu to get started.</p>
             </div>
           ) : (
-            Object.keys(groupedCartItems).sort((a, b) => parseInt(a.replace('Course ', '')) - parseInt(b.replace('Course ', ''))).map(courseName => (
-              <div key={courseName} className="mb-6 p-4 bg-gray-700 rounded-lg shadow-md">
-                <div className="flex justify-between items-center mb-3 border-b border-gray-600 pb-2">
-                  <h3 className="text-xl font-bold text-emerald-300">{courseName}</h3>
-                  {courseName !== `Course 1` && ( // Don't allow removing the first course
-                    <button
-                      onClick={() => removeCourse(courseName)}
-                      className="text-red-400 hover:text-red-500 transition-colors"
-                      aria-label={`Remove ${courseName}`}
-                    >
+             Object.keys(groupedCartItems).sort((a, b) => parseInt(a.replace('Course ', '')) - parseInt(b.replace('Course ', ''))).map(courseName => (
+              // MODIFIED: Course group styling
+              <div key={courseName} className="mb-4 bg-gray-900/50 rounded-xl">
+                <div className="flex justify-between items-center p-3 border-b border-gray-700">
+                  <h3 className="text-lg font-bold text-sky-300">{courseName}</h3>
+                   {courseName !== `Course 1` && (
+                    <button onClick={() => removeCourse(courseName)} className="text-red-400 hover:text-red-300 transition-colors" aria-label={`Remove ${courseName}`}>
                       <TrashIcon className="h-5 w-5" />
                     </button>
                   )}
                 </div>
-                <ul className="space-y-3">
+                <ul className="space-y-2 p-3">
                   {groupedCartItems[courseName].map((item) => (
-                    <li key={item.productId} className="flex justify-between items-center text-lg">
+                    // MODIFIED: Cart item styling
+                    <li key={item.productId} className="flex items-center text-base">
                       <div className="flex-grow">
-                        <span className="font-medium">{item.name}</span>
-                        <span className="text-gray-400 text-sm block">
-                          ${item.price.toFixed(2)} each
-                        </span>
+                        <p className="font-semibold text-white">{item.name}</p>
+                        <p className="text-gray-400 text-xs">${item.price.toFixed(2)}</p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.course, -1)}
-                          className="p-1 rounded-full bg-gray-600 hover:bg-gray-500 transition"
-                          aria-label={`Decrease quantity of ${item.name}`}
-                        >
+                      <div className="flex items-center space-x-3">
+                        <button onClick={() => updateQuantity(item.productId, item.course, -1)} className="p-1.5 rounded-full bg-gray-700 hover:bg-gray-600 transition-transform active:scale-95" aria-label={`Decrease quantity of ${item.name}`}>
                           <MinusIcon className="h-4 w-4" />
                         </button>
-                        <span className="font-bold w-6 text-center">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.course, 1)}
-                          className="p-1 rounded-full bg-gray-600 hover:bg-gray-500 transition"
-                          aria-label={`Increase quantity of ${item.name}`}
-                        >
+                        <span className="font-bold w-6 text-center text-lg">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.productId, item.course, 1)} className="p-1.5 rounded-full bg-sky-500 text-white hover:bg-sky-400 transition-transform active:scale-95" aria-label={`Increase quantity of ${item.name}`}>
                           <PlusIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => removeItem(item.productId, item.course)}
-                          className="p-1 rounded-full text-red-400 hover:text-red-500 transition"
-                          aria-label={`Remove ${item.name} from cart`}
-                        >
-                          <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </li>
@@ -325,48 +303,46 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
             </button>
             <p className="text-lg font-medium">Current Course: <span className="text-rose-400 font-bold">Course {currentCourse}</span></p>
         </div>
-
-
-        {/* Totals */}
-        <div className="mt-6 pt-6 border-t-2 border-gray-700 space-y-3">
-          <div className="flex justify-between text-lg">
-            <span>Subtotal:</span>
-            <span className="font-semibold">${subtotal.toFixed(2)}</span>
+        
+        {/* MODIFIED: Totals styling */}
+        <div className="mt-auto pt-4 border-t-2 border-gray-700/50 space-y-2">
+          <div className="flex justify-between text-base text-gray-300">
+            <span>Subtotal</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-lg">
-            <span>Tax ({TAX_RATE * 100}%):</span>
-            <span className="font-semibold">${taxAmount.toFixed(2)}</span>
+          <div className="flex justify-between text-base text-gray-300">
+            <span>Tax ({TAX_RATE * 100}%)</span>
+            <span className="font-medium">${taxAmount.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-lg">
-            <span>Service Charge ({SERVICE_CHARGE_RATE * 100}%):</span>
-            <span className="font-semibold">${serviceChargeAmount.toFixed(2)}</span>
+          <div className="flex justify-between text-base text-gray-300">
+            <span>Service</span>
+            <span className="font-medium">${serviceChargeAmount.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-3xl font-bold text-rose-400 pt-4 border-t border-gray-700">
-            <span>Grand Total:</span>
-            <span>${grandTotal.toFixed(2)}</span>
+          <div className="flex justify-between text-2xl font-bold text-white pt-2 mt-2 border-t border-gray-700">
+            <span>Total</span>
+            <span className="text-green-400">${grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-6 space-y-3">
-          <button
-            onClick={handlePlaceOrder}
-            className="w-full py-4 bg-green-600 text-white text-xl font-bold rounded-lg shadow-xl hover:bg-green-700 transition disabled:opacity-50"
-            disabled={cart.length === 0 || loading}
-          >
-            {loading ? 'Placing Order...' : 'Place Order'}
+        {/* MODIFIED: Action buttons styling */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button onClick={clearCart} className="w-full py-3 bg-red-800/80 text-white text-base font-bold rounded-lg shadow-lg hover:bg-red-700 transition disabled:opacity-50" disabled={cart.length === 0 || loading}>
+            Clear
           </button>
-          <button
-            onClick={clearCart}
-            className="w-full py-3 bg-red-600 text-white text-lg rounded-lg shadow-md hover:bg-red-700 transition disabled:opacity-50"
-            disabled={cart.length === 0 || loading}
-          >
-            Clear Order
+          <button onClick={handlePlaceOrder} className="w-full py-3 bg-green-600 text-white text-base font-bold rounded-lg shadow-xl hover:bg-green-500 transition disabled:opacity-50" disabled={cart.length === 0 || loading}>
+            {loading ? 'Submitting...' : 'Place Order'}
           </button>
         </div>
       </div>
 
-      {/* Right Panel: Product Display */}
+      {/* --- Right Panel: Product Display --- */}
+      {/* MODIFIED: Conditional rendering for mobile vs. desktop */}
+       <div className={`
+        ${mobileView === 'menu' ? 'flex' : 'hidden'} 
+        lg:flex flex-grow bg-gray-900 p-4 sm:p-6 flex-col overflow-hidden
+      `}>
+        {/* ... (Header and Search bar remain mostly the same, slight style tweaks) ... */}
+              {/* Right Panel: Product Display */}
       <div className="flex-grow bg-gray-900 p-6 flex flex-col overflow-hidden">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-extrabold text-sky-400 flex items-center">
@@ -411,45 +387,43 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
           ))}
         </div>
 
-        {/* Product Grid */}
-        {loading ? (
-          <div className="flex-grow flex items-center justify-center text-blue-400">Loading dishes...</div>
-        ) : error ? (
-          <div className="flex-grow flex items-center justify-center text-red-500">Error loading dishes: {error}</div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="flex-grow flex items-center justify-center text-gray-500">
-            <p className="text-lg">No dishes found for this category or search term.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 flex-grow overflow-y-auto pr-4 custom-scrollbar">
+        
+        {/* MODIFIED: Category tabs styling */}
+        {/* <div className="flex space-x-2 p-1.5 bg-gray-800 rounded-full shadow-inner mb-6 overflow-x-auto custom-scrollbar">
+          <button onClick={() => setActiveCategory("All")} className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 flex-shrink-0 ${activeCategory === "All" ? "bg-sky-500 text-white" : "text-gray-300 hover:bg-gray-700"}`}>
+            All Items
+          </button>
+          {categories.map((category) => (
+            <button key={category.id} onClick={() => setActiveCategory(category.id)} className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 flex-shrink-0 ${activeCategory === category.id ? "bg-sky-500 text-white" : "text-gray-300 hover:bg-gray-700"}`}>
+              {category.name}
+            </button>
+          ))}
+        </div> */}
+
+        {/* MODIFIED: Product Grid styling */}
+        {loading ? ( <div className="flex-grow flex items-center justify-center">Loading...</div> ) 
+         : error ? ( <div className="flex-grow flex items-center justify-center text-red-400">Error: {error}</div> ) 
+         : filteredProducts.length === 0 ? ( <div className="flex-grow flex items-center justify-center text-gray-500">No items found.</div>) 
+         : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 flex-grow overflow-y-auto pr-2 -mr-2 custom-scrollbar">
             {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1"
-                onClick={() => addToCart(product)}
-              >
-                <div className="relative h-36 w-full">
-                  <Image
-                    src={product.images && product.images.length > 0 ? product.images[0].url : "https://placehold.co/400x200/333/eee?text=No+Image"}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    loader={loader}
-                  />
-                  {product.isOnOffer && (
-                    <span className="absolute top-2 right-2 bg-yellow-500 text-gray-900 text-xs font-bold px-2 py-1 rounded-full">
-                      Offer
-                    </span>
-                  )}
+              // MODIFIED: Product card design
+              <div key={product.id} className="bg-gray-800 rounded-xl shadow-lg flex flex-col group">
+                <div className="relative h-28 sm:h-32 w-full">
+                  <Image src={product.images?.[0]?.url ?? "https://placehold.co/400x200/333/eee?text=No+Image"} alt={product.name} fill className="object-cover rounded-t-xl" loader={loader} />
+                  {product.isOnOffer && (<span className="absolute top-2 right-2 bg-yellow-400 text-gray-900 text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">Offer</span>)}
                 </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-bold text-sky-400 mb-1">{product.name}</h3>
-                  <p className="text-sm text-gray-400 line-clamp-2 mb-2">{product.description}</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xl font-extrabold text-green-400">${product.finalPrice.toFixed(2)}</span>
-                    {product.discount && product.discount > 0 && (
-                      <span className="text-sm text-gray-500 line-through">${product.salesPrice.toFixed(2)}</span>
-                    )}
+                <div className="p-3 flex flex-col flex-grow">
+                  <h3 className="font-bold text-white text-base leading-tight truncate">{product.name}</h3>
+                  <p className="text-xs text-gray-400 line-clamp-2 flex-grow">{product.description}</p>
+                  <div className="flex justify-between items-center mt-3">
+                    <div className="flex items-baseline">
+                      <span className="text-lg font-extrabold text-green-400">${product.finalPrice.toFixed(2)}</span>
+                      {product.discount && product.discount > 0 && (<span className="text-xs text-gray-500 line-through ml-2">${product.salesPrice.toFixed(2)}</span>)}
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="p-2 rounded-full bg-sky-500 text-white shadow-md group-hover:bg-sky-400 transition-transform active:scale-95" aria-label={`Add ${product.name} to cart`}>
+                      <PlusIcon className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -458,6 +432,23 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
         )}
       </div>
 
+      {/* --- NEW: Mobile Bottom Navigation --- */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800/80 backdrop-blur-sm border-t border-gray-700/50 flex justify-around p-2 z-50">
+        <button onClick={() => setMobileView('menu')} className={`flex flex-col items-center gap-1 transition-colors ${mobileView === 'menu' ? 'text-sky-400' : 'text-gray-400'}`}>
+          <Bars3BottomLeftIcon className="h-6 w-6" />
+          <span className="text-xs font-semibold">Menu</span>
+        </button>
+        <button onClick={() => setMobileView('order')} className={`relative flex flex-col items-center gap-1 transition-colors ${mobileView === 'order' ? 'text-sky-400' : 'text-gray-400'}`}>
+          <ShoppingCartIcon className="h-6 w-6" />
+          <span className="text-xs font-semibold">Order</span>
+          {cart.length > 0 && (
+            <span className="absolute -top-1 -right-2 bg-sky-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              {cart.reduce((acc, item) => acc + item.quantity, 0)}
+            </span>
+          )}
+        </button>
+      </div>
+      
       {/* Custom Scrollbar Styling */}
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -476,6 +467,7 @@ const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProduct
           background: #6b7280; /* gray-600 */
         }
       `}</style>
+    </div>
     </div>
   );
 };

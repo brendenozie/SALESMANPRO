@@ -69,7 +69,7 @@ export default async function AdminStoreLayout({
   // Pass storeFormData and userRole to the client component via context
   return (
     <StoreContextProvider initialStore={storeFormData} userRole={userRole} userId={session.user.id}>
-      <AdminLayout>
+      <AdminLayout params={params}>
         {children}
       </AdminLayout>
     </StoreContextProvider>
