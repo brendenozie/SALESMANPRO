@@ -1,7 +1,7 @@
 // app/admin/donations/DonationsClient.tsx
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,19 +12,66 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Donation } from "./page"; // Import the Donation type
+import { Donation } from "./page";
+import Modal from "@/components/Modal"; // Adjust path as needed
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// Placeholder types for dropdowns - In a real app, these would be fetched from your APIs
+type UserOption = { id: string; name: string; email: string };
+type ProjectOption = { id: string; name: string };
+type CampaignOption = { id: string; name: string };
 
 interface ClientProps {
   donationsData: Donation[];
 }
 
-const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
+const DonationsClient: React.FC<ClientProps> = ({ donationsData: initialDonationsData }) => {
+  const [donationsData, setDonationsData] = useState<Donation[]>(initialDonationsData);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Placeholder data for dropdowns (replace with actual fetched data)
+  const [users, setUsers] = useState<UserOption[]>([
+    { id: 'user1', name: 'John Doe', email: 'john.doe@example.com' },
+    { id: 'user2', name: 'Jane Smith', email: 'jane.smith@example.com' },
+  ]);
+  const [projects, setProjects] = useState<ProjectOption[]>([
+    { id: 'project1', name: 'Community Garden' },
+    { id: 'project2', name: 'Education Drive' },
+  ]);
+  const [campaigns, setCampaigns] = useState<CampaignOption[]>([
+    { id: 'campaign1', name: 'Summer Fundraiser' },
+    { id: 'campaign2', name: 'Winter Aid Appeal' },
+  ]);
+
   const itemsPerPage = 6;
+
+  // Function to refresh data
+  const refreshDonations = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/donations`, { cache: "no-store" }); // Adjust for companyId if needed
+      if (res.ok) {
+        const data = await res.json();
+        setDonationsData(data);
+      } else {
+        throw new Error(`Failed to fetch donations: ${res.statusText}`);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to refresh donations.");
+      console.error("Error refreshing donations:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter by donor name, email, or project/campaign name
   const filteredDonations = useMemo(() => {
@@ -79,6 +126,37 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
     ],
   };
 
+  // Handle Add Donation
+  const handleAddDonation = async (newDonation: Omit<Donation, 'id' | 'createdAt' | 'donor' | 'project' | 'campaign'>) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/donations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newDonation),
+      });
+
+      if (res.ok) {
+        setIsAddModalOpen(false);
+        await refreshDonations(); // Refresh the list after successful addition
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to add donation.');
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to add donation.");
+      console.error("Error adding donation:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Placeholder for Edit/Delete actions
+  const handleEdit = (id: string) => alert(`Editing donation with ID ${id}`);
+  const handleDelete = (id: string) => alert(`Deleting donation with ID ${id}`);
 
   return (
     <main className="flex-grow container mx-auto px-6 py-8 bg-gray-900 text-gray-100 min-h-screen">
@@ -87,8 +165,8 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
           Donations Management
         </h1>
 
-        {/* Search Bar */}
-        <div className="flex justify-center mb-8">
+        {/* Action Bar: Search and Add Button */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
           <input
             type="text"
             placeholder="Search donations by donor, project, or campaign..."
@@ -97,22 +175,33 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none shadow-md"
+            className="w-full sm:max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none shadow-md"
             aria-label="Search donations"
           />
-          {searchTerm && (
+          <div className="flex gap-3">
+            {searchTerm && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
+                aria-label="Clear search"
+              >
+                Clear
+              </button>
+            )}
             <button
-              onClick={() => {
-                setSearchTerm("");
-                setCurrentPage(1);
-              }}
-              className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
-              aria-label="Clear search"
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-6 py-3 bg-teal-500 text-white rounded-lg shadow-lg hover:bg-teal-600 transition-all font-semibold"
             >
-              Clear
+              Add New Donation
             </button>
-          )}
+          </div>
         </div>
+
+        {loading && <p className="text-center text-blue-400 mb-4">Loading donations...</p>}
+        {error && <p className="text-center text-red-500 mb-4">Error: {error}</p>}
 
         {/* Summary Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -163,7 +252,7 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
 
         {/* Donations List */}
         <section>
-          {paginatedDonations.length === 0 ? (
+          {paginatedDonations.length === 0 && !loading && !error ? (
             <div className="text-center py-16">
               <p className="text-lg text-gray-400">
                 No donations match your search or are available.
@@ -175,8 +264,8 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
                 <DonationCard
                   key={donation.id}
                   donation={donation}
-                  onEdit={(id) => alert(`Editing donation with ID ${id}`)}
-                  onDelete={(id) => alert(`Deleting donation with ID ${id}`)}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
@@ -187,7 +276,7 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
         {totalPages > 1 && (
           <div className="flex justify-center space-x-4 mt-8">
             <button
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || loading}
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               className="px-4 py-2 bg-gray-700 rounded-lg text-white disabled:opacity-50 hover:bg-gray-600 transition"
             >
@@ -197,7 +286,7 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
               {`Page ${currentPage} of ${totalPages}`}
             </span>
             <button
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || loading}
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
@@ -208,6 +297,18 @@ const DonationsClient: React.FC<ClientProps> = ({ donationsData }) => {
           </div>
         )}
       </div>
+
+      {/* Add Donation Modal */}
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Donation">
+        <AddDonationForm
+          onSubmit={handleAddDonation}
+          onCancel={() => setIsAddModalOpen(false)}
+          isLoading={loading}
+          users={users}
+          projects={projects}
+          campaigns={campaigns}
+        />
+      </Modal>
     </main>
   );
 };
@@ -281,3 +382,189 @@ const DonationCard: React.FC<DonationCardProps> = ({ donation, onEdit, onDelete 
     </div>
   </div>
 );
+
+// Add Donation Form Component
+interface AddDonationFormProps {
+  onSubmit: (donation: Omit<Donation, 'id' | 'createdAt' | 'donor' | 'project' | 'campaign'>) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+  users: UserOption[];
+  projects: ProjectOption[];
+  campaigns: CampaignOption[];
+}
+
+const AddDonationForm: React.FC<AddDonationFormProps> = ({ onSubmit, onCancel, isLoading, users, projects, campaigns }) => {
+  const [donorId, setDonorId] = useState('');
+  const [amount, setAmount] = useState<string>('');
+  const [currency, setCurrency] = useState('USD');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [notes, setNotes] = useState('');
+  const [status, setStatus] = useState<Donation['status']>('PENDING');
+  const [projectId, setProjectId] = useState('');
+  const [campaignId, setCampaignId] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+
+    if (!donorId) {
+      setFormError('Donor is required.');
+      return;
+    }
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      setFormError('Amount must be a positive number.');
+      return;
+    }
+
+    // onSubmit({
+    //   donorId,
+    //   amount: parseFloat(amount),
+    //   currency,
+    //   paymentMethod: paymentMethod || null,
+    //   notes: notes || null,
+    //   status,
+    //   projectId: projectId || null,
+    //   campaignId: campaignId || null,
+    //   transactionId: transactionId || null,
+    // });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {formError && <p className="text-red-500 text-sm">{formError}</p>}
+      <div>
+        <label htmlFor="donorId" className="block text-sm font-medium text-gray-300">Donor</label>
+        <select
+          id="donorId"
+          value={donorId}
+          onChange={(e) => setDonorId(e.target.value)}
+          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+          required
+        >
+          <option value="">Select a donor</option>
+          {users.map(user => (
+            <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="amount" className="block text-sm font-medium text-gray-300">Amount</label>
+          <input
+            type="number"
+            id="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            step="0.01"
+            className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="currency" className="block text-sm font-medium text-gray-300">Currency</label>
+          <input
+            type="text"
+            id="currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+            required
+          />
+        </div>
+      </div>
+      <div>
+        <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-300">Payment Method</label>
+        <input
+          type="text"
+          id="paymentMethod"
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+        />
+      </div>
+      <div>
+        <label htmlFor="status" className="block text-sm font-medium text-gray-300">Status</label>
+        <select
+          id="status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as Donation['status'])}
+          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+        >
+          <option value="PENDING">Pending</option>
+          <option value="SUCCESS">Success</option>
+          <option value="FAILED">Failed</option>
+          <option value="REFUNDED">Refunded</option>
+        </select>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="projectId" className="block text-sm font-medium text-gray-300">Project (Optional)</label>
+          <select
+            id="projectId"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+          >
+            <option value="">None</option>
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>{project.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="campaignId" className="block text-sm font-medium text-gray-300">Campaign (Optional)</label>
+          <select
+            id="campaignId"
+            value={campaignId}
+            onChange={(e) => setCampaignId(e.target.value)}
+            className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+          >
+            <option value="">None</option>
+            {campaigns.map(campaign => (
+              <option key={campaign.id} value={campaign.id}>{campaign.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div>
+        <label htmlFor="transactionId" className="block text-sm font-medium text-gray-300">Transaction ID (Optional)</label>
+        <input
+          type="text"
+          id="transactionId"
+          value={transactionId}
+          onChange={(e) => setTransactionId(e.target.value)}
+          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+        />
+      </div>
+      <div>
+        <label htmlFor="notes" className="block text-sm font-medium text-gray-300">Notes (Optional)</label>
+        <textarea
+          id="notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-teal-500 focus:border-teal-500"
+        ></textarea>
+      </div>
+      <div className="flex justify-end space-x-3 mt-6">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition"
+          disabled={isLoading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition disabled:opacity-50"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Adding...' : 'Add Donation'}
+        </button>
+      </div>
+    </form>
+  );
+};
