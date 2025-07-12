@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb";
+import prisma from "@/server/db/prismadb";
 import type { Prisma } from "@prisma/client";
 
 // GET /api/marketplace-listings?agentId=&search=&brand=&category=&subCategory=&minPrice=&maxPrice=&availability=&sort=&page=&limit=

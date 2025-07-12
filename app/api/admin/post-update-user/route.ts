@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 // PUT /api/user?agentId=&limit=&offset=
 export async function PUT(req: Request) {

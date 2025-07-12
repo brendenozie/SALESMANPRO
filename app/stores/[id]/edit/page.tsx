@@ -2,7 +2,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import CreateStoreForm from "../../../../components/stores/create/CreateStoreForm/CreateStoreForm";
-import prisma from "../../../../server/db/prismadb";
+import prisma from "@/server/db/prismadb";
 import { StoreForm } from "../../../../types/typings";
 
 export const dynamic = "force-dynamic";

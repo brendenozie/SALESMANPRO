@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 // POST handler for inventory actions in App Router
 export async function POST(req: Request) {

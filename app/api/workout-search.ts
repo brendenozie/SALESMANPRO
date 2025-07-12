@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../server/db/prismadb";
+import prisma from "@/server/db/prismadb";
 
 // Define the API route
 export default async function GET( req : Request ) {

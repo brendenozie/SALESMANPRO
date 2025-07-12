@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../server/db/prismadb";
+import prisma from "@/server/db/prismadb";
 import { startOfDay, endOfDay, addDays,subDays  } from 'date-fns';
 
 // Define your types

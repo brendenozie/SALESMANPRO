@@ -1,6 +1,6 @@
 // app/api/shop/categories/route.ts
 import { NextResponse } from 'next/server'
-import prisma from '../../../../server/db/prismadb'
+import prisma from '@/server/db/prismadb'
 
 export async function GET(request: Request) {
   try {

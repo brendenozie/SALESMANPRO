@@ -1,5 +1,5 @@
 // app/[slug]/layout.tsx
-import prisma from '../../../server/db/prismadb';
+import prisma from '@/server/db/prismadb';
 import { StoreContextProvider } from '../../../contexts/StoreContext';
 import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';

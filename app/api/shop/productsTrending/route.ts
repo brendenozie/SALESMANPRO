@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb";
+import prisma from "@/server/db/prismadb";
 
 // GET /api/trending?agentId=&limit=&days=&weightViews=&weightPurchases=&weightFavorites=
 export async function GET(req: Request) {

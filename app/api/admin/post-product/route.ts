@@ -1,7 +1,7 @@
 // File: /pages/api/product/route.ts  (or wherever your Next.js “/api/product” lives)
 
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 // POST /api/product
 export async function POST(req: Request) {

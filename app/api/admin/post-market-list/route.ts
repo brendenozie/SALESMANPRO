@@ -1,6 +1,6 @@
 // app/api/marketplace-list/route.ts
 import { NextResponse } from "next/server";
-import prisma from "../../../../server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 // Utility to safely parse JSON strings into objects (or return fallback)
 const parseJsonSafely = (data: any, fallback: any = null) => {

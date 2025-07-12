@@ -1,7 +1,7 @@
 // app/[slug]/products/[productId]/page.tsx
 import React from 'react';
 import { notFound } from 'next/navigation';
-import prisma from '../../../../../server/db/prismadb';
+import prisma from '@/server/db/prismadb';
 import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
