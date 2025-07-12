@@ -14,7 +14,7 @@ import {
   Legend,
 } from "chart.js";
 import { ProductCategory, Product } from "./page";
-import Modal from "../../../../../components/Modal"; // Adjust path as needed
+import Modal from "@/components/Modal"; // Adjust path as needed
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);

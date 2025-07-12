@@ -36,7 +36,7 @@ const Modal = ({ isOpen, onClose, title, children }: any) => {
         >
           <motion.div
             className=" max-w-5xl w-full relative p-6"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e : any) => e.stopPropagation()}
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}

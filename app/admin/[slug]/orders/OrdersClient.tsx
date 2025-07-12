@@ -13,7 +13,7 @@ import {
   Legend,
 } from "chart.js";
 import { CustomerOrder, OrderItem } from "./page";
-import Modal from "../../../../../components/Modal"; // Adjust path as needed
+import Modal from "@/components/Modal"; // Adjust path as needed
 import { CurrencyDollarIcon, TruckIcon, ClockIcon } from "@heroicons/react/24/outline"; // Icons for summary cards
 
 // Register Chart.js components

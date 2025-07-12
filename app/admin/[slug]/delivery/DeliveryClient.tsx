@@ -13,7 +13,7 @@ import {
   Legend,
 } from "chart.js";
 import { CustomerOrder, OrderItem } from "./page"; // Re-use types
-import Modal from "../../../../../components/Modal"; // Adjust path as needed
+import Modal from "@/components/Modal"; // Adjust path as needed
 import { TruckIcon, ClockIcon, MapPinIcon } from "@heroicons/react/24/outline"; // Icons for summary cards
 
 // Register Chart.js components

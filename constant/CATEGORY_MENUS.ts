@@ -24,6 +24,7 @@ import {
 export const getCategoryMenus = (adminSlug: string) => ({
   "E-commerce": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -47,7 +48,8 @@ export const getCategoryMenus = (adminSlug: string) => ({
   ],
 
   "Service Provider": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     {
       label: "Bookings",
       icon: CalendarIcon,
@@ -63,7 +65,8 @@ export const getCategoryMenus = (adminSlug: string) => ({
   ],
 
   "Booking & Appointments": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Calendar", href: `/admin/${adminSlug}/calendar`, icon: CalendarIcon },
     { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
     { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
@@ -101,7 +104,8 @@ export const getCategoryMenus = (adminSlug: string) => ({
   ],
 
   "Educational & Online Courses": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     {
       label: "Management",
       icon: ClipboardDocumentListIcon,
@@ -152,28 +156,33 @@ export const getCategoryMenus = (adminSlug: string) => ({
   ],
 
   "Restaurant & Food Delivery": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Menu", href: `/admin/${adminSlug}/menu`, icon: ClipboardDocumentListIcon },
     { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
     { label: "Delivery", href: `/admin/${adminSlug}/delivery`, icon: GlobeAltIcon },
   ],
 
   "Event & Ticketing": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Events", href: `/admin/${adminSlug}/events`, icon: CalendarIcon },
     { label: "Tickets", href: `/admin/${adminSlug}/tickets`, icon: ClipboardDocumentListIcon },
     { label: "Attendees", href: `/admin/${adminSlug}/attendees`, icon: UsersIcon },
   ],
 
   "Real Estate": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon },
     { label: "Agents", href: `/admin/${adminSlug}/agents`, icon: UsersIcon },
     { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UsersIcon },
   ],
 
   "Healthcare & Clinics": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Patients", href: `/admin/${adminSlug}/patients`, icon: UsersIcon },
     { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: CalendarIcon },
     { label: "Doctors", href: `/admin/${adminSlug}/doctors`, icon: BriefcaseIcon },
@@ -188,6 +197,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
 
   "Media & Entertainment": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Media Library", href: `/admin/${adminSlug}/media`, icon: FilmIcon },
     { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
     { label: "Sponsors", href: `/admin/${adminSlug}/sponsors`, icon: BriefcaseIcon },
@@ -209,6 +219,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
 
   "Travel & Tourism": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Destinations", href: `/admin/${adminSlug}/destinations`, icon: GlobeAltIcon },
     { label: "Bookings", href: `/admin/${adminSlug}/bookings`, icon: CalendarIcon },
     { label: "Packages", href: `/admin/${adminSlug}/packages`, icon: ClipboardDocumentListIcon },
@@ -216,6 +227,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
 
   "Fitness & Wellness": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Programs", href: `/admin/${adminSlug}/programs`, icon: ClipboardDocumentListIcon },
     { label: "Trainers", href: `/admin/${adminSlug}/trainers`, icon: BriefcaseIcon },
     { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UsersIcon },
@@ -223,6 +235,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
 
   "Marketplace": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     { label: "Vendors", href: `/admin/${adminSlug}/vendors`, icon: UsersIcon },
     { label: "Products", href: `/admin/${adminSlug}/products`, icon: ClipboardDocumentListIcon },
     { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
