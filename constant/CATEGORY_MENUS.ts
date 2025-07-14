@@ -17,6 +17,21 @@ import {
   FilmIcon,
   CreditCardIcon,
   MegaphoneIcon,
+  TicketIcon,
+  BanknotesIcon,
+  ChartPieIcon,
+  HandRaisedIcon,
+  KeyIcon,
+  ListBulletIcon,
+  NewspaperIcon,
+  PhotoIcon,
+  PuzzlePieceIcon,
+  QrCodeIcon,
+  ReceiptPercentIcon,
+  ShoppingBagIcon,
+  TagIcon,
+  UserCircleIcon,
+  UserGroupIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -138,7 +153,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
       label: "Events",
       icon: AcademicCapIcon,
       subItems: [
-        { label: "All Events", href: `/admin/${adminSlug}/events` },
+        { label: "All Events", href: `/admin/${adminSlug}/school-events` },
       ],
     },    
     { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements`, icon: AcademicCapIcon },
@@ -163,13 +178,45 @@ export const getCategoryMenus = (adminSlug: string) => ({
     { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
     { label: "Delivery", href: `/admin/${adminSlug}/delivery`, icon: GlobeAltIcon },
   ],
+  
+ "Event & Ticketing": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/company-pos`, icon: CreditCardIcon }, // Changed icon for POS for better representation
+    { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },
+    { label: "Manage Events", href: `/admin/${adminSlug}/manage-events`, icon: TicketIcon },
+    { label: "Tickets", href: `/admin/${adminSlug}/manage-tickets`, icon: TicketIcon }, // Changed icon to TicketIcon for clarity
+    { label: "Attendees", href: `/admin/${adminSlug}/manage-attendees`, icon: UsersIcon },
+    { label: "Orders", href: `/admin/${adminSlug}/manage-event-orders`, icon: ShoppingBagIcon }, // Added Orders for transaction tracking
+    { label: "Check-in", href: `/admin/${adminSlug}/manage-check-in`, icon: QrCodeIcon }, // For attendee check-in at events
+  ],
 
-  "Event & Ticketing": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
-    { label: "Events", href: `/admin/${adminSlug}/events`, icon: CalendarIcon },
-    { label: "Tickets", href: `/admin/${adminSlug}/tickets`, icon: ClipboardDocumentListIcon },
-    { label: "Attendees", href: `/admin/${adminSlug}/attendees`, icon: UsersIcon },
+  "Content Management": [
+    { label: "Pages", href: `/admin/${adminSlug}/pages`, icon: DocumentTextIcon }, // For static pages like About Us, Contact
+    { label: "Blog Posts", href: `/admin/${adminSlug}/blog`, icon: NewspaperIcon }, // If you have a blog
+    { label: "Announcements", href: `/admin/${adminSlug}/announcements`, icon: MegaphoneIcon }, // For site-wide announcements
+    { label: "Promotions", href: `/admin/${adminSlug}/promotions`, icon: TagIcon }, // For discounts, promo codes
+    { label: "Sponsors", href: `/admin/${adminSlug}/sponsors`, icon: HandRaisedIcon }, // If events have sponsors
+    { label: "Media Library", href: `/admin/${adminSlug}/media`, icon: PhotoIcon }, // Central place for images, videos
+  ],
+
+  "User Management": [
+    { label: "Users", href: `/admin/${adminSlug}/users`, icon: UserGroupIcon }, // Manage all platform users
+    { label: "Roles & Permissions", href: `/admin/${adminSlug}/roles`, icon: KeyIcon }, // If you have different admin/organizer roles
+    { label: "Organizers", href: `/admin/${adminSlug}/organizers`, icon: BuildingOfficeIcon }, // Manage event organizers (if distinct from general users)
+  ],
+
+  "Financials & Reports": [
+    { label: "Payouts", href: `/admin/${adminSlug}/payouts`, icon: BanknotesIcon }, // Track money paid out to organizers
+    { label: "Transactions", href: `/admin/${adminSlug}/transactions`, icon: ReceiptPercentIcon }, // Detailed transaction logs
+    { label: "Revenue Reports", href: `/admin/${adminSlug}/reports/revenue`, icon: ChartBarIcon },
+    { label: "Sales Reports", href: `/admin/${adminSlug}/reports/sales`, icon: ChartPieIcon },
+  ],
+  
+  "Settings": [
+    { label: "General Settings", href: `/admin/${adminSlug}/settings/general`, icon: Cog6ToothIcon },
+    { label: "Profile", href: `/admin/${adminSlug}/settings/profile`, icon: UserCircleIcon }, // Admin user profile settings
+    { label: "Integrations", href: `/admin/${adminSlug}/settings/integrations`, icon: PuzzlePieceIcon }, // API keys, third-party connections
+    { label: "Audit Log", href: `/admin/${adminSlug}/settings/audit-log`, icon: ListBulletIcon }, // Track admin actions
   ],
 
   "Real Estate": [
