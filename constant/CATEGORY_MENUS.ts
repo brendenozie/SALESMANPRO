@@ -35,6 +35,7 @@ import {
   CalendarDaysIcon,
   ChatBubbleLeftRightIcon,
   MapPinIcon,
+  CubeTransparentIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -266,11 +267,18 @@ export const getCategoryMenus = (adminSlug: string) => ({
   // },
 
   "Healthcare & Clinics": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
-    { label: "Patients", href: `/admin/${adminSlug}/patients`, icon: UsersIcon },
-    { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: CalendarIcon },
-    { label: "Doctors", href: `/admin/${adminSlug}/doctors`, icon: BriefcaseIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/health-pos`, icon: ClipboardDocumentListIcon },
+    { label: "Patients", href: `/admin/${adminSlug}/health-patients`, icon: UsersIcon },
+    { label: "Appointments", href: `/admin/${adminSlug}/health-appointments`, icon: CalendarIcon },
+    { label: "Doctors", href: `/admin/${adminSlug}/health-doctors`, icon: BriefcaseIcon },
+    { label: "Staff", href: `/admin/${adminSlug}/health-staff`, icon: UserGroupIcon }, // Manage all clinic staff
+    { label: "Services", href: `/admin/${adminSlug}/health-services`, icon: HeartIcon }, // Manage medical services offered
+    { label: "Prescriptions", href: `/admin/${adminSlug}/health-prescriptions`, icon: DocumentTextIcon }, // Manage patient prescriptions
+    { label: "Billing & Invoices", href: `/admin/${adminSlug}/health-billing`, icon: CreditCardIcon }, // Handle financial transactions
+    { label: "Inventory", href: `/admin/${adminSlug}/health-inventory`, icon: CubeTransparentIcon }, // Manage medical supplies and equipment
+    { label: "Reports", href: `/admin/${adminSlug}/health-reports`, icon: ChartBarIcon }, // Generate various clinic reports
+    { label: "Settings", href: `/admin/${adminSlug}/health-settings`, icon: Cog6ToothIcon }, // Clinic-wide settings
   ],
 
   "SaaS & Web Apps": [

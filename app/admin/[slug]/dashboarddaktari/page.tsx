@@ -48,7 +48,7 @@ const fadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
 };
 
-export default function HealthcareDashboardClient({ params }: { params: { adminSlug: string } }) {
+export default function AdminDashboardPage({ params }: { params: { adminSlug: string } }) {
   const { adminSlug } = params;
 
   // Sample Data for Dashboard Cards

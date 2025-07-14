@@ -291,7 +291,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       case 'event & ticketing':
         return <EventDashboardClient />;
       case 'healthcare & clinics':
-        return <HealthcareDashboardClient />;
+        return <HealthcareDashboardClient params= { {adminSlug : companyId} }/>;
       case 'saas & web apps':
         return <SaaSDashboardClient />;
       case 'media & entertainment':

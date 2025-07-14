@@ -292,6 +292,8 @@ model Company {
   DiscussionPost                  DiscussionPost[]
   DiscussionComment               DiscussionComment[]
   Project                         Project[]
+  Prescription                    Prescription[]
+  Doctor                          Doctor[]
 }
 
 enum CategoryStatus {
@@ -1002,6 +1004,8 @@ model User {
   ProjectMember     ProjectMember[]
   Donation          Donation[]
   Property          Property[]
+  Prescription      Prescription[]
+  Doctor            Doctor?
 }
 
 enum Status {
@@ -2001,6 +2005,8 @@ model EducatorAcademicLevelAssignment {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
+  doctorId  String?   @db.ObjectId
 
   // Ensures that an educator can only be assigned to a specific academic level once
   @@unique([educatorId, academicLevelId])
@@ -2072,6 +2078,8 @@ model CourseEducatorAssignment {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
+  doctorId  String?   @db.ObjectId
 
   // Ensures that an educator can only be assigned to a specific academic level once
   @@unique([educatorId, courseId])
@@ -2193,6 +2201,8 @@ model CourseAssignment {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   Grade     Grade[]
+  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
+  doctorId  String?   @db.ObjectId
 }
 
 // Submission Model (Student's assignment submission)
@@ -2224,6 +2234,8 @@ model AssignmentSubmission {
 
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
+  Doctor    Doctor?  @relation(fields: [doctorId], references: [id])
+  doctorId  String?  @db.ObjectId
 
   @@unique([assignmentId, studentId])
   @@index([studentId])
@@ -2475,6 +2487,8 @@ model ClassSchedule {
   updatedAt DateTime? @updatedAt
 
   AttendanceRecord AttendanceRecord[]
+  Doctor           Doctor?            @relation(fields: [doctorId], references: [id])
+  doctorId         String?            @db.ObjectId
 
   // Unique constraint: An educator can only have one class scheduled at a specific date and time within a company.
   // This helps prevent accidental double-booking for the same educator.
@@ -2522,6 +2536,8 @@ model AttendanceRecord {
 
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
+  Doctor    Doctor?  @relation(fields: [doctorId], references: [id])
+  doctorId  String?  @db.ObjectId
 
   @@index([studentId, date])
   @@index([classScheduleId])
@@ -2563,6 +2579,8 @@ model Exam {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
+  doctorId  String?   @db.ObjectId
 
   // Suggested unique constraint: One exam per course at a specific date and start time within a company
   @@unique([companyId, courseId, date, startTime])
@@ -2618,6 +2636,8 @@ model ExamSubmission {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
+  doctorId  String?   @db.ObjectId
 
   @@unique([examId, studentId]) // A student can only submit one exam per exam
   @@index([examId])
@@ -2678,6 +2698,10 @@ model CourseMaterial {
   updatedAt    DateTime?          @updatedAt
   Educator     Educator?          @relation(fields: [educatorId], references: [id])
   educatorId   String?            @db.ObjectId
+  Doctor       Doctor?            @relation(fields: [doctorId], references: [id])
+  doctorId     String?            @db.ObjectId
+  Doctor       Doctor?            @relation(fields: [doctorId], references: [id])
+  doctorId     String?            @db.ObjectId
 
   @@index([courseId, type])
   @@index([uploadedById])
@@ -2701,6 +2725,8 @@ model DiscussionTopic {
 
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id])
+  Doctor    Doctor? @relation(fields: [doctorId], references: [id])
+  doctorId  String? @db.ObjectId
 
   @@index([courseId])
   @@index([createdById])
@@ -2776,8 +2802,11 @@ model Department {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  Company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
+  Company   Company  @relation(fields: [companyId], references: [id])
+  companyId String   @db.ObjectId
+  Doctor    Doctor?  @relation(fields: [doctorId], references: [id])
+  doctorId  String?  @db.ObjectId
+  Doctor    Doctor[]
 
   @@unique([companyId, name])
   @@index([name])
@@ -2817,6 +2846,8 @@ model Grade {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
+  doctorId  String?   @db.ObjectId
 
   @@index([studentId])
   @@index([courseId])
@@ -3046,4 +3077,68 @@ model PropertyLocation {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   Property  Property[]
+}
+
+model Prescription {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  patientId    String    @db.ObjectId
+  patient      User      @relation(fields: [patientId], references: [id])
+  doctorId     String    @db.ObjectId
+  doctor       Doctor    @relation(fields: [doctorId], references: [id]) // Assuming Educator is doctor
+  medication   String
+  dosage       String
+  instructions String?
+  issuedDate   DateTime
+  expiryDate   DateTime?
+  status       String    @default("Pending") // e.g., "Pending", "Dispensed", "Expired"
+  notes        String?
+  companyId    String    @db.ObjectId
+  company      Company   @relation(fields: [companyId], references: [id])
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt
+}
+
+// Educator Profile Model (one-to-one with User)
+model Doctor {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @unique @db.ObjectId // Link to User model
+  user   User   @relation(name: "educator", fields: [userId], references: [id])
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  loginCode String @unique // NEW: Unique generated number for login
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  classesScheduled ClassSchedule[]
+  Exam             Exam[]
+  CourseMaterial   CourseMaterial[]
+  AttendanceRecord AttendanceRecord[] @relation("RecordedAttendance")
+
+  createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
+
+  uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
+  headedDepartments Department[]     @relation("DepartmentHead")
+
+  // NEW: Junction table for many-to-many with AcademicLevel
+  academicLevelAssignments EducatorAcademicLevelAssignment[]
+
+  Department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?     @db.ObjectId
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  assignmentSubmission AssignmentSubmission[]
+  examSubmission       ExamSubmission[]
+
+  Grade                    Grade[]                    @relation("recordedBy")
+  CourseEducatorAssignment CourseEducatorAssignment[]
+  CourseAssignment         CourseAssignment[]
+  Prescription             Prescription[]
 }
