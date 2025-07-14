@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresenc
 import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/solid'; // New icons for better visuals
 
 // Custom loader is not directly used in this component, but keeping it for context
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 

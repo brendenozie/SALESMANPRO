@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { StarIcon } from '@heroicons/react/24/solid'; // For star ratings
 
 // Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -102,7 +102,7 @@ export default function TestimonialsSection({ testimonials }: any) {
             initial="hidden"
             viewport={{ once: true, amount: 0.3 }}
           >
-            {testimonials.map((t, idx) => (
+            {testimonials.map((t:any, idx:any) => (
               <motion.div
                 key={t.author + idx} // Using idx as fallback for unique key if id isn't available
                 role="group"

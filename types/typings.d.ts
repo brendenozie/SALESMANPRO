@@ -215,9 +215,12 @@ type StoreForm = {
   paymentSettings: Record<string, any>;
   shippingSettings: Record<string, any>;
   marketplaceListings: MarketplaceListingForm[];
-  storeCategories: StoreCategoryEntry[];
+  storeCategories: any[];
   pricingTiers: PricingTier[];
   blogs:any[];
+  agents:any[];
+  locations:any[];
+  blogPosts:any[];
 };
 
 export interface PricingTier {

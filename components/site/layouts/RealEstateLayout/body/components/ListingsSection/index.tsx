@@ -7,9 +7,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // Correct import for useRouter from next/navigation
 
 // Placeholder Icons (ensure you have these from @heroicons/react/24/solid or similar)
-import { MapPinIcon, BedIcon, BathIcon } from '@heroicons/react/24/solid'; // Example imports
+import { MapPinIcon, } from '@heroicons/react/24/solid'; // Example imports
+import { BeakerIcon, BoltSlashIcon } from '@heroicons/react/24/outline';
+
 // For SquareFootIcon, you might need to create a custom one or find a suitable alternative
-const SquareFootIcon = (props) => (
+const SquareFootIcon = (props:any) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
     <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-3.75h.008v.008H7.5v-.008Zm0 2.25h.008v.008H7.5V16.5Zm0 2.25h.008v.008H7.5V18.75Z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25a.75.75 0 0 0-1.5 0v.562a49.168 49.168 0 0 1-3.478 1.197 50.554 50.554 0 0 0-1.5.124.75.75 0 0 0-.75.75v3.626a.75.75 0 0 0 .61.745c.386.065.779.117 1.17.155L12 12l2.695-1.84c.39-.038.783-.09 1.17-.155a.75.75 0 0 0 .61-.745V4.877a.75.75 0 0 0-.75-.75 2.25 2.25 0 0 0-.124-1.5 50.554 50.554 0 0 0-1.197-3.478V2.25Zm-4.25 10.25a.75.75 0 0 0-1.5 0v3.89a.75.75 0 0 0 .75.75h.75a.75.75 0 0 0 .75-.75v-3.89Zm8.5 0a.75.75 0 0 0-1.5 0v3.89a.75.75 0 0 0 .75.75h.75a.75.75 0 0 0 .75-.75v-3.89Z" />
@@ -18,7 +20,7 @@ const SquareFootIcon = (props) => (
 
 
 // Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -86,7 +88,7 @@ export default function ListingsSection({ products, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {products.map((prop) => (
+          {products.map((prop:any) => (
             <Link key={prop.id} href={`/site/${slug}/property/${prop.id}`} passHref>
               <motion.a
                 className="block bg-white dark:bg-gray-850 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
@@ -127,8 +129,8 @@ export default function ListingsSection({ products, slug }: any) {
                     </p>
                   )}
                   <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center space-x-4">
-                    {prop.beds && <span className="flex items-center"><BedIcon className="w-4 h-4 mr-1 text-emerald-500" /> {prop.beds} Beds</span>}
-                    {prop.baths && <span className="flex items-center"><BathIcon className="w-4 h-4 mr-1 text-emerald-500" /> {prop.baths} Baths</span>}
+                    {prop.beds && <span className="flex items-center"><BeakerIcon className="w-4 h-4 mr-1 text-emerald-500" /> {prop.beds} Beds</span>}
+                    {prop.baths && <span className="flex items-center"><BoltSlashIcon className="w-4 h-4 mr-1 text-emerald-500" /> {prop.baths} Baths</span>}
                     {prop.sqft && <span className="flex items-center"><SquareFootIcon className="w-4 h-4 mr-1 text-emerald-500" /> {prop.sqft.toLocaleString()} sqft</span>}
                   </p>
                   <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">
@@ -145,7 +147,7 @@ export default function ListingsSection({ products, slug }: any) {
                                transition duration-300 ease-in-out transform hover:scale-[1.01] active:scale-[0.99]"
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    onClick={(e) => {
+                    onClick={(e:any) => {
                       e.preventDefault();
                       e.stopPropagation();
                       router.push(`/site/${slug}/property/${prop.id}`);

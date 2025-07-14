@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 // Mocking the image loader since Next.js Image is not available
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -189,7 +189,7 @@ export default function WhyChooseUs({ metrics, awards }: any) {
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
           >
-            {metrics && metrics.map((m, idx) => {
+            {metrics && metrics.map((m:any, idx:any) => {
               const Icon = getIconComponent(m.iconName); // Get the component based on iconName
               return (
                 <motion.div
@@ -247,7 +247,7 @@ export default function WhyChooseUs({ metrics, awards }: any) {
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
             >
-              {awards.map((a, idx) => (
+              {awards.map((a:any, idx:any) => (
                 <motion.div
                   key={a.id || idx} // Use idx as fallback key
                   variants={itemVariants}

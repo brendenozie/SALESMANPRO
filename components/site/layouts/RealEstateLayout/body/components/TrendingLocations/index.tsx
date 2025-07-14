@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 // Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -74,7 +74,7 @@ export default function TrendingLocations({ locations, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {locations.map((loc) => (
+          {locations.map((loc:any) => (
             <Link key={loc.id} href={`/site/${slug}/location/${loc.id}`} passHref>
               <motion.a
                 className="snap-start min-w-[280px] sm:min-w-[320px] lg:min-w-[350px] relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group

@@ -38,7 +38,7 @@ const sampleStoreData = {
   slug: "dreamnest", // Unique identifier for the store
   description: "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease.",
   bannerUrl: "/banners/main-banner.jpg", // High-quality banner for Hero
-  StoreCategory: [
+  storeCategories: [
     { id: 1, name: "Apartments", slug: "apartments", imageUrl: "/categories/apartment.jpg", description: "Modern living spaces in the heart of the city." },
     { id: 2, name: "Villas & Houses", slug: "villas-houses", imageUrl: "/categories/villa.jpg", description: "Spacious homes with private amenities." },
     { id: 3, name: "Commercial Spaces", slug: "offices", imageUrl: "/categories/office.jpg", description: "Prime locations for your business." },
@@ -85,29 +85,29 @@ const sampleStoreData = {
     { id: 3, name: "Excellence in Service", iconUrl: "/badges/realtor.png" },
   ],
   featuredListings: [
-    { "id": 1, "image": "/properties/featured1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3, "baths": 2, "sqft": 1800, "badge": "New", "description": "A charming family home with a spacious backyard." },
-    { "id": 2, "image": "/properties/featured2.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths": 3, "sqft": 2500, "badge": "Hot Deal", "description": "Modern design with smart home features and a panoramic view." },
-    { "id": 3, "image": "/properties/featured3.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths": 2.5, "sqft": 2000, "badge": "Price Reduced", "description": "Recently renovated property in a quiet, friendly neighborhood." },
-    { "id": 4, "image": "/properties/featured4.jpg", "price": 720000, "address": "101 Lakefront Drive, Lakeside", "beds": 5, "baths": 4, "sqft": 3500, "badge": "Luxury", "description": "Stunning lakefront property with private dock and expansive views." },
+    { "id": 1, image: "/properties/featured1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3, "baths": 2, "sqft": 1800, "badge": "New", "description": "A charming family home with a spacious backyard." },
+    { "id": 2, image: "/properties/featured2.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths": 3, "sqft": 2500, "badge": "Hot Deal", "description": "Modern design with smart home features and a panoramic view." },
+    { "id": 3, image: "/properties/featured3.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths": 2.5, "sqft": 2000, "badge": "Price Reduced", "description": "Recently renovated property in a quiet, friendly neighborhood." },
+    { "id": 4, image: "/properties/featured4.jpg", "price": 720000, "address": "101 Lakefront Drive, Lakeside", "beds": 5, "baths": 4, "sqft": 3500, "badge": "Luxury", "description": "Stunning lakefront property with private dock and expansive views." },
   ],
   // Note: Assuming 'listings' will eventually come from 'marketplaceListings' or a filtered subset
   listings: [
-    { "id": 1, "image": "/properties/apartment1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3, "baths": 2, "sqft": 1800, "badge": "New" },
-    { "id": 2, "image": "/properties/villa1.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths": 3, "sqft": 2500, "badge": "Hot" },
-    { "id": 3, "image": "/properties/office1.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths": 2.5, "sqft": 2000, "badge": "Price Reduced" },
-    { "id": 4, "image": "/properties/land1.jpg", "price": 3000000, "address": "101 Green Fields, Rural Haven", beds: 0, baths: 0, sqft: 43560, badge: "Investment" },
+    { "id": 1, image: "/properties/apartment1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3, "baths": 2, "sqft": 1800, "badge": "New" },
+    { "id": 2, image: "/properties/villa1.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths": 3, "sqft": 2500, "badge": "Hot" },
+    { "id": 3, image: "/properties/office1.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths": 2.5, "sqft": 2000, "badge": "Price Reduced" },
+    { "id": 4, image: "/properties/land1.jpg", "price": 3000000, "address": "101 Green Fields, Rural Haven", beds: 0, baths: 0, sqft: 43560, badge: "Investment" },
   ],
   locations: [
-    { "id": 1, "name": "Downtown", "image": "/locations/downtown.jpg", "listings": 120, "avgPrice": 420000, description: "Vibrant city living with access to all amenities." },
-    { "id": 2, "name": "Uptown Hills", "image": "/locations/uptown.jpg", "listings": 80, "avgPrice": 380000, description: "Exclusive residential area with lush greenery." },
-    { "id": 3, "name": "Riverside Estates", "image": "/locations/riverside.jpg", "listings": 60, "avgPrice": 310000, description: "Peaceful waterfront properties, perfect for families." },
-    { "id: 4", "name": "Tech Hub North", "image": "/locations/techhub.jpg", "listings": 45, "avgPrice": 550000, description: "Modern living near innovation centers." }
+    { "id": 1, "name": "Downtown", image: "/locations/downtown.jpg", "listings": 120, "avgPrice": 420000, description: "Vibrant city living with access to all amenities." },
+    { "id": 2, "name": "Uptown Hills", image: "/locations/uptown.jpg", "listings": 80, "avgPrice": 380000, description: "Exclusive residential area with lush greenery." },
+    { "id": 3, "name": "Riverside Estates", image: "/locations/riverside.jpg", "listings": 60, "avgPrice": 310000, description: "Peaceful waterfront properties, perfect for families." },
+    { "id": 4, "name": "Tech Hub North", image: "/locations/techhub.jpg", "listings": 45, "avgPrice": 550000, description: "Modern living near innovation centers." }
   ],
   blogPosts: [
-    { "id": 1, "title": "5 Essential Tips for First-Time Home Buyers in 2025", "link": "#", "imageUrl": "/blog/blog1.jpg", "date": "July 10, 2025", "author": "DreamNest Editorial" },
-    { "id": 2, "title": "Navigating the Current Real Estate Market: Trends and Forecasts", "link": "#", "imageUrl": "/blog/blog2.jpg", "date": "June 28, 2025", "author": "Market Analyst" },
-    { "id": 3, "title": "Maximizing Your Home's Value: Effective Staging Techniques", "link": "#", "imageUrl": "/blog/blog3.jpg", "date": "June 15, 2025", "author": "Design Team" },
-    { "id": 4, "title": "The Rise of Sustainable Homes: What You Need to Know", "link": "#", "imageUrl": "/blog/blog4.jpg", "date": "May 30, 2025", "author": "Green Living Expert" },
+    { "id": 1, "title": "5 Essential Tips for First-Time Home Buyers in 2025", "link": "#", imageUrl: "/blog/blog1.jpg", "date": "July 10, 2025", "author": "DreamNest Editorial" },
+    { "id": 2, "title": "Navigating the Current Real Estate Market: Trends and Forecasts", "link": "#", imageUrl: "/blog/blog2.jpg", "date": "June 28, 2025", "author": "Market Analyst" },
+    { "id": 3, "title": "Maximizing Your Home's Value: Effective Staging Techniques", "link": "#", imageUrl: "/blog/blog3.jpg", "date": "June 15, 2025", "author": "Design Team" },
+    { "id": 4, "title": "The Rise of Sustainable Homes: What You Need to Know", "link": "#", imageUrl: "/blog/blog4.jpg", "date": "May 30, 2025", "author": "Green Living Expert" },
   ],
 };
 
@@ -119,9 +119,10 @@ export default function RealEstateSite() {
   const { storeFormData } = useStoreContext(); // Assuming this is where dynamic store data might come from
 
   // Prioritize dynamic data from context, fall back to sample data
-  const storeData = storeFormData && Object.keys(storeFormData).length > 0
-    ? storeFormData
-    : sampleStoreData;
+  const storeData = sampleStoreData;
+  // const storeData = storeFormData && Object.keys(storeFormData).length > 0
+  //   ? storeFormData
+  //   : sampleStoreData;
 
   // Destructure data using the potentially updated storeData
   const {
@@ -129,7 +130,7 @@ export default function RealEstateSite() {
     slug,
     description,
     bannerUrl,
-    StoreCategory: categories, // Renamed for clarity in props
+    storeCategories: categories, // Renamed for clarity in props
     marketplaceListings,
     agents,
     metrics,
@@ -200,8 +201,8 @@ export default function RealEstateSite() {
       {/* Property Categories Section */}
       <CategoriesSection categories={categories} slug={slug} />
 
-      {/* Featured Listings Section (using marketplaceListings as source) */}
-      <FeaturedListings listings={storeData.featuredListings || marketplaceListings} slug={slug} />
+      {/* Featured Listings Section (using marketplaceListings as source) storeData.featuredListings || */}
+      <FeaturedListings listings={marketplaceListings} slug={slug} />
 
       {/* Trending Locations Section */}
       <TrendingLocations locations={locations} slug={slug} />

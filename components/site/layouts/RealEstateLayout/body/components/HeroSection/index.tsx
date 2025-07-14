@@ -38,6 +38,7 @@ const variants = {
 export default function HeroSection({
   name,
   bannerUrl,
+  description,
   location,
   minPrice,
   maxPrice,
@@ -45,7 +46,7 @@ export default function HeroSection({
   setMinPrice,
   setMaxPrice,
   handleSearch,
-}) {
+}:any) {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-950">
       {/* Background Image with Enhanced Overlay */}
@@ -90,7 +91,7 @@ export default function HeroSection({
 
         {/* Search Form */}
         <motion.form
-          onSubmit={(e) => {
+          onSubmit={(e:any) => {
             e.preventDefault();
             handleSearch();
           }}

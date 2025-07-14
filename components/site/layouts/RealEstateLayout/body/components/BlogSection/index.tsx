@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { CalendarDaysIcon, UserCircleIcon } from '@heroicons/react/24/solid'; // New icons for date and author
 
 // Mocking the image loader since Next.js Image is not available
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -73,7 +73,7 @@ export default function BlogSection({ posts, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {posts.map((post) => (
+          {posts.map((post:any) => (
             <Link key={post.id} href={`/site/${slug}/blog/${post.slug}`} passHref>
               <motion.article
                 className="block bg-white dark:bg-gray-850 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 group

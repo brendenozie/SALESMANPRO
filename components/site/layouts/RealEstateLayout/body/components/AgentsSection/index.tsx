@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { PhoneIcon, EnvelopeIcon, StarIcon } from '@heroicons/react/24/solid'; // New icons for contact and rating
 
 // Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -73,7 +73,7 @@ export default function AgentsSection({ agents, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {agents.map((agent) => (
+          {agents.map((agent:any) => (
             <Link key={agent.id} href={`/site/${slug}/agent/${agent.id}`} passHref>
               <motion.a
                 className="block bg-white dark:bg-gray-850 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 group
@@ -167,7 +167,7 @@ export default function AgentsSection({ agents, slug }: any) {
                              transition duration-300 ease-in-out transform hover:scale-[1.01] active:scale-[0.99]"
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  onClick={(e) => {
+                  onClick={(e:any) => {
                     e.preventDefault(); // Prevent Link's default action if button is clicked
                     e.stopPropagation(); // Stop event bubbling to parent Link
                     window.location.href = `/site/${slug}/agent/${agent.id}`;
