@@ -1001,6 +1001,7 @@ model User {
   Company           Company[]       @relation(name: "companyAdmin")
   ProjectMember     ProjectMember[]
   Donation          Donation[]
+  Property          Property[]
 }
 
 enum Status {
@@ -2968,4 +2969,82 @@ enum DonationStatus {
   PENDING
   FAILED
   REFUNDED
+}
+
+// Add these models to your existing schema.txt
+
+model Property {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  price       Float
+  currency    String         @default("KES") // Assuming Kenyan Shillings
+  type        String // e.g., "For Sale", "For Rent"
+  status      PropertyStatus @default(AVAILABLE) // Define PropertyStatus enum below
+
+  // Relationships
+  categoryId String           @db.ObjectId
+  category   PropertyCategory @relation(fields: [categoryId], references: [id])
+
+  locationId String           @db.ObjectId
+  location   PropertyLocation @relation(fields: [locationId], references: [id])
+
+  agentId String? @db.ObjectId // Optional: if properties are linked to specific agents
+  agent   User?   @relation(fields: [agentId], references: [id]) // Assuming agent is a User with ROLE.AGENT
+
+  // Property Details
+  bedrooms      Int?
+  bathrooms     Int?
+  areaSqFt      Float? // Square footage or square meters
+  plotSizeAcres Float? // For land or properties with large plots
+  yearBuilt     Int?
+  address       String?
+  photos        String[] // Array of photo URLs
+  features      String[] // Array of features (e.g., "Swimming Pool", "Parking")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Enum for Property Status
+enum PropertyStatus {
+  AVAILABLE
+  UNDER_OFFER
+  SOLD
+  RENTED
+  DRAFT
+  ARCHIVED
+}
+
+model PropertyCategory {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String             @unique
+  description      String?
+  // Optional: for hierarchical categories, e.g., "Apartment" belongs to "Residential"
+  parentCategoryId String?            @db.ObjectId
+  parentCategory   PropertyCategory?  @relation("SubCategories", fields: [parentCategoryId], references: [id])
+  subCategories    PropertyCategory[] @relation("SubCategories")
+
+  properties Property[] // Link categories to properties
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PropertyLocation {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String             @unique
+  description      String?
+  latitude         Float?
+  longitude        Float?
+  // Optional: for hierarchical locations, e.g., "Kilimani" belongs to "Nairobi"
+  parentLocationId String?            @db.ObjectId
+  parentLocation   PropertyLocation?  @relation("SubLocations", fields: [parentLocationId], references: [id])
+  subLocations     PropertyLocation[] @relation("SubLocations")
+
+  properties Property[] // Link locations to properties
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
