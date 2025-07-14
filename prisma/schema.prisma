@@ -951,13 +951,13 @@ model User {
   ProductReviewResponse ProductReviewResponse[]
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
-  // Company               Company[]
-  Review                Review[]
-  Question              Question[]
-  RecentlyViewed        RecentlyViewed[]
-  Wishlist              Wishlist[]
-  Payment               Payment[]
-  Appointment           Appointment[]
+
+  Review         Review[]
+  Question       Question[]
+  RecentlyViewed RecentlyViewed[]
+  Wishlist       Wishlist[]
+  Payment        Payment[]
+  Appointment    Appointment[]
 
   // If an admin can also post announcements, link directly from User
   announcements Announcement[] @relation("UserAnnouncements")
@@ -1005,7 +1005,7 @@ model User {
   Donation          Donation[]
   Property          Property[]
   Prescription      Prescription[]
-  Doctor            Doctor?
+  Doctor            Doctor[]
 }
 
 enum Status {
@@ -2005,8 +2005,6 @@ model EducatorAcademicLevelAssignment {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
-  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
-  doctorId  String?   @db.ObjectId
 
   // Ensures that an educator can only be assigned to a specific academic level once
   @@unique([educatorId, academicLevelId])
@@ -2078,8 +2076,6 @@ model CourseEducatorAssignment {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
-  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
-  doctorId  String?   @db.ObjectId
 
   // Ensures that an educator can only be assigned to a specific academic level once
   @@unique([educatorId, courseId])
@@ -2201,8 +2197,6 @@ model CourseAssignment {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   Grade     Grade[]
-  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
-  doctorId  String?   @db.ObjectId
 }
 
 // Submission Model (Student's assignment submission)
@@ -2234,8 +2228,6 @@ model AssignmentSubmission {
 
   company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId // Academic levels are specific to a company/school
-  Doctor    Doctor?  @relation(fields: [doctorId], references: [id])
-  doctorId  String?  @db.ObjectId
 
   @@unique([assignmentId, studentId])
   @@index([studentId])
@@ -2487,8 +2479,6 @@ model ClassSchedule {
   updatedAt DateTime? @updatedAt
 
   AttendanceRecord AttendanceRecord[]
-  Doctor           Doctor?            @relation(fields: [doctorId], references: [id])
-  doctorId         String?            @db.ObjectId
 
   // Unique constraint: An educator can only have one class scheduled at a specific date and time within a company.
   // This helps prevent accidental double-booking for the same educator.
@@ -2536,8 +2526,6 @@ model AttendanceRecord {
 
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
-  Doctor    Doctor?  @relation(fields: [doctorId], references: [id])
-  doctorId  String?  @db.ObjectId
 
   @@index([studentId, date])
   @@index([classScheduleId])
@@ -2579,8 +2567,6 @@ model Exam {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
-  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
-  doctorId  String?   @db.ObjectId
 
   // Suggested unique constraint: One exam per course at a specific date and start time within a company
   @@unique([companyId, courseId, date, startTime])
@@ -2636,8 +2622,6 @@ model ExamSubmission {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
-  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
-  doctorId  String?   @db.ObjectId
 
   @@unique([examId, studentId]) // A student can only submit one exam per exam
   @@index([examId])
@@ -2698,10 +2682,6 @@ model CourseMaterial {
   updatedAt    DateTime?          @updatedAt
   Educator     Educator?          @relation(fields: [educatorId], references: [id])
   educatorId   String?            @db.ObjectId
-  Doctor       Doctor?            @relation(fields: [doctorId], references: [id])
-  doctorId     String?            @db.ObjectId
-  Doctor       Doctor?            @relation(fields: [doctorId], references: [id])
-  doctorId     String?            @db.ObjectId
 
   @@index([courseId, type])
   @@index([uploadedById])
@@ -2725,8 +2705,6 @@ model DiscussionTopic {
 
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id])
-  Doctor    Doctor? @relation(fields: [doctorId], references: [id])
-  doctorId  String? @db.ObjectId
 
   @@index([courseId])
   @@index([createdById])
@@ -2802,11 +2780,8 @@ model Department {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  Company   Company  @relation(fields: [companyId], references: [id])
-  companyId String   @db.ObjectId
-  Doctor    Doctor?  @relation(fields: [doctorId], references: [id])
-  doctorId  String?  @db.ObjectId
-  Doctor    Doctor[]
+  Company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
 
   @@unique([companyId, name])
   @@index([name])
@@ -2846,8 +2821,6 @@ model Grade {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
-  Doctor    Doctor?   @relation(fields: [doctorId], references: [id])
-  doctorId  String?   @db.ObjectId
 
   @@index([studentId])
   @@index([courseId])
@@ -3102,9 +3075,6 @@ model Prescription {
 model Doctor {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation(name: "educator", fields: [userId], references: [id])
-
   phone          String?
   bio            String?
   address        String?
@@ -3115,30 +3085,10 @@ model Doctor {
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
 
-  classesScheduled ClassSchedule[]
-  Exam             Exam[]
-  CourseMaterial   CourseMaterial[]
-  AttendanceRecord AttendanceRecord[] @relation("RecordedAttendance")
-
-  createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
-
-  uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
-  headedDepartments Department[]     @relation("DepartmentHead")
-
-  // NEW: Junction table for many-to-many with AcademicLevel
-  academicLevelAssignments EducatorAcademicLevelAssignment[]
-
-  Department   Department? @relation(fields: [departmentId], references: [id])
-  departmentId String?     @db.ObjectId
-
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  assignmentSubmission AssignmentSubmission[]
-  examSubmission       ExamSubmission[]
-
-  Grade                    Grade[]                    @relation("recordedBy")
-  CourseEducatorAssignment CourseEducatorAssignment[]
-  CourseAssignment         CourseAssignment[]
-  Prescription             Prescription[]
+  Prescription Prescription[]
+  User         User?          @relation(fields: [userId], references: [id])
+  userId       String?        @db.ObjectId
 }
