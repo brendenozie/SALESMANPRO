@@ -32,6 +32,9 @@ import {
   TagIcon,
   UserCircleIcon,
   UserGroupIcon,
+  CalendarDaysIcon,
+  ChatBubbleLeftRightIcon,
+  MapPinIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -136,8 +139,6 @@ export const getCategoryMenus = (adminSlug: string) => ({
         { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
         { label: "Parents", href: `/admin/${adminSlug}/parents` },     
         { label: "Students", href: `/admin/${adminSlug}/students` },          
-        // { label: "Classes", href: `/admin/${adminSlug}/classes` }, // subjects
-
       ],
     },
     {
@@ -220,12 +221,49 @@ export const getCategoryMenus = (adminSlug: string) => ({
   ],
 
   "Real Estate": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
-    { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon },
-    { label: "Agents", href: `/admin/${adminSlug}/agents`, icon: UsersIcon },
-    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UsersIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics
+      { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
+      { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
+      { label: "Clients", href: `/admin/${adminSlug}/properties-clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+      { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
+      { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
+      { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+      { label: "Categories", href: `/admin/${adminSlug}/properties-categories`, icon: TagIcon }, // Manage property categories (e.g., Residential, Commercial, Land)
+      { label: "Locations", href: `/admin/${adminSlug}/properties-locations`, icon: MapPinIcon }, // Manage geographic locations for listings
   ],
+
+  
+  // {
+  //   category: "Content Management",
+  //   items: [
+  //     { label: "Blog Posts", href: `/admin/${adminSlug}/blog`, icon: NewspaperIcon }, // Manage articles, news, and updates
+  //     { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon: StarIcon }, // Manage client reviews and testimonials
+  //     { label: "FAQs", href: `/admin/${adminSlug}/faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions
+  //     { label: "Pages", href: `/admin/${adminSlug}/pages`, icon: DocumentIcon }, // Manage static pages (e.g., About Us, Contact)
+  //   ],
+  // },
+  // {
+  //   category: "Financial & Reports",
+  //   items: [
+  //     { label: "Transactions", href: `/admin/${adminSlug}/transactions`, icon: CreditCardIcon }, // View and manage financial transactions
+  //     { label: "Commissions", href: `/admin/${adminSlug}/commissions`, icon: CurrencyDollarIcon }, // Track agent commissions
+  //     { label: "Reports", href: `/admin/${adminSlug}/reports`, icon: ChartBarIcon }, // Generate various business reports (sales, agent performance)
+  //     // The "POS" (Point of Sale) could be here if you have direct sales of other items,
+  //     // but for real estate, it's less common unless you're selling related merchandise.
+  //     // If it's for direct property sales/reservations, "Offers & Contracts" might be more suitable.
+  //     // If still desired, you could place it here:
+  //     // { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
+  //   ],
+  // },
+  // {
+  //   category: "Settings & Administration",
+  //   items: [
+  //     { label: "Users & Roles", href: `/admin/${adminSlug}/users`, icon: KeyIcon }, // Manage admin users, permissions, and roles
+  //     { label: "Site Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon }, // General website settings (branding, contact info)
+  //     { label: "Notifications", href: `/admin/${adminSlug}/notifications`, icon: BellIcon }, // Manage notification settings
+  //     { label: "Integrations", href: `/admin/${adminSlug}/integrations`, icon: PuzzlePieceIcon }, // Manage third-party integrations (e.g., CRM, email marketing)
+  //   ],
+  // },
 
   "Healthcare & Clinics": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
@@ -418,7 +456,6 @@ export const getCategoryMenus = (adminSlug: string) => ({
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
-
 
   "Head Teacher": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
