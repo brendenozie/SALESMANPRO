@@ -65,7 +65,7 @@ export default function HealthcareHero({ name, slug, description, bannerUrl }: H
 
       {/* Content */}
       <motion.div
-        className="relative z-10 px-6 py-16 text-center max-w-4xl mx-auto" // Added max-width and vertical padding
+        className="relative z-10 px-6 py-20 mt-28 text-center max-w-4xl mx-auto" // Added max-width and vertical padding
         variants={containerVariants}
         initial="hidden"
         animate="visible"

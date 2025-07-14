@@ -3043,8 +3043,7 @@ model PropertyLocation {
   parentLocation   PropertyLocation?  @relation("SubLocations", fields: [parentLocationId], references: [id])
   subLocations     PropertyLocation[] @relation("SubLocations")
 
-  properties Property[] // Link locations to properties
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Property  Property[]
 }
