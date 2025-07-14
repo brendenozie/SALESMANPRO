@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link"; // Use Next.js Link for client-side navigation
+import Image from "next/image"; // Import Image component
 import { useRouter } from "next/navigation";
 import {
   MapPinIcon,
@@ -13,140 +13,180 @@ import {
   HomeIcon,
   MapIcon,
   TagIcon,
-} from "@heroicons/react/24/outline";
+  ChatBubbleBottomCenterTextIcon, // A more modern chat icon for WhatsApp
+} from "@heroicons/react/24/solid"; // Changed to solid for consistency
+
+// Import your updated child components
+import FAQSection from "./components/FAQSection";
+import TestimonialsSection from "./components/TestimonialsSection";
+import AgentsSection from "./components/AgentsSection";
+import BlogSection from "./components/BlogSection";
+import CategoriesSection from "./components/CategoriesSection";
+import FeaturedListings from "./components/FeaturedListings";
+import HeroSection from "./components/HeroSection";
+import ListingsSection from "./components/ListingsSection";
+import NewsletterSection from "./components/NewsletterSection";
+import TrendingLocations from "./components/TrendingLocations";
+import WhyChooseUs from "./components/WhyChooseUs";
 import { useStoreContext } from "../../../../../contexts/StoreContext";
 
-const store = {
-  name: "UrbanNest Realty",
-  slug: "urbannest",
-  description: "Find your perfect home with ease and style.",
-  // bannerUrl: banner.src,
+
+// --- Sample Data Definition ---
+// This robust sample data ensures all child components have something beautiful to display
+const sampleStoreData = {
+  name: "DreamNest Realty",
+  slug: "dreamnest", // Unique identifier for the store
+  description: "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease.",
+  bannerUrl: "/banners/main-banner.jpg", // High-quality banner for Hero
   StoreCategory: [
-    { id: 1, name: "Apartments", slug: "apartments", imageUrl: "/categories/apartment.jpg" },
-    { id: 2, name: "Villas", slug: "villas", imageUrl: "/categories/villa.jpg" },
-    { id: 3, name: "Offices", slug: "offices", imageUrl: "/categories/office.jpg" },
-    { id: 4, name: "Land Plots", slug: "land-plots", imageUrl: "/categories/land.jpg" },
+    { id: 1, name: "Apartments", slug: "apartments", imageUrl: "/categories/apartment.jpg", description: "Modern living spaces in the heart of the city." },
+    { id: 2, name: "Villas & Houses", slug: "villas-houses", imageUrl: "/categories/villa.jpg", description: "Spacious homes with private amenities." },
+    { id: 3, name: "Commercial Spaces", slug: "offices", imageUrl: "/categories/office.jpg", description: "Prime locations for your business." },
+    { id: 4, name: "Land Plots", slug: "land-plots", imageUrl: "/categories/land.jpg", description: "Build your vision from the ground up." },
+    { id: 5, name: "Condos", slug: "condos", imageUrl: "/categories/condo.jpg", description: "Convenient and amenity-rich living." },
   ],
-  products: [
-    { id: "h1", name: "Luxury City Apartment", price: 8500000, imageUrl: "/properties/apartment1.jpg" },
-    { id: "h2", name: "Beachside Villa", price: 15000000, imageUrl: "/properties/villa1.jpg" },
-    { id: "h3", name: "Downtown Office Space", price: 6000000, imageUrl: "/properties/office1.jpg" },
-    { id: "h4", name: "Private Land Plot", price: 3000000, imageUrl: "/properties/land1.jpg" },
-    { id: "h5", name: "Modern Loft", price: 9500000, imageUrl: "/properties/loft1.jpg" },
-    { id: "h6", name: "Suburban Family Home", price: 7000000, imageUrl: "/properties/home1.jpg" },
+  marketplaceListings: [
+    { id: "h1", name: "Luxury Penthouse", price: 12500000, imageUrl: "/properties/apartment1.jpg", address: "123 Sky Tower, Downtown", beds: 4, baths: 3, sqft: 3200, badge: "Premium", description: "Experience unparalleled luxury with breathtaking city views." },
+    { id: "h2", name: "Seaside Grand Villa", price: 25000000, imageUrl: "/properties/villa1.jpg", address: "456 Ocean Drive, Coastal Paradise", beds: 6, baths: 5, sqft: 5000, badge: "Exclusive", description: "An exquisite villa offering direct beach access and ultimate privacy." },
+    { id: "h3", name: "Modern Office Suite", price: 7500000, imageUrl: "/properties/office1.jpg", address: "789 Business Hub, Tech Park", beds: 0, baths: 2, sqft: 2000, badge: "New Listing", description: "State-of-the-art office space designed for productivity and collaboration." },
+    { id: "h4", name: "Spacious Countryside Plot", price: 4000000, imageUrl: "/properties/land1.jpg", address: "101 Green Fields, Rural Haven", beds: 0, baths: 0, sqft: 43560, badge: "Investment", description: "Expansive land perfect for building your custom estate." },
+    { id: "h5", name: "Charming Suburban Home", price: 9800000, imageUrl: "/properties/loft1.jpg", address: "234 Elm Street, Quiet Neighborhood", beds: 3, baths: 2, sqft: 2200, badge: "Family Ready", description: "A cozy and inviting home, ideal for growing families." },
+    { id: "h6", name: "Urban Loft Apartment", price: 6200000, imageUrl: "/properties/home1.jpg", address: "567 Art District, Urban Core", beds: 2, baths: 2, sqft: 1500, badge: "Trendy", description: "Stylish loft living with vibrant city culture at your doorstep." },
+    { id: "h7", name: "Mountain View Cabin", price: 8000000, imageUrl: "/properties/cabin.jpg", address: "890 Pine Ridge, Serene Mountains", beds: 3, baths: 2, sqft: 1600, badge: "Getaway", description: "Escape to nature in this beautifully designed cabin." },
   ],
   testimonials: [
-    { quote: "UrbanNest made finding our dream home a breeze!", author: "Alice K." },
-    { quote: "Professional, transparent and efficient. Highly recommend!", author: "Brian M." },
-    { quote: "Great selection of properties and friendly agents.", author: "Cindy L." },
+    { quote: "DreamNest Realty exceeded all our expectations! Their agents were incredibly knowledgeable and made our home-buying journey seamless.", author: "Alice G.", avatarUrl: "/avatars/avatar1.jpg", rating: 5, role: "First-Time Homeowner" },
+    { quote: "The team at DreamNest is truly professional and transparent. They found us the perfect commercial space much faster than we anticipated.", author: "Brenda K.", avatarUrl: "/avatars/avatar2.jpg", rating: 5, role: "Business Owner" },
+    { quote: "Outstanding service! We were guided every step of the way, and their property selection was vast. Highly recommended!", author: "Charles L.", avatarUrl: "/avatars/avatar3.jpg", rating: 4.5, role: "Real Estate Investor" },
+    { quote: "Their deep market insights gave us a competitive edge. Selling our property was surprisingly stress-free. Thank you, DreamNest!", author: "Diana P.", avatarUrl: "/avatars/avatar4.jpg", rating: 5, role: "Seller" },
   ],
   faqs: [
-    { question: "Can I schedule a viewing?", answer: "Yes, book a viewing directly through the listing page." },
-    { question: "Do you offer mortgage assistance?", answer: "We partner with top banks for mortgage support." },
-    { question: "Is there a buyer's guarantee?", answer: "Yes, we offer a money-back guarantee within 7 days." },
+    { question: "How does the home buying process work with DreamNest Realty?", answer: "We streamline the entire process, from initial consultation and property search to negotiation and closing. Our agents provide personalized guidance every step of the way to ensure a smooth and enjoyable experience." },
+    { question: "Can I get a virtual tour of properties before visiting in person?", answer: "Absolutely! Many of our listings feature high-quality virtual tours and detailed photo galleries. Contact the listing agent to arrange a virtual walkthrough or for more details." },
+    { question: "What are the typical closing costs associated with buying a property?", answer: "Closing costs typically range from 2-5% of the purchase price and can include items like loan origination fees, title insurance, appraisal fees, and legal fees. Our team will provide a detailed breakdown specific to your transaction." },
+    { question: "Do you offer property management services after purchase?", answer: "Yes, we provide comprehensive property management services for both residential and commercial properties, ensuring your investment is well-maintained and generates optimal returns. Speak to our team for a tailored quote." },
+    { question: "How do I determine the right price to sell my home?", answer: "Our expert agents conduct a thorough market analysis, evaluating comparable sales, current market trends, and your property's unique features to determine the most competitive and effective listing price for a quick and profitable sale." },
   ],
   agents: [
-    { id: 1, name: "Sarah M.", role: "Lead Agent", photoUrl: "/agents/sarah.jpg", rating: 4.8 },
-    { id: 2, name: "David T.", role: "Senior Agent", photoUrl: "/agents/david.jpg", rating: 4.6 },
-    { id: 3, name: "Emily R.", role: "Junior Agent", photoUrl: "/agents/emily.jpg", rating: 4.7 },
+    { id: 1, name: "Sophia Chen", role: "Luxury Property Specialist", photoUrl: "/agents/sarah.jpg", rating: 4.9, isOnline: true, phone: "+254712345678", email: "sophia.c@dreamnest.com" },
+    { id: 2, name: "Marcus Reed", role: "Commercial Real Estate Expert", photoUrl: "/agents/david.jpg", rating: 4.7, isOnline: false, phone: "+254712345679", email: "marcus.r@dreamnest.com" },
+    { id: 3, name: "Olivia Grace", role: "Residential Sales Lead", photoUrl: "/agents/emily.jpg", rating: 4.8, isOnline: true, phone: "+254712345680", email: "olivia.g@dreamnest.com" },
+    { id: 4, name: "Ethan Cole", role: "Land & Development Consultant", photoUrl: "/agents/agent4.jpg", rating: 4.6, isOnline: true, phone: "+254712345681", email: "ethan.c@dreamnest.com" },
   ],
   metrics: [
-    { id: 1, label: "Homes Sold This Month", value: 500 },
-    { id: 2, label: "Visitors Online", value: 120 },
+    { id: 1, label: "Properties Listed", value: 1250, iconName: "BuildingOfficeIcon" },
+    { id: 2, label: "Happy Clients", value: 980, iconName: "UsersIcon" },
+    { id: 3, label: "Years in Business", value: 15, iconName: "SparklesIcon" },
+    { id: 4, label: "Average Rating", value: 4.9, iconName: "StarIcon" }, // Custom metric for average rating
   ],
   awards: [
-    { id: 1, name: "REALTOR® Association Member", iconUrl: "/badges/realtor.png" },
-    { id: 2, name: "Top Rated 2024", iconUrl: "/badges/top-rated.png" },
+    { id: 1, name: "Best Real Estate Agency 2024", iconUrl: "/badges/top-rated.png" },
+    { id: 2, name: "Client Satisfaction Award", iconUrl: "/badges/satisfaction.png" }, // Assuming you have an image for this
+    { id: 3, name: "Excellence in Service", iconUrl: "/badges/realtor.png" },
   ],
-  featuredListings :[
-    {"id": 1, "image": "/images/house1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3,
-    "baths": 2, "sqft": 1800, "badge": "New"},
-    {"id": 2, "image": "/images/house2.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths":
-    3, "sqft": 2500, "badge": "Hot"},
-    {"id": 3, "image": "/images/house3.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths":
-    2.5, "sqft": 2000, "badge": "Price Reduced"}
+  featuredListings: [
+    { "id": 1, "image": "/properties/featured1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3, "baths": 2, "sqft": 1800, "badge": "New", "description": "A charming family home with a spacious backyard." },
+    { "id": 2, "image": "/properties/featured2.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths": 3, "sqft": 2500, "badge": "Hot Deal", "description": "Modern design with smart home features and a panoramic view." },
+    { "id": 3, "image": "/properties/featured3.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths": 2.5, "sqft": 2000, "badge": "Price Reduced", "description": "Recently renovated property in a quiet, friendly neighborhood." },
+    { "id": 4, "image": "/properties/featured4.jpg", "price": 720000, "address": "101 Lakefront Drive, Lakeside", "beds": 5, "baths": 4, "sqft": 3500, "badge": "Luxury", "description": "Stunning lakefront property with private dock and expansive views." },
   ],
-  listings :[
-    {"id": 1, "image": "/images/house1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3,
-    "baths": 2, "sqft": 1800, "badge": "New"},
-    {"id": 2, "image": "/images/house2.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths":
-    3, "sqft": 2500, "badge": "Hot"},
-    {"id": 3, "image": "/images/house3.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths":
-    2.5, "sqft": 2000, "badge": "Price Reduced"}
+  // Note: Assuming 'listings' will eventually come from 'marketplaceListings' or a filtered subset
+  listings: [
+    { "id": 1, "image": "/properties/apartment1.jpg", "price": 350000, "address": "123 Maple Street, Springfield", "beds": 3, "baths": 2, "sqft": 1800, "badge": "New" },
+    { "id": 2, "image": "/properties/villa1.jpg", "price": 550000, "address": "456 Oak Avenue, Metropolis", "beds": 4, "baths": 3, "sqft": 2500, "badge": "Hot" },
+    { "id": 3, "image": "/properties/office1.jpg", "price": 450000, "address": "789 Pine Road, Centerville", "beds": 3, "baths": 2.5, "sqft": 2000, "badge": "Price Reduced" },
+    { "id": 4, "image": "/properties/land1.jpg", "price": 3000000, "address": "101 Green Fields, Rural Haven", beds: 0, baths: 0, sqft: 43560, badge: "Investment" },
   ],
-  locations :  [
-    {"id": 1, "name": "Downtown", "image": "/images/city1.jpg", "listings": 120, "avgPrice": 420000},
-    {"id": 2, "name": "Uptown", "image": "/images/city2.jpg", "listings": 80, "avgPrice": 380000},
-    {"id": 3, "name": "Riverside", "image": "/images/city3.jpg", "listings": 60, "avgPrice": 310000}
+  locations: [
+    { "id": 1, "name": "Downtown", "image": "/locations/downtown.jpg", "listings": 120, "avgPrice": 420000, description: "Vibrant city living with access to all amenities." },
+    { "id": 2, "name": "Uptown Hills", "image": "/locations/uptown.jpg", "listings": 80, "avgPrice": 380000, description: "Exclusive residential area with lush greenery." },
+    { "id": 3, "name": "Riverside Estates", "image": "/locations/riverside.jpg", "listings": 60, "avgPrice": 310000, description: "Peaceful waterfront properties, perfect for families." },
+    { "id: 4", "name": "Tech Hub North", "image": "/locations/techhub.jpg", "listings": 45, "avgPrice": 550000, description: "Modern living near innovation centers." }
   ],
-  blogPosts : [
-    {"id": 1, "title": "5 Tips for First-Time Home Buyers", "link": "#"},
-    {"id": 2, "title": "Market Trends: 2025 Housing", "link": "#"},
-    {"id": 3, "title": "How to Stage Your Home", "link": "#"}
+  blogPosts: [
+    { "id": 1, "title": "5 Essential Tips for First-Time Home Buyers in 2025", "link": "#", "imageUrl": "/blog/blog1.jpg", "date": "July 10, 2025", "author": "DreamNest Editorial" },
+    { "id": 2, "title": "Navigating the Current Real Estate Market: Trends and Forecasts", "link": "#", "imageUrl": "/blog/blog2.jpg", "date": "June 28, 2025", "author": "Market Analyst" },
+    { "id": 3, "title": "Maximizing Your Home's Value: Effective Staging Techniques", "link": "#", "imageUrl": "/blog/blog3.jpg", "date": "June 15, 2025", "author": "Design Team" },
+    { "id": 4, "title": "The Rise of Sustainable Homes: What You Need to Know", "link": "#", "imageUrl": "/blog/blog4.jpg", "date": "May 30, 2025", "author": "Green Living Expert" },
   ],
-  };
-
-// Reusable loader
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+};
 
 //──────────────────────────────────────────────────────────────────────────────
 // Main RealEstateSite Component
 //──────────────────────────────────────────────────────────────────────────────
 export default function RealEstateSite() {
   const router = useRouter();
-  const { storeFormData } = useStoreContext();
+  const { storeFormData } = useStoreContext(); // Assuming this is where dynamic store data might come from
+
+  // Prioritize dynamic data from context, fall back to sample data
+  const storeData = storeFormData && Object.keys(storeFormData).length > 0
+    ? storeFormData
+    : sampleStoreData;
+
+  // Destructure data using the potentially updated storeData
   const {
     name,
     slug,
     description,
     bannerUrl,
-    storeCategories: categories,
+    StoreCategory: categories, // Renamed for clarity in props
     marketplaceListings,
-    // agents:store.agents,
+    agents,
     metrics,
     awards,
     testimonials,
     faqs,
-    // locations:store.locations,
-    // blogPosts:store.blogPosts,
-  } = storeFormData;
+    locations,
+    blogPosts,
+  } = storeData;
 
-  // Search form state
+  // Search form state (remains local to parent for now)
   const [location, setLocation] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [showNewsletter, setShowNewsletter] = useState(true);
+  const [showNewsletter, setShowNewsletter] = useState(true); // Control Newsletter visibility
 
   useEffect(() => {
-    // Placeholder for fetching or additional setup
-  }, []);
+    // You can add logic here to fetch real data based on `slug` if needed,
+    // and then update `storeFormData` in your context.
+    // For now, it defaults to sample data if `storeFormData` is empty.
+  }, [slug]);
 
-  const handleSearch = () =>
-    alert(`Searching in ${location} between KES ${minPrice} and KES ${maxPrice}`);
+  const handleSearch = () => {
+    // Implement actual search logic, e.g., navigate to a search results page
+    alert(`Searching in ${location || 'all locations'} between KES ${minPrice || 'any'} and KES ${maxPrice || 'any'}`);
+    router.push(`/site/${slug}/listings?location=${location}&minPrice=${minPrice}&maxPrice=${maxPrice}`);
+  };
 
-  const handleNewsletter = (e: any) => {
+  const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowNewsletter(false);
-    // Submit logic here
+    // Simulate newsletter submission
+    console.log("Newsletter subscribed!");
+    setShowNewsletter(false); // Hide newsletter after submission for this session
+    // In a real app, you'd send this data to a backend
   };
 
   return (
-    <div className="font-sans text-gray-800">
-      {/* Sticky Contact Agent Button */}
+    <div className="font-sans text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 min-h-screen">
+      {/* Sticky Contact Agent Button (WhatsApp) */}
       <a
-        href={`https://wa.me/254712345678?text=Hi%20${encodeURIComponent(
-          name
-        )},%20I'd%20like%20to%20inquire%20about%20a%20listing`}
+        href={`https://wa.me/254712345678?text=Hi%20DreamNest%20Realty,%20I'd%20like%20to%20inquire%20about%20a%20listing`}
         target="_blank"
-        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-xl z-50"
-        aria-label="Chat on WhatsApp"
+        rel="noopener noreferrer" // Added for security best practice
+        className="fixed bottom-6 right-6 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700
+                   text-white p-4 rounded-full shadow-lg hover:shadow-xl z-50 transition-all duration-300 transform hover:scale-105
+                   flex items-center justify-center group"
+        aria-label="Chat with us on WhatsApp"
       >
-        <img src="/icons/whatsapp.svg" alt="Chat" className="h-6 w-6" />
+        {/* Using Heroicon for consistency, if you have a custom SVG keep it */}
+        <ChatBubbleBottomCenterTextIcon className="h-7 w-7 transition-transform duration-300 group-hover:rotate-6" />
+        <span className="sr-only">Chat on WhatsApp</span> {/* Screen reader only text */}
       </a>
 
       {/* Hero Section */}
       <HeroSection
         name={name}
+        description={description} // Pass description to HeroSection
         bannerUrl={bannerUrl}
         location={location}
         minPrice={minPrice}
@@ -157,795 +197,46 @@ export default function RealEstateSite() {
         handleSearch={handleSearch}
       />
 
-      {/* Property Types */}
+      {/* Property Categories Section */}
       <CategoriesSection categories={categories} slug={slug} />
 
-      {/* Featured Listings */}
-      <FeaturedListings listings={marketplaceListings} slug={slug} />
+      {/* Featured Listings Section (using marketplaceListings as source) */}
+      <FeaturedListings listings={storeData.featuredListings || marketplaceListings} slug={slug} />
 
-      {/* Trending Locations */}
-      <TrendingLocations locations={store.locations} slug={slug} />
+      {/* Trending Locations Section */}
+      <TrendingLocations locations={locations} slug={slug} />
 
-      {/* All Listings */}
+      {/* All Listings Section (using marketplaceListings as source) */}
       <ListingsSection products={marketplaceListings} slug={slug} />
 
-      {/* Newsletter Signup */}
-      {showNewsletter && <NewsletterSection handleNewsletter={handleNewsletter} />}
-
-      {/* Blog Posts */}
-      <BlogSection posts={store.blogPosts} slug={slug} />
-
-      {/* Agents */}
-      <AgentsSection agents={store.agents} slug={slug} />
-
-      {/* Metrics & Awards */}
+      {/* Why Choose Us Section */}
       <WhyChooseUs metrics={metrics} awards={awards} />
 
-      {/* Testimonials Carousel */}
+      {/* Agents Section */}
+      <AgentsSection agents={agents} slug={slug} />
+
+      {/* Testimonials Carousel Section */}
       <TestimonialsSection testimonials={testimonials} />
 
       {/* FAQ Section */}
       <FAQSection faqs={faqs} />
+
+      {/* Blog Posts Section */}
+      <BlogSection posts={blogPosts} slug={slug} />
+
+      {/* Newsletter Signup Section (conditionally rendered) */}
+      <AnimatePresence>
+        {showNewsletter && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.5 }}
+          >
+            <NewsletterSection handleNewsletter={handleNewsletter} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// HeroSection
-//──────────────────────────────────────────────────────────────────────────────
-const variants = {
-  fadeInUp: { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } },
-  fadeIn: { hidden: { opacity: 0 }, visible: { opacity: 1 } },
-};
-
-function HeroSection({
-  name,
-  bannerUrl,
-  location,
-  minPrice,
-  maxPrice,
-  setLocation,
-  setMinPrice,
-  setMaxPrice,
-  handleSearch,
-}: any) {
-  return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-900">
-      {/* Background */}
-      <div className="absolute inset-0">
-        <Image
-          src={bannerUrl || "/images/realestate-hero.jpg"}
-          alt=""
-          layout="fill"
-          objectFit="cover"
-          className="opacity-60 dark:opacity-30"
-          aria-hidden="true"
-          loader={loader}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-700 dark:to-teal-900" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 max-w-4xl text-center px-4 sm:px-6 lg:px-8">
-        <motion.h1
-          className="text-5xl md:text-7xl font-extrabold leading-tight text-gray-900 dark:text-white drop-shadow-lg"
-          variants={variants.fadeInUp}
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.8 }}
-        >
-          Find Your Perfect Stay
-        </motion.h1>
-        <motion.p
-          className="mt-4 text-base md:text-lg font-medium text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
-          variants={variants.fadeInUp}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.3, duration: 0.8 }}
-        >
-          Search properties by location and price range to discover the ideal place to call home.
-        </motion.p>
-
-        <motion.form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSearch();
-          }}
-          className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-80 backdrop-blur-2xl rounded-2xl p-6 shadow-xl"
-          variants={variants.fadeIn}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.6, duration: 0.8 }}
-          aria-label="Search properties form"
-        >
-          {/* Location Input */}
-          <label className="relative flex items-center">
-            <MapPinIcon
-              className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3"
-              aria-hidden="true"
-            />
-            <input
-              type="text"
-              placeholder="Location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              aria-label="Location"
-              className="w-full pl-10 pr-4 py-2 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 transition transform focus:scale-105"
-            />
-          </label>
-
-          {/* Min Price */}
-          <label className="relative flex items-center">
-            <CurrencyDollarIcon
-              className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3"
-              aria-hidden="true"
-            />
-            <input
-              type="number"
-              placeholder="Min Price"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              aria-label="Minimum price"
-              className="w-full pl-10 pr-4 py-2 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 transition transform focus:scale-105"
-            />
-          </label>
-
-          {/* Max Price */}
-          <label className="relative flex items-center">
-            <CurrencyDollarIcon
-              className="w-5 h-5 text-emerald-500 dark:text-emerald-400 absolute left-3"
-              aria-hidden="true"
-            />
-            <input
-              type="number"
-              placeholder="Max Price"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              aria-label="Maximum price"
-              className="w-full pl-10 pr-4 py-2 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 transition transform focus:scale-105"
-            />
-          </label>
-
-          {/* Search Button */}
-          <motion.button
-            type="submit"
-            className="md:col-span-2 flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-400 dark:from-teal-600 dark:to-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-amber-400 focus:ring-opacity-60"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Search listings"
-          >
-            <MagnifyingGlassIcon className="w-5 h-5" aria-hidden="true" />
-            <span>Search</span>
-          </motion.button>
-        </motion.form>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// CategoriesSection
-//──────────────────────────────────────────────────────────────────────────────
-function CategoriesSection({ categories, slug }: any) {
-  return (
-    <section className="py-20 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-12">
-          Property Types
-        </h2>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories.map((cat: any) => (
-            <Link key={cat.id} href={`/site/${slug}/category/${cat.slug}`}>
-              <motion.a
-                className="block relative rounded-2xl overflow-hidden shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                whileHover={{ scale: 1.05 }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                aria-label={cat.name}
-              >
-                <div className="relative h-40 sm:h-48 w-full">
-                  <Image
-                    src={cat.imageUrl}
-                    alt={cat.name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transform transition-transform duration-500 hover:scale-110"
-                    loader={loader}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                </div>
-
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                  <span className="px-4 py-1 bg-emerald-600 text-white text-sm uppercase tracking-wide rounded-lg">
-                    {cat.name}
-                  </span>
-                </div>
-              </motion.a>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// FeaturedListings
-//──────────────────────────────────────────────────────────────────────────────
-function FeaturedListings({ listings, slug }: any) {
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-16">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-8">
-          Featured Listings
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {listings.map((item: any) => (
-            <motion.div
-              key={item.id}
-              role="button"
-              tabIndex={0}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -8, boxShadow: "0 12px 24px rgba(0,0,0,0.12)" }}
-              transition={{ type: "spring", stiffness: 250 }}
-              onClick={() => (window.location.href = `/site/${slug}/property/${item.id}`)}
-              className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            >
-              <div className="relative h-64 w-full overflow-hidden">
-                <Image
-                  src={item.image}
-                  alt={item.address}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transform transition-transform duration-500 hover:scale-110"
-                  loader={loader}
-                />
-                {item.badge && (
-                  <span className="absolute top-4 right-4 bg-amber-500 text-white text-xs font-semibold uppercase px-3 py-1 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-
-              <div className="p-6 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-emerald-600">
-                    KES {item.price.toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 font-medium">{item.address}</p>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  {item.beds} beds • {item.baths} baths • {item.sqft.toLocaleString()} sqft
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = `/site/${slug}/property/${item.id}`;
-                  }}
-                  className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white font-medium py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                  aria-label={`View details for ${item.address}`}
-                >
-                  View Details
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// TrendingLocations
-//──────────────────────────────────────────────────────────────────────────────
-function TrendingLocations({ locations, slug }: any) {
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-16 px-6">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-8">
-          Trending Locations
-        </h2>
-        <div className="flex space-x-6 overflow-x-auto pb-4 snap-x snap-mandatory">
-          {locations.map((loc: any) => (
-            <motion.div
-              key={loc.id}
-              role="group"
-              tabIndex={0}
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -5 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              onClick={() => (window.location.href = `/site/${slug}/location/${loc.id}`)}
-              className="snap-center min-w-[220px] sm:min-w-[260px] relative rounded-3xl overflow-hidden shadow-lg bg-black/5 dark:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            >
-              <div className="relative h-48 sm:h-56 w-full overflow-hidden">
-                <Image
-                  src={loc.image}
-                  alt={loc.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transform transition-transform duration-500 group-hover:scale-105"
-                  loader={loader}
-                />
-                <span className="absolute top-4 left-4 bg-emerald-500 text-white text-xs uppercase px-3 py-1 rounded-full">
-                  {loc.listings} Listings
-                </span>
-              </div>
-              <div className="absolute bottom-4 left-4 right-4 bg-gradient-to-t from-black/70 to-transparent p-4">
-                <h3 className="text-xl font-semibold text-white mb-1">{loc.name}</h3>
-                <p className="text-sm text-gray-200">Avg KES {loc.avgPrice.toLocaleString()}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// ListingsSection
-//──────────────────────────────────────────────────────────────────────────────
-function ListingsSection({ products, slug }: any) {
-  const router = useRouter();
-  return (
-    <section className="py-20 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-12">
-          Listings
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((prop: any) => (
-            <motion.div
-              key={prop.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => router.push(`/site/${slug}/property/${prop.id}`)}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -10, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 shadow-md hover:shadow-xl"
-            >
-              <div className="relative h-72 w-full overflow-hidden">
-                <Image
-                  src={prop.imageUrl}
-                  alt={prop.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transform transition-transform duration-500 hover:scale-110"
-                  loader={loader}
-                />
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  {prop.name}
-                </h3>
-                <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">
-                  KES {prop.price.toLocaleString()}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// NewsletterSection
-//──────────────────────────────────────────────────────────────────────────────
-function NewsletterSection({ handleNewsletter }: any) {
-  return (
-    <motion.section
-      className="bg-gray-50 dark:bg-gray-900 py-20"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
-    >
-      <div className="max-w-3xl mx-auto px-6 text-center">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-4">
-          Stay Updated
-        </h2>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-          Subscribe to our newsletter for the latest listings and market insights.
-        </p>
-
-        <form
-          onSubmit={handleNewsletter}
-          className="flex flex-col md:flex-row items-center gap-4 max-w-md mx-auto"
-        >
-          <input
-            type="email"
-            placeholder="Enter your email"
-            required
-            aria-label="Email address"
-            className="flex-1 w-full p-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
-          />
-          <motion.button
-            type="submit"
-            aria-label="Subscribe to newsletter"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full md:w-auto bg-gradient-to-r from-emerald-500 to-teal-400 text-white font-semibold uppercase py-4 px-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
-          >
-            Subscribe
-          </motion.button>
-        </form>
-      </div>
-    </motion.section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// AgentsSection
-//──────────────────────────────────────────────────────────────────────────────
-function AgentsSection({ agents, slug }: any) {
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-20">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-12">
-          Meet Our Agents
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {agents.map((agent: any) => (
-            <motion.div
-              key={agent.id}
-              role="group"
-              tabIndex={0}
-              aria-label={`Agent ${agent.name}, ${agent.role}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.03 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              onClick={() => (window.location.href = `/site/${slug}/agent/${agent.id}`)}
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-6 text-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            >
-              <div className="mx-auto mb-4 relative w-32 h-32 rounded-full overflow-hidden ring-2 ring-amber-500">
-                <Image
-                  src={agent.photoUrl}
-                  alt={agent.name}
-                  loader={loader}
-                  layout="fill"
-                  objectFit="cover"
-                />
-              </div>
-
-              <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                {agent.name}
-              </h3>
-              <p className="text-emerald-600 dark:text-emerald-400 font-medium mb-2">
-                {agent.role}
-              </p>
-
-              <motion.span
-                className="inline-block bg-amber-500 text-white text-sm font-semibold px-3 py-1 rounded-full"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              >
-                {agent.rating.toFixed(1)} ★
-              </motion.span>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// BlogSection
-//──────────────────────────────────────────────────────────────────────────────
-function BlogSection({ posts, slug }: any) {
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-20">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-12">
-          Latest Insights
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post: any) => (
-            <motion.article
-              key={post.id}
-              role="article"
-              tabIndex={0}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.03, boxShadow: "0 12px 24px rgba(0,0,0,0.12)" }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer"
-            >
-              {post.imageUrl && (
-                <div className="relative h-48 w-full overflow-hidden">
-                  <Image
-                    src={post.imageUrl}
-                    alt={post.title}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transform transition-transform duration-500 hover:scale-110"
-                    loader={loader}
-                  />
-                </div>
-              )}
-
-              <div className="p-6 flex flex-col justify-between h-full">
-                <div>
-                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    {post.title}
-                  </h3>
-                  {post.excerpt && (
-                    <p className="text-base text-gray-700 dark:text-gray-300 mb-4">
-                      {post.excerpt}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between mt-auto">
-                  <div className="flex items-center space-x-2">
-                    {post.author?.avatarUrl && (
-                      <Image
-                        src={post.author.avatarUrl}
-                        alt={post.author.name}
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
-                    )}
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(post.publishedAt).toLocaleDateString("en-KE", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
-                  <Link href={`/site/${slug}/blog/${post.slug}`}>
-                    <motion.a
-                      whileHover={{ scale: 1.05 }}
-                      className="text-sm font-semibold bg-gradient-to-r from-emerald-500 to-teal-400 text-white uppercase px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                      aria-label={`Read more about ${post.title}`}
-                    >
-                      Read More
-                    </motion.a>
-                  </Link>
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// WhyChooseUs
-//──────────────────────────────────────────────────────────────────────────────
-function WhyChooseUs({ metrics, awards }: any) {
-  const controls = useAnimation();
-
-  useEffect(() => {
-    controls.start((i: number) => ({
-      y: 0,
-      opacity: 1,
-      transition: { delay: i * 0.2, duration: 0.6 },
-    }));
-  }, [controls]);
-
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-20">
-      <div className="max-w-7xl mx-auto px-6 text-center">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-12">
-          Why Choose Us
-        </h2>
-
-        {/* Metrics */}
-        <div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12"
-          role="group"
-          aria-label="Company metrics"
-        >
-          {metrics && metrics.map((m: any, idx: number) => (
-            <motion.div
-              key={m.id}
-              custom={idx}
-              initial={{ opacity: 0, y: 20 }}
-              animate={controls}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            >
-              {m.iconUrl && (
-                <div className="mx-auto mb-4 w-12 h-12">
-                  <Image
-                    src={m.iconUrl}
-                    alt={`${m.label} icon`}
-                    width={48}
-                    height={48}
-                    className="object-contain"
-                    loader={loader}
-                  />
-                </div>
-              )}
-              <motion.p
-                className="text-5xl font-extrabold text-emerald-600"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: idx * 0.2 + 0.3 }}
-              >
-                {m.value.toLocaleString()}+
-              </motion.p>
-              <p className="mt-2 text-lg font-medium text-gray-700 dark:text-gray-300">
-                {m.label}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Awards */}
-        <div
-          className="flex flex-wrap justify-center gap-8"
-          role="group"
-          aria-label="Awards and recognitions"
-        >
-          {awards && awards.map((a: any) => (
-            <motion.div
-              key={a.id}
-              whileHover={{ y: -4 }}
-              className="flex flex-col items-center w-32"
-            >
-              <div className="relative w-16 h-16 filter grayscale hover:grayscale-0 transition">
-                <Image
-                  src={a.iconUrl}
-                  alt={a.name}
-                  layout="fill"
-                  objectFit="contain"
-                  loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
-                />
-              </div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{a.name}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// TestimonialsSection
-//──────────────────────────────────────────────────────────────────────────────
-function TestimonialsSection({ testimonials }: any) {
-  const carouselRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-20">
-      <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-12">
-          What Clients Say
-        </h2>
-
-        <motion.div
-          ref={carouselRef}
-          className="flex space-x-6 overflow-x-auto pb-4 snap-x snap-mandatory cursor-grab"
-          drag="x"
-          dragConstraints={carouselRef}
-          dragElastic={0.1}
-          role="region"
-          aria-label="Testimonials carousel"
-        >
-          {testimonials.map((t: any, idx: number) => (
-            <motion.div
-              key={t.author + idx}
-              role="group"
-              tabIndex={0}
-              className="snap-center min-w-[300px] bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              initial={{ opacity: 0, x: idx % 2 === 0 ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: idx * 0.2 }}
-              whileHover={{ scale: 1.02 }}
-            >
-              {t.avatarUrl && (
-                <div className="mx-auto mb-4 w-16 h-16 rounded-full overflow-hidden ring-2 ring-emerald-500">
-                  <Image
-                    src={t.avatarUrl}
-                    alt={t.author}
-                    width={64}
-                    height={64}
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <p className="italic text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                “{t.quote}”
-              </p>
-              <span className="mt-6 block font-semibold text-gray-900 dark:text-gray-100">
-                — {t.author}
-              </span>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-//──────────────────────────────────────────────────────────────────────────────
-// FAQSection
-//──────────────────────────────────────────────────────────────────────────────
-function FAQSection({ faqs }: any) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const toggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
-  return (
-    <section className="bg-gray-50 dark:bg-gray-900 py-20">
-      <div className="max-w-3xl mx-auto px-6">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-10">
-          FAQs
-        </h2>
-        <div className="space-y-4">
-          {faqs.map((q: any, idx: number) => (
-            <motion.details
-              key={q.question}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 + idx * 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500"
-            >
-              <summary
-                className="flex justify-between items-center cursor-pointer px-6 py-4 text-xl font-semibold text-gray-900 dark:text-gray-100 hover:text-emerald-600 transition"
-                aria-controls={`faq-content-${idx}`}
-                id={`faq-summary-${idx}`}
-                onClick={() => toggle(idx)}
-              >
-                {q.question}
-                <motion.span
-                  className="ml-2"
-                  animate={{
-                    rotate: openIndex === idx ? 180 : 0,
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ChevronDownIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                </motion.span>
-              </summary>
-              {openIndex === idx && (
-                <motion.div
-                  id={`faq-content-${idx}`}
-                  className="px-6 pb-6 text-gray-700 dark:text-gray-300"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.1 }}
-                >
-                  <p className="mt-2">{q.answer}</p>
-                </motion.div>
-              )}
-            </motion.details>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }
