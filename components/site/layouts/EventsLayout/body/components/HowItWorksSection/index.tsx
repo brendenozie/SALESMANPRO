@@ -2,73 +2,112 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PlayCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-import { AcademicCapIcon, BanknotesIcon, HeartIcon } from '@heroicons/react/24/outline'; // Importing specific icons
-import { useStoreContext } from '@/contexts/StoreContext';
+import { MagnifyingGlassIcon, PencilSquareIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
-// Mocking the image loader since Next.js Image is not available
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-
+// Data for the steps
 const steps = [
   {
-    icon: <MagnifyingGlassIcon className="w-8 h-8 text-purple-600" />,
-    title: "Find Events",
-    description:
-      "Browse trending, upcoming, and local events tailored to your interests.",
+    icon: <MagnifyingGlassIcon className="w-8 h-8 text-purple-400" />,
+    title: "Find Your Next Event",
+    description: "Use our powerful search and curated lists to discover trending, upcoming, and local events tailored to your interests.",
   },
   {
-    icon: <CalendarIcon className="w-8 h-8 text-purple-600" />,
+    icon: <PencilSquareIcon className="w-8 h-8 text-pink-400" />,
     title: "Book or Create",
-    description:
-      "Easily book your spot or create your own event in minutes using our intuitive dashboard.",
+    description: "Easily book your spot in a few clicks or bring your own vision to life by creating an event with our intuitive organizer dashboard.",
   },
   {
-    icon: <FaceSmileIcon className="w-8 h-8 text-purple-600" />,
+    icon: <SparklesIcon className="w-8 h-8 text-indigo-400" />,
     title: "Enjoy the Experience",
-    description:
-      "Attend, network, or host—our tools make every step of the event journey seamless and fun.",
+    description: "Attend, network, and celebrate. Our platform ensures every step of the event journey is seamless, secure, and unforgettable.",
   },
 ];
 
+// Framer Motion variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
+
 export default function HowItWorksSection() {
   return (
-    <section className="bg-white dark:bg-gray-950 py-20 px-4 sm:px-10">
-      <div className="max-w-6xl mx-auto text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: -10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-white mb-6"
-        >
-          How It Works
-        </motion.h2>
-        <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
-          Getting started is easy. Whether you're here to discover or organize,
-          we’ve got you covered in three simple steps.
-        </p>
+    <section className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-1/4 right-0 w-96 h-96 bg-pink-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-left">
+      <div className="max-w-6xl mx-auto text-center relative z-10">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.5 }}
+        >
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4">
+                Getting Started is <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">Simple</span>
+            </h2>
+            <p className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto">
+                Whether you're here to discover or to create, our process is designed to be effortless. Follow three easy steps to unlock a world of events.
+            </p>
+        </motion.div>
+
+        <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="relative grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16"
+        >
+            {/* Dashed Connecting Line for Desktop */}
+            <div className="hidden md:block absolute top-1/3 left-0 w-full h-px">
+                <svg width="100%" height="100%">
+                    <line x1="0" y1="0" x2="100%" y2="0" strokeWidth="2" strokeDasharray="8 8" className="stroke-gray-700" />
+                </svg>
+            </div>
+
           {steps.map((step, index) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.15, duration: 0.6 }}
-              className="bg-gray-50 dark:bg-gray-900 p-6 rounded-2xl shadow hover:shadow-lg transition-all duration-300"
+              key={step.title}
+              variants={itemVariants}
+              className="relative flex flex-col items-center text-center"
             >
-              <div className="mb-4">{step.icon}</div>
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                {step.title}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                {step.description}
-              </p>
+                <div className="relative z-10 flex items-center justify-center w-24 h-24 rounded-full bg-gray-900 border-2 border-gray-700">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-gray-800/80 backdrop-blur-sm">
+                        {step.icon}
+                    </div>
+                </div>
+                {/* Vertical line for mobile */}
+                {index < steps.length - 1 && (
+                    <div className="md:hidden absolute top-24 left-1/2 -translate-x-1/2 h-16 w-px bg-gray-700"></div>
+                )}
+                <div className="mt-6">
+                    <h3 className="text-xl font-bold text-white mb-2">
+                        {step.title}
+                    </h3>
+                    <p className="text-gray-400">
+                        {step.description}
+                    </p>
+                </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

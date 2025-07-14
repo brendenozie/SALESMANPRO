@@ -1,23 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRightIcon,
-  BellIcon,
-  CalendarIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  FaceSmileIcon,
-  MagnifyingGlassIcon,
-  MapPinIcon,
-  TagIcon,
-  TicketIcon,
-} from "@heroicons/react/24/outline";
 import { useStoreContext } from "../../../../../contexts/StoreContext";
+import HeroComponent from "./components/HeroSection";
+import AboutSection from "./components/AboutSection";
+import FeaturesSection from "./components/FeaturesSection";
+import HowItWorksSection from "./components/HowItWorksSection";
+import LiveEventsSection from "./components/LiveEventsSection";
+import TestimonialsSection from "./components/TestimonialsSection";
+import PricingSection from "./components/PricingSection";
+import FAQSection from "./components/FAQSection";
+import CallToActionSection from "./components/CallToActionSection";
 
 //----------------------------------------------
 // Image loader (same as elsewhere)
@@ -75,19 +70,9 @@ export default function EventsSite() {
       {/* FAQ */}
       <FAQSection faqs={faqs} />
 
-      {/* Call To Action */}
-      <section className="bg-indigo-600 text-white py-16 text-center relative">
-        <h3 className="text-3xl md:text-4xl font-bold mb-4">Host With Us</h3>
-        <p className="text-lg mb-6">
-          Planning an event? Let us help you make it extraordinary.
-        </p>
-        <Link
-          href={`/${slug}/host`}
-          className="bg-white text-indigo-600 px-6 py-3 rounded-full font-semibold hover:bg-indigo-100 transition"
-        >
-          Get Started
-        </Link>
-      </section>
+      <CallToActionSection slug={""} />
+
+      
     </div>
   );
 }

@@ -2,11 +2,9 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PlayCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-import { AcademicCapIcon, BanknotesIcon, HeartIcon } from '@heroicons/react/24/outline'; // Importing specific icons
-import { useStoreContext } from '@/contexts/StoreContext';
+import { CheckCircleIcon, ArrowRightIcon } from '@heroicons/react/24/outline'; // Using CheckCircleIcon and ArrowRightIcon
 
-// Mocking the image loader since Next.js Image is not available
+// Mocking the image loader since Next.js Image is not available (kept for context)
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
@@ -23,6 +21,7 @@ const plans = [
       "Email support",
     ],
     highlighted: false,
+    buttonText: "Get Started Free",
   },
   {
     title: "Pro",
@@ -36,6 +35,7 @@ const plans = [
       "Custom branding",
     ],
     highlighted: true,
+    buttonText: "Go Pro",
   },
   {
     title: "Enterprise",
@@ -48,59 +48,95 @@ const plans = [
       "White-label solution",
     ],
     highlighted: false,
+    buttonText: "Contact Us",
   },
 ];
 
+// Framer Motion variants for pricing cards
+const priceCardVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.7,
+      ease: "easeOut",
+    },
+  },
+};
+
 export default function PricingSection() {
   return (
-    <section className="bg-gray-50 dark:bg-gray-950 py-20 px-4 sm:px-10">
-      <div className="max-w-7xl mx-auto text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: -10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-white mb-6"
-        >
-          Flexible Plans for Every Organizer
-        </motion.h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-14 max-w-2xl mx-auto">
-          Whether you're just starting out or managing major festivals, our
-          pricing is built to scale with you.
-        </p>
+    <section className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
+      {/* Decorative Background Elements - consistent with other sections */}
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-indigo-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
 
-        <div className="grid gap-10 md:grid-cols-3">
+      <div className="max-w-7xl mx-auto text-center relative z-10">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          viewport={{ once: true, amount: 0.5 }}
+          className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+        >
+          Flexible Plans for <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">Every Organizer</span>
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
+          viewport={{ once: true, amount: 0.5 }}
+          className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto"
+        >
+          Whether you're just starting out or managing major festivals, our pricing is built to scale with you.
+        </motion.p>
+
+        <div className="grid gap-8 md:grid-cols-3 items-stretch"> {/* Use items-stretch to make cards same height */}
           {plans.map((plan, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              className={`rounded-2xl p-8 shadow-lg border ${
+              variants={priceCardVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: index * 0.1 }}
+              className={`rounded-3xl p-8 shadow-xl flex flex-col justify-between transform transition-all duration-300 hover:scale-[1.02] ${
                 plan.highlighted
-                  ? "bg-indigo-600 text-white border-indigo-700"
-                  : "bg-white dark:bg-gray-900 text-gray-800 dark:text-white border-gray-200 dark:border-gray-800"
+                  ? "bg-gradient-to-br from-indigo-700 to-purple-800 text-white border-2 border-indigo-500 shadow-indigo-500/20" // Highlighted style
+                  : "bg-gray-800 text-gray-200 border border-gray-700 hover:border-indigo-600" // Default style
               }`}
             >
-              <h3 className="text-2xl font-bold mb-2">{plan.title}</h3>
-              <p className="text-3xl font-semibold mb-4">{plan.price}</p>
-              <p className="text-sm mb-6">{plan.description}</p>
-              <ul className="space-y-3 mb-6">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-sm">
-                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+              <div>
+                <h3 className={`text-3xl font-bold mb-4 ${plan.highlighted ? 'text-white' : 'text-white'}`}>
+                  {plan.title}
+                </h3>
+                <p className={`text-5xl font-extrabold mb-4 ${plan.highlighted ? 'text-white' : 'text-indigo-400'}`}>
+                  {plan.price}
+                </p>
+                <p className={`text-md mb-8 ${plan.highlighted ? 'text-indigo-200' : 'text-gray-400'}`}>
+                  {plan.description}
+                </p>
+                <ul className="space-y-4 mb-10 text-left">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-3 text-lg">
+                      <CheckCircleIcon className={`w-6 h-6 ${plan.highlighted ? 'text-green-300' : 'text-indigo-400'}`} />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <a
                 href="#"
-                className={`inline-block w-full py-2 px-4 rounded-md text-center font-medium transition ${
+                className={`inline-flex items-center justify-center w-full py-4 px-6 rounded-xl text-center text-lg font-semibold transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   plan.highlighted
-                    ? "bg-white text-indigo-600 hover:bg-gray-100"
-                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    ? "bg-white text-indigo-700 hover:bg-gray-200 focus:ring-white focus:ring-offset-indigo-800" // Highlighted button
+                    : "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 focus:ring-offset-gray-900" // Default button
                 }`}
               >
-                {plan.title === "Enterprise" ? "Contact Us" : "Get Started"}
+                {plan.buttonText}
+                <ArrowRightIcon className="ml-3 w-5 h-5" />
               </a>
             </motion.div>
           ))}
