@@ -42,6 +42,8 @@ import {
   ServerStackIcon,
   StarIcon,
   VideoCameraIcon,
+  QuestionMarkCircleIcon,
+  ShieldCheckIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -398,9 +400,16 @@ export const getCategoryMenus = (adminSlug: string) => ({
 
   "Finance & Legal": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UsersIcon },
-    { label: "Invoices", href: `/admin/${adminSlug}/invoices`, icon: ClipboardDocumentListIcon },
-    { label: "Documents", href: `/admin/${adminSlug}/documents`, icon: DocumentTextIcon },
+    { label: "Clients", href: `/admin/${adminSlug}/finance-clients`, icon: UsersIcon },
+    { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
+    { label: "Documents", href: `/admin/${adminSlug}/finance-documents`, icon: DocumentTextIcon },
+    { label: "Appointments", href: `/admin/${adminSlug}/finance-appointments`, icon: CalendarDaysIcon }, // For scheduling consultations
+    { label: "Billing & Invoices", href: `/admin/${adminSlug}/finance-invoices`, icon: ClipboardDocumentListIcon }, // More explicit name
+    { label: "Experts/Team", href: `/admin/${adminSlug}/finance-team`, icon: ShieldCheckIcon }, // Manage experts/advisors
+    { label: "Packages & Pricing", href: `/admin/${adminSlug}/finance-packages`, icon: TagIcon }, // Manage consultation packages
+    { label: "Testimonials", href: `/admin/${adminSlug}/finance-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client feedback
+    { label: "FAQs", href: `/admin/${adminSlug}/finance-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions
+    { label: "Settings", href: `/admin/${adminSlug}/finance-settings`, icon: Cog6ToothIcon }, // General admin settings
   ],
 
   "Automotive": [
