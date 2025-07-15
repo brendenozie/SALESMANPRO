@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'; // Ensure AnimatePresen
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, StarIcon } from '@heroicons/react/24/solid'; // Updated icons for slider controls and rating
 import Image from 'next/image';
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
 interface Testimonial {
   id: string;
   quote: string;
@@ -116,6 +119,7 @@ export default function TestimonialsSlider({ testimonials }: TestimonialsSliderP
                     <Image
                       src={testimonials[idx].avatarUrl}
                       alt={testimonials[idx].author}
+                      loader={loader}
                       width={96}
                       height={96}
                       className="object-cover w-full h-full"

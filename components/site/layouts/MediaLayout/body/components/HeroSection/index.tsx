@@ -13,6 +13,9 @@ interface MediaHeroProps {
   bannerUrl?: string;
 }
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
 /**
  * Hero Section for Media and Entertainment Website
  * Displays featured content with a captivating visual and clear calls to action.
@@ -45,6 +48,7 @@ export default function MediaHeroSection({ store, onPlay }: any) { // Removed 'l
         <Image
           src={slide.imageUrl}
           alt={slide.headline || "Featured Media"}
+          loader={loader}
           fill
           className="absolute inset-0 object-cover object-center w-full h-full brightness-[.4] transition-transform duration-500 ease-in-out hover:scale-105" // Added hover effect
           priority

@@ -6,12 +6,15 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowRightIcon } from '@heroicons/react/24/solid'; // Keeping ArrowRightIcon for category navigation
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
 interface Category {
   id: string;
   name: string;
   slug: string;
   imageUrl?: string;
-  icon?: React.ElementType; // Optional icon for the category
+  icon?: string; // Optional icon for the category
 }
 
 interface EnhancedCategoriesSectionProps {
@@ -82,6 +85,7 @@ export default function EnhancedCategoriesSection({
                   src={cat.imageUrl || 'jump'}
                   alt={cat.name}
                   fill
+                  loader={loader}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover w-full h-full brightness-[.6] group-hover:brightness-[.5] group-hover:scale-110 transition-all duration-500 ease-in-out" // Subtle zoom on hover
                   priority={index < 4} // Prioritize loading for the first few categories
@@ -92,7 +96,7 @@ export default function EnhancedCategoriesSection({
 
                 {/* Content */}
                 <motion.div
-                  className="absolute bottom-6 left-6 right-6 z-10 flex flex-col items-start"
+                  className="absolute bottom-6 left-6 right-6 z-10 flex flex-col items-start h-6 w-6"
                   variants={textVariants}
                   transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }} // Staggered text reveal
                 >
@@ -103,7 +107,8 @@ export default function EnhancedCategoriesSection({
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.1 + 0.6, duration: 0.5, type: "spring", stiffness: 300 }}
                     >
-                      <IconComponent className="h-6 w-6" />
+                      {/* <IconComponent className="h-6 w-6" /> */}
+                      {IconComponent}
                     </motion.div>
                   )}
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-1 drop-shadow-md">

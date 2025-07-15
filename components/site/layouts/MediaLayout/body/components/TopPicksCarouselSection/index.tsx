@@ -6,6 +6,9 @@ import { PlayCircleIcon, ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, Star
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
 interface TopPick {
   id: string;
   title: string;
@@ -123,6 +126,7 @@ export default function TopPicksCarousel({ picks, onSelect }: TopPicksCarouselPr
                     <Image
                       src={item.imageUrl}
                       alt={item.title}
+                      loader={loader}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
                       className="object-cover object-center brightness-75 group-hover:brightness-50 transition-all duration-500 ease-in-out"

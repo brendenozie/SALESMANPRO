@@ -21,6 +21,10 @@ interface LatestReleasesSectionProps {
   onPlay: (item: ReleaseItem) => void; // Function to handle playing the media
 }
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+
 /**
  * Visually Appealing & Engaging Latest Releases Section
  * Showcases new media content with interactive cards and clear calls to action.
@@ -100,6 +104,7 @@ export default function LatestReleasesSection({
                 <Image
                   src={item.imageUrl}
                   alt={item.title}
+                  loader={loader}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover object-center brightness-[.7] group-hover:brightness-[.5] group-hover:scale-110 transition-all duration-500 ease-in-out" // Zoom and darken on hover

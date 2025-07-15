@@ -21,6 +21,10 @@ interface LatestVideosSectionProps {
   // loader is removed as Next.js Image handles it
 }
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+
 /**
  * Intuitive, Engaging, and Visually Appealing Latest Videos Section
  * Showcases recent video content with dynamic cards and clear playback options.
@@ -80,6 +84,7 @@ export default function LatestVideosSection({ videos }: LatestVideosSectionProps
                 <Image
                   src={vid.imageUrl}
                   alt={vid.title || "Latest Video"}
+                  loader={loader}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover object-center brightness-[.7] group-hover:brightness-[.5] group-hover:scale-110 transition-all duration-500 ease-in-out" // Zoom & darken on hover

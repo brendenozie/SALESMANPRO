@@ -6,6 +6,9 @@ import { ArrowRightIcon, CalendarDaysIcon, TagIcon } from '@heroicons/react/24/s
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
 interface Article {
   id: string;
   name: string; // Renamed from 'title' for consistency if needed, but 'title' is fine too
@@ -82,6 +85,7 @@ export default function FeaturedArticlesSection({ featured, storeSlug }: Feature
                   src={art.imageUrl}
                   alt={art.name}
                   fill
+                  loader={loader}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover object-center brightness-[.7] group-hover:brightness-[.5] group-hover:scale-110 transition-all duration-500 ease-in-out" // Zoom & darken on hover
                   priority={index < 3} // Prioritize first few images
