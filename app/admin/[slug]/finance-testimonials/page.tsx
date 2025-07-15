@@ -1,4 +1,5 @@
 // app/admin/[adminSlug]/testimonials/page.tsx
+"use client";
 
 import { motion } from 'framer-motion';
 import { ChatBubbleLeftRightIcon, CheckCircleIcon, EyeSlashIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/24/solid';

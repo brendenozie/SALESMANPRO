@@ -1,4 +1,5 @@
 // app/admin/[adminSlug]/settings/page.tsx
+"use client";
 
 import { motion } from 'framer-motion';
 import { Cog6ToothIcon, UserCircleIcon, BellIcon, PaintBrushIcon } from '@heroicons/react/24/solid';

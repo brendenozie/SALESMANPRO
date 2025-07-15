@@ -1,4 +1,5 @@
 // app/admin/[adminSlug]/faqs/page.tsx
+"use client";
 
 import { motion } from 'framer-motion';
 import { QuestionMarkCircleIcon, PlusCircleIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';

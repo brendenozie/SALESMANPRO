@@ -1,4 +1,4 @@
-
+"use client";
 
 import { motion } from 'framer-motion';
 import { TagIcon, CheckCircleIcon, XMarkIcon, PlusCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/solid';

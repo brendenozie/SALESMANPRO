@@ -1,4 +1,5 @@
 // app/admin/[adminSlug]/invoices/page.tsx
+"use client";
 
 import { motion } from 'framer-motion';
 import { ClipboardDocumentListIcon, PlusCircleIcon, EyeIcon, ArrowDownTrayIcon, XMarkIcon } from '@heroicons/react/24/solid';

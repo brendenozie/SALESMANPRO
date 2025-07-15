@@ -1,4 +1,5 @@
 // app/admin/[adminSlug]/page.tsx
+"use client";
 
 import { motion } from 'framer-motion';
 import { SparklesIcon, BriefcaseIcon, UsersIcon, CheckCircleIcon } from '@heroicons/react/24/solid';

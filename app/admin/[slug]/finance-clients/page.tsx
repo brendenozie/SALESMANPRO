@@ -1,4 +1,5 @@
 // app/admin/[adminSlug]/clients/page.tsx
+"use client";
 
 import { motion } from 'framer-motion';
 import { PencilIcon, TrashIcon, PlusCircleIcon } from '@heroicons/react/24/solid';

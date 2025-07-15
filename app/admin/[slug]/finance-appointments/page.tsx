@@ -1,4 +1,5 @@
 // app/admin/[adminSlug]/appointments/page.tsx
+"use client";
 
 import { motion } from 'framer-motion';
 import { CalendarDaysIcon, CheckCircleIcon, XCircleIcon, PlusCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
