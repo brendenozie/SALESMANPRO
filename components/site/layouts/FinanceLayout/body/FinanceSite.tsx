@@ -5,698 +5,309 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  BriefcaseIcon,
-  ScaleIcon,
-  ChartBarIcon,
-  ShieldCheckIcon,
-  HandThumbUpIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ClockIcon,
-  UsersIcon,
-  CheckBadgeIcon,
-  DocumentTextIcon,
-  CalendarDaysIcon,
-} from "@heroicons/react/24/solid";
+// Assuming useStoreContext provides data for the site; if not, remove or adjust.
 import { useStoreContext } from "../../../../../contexts/StoreContext";
+
+// Import all your transformed child components
+import HeroSection from "./components/heroSection";
+import PracticeAreasSection from "./components/PracticeAreasSection";
+import WhyChooseUsSection from "./components/WhyChooseUsSection";
+import CaseStudiesTestimonials from "./components/CaseStudiesTestimonialsSection";
+import ProcessWorkflowSection from "./components/ProcessWorkflowSection";
+import MeetOurExperts from "./components/MeetOurExperts";
+import ConsultationPackagesSection from "./components/ConsultationPackagesSection";
+import FAQSection from "./components/FAQSection";
+import ContactSection from "./components/ContactSection";
+
+// --- Global Theme Colors (for Navbar and Footer consistency) ---
+const darkBackground = "#0A192F"; // Main background for sections, navbar, footer
+const cardBackground = "#1B2A41"; // Used for cards/elements on dark background
+const accentColor = "#66B2FF"; // Primary accent blue
+const textColorLight = "#E0E7FF"; // Lighter text on dark background
+const textColorMuted = "#A7B8D6"; // Muted text for secondary info
+
+// --- Navbar Component ---
+const Navbar = () => {
+  // Navigation links - link to section IDs
+  const navLinks = [
+    { name: "Home", href: "#top" },
+    { name: "Services", href: "#practice-areas" },
+    { name: "Why Us", href: "#why-choose-us" },
+    { name: "Process", href: "#our-process" },
+    { name: "Team", href: "#our-experts" },
+    { name: "Packages", href: "#consultation-packages" },
+    { name: "FAQs", href: "#faqs" },
+    { name: "Contact", href: "#contact-us" },
+  ];
+
+  const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+    `${src}?w=${width}&q=${quality || 75}`;
+
+  return (
+    <motion.nav
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+      className="fixed top-0 left-0 right-0 z-50 py-4 px-6 md:px-8 shadow-lg"
+      style={{ backgroundColor: darkBackground, borderBottom: `1px solid ${cardBackground}` }}
+    >
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        {/* Logo/Brand Name */}
+        <Link href="#top" className="flex items-center space-x-2 text-white text-2xl font-bold hover:text-blue-300 transition-colors duration-300">
+          <Image src="/images/logo-placeholder.png" alt="CapitalEdge Logo" loader={loader} width={40} height={40} className="rounded-full" />
+          <span>CapitalEdge</span>
+        </Link>
+
+        {/* Navigation Links (Desktop) */}
+        <div className="hidden md:flex space-x-8">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className="text-lg font-medium text-blue-200 hover:text-white transition-colors duration-300"
+            >
+              {link.name}
+            </Link>
+          ))}
+        </div>
+
+        {/* Mobile Menu Button (You'd implement actual mobile menu logic here) */}
+        <div className="md:hidden">
+          {/* Example: Hamburger Icon */}
+          <button className="text-white focus:outline-none">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16m-7 6h7"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </motion.nav>
+  );
+};
+
+// --- Footer Component ---
+const Footer = () => {
+  return (
+    <footer className="py-12 px-6 md:px-8" style={{ backgroundColor: darkBackground, borderTop: `1px solid ${cardBackground}` }}>
+      <div className="max-w-7xl mx-auto text-center text-blue-300">
+        <p className="text-lg font-semibold mb-4">CapitalEdge</p>
+        <p className="mb-2">123 Lumina Tower, Suite 500, Strategic Avenue, Nairobi, Kenya</p>
+        <p className="mb-2">+1 (234) 567-890 | info@capitaledge.com</p>
+        <div className="flex justify-center space-x-6 mt-6">
+          {/* Social Media Icons (replace with actual icons/links) */}
+          <a href="#" aria-label="Facebook" className="text-blue-300 hover:text-white transition-colors duration-200">
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M14 12.006c0-1.12.92-1.994 2.012-1.994s2.012.875 2.012 1.994-.92 1.994-2.012 1.994-2.012-.875-2.012-1.994zm5-7v14c0 2.761-2.239 5-5 5h-14c-2.761 0-5-2.239-5-5v-14c0-2.761 2.239-5 5-5h14c2.761 0 5 2.239 5 5zm-4 11h-2l-.004-7.107c-.446-.341-.758-.582-1.153-.722-.401-.143-.88-.215-1.439-.215-1.399 0-2.316.892-2.316 2.508v5.536h-2v-11h2v1.765c.379-.652.842-1.229 1.401-1.688.559-.459 1.258-.797 2.091-.797 2.003 0 3.398 1.492 3.398 5.706v6.214z"></path></svg>
+          </a>
+          <a href="#" aria-label="Twitter" className="text-blue-300 hover:text-white transition-colors duration-200">
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.29 8.29-4.59 4.59-2.29-2.29c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41L9.7 16.59c.39.39 1.02.39 1.41 0l5.3-5.3c.39-.39.39-1.02 0-1.41s-1.03-.39-1.42 0z"></path></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn" className="text-blue-300 hover:text-white transition-colors duration-200">
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
+          </a>
+        </div>
+        <p className="mt-8 text-sm text-blue-400">&copy; {new Date().getFullYear()} CapitalEdge. All rights reserved.</p>
+      </div>
+    </footer>
+  );
+};
+
 
 export default function FinancSite() {
   const router = useRouter();
-  const { storeFormData } = useStoreContext();
+  // Using the context, but also providing local 'store' for demo purposes
+  // In a real app, you'd likely fetch this data or get it from a CMS.
+  const { storeFormData } = useStoreContext(); 
 
-  const [metrics, setMetrics] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<any[]>([]);
-
-  const store = {
-  name: "CapitalEdge Finance",
-  slug: "capitaledge",
-  bannerUrl: "/images/finance-hero.jpg",
-  metrics: [
-  { label: "Clients Served", value: "500+" },
-  { label: "Assets Managed", value: "\$10M+" },
-  { label: "Expert Advisors", value: "20+" },
-  { label: "Satisfaction Rate", value: "98%" },
-  ],
-  services: [
-  { id: "sv1", name: "Wealth Planning", imageUrl: "/services/wealth.jpg", slug: "wealth-planning" },
-  { id: "sv2", name: "Investment Management", imageUrl: "/services/investment.jpg", slug: "investment-management" },
-  { id: "sv3", name: "Retirement Solutions", imageUrl: "/services/retirement.jpg", slug: "retirement-solutions" },
-  ],
-  testimonials: [
-  { quote: "CapitalEdge guided me to financial freedom!", author: "Emily R." },
-  { quote: "Professional and trustworthy advisors.", author: "Mark T." },
-  ],
-  faqs: [
-  { question: "How do I get started?", answer: "Schedule a free consultation using our contact form." },
-  { question: "What fees do you charge?", answer: "We offer transparent, performance-based fees." },
-  ],
-  experts:[
-    {
-      name: "Ava Richardson",
-      role: "Senior Legal Advisor",
-      img: "/team/ava.jpg",
-      bio: "20+ years in corporate and financial law.",
-    },
-    {
-      name: "Liam Patel",
-      role: "Tax & Compliance Specialist",
-      img: "/team/liam.jpg",
-      bio: "Expert in international tax regulations.",
-    },
-    {
-      name: "Sophia Lee",
-      role: "Financial Consultant",
-      img: "/team/sophia.jpg",
-      bio: "Helping clients grow wealth responsibly.",
-    },
-  ],
-  packages:[
-    {
-      title: "Starter",
-      price: "$199",
-      frequency: "per session",
-      features: [
-        "30-minute consultation",
-        "One legal document review",
-        "Basic financial advice",
-      ],
-      featured: false,
-    },
-    {
-      title: "Professional",
-      price: "$499",
-      frequency: "per month",
-      features: [
-        "2 consultations/month",
-        "Document drafting support",
-        "Tax & compliance guidance",
-        "Priority email support",
-      ],
-      featured: true,
-    },
-    {
-      title: "Enterprise",
-      price: "Contact Us",
-      frequency: "",
-      features: [
-        "Unlimited consultations",
-        "Dedicated legal advisor",
-        "Custom compliance packages",
-        "Full access to tools & insights",
-      ],
-      featured: false,
-    },
-  ]
-  
+  // Combined data source (prioritize storeFormData if available, else use hardcoded 'store')
+  const siteData = storeFormData && Object.keys(storeFormData).length > 0 ? storeFormData : {
+    name: "CapitalEdge",
+    slug: "capitaledge",
+    bannerUrl: "/images/finance-hero.webp", // Ensure this path is correct and image exists
+    metrics: [
+      { label: "Clients Served", value: "500+" },
+      { label: "Assets Managed", value: "$10M+" },
+      { label: "Expert Advisors", value: "20+" },
+      { label: "Satisfaction Rate", value: "98%" },
+    ],
+    services: [
+      { id: "sv1", name: "Wealth Planning", imageUrl: "/images/services/wealth.webp", slug: "wealth-planning", description: "Strategic wealth accumulation and preservation for future generations." },
+      { id: "sv2", name: "Investment Management", imageUrl: "/images/services/investment.webp", slug: "investment-management", description: "Optimized portfolio strategies for maximum returns with controlled risk." },
+      { id: "sv3", name: "Retirement Solutions", imageUrl: "/images/services/retirement.webp", slug: "retirement-solutions", description: "Secure your golden years with robust and personalized retirement plans." },
+      { id: "sv4", name: "Estate Planning", imageUrl: "/images/services/estate.webp", slug: "estate-planning", description: "Comprehensive guidance for seamless asset transfer and legacy protection." },
+    ],
+    testimonials: [
+      { id: 't1', quote: "CapitalEdge transformed my financial outlook. Their expertise is unmatched!", author: "Sarah M., Entrepreneur" },
+      { id: 't2', quote: "The legal clarity they provided was invaluable. Highly professional and responsive.", author: "Dr. Alex J., Medical Director" },
+      { id: 't3', quote: "Their team made complex tax planning seem effortless. Truly exceptional service.", author: "Michael C., Business Owner" },
+    ],
+    faqs: [
+      { id: 'faq1', question: "What types of legal services do you offer?", answer: "We offer a comprehensive range of legal services including corporate law, intellectual property, real estate, litigation, and dispute resolution. Our experts are equipped to handle complex cases across various sectors." },
+      { id: 'faq2', question: "How do your financial advisory services work?", answer: "Our financial advisory services cover wealth management, investment planning, tax strategy, and estate planning. We work closely with you to understand your financial goals and create tailored strategies for sustainable growth." },
+      { id: 'faq3', question: "What is your typical client engagement process?", answer: "Our process begins with an initial consultation to understand your needs, followed by strategic planning, meticulous execution of the agreed-upon strategy, and continuous support with regular reviews to ensure long-term success." },
+      { id: 'faq4', question: "Are your consultations confidential?", answer: "Absolutely. All consultations and client interactions are treated with the utmost confidentiality and discretion, adhering to the highest standards of professional ethics and legal privacy regulations." },
+      { id: 'faq5', question: "How do I schedule an initial consultation?", answer: "You can easily schedule an initial consultation through our website's contact form, by calling our office directly, or by utilizing our online booking system available on the 'Consultation Packages' page." },
+    ],
+    experts:[
+      {
+        id: 'exp1',
+        name: 'Dr. Evelyn Reed',
+        role: 'Chief Legal Officer',
+        img: '/images/team/expert-evelyn.webp', // Updated path
+        bio: 'A visionary leader with over 25 years in corporate law and strategic litigation. Evelyn is renowned for her innovative solutions in complex legal landscapes.',
+        linkedin: 'https://linkedin.com/in/evelynreed',
+        email: 'evelyn.reed@capitaledge.com'
+      },
+      {
+        id: 'exp2',
+        name: 'Mr. Benjamin Carter',
+        role: 'Lead Financial Strategist',
+        img: '/images/team/expert-benjamin.webp', // Updated path
+        bio: 'Benjamin brings unparalleled expertise in wealth management, investment banking, and financial planning, helping clients achieve long-term prosperity.',
+        linkedin: 'https://linkedin.com/in/benjamincarter',
+        email: 'benjamin.carter@capitaledge.com'
+      },
+      {
+        id: 'exp3',
+        name: 'Ms. Olivia Hayes',
+        role: 'Senior Tax Advisor',
+        img: '/images/team/expert-olivia.webp', // Updated path
+        bio: 'Specializing in intricate tax codes and compliance, Olivia ensures optimal financial efficiency and robust tax strategies for our diverse clientele.',
+        linkedin: 'https://linkedin.com/in/oliviahayes',
+        email: 'olivia.hayes@capitaledge.com'
+      },
+      {
+        id: 'exp4',
+        name: 'Mr. Alex Thorne',
+        role: 'Real Estate Counsel',
+        img: '/images/team/expert-alex.webp', // Updated path
+        bio: 'Alex offers comprehensive legal support for property acquisitions, development projects, and dispute resolution, safeguarding client investments.',
+        linkedin: 'https://linkedin.com/in/alexthorne',
+        email: 'alex.thorne@capitaledge.com'
+      },
+    ],
+    packages:[
+      {
+        id: 'basic',
+        title: 'Foundational Insight',
+        description: 'Ideal for initial guidance and understanding your legal or financial landscape.',
+        price: '$299',
+        frequency: 'One-time consultation',
+        features: [
+          '60-minute in-depth session',
+          'Initial situation assessment',
+          'High-level strategy overview',
+          'Q&A with a specialist',
+          'Post-consultation summary email',
+        ],
+        buttonText: 'Book Now',
+      },
+      {
+        id: 'premium',
+        title: 'Strategic Partnership',
+        description: 'Comprehensive planning and advisory for complex legal or financial challenges.',
+        price: '$999',
+        frequency: 'Monthly Retainer (3-month minimum)',
+        features: [
+          'Unlimited consultations',
+          'Dedicated lead advisor',
+          'Customized action plan',
+          'Ongoing tactical support',
+          'Priority response time',
+          'Quarterly performance review',
+        ],
+        featured: true,
+        buttonText: 'Get Started',
+      },
+      {
+        id: 'enterprise',
+        title: 'Tailored Enterprise Solutions',
+        description: 'Bespoke solutions crafted for complex corporate and institutional requirements.',
+        price: 'Contact Us',
+        frequency: 'Customized Pricing',
+        features: [
+          'Dedicated enterprise team',
+          'On-site consultations available',
+          'Integrated legal & financial services',
+          'Risk management & compliance',
+          'Proprietary data insights',
+          '24/7 priority support',
+        ],
+        buttonText: 'Request Quote',
+      },
+    ],
+    // themeSettings (example structure from previous usage)
+    themeSettings: {
+      primaryColor: '#004085', // Dark Blue for primary elements
+      secondaryColor: '#1F77B4', // Lighter Blue for secondary elements
+      accentColor: '#66B2FF', // Bright Blue for accents
+    }
   };
 
+  // State initialization: Use the combined siteData for child components
+  const [metrics, setMetrics] = useState<any[]>(siteData.metrics);
+  const [services, setServices] = useState<any[]>(siteData.services);
+  const [testimonials, setTestimonials] = useState<any[]>(siteData.testimonials);
+  const [faqs, setFaqs] = useState<any[]>(siteData.faqs);
+  const [experts, setExperts] = useState<any[]>(siteData.experts);
+  const [packages, setPackages] = useState<any[]>(siteData.packages);
+
+
+  // useEffect to update states if storeFormData changes (e.g., from a CMS)
   useEffect(() => {
-    if (storeFormData) {
+    if (storeFormData && Object.keys(storeFormData).length > 0) {
       setMetrics(storeFormData.metrics || []);
-      setServices(store.services || []);
+      setServices(storeFormData.services || []);
       setTestimonials(storeFormData.testimonials || []);
       setFaqs(storeFormData.faqs || []);
+      setExperts(storeFormData.experts || []);
+      setPackages(storeFormData.packages || []);
     }
   }, [storeFormData]);
 
   return (
-    <div className="space-y-24 font-sans">
-      {/* Hero  */}
-      <Banner
-        headline={storeFormData.name}
-        subline={storeFormData.description}
-        imageUrl={storeFormData.bannerUrl}
-        primary={storeFormData.themeSettings?.primaryColor}
-        secondary={storeFormData.themeSettings?.secondaryColor}
-      />
+    <div className="min-h-screen relative" style={{ backgroundColor: darkBackground }}>
+      {/* Set the main background color for the entire page */}
+      <span id="top" className="absolute -top-20" /> {/* Anchor for 'Home' link */}
 
-      <PracticeAreasSection services={services} />
+      {/* Navbar Component */}
+      <Navbar />
 
-      {/* Why Choose Us */}
-      <WhyChooseUsSection />
+      {/* Main Content Area - Sections with consistent spacing */}
+      <main className="pt-20"> {/* Add padding-top to account for fixed navbar */}
+        <HeroSection
+          headline={siteData.name}
+          subline="Your Partner in Legal & Financial Excellence" // Hardcoded for demo, adjust as needed
+          imageUrl={siteData.bannerUrl}
+          metrics={metrics} // Pass metrics to HeroSection
+          primary={siteData.themeSettings?.primaryColor}
+          secondary={siteData.themeSettings?.secondaryColor}
+        />
 
-      <CaseStudiesTestimonials testimonials={testimonials} />
-
-      <ProcessWorkflowSection />
-
-      {/* Meet Our Experts */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-800">
-        <div className="container mx-auto px-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white"
-          >
-            Meet Our Experts
-          </motion.h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {(store.experts || []).map((member: any, i: number) => (
-              <motion.div
-                key={member.id || i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 text-center"
-              >
-                <div className="w-28 h-28 mx-auto mb-4">
-                  <Image
-                    src={member.img}
-                    alt={member.name}
-                    width={112}
-                    height={112}
-                    className="rounded-full object-cover"
-                    loader={({ src, width, quality }) =>
-                      `${src}?w=${width}&q=${quality || 75}`
-                    }
-                  />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">
-                  {member.name}
-                </h3>
-                <p className="text-indigo-600 font-medium dark:text-indigo-400 mb-2">
-                  {member.role}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  {member.bio}
-                </p>
-              </motion.div>
-            ))}
-          </div>
+        <div className="space-y-24 lg:space-y-36"> {/* Consistent vertical spacing between sections */}
+          <PracticeAreasSection services={services} />
+          <WhyChooseUsSection />
+          <CaseStudiesTestimonials testimonials={testimonials} />
+          <ProcessWorkflowSection />
+          <MeetOurExperts experts={experts} />
+          <ConsultationPackagesSection packages={packages} />
+          <FAQSection faqs={faqs} />
+          <ContactSection />
         </div>
-      </section>
+      </main>
 
-      {/* Consultation Packages */}
-      <section className="py-16 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white"
-          >
-            Consultation Packages
-          </motion.h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {(store.packages || []).map((plan: any, i: number) => (
-              <motion.div
-                key={plan.id || i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className={`rounded-2xl p-6 shadow-md transition ${
-                  plan.featured
-                    ? "bg-indigo-600 text-white border-2 border-indigo-500"
-                    : "bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100"
-                }`}
-              >
-                <h3 className="text-2xl font-bold mb-2">{plan.title}</h3>
-                <p className="text-4xl font-semibold mb-1">{plan.price}</p>
-                <p className="mb-6 text-sm text-gray-600 dark:text-gray-300">
-                  {plan.frequency}
-                </p>
-                <ul className="space-y-2 mb-6 text-sm">
-                  {plan.features.map((feature: string, idx: number) => (
-                    <li key={idx} className="flex items-start">
-                      <span className="mr-2 text-green-500">✔️</span> {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`w-full py-2 px-4 rounded-full font-medium transition ${
-                    plan.featured
-                      ? "bg-white text-indigo-600 hover:bg-gray-100"
-                      : "bg-indigo-600 text-white hover:bg-indigo-700"
-                  }`}
-                >
-                  {plan.price === "Contact Us" ? "Request Quote" : "Get Started"}
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQs */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-800">
-        <div className="container mx-auto px-6 max-w-4xl">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white"
-          >
-            Frequently Asked Questions
-          </motion.h2>
-
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <motion.details
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-                viewport={{ once: true }}
-                className="bg-white dark:bg-gray-900 rounded-xl shadow-md p-6 cursor-pointer group"
-              >
-                <summary className="font-semibold text-gray-800 dark:text-white flex justify-between items-center">
-                  <span>{faq.question}</span>
-                  <span className="transform transition-transform group-open:rotate-45 text-indigo-600 text-2xl">
-                    +
-                  </span>
-                </summary>
-                <p className="mt-3 text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                  {faq.answer}
-                </p>
-              </motion.details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact & Map */}
-      <section className="py-16 bg-indigo-600 text-white">
-        <div className="container mx-auto px-6 max-w-7xl grid lg:grid-cols-2 gap-12 items-center">
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="space-y-6"
-          >
-            <h2 className="text-4xl font-bold mb-4">Get in Touch</h2>
-            <p className="text-white/90">
-              Have a legal or financial question? Reach out and our experts will respond shortly.
-            </p>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="w-full p-3 rounded-xl text-gray-900"
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  className="w-full p-3 rounded-xl text-gray-900"
-                  required
-                />
-              </div>
-              <input
-                type="text"
-                placeholder="Subject"
-                className="w-full p-3 rounded-xl text-gray-900"
-                required
-              />
-              <textarea
-                placeholder="Your Message"
-                rows={4}
-                className="w-full p-3 rounded-xl text-gray-900"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-white text-indigo-700 font-semibold px-6 py-3 rounded-full hover:bg-gray-100 transition"
-              >
-                Send Message
-              </button>
-            </form>
-          </motion.div>
-
-          {/* Embedded Map */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="w-full h-96 rounded-2xl overflow-hidden shadow-lg"
-          >
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.106327684502!2d-122.40158458497722!3d37.78735997975782!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80858064d6b89e67%3A0xa1816cc2625a7a99!2sFinancial%20District%2C%20San%20Francisco%2C%20CA%2094105%2C%20USA!5e0!3m2!1sen!2s!4v1616622280870!5m2!1sen!2s"
-              loading="lazy"
-              allowFullScreen
-              className="w-full h-full border-none"
-            />
-          </motion.div>
-        </div>
-      </section>
+      {/* Footer Component */}
+      <Footer />
     </div>
   );
 }
-
-
-interface Service {
-  id: string;
-  name: string;
-  imageUrl: string;
-  slug: string;
-}
-
-interface PracticeAreasSectionProps {
-  services: Service[];
-}
-
-function PracticeAreasSection({ services }: PracticeAreasSectionProps) {
-  return (
-    <section id="services" className="py-16 bg-gray-50 dark:bg-gray-800">
-      <div className="container mx-auto px-6">
-        {/* Section Title */}
-        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-12">
-          Our Practice Areas
-        </h2>
-
-        {/* Grid 2–3 columns */}
-        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((s) => (
-            <motion.div
-              key={s.id}
-              className="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-md hover:shadow-lg transition-shadow"
-              whileHover={{ y: -5 }}
-              transition={{ type: "spring", stiffness: 200 }}
-            >
-              <BriefcaseIcon className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                {s.name}
-              </h3>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-const features = [
-  {
-    id: 1,
-    icon: ShieldCheckIcon,
-    title: "Trusted Expertise",
-    description: "Over 20 years of combined legal and financial experience.",
-  },
-  {
-    id: 2,
-    icon: HandThumbUpIcon,
-    title: "Personalized Service",
-    description: "Tailored solutions designed around your unique goals.",
-  },
-  {
-    id: 3,
-    icon: ClockIcon,
-    title: "Timely Communication",
-    description: "We respect your time—fast responses & clear updates.",
-  },
-  {
-    id: 4,
-    icon: UsersIcon,
-    title: "Client-Focused",
-    description: "Your satisfaction is our top priority, every step of the way.",
-  },
-];
-
-function WhyChooseUsSection() {
-  return (
-    <section id="usps" className="py-16 bg-white dark:bg-gray-900">
-      <div className="container mx-auto px-6">
-        {/* Section Title */}
-        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-12">
-          Why Choose Us
-        </h2>
-
-        {/* Feature List Grid */}
-        <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f, i) => (
-            <motion.div
-              key={f.id}
-              className="flex flex-col items-center text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-md"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: 0.2 * i, duration: 0.6 }}
-            >
-              <f.icon className="h-12 w-12 text-blue-600 dark:text-blue-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                {f.title}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                {f.description}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-function CaseStudiesTestimonials({ testimonials }: { testimonials: any[] }) {
-  const [index, setIndex] = React.useState(0);
-  const length = testimonials.length;
-
-  const prev = () => setIndex((index - 1 + length) % length);
-  const next = () => setIndex((index + 1) % length);
-
-  return (
-    <section className="py-16 bg-gray-50 dark:bg-gray-800">
-      <div className="container mx-auto px-6 text-center">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-8">
-          What Our Clients Say
-        </h2>
-
-        <div className="relative max-w-2xl mx-auto">
-          <AnimatePresence initial={false}>
-            {testimonials.map((t, i) =>
-              i === index && (
-                <motion.div
-                  key={t.id || i}
-                  className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-lg"
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="flex flex-col items-center">
-                    {t.avatarUrl && (
-                      <Image
-                        src={t.avatarUrl}
-                        alt={t.author}
-                        width={80}
-                        height={80}
-                        className="rounded-full mb-4"
-                        loader={({ src, width, quality }) =>
-                          `${src}?w=${width}&q=${quality || 75}`
-                        }
-                      />
-                    )}
-                    <p className="italic text-gray-700 dark:text-gray-200 mb-4">
-                      “{t.quote}”
-                    </p>
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      — {t.author}
-                    </span>
-                  </div>
-                </motion.div>
-              )
-            )}
-          </AnimatePresence>
-
-          {/* Controls */}
-          <button
-            onClick={prev}
-            className="absolute top-1/2 left-0 transform -translate-y-1/2 bg-white dark:bg-gray-700 p-2 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400"
-            aria-label="Previous"
-          >
-            <ChevronLeftIcon className="h-6 w-6 text-gray-900 dark:text-gray-100" />
-          </button>
-          <button
-            onClick={next}
-            className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white dark:bg-gray-700 p-2 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400"
-            aria-label="Next"
-          >
-            <ChevronRightIcon className="h-6 w-6 text-gray-900 dark:text-gray-100" />
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-const steps = [
-  {
-    id: 1,
-    icon: DocumentTextIcon,
-    title: "Consultation",
-    description:
-      "Discuss your needs and goals with our experts to create a tailored plan.",
-  },
-  {
-    id: 2,
-    icon: CalendarDaysIcon,
-    title: "Planning",
-    description:
-      "Receive a clear roadmap and timeline for your legal or financial project.",
-  },
-  {
-    id: 3,
-    icon: CheckBadgeIcon,
-    title: "Execution",
-    description:
-      "Our team implements the strategy with attention to detail and compliance.",
-  },
-  {
-    id: 4,
-    icon: HandThumbUpIcon,
-    title: "Delivery",
-    description:
-      "Review results and ongoing support to ensure lasting success.",
-  },
-];
-
-function ProcessWorkflowSection() {
-  return (
-    <section className="py-16 bg-white dark:bg-gray-900">
-      <div className="container mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 text-center mb-12">
-          Our Process
-        </h2>
-
-        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between">
-          {/* Vertical line for desktop */}
-          <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full border-l-2 border-gray-200 dark:border-gray-700" />
-
-          {steps.map((step, idx) => {
-            const Icon = step.icon;
-            const isLeft = idx % 2 === 0;
-            return (
-              <motion.div
-                key={step.id}
-                className={`relative flex-1 mb-12 md:mb-0 md:w-1/4 flex flex-col items-center text-center px-4 ${
-                  isLeft
-                    ? "md:pr-8 md:items-end md:text-right"
-                    : "md:pl-8 md:items-start md:text-left"
-                }`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ delay: idx * 0.2, duration: 0.6 }}
-              >
-                {/* Step Icon */}
-                <div className="bg-blue-600 text-white p-3 rounded-full shadow-lg mb-4">
-                  <Icon className="h-6 w-6" />
-                </div>
-                {/* Connector dot */}
-                <div className="hidden md:block absolute top-8 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-full w-4 h-4" />
-
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {step.description}
-                </p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-interface BannerProps {
-  headline?: string;
-  subline?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  imageUrl?: string;
-  primary?: string;
-  secondary?: string;
-}
-
-const Banner: React.FC<BannerProps> = ({
-  headline,
-  subline,
-  ctaText = "Get a Free Consultation",
-  ctaLink = "/contact",
-  imageUrl,
-  primary,
-  secondary,
-}) => {
-  return (
-    <section
-      className="relative overflow-hidden text-white py-24 sm:py-32"
-      style={{
-        background: `linear-gradient(to right, ${primary}, ${secondary})`,
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-12">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4">
-              {headline}
-            </h1>
-            <p className="text-lg sm:text-xl mb-6 text-white/90">{subline}</p>
-            <a
-              href={ctaLink}
-              className="inline-block px-6 py-3 rounded-full font-medium bg-white text-gray-900 hover:bg-gray-100 transition"
-            >
-              {ctaText}
-            </a>
-          </motion.div>
-
-          {imageUrl && (
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="hidden md:block"
-            >
-              <Image
-                src={imageUrl}
-                alt="Finance or Legal Visual"
-                width={500}
-                height={400}
-                className="w-full h-auto object-contain"
-                loader={({ src, width, quality }) =>
-                  `${src}?w=${width}&q=${quality || 75}`
-                }
-              />
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* Optional decorative SVG background */}
-      <div className="absolute inset-0 pointer-events-none opacity-10">
-        <Image
-          src="/grid-light.svg"
-          alt="decor"
-          fill
-          className="object-cover"
-          style={{ mixBlendMode: "overlay" }}
-          loader={({ src, width, quality }) =>
-            `${src}?w=${width}&q=${quality || 75}`
-          }
-        />
-      </div>
-    </section>
-  );
-};
