@@ -40,6 +40,8 @@ import {
   DocumentChartBarIcon,
   LifebuoyIcon,
   ServerStackIcon,
+  StarIcon,
+  VideoCameraIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -347,11 +349,51 @@ export const getCategoryMenus = (adminSlug: string) => ({
     ],
 
   "Media & Entertainment": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
-    { label: "Media Library", href: `/admin/${adminSlug}/media`, icon: FilmIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon },
-    { label: "Sponsors", href: `/admin/${adminSlug}/sponsors`, icon: BriefcaseIcon },
+    { 
+      label: "Dashboard", 
+      href: `/admin/${adminSlug}`, 
+      icon: HomeIcon,
+    },
+    { 
+      label: "Content Library", // Renamed for clarity
+      href: `/admin/${adminSlug}/media-content`, // Unified content management
+      icon: FilmIcon, // Covers both video and general media
+    },
+    { 
+      label: "Article Management", // Specific for articles
+      href: `/admin/${adminSlug}/media-articles`, 
+      icon: NewspaperIcon,
+    },
+    { 
+      label: "Video Management", // Specific for videos
+      href: `/admin/${adminSlug}/media-videos`, 
+      icon: VideoCameraIcon,
+    },
+    { 
+      label: "Publishing Schedule", // More descriptive
+      href: `/admin/${adminSlug}/media-schedule`, 
+      icon: CalendarIcon,
+    },
+    { 
+      label: "User Management", // Essential for any platform
+      href: `/admin/${adminSlug}/media-users`, 
+      icon: UsersIcon,
+    },
+    { 
+      label: "Sponsors & Partnerships", // More descriptive
+      href: `/admin/${adminSlug}/media-sponsors`, 
+      icon: BriefcaseIcon,
+    },
+    { 
+      label: "Analytics", // For insights
+      href: `/admin/${adminSlug}/media-analytics`, 
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Featured & Top Picks", // For managing highlighted content
+      href: `/admin/${adminSlug}/media-featured-picks`,
+      icon: StarIcon,
+    },
   ],
 
   "Finance & Legal": [
