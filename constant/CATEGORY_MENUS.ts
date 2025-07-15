@@ -286,16 +286,9 @@ export const getCategoryMenus = (adminSlug: string) => ({
   ],
 
   "SaaS & Web Apps": [
+      {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },
       {
-        label: "Dashboard",
-        href: `/admin/${adminSlug}`,
-        icon: HomeIcon,
-      },
-      {
-        label: "Users",
-        href: `/admin/${adminSlug}/saas-users`,
-        icon: UsersIcon,
-      },
+        label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
       {
         label: "Plans & Subscriptions",
         href: "/admin/${adminSlug}/saas-plans",
