@@ -414,9 +414,9 @@ export const getCategoryMenus = (adminSlug: string) => ({
 
   "Automotive": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Vehicles", href: `/admin/${adminSlug}/vehicles`, icon: FilmIcon },
-    { label: "Requests", href: `/admin/${adminSlug}/requests`, icon: ClipboardDocumentListIcon },
-    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UsersIcon },
+    { label: "Vehicles", href: `/admin/${adminSlug}/vehicle-manage`, icon: FilmIcon },
+    { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
+    { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
   ],
 
   "Travel & Tourism": [

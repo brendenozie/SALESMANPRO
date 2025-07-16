@@ -20,7 +20,7 @@ import TrendingLocations from "./components/TrendingLocationsSection";
 import VideoShowcaseSection from "./components/VideoShowcaseSection";
 import FilterBarSection from "./components/FilterBarSection";
 import MarketInsightsSection from "./components/MarketInsightsSection";
-import Testimonials from "@/components/Testimonials";
+// import Testimonials from "./components/TestimonialsSection";
 import BrowseByCategory from "./components/BrowseByCategorySection";
 import FeaturedListings from "./components/FeaturedListingsSection";
 import HowItWorks from "./components/HowItWorksSection";
@@ -226,7 +226,7 @@ export default function AutomotiveSite() {
 
       <BrowseByCategory />
       
-      <Testimonials />
+      {/* <Testimonials /> */}
 
       <FilterBarSection />
 
