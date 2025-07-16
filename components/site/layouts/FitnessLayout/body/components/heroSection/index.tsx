@@ -1,4 +1,4 @@
-h"use client";
+"use client";
 
 import React, { useState } from 'react'; // Import useState
 import { motion } from 'framer-motion';

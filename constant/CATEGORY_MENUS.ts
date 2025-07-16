@@ -483,7 +483,7 @@ export const getCategoryMenus = (adminSlug: string) => ({
     }
   ],
 
-  "Fitness & Wellness Admin": [
+  "Fitness & Wellness": [
         { label: "Dashboard", href: `/admin/${adminSlug}`, icon: "HomeIcon" }, // Overview of gym activity
         { label: "POS & Sales", href: `/admin/${adminSlug}/fitness-pos`, icon: "CurrencyDollarIcon" }, // Point of Sale and transaction management
         { label: "Programs & Classes", href: `/admin/${adminSlug}/fitness-programs`, icon: "ClipboardDocumentListIcon" }, // Manage fitness programs, classes, schedules
