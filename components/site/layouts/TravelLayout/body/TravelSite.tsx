@@ -13,6 +13,16 @@ import {
 
 import { useStoreContext } from "../../../../../contexts/StoreContext";
 import { StoreForm } from "../../../../../types/typings";
+import Testimonials from "./components/TestimonialsSection";
+import Hero from "./components/HeroSection";
+import FilterBar from "./components/FilterBarSection";
+import Listings from "./components/ListingsSection";
+import MarketInsights from "./components/MarketInsightsSection";
+import MeetAgents from "./components/MeetAgentsSection";
+import MobileAppPromo from "./components/MobileAppPromoSection";
+import NewsletterSignup from "./components/NewsletterSignupSection";
+import TrendingLocations from "./components/TrendingLocationsSection";
+import VirtualTours from "./components/VirtualToursSection";
 
 // Sample store & travel data
 const store = {
@@ -326,7 +336,7 @@ export default function TravelSite() {
 
   return (
     <div className="space-y-20 font-sans">
-      {/* Hero Section */}
+      {/* Hero Section  */}
       <Hero storeFormData={storeFormData} />
 
       <main className="space-y-16 px-4 lg:px-24">

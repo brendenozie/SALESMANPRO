@@ -2,61 +2,56 @@
 
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image"; // Make sure Image component is imported
+import Image from "next/image";
 import {
-  MapPinIcon, // For location input
-  CurrencyDollarIcon, // For price range
-   // For vehicle type (Assuming a similar icon exists or can be custom)
-  MagnifyingGlassIcon, // For search button
-} from "@heroicons/react/24/outline"; // Import relevant icons
-
+  MapPinIcon,
+  CalendarDaysIcon,
+  UserGroupIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import Link from "next/link";
 
-// Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }: any) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-// Animation variants for staggered reveal (reused for consistency)
+// Animation variants for staggered reveal
 const containerVariants = {
-  hidden: { opacity: 0, y: 30 }, // Increased y for more noticeable entrance
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      staggerChildren: 0.1, // Slightly slower stagger for more impact
-      delayChildren: 0.2, // Overall delay before children start
+      staggerChildren: 0.15,
+      delayChildren: 0.3,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 }, // Increased y and slightly smaller scale
+  hidden: { opacity: 0, y: 50, scale: 0.9 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 100, // Softer spring
-      damping: 15, // More damping for a smoother stop
+      stiffness: 120,
+      damping: 18,
     },
   },
 };
 
-// Dummy Data for Vehicle Types (Expanded)
-const vehicleTypes = [
-  "Sedan",
-  "SUV",
-  "Truck",
-  "Coupe",
-  "Hatchback",
-  "Convertible",
-  "Minivan",
-  "Electric",
+// Dummy Data for Travel Types (Expanded and more relevant)
+const travelTypes = [
+  "Adventure Travel",
+  "Relaxation Getaway",
+  "Cultural Exploration",
+  "Business Trip",
+  "Family Vacation",
+  "Road Trip",
+  "Cruise",
 ];
 
-// Dummy data for banner images (example)
+
+
+// Dummy data for banner images (example) - Not directly used in this video-focused version, but kept for reference
 const heroBanners = [
   {
     type: "image",
@@ -75,105 +70,172 @@ const heroBanners = [
   },
 ];
 
-// Enhanced HeroSection Component
-interface HeroSectionProps {
-  // You might not need bannerUrl if using an internal carousel
-  // If still external, define it as string[]
+// Interface for form data (assuming it's passed from a parent component)
+interface StoreForm {
+  name: string;
+  // Add other properties if your storeFormData has them
 }
-// Hero.tsx
-export default function Hero({ storeFormData }: { storeFormData : StoreForm}) {
+
+export default function Hero({ storeFormData }: { storeFormData: StoreForm }) {
   const [destination, setDestination] = useState("");
   const [travelType, setTravelType] = useState(travelTypes[0]);
   const [date, setDate] = useState("");
   const [guests, setGuests] = useState(2);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real application, you'd handle form submission here
+    console.log({ destination, travelType, date, guests });
+    alert("Searching for trips! (Check console for data)");
+  };
+
   return (
-    <section className="relative h-screen w-full overflow-hidden">
-      {/* Full-screen video / fallback image */}
+    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
+      {/* Full-screen video background */}
       <video
         className="absolute inset-0 w-full h-full object-cover"
         src="/assets/hero-travel.mp4"
         autoPlay
         muted
         loop
-      />
-      <div className="absolute inset-0 bg-black bg-opacity-50" />
+        playsInline // Important for mobile autoplay
+        preload="auto"
+      >
+        Your browser does not support the video tag.
+      </video>
 
-      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white">
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/30" />
+
+      {/* Content Container */}
+      <motion.div
+        className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white max-w-5xl mx-auto"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Main Headline */}
         <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold max-w-3xl"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight drop-shadow-lg"
+          variants={itemVariants}
         >
-          {storeFormData.name || "Explore the World, One Journey at a Time"}
+          {storeFormData.name || "Explore the World, Create Unforgettable Memories"}
         </motion.h1>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="mt-8 bg-white rounded-2xl p-6 shadow-xl w-full max-w-4xl"
+        {/* Sub-headline/Tagline */}
+        <motion.p
+          className="mt-4 text-lg sm:text-xl md:text-2xl text-gray-200 max-w-2xl drop-shadow"
+          variants={itemVariants}
         >
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Destination */}
-            <input
-              type="text"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="Where to?"
-              className="flex-1 rounded-xl border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
+          Your next adventure awaits. Discover breathtaking destinations and plan your perfect journey with ease.
+        </motion.p>
 
-            {/* Travel Type */}
-            <select
-              value={travelType}
-              onChange={(e) => setTravelType(e.target.value)}
-              className="flex-1 rounded-xl border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            >
-              {travelTypes.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
+        {/* Search Form */}
+        <motion.form
+          className="mt-12 bg-white rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-4xl"
+          variants={itemVariants}
+          onSubmit={handleSubmit}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {/* Destination Input */}
+            <div className="relative">
+              <MapPinIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
+              <input
+                type="text"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                placeholder="Where do you want to go?"
+                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200"
+              />
+            </div>
+
+            {/* Travel Type Select */}
+            <div className="relative">
+              <span className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6">
+                ✈️
+              </span>{" "}
+              {/* Airplane emoji as icon alternative */}
+              <select
+                value={travelType}
+                onChange={(e) => setTravelType(e.target.value)}
+                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer transition duration-200"
+              >
+                {travelTypes.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                <svg
+                  className="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </div>
+            </div>
 
             {/* Date Picker */}
-            <div className="relative flex-1">
-              <CalendarDaysIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+            <div className="relative">
+              <CalendarDaysIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-xl border border-gray-300 px-10 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200"
               />
             </div>
 
-            {/* Guests */}
-            <div className="relative flex-1">
-              <UserGroupIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+            {/* Guests Input */}
+            <div className="relative">
+              <UserGroupIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
               <input
                 type="number"
                 min={1}
                 max={10}
                 value={guests}
                 onChange={(e) => setGuests(Number(e.target.value))}
-                className="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200"
                 placeholder="Guests"
               />
             </div>
-
-            {/* Search Button */}
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-6 py-3 font-semibold transition">
-              Search Trips
-            </button>
           </div>
+
+          {/* Search Button */}
+          <button
+            type="submit"
+            className="mt-6 w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8 py-4 font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 flex items-center justify-center gap-2"
+          >
+            <MagnifyingGlassIcon className="h-6 w-6" /> Search Your Journey
+          </button>
 
           {/* Secondary CTAs */}
-          <div className="mt-4 flex justify-center space-x-8 text-indigo-600">
-            <button className="hover:underline">Become a Host</button>
-            <button className="hover:underline">Contact Travel Expert</button>
+          <div className="mt-8 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-indigo-700 font-medium">
+            <Link href="/host" passHref>
+              <motion.a
+                className="hover:underline hover:text-indigo-900 transition"
+                variants={itemVariants}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                🌍 Become a Host
+              </motion.a>
+            </Link>
+            <Link href="/contact" passHref>
+              <motion.a
+                className="hover:underline hover:text-indigo-900 transition"
+                variants={itemVariants}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                📞 Contact Travel Expert
+              </motion.a>
+            </Link>
           </div>
-        </motion.div>
-      </div>
+        </motion.form>
+      </motion.div>
     </section>
   );
 }

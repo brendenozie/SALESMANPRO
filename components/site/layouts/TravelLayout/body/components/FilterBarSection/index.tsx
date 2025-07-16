@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image"; // Make sure Image component is imported
 import {
   MapPinIcon, // For location input
   CurrencyDollarIcon, // For price range
    // For vehicle type (Assuming a similar icon exists or can be custom)
-  MagnifyingGlassIcon, // For search button
+  MagnifyingGlassIcon,
+  ChevronDownIcon,
+  CalendarDaysIcon,
+  UserGroupIcon,
+  XMarkIcon, // For search button
 } from "@heroicons/react/24/outline"; // Import relevant icons
 
 import Link from "next/link";
@@ -56,6 +60,16 @@ const vehicleTypes = [
   "Electric",
 ];
 
+const regions = [
+  "North America",
+  "Europe",
+  "Asia",
+  "Africa",
+  "South America",
+  "Oceania",
+  "Middle East",
+];
+
 // Dummy data for banner images (example)
 const heroBanners = [
   {
@@ -83,7 +97,260 @@ interface HeroSectionProps {
 
  // FilterBar.tsx
 
+
+   
+   // data/trendingLocations.ts
+   export interface TrendingLocation {
+     id: string
+     name: string
+     image: string
+     listingsCount: number
+     avgPrice: number
+   }
+   
+   export const trendingLocations: TrendingLocation[] = [
+     {
+       id: 'tokyo',
+       name: 'Tokyo, Japan',
+       image: '/assets/trending/tokyo.jpg',
+       listingsCount: 342,
+       avgPrice: 2200,
+     },
+     {
+       id: 'bali',
+       name: 'Bali, Indonesia',
+       image: '/assets/trending/bali.jpg',
+       listingsCount: 289,
+       avgPrice: 1250,
+     },
+     {
+       id: 'paris',
+       name: 'Paris, France',
+       image: '/assets/trending/paris.jpg',
+       listingsCount: 410,
+       avgPrice: 3000,
+     },
+     {
+       id: 'cape-town',
+       name: 'Cape Town, South Africa',
+       image: '/assets/trending/capetown.jpg',
+       listingsCount: 157,
+       avgPrice: 1400,
+     },
+     // …more locations
+   ]
+   
+   const travelTypes = [
+      "Adventure Travel",
+      "Relaxation Getaway",
+      "Cultural Exploration",
+      "Business Trip",
+      "Family Vacation",
+      "Road Trip",
+      "Cruise",
+    ];
+
+
+// FilterBar.jsx
 export default function FilterBar() {
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState("");
+  const [region, setRegion] = useState("");
+  const [date, setDate] = useState("");
+  const [guests, setGuests] = useState(2);
+  const [price, setPrice] = useState(2500);
+  const [isClient, setIsClient] = useState(false); // State to check if component is mounted on client
+
+  useEffect(() => {
+    setIsClient(true); // Set to true once the component mounts on the client
+  }, []);
+
+  const handleApplyFilters = () => {
+    console.log({ type, region, date, guests, price });
+    alert("Applying filters! (Check console for data)");
+  };
+
+  const handleClearFilters = () => {
+    setType("");
+    setRegion("");
+    setDate("");
+    setGuests(2);
+    setPrice(2500);
+    alert("Filters cleared!");
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="sticky top-0 z-30 bg-white/90 backdrop-blur-lg shadow-lg px-4 py-4 border-b border-gray-100"
+    >
+      <div className="max-w-7xl mx-auto">
+        {/* Mobile Toggle Button */}
+        <div className="md:hidden flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-800">Filter Your Trip</h2>
+          <motion.button
+            onClick={() => setOpen(!open)}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full text-indigo-700 font-semibold shadow-sm hover:bg-indigo-100 transition duration-200"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {open ? "Hide Filters" : "Show Filters"}
+            <ChevronDownIcon
+              className={`w-5 h-5 transform transition-transform duration-300 ${
+                open ? "rotate-180" : ""
+              }`}
+            />
+          </motion.button>
+        </div>
+
+        {/* Filter Controls - Conditionally rendered for mobile with client-side check */}
+        <AnimatePresence>
+          {isClient && (open || window.innerWidth >= 768) ? (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-end">
+                {/* Travel Type */}
+                <div className="relative">
+                  <label htmlFor="travelType" className="sr-only">Travel Type</label>
+                  <span className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6">
+                    ✈️
+                  </span>
+                  <select
+                    id="travelType"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer transition duration-200 shadow-sm"
+                  >
+                    <option value="">All Types</option>
+                    {travelTypes.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Region */}
+                <div className="relative">
+                  <label htmlFor="region" className="sr-only">Region</label>
+                  <MapPinIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
+                  <select
+                    id="region"
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer transition duration-200 shadow-sm"
+                  >
+                    <option value="">All Regions</option>
+                    {regions.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Date */}
+                <div className="relative">
+                  <label htmlFor="date" className="sr-only">Date</label>
+                  <CalendarDaysIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
+                  <input
+                    id="date"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200 shadow-sm"
+                  />
+                </div>
+
+                {/* Guests */}
+                <div className="relative">
+                  <label htmlFor="guests" className="sr-only">Number of Guests</label>
+                  <UserGroupIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
+                  <input
+                    id="guests"
+                    type="number"
+                    min={1}
+                    value={guests}
+                    onChange={(e) => setGuests(Number(e.target.value))}
+                    placeholder="Guests"
+                    className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200 shadow-sm"
+                  />
+                </div>
+
+                {/* Price Range */}
+                <div className="relative col-span-1 sm:col-span-2 lg:col-span-1 flex flex-col justify-center">
+                  <label htmlFor="priceRange" className="text-sm text-gray-700 font-medium mb-1">
+                    Max Budget: <span className="font-bold">${price}</span>
+                  </label>
+                  <div className="relative flex items-center">
+                    <CurrencyDollarIcon className="absolute left-3 text-gray-500 w-5 h-5" />
+                    <input
+                      id="priceRange"
+                      type="range"
+                      min={500}
+                      max={5000}
+                      step={100}
+                      value={price}
+                      onChange={(e) => setPrice(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1 flex flex-col sm:flex-row lg:flex-col gap-3">
+                  <motion.button
+                    onClick={handleApplyFilters}
+                    className="w-full bg-indigo-600 text-white py-3 rounded-full font-semibold shadow-md hover:bg-indigo-700 transition duration-200 flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <MagnifyingGlassIcon className="w-5 h-5" /> Apply Filters
+                  </motion.button>
+                  <motion.button
+                    onClick={handleClearFilters}
+                    className="w-full bg-gray-200 text-gray-700 rounded-full px-6 py-3 font-semibold shadow-md hover:bg-gray-300 transition duration-200 flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <XMarkIcon className="w-5 h-5" /> Clear Filters
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+function FilterBarV1() {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState("");
   const [region, setRegion] = useState("");
