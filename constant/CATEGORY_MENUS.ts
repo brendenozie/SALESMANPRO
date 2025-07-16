@@ -419,68 +419,70 @@ export const getCategoryMenus = (adminSlug: string) => ({
     { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
   ],
 
+  
   "Travel & Tourism": [
     {
       label: "Dashboard",
-      href: "/admin/${adminSlug}",
+      href: `/admin/${adminSlug}`,
       icon: "HomeIcon"
     },
     {
       label: "Bookings",
-      href: "/admin/${adminSlug}/travel-bookings",
+      href: `/admin/${adminSlug}/travel-bookings`,
       icon: "CalendarDaysIcon"
     },
     {
       label: "Destinations",
-      href: "/admin/${adminSlug}/travel-destinations",
+      href: `/admin/${adminSlug}/travel-destinations`,
       icon: "GlobeAltIcon"
     },
     {
       label: "Packages & Tours",
-      href: "/admin/${adminSlug}/travel-packages",
+      href: `/admin/${adminSlug}/travel-packages`,
       icon: "BriefcaseIcon"
     },
     {
       label: "Users & Customers",
-      href: "/admin/${adminSlug}/travel-users",
+      href: `/admin/${adminSlug}/travel-users`,
       icon: "UsersIcon"
     },
     {
       label: "Travel Experts",
-      href: "/admin/${adminSlug}/travel-experts",
+      href: `/admin/${adminSlug}/travel-experts`,
       icon: "UserGroupIcon"
     },
     {
       label: "Virtual Tours",
-      href: "/admin/${adminSlug}/travel-virtual-tours",
+      href: `/admin/${adminSlug}/travel-virtual-tours`,
       icon: "PlayCircleIcon"
     },
     {
       label: "Testimonials",
-      href: "/admin/${adminSlug}/travel-testimonials",
+      href: `/admin/${adminSlug}/travel-testimonials`,
       icon: "ChatBubbleLeftRightIcon"
     },
     {
       label: "Blog & Content",
-      href: "/admin/${adminSlug}/travel-blog",
+      href: `/admin/${adminSlug}/travel-blog`,
       icon: "NewspaperIcon"
     },
     {
       label: "Promotions & Deals",
-      href: "/admin/${adminSlug}/travel-promotions",
+      href: `/admin/${adminSlug}/travel-promotions`,
       icon: "TagIcon"
     },
     {
       label: "Inquiries",
-      href: "/admin/${adminSlug}/travel-inquiries",
+      href: `/admin/${adminSlug}/travel-inquiries`,
       icon: "QuestionMarkCircleIcon"
     },
     {
       label: "Settings",
-      href: "/admin/${adminSlug}/travel-settings",
+      href: `/admin/${adminSlug}/travel-settings`,
       icon: "Cog6ToothIcon"
     }
   ],
+
 
   "Fitness & Wellness": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
