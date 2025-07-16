@@ -420,11 +420,66 @@ export const getCategoryMenus = (adminSlug: string) => ({
   ],
 
   "Travel & Tourism": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
-    { label: "Destinations", href: `/admin/${adminSlug}/destinations`, icon: GlobeAltIcon },
-    { label: "Bookings", href: `/admin/${adminSlug}/bookings`, icon: CalendarIcon },
-    { label: "Packages", href: `/admin/${adminSlug}/packages`, icon: ClipboardDocumentListIcon },
+    {
+      label: "Dashboard",
+      href: "/admin/${adminSlug}",
+      icon: "HomeIcon"
+    },
+    {
+      label: "Bookings",
+      href: "/admin/${adminSlug}/travel-bookings",
+      icon: "CalendarDaysIcon"
+    },
+    {
+      label: "Destinations",
+      href: "/admin/${adminSlug}/travel-destinations",
+      icon: "GlobeAltIcon"
+    },
+    {
+      label: "Packages & Tours",
+      href: "/admin/${adminSlug}/travel-packages",
+      icon: "BriefcaseIcon"
+    },
+    {
+      label: "Users & Customers",
+      href: "/admin/${adminSlug}/travel-users",
+      icon: "UsersIcon"
+    },
+    {
+      label: "Travel Experts",
+      href: "/admin/${adminSlug}/travel-experts",
+      icon: "UserGroupIcon"
+    },
+    {
+      label: "Virtual Tours",
+      href: "/admin/${adminSlug}/travel-virtual-tours",
+      icon: "PlayCircleIcon"
+    },
+    {
+      label: "Testimonials",
+      href: "/admin/${adminSlug}/travel-testimonials",
+      icon: "ChatBubbleLeftRightIcon"
+    },
+    {
+      label: "Blog & Content",
+      href: "/admin/${adminSlug}/travel-blog",
+      icon: "NewspaperIcon"
+    },
+    {
+      label: "Promotions & Deals",
+      href: "/admin/${adminSlug}/travel-promotions",
+      icon: "TagIcon"
+    },
+    {
+      label: "Inquiries",
+      href: "/admin/${adminSlug}/travel-inquiries",
+      icon: "QuestionMarkCircleIcon"
+    },
+    {
+      label: "Settings",
+      href: "/admin/${adminSlug}/travel-settings",
+      icon: "Cog6ToothIcon"
+    }
   ],
 
   "Fitness & Wellness": [
