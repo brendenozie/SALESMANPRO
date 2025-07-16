@@ -1,471 +1,488 @@
 "use client";
 
-import React, { useState, useEffect, } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+// Assuming useStoreContext provides a way to get global data,
+// but for this example, we'll use local dummy data.
 import { useStoreContext } from "../../../../../contexts/StoreContext";
-import Testimonials from "./components/TestimonialsSection";
-import AppPromotion from "./components/AppPromotionSection";
+
+// Import your enhanced components
+import TestimonialsSection from "./components/TestimonialsSection"; // Renamed for clarity
+import AppPromotionSection from "./components/AppPromotionSection"; // Renamed for clarity
+import FaqsSection from "./components/FAQsSection"; // Renamed for clarity
 import ExpertsSection from "./components/ExpertsSection";
-import FaqsSection from "./components/FAQsSection";
 import FilterBar from "./components/FilterBarSection";
 import HeroSection from "./components/heroSection";
 import ListingsGrid from "./components/ListingsGridSection";
 import LocationsSection from "./components/LocationsSection";
 import MarketInsights from "./components/MarketInsightsSection";
-import Newsletter from "./components/NewsletterSection";
+import NewsletterSection from "./components/NewsletterSection"; // Renamed for clarity
 import VirtualTours from "./components/VirtualToursSection";
 
-// Sample data
-const store = {
-  name: "Peak Performance Gym",
-  slug: "peak-performance",
-  bannerUrl: "/images/fitness-hero.jpg",
-  classes: [
-  { id: "c1", name: "HIIT Blast", price: 1200, imageUrl: "/classes/hiit.jpg", slug: "hiit-blast" },
-  { id: "c2", name: "Yoga Flow", price: 800, imageUrl: "/classes/yoga.jpg", slug: "yoga-flow" },
-  { id: "c3", name: "Spin Session", price: 1000, imageUrl: "/classes/spin.jpg", slug: "spin-session" },
-  ],
-  trainers: [
-  { id: "t1", name: "Alex Carter", imageUrl: "/trainers/alex.jpg" },
-  { id: "t2", name: "Mia Wong", imageUrl: "/trainers/mia.jpg" },
-  { id: "t3", name: "Liam Patel", imageUrl: "/trainers/liam.jpg" },
-  { id: "t4", name: "Sofia Lee", imageUrl: "/trainers/sofia.jpg" },
-  ],
-  testimonials: [
-  { quote: "I achieved my best shape ever!", author: "Jordan R." },
-  { quote: "Trainers are super motivating.", author: "Taylor S." },
-  { quote: "Love the community vibes here.", author: "Casey L." },
-  ],
-  faqs: [
-  { question: "Do you offer monthly memberships?", answer: "Yes, with flexible cancellation policy." },
-  { question: "Can I try a class for free?", answer: "First class is complimentary for new members." },
-  { question: "Are personal training sessions available?", answer: "Yes, book 1-on-1 sessions with top trainers." },
-  ],
-  };
-  
-  
-  const programTypes = ['Yoga', 'CrossFit', 'Meditation', 'Personal Training'];
-  const Bannerlocations = ['New York', 'London', 'Online', 'Los Angeles'];
-  const goals = ['Weight Loss', 'Flexibility', 'Strength', 'Mindfulness'];
-  
-  const formats = ['In-person', 'Live Online', 'On-demand'];
-  const intensities = ['Low', 'Medium', 'High'];
-  const durations = [15, 30, 45, 60];
-  
-  const listings = [
-    {
-      "id": "1",
-      "image": "/images/yoga.jpg",
-      "title": "Sunrise Yoga Flow",
-      "instructor": "Alex Morgan",
-      "price": "$20/session",
-      "badge": "New"
-    },
-    {
-      "id": "2",
-      "image": "/images/hiit.jpg",
-      "title": "HIIT Blast",
-      "instructor": "Jordan Smith",
-      "price": "$25/session",
-      "badge": "Popular"
-    },
-    {
-      "id": "3",
-      "image": "/images/spin.jpg",
-      "title": "Spin Session",
-      "instructor": "Mia Wong",
-      "price": "$15/session",
-      "badge": "On Sale"  
-    },
-    {
-      "id": "4",
-      "image": "/images/strength.jpg",
-      "title": "Strength Training Basics",
-      "instructor": "Liam Patel",
-      "price": "$30/session",
-      "badge": "New"
-    },
-    {
-      "id": "5",
-      "image": "/images/meditation.jpg",
-      "title": "Guided Meditation for Beginners",
-      "instructor": "Sofia Lee",
-      "price": "$10/session",
-      "badge": "Popular"
-    },
-    {
-      "id": "6",
-      "image": "/images/crossfit.jpg",
-      "title": "CrossFit Fundamentals",
-      "instructor": "Alex Carter",
-      "price": "$35/session",
-      "badge": "On Sale"
-    } 
-  ];
-  
-  const locations = [
-    {
-      "id": "nyc-studio",
-      "name": "NYC Studio",
-      "image": "/images/nyc.jpg",
-      "programs": 120,
-      "rating": 4.8
-    },
-    {
-      "id": "london-studio",
-      "name": "London Studio",
-      "image": "/images/london.jpg",
-      "programs": 95,
-      "rating": 4.7
-    },
-    {
-      "id": "la-studio",
-      "name": "Los Angeles Studio",
-      "image": "/images/la.jpg",
-      "programs": 80,
-      "rating": 4.6
-    },
-    {
-      "id": "online-classes",
-      "name": "Online Classes",
-      "image": "/images/online.jpg",
-      "programs": 200,
-      "rating": 4.9
-    },
-    {
-      "id": "tokyo-studio",
-      "name": "Tokyo Studio",
-      "image": "/images/tokyo.jpg",
-      "programs": 70,
-      "rating": 4.5
-    }
-    
-  ];
-  
-  const videos = [
-    {
-      id: "1",
-      thumbnail: "/images/yoga.jpg",
-      title: "Sunrise Yoga Flow",
-      src: "/videos/yoga.mp4",
-      instructor: "Alex Morgan",
-      price: "$20/session",
-      badge: "New"
-    },
-    {
-      id: "2",
-      thumbnail: "/images/hiit.jpg",
-      title: "HIIT Blast",
-      src: "/videos/hiit.mp4",
-      instructor: "Jordan Smith",
-      price: "$25/session",
-      badge: "Popular"
-    },
-    {
-      id: "3",
-      thumbnail: "/images/spin.jpg",
-      title: "Spin Session",
-      src: "/videos/spin.mp4",
-      instructor: "Mia Wong",
-      price: "$15/session",
-      badge: "On Sale"  
-    },
-    {
-      id: "4",
-      thumbnail: "/images/strength.jpg",
-      title: "Strength Training Basics",
-      src: "/videos/strength.mp4",
-      instructor: "Liam Patel",
-      price: "$30/session",
-      badge: "New"
-    },
-    {
-      id: "5",
-      thumbnail: "/images/meditation.jpg",
-      title: "Guided Meditation for Beginners",
-      src: "/videos/meditation.mp4",
-      instructor: "Sofia Lee",
-      price: "$10/session",
-      badge: "Popular"
-    },
-    {
-      id: "6",
-      thumbnail: "/images/crossfit.jpg",
-      title: "CrossFit Fundamentals",
-      src: "/videos/crossfit.mp4",
-      instructor: "Alex Carter",
-      price: "$35/session",
-      badge: "On Sale"
-    },
-  ];
-  
-  
-  const testimonials = [
-    {
-      "id": "t1",
-      "name": "Jane Doe",
-      "avatar": "/images/jane.jpg",
-      "quote": "I lost 20 lbs in 3 months thanks to these amazing trainers!"
-    },
-    {
-      "id": "t2",
-      "name": "John Smith",
-      "avatar": "/images/john.jpg",
-      "quote": "The community here is so supportive, I love it!"
-    },
-    {
-      "id": "t3",
-      "name": "Emily Johnson",
-      "avatar": "/images/emily.jpg",
-      "quote": "Best fitness classes I've ever attended, highly recommend!"
-    },
-    {
-      "id": "t4",
-      "name": "Michael Brown",
-      "avatar": "/images/michael.jpg",
-      "quote": "The trainers are top-notch, they really know their stuff!"
-    }  
-  ];
-  
-  const experts = [
-    // {
-    //   "id": "nyc-studio",
-    //   "name": "NYC Studio",
-    //   "image": "/images/nyc.jpg",
-    //   "programs": 120,
-    //   "rating": 4.8
-    // },
-    // {
-    //   "id": "london-studio",
-    //   "name": "London Studio",
-    //   "image": "/images/london.jpg",
-    //   "programs": 95,
-    //   "rating": 4.7
-    // },
-    // {
-    //   "id": "la-studio",
-    //   "name": "Los Angeles Studio",
-    //   "image": "/images/la.jpg",
-    //   "programs": 80,
-    //   "rating": 4.6
-    // },
-    // {
-    //   "id": "online-classes",
-    //   "name": "Online Classes",
-    //   "image": "/images/online.jpg",
-    //   "programs": 200,
-    //   "rating": 4.9
-    // },
-    // {
-    //   "id": "tokyo-studio",
-    //   "name": "Tokyo Studio",
-    //   "image": "/images/tokyo.jpg",
-    //   "programs": 70,
-    //   "rating": 4.5
-    // },
-    {
-      "id": "expert1",
-      "name": "Dr. Sarah Lee",
-      "photo": "/images/sarah.jpg",
-      "specialty": "Nutrition",
-      "experience": 10
-    },
-    {
-      "id": "expert2",
-      "name": "Coach Mike Johnson",
-      "photo": "/images/mike.jpg",
-      "specialty": "Strength Training",
-      "experience": 8
-    },
-    {
-      "id": "expert3",
-      "name": "Yoga Guru Priya",
-      "photo": "/images/priya.jpg",
-      "specialty": "Yoga & Mindfulness",
-      "experience": 12
-    }
-    
-  ];
-  const insights = [
-    {
-      "id": "calorie-calculator",
-      "title": "Calorie Calculator",
-      "description": "Estimate your daily calorie needs based on activity.",
-      "link": "/tools/calorie-calculator"
-    },
-    {
-      "id": "bmi-tracker",
-      "title": "BMI Tracker",
-      "description": "Track your Body Mass Index over time.",
-      "link": "/tools/bmi-tracker"
-    },
-    {
-      "id": "sleep-tips",
-      "title": "5 Tips for Better Sleep",
-      "description": "Improve your sleep quality with these expert tips.",
-      "link": "/blog/sleep-tips"
-    },
-    {
-      "id": "hydration-guide",
-      "title": "Hydration Guide",
-      "description": "Learn how much water you should drink daily.",
-      "link": "/blog/hydration-guide"
-    },
-    {
-      "id": "stress-management",
-      "title": "Stress Management Techniques",
-      "description": "Effective ways to manage stress and anxiety.",
-      "link": "/blog/stress-management"
-    }
-  ];
-  
-  type Insight = {
+// --- Sample Data Definitions (Aligned with enhanced component props) ---
+
+// Testimonial Item Structure (as defined in TestimonialsSection)
+interface TestimonialItem {
     id: string;
-    title: string;
-    description: string;
-    link: string;
-  };
-  
-  type Expert = {
-    id: string;
-    name: string;
-    photo: string;
-    specialty: string;
-    experience: number;
-  };
-  
-  type Testimonial = {
-    id: string;
+    quote: string;
     name: string;
     avatar: string;
-    quote: string;
-  };
-  
-  
-  
-  type Video = {
+    title?: string;
+    program?: string;
+    rating: number;
+}
+
+// FAQ Item Structure (as defined in FaqsSection)
+interface FAQItem {
     id: string;
-    title: string;
-    thumbnail: string;
-    src: string;
-  };
-  
-  
-  type Location = {
+    question: string;
+    answer: string;
+    category?: string;
+}
+
+// Expert Item Structure
+interface Expert {
     id: string;
     name: string;
-    image: string;
-    programs: number;
-    rating: number;
-  };
-  
-  type Listing = {
+    photo: string; // Changed from 'image' to 'photo' for clarity in ExpertsSection
+    specialty: string;
+    experience: number;
+    bio?: string; // Added for more detail in ExpertsSection
+    socials?: {
+        twitter?: string;
+        linkedin?: string;
+        instagram?: string;
+    };
+}
+
+// Listing Item Structure
+interface Listing {
     id: string;
     image: string;
     title: string;
     instructor: string;
     price: string;
     badge?: 'New' | 'Popular' | 'On Sale';
-  };
-  
-  
-  
-// Filter definitions (these remain static)
-// const programTypes = ["Yoga", "CrossFit", "Meditation", "Personal Training"];
-const bannerLocations = ["New York", "London", "Online", "Los Angeles"];
-// const goals = ["Weight Loss", "Flexibility", "Strength", "Mindfulness"];
-// const formats = ["In-person", "Live Online", "On-demand"];
-// const intensities = ["Low", "Medium", "High"];
-// const durations = [15, 30, 45, 60];
+    description?: string; // Added for more detail if needed in ListingsGrid
+    rating?: number; // Added for more detail if needed in ListingsGrid
+}
 
-// Generic image loader
-const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
+// Location Item Structure
+interface Location {
+    id: string;
+    name: string;
+    image: string;
+    programs: number;
+    rating: number;
+    description?: string; // Added for more detail in LocationsSection
+}
 
-export default function FitnessSite() {
-  const router = useRouter();
-  const { storeFormData } = useStoreContext();
+// Video Item Structure (for Virtual Tours)
+interface Video {
+    id: string;
+    title: string;
+    thumbnail: string;
+    src: string;
+    instructor: string; // Keeping instructor and price for consistency from listings
+    price: string;
+    badge?: 'New' | 'Popular' | 'On Sale';
+    description?: string; // Added for more detail in VirtualTours
+}
 
-  // Local state arrays (populated from storeFormData on mount)
-  const [classes, setClasses] = useState([]);
-  const [trainers, setTrainers] = useState([]);
-  const [testimonials, setTestimonials] = useState([]);
-  const [faqs, setFaqs] = useState([]);
-  const [listings, setListings] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [videos, setVideos] = useState([]);
-  const [experts, setExperts] = useState([]);
-  const [insights, setInsights] = useState([]);
-
-  useEffect(() => {
-    if (!storeFormData) return;
-
-    // Pull everything out of storeFormData (assuming it has these fields)
-    setClasses(classes || []);
-    setTrainers(trainers || []);
-    setTestimonials(testimonials || []);
-    setFaqs(faqs || []);
-    setListings(listings || []);
-    setLocations(locations || []);
-    setVideos(videos || []);
-    setExperts(experts || []);
-    setInsights(insights || []);
-  }, [storeFormData]);
-
-  if (!storeFormData) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div className="space-y-24 font-sans">
-      {/* Hero Section */}
-      <HeroSection bannerUrl={storeFormData.bannerUrl} gymName={storeFormData.name} />
-
-      {/* Filter Bar */}
-      <FilterBar />
-
-      {/* Listings Grid */}
-      <ListingsGrid listings={listings} />
-
-      {/* Trending Locations */}
-      <LocationsSection locations={locations} />
-
-      {/* Virtual Tours */}
-      <VirtualTours videos={videos} />
-
-      {/* Experts Section */}
-      <ExpertsSection experts={experts} />
-
-      {/* Insights Section */}
-      <MarketInsights insights={insights} />
-
-      {/* Testimonials */}
-      <Testimonials testimonials={testimonials} />
-
-      {/* App Promotion */}
-      <AppPromotion />
-
-      {/* Newsletter */}
-      <Newsletter />
-
-      {/* FAQs */}
-      <FaqsSection />
-    </div>
-  );
+// Insight Item Structure (for Market Insights)
+interface Insight {
+    id: string;
+    title: string;
+    description: string;
+    link: string;
+    image?: string; // Added for visual appeal in MarketInsights
+    category?: string; // Added for better filtering/categorization
 }
 
 
+// --- Comprehensive Dummy Data ---
+const DUMMY_DATA = {
+    // Hero Section Data
+    gymName: "Zenith Fitness Hub",
+    bannerUrl: "/images/fitness-hero.jpg", // Ensure this image exists
+
+    // Filter Bar Data
+    programTypes: ['Yoga', 'CrossFit', 'Meditation', 'Personal Training', 'Pilates', 'Zumba'],
+    bannerLocations: ['New York', 'London', 'Online', 'Los Angeles', 'Sydney', 'Berlin'],
+    goals: ['Weight Loss', 'Flexibility', 'Strength', 'Mindfulness', 'Endurance', 'Recovery'],
+    formats: ['In-person', 'Live Online', 'On-demand', 'Hybrid'],
+    intensities: ['Low', 'Medium', 'High', 'All Levels'],
+    durations: [15, 30, 45, 60, 90],
+
+    // Listings Grid Data
+    listings: [
+        {
+            "id": "1",
+            "image": "/images/yoga-listing.jpg", // Ensure images exist
+            "title": "Sunrise Yoga Flow",
+            "instructor": "Alex Morgan",
+            "price": "$20/session",
+            "badge": "New",
+            "description": "Start your day with a calming and invigorating yoga sequence.",
+            "rating": 4.9,
+        },
+        {
+            "id": "2",
+            "image": "/images/hiit-listing.jpg",
+            "title": "HIIT Blast: Full Body Burn",
+            "instructor": "Jordan Smith",
+            "price": "$25/session",
+            "badge": "Popular",
+            "description": "High-intensity interval training designed to push your limits and maximize fat burn.",
+            "rating": 4.8,
+        },
+        {
+            "id": "3",
+            "image": "/images/spin-listing.jpg",
+            "title": "Spin Cycle Express",
+            "instructor": "Mia Wong",
+            "price": "$18/session",
+            "badge": "On Sale",
+            "description": "Fast-paced indoor cycling to boost cardio and leg strength. Ride to the beat!",
+            "rating": 4.7,
+        },
+        {
+            "id": "4",
+            "image": "/images/strength-listing.jpg",
+            "title": "Strength Building Fundamentals",
+            "instructor": "Liam Patel",
+            "price": "$30/session",
+            "badge": "New",
+            "description": "Learn proper form and build foundational strength for all fitness levels.",
+            "rating": 4.9,
+        },
+        {
+            "id": "5",
+            "image": "/images/meditation-listing.jpg",
+            "title": "Mindful Meditation & Relaxation",
+            "instructor": "Sofia Lee",
+            "price": "$15/session",
+            "badge": "Popular",
+            "description": "Find your inner peace with guided meditation techniques for stress relief.",
+            "rating": 5.0,
+        },
+        {
+            "id": "6",
+            "image": "/images/crossfit-listing.jpg",
+            "title": "CrossFit Core Power",
+            "instructor": "Alex Carter",
+            "price": "$35/session",
+            "badge": "On Sale",
+            "description": "Dynamic, functional movements to improve overall fitness and agility.",
+            "rating": 4.6,
+        },
+    ],
+
+    // Locations Section Data
+    locations: [
+        {
+            "id": "nyc-studio",
+            "name": "NYC Flagship Studio",
+            "image": "/images/nyc-studio.jpg", // Ensure images exist
+            "programs": 120,
+            "rating": 4.8,
+            "description": "Our state-of-the-art facility in the heart of New York City.",
+        },
+        {
+            "id": "london-studio",
+            "name": "London Riverside Gym",
+            "image": "/images/london-studio.jpg",
+            "programs": 95,
+            "rating": 4.7,
+            "description": "Experience world-class training with a view of the Thames.",
+        },
+        {
+            "id": "la-studio",
+            "name": "Los Angeles Beachfront",
+            "image": "/images/la-studio.jpg",
+            "programs": 80,
+            "rating": 4.6,
+            "description": "Train under the California sun at our vibrant LA location.",
+        },
+        {
+            "id": "online-classes",
+            "name": "Global Online Classes",
+            "image": "/images/online-classes.jpg",
+            "programs": 200,
+            "rating": 4.9,
+            "description": "Access our full library of classes and coaches from anywhere in the world.",
+        },
+        {
+            "id": "tokyo-studio",
+            "name": "Tokyo Zen Studio",
+            "image": "/images/tokyo-studio.jpg",
+            "programs": 70,
+            "rating": 4.5,
+            "description": "Find balance and strength in our serene Tokyo studio.",
+        },
+    ],
+
+    // Virtual Tours Data (re-using listings structure, but src is for video)
+    videos: [
+        {
+            id: "vid1",
+            thumbnail: "/images/video-thumbnail-yoga.jpg",
+            title: "Virtual Studio Tour: Yoga Zone",
+            src: "/videos/yoga-tour.mp4", // Ensure these video files exist
+            instructor: "Various Instructors",
+            price: "Free Tour",
+            badge: "New",
+            description: "Explore our tranquil yoga studio and learn about our classes.",
+        },
+        {
+            id: "vid2",
+            thumbnail: "/images/video-thumbnail-gym.jpg",
+            title: "HIIT & Strength Training Facilities",
+            src: "/videos/gym-tour.mp4",
+            instructor: "Team Zenith",
+            price: "Free Tour",
+            badge: "Popular",
+            description: "A comprehensive look at our cutting-edge strength and HIIT equipment.",
+        },
+        {
+            id: "vid3",
+            thumbnail: "/images/video-thumbnail-pool.jpg",
+            title: "Aquatic Center Walkthrough",
+            src: "/videos/pool-tour.mp4",
+            instructor: "Aquatics Team",
+            price: "Free Tour",
+            badge: "Exclusive",
+            description: "Dive into our Olympic-sized swimming pool and aquatic programs.",
+        },
+    ],
+
+    // Experts Section Data
+    experts: [
+        {
+            "id": "expert1",
+            "name": "Dr. Anya Sharma",
+            "photo": "/images/expert-anya.jpg", // Ensure images exist
+            "specialty": "Holistic Nutrition & Wellness",
+            "experience": 15,
+            "bio": "Dr. Sharma is a renowned nutritionist focusing on sustainable dietary practices and overall well-being. She believes in food as medicine.",
+            "socials": { twitter: "dr_anya", linkedin: "dranyasharma" },
+        },
+        {
+            "id": "expert2",
+            "name": "Coach Marcus 'The Beast' Johnson",
+            "photo": "/images/expert-marcus.jpg",
+            "specialty": "Strength & Conditioning, Olympic Lifting",
+            "experience": 10,
+            "bio": "Marcus is a former professional athlete dedicated to helping clients unlock their full physical potential through tailored strength programs.",
+            "socials": { instagram: "marcus_strength" },
+        },
+        {
+            "id": "expert3",
+            "name": "Elara Vance (Yoga & Mindfulness)",
+            "photo": "/images/expert-elara.jpg",
+            "specialty": "Vinyasa Yoga, Meditation, Stress Reduction",
+            "experience": 12,
+            "bio": "Elara guides students through transformative yoga journeys, emphasizing breathwork and mental clarity for a balanced life.",
+        },
+        {
+            "id": "expert4",
+            "name": "Dr. Ben Carter (Sports Medicine)",
+            "photo": "/images/expert-ben.jpg",
+            "specialty": "Injury Prevention & Rehabilitation",
+            "experience": 18,
+            "bio": "Dr. Carter specializes in helping athletes recover from injuries and optimize performance safely.",
+        },
+    ],
+
+    // Market Insights Data
+    insights: [
+        {
+            "id": "insight1",
+            "title": "Maximizing Your Home Workout Space",
+            "description": "Tips and tricks to get the most out of your small home gym.",
+            "link": "/blog/home-workout-space",
+            "image": "/images/insight-home-gym.jpg", // Ensure images exist
+            "category": "Home Fitness",
+        },
+        {
+            "id": "insight2",
+            "title": "The Science Behind Effective Recovery",
+            "description": "Understanding muscle recovery and optimizing your rest days.",
+            "link": "/blog/recovery-science",
+            "image": "/images/insight-recovery.jpg",
+            "category": "Wellness",
+        },
+        {
+            "id": "insight3",
+            "title": "Fueling Your Body: A Nutrition Guide",
+            "description": "Comprehensive guide to macro and micronutrients for fitness.",
+            "link": "/blog/nutrition-guide",
+            "image": "/images/insight-nutrition.jpg",
+            "category": "Nutrition",
+        },
+        {
+            "id": "insight4",
+            "title": "Setting Achievable Fitness Goals",
+            "description": "Strategies to set, track, and crush your fitness objectives.",
+            "link": "/blog/fitness-goals",
+            "image": "/images/insight-goals.jpg",
+            "category": "Motivation",
+        },
+    ],
+
+    // Testimonials Data (aligned with the enhanced TestimonialsSection)
+    testimonials: [
+        {
+            "id": "t1",
+            "name": "Sarah Chen",
+            "avatar": "/images/avatar-sarah.jpg", // Ensure these avatar images exist
+            "quote": "Joining Zenith Fitness Hub was the best decision for my fitness journey! The trainers are incredibly supportive, and the variety of classes keeps me motivated every day. I've seen amazing results!",
+            "title": "Marketing Specialist",
+            "program": "Elite Fitness Program",
+            "rating": 5,
+        },
+        {
+            "id": "t2",
+            "name": "David Kim",
+            "avatar": "/images/avatar-david.jpg",
+            "quote": "I never thought I'd enjoy working out, but the virtual classes here are a game-changer. The flexibility and expert guidance have helped me stay consistent and feel fantastic.",
+            "title": "Software Engineer",
+            "program": "Virtual Yoga & Mindfulness",
+            "rating": 4,
+        },
+        {
+            "id": "t3",
+            "name": "Maria Rodriguez",
+            "avatar": "/images/avatar-maria.jpg",
+            "quote": "The personalized nutrition advice I received was revolutionary. It wasn't just about weight loss, but about a holistic approach to wellness that truly changed my life for the better.",
+            "title": "Small Business Owner",
+            "program": "Nutrition Coaching",
+            "rating": 5,
+        },
+        {
+            "id": "t4",
+            "name": "Omar Hassan",
+            "avatar": "/images/avatar-omar.jpg",
+            "quote": "The community here is so welcoming and inspiring. It feels like a second family. Every session leaves me energized and ready to tackle anything!",
+            "title": "Graphic Designer",
+            "program": "Group Strength Classes",
+            "rating": 5,
+        },
+    ],
+
+    // FAQs Data (aligned with the enhanced FaqsSection)
+    faqs: [
+        {
+            id: 'faq1',
+            question: "How do I sign up for a new program?",
+            answer: "Signing up is easy! Just navigate to our 'Programs' page, choose your desired plan, and follow the simple steps to create an account and enroll. You'll be ready to start your journey in minutes!",
+            category: "Getting Started",
+        },
+        {
+            id: 'faq2',
+            question: "What types of workouts are available?",
+            answer: "We offer a diverse range of workouts including HIIT, yoga, strength training, dance fitness, and specialized recovery sessions. Our library is constantly updated with new content to keep things fresh and engaging.",
+            category: "Programs & Workouts",
+        },
+        {
+            id: 'faq3',
+            question: "Can I get personalized coaching?",
+            answer: "Absolutely! We offer one-on-one coaching sessions with our certified experts. You can schedule a consultation directly from the 'Coaches & Experts' section to discuss your specific goals.",
+            category: "Coaching & Support",
+        },
+        {
+            id: 'faq4',
+            question: "Is there a mobile app to track my progress?",
+            answer: "Yes, we have a fantastic mobile app available on both iOS and Android! You can download it from the App Store or Google Play to track workouts, monitor nutrition, and connect with the community on the go.",
+            category: "Technical & App",
+        },
+        {
+            id: 'faq5',
+            question: "What is your refund policy?",
+            answer: "We offer a 30-day money-back guarantee on all our premium programs. If you're not completely satisfied, simply contact our support team within 30 days of purchase for a full refund. Your satisfaction is our priority!",
+            category: "Billing & Subscriptions",
+        },
+    ],
+};
 
 
+export default function FitnessSite() {
+    const router = useRouter();
+    // In a real application, useStoreContext would likely fetch this data from an API
+    // For this example, we'll directly use DUMMY_DATA
+    // const { storeFormData } = useStoreContext();
+
+    // Use local state, initialized with DUMMY_DATA
+    const [pageData, setPageData] = useState(DUMMY_DATA);
+
+    // If you were using useStoreContext for dynamic data, it would look more like this:
+    /*
+    const { storeFormData } = useStoreContext();
+    useEffect(() => {
+        if (storeFormData) {
+            setPageData({
+                gymName: storeFormData.name,
+                bannerUrl: storeFormData.bannerUrl,
+                // Map other storeFormData fields to your DUMMY_DATA structure as needed
+                // Ensure the structure matches what child components expect
+                listings: storeFormData.listings || DUMMY_DATA.listings,
+                testimonials: storeFormData.testimonials || DUMMY_DATA.testimonials,
+                // ... and so on for all data types
+            });
+        }
+    }, [storeFormData]);
+
+    // Show loading state if storeFormData is not yet available
+    if (!storeFormData) {
+        return <div className="min-h-screen flex items-center justify-center text-xl text-gray-700">Loading your fitness experience...</div>;
+    }
+    */
 
 
+    return (
+        <div className="space-y-28 font-sans bg-gray-50"> {/* Increased spacing and subtle global background */}
+            {/* Hero Section */}
+            <HeroSection
+                gymName={pageData.gymName}
+                bannerUrl={pageData.bannerUrl}
+            />
 
+            {/* Filter Bar */}
+            <FilterBar
+                programTypes={pageData.programTypes}
+                locations={pageData.bannerLocations} // Use bannerLocations for consistency
+                goals={pageData.goals}
+                formats={pageData.formats}
+                intensities={pageData.intensities}
+                durations={pageData.durations}
+            />
 
+            {/* Listings Grid */}
+            <ListingsGrid listings={pageData.listings} />
 
+            {/* Trending Locations */}
+            <LocationsSection locations={pageData.locations} />
 
+            {/* Virtual Tours */}
+            <VirtualTours videos={pageData.videos} />
 
+            {/* Experts Section */}
+            <ExpertsSection experts={pageData.experts} />
 
+            {/* Insights Section */}
+            <MarketInsights insights={pageData.insights} />
 
+            {/* Testimonials */}
+            <TestimonialsSection testimonials={pageData.testimonials} />
 
+            {/* App Promotion (no props needed as it uses internal dummy data or generic content) */}
+            <AppPromotionSection />
 
+            {/* Newsletter (no props needed as it manages its own state) */}
+            <NewsletterSection />
 
-
+            {/* FAQs */}
+            <FaqsSection faqs={pageData.faqs} />
+        </div>
+    );
+}
