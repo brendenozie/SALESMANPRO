@@ -1,455 +1,490 @@
-import React, { useState, useMemo } from "react";
-import Modal from "./Modal";
-import { motion } from "framer-motion";
+// src/components/AddProductModal.tsx
+'use client';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Modal from './Modal';
+import { motion } from 'framer-motion';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-} from "@heroicons/react/24/outline";
-import Stepper from "./Stepper";
-import { CATEGORY_STEPS } from "@/constant/CATEGORY_STEPS";
-import { FORM_COMPONENTS } from "@/constant/FORM_COMPONENTS";
-import { STEP_LABELS } from "@/constant/STEP_LABELS";
+} from '@heroicons/react/24/outline';
+import Stepper from './Stepper';
+import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
+import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
+import { STEP_LABELS } from '@/constant/STEP_LABELS';
+import CategoryPicker, { CategoryData } from './CategoryPicker';
 
-// -------------------
-// MAPPINGS
-// -------------------
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
+////////////////////////////////////////////////////////////////////////////////
+// 1) Props & Form Type
+////////////////////////////////////////////////////////////////////////////////
 interface AddProductModalProps {
   showRequestProductModal: boolean;
-  setShowRequestProductModal: (b: boolean) => void;
-  product: any | null;
+  setShowRequestProductModal: (open: boolean) => void;
+  product: any | null;           // TODO: replace with your Product type
   companyId: string;
-  categories: any[]; // array of category objects including subcategories
+  categories: CategoryData[];
 }
 
-const AddProductModal: React.FC<AddProductModalProps> = ({
+interface ProductForm {
+  // identifiers
+  id: string;
+  companyId: string;
+
+  // basic info
+  name: string;
+  description: string;
+
+  // category
+  category: CategoryData | null;
+  subCategory: any;
+  subCategoryName: string;
+  brand: string;
+  tags: string[];
+
+  // specs
+  model: string;
+  color: string[];
+  size: string[];
+  weight: string;
+  condition: string;
+  dimension: string;
+  material: string | string[];
+
+  // media
+  images: string[];
+  video: string | null;
+  digitalUrl: string;
+  autoDeliver: boolean;
+
+  // flags
+  isAvailable: boolean;
+  isOnOffer: boolean;
+  isFlashDeal: boolean;
+  isNewArrival: boolean;
+  isDiscounted: boolean;
+  isFeatured: boolean;
+
+  // pricing
+  quantity: number;
+  costPrice: number;
+  salesPrice: number;
+  discount: number;
+  finalPrice: number;
+  profitMargin: number;
+
+  // deals
+  startDealDate: string | null;
+  endDealDate: string | null;
+
+  // vehicle
+  make: string;
+  trim: string;
+  type: string;
+  mileage: string;
+  engineType: string;
+  engineSize: string;
+  transmission: string;
+  drivetrain: string;
+  vin: string;
+  logbookStatus: string;
+  serviceHistory: string;
+  negotiable: boolean;
+  financingAvailable: boolean;
+  tradeIn: boolean;
+  features: any[];
+
+  // books
+  author: string;
+  publisher: string;
+  isbn: string;
+
+  // fashion
+  fabricComposition: string;
+  careInstructions: string;
+
+  // appliances
+  energyRating: string;
+  warrantyPeriod: string;
+  dimensions: string;
+
+  // beauty
+  ingredients: string;
+  usageInstructions: string;
+  expirationDate: string | null;
+
+  // options & amenities
+  option: any[];
+  amenities: string[];
+
+  // property
+  bedrooms: any[];
+  studios: any[];
+  bathrooms: string;
+  area: string;
+  propertyTypeId: string;
+  serviceSchedule: string;
+
+  // year & scheduling
+  year: string;
+  availabilityStart: string;
+  availabilityEnd: string;
+
+  // location & contact
+  location: any;
+  locationName: string;
+  latitude: number | null;
+  longitude: number | null;
+  contact: string;
+  contactName: string;
+  email: string;
+
+  // admin
+  status: string;
+  collectionId: string;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 2) Helpers: upload & payload
+////////////////////////////////////////////////////////////////////////////////
+async function uploadFiles(files: File[], type: 'image' | 'video'): Promise<string[]> {
+  const uploads = files.map((file) => {
+    const fd = new FormData();
+    fd.append('type', type);
+    fd.append('file', file);
+    return fetch('/api/upload', { method: 'POST', body: fd })
+      .then((res) => {
+        if (!res.ok) throw new Error('Upload failed');
+        return res.json();
+      })
+      .then((json) => json.url as string);
+  });
+  return Promise.all(uploads);
+}
+
+function buildProductPayload(f: ProductForm, imageUrls: string[]): any {
+  return {
+    id: f.id || undefined,
+    name: f.name,
+    description: f.description,
+    companyId: f.companyId,
+    sellerType: 'ADMIN',
+    collectionId: f.collectionId,
+
+    // category
+    productCategoryId: f.category?.id || '',
+    category: f.category?.displayName || '',
+    subCategory: f.subCategory,
+    subCategoryName: f.subCategoryName,
+    tags: f.tags,
+
+    // specs
+    brand: f.brand,
+    model: f.model,
+    color: f.color,
+    size: f.size,
+    weight: f.weight,
+    condition: f.condition,
+    dimension: f.dimension,
+    material: Array.isArray(f.material) ? f.material : [f.material],
+
+    // media
+    images: imageUrls,
+    video: f.video,
+    digitalUrl: f.digitalUrl,
+    autoDeliver: f.autoDeliver,
+
+    // flags
+    isAvailable: f.isAvailable,
+    isOnOffer: f.isOnOffer,
+    isFlashDeal: f.isFlashDeal,
+    isNewArrival: f.isNewArrival,
+    isDiscounted: f.isDiscounted,
+    isFeatured: f.isFeatured,
+
+    // pricing
+    quantity: f.quantity,
+    costPrice: f.costPrice,
+    salesPrice: f.salesPrice,
+    discount: f.discount,
+    finalPrice: f.finalPrice,
+    profitMargin: f.profitMargin,
+
+    // deals
+    startDealDate: f.startDealDate,
+    endDealDate: f.endDealDate,
+
+    // vehicle
+    make: f.make,
+    trim: f.trim,
+    type: f.type,
+    mileage: f.mileage,
+    engineType: f.engineType,
+    engineSize: f.engineSize,
+    transmission: f.transmission,
+    drivetrain: f.drivetrain,
+    vin: f.vin,
+    logbookStatus: f.logbookStatus,
+    serviceHistory: f.serviceHistory,
+    negotiable: f.negotiable,
+    financingAvailable: f.financingAvailable,
+    tradeIn: f.tradeIn,
+    features: f.features,
+
+    // books
+    author: f.author,
+    publisher: f.publisher,
+    isbn: f.isbn,
+
+    // fashion
+    fabricComposition: f.fabricComposition,
+    careInstructions: f.careInstructions,
+
+    // appliances
+    energyRating: f.energyRating,
+    warrantyPeriod: f.warrantyPeriod,
+    dimensions: f.dimensions,
+
+    // beauty
+    ingredients: f.ingredients,
+    usageInstructions: f.usageInstructions,
+    expirationDate: f.expirationDate,
+
+    // options & amenities
+    option: f.option,
+    amenities: f.amenities,
+
+    // property
+    bedrooms: f.bedrooms,
+    studios: f.studios,
+    bathrooms: f.bathrooms,
+    area: f.area,
+    propertyTypeId: f.propertyTypeId,
+    serviceSchedule: f.serviceSchedule,
+
+    // year & scheduling
+    year: f.year,
+    availabilityStart: f.availabilityStart,
+    availabilityEnd: f.availabilityEnd,
+
+    // location & contact
+    location: f.location,
+    locationName: f.locationName,
+    latitude: f.latitude,
+    longitude: f.longitude,
+    contact: f.contact,
+    contactName: f.contactName,
+    email: f.email,
+
+    // admin
+    status: f.status,
+  };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 3) Hook: initialize & recalc
+////////////////////////////////////////////////////////////////////////////////
+function useProductForm(
+  product: any | null,
+  companyId: string
+) {
+  const getInitial = (): ProductForm => {
+    const p = product || {};
+    return {
+      id: p.id || '',
+      companyId,
+      name: p.name || '',
+      description: p.description || '',
+      category: p.category || null,
+      subCategory: p.subCategory || {},
+      subCategoryName: p.subCategoryName || '',
+      tags: p.tags || [],
+      collectionId: p.collectionId || '',
+      brand: p.brand || '',
+      model: p.model || '',
+      color: p.color || [],
+      size: p.size || [],
+      weight: p.weight || '',
+      condition: p.condition || '',
+      dimension: p.dimension || '',
+      dimensions: p.dimensions || '',
+      material: p.material || [],
+      images: p.images || [],
+      video: p.video || null,
+      digitalUrl: p.digitalUrl || '',
+      autoDeliver: !!p.autoDeliver,
+      isAvailable: p.isAvailable ?? false,
+      isOnOffer: p.isOnOffer ?? false,
+      isFlashDeal: p.isFlashDeal ?? false,
+      isNewArrival: p.isNewArrival ?? false,
+      isDiscounted: p.isDiscounted ?? false,
+      isFeatured: p.isFeatured ?? false,
+      quantity: p.companyStock ?? 1,
+      costPrice: p.costPrice ?? 0,
+      salesPrice: p.salesPrice ?? 0,
+      discount: p.discount ?? 0,
+      finalPrice: p.finalPrice ?? 0,
+      profitMargin: p.profitMargin ?? 0,
+      startDealDate: p.startDealDate || null,
+      endDealDate: p.endDealDate || null,
+      make: p.make || '',
+      trim: p.trim || '',
+      type: p.type || '',
+      mileage: p.mileage || '',
+      engineType: p.engineType || '',
+      engineSize: p.engineSize || '',
+      transmission: p.transmission || '',
+      drivetrain: p.drivetrain || '',
+      vin: p.vin || '',
+      logbookStatus: p.logbookStatus || 'Available',
+      serviceHistory: p.serviceHistory || 'Full',
+      negotiable: p.negotiable ?? false,
+      financingAvailable: p.financingAvailable ?? false,
+      tradeIn: p.tradeIn ?? false,
+      features: p.features || [],
+      author: p.author || '',
+      publisher: p.publisher || '',
+      isbn: p.isbn || '',
+      fabricComposition: p.fabricComposition || '',
+      careInstructions: p.careInstructions || '',
+      energyRating: p.energyRating || '',
+      warrantyPeriod: p.warrantyPeriod || '',
+      ingredients: p.ingredients || '',
+      usageInstructions: p.usageInstructions || '',
+      expirationDate: p.expirationDate || null,
+      option: p.option || [],
+      amenities: p.amenities || [],
+      bedrooms: p.bedrooms || [],
+      studios: p.studios || [],
+      bathrooms: p.bathrooms || '',
+      area: p.area || '',
+      propertyTypeId: p.propertyTypeId || '',
+      serviceSchedule: p.serviceSchedule || '',
+      year: p.year || '',
+      availabilityStart: p.availabilityStart || '',
+      availabilityEnd: p.availabilityEnd || '',
+      location: p.location || {},
+      locationName: p.locationName || '',
+      latitude: p.latitude ?? null,
+      longitude: p.longitude ?? null,
+      contact: p.contact || '',
+      contactName: p.contactName || '',
+      email: p.email || '',
+      status: p.status || 'ACTIVE',
+    };
+  };
+
+  const [formData, setFormData] = useState<ProductForm>(getInitial);
+
+  useEffect(() => {
+    const cost = formData.costPrice;
+    const sale = formData.salesPrice;
+    const disc = formData.discount;
+    const finalPrice = sale - (sale * disc) / 100;
+    const profitMargin = cost > 0 ? ((sale - cost) / cost) * 100 : 0;
+    setFormData((f) => ({ ...f, finalPrice, profitMargin }));
+  }, [formData.costPrice, formData.salesPrice, formData.discount]);
+
+  const updateField = useCallback(
+    (name: keyof ProductForm, value: any) => {
+      setFormData((f) => ({ ...f, [name]: value }));
+    },
+    []
+  );
+
+  return { formData, updateField };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 4) Main Component
+////////////////////////////////////////////////////////////////////////////////
+export default function AddProductModal({
   showRequestProductModal,
   setShowRequestProductModal,
   product,
   companyId,
   categories,
-}) => {
+}: AddProductModalProps) {
+  const { formData, updateField } = useProductForm(product, companyId);
 
-  // Step state
   const [step, setStep] = useState(1);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Form data state
-  const [formData, setFormData] = useState<any>({
-    id: product?.id || "",
-    name: product?.name || "",
-    description: product?.description || "",
-    productCategoryId: product?.productCategoryId || "",
-
-    // Generic fields:
-    model: product?.model || "",
-
-    color: product?.color || [],
-    size: product?.size || [],
-    weight: product?.weight || "",
-
-    condition: product?.condition || "",
-    dimension: product?.dimension || "",
-    material: product?.material || "",
-    images: product?.images || [],
-
-    // Flags:
-    isAvailable: product?.isAvailable || false,
-    isOnOffer: product?.isOnOffer || false,
-    isFlashDeal: product?.isFlashDeal || false,
-    isNewArrival: product?.isNewArrival || false,
-    isDiscounted: product?.isDiscounted || false,
-    isFeatured: product?.isFeatured || false,
-
-    // Pricing:
-    quantity: product?.companyStock || 1,
-    costPrice: product?.costPrice || "",
-    salesPrice: product?.salesPrice || 0,
-    discount: product?.discount || 0,
-    finalPrice: product?.finalPrice || 0,
-    profitMargin: product?.profitMargin || 0,
-
-    // Category / subcategory / brand / tags
-    category: product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategory: product?.subCategory || "",
-    brand: product?.brand || "",
-    tags: product?.tags || [],
-
-    // Commission / company
-    commissionRate: product?.commissionRate || 0,
-    commissionType: product?.commissionType || "COST",
-    companyId: product?.companyId || `${companyId}`,
-
-    // Vehicle-specific:
-    make: product?.make || "",
-    trim: product?.trim || "",
-    type: product?.type || "",
-    mileage: product?.mileage || "",
-    engineType: product?.engineType || "",
-    engineSize: product?.engineSize || "",
-    transmission: product?.transmission || "",
-    drivetrain: product?.drivetrain || "",
-    vin: product?.vin || "",
-    logbookStatus: product?.logbookStatus || "Available",
-    serviceHistory: product?.serviceHistory || "Full",
-
-    negotiable: product?.negotiable || false,
-    financingAvailable: product?.financingAvailable || false,
-    tradeIn: product?.tradeIn || false,
-    features: product?.features || [],
-
-    location: product?.location || "",
-    contact: product?.contact || "",
-    video: product?.video || null,
-
-    // Books:
-    author: product?.author || "",
-    publisher: product?.publisher || "",
-    isbn: product?.isbn || "",
-
-    // Clothing/Fashion:
-    fabricComposition: product?.fabricComposition || "",
-    careInstructions: product?.careInstructions || "",
-
-    // Home Appliances:
-    energyRating: product?.energyRating || "",
-    warrantyPeriod: product?.warrantyPeriod || "",
-    dimensions: product?.dimensions || "",
-
-    // Beauty Products:
-    ingredients: product?.ingredients || "",
-    usageInstructions: product?.usageInstructions || "",
-    expirationDate: product?.expirationDate || "",
-
-    // Deals:
-    startDealDate: product?.startDealDate,
-    endDealDate: product?.endDealDate,
-
-    // Options / amenities / featured:
-    option: product?.option || [],
-    amenities: product?.amenities || [],
-    featured: product?.featured || false,
-
-    // Property-specific:
-    bedrooms: product?.bedrooms || [],
-    studios: product?.studios || [],
-    bathrooms: product?.bathrooms || "",
-    area: product?.area || "",
-
-    digitalUrl: product?.digitalUrl || "",
-    autoDeliver: !!product?.autoDeliver,
-
-    year: product?.year || "",
-
-    availabilityStart: product?.availabilityStart || "",
-    availabilityEnd: product?.availabilityEnd || "",
-
-    tax: product?.tax || 0,
-    shippingCost: product?.shippingCost || 0,
-
-    email: product?.email || "",
-    locationName: product?.locationName || "",
-    latitude: product?.latitude || null,
-    longitude: product?.longitude || null,
-
-    subCategoryName: product?.subCategoryName || "",
-    contactName:     product?.contactName || "",
-    
-    propertyTypeId:  product?.propertyTypeId || "",
-    serviceSchedule: product?.serviceSchedule || "",
-    
-    status:           product?.status || "ACTIVE",
-    collectionId:     product?.collectionId || "",
-
-  });
-
-  // Determine which steps to show based on category
-  const stepsForCategory: number[] = useMemo(() => {
-    return CATEGORY_STEPS[formData.category?.name] || [1];
-  }, [formData.category]);
-
+  // Category steps & component
+  const categoryKey = formData.category?.displayName.trim() || '';
+  const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1], [categoryKey]);
   const currentDynamicStep = stepsForCategory[step - 1] || 1;
   const FormComponent = FORM_COMPONENTS[currentDynamicStep];
 
-  // Images state
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [images, setImages] = useState<any[]>(
-    product?.images?.map((img: any, index: number) => ({ ...img, index })) || []
+  // Picker data
+  const pickerCategories = useMemo(() => categories, [categories]);
+  const filteredSubCategories = useMemo(
+    () => formData.category?.items || formData.category?.subcategories || [],
+    [formData.category]
   );
-  const [loading, setLoading] = useState(false);
+  const filteredBrands = useMemo(
+    () => formData.category?.allBrands || [],
+    [formData.category]
+  );
 
-  // Subcategories and brands filtered from selected category
-  const filteredSubCategories = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.subcategories || [];
-  }, [formData.category]);
+  // Handlers
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, type, value, checked } = e.target as HTMLInputElement;
+      const val = type === 'checkbox' ? checked : value;
+      updateField(name as keyof ProductForm, val);
+    },
+    [updateField]
+  );
 
-  const filteredBrands = useMemo(() => {
-    if (!formData.category) return [];
-    return formData.category.allBrands || [];
-  }, [formData.category]);
+  const handleCategoryChange = useCallback(
+    (cat: CategoryData | null) => updateField('category', cat),
+    [updateField]
+  );
+  const handleSubCategoryChange = useCallback(
+    (sub: any) => updateField('subCategory', sub),
+    [updateField]
+  );
+  const handleBrandChange = useCallback(
+    (b: string) => updateField('brand', b),
+    [updateField]
+  );
 
-  // Generic input change handler
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, type, value, checked } = e.target as HTMLInputElement;
-
-    setFormData((prev: any) => {
-      let updatedData = {
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      };
-
-      // If pricing fields change, recalc finalPrice & profitMargin
-      if (["costPrice", "salesPrice", "discount"].includes(name)) {
-        const cost = parseFloat(updatedData.costPrice) || 0;
-        const sales = parseFloat(updatedData.salesPrice) || 0;
-        const disc = parseFloat(updatedData.discount) || 0;
-        updatedData.finalPrice = +(
-          sales -
-          (sales * disc) / 100
-        ).toFixed(2);
-        updatedData.profitMargin = cost > 0 ? +(((sales - cost) / cost) * 100).toFixed(1) : 0;
-      }
-
-      return updatedData;
-    });
-  };
-
-  // Upload logic (unchanged)
-  async function uploadWithRetry(file: any, retries = 3) {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        return await uploadFile(file, "image");
-      } catch (error) {
-        console.error(`Upload failed for ${file.name}, attempt ${attempt}`);
-        if (attempt === retries) {
-          return null;
-        }
-      }
-    }
-  }
-
-  const uploadFile = async (file: File, type: string) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("type", type);
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: data,
-    });
-    const json = await res.json();
-    return json.url;
-  };
-
-  // Final submission
-  const handleCreateListing = async () => {
-    if (!window.confirm("Are you sure you want to create this listing?")) return;
-    let updatedImages = images;
-
-    if (newImages.length > 0) {
-      const newImgsWithId = newImages.map((file, idx) => ({
-        id: crypto.randomUUID(),
-        file,
-        index: idx,
-      }));
-
-      const uploadedUrls = await Promise.all(
-        newImgsWithId.map(async ({ id, file, index }) => {
-          const url = await uploadWithRetry(file);
-          return url ? { id, url, index } : null;
-        })
-      );
-
-      const success = uploadedUrls.filter((u) => !!u) as any[];
-      const failed = newImgsWithId.filter(
-        ({ id }) => !success.some((u) => u.id === id)
-      );
-
-      if (failed.length > 0) {
-        setLoading(false);
-        alert(
-          `The following images failed: ${failed.map((f) => f.file.name).join(", ")}`
-        );
-        return;
-      }
-
-      // Replace placeholder images with actual URLs
-      updatedImages = images.map((img: any, idx: number) => {
-        const match = success.find((u) => u.index === idx);
-        return match ? { ...img, url: match.url } : img;
-      });
-
-      setImages(updatedImages);
-      setNewImages([]);
-    }
-
-    // Build final listing object
-    const listing: any = {
-      // — Required scalars / identifiers — 
-      id:                 formData.id,                         // String
-      name:               formData.name,                       // String
-      description:        formData.description,                // String?
-      companyId:          formData.companyId,                  // String? @db.ObjectId
-      sellerType:         "ADMIN",
-    
-      // — Category hierarchy — 
-      productCategoryId:  formData.category?.id || "",         // String? @db.ObjectId
-      category:           formData.category?.name || "",       // String?
-      subCategory:        formData.subCategory,                // Json?
-      subCategoryName:    formData.subCategoryName,            // String?
-    
-      // — Media — 
-      images:             images.map((i) => i.url),            // Json[]
-      video:              formData.video || null,              // String?
-    
-      // — Tagging & branding — 
-      tags:               formData.tags || [],                  // String[]
-      brand:              formData.brand,                       // String?
-      model:              formData.model,                       // String?
-    
-      // — Basic specs — 
-      color:              formData.color,                       // String[]
-      size:               formData.size,                        // String[]
-      weight:             formData.weight,                      // String?
-      condition:          formData.condition,                   // String?
-      dimension:          formData.dimension,                   // String?
-      material:           Array.isArray(formData.material)      // String[]
-                             ? formData.material
-                             : formData.material
-                               ? [formData.material]
-                               : [],
-    
-      // — Book-specific — 
-      author:             formData.author,                      // String?
-      publisher:          formData.publisher,                   // String?
-      isbn:               formData.isbn,                        // String?
-    
-      // — Clothing/Fashion — 
-      fabricComposition:  formData.fabricComposition,           // String?
-      careInstructions:   formData.careInstructions,            // String?
-    
-      // — Home Appliances — 
-      energyRating:       formData.energyRating,                // String?
-      warrantyPeriod:     formData.warrantyPeriod,              // String?
-      applianceDimensions: formData.applianceDimensions,        // String?
-    
-      // — Beauty Products — 
-      ingredients:        formData.ingredients,                 // String?
-      usageInstructions:  formData.usageInstructions,           // String?
-      expirationDate:     formData.expirationDate 
-                            ? new Date(formData.expirationDate)
-                            : null,                             // DateTime?
-    
-      // — Pricing & deals — 
-      costPrice:          parseFloat(formData.costPrice)  || 0, // Float
-      salesPrice:         parseFloat(formData.salesPrice) || 0, // Float
-      discount:           formData.discount,                    // Int?
-      finalPrice:         parseFloat(formData.finalPrice)  || 0, // Float?
-      profitMargin:       parseFloat(formData.profitMargin)|| 0, // Float?
-      startDealDate:      formData.startDealDate,               // DateTime?
-      endDealDate:        formData.endDealDate,                 // DateTime?
-    
-      // — General availability — 
-      availabilityStart:  formData.availabilityStart,           // DateTime?
-      availabilityEnd:    formData.availabilityEnd,             // DateTime?
-    
-      // — Location & contact — 
-      location:           formData.location,                    // Json?
-      locationId:         formData.locationId,                  // String? @db.ObjectId
-      locationName:       formData.locationName,                // String?
-      latitude:           formData.latitude,                    // Float?
-      longitude:          formData.longitude,                   // Float?
-      contact:            formData.contact || "",                // String?
-      contactName:        formData.contactName,                 // String?
-      email:              formData.email,                       // String?
-    
-      // — Amenities — 
-      amenities:          formData.amenities || [],              // String[]
-    
-      // — Property-specific — 
-      propertyTypeId:     formData.propertyTypeId,               // String? @db.ObjectId
-      bedrooms:           formData.bedrooms || [],               // Json?
-      studios:            formData.studios  || [],               // Json?
-      bathrooms:          formData.bathrooms,                    // String?
-      area:               formData.area,                         // String?
-      serviceSchedule:    formData.serviceSchedule,              // String?
-    
-      // — Vehicle-specific — 
-      make:               formData.make,                         // String?
-      trim:               formData.trim,                         // String?
-      type:               formData.type,                         // String?
-      mileage:            formData.mileage,                      // String?
-      engineType:         formData.engineType,                   // String?
-      engineSize:         formData.engineSize,                   // String?
-      transmission:       formData.transmission,                 // String?
-      drivetrain:         formData.drivetrain,                   // String?
-      vin:                formData.vin,                          // String?
-      logbookStatus:      formData.logbookStatus,                // String?
-      serviceHistory:     formData.serviceHistory,               // String?
-      negotiable:         formData.negotiable || false,          // Boolean?
-      financingAvailable: formData.financingAvailable || false,  // Boolean?
-      tradeIn:            formData.tradeIn || false,             // Boolean?
-    
-      // — Digital Goods — 
-      digitalUrl:         formData.digitalUrl,                    // String?
-      autoDeliver:        !!formData.autoDeliver,                // Boolean?
-    
-      // — Pricing breakdown — 
-      tax:                formData.tax      || 0,                // Float?
-      shippingCost:       formData.shippingCost || 0,            // Float?
-    
-      // — Feature flags — 
-      isAvailable:        formData.isAvailable  || false,        // Boolean
-      isOnOffer:          formData.isOnOffer    || false,        // Boolean
-      isFlashDeal:        formData.isFlashDeal  || false,        // Boolean
-      isNewArrival:       formData.isNewArrival || false,        // Boolean
-      isDiscounted:       formData.isDiscounted || false,        // Boolean
-      isFeatured:         formData.isFeatured   || false,        // Boolean
-    
-      // — Other marketplace fields — 
-      delivery:           formData.delivery     || false,         // Boolean
-      paymentOption:      formData.paymentOption || "AT SHOP",   // String
-      showOnGhuba:        formData.showOnGhuba,                   // Boolean?
-    
-      // — Optional: collection & status — 
-      collectionId:       formData.collectionId,                 // String?
-      status:             formData.status,                       // ListingStatus
-  
-    };
-    
-
+  // Submit
+  const handleSave = async () => {
+    if (!window.confirm('Save this product?')) return;
+    setLoading(true);
     try {
-      const resp = await fetch(`${apiUrl}/admin/post-product`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(listing),
+      const imageUrls = newImages.length
+        ? await uploadFiles(newImages, 'image')
+        : formData.images;
+      const payload = buildProductPayload({ ...formData, images: imageUrls }, imageUrls);
+      const res = await fetch(`${apiUrl}/admin/post-product`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
-      if (resp.ok) {
-        const json = await resp.json();
-        alert("Listing created successfully.");
-        setShowRequestProductModal(false);
-        setImages([]);
-        setNewImages([]);
-      } else {
-        console.error("Error:", resp.statusText);
-        alert("Error creating listing. Please try again.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error creating listing. Please try again.");
+      if (!res.ok) throw new Error(res.statusText);
+      alert('Product saved.');
+      setShowRequestProductModal(false);
+    } catch {
+      alert('Error saving product.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Modal
-      isOpen={showRequestProductModal}
-      onClose={() => setShowRequestProductModal(false)}
-    >
-      <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] flex flex-col">
+    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+      <div className="relative p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl h-[90vh] flex flex-col">
+        {loading && (
+          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+            <span>Saving…</span>
+          </div>
+        )}
         <motion.div
           key={step}
           initial={{ opacity: 0, x: -20 }}
@@ -457,58 +492,65 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
           exit={{ opacity: 0, x: 20 }}
           className="flex-grow overflow-y-auto"
         >
-          <Stepper
-            step={step}
-            stepsForCategory={stepsForCategory}
-            STEP_LABELS={STEP_LABELS}
-          />
-          <div className="overflow-y-auto flex-grow p-4">
-            {FormComponent ? (
+          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+          <div className="flex-grow overflow-y-auto p-4">
+            {step === 1 ? (
+              <CategoryPicker
+                formData={{
+                  category: formData.category,
+                  subCategory: formData.subCategory,
+                  brand: formData.brand,
+                }}
+                categories={pickerCategories}
+                filteredBrands={filteredBrands}
+                onCategoryChange={handleCategoryChange}
+                onSubCategoryChange={handleSubCategoryChange}
+                onBrandChange={handleBrandChange}
+              />
+            ) : FormComponent ? (
               <FormComponent
                 formData={formData}
-                setFormData={setFormData}
-                images={images}
-                setImages={setImages}
-                categories={categories}
+                setFormData={updateField as any}
+                handleInputChange={handleInputChange}
                 filteredSubCategories={filteredSubCategories}
                 filteredBrands={filteredBrands}
-                handleInputChange={handleInputChange}
                 newImages={newImages}
                 setNewImages={setNewImages}
               />
             ) : (
-              <p>No form available for this step.</p>
+              <p>No form for this step.</p>
             )}
           </div>
         </motion.div>
         <div className="flex justify-between pt-4 border-t">
           {step > 1 && (
             <button
-              className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center"
-              onClick={() => setStep(step - 1)}
+              className="btn-secondary flex items-center"
+              onClick={() => setStep((s) => s - 1)}
+              disabled={loading}
             >
               <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
             </button>
           )}
           {step < stepsForCategory.length ? (
             <button
-              className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center"
-              onClick={() => setStep(step + 1)}
+              className="btn-primary flex items-center"
+              onClick={() => setStep((s) => s + 1)}
+              disabled={loading}
             >
               Next <ArrowRightIcon className="h-5 w-5 ml-1" />
             </button>
           ) : (
             <button
-              className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
-              onClick={handleCreateListing}
+              className="btn-success flex items-center"
+              onClick={handleSave}
+              disabled={loading}
             >
-              Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
+              Save <CheckCircleIcon className="h-5 w-5 ml-1" />
             </button>
           )}
         </div>
       </div>
     </Modal>
   );
-};
-
-export default AddProductModal;
+}

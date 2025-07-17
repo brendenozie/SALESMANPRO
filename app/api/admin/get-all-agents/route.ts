@@ -1,40 +1,18 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from "@/server/db/prismadb"; 
 
+export async function GET(req: NextRequest) {
+  const companyId = req.nextUrl.searchParams.get('companyId');
+  if (!companyId) return NextResponse.json({ error: 'Missing companyId' }, { status: 400 });
 
-export async function GET( req : Request ) {
-
-  if (req.method === "GET") {
-    try {
-      const agents = await prisma.salesAgent.findMany({
-        include: {
-          // orders: {
-          //   include: {
-          //     product: true,
-          //   },
-          // },
-          clients: true, // Optional: Include clients if needed
-        },
-      });
-
-      const formattedAgents = agents.map((agent) => ({
-        id: agent.id,
-        name: agent.name,
-        totalSales: 0,//agent.orders.reduce((sum, order) => sum + order.quantity, 0),
-        inventory: {},
-        // agent.orders.map((order) => ({
-        //   productId: order.product.id,
-        //   productName: order.product.name,
-        //   quantity: order.quantity,
-        // })),
-      }));
-
-      return NextResponse.json(formattedAgents,{status:200});
-    } catch (error) {
-      // console.error(error);
-      return NextResponse.json({ message: "Internal server error" },{status:400});
-    }
-  } else {
-    return NextResponse.json({ message: "Method not allowed" },{status:400});
+  try {
+    const agents = await prisma.salesAgent.findMany({
+      where: { companyId },
+      select: { id: true, name: true }
+    });
+    return NextResponse.json(agents);
+  } catch (error) {
+    console.error('Error fetching agents:', error);
+    return NextResponse.json({ error: 'Failed to fetch agents' }, { status: 500 });
   }
 }

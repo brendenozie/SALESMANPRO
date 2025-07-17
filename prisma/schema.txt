@@ -292,6 +292,8 @@ model Company {
   DiscussionPost                  DiscussionPost[]
   DiscussionComment               DiscussionComment[]
   Project                         Project[]
+  Prescription                    Prescription[]
+  Doctor                          Doctor[]
 }
 
 enum CategoryStatus {
@@ -949,13 +951,13 @@ model User {
   ProductReviewResponse ProductReviewResponse[]
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
-  // Company               Company[]
-  Review                Review[]
-  Question              Question[]
-  RecentlyViewed        RecentlyViewed[]
-  Wishlist              Wishlist[]
-  Payment               Payment[]
-  Appointment           Appointment[]
+
+  Review         Review[]
+  Question       Question[]
+  RecentlyViewed RecentlyViewed[]
+  Wishlist       Wishlist[]
+  Payment        Payment[]
+  Appointment    Appointment[]
 
   // If an admin can also post announcements, link directly from User
   announcements Announcement[] @relation("UserAnnouncements")
@@ -1002,6 +1004,8 @@ model User {
   ProjectMember     ProjectMember[]
   Donation          Donation[]
   Property          Property[]
+  Prescription      Prescription[]
+  Doctor            Doctor[]
 }
 
 enum Status {
@@ -3046,4 +3050,45 @@ model PropertyLocation {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   Property  Property[]
+}
+
+model Prescription {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  patientId    String    @db.ObjectId
+  patient      User      @relation(fields: [patientId], references: [id])
+  doctorId     String    @db.ObjectId
+  doctor       Doctor    @relation(fields: [doctorId], references: [id]) // Assuming Educator is doctor
+  medication   String
+  dosage       String
+  instructions String?
+  issuedDate   DateTime
+  expiryDate   DateTime?
+  status       String    @default("Pending") // e.g., "Pending", "Dispensed", "Expired"
+  notes        String?
+  companyId    String    @db.ObjectId
+  company      Company   @relation(fields: [companyId], references: [id])
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt
+}
+
+// Educator Profile Model (one-to-one with User)
+model Doctor {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  phone          String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  loginCode String @unique // NEW: Unique generated number for login
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  Prescription Prescription[]
+  User         User?          @relation(fields: [userId], references: [id])
+  userId       String?        @db.ObjectId
 }

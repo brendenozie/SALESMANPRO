@@ -1,6 +1,12 @@
+// src/components/AddToProductMarketModal.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import Modal from './Modal';
 import { motion } from 'framer-motion';
 import {
@@ -14,517 +20,521 @@ import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker, { CategoryData } from './CategoryPicker';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-const AddToProductMarketModal = ({
+// -----------------------------------------------------------------------------
+// 1) Prop & Form Types
+// -----------------------------------------------------------------------------
+interface AddToProductMarketModalProps {
+  showRequestProductModal: boolean;
+  setShowRequestProductModal: (open: boolean) => void;
+  product: any;          // replace with your ProductPayload
+  marketListItem?: any;  // replace with your MarketListItemPayload
+  companyId: string;
+  categories: CategoryData[];
+}
+
+interface MarketListingForm {
+  // Identifiers & relations
+  id: string;
+  productId: string;
+  sellerType: string;
+  companyId: string;
+
+  // Title & description
+  name: string;
+  description: string;
+
+  // Category hierarchy & tagging
+  productCategoryId: string;
+  category: CategoryData | null;
+  subCategory: any;
+  subCategoryName: string;
+  tags: string[];
+
+  // Branding & specs
+  brand: string | null;
+  model: string;
+  color: string[];
+  size: string[];
+  weight: string;
+  condition: string;
+  dimension: string;
+  material: string[];
+
+  // Profit & pricing
+  quantity: number;
+  buyingPrice: number;
+  sellingPrice: number;
+  discount: number;
+  finalPrice: number;
+  profitMargin: number;
+
+  // Deal scheduling
+  startDealDate: string | null;
+  endDealDate: string | null;
+
+  // Feature flags
+  isAvailable: boolean;
+  isOnOffer: boolean;
+  isFlashDeal: boolean;
+  isNewArrival: boolean;
+  isDiscounted: boolean;
+  isFeatured: boolean;
+
+  // Marketplace-specific
+  delivery: boolean;
+  paymentOption: string;
+  showOnGhuba: boolean;
+
+  // Contact & location
+  contactName: string;
+  contact: string;
+  locationName: string;
+  location: any;
+  locationId: string;
+  latitude: number | null;
+  longitude: number | null;
+
+  // Vehicle-specific
+  make: string;
+  trim: string;
+  type: string;
+  mileage: string;
+  engineType: string;
+  engineSize: string;
+  transmission: string;
+  drivetrain: string;
+  vin: string;
+  logbookStatus: string;
+  serviceHistory: string;
+  negotiable: boolean;
+  financingAvailable: boolean;
+  tradeIn: boolean;
+
+  // Books
+  author: string;
+  publisher: string;
+  isbn: string;
+
+  // Clothing/Fashion
+  fabricComposition: string;
+  careInstructions: string;
+
+  // Home Appliances
+  energyRating: string;
+  warrantyPeriod: string;
+  applianceDimensions: string;
+
+  // Beauty Products
+  ingredients: string;
+  usageInstructions: string;
+  expirationDate: string | null;
+
+  // Amenities (for properties/services)
+  amenities: string[];
+
+  // Property-specific
+  bedrooms: any;
+  studios: any;
+  bathrooms: string;
+  area: string;
+  serviceSchedule: string;
+
+  // Scheduling (services/bookings)
+  availabilityStart: string;
+  availabilityEnd: string;
+  bookingSlots: any[];
+  minNoticePeriod: string;
+  maxBookingAhead: string;
+  pricingTiers: any[];
+  requiredClientInfo: string;
+  fulfillmentStatus: string;
+  totalCapacity: string;
+  currentBookedCount: string;
+  providerRating: string;
+  hourlyRate: string;
+  minimumHours: string;
+  deliveryMethod: string;
+
+  // Digital goods
+  digitalUrl: string;
+  autoDeliver: boolean;
+
+  // Admin-only
+  status: string;
+}
+
+// -----------------------------------------------------------------------------
+// 2) Helpers: uploads + payload builder
+// -----------------------------------------------------------------------------
+async function uploadFiles(files: File[], type: 'image' | 'video' | 'file'): Promise<string[]> {
+  const promises = files.map((file) => {
+    const fd = new FormData();
+    fd.append('type', type);
+    fd.append('file', file);
+    return fetch('/api/upload', { method: 'POST', body: fd })
+      .then((res) => {
+        if (!res.ok) throw new Error(`${type} upload failed`);
+        return res.json();
+      })
+      .then((json) => json.url as string);
+  });
+  return Promise.all(promises);
+}
+
+function buildListingPayload(
+  f: MarketListingForm,
+  imageUrls: string[],
+  videoUrls: string[]
+): any {
+  return {
+    id: f.id || undefined,
+    sellerType: f.sellerType,
+    companyId: f.companyId,
+    productId: f.productId,
+    images: imageUrls,
+    video: videoUrls[0] || null,
+    books: [], // map book covers here if needed
+    name: f.name,
+    description: f.description,
+    quantity: f.quantity,
+    productCategoryId: f.productCategoryId,
+    category: f.category?.displayName || '',
+    subCategory: f.subCategory,
+    subCategoryName: f.subCategoryName,
+    tags: f.tags,
+    brand: f.brand,
+    model: f.model,
+    color: f.color,
+    size: f.size,
+    weight: f.weight,
+    condition: f.condition,
+    dimension: f.dimension,
+    material: f.material,
+    profitMargin: f.profitMargin,
+    discount: f.discount,
+    buyingPrice: f.buyingPrice,
+    sellingPrice: f.sellingPrice,
+    finalPrice: f.finalPrice,
+    startDealDate: f.startDealDate,
+    endDealDate: f.endDealDate,
+    isAvailable: f.isAvailable,
+    isOnOffer: f.isOnOffer,
+    isFlashDeal: f.isFlashDeal,
+    isNewArrival: f.isNewArrival,
+    isDiscounted: f.isDiscounted,
+    isFeatured: f.isFeatured,
+    delivery: f.delivery,
+    paymentOption: f.paymentOption,
+    showOnGhuba: f.showOnGhuba,
+    contactName: f.contactName,
+    contact: f.contact,
+    locationName: f.locationName,
+    location: f.location,
+    locationId: f.locationId,
+    latitude: f.latitude,
+    longitude: f.longitude,
+    make: f.make,
+    trim: f.trim,
+    type: f.type,
+    mileage: f.mileage,
+    engineType: f.engineType,
+    engineSize: f.engineSize,
+    transmission: f.transmission,
+    drivetrain: f.drivetrain,
+    vin: f.vin,
+    logbookStatus: f.logbookStatus,
+    serviceHistory: f.serviceHistory,
+    negotiable: f.negotiable,
+    financingAvailable: f.financingAvailable,
+    tradeIn: f.tradeIn,
+    author: f.author,
+    publisher: f.publisher,
+    isbn: f.isbn,
+    fabricComposition: f.fabricComposition,
+    careInstructions: f.careInstructions,
+    energyRating: f.energyRating,
+    warrantyPeriod: f.warrantyPeriod,
+    applianceDimensions: f.applianceDimensions,
+    ingredients: f.ingredients,
+    usageInstructions: f.usageInstructions,
+    expirationDate: f.expirationDate,
+    amenities: f.amenities,
+    bedrooms: f.bedrooms,
+    studios: f.studios,
+    bathrooms: f.bathrooms,
+    area: f.area,
+    serviceSchedule: f.serviceSchedule,
+    availabilityStart: f.availabilityStart,
+    availabilityEnd: f.availabilityEnd,
+    bookingSlots: f.bookingSlots,
+    minNoticePeriod: f.minNoticePeriod,
+    maxBookingAhead: f.maxBookingAhead,
+    pricingTiers: f.pricingTiers,
+    requiredClientInfo: f.requiredClientInfo,
+    fulfillmentStatus: f.fulfillmentStatus,
+    totalCapacity: f.totalCapacity,
+    currentBookedCount: f.currentBookedCount,
+    providerRating: f.providerRating,
+    hourlyRate: f.hourlyRate,
+    minimumHours: f.minimumHours,
+    deliveryMethod: f.deliveryMethod,
+    digitalUrl: f.digitalUrl,
+    autoDeliver: f.autoDeliver,
+    status: f.status,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 3) Custom Hook to manage form data & calculations
+// -----------------------------------------------------------------------------
+function useMarketListingForm(
+  product: any,
+  marketListItem: any,
+  companyId: string
+) {
+  const getInitial = (): MarketListingForm => {
+    const raw = marketListItem || {};
+    const p = product?.product || {};
+    return {
+      id: raw.id || '',
+      productId: raw.productId || p.id || '',
+      sellerType: p.sellerType || 'ADMIN',
+      companyId: raw.companyId || p.companyId || companyId,
+
+      name: raw.name || p.name || '',
+      description: raw.description || p.description || '',
+
+      productCategoryId: raw.productCategoryId || p.productCategoryId || '',
+      category: raw.productCategory || p.product?.productCategory || null,
+      subCategory: raw.subCategory || p.subCategory || {},
+      subCategoryName: raw.subCategoryName || p.subCategoryName || '',
+      tags: raw.tags || p.tags || [],
+
+      brand: raw.brand || p.brand || null,
+      model: raw.model || p.model || '',
+      color: raw.color || p.color || [],
+      size: raw.size || p.size || [],
+      weight: raw.weight || p.weight || '',
+      condition: raw.condition || p.condition || '',
+      dimension: raw.dimension || p.dimension || '',
+      material: raw.material || p.material || [],
+
+      quantity: raw.quantity ?? 1,
+      buyingPrice: raw.buyingPrice ?? p.salesPrice ?? 0,
+      sellingPrice: raw.sellingPrice ?? p.sellingPrice ?? 0,
+      discount: raw.discount ?? p.discount ?? 0,
+      finalPrice: 0,
+      profitMargin: 0,
+
+      startDealDate: raw.startDealDate || p.startDealDate || null,
+      endDealDate: raw.endDealDate || p.endDealDate || null,
+
+      isAvailable: raw.isAvailable ?? p.isAvailable ?? false,
+      isOnOffer: raw.isOnOffer ?? p.isOnOffer ?? false,
+      isFlashDeal: raw.isFlashDeal ?? p.isFlashDeal ?? false,
+      isNewArrival: raw.isNewArrival ?? p.isNewArrival ?? false,
+      isDiscounted: raw.isDiscounted ?? p.isDiscounted ?? false,
+      isFeatured: raw.isFeatured ?? p.isFeatured ?? false,
+
+      delivery: raw.delivery ?? p.delivery ?? false,
+      paymentOption: raw.paymentOption || p.paymentOption || 'AT SHOP',
+      showOnGhuba: raw.showOnGhuba ?? p.showOnGhuba ?? true,
+
+      contactName: raw.contactName || p.contactName || '',
+      contact: raw.contact || p.contact || '',
+      locationName: raw.locationName || p.locationName || '',
+      location: raw.location || p.location || {},
+      locationId: raw.locationId || p.locationId || '',
+      latitude: raw.latitude ?? p.latitude ?? null,
+      longitude: raw.longitude ?? p.longitude ?? null,
+
+      make: raw.make || p.make || '',
+      trim: raw.trim || p.trim || '',
+      type: raw.type || p.type || '',
+      mileage: raw.mileage || p.mileage || '',
+      engineType: raw.engineType || p.engineType || '',
+      engineSize: raw.engineSize || p.engineSize || '',
+      transmission: raw.transmission || p.transmission || '',
+      drivetrain: raw.drivetrain || p.drivetrain || '',
+      vin: raw.vin || p.vin || '',
+      logbookStatus: raw.logbookStatus || p.logbookStatus || 'Available',
+      serviceHistory: raw.serviceHistory || p.serviceHistory || 'Full',
+      negotiable: raw.negotiable ?? p.negotiable ?? false,
+      financingAvailable: raw.financingAvailable ?? p.financingAvailable ?? false,
+      tradeIn: raw.tradeIn ?? p.tradeIn ?? false,
+
+      author: raw.author || p.author || '',
+      publisher: raw.publisher || p.publisher || '',
+      isbn: raw.isbn || p.isbn || '',
+
+      fabricComposition: raw.fabricComposition || p.fabricComposition || '',
+      careInstructions: raw.careInstructions || p.careInstructions || '',
+
+      energyRating: raw.energyRating || p.energyRating || '',
+      warrantyPeriod: raw.warrantyPeriod || p.warrantyPeriod || '',
+      applianceDimensions: raw.applianceDimensions || p.applianceDimensions || '',
+
+      ingredients: raw.ingredients || p.ingredients || '',
+      usageInstructions: raw.usageInstructions || p.usageInstructions || '',
+      expirationDate: raw.expirationDate || p.expirationDate || null,
+
+      amenities: raw.amenities || p.amenities || [],
+      bedrooms: raw.bedrooms || p.bedrooms || {},
+      studios: raw.studios || p.studios || {},
+      bathrooms: raw.bathrooms || p.bathrooms || '',
+      area: raw.area || p.area || '',
+      serviceSchedule: raw.serviceSchedule || p.serviceSchedule || '',
+
+      availabilityStart: raw.availabilityStart || p.availabilityStart || '',
+      availabilityEnd: raw.availabilityEnd || p.availabilityEnd || '',
+      bookingSlots: raw.bookingSlots || p.bookingSlots || [],
+      minNoticePeriod: raw.minNoticePeriod || p.minNoticePeriod || '',
+      maxBookingAhead: raw.maxBookingAhead || p.maxBookingAhead || '',
+      pricingTiers: raw.pricingTiers || p.pricingTiers || [],
+      requiredClientInfo: raw.requiredClientInfo || p.requiredClientInfo || '',
+      fulfillmentStatus: raw.fulfillmentStatus || p.fulfillmentStatus || '',
+      totalCapacity: raw.totalCapacity || p.totalCapacity || '',
+      currentBookedCount: raw.currentBookedCount || p.currentBookedCount || '',
+      providerRating: raw.providerRating || p.providerRating || '',
+      hourlyRate: raw.hourlyRate || p.hourlyRate || '',
+      minimumHours: raw.minimumHours || p.minimumHours || '',
+      deliveryMethod: raw.deliveryMethod || p.deliveryMethod || '',
+
+      digitalUrl: raw.digitalUrl || p.digitalUrl || '',
+      autoDeliver: raw.autoDeliver ?? p.autoDeliver ?? false,
+
+      status: raw.status || p.status || 'ACTIVE',
+    };
+  };
+
+  const [formData, setFormData] = useState<MarketListingForm>(getInitial);
+
+  // update price calculations
+  useEffect(() => {
+    const { buyingPrice, sellingPrice, discount } = formData;
+    const finalPrice = sellingPrice - (sellingPrice * discount) / 100;
+    const profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
+    setFormData((f) => ({ ...f, finalPrice, profitMargin }));
+  }, [formData.buyingPrice, formData.sellingPrice, formData.discount]);
+
+  const updateField = useCallback(
+    (name: keyof MarketListingForm, value: any) => {
+      setFormData((f) => ({ ...f, [name]: value }));
+    },
+    []
+  );
+
+  return { formData, updateField };
+}
+
+// -----------------------------------------------------------------------------
+// 4) Main Component
+// -----------------------------------------------------------------------------
+export default function AddToProductMarketModal({
   showRequestProductModal,
   setShowRequestProductModal,
   product,
   marketListItem,
   companyId,
   categories,
-}: any) => {
+}: AddToProductMarketModalProps) {
+  const { formData, updateField } = useMarketListingForm(product, marketListItem, companyId);
 
-  console.log(categories);
-
-  const pickerCategories = useMemo(() => {
-    return categories.map((raw:any) => ({
-      // ← this must be the *real* ProductCategory ID
-      id: raw.category.id,
-      displayName: raw.displayName,
-      icon: raw.icon,
-      items: raw.items,
-      allBrands: raw.allBrands ?? raw.category.allBrands ?? [],
-    }))
-  }, [categories])
-  
-
-  const [formData, setFormData] = useState({
-
-    id:                  marketListItem?.id                   || "",
-    productId:           marketListItem?.productId            || product?.product?.id          || "",
-    name:                marketListItem?.name                 || marketListItem?.title         || product?.product?.name  || "",
-    description:         marketListItem?.description          || product?.product?.description || "",
-    productCategoryId:   marketListItem?.productCategoryId    || product?.product?.productCategoryId || "",
-  
-    // Basic specs:
-    model:               marketListItem?.model                || product?.product?.model       || "",
-    color:               marketListItem?.color                || product?.product?.color       || [],
-    size:                marketListItem?.size                 || product?.product?.size        || [],
-    weight:              marketListItem?.weight               || product?.product?.weight      || "",
-    condition:           marketListItem?.condition            || product?.product?.condition   || "",
-    dimension:           marketListItem?.dimension            || product?.product?.dimension   || "",
-    material:            marketListItem?.material             || product?.product?.material    || [],
-  
-    // Flags:
-    isAvailable:         marketListItem?.isAvailable          || product?.product?.isAvailable   || false,
-    isOnOffer:           marketListItem?.isOnOffer            || product?.product?.isOnOffer     || false,
-    isFlashDeal:         marketListItem?.isFlashDeal          || product?.product?.isFlashDeal   || false,
-    isNewArrival:        marketListItem?.isNewArrival         || product?.product?.isNewArrival  || false,
-    isDiscounted:        marketListItem?.isDiscounted         || product?.product?.isDiscounted  || false,
-    isFeatured:          marketListItem?.isFeatured           || product?.product?.isFeatured    || false,
-  
-    // Inventory / pricing:
-    quantity:            marketListItem?.quantity             || 1,
-    buyingPrice:         marketListItem?.buyingPrice          || product?.product?.salesPrice    || 0,
-    sellingPrice:        marketListItem?.sellingPrice         || product?.product?.sellingPrice  || 0,
-    discount:            marketListItem?.discount             || product?.product?.discount      || 0,
-    finalPrice:          marketListItem?.finalPrice           || product?.product?.finalPrice    || 0,
-    profitMargin:        marketListItem?.profitMargin         || product?.product?.profitMargin  || 0,
-  
-    category:            marketListItem?.productCategory      || product?.product?.productCategory || { subcategories: [], allBrands: [] },
-    subCategory:         marketListItem?.subCategory          || product?.product?.subCategory    || {},
-    subCategoryName:     marketListItem?.subCategoryName      || product?.product?.subCategoryName || "",
-    tags:                marketListItem?.tags                 || product?.product?.tags            || [],
-  
-    brand:               marketListItem?.brand                || product?.product?.brand           || "",
-  
-    // Commission fields (DELETE these if you don’t actually store them):
-    // commissionRate:      marketListItem?.commissionRate        || product?.product?.commissionRate   || 0,
-    // commissionType:      marketListItem?.commissionType        || product?.product?.commissionType   || "COST",
-  
-    companyId:  marketListItem?.companyId  || product?.product?.companyId          || `${companyId}`,
-    sellerType: product?.product?.sellerType || `ADMIN`,
-  
-    // Vehicle-specific:
-    make:                marketListItem?.make                 || product?.product?.make            || "",
-    trim:                marketListItem?.trim                 || product?.product?.trim            || "",
-    type:                marketListItem?.type                 || product?.product?.type            || "",
-    mileage:             marketListItem?.mileage              || product?.product?.mileage         || "",
-    engineType:          marketListItem?.engineType           || product?.product?.engineType      || "",
-    engineSize:          marketListItem?.engineSize           || product?.product?.engineSize      || "",
-    transmission:        marketListItem?.transmission         || product?.product?.transmission    || "",
-    drivetrain:          marketListItem?.drivetrain           || product?.product?.drivetrain      || "",
-    vin:                 marketListItem?.vin                  || product?.product?.vin             || "",
-    logbookStatus:       marketListItem?.logbookStatus        || product?.product?.logbookStatus   || "Available",
-    serviceHistory:      marketListItem?.serviceHistory       || product?.product?.serviceHistory  || "Full",
-    negotiable:          marketListItem?.negotiable           || product?.product?.negotiable      || false,
-    financingAvailable:  marketListItem?.financingAvailable   || product?.product?.financingAvailable || false,
-    tradeIn:             marketListItem?.tradeIn              || product?.product?.tradeIn            || false,
-  
-    // Media:
-    images:              marketListItem?.images               || product?.product?.images            || [],
-    video:               marketListItem?.video                || product?.product?.video             || null,
-  
-    // Books:
-    author:              marketListItem?.author               || product?.product?.author            || "",
-    publisher:           marketListItem?.publisher            || product?.product?.publisher         || "",
-    isbn:                marketListItem?.isbn                 || product?.product?.isbn              || "",
-  
-    // Clothing/Fashion:
-    fabricComposition:   marketListItem?.fabricComposition    || product?.product?.fabricComposition || "",
-    careInstructions:    marketListItem?.careInstructions     || product?.product?.careInstructions  || "",
-  
-    // Home Appliances:
-    energyRating:        marketListItem?.energyRating         || product?.product?.energyRating      || "",
-    warrantyPeriod:      marketListItem?.warrantyPeriod       || product?.product?.warrantyPeriod    || "",
-    applianceDimensions: marketListItem?.applianceDimensions  || product?.product?.applianceDimensions || "",
-  
-    // Beauty Products:
-    ingredients:         marketListItem?.ingredients          || product?.product?.ingredients       || "",
-    usageInstructions:   marketListItem?.usageInstructions    || product?.product?.usageInstructions || "",
-    expirationDate:      marketListItem?.expirationDate       || product?.product?.expirationDate    || "",
-  
-    // Deals:
-    startDealDate:       marketListItem?.startDealDate        || product?.product?.startDealDate     || null,
-    endDealDate:         marketListItem?.endDealDate          || product?.product?.endDealDate       || null,
-  
-    // Amenities:
-    amenities:           marketListItem?.amenities            || product?.product?.amenities         || [],
-  
-    // Property-specific:
-    bedrooms:            marketListItem?.bedrooms             || product?.product?.bedrooms          || {},
-    studios:             marketListItem?.studios              || product?.product?.studios           || {},
-    bathrooms:           marketListItem?.bathrooms            || product?.product?.bathrooms         || "",
-    area:                marketListItem?.area                 || product?.product?.area              || "",
-    serviceSchedule:     marketListItem?.serviceSchedule      || product?.product?.serviceSchedule   || "",
-    
-    // Scheduling    
-    availabilityStart:     marketListItem?.availabilityStart  || product?.product?.availabilityStart   || "",
-    availabilityEnd:     marketListItem?.availabilityEnd      || product?.product?.availabilityEnd   || "",
-
-    bookingSlots:     marketListItem?.bookingSlots     || product?.product?.bookingSlots   || [],
-    minNoticePeriod:     marketListItem?.minNoticePeriod     || product?.product?.minNoticePeriod   || "",
-    maxBookingAhead:     marketListItem?.maxBookingAhead     || product?.product?.maxBookingAhead   || "",
-
-    pricingTiers:     marketListItem?.pricingTiers     || product?.product?.pricingTiers   || [],
-
-    requiredClientInfo:     marketListItem?.requiredClientInfo     || product?.product?.requiredClientInfo   || "",
-    fulfillmentStatus:     marketListItem?.fulfillmentStatus     || product?.product?.fulfillmentStatus   || "",
-
-    totalCapacity:     marketListItem?.totalCapacity     || product?.product?.totalCapacity   || "",
-    currentBookedCount:     marketListItem?.currentBookedCount     || product?.product?.currentBookedCount   || "",
-
-    providerRating:     marketListItem?.providerRating     || product?.product?.providerRating   || "",
-
-    hourlyRate:     marketListItem?.hourlyRate     || product?.product?.hourlyRate   || "",
-    minimumHours:     marketListItem?.minimumHours     || product?.product?.minimumHours   || "",
-    deliveryMethod:     marketListItem?.deliveryMethod     || product?.product?.deliveryMethod   || "",
-  
-    // Digital goods:
-    digitalUrl:          marketListItem?.digitalUrl           || product?.product?.digitalUrl        || "",
-    autoDeliver:         marketListItem?.autoDeliver          || product?.product?.autoDeliver        || false,
-  
-    // Marketplace-specific defaults (if your form doesn’t collect them, you can hardcode/prisma defaults):
-    delivery:            marketListItem?.delivery            || false,
-    paymentOption:       marketListItem?.paymentOption       || "AT SHOP",
-    showOnGhuba:         marketListItem?.showOnGhuba         || true,
-  
-    // Contact & location:
-    contactName:         marketListItem?.contactName         || product?.product?.contactName       || "",
-    contact:             marketListItem?.contact             || product?.product?.contact           || "",
-    locationName:        marketListItem?.locationName        || product?.product?.locationName      || "",
-    location:            marketListItem?.location            || product?.product?.location          || {},
-    locationId:          marketListItem?.locationId          || product?.product?.locationId        || "",
-    latitude:            marketListItem?.latitude             ? parseFloat(marketListItem.latitude.toString()) : product?.product?.latitude  || null,
-    longitude:           marketListItem?.longitude            ? parseFloat(marketListItem.longitude.toString()) : product?.product?.longitude || null,
-  
-    // Admin/Admin-only:
-    status:              marketListItem?.status             || product?.product?.status            || "ACTIVE",
-  });  
-
-  const [images, setImages] = useState<string[]>([]);
-  const [videos, setVideos] = useState<string[]>([]);
-  
-  const [loading, setLoading] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  const [step, setStep] = useState(1);  
-  
-  // 1) extract the raw lookup key
-  const categoryKey = formData.category?.displayName?.trim();
-
-  // 2) lookup steps
-  const stepsForCategory = useMemo<number[]>(() => {
-    return CATEGORY_STEPS[categoryKey] || [];
-  }, [categoryKey]); 
-
+  // derive dynamic steps & form component
+  const categoryKey = formData.category?.displayName?.trim() || '';
+  const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1], [categoryKey]);
   const currentDynamicStep = stepsForCategory[step - 1] || 1;
-  
-  const FormComponent = currentDynamicStep ? FORM_COMPONENTS[currentDynamicStep] : FORM_COMPONENTS[1];
+  const FormComponent = useMemo(
+    () => FORM_COMPONENTS[currentDynamicStep] || FORM_COMPONENTS[1],
+    [currentDynamicStep]
+  );
 
-  // in AddToProductMarketModal (or directly in CategoryPicker)
-  const filteredBrands = useMemo<string[]>(() => {
-    // try the “allBrands” array first
-    if (Array.isArray(formData.category?.allBrands)) {
-      return formData.category!.allBrands;
-    }
-    // maybe you have brands under a nested `category` object?
-    if (Array.isArray(formData.category?.category?.allBrands)) {
-      return formData.category!.category!.allBrands;
-    }
-    // no brands available
-    return [];
-  }, [
-    formData.category?.allBrands,
-    formData.category?.category?.allBrands,
-  ]);
+  // simplified picker categories
+  const pickerCategories = useMemo(
+    () =>
+      categories.map((raw) => ({
+        id: raw.category.id,
+        displayName: raw.displayName,
+        icon: raw.icon,
+        items: raw.items,
+        allBrands: raw.allBrands ?? [],
+      })),
+    [categories]
+  );
 
-  
-  // Handlers
-   const handleCategoryChange = (cat: CategoryData|null) => {
-    setFormData(f => ({ ...f, category: cat, subCategory: null, brand: null }));
-  };
-
-  const handleSubCategoryChange = (sub:any) =>  setFormData((prev) => ({ ...prev, subCategory: sub, brand: null }));
-  const handleBrandChange = (b:any) =>  setFormData((prev) => ({ ...prev, brand: b }));
-  const handleInputChange = (e:any) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      let newValue = ['discount', 'buyingPrice', 'sellingPrice'].includes(name)
+  // input handlers
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const { name, value } = e.target;
+      const parsed = ['discount', 'buyingPrice', 'sellingPrice'].includes(name)
         ? parseFloat(value) || 0
         : value;
-      const updated = { ...prev, [name]: newValue };
-      if (['buyingPrice', 'sellingPrice', 'discount'].includes(name)) {
-        const bp = parseFloat(updated.buyingPrice) || 0;
-        const sp = parseFloat(updated.sellingPrice) || 0;
-        const disc = parseFloat(updated.discount) || 0;
-        updated.finalPrice = sp - (sp * disc) / 100;
-        updated.profitMargin = bp > 0 ? ((sp - bp) / bp) * 100 : 0;
-      }
-      return updated;
-    });
-  };
+      updateField(name as any, parsed);
+    },
+    [updateField]
+  );
 
-  const isCategoryStep = step === 1;
+  const handleCategoryChange = useCallback(
+    (cat: CategoryData | null) => updateField('category', cat),
+    [updateField]
+  );
+  const handleSubCategoryChange = useCallback(
+    (sub: any) => updateField('subCategory', sub),
+    [updateField]
+  );
+  const handleBrandChange = useCallback(
+    (b: string) => updateField('brand', b),
+    [updateField]
+  );
 
-  interface BookItem {
-    title?: string;
-    author?: string;
-    publisher?: string;
-    isbn?: string;
-    [key: string]: any;
-  }
-  const [books, setBooks] = useState<BookItem[]>([]);
-
+  // form submission
   const handleCreateListing = async () => {
-    if (window.confirm("Are you sure you want to create this listing?")) {
-      // Build a listing object conforming to the updated marketplaceListings model
+    if (!window.confirm('Are you sure you want to create this listing?')) return;
 
-      // 1) First, upload all images to S3 (in parallel).
-      //    We map each File in imageFiles → a fetch("/api/upload", …) promise.
-      const imageUploadPromises = imageFiles.map((file) => {
-        const formData = new FormData();
-        formData.append("type", "image");
-        formData.append("file", file);
-        return fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("Image upload failed");
-            return res.json();
-          })
-          .then((json) => json.url as string);
-      });
-
-      // 2) Then, upload all videos to S3 (in parallel).
-      const videoUploadPromises = videoFiles.map((file) => {
-        const formData = new FormData();
-        formData.append("type", "video");
-        formData.append("file", file);
-        return fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("Video upload failed");
-            return res.json();
-          })
-          .then((json) => json.url as string);
-      });
-
-      // 3) Upload all book covers (in parallel). If a BookItem.coverFile is null, we skip.
-      const bookCoverUploadPromises = books.map((book) => {
-        if (!book.coverFile) {
-          return Promise.resolve(null); // no cover was chosen
-        }
-        const fd = new FormData();
-        fd.append("type", "file"); // or "image" if you prefer putting covers under images/
-        fd.append("file", book.coverFile);
-        return fetch("/api/upload", {
-          method: "POST",
-          body: fd,
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("Book cover upload failed");
-            return res.json();
-          })
-          .then((json) => json.url as string);
-      });
-
-      // 4) Await them all together:
-      const [
-        imageUrls,
-        videoUrls,
-        bookCoverUrls,
-      ] = await Promise.all([
-        Promise.all(imageUploadPromises),
-        Promise.all(videoUploadPromises),
-        Promise.all(bookCoverUploadPromises),
+    setLoading(true);
+    try {
+      const [imageUrls, videoUrls] = await Promise.all([
+        uploadFiles(imageFiles, 'image'),
+        uploadFiles(videoFiles, 'video'),
       ]);
+      const payload = buildListingPayload(formData, imageUrls, videoUrls);
+      const res = await fetch(`${apiUrl}/admin/post-market-list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(res.statusText);
 
-      // 5) Build the final array of BookItems, replacing coverFile with coverUrl
-      const booksWithUrls = books.map((book, idx) => ({
-        title: book.title,
-        author: book.author,
-        coverUrl: bookCoverUrls[idx] || null,
-      }));
-
-
-      const listing: any = {
-        // — Identifiers & relations —
-        id:                   formData.id,                           // String @id (for updates) or omit for create
-        sellerType:           formData.sellerType || "ADMIN",         // SellerType enum
-        companyId:            formData.companyId,                              // String? @db.ObjectId
-        sellerId:             undefined,                              // Optional: if you know a specific sellerId
-        productId:            formData.productId,                     // String? @db.ObjectId
-        
-        images: imageUrls,                  // array of S3 URLs
-
-        video: videoUrls.length > 0
-          ? videoUrls[0]                     // or send an array, if your schema allows multiple
-          : null,
-
-        // — Books —
-        books: booksWithUrls, 
-      
-        // — Title & description —
-        name:                formData.name,                         // String
-        description:          formData.description,                   // String?
-      
-        // — Inventory & media —
-        quantity:             formData.quantity,                      // Int
-        // images:               images || [],                           // Json[]
-        // video:                formData.video || null,                 // String?
-      
-        // — Category hierarchy & tagging —
-        productCategoryId:    formData.category?.id    || "",         // String @db.ObjectId
-        category:             formData.category?.displayName  || "",         // String?
-
-        subCategory:          formData.subCategory      || {},         // Json
-        subCategoryName:      formData.subCategoryName  || "",         // String?
-        tags:                 formData.tags             || [],         // String[]
-      
-        // — Branding & specs —
-        brand:                formData.brand            || "",         // String?
-        model:                formData.model            || "",         // String?
-        color:                formData.color            || [],         // String[]
-        size:                 formData.size             || [],         // String[]
-        weight:               formData.weight           || "",         // String?
-        condition:            formData.condition        || "",         // String?
-        dimension:            formData.dimension        || "",         // String?
-        material:             Array.isArray(formData.material)
-                              ? formData.material
-                              : formData.material
-                                ? [formData.material]
-                                : [],                              // String[]
-      
-        // — Profit & pricing —
-        profitMargin:         parseFloat(formData.profitMargin) || 0, // Float?
-        discount:             parseInt(formData.discount)      || 0,  // Int?
-        buyingPrice:          parseFloat(formData.buyingPrice) || 0, // Float
-        sellingPrice:         parseFloat(formData.sellingPrice) || 0,// Float
-        finalPrice:           parseFloat(formData.finalPrice)  || 0, // Float?
-      
-        // — Deal scheduling —
-        startDealDate:        formData.startDealDate   || null,       // DateTime? 
-        endDealDate:          formData.endDealDate     || null,       // DateTime?
-        
-        // — Category-specific details —
-        author:               formData.author            || "",       // String?
-        publisher:            formData.publisher         || "",       // String?
-        isbn:                 formData.isbn              || "",       // String?
-        fabricComposition:    formData.fabricComposition || "",       // String?
-        careInstructions:     formData.careInstructions  || "",       // String?
-        energyRating:         formData.energyRating      || "",       // String?
-        warrantyPeriod:       formData.warrantyPeriod    || "",       // String?
-        applianceDimensions:  formData.applianceDimensions|| "",      // String?
-        ingredients:          formData.ingredients       || "",       // String?
-        usageInstructions:    formData.usageInstructions || "",       // String?
-        expirationDate:       formData.expirationDate
-                              ? new Date(formData.expirationDate)
-                              : null,                              // DateTime?
-      
-        // — Feature flags —
-        isAvailable:          formData.isAvailable  || false,         // Boolean
-        isOnOffer:            formData.isOnOffer    || false,         // Boolean
-        isFlashDeal:          formData.isFlashDeal  || false,         // Boolean
-        isNewArrival:         formData.isNewArrival || false,         // Boolean
-        isDiscounted:         formData.isDiscounted || false,         // Boolean
-        isFeatured:           formData.isFeatured   || false,         // Boolean
-      
-        // — Marketplace-specific —
-        delivery:             formData.delivery       || false,         // Boolean
-        paymentOption:        formData.paymentOption  || "AT SHOP",     // String
-        showOnGhuba:          formData.showOnGhuba    || true,          // Boolean?
-        
-        // — Contact & location (embed GeoJSON or link to Location table) —
-        contact:              formData.contact        || "",            // String?
-        location:             formData.location       || {},            // Json?
-        locationId:           formData.locationId     || "",            // String? @db.ObjectId
-        locationName:         formData.locationName   || "",            // String?
-        latitude:             parseFloat(formData.latitude)  || null,      // Float?
-        longitude:            parseFloat(formData.longitude) || null,      // Float?
-      
-        // — Property-specific —
-        bedrooms:             formData.bedrooms       || {},            // Json?
-        studios:              formData.studios        || {},            // Json?
-        bathrooms:            formData.bathrooms      || "",            // String?
-        area:                 formData.area           || "",            // String?
-        serviceSchedule:      formData.serviceSchedule|| "",            // String?
-
-        // Scheduling    
-        availabilityStart:    formData.availabilityStart       || {},
-        availabilityEnd:    formData.availabilityEnd       || {},
-
-        bookingSlots:     formData.bookingSlots       || {},
-        minNoticePeriod:   formData.minNoticePeriod   || "",
-        maxBookingAhead: formData.maxBookingAhead     || "",
-
-        pricingTiers: formData.pricingTiers       || {},
-
-        requiredClientInfo: formData.requiredClientInfo       || [],
-        fulfillmentStatus:  formData.fulfillmentStatus       || "",
-
-        totalCapacity:  formData.totalCapacity       || 0,
-        currentBookedCount: formData.currentBookedCount       || 0,
-
-        providerRating: formData.providerRating       || {},
-
-        hourlyRate: formData.hourlyRate       || 0.0,
-        minimumHours:  formData.minimumHours       || 0,
-        deliveryMethod: formData.deliveryMethod       || "Remote/Virtual",
-    
-        // — Vehicle-specific —
-        make:                 formData.make            || "",           // String?
-        trim:                 formData.trim            || "",           // String?
-        type:                 formData.type            || "",           // String?
-        mileage:              formData.mileage         || "",           // String?
-        engineType:           formData.engineType      || "",           // String?
-        engineSize:           formData.engineSize      || "",           // String?
-        transmission:         formData.transmission    || "",           // String?
-        drivetrain:           formData.drivetrain      || "",           // String?
-        vin:                  formData.vin             || "",           // String?
-        logbookStatus:        formData.logbookStatus   || "",           // String?
-        serviceHistory:       formData.serviceHistory  || "",           // String?
-        negotiable:           formData.negotiable      || false,        // Boolean?
-        financingAvailable:   formData.financingAvailable || false,      // Boolean?
-        tradeIn:              formData.tradeIn         || false,        // Boolean?
-      
-        // — Digital goods —
-        digitalUrl:           formData.digitalUrl      || "",           // String?
-        autoDeliver:          !!formData.autoDeliver,                  // Boolean?
-      
-        // — Admin/Admin-only fields —
-        status:               formData.status         || "ACTIVE",     // ListingStatus
-        
-      };
-    
-      try {
-
-        const response = await fetch(`${apiUrl}/admin/post-market-list`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(listing)
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Listing created:", data);
-          alert("Marketplace listing created successfully.");
-          
-          // 7) Close modal + clear all file states:
-          setShowRequestProductModal(false);
-          setImageFiles([]);
-          setImagePreviews([]);
-          setVideoFiles([]);
-          setVideoPreviews([]);
-          setBooks([]);
-        } else {
-          console.error("Error creating listing:", response.statusText);
-          console.error("Error creating listing:", response);
-          alert("Error creating listing. Please try again.");
-        }
-      } catch (error) {
-        console.error("Error creating listing:", error);
-        alert("Error creating listing. Please try again.");
-      }
+      alert('Marketplace listing created successfully.');
+      setShowRequestProductModal(false);
+      setImageFiles([]);
+      setImagePreviews([]);
+      setVideoFiles([]);
+    } catch (err) {
+      console.error(err);
+      alert('Error creating listing. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Modal
-      isOpen={showRequestProductModal}
-      onClose={() => setShowRequestProductModal(false)}
-    >
-      <div className="p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl mx-auto h-[90vh] flex flex-col">
+    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+      <div className="relative p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl h-[90vh] flex flex-col">
+        {loading && (
+          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+            <span>Uploading…</span>
+          </div>
+        )}
+
         <motion.div
           key={step}
           initial={{ opacity: 0, x: -20 }}
@@ -532,33 +542,26 @@ const AddToProductMarketModal = ({
           exit={{ opacity: 0, x: 20 }}
           className="flex-grow overflow-y-auto"
         >
-          <Stepper
-            step={step}
-            stepsForCategory={stepsForCategory}
-            STEP_LABELS={STEP_LABELS}
-          />
-
-          {/* Main Content */}
+          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
           <div className="flex-grow overflow-y-auto p-4">
-            {isCategoryStep ? (
-               <CategoryPicker
-               formData={{
-                 category: formData.category,
-                 subCategory: formData.subCategory,
-                 brand: formData.brand,
-               }}
-               categories={pickerCategories}
-               filteredBrands={filteredBrands}
-               onCategoryChange={handleCategoryChange}
-               onSubCategoryChange={handleSubCategoryChange}
-               onBrandChange={handleBrandChange}
-             />
+            {step === 1 ? (
+              <CategoryPicker
+                formData={{
+                  category: formData.category,
+                  subCategory: formData.subCategory,
+                  brand: formData.brand,
+                }}
+                categories={pickerCategories}
+                filteredBrands={formData.category?.allBrands || []}
+                onCategoryChange={handleCategoryChange}
+                onSubCategoryChange={handleSubCategoryChange}
+                onBrandChange={handleBrandChange}
+              />
             ) : FormComponent ? (
               <FormComponent
                 formData={formData}
-                setFormData={setFormData}
                 handleInputChange={handleInputChange}
-                // pass other props like images, videos, books etc.
+                setFormData={updateField as any}
               />
             ) : (
               <p>No form available for this step.</p>
@@ -566,28 +569,29 @@ const AddToProductMarketModal = ({
           </div>
         </motion.div>
 
-        {/* Navigation Buttons */}
         <div className="flex justify-between pt-4 border-t">
           {step > 1 && (
             <button
-              className="bg-gray-400 text-white py-2 px-4 rounded-lg flex items-center"
-              onClick={() => setStep(step - 1)}
+              className="btn-secondary flex items-center"
+              onClick={() => setStep((s) => s - 1)}
+              disabled={loading}
             >
               <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
             </button>
           )}
-
           {step < stepsForCategory.length ? (
             <button
-              className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center"
-              onClick={() => setStep(step + 1)}
+              className="btn-primary flex items-center"
+              onClick={() => setStep((s) => s + 1)}
+              disabled={loading}
             >
               Next <ArrowRightIcon className="h-5 w-5 ml-1" />
             </button>
           ) : (
             <button
+              className="btn-success flex items-center"
               onClick={handleCreateListing}
-              className="bg-green-600 text-white py-2 px-4 rounded-lg flex items-center"
+              disabled={loading}
             >
               Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
             </button>
@@ -596,7 +600,4 @@ const AddToProductMarketModal = ({
       </div>
     </Modal>
   );
-};
-
-export default AddToProductMarketModal;
-
+}
