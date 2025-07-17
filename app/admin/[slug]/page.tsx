@@ -74,6 +74,10 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     redirect('/dashboard'); // Or show a 404 page
   }
 
+  console.log("company?.category");
+  console.log("1111111111111111");
+  console.log(company?.category);
+
   const categoryKey = normalizeCategory(company?.category || userRole); // Normalize category for consistent handling
 
   // 3. Fetch Dashboard Metrics based on Role and Category
@@ -271,6 +275,8 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     // Fallback for other roles (e.g., ADMIN, or other business categories)
     switch (categoryKey) {
       case 'e-commerce':
+        return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
+      case 'ecommerce':
         return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
       case 'real estate':
         return <RealEstateDashboardClient />;

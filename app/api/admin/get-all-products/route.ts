@@ -90,7 +90,7 @@ export async function GET( req : Request ) {
 
       return NextResponse.json(products);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       return NextResponse.json({ message: "Internal server error" });
     }
   } else {

@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { StaticImageData } from 'next/image';
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 export interface DashboardCardProps {
   href: string;
   bgColor: string;
@@ -22,7 +24,7 @@ const DashboardCard = ({ href, bgColor, title, icon, value, progress, barColor }
             {typeof icon === 'string' ? (
                 <img src={icon} alt={title} width={48} height={48} className="w-10 h-10" />
             ) : (
-                <Image src={icon} alt={title} width={48} height={48} className="w-10 h-10" />
+                <Image src={icon} alt={title} width={48} height={48} className="w-10 h-10" loader={loader}/>
             )}
         </div>
         <div>

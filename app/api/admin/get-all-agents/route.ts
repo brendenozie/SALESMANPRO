@@ -31,7 +31,7 @@ export async function GET( req : Request ) {
 
       return NextResponse.json(formattedAgents,{status:200});
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       return NextResponse.json({ message: "Internal server error" },{status:400});
     }
   } else {

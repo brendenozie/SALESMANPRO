@@ -73,7 +73,6 @@ export const ContextProvider = ({ children }) => {
           fetchLocationName(latitude, longitude);
         },
         (error) => {
-          console.error("Error getting location:", error);
           setLocationName("Location access denied.");
         },
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }

@@ -61,6 +61,14 @@ export const getCategoryMenus = (adminSlug: string) => ({
       ],
     },
     {
+      label:"Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Clients", href: `/admin/${adminSlug}/clients` },
+      ],
+    },
+    {
       label: "Orders",
       icon: UsersIcon,
       subItems: [
