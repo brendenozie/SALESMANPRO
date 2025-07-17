@@ -412,6 +412,7 @@ export default function AddProductModal({
   const [step, setStep] = useState(1);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  
 
   // Category steps & component
   const categoryKey = formData.category?.displayName.trim() || '';
@@ -429,6 +430,11 @@ export default function AddProductModal({
     () => formData.category?.allBrands || [],
     [formData.category]
   );
+
+  
+  const lastStepIndex = stepsForCategory.length;
+  const isFirstStep   = step === 1;
+  const isLastStep    = step === lastStepIndex;
 
   // Handlers
   const handleInputChange = useCallback(
@@ -523,35 +529,42 @@ export default function AddProductModal({
           </div>
         </motion.div>
         <div className="flex justify-between pt-4 border-t">
-          {step > 1 && (
-            <button
-              className="btn-secondary flex items-center"
-              onClick={() => setStep((s) => s - 1)}
-              disabled={loading}
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
-            </button>
-          )}
-          {step < stepsForCategory.length ? (
-            <button
-              className="btn-primary flex items-center"
-              onClick={() => setStep((s) => s + 1)}
-              disabled={loading}
-            >
-              Next <ArrowRightIcon className="h-5 w-5 ml-1" />
-            </button>
-          ) : (step > stepsForCategory.length - 1 ? (
-                <button
-                  className="btn-success flex items-center"
-                  onClick={handleSave}
-                  disabled={loading}
-                >
-                  Save <CheckCircleIcon className="h-5 w-5 ml-1" />
-                </button>
-                  ) : (
-                    <div></div>
-                  )
-          )}
+          {/* Back button only if not on the very first step */}
+          { !isFirstStep
+            ? (
+              <button
+                className="btn-secondary flex items-center"
+                onClick={() => setStep((s) => s - 1)}
+                disabled={loading}
+              >
+                <ArrowLeftIcon className="h-5 w-5 mr-1" />
+                Back
+              </button>
+            )
+            // empty div to keep spacing if you want
+            : <div />
+          }
+
+          {/* Next on all but the last step; Save only on the last step */}
+          { isLastStep
+            ? (
+              <button
+                className="btn-success flex items-center"
+                onClick={handleSave}
+                disabled={loading}
+              >
+                Save <CheckCircleIcon className="h-5 w-5 ml-1" />
+              </button>
+            ) : (
+              <button
+                className="btn-primary flex items-center"
+                onClick={() => setStep((s) => s + 1)}
+                disabled={loading}
+              >
+                Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+              </button>
+            )
+          }
         </div>
       </div>
     </Modal>

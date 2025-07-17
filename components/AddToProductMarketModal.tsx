@@ -457,6 +457,10 @@ export default function AddToProductMarketModal({
     [currentDynamicStep]
   );
 
+  const lastStepIndex = stepsForCategory.length;
+  const isFirstStep   = step === 1;
+  const isLastStep    = step === lastStepIndex;
+
   // simplified picker categories
   const pickerCategories = useMemo(
     () =>
@@ -570,6 +574,44 @@ export default function AddToProductMarketModal({
         </motion.div>
 
         <div className="flex justify-between pt-4 border-t">
+                  {/* Back button only if not on the very first step */}
+                  { !isFirstStep
+                    ? (
+                      <button
+                        className="btn-secondary flex items-center"
+                        onClick={() => setStep((s) => s - 1)}
+                        disabled={loading}
+                      >
+                        <ArrowLeftIcon className="h-5 w-5 mr-1" />
+                        Back
+                      </button>
+                    )
+                    // empty div to keep spacing if you want
+                    : <div />
+                  }
+        
+                  {/* Next on all but the last step; Save only on the last step */}
+                  { isLastStep
+                    ? (
+                      <button
+                        className="btn-success flex items-center"
+                        onClick={handleCreateListing}
+                        disabled={loading}
+                      >
+                        Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-primary flex items-center"
+                        onClick={() => setStep((s) => s + 1)}
+                        disabled={loading}
+                      >
+                        Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+                      </button>
+                    )
+                  }
+                </div>
+        {/* <div className="flex justify-between pt-4 border-t">
           {step > 1 && (
             <button
               className="btn-secondary flex items-center"
@@ -599,7 +641,7 @@ export default function AddToProductMarketModal({
               <div></div>
             )
           )}
-        </div>
+        </div> */}
       </div>
     </Modal>
   );
