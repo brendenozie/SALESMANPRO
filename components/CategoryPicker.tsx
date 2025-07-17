@@ -1,40 +1,41 @@
 'use client';
 
+import { ProductCategory, StoreCategory } from "@/app/admin/[slug]/categories/page";
 import React, { useState, useEffect, useRef } from "react";
 
 // --- Type Definitions ---
-export interface CategoryItem {
-  id: string;
-  name: string;
-  slug: string;
-}
+// export interface CategoryItem {
+//   id: string;
+//   name: string;
+//   slug: string;
+// }
 
-export interface CategoryData {
-  companyId: string;
-  categoryId: string;
-  displayName: string;
-  icon: string;
-  sortOrder: number;
-  visible: boolean;
-  id: string;
-  items: CategoryItem[];
-  category?: {
-    subcategories?: CategoryItem[];
-  };
-}
+// export interface CategoryData {
+//   companyId: string;
+//   categoryId: string;
+//   displayName: string;
+//   icon: string;
+//   sortOrder: number;
+//   visible: boolean;
+//   id: string;
+//   items: CategoryItem[];
+//   category?: {
+//     subcategories?: CategoryItem[];
+//   };
+// }
 
 type Brand = string;
 
 interface Props {
   formData: {
-    category: CategoryData | null;
-    subCategory: CategoryItem | null;
+    category: StoreCategory | null;
+    subCategory: ProductCategory | null;
     brand: Brand | null;
   };
-  categories: CategoryData[];
+  categories: StoreCategory[];
   filteredBrands: Brand[];
-  onCategoryChange: (category: CategoryData | null) => void;
-  onSubCategoryChange: (subcategory: CategoryItem | null) => void;
+  onCategoryChange: (category: StoreCategory | null) => void;
+  onSubCategoryChange: (subcategory: ProductCategory | null) => void;
   onBrandChange: (brand: Brand | null) => void;
 }
 

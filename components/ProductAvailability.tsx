@@ -7,13 +7,12 @@ import {
   FireIcon,
   TagIcon,
   SparklesIcon,
-  GiftIcon,
   CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 
 interface ProductAvailabilityProps {
   formData: Record<string, any>;
-  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  onChange: (name: string, value: any) => void;
 }
 
 const FeatureToggle = ({
@@ -47,19 +46,7 @@ const FeatureToggle = ({
   </div>
 );
 
-const ProductAvailability: React.FC<ProductAvailabilityProps> = ({
-  formData,
-  setFormData,
-}) => {
-  const toggleAvailability = () => {
-    setFormData((prev) => ({
-      ...prev,
-      isAvailable: !prev.isAvailable,
-      // Clear restockDate if toggling available
-      ...(prev.isAvailable && { restockDate: "" }),
-    }));
-  };
-
+const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onChange }) => {
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
       {/* Header */}
@@ -77,7 +64,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setFormData({ ...formData, isAvailable: true })}
+            onClick={() => onChange("isAvailable", true)}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
               formData.isAvailable
                 ? "bg-blue-600 text-white"
@@ -90,7 +77,10 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setFormData({ ...formData, isAvailable: false })}
+            onClick={() => {
+              onChange("isAvailable", false);
+              onChange("restockDate", "");
+            }}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
               !formData.isAvailable
                 ? "bg-red-600 text-white"
@@ -112,25 +102,19 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({
             name="quantity"
             min={0}
             value={formData.quantity || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, quantity: parseInt(e.target.value, 10) || 0 })
-            }
+            onChange={(e) => onChange("quantity", parseInt(e.target.value, 10) || 0)}
             placeholder="e.g. 100"
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         {!formData.isAvailable && (
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Restock Date
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Restock Date</label>
             <input
               type="date"
               name="restockDate"
               value={formData.restockDate || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, restockDate: e.target.value })
-              }
+              onChange={(e) => onChange("restockDate", e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -145,105 +129,72 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({
             label="Featured"
             icon={StarIcon}
             enabled={!!formData.isFeatured}
-            onToggle={() =>
-              setFormData((prev) => ({ ...prev, isFeatured: !prev.isFeatured }))
-            }
+            onToggle={() => onChange("isFeatured", !formData.isFeatured)}
           />
           <FeatureToggle
             label="New Arrival"
             icon={SparklesIcon}
             enabled={!!formData.isNewArrival}
-            onToggle={() =>
-              setFormData((prev) => ({ ...prev, isNewArrival: !prev.isNewArrival }))
-            }
+            onToggle={() => onChange("isNewArrival", !formData.isNewArrival)}
           />
           <FeatureToggle
             label="On Offer"
             icon={TagIcon}
             enabled={!!formData.isOnOffer}
-            onToggle={() =>
-              setFormData((prev) => ({ ...prev, isOnOffer: !prev.isOnOffer }))
-            }
+            onToggle={() => onChange("isOnOffer", !formData.isOnOffer)}
           />
           <FeatureToggle
             label="Discounted"
             icon={CurrencyDollarIcon}
             enabled={!!formData.isDiscounted}
-            onToggle={() =>
-              setFormData((prev) => ({ ...prev, isDiscounted: !prev.isDiscounted }))
-            }
+            onToggle={() => onChange("isDiscounted", !formData.isDiscounted)}
           />
           <FeatureToggle
             label="Flash Deal"
             icon={FireIcon}
             enabled={!!formData.isFlashDeal}
-            onToggle={() =>
-              setFormData((prev) => ({ ...prev, isFlashDeal: !prev.isFlashDeal }))
-            }
+            onToggle={() => onChange("isFlashDeal", !formData.isFlashDeal)}
           />
         </div>
+
+        {/* Deal & Availability Date Range */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <label className="block">
-                <span className="text-gray-700 font-medium text-sm">Deal Start Date</span>
-                {/* Consider a DatePicker component here */}
-                <input
-                    type="datetime-local"
-                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                    // value={formatDateForInput(formData.startDealDate)}
-                    value={formData.startDealDate || ""}
-                    onChange={(e) =>
-                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
-                    }
-                />
-            </label>
-            <label className="block">
-                <span className="text-gray-700 font-medium text-sm">Deal End Date</span>
-                {/* Consider a DatePicker component here */}
-                <input
-                    type="datetime-local"
-                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                    value={formData.startDealDate || ""}
-                    onChange={(e) =>
-                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
-                    }
-                    // value={formatDateForInput(formData.endDealDate)}
-                    // onChange={(e) =>
-                    //     setFormData({ ...formData, endDealDate: e.target.value ? new Date(e.target.value) : undefined })
-                    // }
-                />
-            </label>
-            <label className="block">
-                <span className="text-gray-700 font-medium text-sm">Availability Start Date</span>
-                {/* Consider a DatePicker component here */}
-                <input
-                    type="datetime-local"
-                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                    value={formData.startDealDate || ""}
-                    onChange={(e) =>
-                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
-                    }
-                    // value={formatDateForInput(formData.availabilityStart)}
-                    // onChange={(e) =>
-                    //     setFormData({ ...formData, availabilityStart: e.target.value ? new Date(e.target.value) : undefined })
-                    // }
-                />
-            </label>
-            <label className="block">
-                <span className="text-gray-700 font-medium text-sm">Availability End Date</span>
-                {/* Consider a DatePicker component here */}
-                <input
-                    type="datetime-local"
-                    className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                    value={formData.startDealDate || ""}
-                    onChange={(e) =>
-                        setFormData({ ...formData, startDealDate: e.target.value ? new Date(e.target.value) : undefined })
-                    }
-                    // value={formatDateForInput(formData.availabilityEnd)}
-                    // onChange={(e) =>
-                    //     setFormData({ ...formData, availabilityEnd: e.target.value ? new Date(e.target.value) : undefined })
-                    // }
-                />
-            </label>
+          <label className="block">
+            <span className="text-gray-700 font-medium text-sm">Deal Start Date</span>
+            <input
+              type="datetime-local"
+              value={formData.startDealDate || ""}
+              onChange={(e) => onChange("startDealDate", e.target.value)}
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </label>
+          <label className="block">
+            <span className="text-gray-700 font-medium text-sm">Deal End Date</span>
+            <input
+              type="datetime-local"
+              value={formData.endDealDate || ""}
+              onChange={(e) => onChange("endDealDate", e.target.value)}
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </label>
+          <label className="block">
+            <span className="text-gray-700 font-medium text-sm">Availability Start Date</span>
+            <input
+              type="datetime-local"
+              value={formData.availabilityStart || ""}
+              onChange={(e) => onChange("availabilityStart", e.target.value)}
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </label>
+          <label className="block">
+            <span className="text-gray-700 font-medium text-sm">Availability End Date</span>
+            <input
+              type="datetime-local"
+              value={formData.availabilityEnd || ""}
+              onChange={(e) => onChange("availabilityEnd", e.target.value)}
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </label>
         </div>
       </div>
     </section>

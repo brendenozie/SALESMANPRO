@@ -48,10 +48,13 @@ import {
 } from "@heroicons/react/24/outline";
 
 // Helper to inject dynamic adminSlug
-export const getCategoryMenus = (adminSlug: string) => ({
+//accessLevel is the users different user roles that allows for users to access some paths or not 
+
+export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "E-commerce": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -427,7 +430,6 @@ export const getCategoryMenus = (adminSlug: string) => ({
     { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
   ],
 
-  
   "Travel & Tourism": [
     {
       label: "Dashboard",

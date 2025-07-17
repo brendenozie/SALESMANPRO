@@ -1,6 +1,10 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { PlusCircleIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  PlusCircleIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 
 interface AmenityItem {
   name: string;
@@ -80,7 +84,8 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
 
-  // Filter categories/items by search term
+  const vehicleAmenities = formData.vehicleAmenities || [];
+
   const filteredCategories = useMemo(() => {
     if (!searchTerm.trim()) return VEHICLE_AMENITIES;
     return VEHICLE_AMENITIES.map((cat) => ({
@@ -91,58 +96,48 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
     })).filter((cat) => cat.items.length > 0);
   }, [searchTerm]);
 
-  // Toggle a predefined or custom amenity
   const toggleAmenity = useCallback(
     (value: string) => {
-      const current: string[] = formData.vehicleAmenities || [];
-      const updated = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      setFormData({ ...formData, vehicleAmenities: updated });
+      const updated = vehicleAmenities.includes(value)
+        ? vehicleAmenities.filter((v) => v !== value)
+        : [...vehicleAmenities, value];
+      setFormData((prev) => ({ ...prev, vehicleAmenities: updated }));
     },
-    [formData, setFormData]
+    [vehicleAmenities, setFormData]
   );
 
-  // Add a new custom amenity (if non-empty and not duplicate)
-  const addCustomAmenity = () => {
+  const addCustomAmenity = useCallback(() => {
     const trimmed = customAmenity.trim();
-    if (!trimmed) return;
-    if ((formData.vehicleAmenities || []).includes(trimmed)) {
-      setCustomAmenity("");
-      return;
-    }
-    setFormData({
-      ...formData,
-      vehicleAmenities: [...(formData.vehicleAmenities || []), trimmed],
-    });
+    if (!trimmed || vehicleAmenities.includes(trimmed)) return;
+    setFormData((prev) => ({
+      ...prev,
+      vehicleAmenities: [...vehicleAmenities, trimmed],
+    }));
     setCustomAmenity("");
-  };
+  }, [customAmenity, vehicleAmenities, setFormData]);
 
-  // Separate predefined vs. custom
   const predefinedSet = useMemo(
     () =>
       new Set(
-        VEHICLE_AMENITIES.flatMap((cat) => cat.items.map((item) => item.value))
+        VEHICLE_AMENITIES.flatMap((cat) =>
+          cat.items.map((item) => item.value)
+        )
       ),
     []
   );
-  const customItems = (formData.vehicleAmenities || []).filter(
-    (a: string) => !predefinedSet.has(a)
-  );
+
+  const customItems = vehicleAmenities.filter((a) => !predefinedSet.has(a));
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
-      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">
-          Select Vehicle Features
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800">Select Vehicle Features</h2>
         <p className="text-gray-500 mt-1">
-          Choose from common vehicle amenities, or add your own custom feature.
+          Choose from predefined vehicle amenities or add your own custom ones.
         </p>
       </div>
 
-      {/* Search Bar */}
+      {/* Search */}
       <div className="relative">
         <MagnifyingGlassIcon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
@@ -154,21 +149,19 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
         />
       </div>
 
-      {/* Predefined Categories */}
+      {/* Categories */}
       <div className="space-y-6">
         {filteredCategories.map((category) => (
           <div key={category.category} className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-700">
-              {category.category}
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-700">{category.category}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {category.items.map((item) => {
-                const selected =
-                  formData.vehicleAmenities?.includes(item.value);
+                const selected = vehicleAmenities.includes(item.value);
                 return (
                   <motion.button
                     key={item.value}
                     type="button"
+                    aria-label={item.name}
                     onClick={() => toggleAmenity(item.value)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -191,11 +184,9 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
       {/* Custom Features */}
       {customItems.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-gray-700 mt-4">
-            Custom Features
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-700">Custom Features</h3>
           <div className="flex flex-wrap gap-3">
-            {customItems.map((item: string) => (
+            {customItems.map((item) => (
               <motion.div
                 key={item}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -203,7 +194,10 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
                 className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full shadow-sm space-x-2"
               >
                 <span>{item}</span>
-                <button onClick={() => toggleAmenity(item)}>
+                <button
+                  onClick={() => toggleAmenity(item)}
+                  aria-label={`Remove ${item}`}
+                >
                   <XMarkIcon className="w-4 h-4" />
                 </button>
               </motion.div>

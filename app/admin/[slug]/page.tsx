@@ -43,7 +43,9 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
 
   const userRole = session.user?.role?.toUpperCase() || 'ADMIN'; // Default to ADMIN if role is not set
 
-  console.log(userRole);
+  console.log("3333333333333");
+  console.log(session.user?.id);
+  console.log(params.slug);
 
   // 1. Authentication and Authorization Check
   // Allow 'ADMIN', 'STUDENT', and 'EDUCATOR' roles to access admin dashboards

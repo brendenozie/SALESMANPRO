@@ -13,7 +13,8 @@ import Stepper from './Stepper';
 import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
-import CategoryPicker, { CategoryData } from './CategoryPicker';
+import CategoryPicker from './CategoryPicker';
+import { ProductCategory, StoreCategory } from '@/app/admin/[slug]/categories/page';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -25,7 +26,7 @@ interface AddProductModalProps {
   setShowRequestProductModal: (open: boolean) => void;
   product: any | null;           // TODO: replace with your Product type
   companyId: string;
-  categories: CategoryData[];
+  categories: StoreCategory[];
 }
 
 interface ProductForm {
@@ -38,11 +39,15 @@ interface ProductForm {
   description: string;
 
   // category
-  category: CategoryData | null;
-  subCategory: any;
+  // category: CategoryData | null;
+  // subCategory: any;
   subCategoryName: string;
-  brand: string;
+  // brand: string;
   tags: string[];
+
+  category: StoreCategory | null;
+  subCategory: ProductCategory | null;
+  brand: string | null;
 
   // specs
   model: string;
@@ -297,12 +302,16 @@ function useProductForm(
       companyId,
       name: p.name || '',
       description: p.description || '',
-      category: p.category || null,
-      subCategory: p.subCategory || {},
+      
       subCategoryName: p.subCategoryName || '',
+
+      category: p.category || null,
+      subCategory: p.subCategory || null,
+      brand: p.brand || null,
+
       tags: p.tags || [],
       collectionId: p.collectionId || '',
-      brand: p.brand || '',
+      
       model: p.model || '',
       color: p.color || [],
       size: p.size || [],
@@ -408,6 +417,7 @@ export default function AddProductModal({
   categories,
 }: AddProductModalProps) {
   const { formData, updateField } = useProductForm(product, companyId);
+  
 
   const [step, setStep] = useState(1);
   const [newImages, setNewImages] = useState<File[]>([]);
@@ -422,8 +432,9 @@ export default function AddProductModal({
 
   // Picker data
   const pickerCategories = useMemo(() => categories, [categories]);
+  
   const filteredSubCategories = useMemo(
-    () => formData.category?.items || formData.category?.subcategories || [],
+    () => formData.category?.items || formData.category?.items || [],
     [formData.category]
   );
   const filteredBrands = useMemo(
@@ -447,7 +458,7 @@ export default function AddProductModal({
   );
 
   const handleCategoryChange = useCallback(
-    (cat: CategoryData | null) => updateField('category', cat),
+    (cat: StoreCategory | null) => updateField('category', cat),
     [updateField]
   );
   const handleSubCategoryChange = useCallback(
@@ -491,8 +502,7 @@ export default function AddProductModal({
             <span>Saving…</span>
           </div>
         )}
-        <motion.div
-          key={step}
+        <motion.div key={step} 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 20 }}
@@ -507,6 +517,44 @@ export default function AddProductModal({
                   subCategory: formData.subCategory,
                   brand: formData.brand,
                 }}
+                categories={categories}
+                filteredBrands={formData.category?.allBrands || []}
+                onCategoryChange={cat => updateField('category', cat)}
+                onSubCategoryChange={sub => updateField('subCategory', sub)}
+                onBrandChange={brand => updateField('brand', brand)}
+              />
+            ) : FormComponent ? (
+              <FormComponent
+                formData={formData}
+                setFormData={updateField as any}
+                handleInputChange={handleInputChange}
+                filteredSubCategories={
+                  formData.category?.items.length
+                    ? formData.category.items
+                    : formData.category?.category?.subcategories ?? []
+                }
+                filteredBrands={filteredBrands /* from your memo for later steps */}
+                newImages={newImages}
+                setNewImages={setNewImages}
+              />
+            ) : (
+              <p>No form for this step.</p>
+            )}
+          </div>
+        </motion.div>
+
+        {/* <motion.div
+          key={step}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          className="flex-grow overflow-y-auto"
+        >
+          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+          <div className="flex-grow overflow-y-auto p-4">
+            {step === 1 ? (
+              <CategoryPicker
+                formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
                 categories={pickerCategories}
                 filteredBrands={filteredBrands}
                 onCategoryChange={handleCategoryChange}
@@ -527,7 +575,7 @@ export default function AddProductModal({
               <p>No form for this step.</p>
             )}
           </div>
-        </motion.div>
+        </motion.div> */}
         <div className="flex justify-between pt-4 border-t">
           {/* Back button only if not on the very first step */}
           { !isFirstStep

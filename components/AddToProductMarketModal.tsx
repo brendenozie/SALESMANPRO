@@ -18,7 +18,8 @@ import Stepper from './Stepper';
 import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
-import CategoryPicker, { CategoryData } from './CategoryPicker';
+import CategoryPicker  from './CategoryPicker';
+import { StoreCategory } from '@/app/admin/[slug]/categories/page';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -31,7 +32,7 @@ interface AddToProductMarketModalProps {
   product: any;          // replace with your ProductPayload
   marketListItem?: any;  // replace with your MarketListItemPayload
   companyId: string;
-  categories: CategoryData[];
+  categories: StoreCategory[];
 }
 
 interface MarketListingForm {
@@ -47,7 +48,7 @@ interface MarketListingForm {
 
   // Category hierarchy & tagging
   productCategoryId: string;
-  category: CategoryData | null;
+  category: StoreCategory | null;
   subCategory: any;
   subCategoryName: string;
   tags: string[];
@@ -465,7 +466,7 @@ export default function AddToProductMarketModal({
   const pickerCategories = useMemo(
     () =>
       categories.map((raw) => ({
-        id: raw.category.id,
+        id: raw.id,
         displayName: raw.displayName,
         icon: raw.icon,
         items: raw.items,
@@ -487,7 +488,7 @@ export default function AddToProductMarketModal({
   );
 
   const handleCategoryChange = useCallback(
-    (cat: CategoryData | null) => updateField('category', cat),
+    (cat: StoreCategory | null) => updateField('category', cat),
     [updateField]
   );
   const handleSubCategoryChange = useCallback(

@@ -1,33 +1,13 @@
-import React, { useCallback } from "react";
+import React from "react";
 import InputField from "./InputField";
 
 interface OwnershipPricingProps {
-  formData: {
-    vin?: string;
-    logbookStatus?: string;
-    price?: number | string;
-    negotiable?: boolean;
-    financingAvailable?: boolean;
-    tradeIn?: boolean;
-    serviceHistory?: string;
-    [key: string]: any;
-  };
-  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  formData: Record<string, any>;
+  onChange: (name: string, value: any) => void;
 }
 
-const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormData }) => {
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const { name, value, type, checked } = e.target as HTMLInputElement;
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    },
-    [setFormData]
-  );
-
-  const selectClasses =
+const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange }) => {
+  const inputClasses =
     "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
   const checkboxClasses = "h-5 w-5 text-blue-600 border-gray-300 rounded";
 
@@ -41,7 +21,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
         </p>
       </div>
 
-      {/* ── Subsection: Vehicle ID & Logbook ── */}
+      {/* ── Vehicle Identification ── */}
       <div className="bg-gray-50 p-5 rounded-lg space-y-4">
         <h4 className="text-lg font-medium text-gray-700">Vehicle Identification</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -49,23 +29,20 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
             label="VIN Number"
             name="vin"
             value={formData.vin ?? ""}
-            onChange={handleChange}
+            onChange={(e) => onChange("vin", e.target.value)}
             placeholder="e.g. 1HGCM82633A004352"
             required
           />
           <div>
-            <label
-              htmlFor="logbookStatus"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="logbookStatus" className="block text-sm font-medium text-gray-700">
               Logbook Status
             </label>
             <select
               id="logbookStatus"
               name="logbookStatus"
               value={formData.logbookStatus ?? ""}
-              onChange={handleChange}
-              className={selectClasses}
+              onChange={(e) => onChange("logbookStatus", e.target.value)}
+              className={inputClasses}
               required
             >
               <option value="" disabled>
@@ -79,7 +56,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
         </div>
       </div>
 
-      {/* ── Subsection: Pricing & Negotiation ── */}
+      {/* ── Pricing Options ── */}
       <div className="bg-gray-50 p-5 rounded-lg space-y-4">
         <h4 className="text-lg font-medium text-gray-700">Pricing Options</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
@@ -88,7 +65,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
             name="price"
             type="number"
             value={formData.price ?? ""}
-            onChange={handleChange}
+            onChange={(e) => onChange("price", e.target.value)}
             placeholder="e.g. 15000"
             required
           />
@@ -97,7 +74,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
               type="checkbox"
               name="negotiable"
               checked={!!formData.negotiable}
-              onChange={handleChange}
+              onChange={(e) => onChange("negotiable", e.target.checked)}
               className={checkboxClasses}
             />
             <span className="text-sm text-gray-700">Price Negotiable</span>
@@ -105,7 +82,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
         </div>
       </div>
 
-      {/* ── Subsection: Additional Options ── */}
+      {/* ── Additional Features ── */}
       <div className="bg-gray-50 p-5 rounded-lg space-y-4">
         <h4 className="text-lg font-medium text-gray-700">Additional Features</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
@@ -114,7 +91,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
               type="checkbox"
               name="financingAvailable"
               checked={!!formData.financingAvailable}
-              onChange={handleChange}
+              onChange={(e) => onChange("financingAvailable", e.target.checked)}
               className={checkboxClasses}
             />
             <span className="text-sm text-gray-700">Financing Available</span>
@@ -125,25 +102,22 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
               type="checkbox"
               name="tradeIn"
               checked={!!formData.tradeIn}
-              onChange={handleChange}
+              onChange={(e) => onChange("tradeIn", e.target.checked)}
               className={checkboxClasses}
             />
             <span className="text-sm text-gray-700">Trade‐in Accepted</span>
           </label>
 
           <div>
-            <label
-              htmlFor="serviceHistory"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="serviceHistory" className="block text-sm font-medium text-gray-700">
               Service History
             </label>
             <select
               id="serviceHistory"
               name="serviceHistory"
               value={formData.serviceHistory ?? ""}
-              onChange={handleChange}
-              className={selectClasses}
+              onChange={(e) => onChange("serviceHistory", e.target.value)}
+              className={inputClasses}
             >
               <option value="" disabled>
                 Select history

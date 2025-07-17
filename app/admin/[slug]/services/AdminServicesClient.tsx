@@ -11,7 +11,8 @@ import {
 } from "@heroicons/react/24/outline";
 import ServiceListingFormRedesign from "@/components/admin/components/ServiceListingFormRedesign";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
-import { Category } from "../categories/page";
+import { StoreCategory } from "../categories/page";
+
 
 // Enums/types matching Prisma schema
 export type ListingStatus = "ACTIVE" | "PENDING" | "REJECTED" | "ARCHIVED";
@@ -100,7 +101,7 @@ interface Props {
   sellers?: { id: string; name: string }[];
   companies?: { id: string; name: string }[];
   companyId: string;
-  categoriesData: Category[];
+  categoriesData: StoreCategory[];
 }
 
 export default function AdminServicesClient({
@@ -113,6 +114,7 @@ export default function AdminServicesClient({
   companyId = "",
   categoriesData
 }: Props) {
+  
   const [services, setServices] = useState<ServiceItem[]>(initialServices);
   const [selected, setSelected] = useState<ServiceItem | null>(null);
   const [formMode, setFormMode] = useState<"edit" | "create">("edit");
@@ -247,8 +249,6 @@ export default function AdminServicesClient({
           showRequestProductModal={showEditToMarketModal}
           setShowRequestProductModal={setShowEditToMarketModal}
           product={selectedService}
-          // sellerId={""}
-          // sellerType={""}
           marketListItem={selectedService}
           categories={categoriesData}
           companyId={companyId}
@@ -260,8 +260,6 @@ export default function AdminServicesClient({
           showRequestProductModal={showAddToMarketModal}
           setShowRequestProductModal={setShowAddToMarketModal}
           product={null}
-          // sellerId={""}
-          // sellerType={""}
           marketListItem={null}
           categories={categoriesData}
           companyId={companyId}

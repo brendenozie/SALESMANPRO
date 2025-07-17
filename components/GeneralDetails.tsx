@@ -3,34 +3,19 @@ import InputField from "./InputField";
 import CommissionSection from "./CommissionSection";
 
 interface GeneralDetailsProps {
-  formData: {
-    make?: string;
-    model?: string;
-    year?: number | string;
-    trim?: string;
-    type?: string;
-    color?: string;
-    mileage?: number | string;
-    condition?: string;
-    material?: string;
-    weight?: number | string;
-    dimensions?: string;
-    longDescription?: string;
-    [key: string]: any;
-  };
-  setFormData: (data: Record<string, any>) => void;
+  formData: Record<string, any>;
+  setFormData: (field: string, value: any) => void;
 }
 
 const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }) => {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      const { name, value } = e.target;
-      setFormData((prev: any) => ({ ...prev, [name]: value }));
+      const { name, value, type } = e.target;
+      setFormData(name, type === "number" ? parseFloat(value) || "" : value);
     },
     [setFormData]
   );
 
-  // Common Tailwind classes for selects and textareas
   const selectClasses =
     "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
   const textareaClasses =
@@ -38,62 +23,33 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
-      {/* ── Section 1: Basic Info ── */}
+      {/* ── Basic Info ── */}
       <div className="bg-gray-50 p-4 rounded-lg space-y-4">
         <h3 className="text-lg font-semibold text-gray-700">Basic Info</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField
-            label="Make"
-            name="make"
-            value={formData.make ?? ""}
-            onChange={handleChange}
-            required
-          />
-          <InputField
-            label="Model"
-            name="model"
-            value={formData.model ?? ""}
-            onChange={handleChange}
-            required
-          />
-          <InputField
-            label="Year"
-            name="year"
-            type="number"
-            value={formData.year ?? ""}
-            onChange={handleChange}
-            required
-          />
-          <InputField
-            label="Trim"
-            name="trim"
-            value={formData.trim ?? ""}
-            onChange={handleChange}
-          />
-          <InputField
-            label="Type (SUV, Sedan, etc.)"
-            name="type"
-            value={formData.type ?? ""}
-            onChange={handleChange}
-            required
-          />
-          <InputField
-            label="Color"
-            name="color"
-            value={formData.color ?? ""}
-            onChange={handleChange}
-          />
-          <InputField
-            label="Mileage (km)"
-            name="mileage"
-            type="number"
-            value={formData.mileage ?? ""}
-            onChange={handleChange}
-          />
+          {[
+            { label: "Make", name: "make", required: true },
+            { label: "Model", name: "model", required: true },
+            { label: "Year", name: "year", type: "number", required: true },
+            { label: "Trim", name: "trim" },
+            { label: "Type (SUV, Sedan, etc.)", name: "type", required: true },
+            { label: "Color", name: "color" },
+            { label: "Mileage (km)", name: "mileage", type: "number" },
+          ].map(({ label, name, type = "text", required }) => (
+            <InputField
+              key={name}
+              label={label}
+              name={name}
+              type={type}
+              value={formData[name] ?? ""}
+              onChange={handleChange}
+              required={required}
+            />
+          ))}
         </div>
       </div>
 
-      {/* ── Section 2: Condition & Description ── */}
+      {/* ── Condition & Description ── */}
       <div className="bg-gray-50 p-4 rounded-lg space-y-4">
         <h3 className="text-lg font-semibold text-gray-700">Condition & Description</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,9 +65,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
               className={selectClasses}
               required
             >
-              <option value="" disabled>
-                Select condition
-              </option>
+              <option value="" disabled>Select condition</option>
               <option value="New">New</option>
               <option value="Used">Used</option>
               <option value="Certified Pre-Owned">Certified Pre-Owned</option>
@@ -135,7 +89,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
         </div>
       </div>
 
-      {/* ── Section 3: Material, Weight & Dimensions ── */}
+      {/* ── Material & Size ── */}
       <div className="bg-gray-50 p-4 rounded-lg space-y-4">
         <h3 className="text-lg font-semibold text-gray-700">Material & Size</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -184,7 +138,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
         </div>
       </div>
 
-      {/* ── Section 4: Commission & Pricing ── */}
+      {/* ── Commission & Pricing ── */}
       <div className="bg-gray-50 p-4 rounded-lg space-y-4">
         <h3 className="text-lg font-semibold text-gray-700">Commission & Pricing</h3>
         <CommissionSection formData={formData} onChange={handleChange} />

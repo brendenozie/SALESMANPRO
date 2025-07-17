@@ -12,6 +12,7 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
+import { StoreCategory } from "../categories/page";
 
 type Product = {
   id: string;
@@ -28,13 +29,13 @@ type Product = {
   commissionType: number;
 };
 
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
+// type Category = {
+//   id: string;
+//   name: string;
+//   image: string;
+//   tags: string[];
+//   status: string;
+// };
 
 type Agent = {
   id: string;
@@ -44,7 +45,7 @@ type Agent = {
 interface ClientProps {
   companyId: string;
   productsData: Product[];
-  categoriesData: Category[];
+  categoriesData: StoreCategory[];
   agentsData: Agent[];
 }
 
@@ -196,7 +197,7 @@ export default function AdminInventoryClient({
             setShowRequestProductModal={setShowEditProductModal}
             categories={categoriesData}
             companyId={companyId}
-            product={selectedProduct} // Pass for editing
+            product={selectedProduct}
           />
         )}
 
@@ -233,13 +234,7 @@ export default function AdminInventoryClient({
             setShowRequestProductModal={setShowAddToMarketProductModal}
             categories={categoriesData}
             product={selectedProduct}
-            inventoryItemId={selectedProduct.inventoryId}
-            agentInventoryItemId={selectedAgent?.id}
-            quantity={stockAmount}
-            sellerId={"63f7c9e2d91b1b2a5e80b013"} // ← hardcoded in your example
             companyId={companyId}
-            salesAgentId={selectedAgent}
-            sellerType={"ADMIN"}
           />
         )}
       </div>

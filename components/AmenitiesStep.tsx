@@ -1,6 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { PlusCircleIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  PlusCircleIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 
 interface AmenityItem {
   name: string;
@@ -110,7 +114,8 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
   const [searchTerm, setSearchTerm] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
 
-  // Filter categories/items by search term
+  const amenities = formData.amenities || [];
+
   const filteredCategories = useMemo(() => {
     if (!searchTerm.trim()) return AMENITIES_CATEGORIES;
     return AMENITIES_CATEGORIES.map((cat) => ({
@@ -121,34 +126,35 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
     })).filter((cat) => cat.items.length > 0);
   }, [searchTerm]);
 
-  // Toggle a predefined or custom amenity
-  const toggleAmenity = (value: string) => {
-    const current: string[] = formData.amenities || [];
-    const updated = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
-    setFormData({ ...formData, amenities: updated });
-  };
+  const toggleAmenity = useCallback(
+    (value: string) => {
+      const updated = amenities.includes(value)
+        ? amenities.filter((a) => a !== value)
+        : [...amenities, value];
+      setFormData((prev) => ({ ...prev, amenities: updated }));
+    },
+    [amenities, setFormData]
+  );
 
-  // Add a new custom amenity (if non-empty and not duplicate)
-  const addCustomAmenity = () => {
+  const addCustomAmenity = useCallback(() => {
     const trimmed = customAmenity.trim();
-    if (!trimmed) return;
-    if ((formData.amenities || []).includes(trimmed)) {
-      setCustomAmenity("");
-      return;
-    }
-    setFormData({ ...formData, amenities: [...(formData.amenities || []), trimmed] });
+    if (!trimmed || amenities.includes(trimmed)) return;
+    setFormData((prev) => ({
+      ...prev,
+      amenities: [...(prev.amenities || []), trimmed],
+    }));
     setCustomAmenity("");
-  };
+  }, [customAmenity, amenities, setFormData]);
 
-  // Separate predefined vs custom
-  const predefinedSet = new Set(
-    AMENITIES_CATEGORIES.flatMap((cat) => cat.items.map((item) => item.value))
+  const predefinedSet = useMemo(
+    () =>
+      new Set(AMENITIES_CATEGORIES.flatMap((cat) =>
+        cat.items.map((item) => item.value)
+      )),
+    []
   );
-  const customAmenities = (formData.amenities || []).filter(
-    (a: string) => !predefinedSet.has(a)
-  );
+
+  const customAmenities = amenities.filter((a) => !predefinedSet.has(a));
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
@@ -159,7 +165,7 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
         </p>
       </div>
 
-      {/* Search Bar */}
+      {/* Search */}
       <div className="relative">
         <MagnifyingGlassIcon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
@@ -171,14 +177,14 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
         />
       </div>
 
-      {/* Predefined Amenity Categories */}
+      {/* Categories */}
       <div className="space-y-6">
         {filteredCategories.map((category) => (
           <div key={category.category} className="space-y-3">
             <h3 className="text-lg font-semibold text-gray-700">{category.category}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {category.items.map((amenity) => {
-                const selected = (formData.amenities || []).includes(amenity.value);
+                const selected = amenities.includes(amenity.value);
                 return (
                   <motion.button
                     key={amenity.value}
@@ -202,12 +208,12 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
         ))}
       </div>
 
-      {/* Custom Amenities Section */}
+      {/* Custom */}
       {customAmenities.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-gray-700">Custom Amenities</h3>
           <div className="flex flex-wrap gap-3">
-            {customAmenities.map((amenity: string) => (
+            {customAmenities.map((amenity) => (
               <motion.div
                 key={amenity}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -224,7 +230,7 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
         </div>
       )}
 
-      {/* Add Custom Amenity Input */}
+      {/* Input */}
       <div className="flex items-center space-x-3">
         <input
           type="text"

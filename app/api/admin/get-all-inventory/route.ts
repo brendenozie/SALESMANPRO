@@ -5,7 +5,6 @@ import { OrderStatus } from "@prisma/client";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
-  const agentId = searchParams.get("agentId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const page = parseInt(searchParams.get("page") || "1", 10);
   const status = searchParams.get("status") || "all";
@@ -89,7 +88,6 @@ export async function GET(req: Request) {
 
     return NextResponse.json(formattedProducts);
   } catch (error) {
-    console.error("Fetch error:", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }

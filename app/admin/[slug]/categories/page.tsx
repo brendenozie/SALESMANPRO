@@ -39,7 +39,7 @@ export type ProductCategory = {
   isFeatured?: boolean;
   showInHomepage?: boolean;
   attributes?: Record<string, any>;
-  subcategories: Subcategory[];
+  subcategories?: Subcategory[] | null;
   icon?: string;
   image?: string;
 };
