@@ -44,6 +44,11 @@ import {
   VideoCameraIcon,
   QuestionMarkCircleIcon,
   ShieldCheckIcon,
+  PlayCircleIcon,
+  ArrowUturnLeftIcon,
+  BellIcon,
+  CurrencyDollarIcon,
+  PencilSquareIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -434,88 +439,88 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Dashboard",
       href: `/admin/${adminSlug}`,
-      icon: "HomeIcon"
+      icon: HomeIcon
     },
     {
       label: "Bookings",
       href: `/admin/${adminSlug}/travel-bookings`,
-      icon: "CalendarDaysIcon"
+      icon: CalendarDaysIcon
     },
     {
       label: "Destinations",
       href: `/admin/${adminSlug}/travel-destinations`,
-      icon: "GlobeAltIcon"
+      icon: GlobeAltIcon
     },
     {
       label: "Packages & Tours",
       href: `/admin/${adminSlug}/travel-packages`,
-      icon: "BriefcaseIcon"
+      icon: BriefcaseIcon
     },
     {
       label: "Users & Customers",
       href: `/admin/${adminSlug}/travel-users`,
-      icon: "UsersIcon"
+      icon: UsersIcon
     },
     {
       label: "Travel Experts",
       href: `/admin/${adminSlug}/travel-experts`,
-      icon: "UserGroupIcon"
+      icon: UserGroupIcon
     },
     {
       label: "Virtual Tours",
       href: `/admin/${adminSlug}/travel-virtual-tours`,
-      icon: "PlayCircleIcon"
+      icon: PlayCircleIcon
     },
     {
       label: "Testimonials",
       href: `/admin/${adminSlug}/travel-testimonials`,
-      icon: "ChatBubbleLeftRightIcon"
+      icon: ChatBubbleLeftRightIcon
     },
     {
       label: "Blog & Content",
       href: `/admin/${adminSlug}/travel-blog`,
-      icon: "NewspaperIcon"
+      icon: NewspaperIcon
     },
     {
       label: "Promotions & Deals",
       href: `/admin/${adminSlug}/travel-promotions`,
-      icon: "TagIcon"
+      icon: TagIcon
     },
     {
       label: "Inquiries",
       href: `/admin/${adminSlug}/travel-inquiries`,
-      icon: "QuestionMarkCircleIcon"
+      icon: QuestionMarkCircleIcon
     },
     {
       label: "Settings",
       href: `/admin/${adminSlug}/travel-settings`,
-      icon: "Cog6ToothIcon"
+      icon: Cog6ToothIcon
     }
   ],
 
   "Fitness & Wellness": [
-        { label: "Dashboard", href: `/admin/${adminSlug}`, icon: "HomeIcon" }, // Overview of gym activity
-        { label: "POS & Sales", href: `/admin/${adminSlug}/fitness-pos`, icon: "CurrencyDollarIcon" }, // Point of Sale and transaction management
-        { label: "Programs & Classes", href: `/admin/${adminSlug}/fitness-programs`, icon: "ClipboardDocumentListIcon" }, // Manage fitness programs, classes, schedules
-        { label: "Trainers & Staff", href: `/admin/${adminSlug}/fitness-trainers`, icon: "BriefcaseIcon" }, // Manage trainer profiles, availability
-        { label: "Clients & Members", href: `/admin/${adminSlug}/fitness-clients`, icon: "UsersIcon" }, // Manage client accounts, memberships, progress
-        { label: "Locations & Facilities", href: `/admin/${adminSlug}/fitness-locations`, icon: "MapPinIcon" }, // Manage physical gym locations, equipment, rooms
-        { label: "Bookings & Schedule", href: `/admin/${adminSlug}/fitness-bookings`, icon: "CalendarDaysIcon" }, // Manage class and personal training bookings
-        { label: "Notifications & Comms", href: `/admin/${adminSlug}/fitness-notifications`, icon: "BellIcon" }, // Send announcements, newsletters, client messages
-        { label: "Reports & Analytics", href: `/admin/${adminSlug}/fitness-reports`, icon: "ChartBarIcon" }, // View performance metrics, sales reports
-        { label: "Settings", href: `/admin/${adminSlug}/fitness-settings`, icon: "Cog6ToothIcon" }, // General administrative settings, user roles
+        { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overview of gym activity
+        { label: "POS & Sales", href: `/admin/${adminSlug}/fitness-pos`, icon: CurrencyDollarIcon }, // Point of Sale and transaction management
+        { label: "Programs & Classes", href: `/admin/${adminSlug}/fitness-programs`, icon : ClipboardDocumentListIcon}, // Manage fitness programs, classes, schedules
+        { label: "Trainers & Staff", href: `/admin/${adminSlug}/fitness-trainers`, icon : BriefcaseIcon}, // Manage trainer profiles, availability
+        { label: "Clients & Members", href: `/admin/${adminSlug}/fitness-clients`, icon : UsersIcon}, // Manage client accounts, memberships, progress
+        { label: "Locations & Facilities", href: `/admin/${adminSlug}/fitness-locations`, icon : MapPinIcon}, // Manage physical gym locations, equipment, rooms
+        { label: "Bookings & Schedule", href: `/admin/${adminSlug}/fitness-bookings`, icon : CalendarDaysIcon}, // Manage class and personal training bookings
+        { label: "Notifications & Comms", href: `/admin/${adminSlug}/fitness-notifications`, icon : BellIcon}, // Send announcements, newsletters, client messages
+        { label: "Reports & Analytics", href: `/admin/${adminSlug}/fitness-reports`, icon : ChartBarIcon}, // View performance metrics, sales reports
+        { label: "Settings", href: `/admin/${adminSlug}/fitness-settings`, icon : Cog6ToothIcon}, // General administrative settings, user roles
     ],
     // You could also categorize into more specific sections if the admin grows
     "Marketing & Engagement": [
-        { label: "Content Management", href: `/admin/${adminSlug}/content`, icon: "PencilSquareIcon" }, // Blog posts, articles, website content
-        { label: "Promotions & Deals", href: `/admin/${adminSlug}/promotions`, icon: "TagIcon" }, // Create and manage discounts, special offers
-        { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon: "ChatBubbleLeftRightIcon" }, // Manage client testimonials
-        { label: "FAQs", href: `/admin/${adminSlug}/faqs`, icon: "QuestionMarkCircleIcon" }, // Manage frequently asked questions
+        { label: "Content Management", href: `/admin/${adminSlug}/content`, icon : PencilSquareIcon}, // Blog posts, articles, website content
+        { label: "Promotions & Deals", href: `/admin/${adminSlug}/promotions`, icon : TagIcon}, // Create and manage discounts, special offers
+        { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon : ChatBubbleLeftRightIcon}, // Manage client testimonials
+        { label: "FAQs", href: `/admin/${adminSlug}/faqs`, icon : QuestionMarkCircleIcon}, // Manage frequently asked questions
     ],
     "Billing & Finance": [
-        { label: "Invoices", href: `/admin/${adminSlug}/invoices`, icon: "DocumentTextIcon" },
-        { label: "Payments", href: `/admin/${adminSlug}/payments`, icon: "CreditCardIcon" },
-        { label: "Refunds", href: `/admin/${adminSlug}/refunds`, icon: "ArrowUturnLeftIcon" },
+        { label: "Invoices", href: `/admin/${adminSlug}/invoices`, icon : DocumentTextIcon},
+        { label: "Payments", href: `/admin/${adminSlug}/payments`, icon : CreditCardIcon},
+        { label: "Refunds", href: `/admin/${adminSlug}/refunds`, icon : ArrowUturnLeftIcon},
     ],
 
   "Marketplace": [

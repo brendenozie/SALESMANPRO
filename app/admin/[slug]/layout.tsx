@@ -44,7 +44,9 @@ export default async function AdminStoreLayout({
       marketplaceListings: {
         take: 12, select: {
           id: true, name: true, description: true, finalPrice: true, images: true,
-          isAvailable: true, isFeatured: true, product: { select: { id: true, name: true, description: true, brand: true, color: true, size: true, }, },
+          isAvailable: true, isFeatured: true, product: { 
+            select: { id: true, name: true, description: true, brand: true, color: true, size: true, }, 
+          },
         },
       },
       StoreCategory: {
