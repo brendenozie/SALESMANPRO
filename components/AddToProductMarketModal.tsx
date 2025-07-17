@@ -587,14 +587,17 @@ export default function AddToProductMarketModal({
             >
               Next <ArrowRightIcon className="h-5 w-5 ml-1" />
             </button>
-          ) : (
-            <button
-              className="btn-success flex items-center"
-              onClick={handleCreateListing}
-              disabled={loading}
-            >
-              Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
-            </button>
+          ) : (step > (stepsForCategory.length - 1) ? (
+                <button
+                  className="btn-success flex items-center"
+                  onClick={handleCreateListing}
+                  disabled={loading}
+                >
+                  Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
+                </button>
+            ) : (
+              <div></div>
+            )
           )}
         </div>
       </div>

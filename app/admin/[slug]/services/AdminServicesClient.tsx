@@ -247,8 +247,8 @@ export default function AdminServicesClient({
           showRequestProductModal={showEditToMarketModal}
           setShowRequestProductModal={setShowEditToMarketModal}
           product={selectedService}
-          sellerId={""}
-          sellerType={""}
+          // sellerId={""}
+          // sellerType={""}
           marketListItem={selectedService}
           categories={categoriesData}
           companyId={companyId}
@@ -260,8 +260,8 @@ export default function AdminServicesClient({
           showRequestProductModal={showAddToMarketModal}
           setShowRequestProductModal={setShowAddToMarketModal}
           product={null}
-          sellerId={""}
-          sellerType={""}
+          // sellerId={""}
+          // sellerType={""}
           marketListItem={null}
           categories={categoriesData}
           companyId={companyId}

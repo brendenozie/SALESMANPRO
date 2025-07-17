@@ -132,15 +132,29 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
 
           {showAddToMarketModal && selectedProduct && (
             <AddToProductMarketModal
-              showRequestProductModal={showAddToMarketModal}
-              setShowRequestProductModal={setShowAddToMarketModal}
-              product={selectedProduct}
-              sellerId={""}       
-              sellerType={""}     
-              marketListItem={selectedProduct}
-              categories={categoriesData}
-            />
+                    showRequestProductModal={showAddToMarketModal}
+                    setShowRequestProductModal={setShowAddToMarketModal}
+                    product={null}
+                    // sellerId={""}
+                    // sellerType={""}
+                    marketListItem={selectedProduct}
+                    categories={categoriesData}
+                    companyId={companyId}
+                  />
           )}
+
+          {showAddToMarketModal && (
+                  <AddToProductMarketModal
+                    showRequestProductModal={showAddToMarketModal}
+                    setShowRequestProductModal={setShowAddToMarketModal}
+                    product={null}
+                    // sellerId={""}
+                    // sellerType={""}
+                    marketListItem={null}
+                    categories={categoriesData}
+                    companyId={companyId}
+                  />
+                )}
 
           {showRequestModal && selectedProduct && (
             <ProductRequestModal
