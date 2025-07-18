@@ -1,10 +1,15 @@
+'use client';
+
 import React, { useCallback } from "react";
 import { motion } from "framer-motion";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
+// It's highly recommended to import ProductForm from AddProductModal.tsx for better type safety
+// For simplicity in this example, we'll use a generic Record<string, any> for updateField's 'name'
 interface ProductVariantsProps {
   formData: Record<string, any>;
-  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  // Corrected type to match the updateField function from the parent
+  setFormData: (name: string, value: any) => void;
 }
 
 const VARIANT_OPTIONS = {
@@ -18,36 +23,34 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
   // Toggle selection of a predefined variant option
   const handleOptionToggle = useCallback(
     (category: keyof typeof VARIANT_OPTIONS, option: string) => {
-      setFormData((prev) => {
-        const currentList: string[] = prev[category] || [];
-        const updatedList = currentList.includes(option)
-          ? currentList.filter((v) => v !== option)
-          : [...currentList, option];
-        return { ...prev, [category]: updatedList };
-      });
+      const currentList: string[] = formData[category] || [];
+      const updatedList = currentList.includes(option)
+        ? currentList.filter((v) => v !== option)
+        : [...currentList, option];
+      setFormData(category, updatedList); // Use updateField directly
     },
-    [setFormData]
+    [formData, setFormData] // Dependencies: formData and updateField itself
   );
 
   // Add a new empty custom variant
   const addCustomVariant = () => {
     const existing = Array.isArray(formData.customVariants) ? formData.customVariants : [];
     const next = [...existing, { name: "", extraPrice: "" }];
-    setFormData({ ...formData, customVariants: next });
+    setFormData("customVariants", next); // Use updateField
   };
 
   // Update a field of a specific custom variant
   const updateCustomVariant = (index: number, field: "name" | "extraPrice", value: string) => {
     const variants = Array.isArray(formData.customVariants) ? [...formData.customVariants] : [];
     variants[index] = { ...variants[index], [field]: value };
-    setFormData({ ...formData, customVariants: variants });
+    setFormData("customVariants", variants); // Use updateField
   };
 
   // Remove a custom variant by index
   const removeCustomVariant = (index: number) => {
     const variants = Array.isArray(formData.customVariants) ? [...formData.customVariants] : [];
     variants.splice(index, 1);
-    setFormData({ ...formData, customVariants: variants });
+    setFormData("customVariants", variants); // Use updateField
   };
 
   return (

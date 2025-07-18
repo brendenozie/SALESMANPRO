@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback } from "react";
 import { motion } from "framer-motion";
 import {
@@ -7,9 +9,12 @@ import {
   GlobeAltIcon,
 } from "@heroicons/react/24/outline";
 
+// It's highly recommended to import ProductForm from AddProductModal.tsx for better type safety
+// For simplicity in this example, we'll use a generic Record<string, any> for updateField's 'name'
 interface ContactLocationProps {
   formData: Record<string, any>;
-  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  // Corrected type to match the updateField function from the parent
+  setFormData: (name: string, value: any) => void;
 }
 
 const DIGITAL_SUBCATEGORIES = [
@@ -22,17 +27,18 @@ const DIGITAL_SUBCATEGORIES = [
 
 const ContactLocation: React.FC<ContactLocationProps> = ({
   formData,
-  setFormData,
+  setFormData, // Renamed from setFormData
 }) => {
-  const subCat = formData.subCategory || "";
+  // Accessing subCategoryName from formData for consistency with ProductForm
+  const subCat = formData.subCategoryName || ""; // Use subCategoryName as per ProductForm
   const isDigital = DIGITAL_SUBCATEGORIES.includes(subCat);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData(name, value); // Call updateField directly
     },
-    [setFormData]
+    [setFormData] // Dependency: updateField
   );
 
   const fillCurrentLocation = () => {
@@ -43,8 +49,14 @@ const ContactLocation: React.FC<ContactLocationProps> = ({
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const coords = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
-        setFormData((prev) => ({ ...prev, location: coords }));
+        const latitude = pos.coords.latitude;
+        const longitude = pos.coords.longitude;
+        setFormData('latitude', latitude);
+        setFormData('longitude', longitude);
+        // Optionally, update a displayable location name based on coordinates
+        setFormData('locationName', `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        // If formData.location is intended to be a complex object, you'd update it differently.
+        // For now, assuming locationName, latitude, longitude are the target fields.
       },
       (err) => {
         console.error("Geolocation error:", err.message);
@@ -65,14 +77,14 @@ const ContactLocation: React.FC<ContactLocationProps> = ({
 
       {/* Form Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Location */}
+        {/* Location Name / Physical Location */}
         {!isDigital && (
           <div className="relative">
             <MapPinIcon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              name="location"
-              value={formData.location || ""}
+              name="locationName" // Changed name to locationName as per ProductForm
+              value={formData.locationName || ""} // Use locationName from formData
               onChange={handleChange}
               placeholder="Enter address or city"
               className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -88,6 +100,33 @@ const ContactLocation: React.FC<ContactLocationProps> = ({
             </motion.button>
           </div>
         )}
+
+        {/* Digital Product URL */}
+        {isDigital && (
+          <div className="relative col-span-full">
+            <GlobeAltIcon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="url"
+              name="digitalUrl"
+              value={formData.digitalUrl || ""}
+              onChange={handleChange}
+              placeholder="e.g. https://yourproduct.com/download"
+              className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        )}
+        
+        {/* Contact Name */}
+        <div className="relative">
+          <input
+            type="text"
+            name="contactName"
+            value={formData.contactName || ""}
+            onChange={handleChange}
+            placeholder="Contact Person's Name"
+            className="w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
         {/* Contact Number */}
         <div className="relative">

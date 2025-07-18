@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
@@ -18,20 +20,21 @@ interface AmenityCategory {
 }
 
 interface VehicleAmenitiesStepProps {
-  formData: { vehicleAmenities: string[] };
-  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  formData: { vehicleAmenities?: string[] }; // 'vehicleAmenities' can be undefined initially
+  // Corrected type to match the updateField function from the parent
+  setFormData: (name: string, value: any) => void;
 }
 
 const VEHICLE_AMENITIES: AmenityCategory[] = [
   {
     category: "Comfort & Interior",
     items: [
-      { name: "Air Conditioning", value: "ac", icon: "🌬" },
-      { name: "Leather Seats", value: "leather_seats", icon: "🛋" },
+      { name: "Air Conditioning", value: "ac", icon: "🌬️" }, // Changed emoji for consistency
+      { name: "Leather Seats", value: "leather_seats", icon: "🛋️" }, // Changed emoji for consistency
       { name: "Heated Seats", value: "heated_seats", icon: "🔥" },
       { name: "Sunroof / Moonroof", value: "sunroof", icon: "🌞" },
       { name: "Ambient Lighting", value: "ambient_lighting", icon: "💡" },
-      { name: "Cruise Control", value: "cruise_control", icon: "🛣" },
+      { name: "Cruise Control", value: "cruise_control", icon: "🛣️" }, // Changed emoji for consistency
     ],
   },
   {
@@ -68,7 +71,7 @@ const VEHICLE_AMENITIES: AmenityCategory[] = [
   {
     category: "Performance & Tech",
     items: [
-      { name: "All-Wheel Drive", value: "awd", icon: "🔧" },
+      { name: "All-Wheel Drive", value: "awd", icon: "⚙️" }, // Changed emoji to something more general for AWD
       { name: "Keyless Entry", value: "keyless_entry", icon: "🔑" },
       { name: "Remote Start", value: "remote_start", icon: "📲" },
       { name: "EV Charging Port", value: "ev_port", icon: "⚡" },
@@ -79,11 +82,12 @@ const VEHICLE_AMENITIES: AmenityCategory[] = [
 
 const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
   formData,
-  setFormData,
+  setFormData, // Renamed from setFormData
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
 
+  // Ensure vehicleAmenities is always an array, even if formData.vehicleAmenities is undefined
   const vehicleAmenities = formData.vehicleAmenities || [];
 
   const filteredCategories = useMemo(() => {
@@ -101,18 +105,20 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
       const updated = vehicleAmenities.includes(value)
         ? vehicleAmenities.filter((v) => v !== value)
         : [...vehicleAmenities, value];
-      setFormData((prev) => ({ ...prev, vehicleAmenities: updated }));
+      setFormData("vehicleAmenities", updated); // Call updateField directly
     },
-    [vehicleAmenities, setFormData]
+    [vehicleAmenities, setFormData] // Dependencies: vehicleAmenities and updateField
   );
 
   const addCustomAmenity = useCallback(() => {
     const trimmed = customAmenity.trim();
-    if (!trimmed || vehicleAmenities.includes(trimmed)) return;
-    setFormData((prev) => ({
-      ...prev,
-      vehicleAmenities: [...vehicleAmenities, trimmed],
-    }));
+    // Only add if it's not empty and not already included (predefined or custom)
+    if (!trimmed || vehicleAmenities.includes(trimmed)) {
+      setCustomAmenity(""); // Clear input if invalid or duplicate
+      return;
+    }
+    const newVehicleAmenities = [...vehicleAmenities, trimmed];
+    setFormData("vehicleAmenities", newVehicleAmenities); // Call updateField
     setCustomAmenity("");
   }, [customAmenity, vehicleAmenities, setFormData]);
 
@@ -126,6 +132,7 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
     []
   );
 
+  // Filter out predefined amenities to show only truly custom ones
   const customItems = vehicleAmenities.filter((a) => !predefinedSet.has(a));
 
   return (
@@ -197,6 +204,7 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
                 <button
                   onClick={() => toggleAmenity(item)}
                   aria-label={`Remove ${item}`}
+                  className="text-green-600 hover:text-green-800 focus:outline-none" // Added styling for consistency
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </button>
@@ -212,7 +220,7 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
           type="text"
           placeholder="Add custom feature"
           value={customAmenity}
-          onChange={(e) => setCustomAmenity(e.target.value)}
+          onChange={(e) => setCustomAmenity(e.target.value)} // setSearchTerm("") || Clear search on custom input
           className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button

@@ -72,19 +72,16 @@ const CategoryPicker: React.FC<Props> = ({
   onSubCategoryChange,
   onBrandChange,
 }) => {
+  
   const [searchTerm, setSearchTerm] = useState("");
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Pull subcategories from either `items` or nested `category.subcategories`
-  const rawItems =
-    formData.category?.items?.length
-      ? formData.category.items
-      : formData.category?.category?.subcategories ?? [];
-  const filteredSubCategories = rawItems.filter((sub) =>
-    sub.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const rawItems = formData.category?.items?.length ? formData.category.items : formData.category?.category?.subcategories ?? [];
+
+  const filteredSubCategories = rawItems.filter((sub) => sub.name.toLowerCase().includes(searchTerm.toLowerCase()) );
 
   const updateScrollArrows = () => {
     const el = categoryScrollRef.current;

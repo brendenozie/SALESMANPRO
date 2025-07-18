@@ -1,3 +1,5 @@
+"use client";
+
 import Banner from "../../components/Banner";
 import { useSession } from "next-auth/react";
 import MainLayout from "../../components/MainLayout";
@@ -7,14 +9,15 @@ import Join from "../../components/Join";
 import Reasons from "../../components/Reasons";
 import Plans from "../../components/Plans";
 import Testimonials from "../../components/Testimonials";
-import { ISubscritption } from "../../types/typings";
-import { GetServerSidePropsContext } from "next";
+// import { ISubscritption } from "../../types/typings";
+// import { GetServerSidePropsContext } from "next";
 
 type Props = {
-    subscriptions:  ISubscritption[] ;
+    // subscriptions:  ISubscritption[] ;
 };
 
 const Home = (props:Props) => {
+  
   const { data: session, status } = useSession();
 
   if (status === "loading") return (
@@ -52,38 +55,38 @@ const Home = (props:Props) => {
 export default Home;
 
 
-export const getServerSideProps = async (
-    context: GetServerSidePropsContext
-) => {
+// export const getServerSideProps = async (
+//     context: GetServerSidePropsContext
+// ) => {
     
-    let url = process.env.NEXT_PUBLIC_API_URL;
+//     let url = process.env.NEXT_PUBLIC_API_URL;
 
-    // Prepare all fetch requests with date range and userId as query parameters
-    // const fetchPromises = [
-    //     fetch(`${url}/get-subscriptions`).then((res) => res.json()),
-    //    ];
+//     // Prepare all fetch requests with date range and userId as query parameters
+//     // const fetchPromises = [
+//     //     fetch(`${url}/get-subscriptions`).then((res) => res.json()),
+//     //    ];
 
 
 
-  try {
-    // Wait for all fetch requests to complete
-    // const [
-    //   subscriptions,
-    // ] = await Promise.all(fetchPromises);
+//   try {
+//     // Wait for all fetch requests to complete
+//     // const [
+//     //   subscriptions,
+//     // ] = await Promise.all(fetchPromises);
 
-    return {
-      props: {
-        subscriptions:null,
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching data:", error);
+//     return {
+//       props: {
+//         subscriptions:null,
+//       },
+//     };
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
 
-    // Handle error appropriately
-    return {
-      props: {
-        subscriptions: null,
-      },
-    };
-  }
-}
+//     // Handle error appropriately
+//     return {
+//       props: {
+//         subscriptions: null,
+//       },
+//     };
+//   }
+// }

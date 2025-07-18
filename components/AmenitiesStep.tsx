@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
@@ -18,19 +20,20 @@ interface AmenityCategory {
 }
 
 interface AmenitiesStepProps {
-  formData: { amenities: string[] };
-  setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  formData: { amenities?: string[] }; // amenities can be undefined initially
+  // Corrected type to match the updateField function from the parent
+  setFormData: (name: string, value: any) => void;
 }
 
 const AMENITIES_CATEGORIES: AmenityCategory[] = [
   {
     category: "General",
     items: [
-      { name: "Air Conditioning", value: "air_conditioning", icon: "🌡" },
+      { name: "Air Conditioning", value: "air_conditioning", icon: "🌡️" },
       { name: "Heating", value: "heating", icon: "🔥" },
       { name: "Backup Generator", value: "backup_generator", icon: "🔌" },
-      { name: "Elevator", value: "elevator", icon: "🏗" },
-      { name: "Ceiling Fans", value: "ceiling_fans", icon: "🌬" },
+      { name: "Elevator", value: "elevator", icon: "🏗️" },
+      { name: "Ceiling Fans", value: "ceiling_fans", icon: "🌬️" },
       { name: "Private Entrance", value: "private_entrance", icon: "🚪" },
       { name: "Housekeeping Service", value: "housekeeping", icon: "🧹" },
     ],
@@ -49,7 +52,7 @@ const AMENITIES_CATEGORIES: AmenityCategory[] = [
   {
     category: "Fitness & Recreation",
     items: [
-      { name: "Swimming Pool", value: "pool", icon: "🏊" },
+      { name: "Swimming Pool", value: "pool", icon: "🏊‍♀️" },
       { name: "Gym/Fitness Center", value: "gym", icon: "🏋️" },
       { name: "Tennis Court", value: "tennis_court", icon: "🎾" },
       { name: "Game Room", value: "game_room", icon: "🎯" },
@@ -62,7 +65,7 @@ const AMENITIES_CATEGORIES: AmenityCategory[] = [
     items: [
       { name: "Garden", value: "garden", icon: "🌳" },
       { name: "BBQ Area", value: "bbq_area", icon: "🍖" },
-      { name: "Rooftop Lounge", value: "rooftop", icon: "🏕" },
+      { name: "Rooftop Lounge", value: "rooftop", icon: "🏕️" },
       { name: "Balcony/Terrace", value: "balcony", icon: "🌅" },
       { name: "Outdoor Fireplace", value: "outdoor_fireplace", icon: "🔥" },
     ],
@@ -81,7 +84,7 @@ const AMENITIES_CATEGORIES: AmenityCategory[] = [
     category: "Family-Friendly",
     items: [
       { name: "Children’s Play Area", value: "play_area", icon: "🎠" },
-      { name: "On-Site Daycare", value: "daycare", icon: "👩‍⚕️" },
+      { name: "On-Site Daycare", value: "daycare", icon: "👩‍🍼" }, // Updated emoji for daycare
       { name: "Nearby Schools", value: "nearby_schools", icon: "🏫" },
     ],
   },
@@ -89,7 +92,7 @@ const AMENITIES_CATEGORIES: AmenityCategory[] = [
     category: "Business & Workspaces",
     items: [
       { name: "Co-Working Space", value: "coworking_space", icon: "🏢" },
-      { name: "Business Center", value: "business_center", icon: "🖥" },
+      { name: "Business Center", value: "business_center", icon: "🖥️" },
       { name: "Conference Room", value: "conference_room", icon: "🎤" },
     ],
   },
@@ -103,7 +106,7 @@ const AMENITIES_CATEGORIES: AmenityCategory[] = [
   {
     category: "Kitchen & Dining",
     items: [
-      { name: "Fully Equipped Kitchen", value: "kitchen", icon: "🍽" },
+      { name: "Fully Equipped Kitchen", value: "kitchen", icon: "🍽️" },
       { name: "In-Unit Laundry", value: "laundry", icon: "🧺" },
       { name: "Wine Cellar", value: "wine_cellar", icon: "🥂" },
     ],
@@ -114,6 +117,7 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
   const [searchTerm, setSearchTerm] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
 
+  // Ensure amenities is always an array, even if formData.amenities is undefined
   const amenities = formData.amenities || [];
 
   const filteredCategories = useMemo(() => {
@@ -131,29 +135,32 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
       const updated = amenities.includes(value)
         ? amenities.filter((a) => a !== value)
         : [...amenities, value];
-      setFormData((prev) => ({ ...prev, amenities: updated }));
+      setFormData("amenities", updated); // Call updateField directly
     },
-    [amenities, setFormData]
+    [amenities, setFormData] // Dependencies: amenities and updateField
   );
 
   const addCustomAmenity = useCallback(() => {
     const trimmed = customAmenity.trim();
-    if (!trimmed || amenities.includes(trimmed)) return;
-    setFormData((prev) => ({
-      ...prev,
-      amenities: [...(prev.amenities || []), trimmed],
-    }));
+    // Only add if it's not empty and not already included (predefined or custom)
+    if (!trimmed || amenities.includes(trimmed)) {
+      setCustomAmenity(""); // Clear input if invalid or duplicate
+      return;
+    }
+    const newAmenities = [...amenities, trimmed];
+    setFormData("amenities", newAmenities); // Call updateField
     setCustomAmenity("");
   }, [customAmenity, amenities, setFormData]);
 
   const predefinedSet = useMemo(
     () =>
-      new Set(AMENITIES_CATEGORIES.flatMap((cat) =>
-        cat.items.map((item) => item.value)
-      )),
+      new Set(
+        AMENITIES_CATEGORIES.flatMap((cat) => cat.items.map((item) => item.value))
+      ),
     []
   );
 
+  // Filter out predefined amenities to show only truly custom ones
   const customAmenities = amenities.filter((a) => !predefinedSet.has(a));
 
   return (
@@ -208,7 +215,7 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
         ))}
       </div>
 
-      {/* Custom */}
+      {/* Custom Amenities Display */}
       {customAmenities.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-gray-700">Custom Amenities</h3>
@@ -221,7 +228,7 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
                 className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full shadow-sm space-x-2"
               >
                 <span>{amenity}</span>
-                <button onClick={() => toggleAmenity(amenity)}>
+                <button onClick={() => toggleAmenity(amenity)} className="text-green-600 hover:text-green-800 focus:outline-none">
                   <XMarkIcon className="w-4 h-4" />
                 </button>
               </motion.div>
@@ -230,13 +237,13 @@ const AmenitiesStep: React.FC<AmenitiesStepProps> = ({ formData, setFormData }) 
         </div>
       )}
 
-      {/* Input */}
+      {/* Input for New Custom Amenity */}
       <div className="flex items-center space-x-3">
         <input
           type="text"
           placeholder="Add custom amenity"
           value={customAmenity}
-          onChange={(e) => setCustomAmenity(e.target.value)}
+          onChange={(e) => setCustomAmenity(e.target.value)} // setSearchTerm("") || Clear search on custom input
           className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button

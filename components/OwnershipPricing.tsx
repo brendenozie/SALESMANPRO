@@ -1,15 +1,25 @@
-import React from "react";
+import React, { useCallback } from "react";
 import InputField from "./InputField";
 
 interface OwnershipPricingProps {
   formData: Record<string, any>;
   onChange: (name: string, value: any) => void;
+  setFormData: (field: string, value: any) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
-const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange }) => {
-  const inputClasses =
-    "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
+const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange, setFormData, handleInputChange }) => {
+  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
   const checkboxClasses = "h-5 w-5 text-blue-600 border-gray-300 rounded";
+
+  const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value, type } = e.target;
+        setFormData(name, type === "number" ? parseFloat(value) || "" : value);
+      },
+      [setFormData]
+    );
+  
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
@@ -29,7 +39,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange 
             label="VIN Number"
             name="vin"
             value={formData.vin ?? ""}
-            onChange={(e) => onChange("vin", e.target.value)}
+            handleInputChange={handleInputChange}//(e) => onChange("vin", e.target.value)}
             placeholder="e.g. 1HGCM82633A004352"
             required
           />
@@ -65,7 +75,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange 
             name="price"
             type="number"
             value={formData.price ?? ""}
-            onChange={(e) => onChange("price", e.target.value)}
+            handleInputChange={handleInputChange}//onChange={(e) => onChange("price", e.target.value)}
             placeholder="e.g. 15000"
             required
           />
@@ -74,7 +84,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange 
               type="checkbox"
               name="negotiable"
               checked={!!formData.negotiable}
-              onChange={(e) => onChange("negotiable", e.target.checked)}
+              onChange={handleChange}//onChange={(e) => onChange("negotiable", e.target.checked)}
               className={checkboxClasses}
             />
             <span className="text-sm text-gray-700">Price Negotiable</span>
@@ -91,7 +101,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange 
               type="checkbox"
               name="financingAvailable"
               checked={!!formData.financingAvailable}
-              onChange={(e) => onChange("financingAvailable", e.target.checked)}
+              onChange={handleChange}//onChange={(e) => onChange("financingAvailable", e.target.checked)}
               className={checkboxClasses}
             />
             <span className="text-sm text-gray-700">Financing Available</span>
@@ -102,7 +112,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange 
               type="checkbox"
               name="tradeIn"
               checked={!!formData.tradeIn}
-              onChange={(e) => onChange("tradeIn", e.target.checked)}
+              onChange={handleChange}//onChange={(e) => onChange("tradeIn", e.target.checked)}
               className={checkboxClasses}
             />
             <span className="text-sm text-gray-700">Trade‐in Accepted</span>
@@ -116,7 +126,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange 
               id="serviceHistory"
               name="serviceHistory"
               value={formData.serviceHistory ?? ""}
-              onChange={(e) => onChange("serviceHistory", e.target.value)}
+              onChange={handleChange}//onChange={(e) => onChange("serviceHistory", e.target.value)}
               className={inputClasses}
             >
               <option value="" disabled>

@@ -10,9 +10,10 @@ import {
   CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 
+// No changes needed here, the interface is correct for updateField
 interface ProductAvailabilityProps {
   formData: Record<string, any>;
-  onChange: (name: string, value: any) => void;
+  setFormData: (name: string, value: any) => void;
 }
 
 const FeatureToggle = ({
@@ -46,7 +47,7 @@ const FeatureToggle = ({
   </div>
 );
 
-const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onChange }) => {
+const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, setFormData }) => {
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
       {/* Header */}
@@ -64,7 +65,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => onChange("isAvailable", true)}
+            onClick={() => setFormData("isAvailable", true)}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
               formData.isAvailable
                 ? "bg-blue-600 text-white"
@@ -78,8 +79,8 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              onChange("isAvailable", false);
-              onChange("restockDate", "");
+              setFormData("isAvailable", false);
+              setFormData("restockDate", ""); // This line assumes 'restockDate' is a field you want to clear
             }}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
               !formData.isAvailable
@@ -102,7 +103,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
             name="quantity"
             min={0}
             value={formData.quantity || ""}
-            onChange={(e) => onChange("quantity", parseInt(e.target.value, 10) || 0)}
+            onChange={(e) => setFormData("quantity", parseInt(e.target.value, 10) || 0)}
             placeholder="e.g. 100"
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -114,7 +115,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
               type="date"
               name="restockDate"
               value={formData.restockDate || ""}
-              onChange={(e) => onChange("restockDate", e.target.value)}
+              onChange={(e) => setFormData("restockDate", e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -129,31 +130,31 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
             label="Featured"
             icon={StarIcon}
             enabled={!!formData.isFeatured}
-            onToggle={() => onChange("isFeatured", !formData.isFeatured)}
+            onToggle={() => setFormData("isFeatured", !formData.isFeatured)}
           />
           <FeatureToggle
             label="New Arrival"
             icon={SparklesIcon}
             enabled={!!formData.isNewArrival}
-            onToggle={() => onChange("isNewArrival", !formData.isNewArrival)}
+            onToggle={() => setFormData("isNewArrival", !formData.isNewArrival)}
           />
           <FeatureToggle
             label="On Offer"
             icon={TagIcon}
             enabled={!!formData.isOnOffer}
-            onToggle={() => onChange("isOnOffer", !formData.isOnOffer)}
+            onToggle={() => setFormData("isOnOffer", !formData.isOnOffer)}
           />
           <FeatureToggle
             label="Discounted"
             icon={CurrencyDollarIcon}
             enabled={!!formData.isDiscounted}
-            onToggle={() => onChange("isDiscounted", !formData.isDiscounted)}
+            onToggle={() => setFormData("isDiscounted", !formData.isDiscounted)}
           />
           <FeatureToggle
             label="Flash Deal"
             icon={FireIcon}
             enabled={!!formData.isFlashDeal}
-            onToggle={() => onChange("isFlashDeal", !formData.isFlashDeal)}
+            onToggle={() => setFormData("isFlashDeal", !formData.isFlashDeal)}
           />
         </div>
 
@@ -164,7 +165,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
             <input
               type="datetime-local"
               value={formData.startDealDate || ""}
-              onChange={(e) => onChange("startDealDate", e.target.value)}
+              onChange={(e) => setFormData("startDealDate", e.target.value)}
               className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </label>
@@ -173,7 +174,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
             <input
               type="datetime-local"
               value={formData.endDealDate || ""}
-              onChange={(e) => onChange("endDealDate", e.target.value)}
+              onChange={(e) => setFormData("endDealDate", e.target.value)}
               className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </label>
@@ -182,7 +183,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
             <input
               type="datetime-local"
               value={formData.availabilityStart || ""}
-              onChange={(e) => onChange("availabilityStart", e.target.value)}
+              onChange={(e) => setFormData("availabilityStart", e.target.value)}
               className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </label>
@@ -191,7 +192,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, onC
             <input
               type="datetime-local"
               value={formData.availabilityEnd || ""}
-              onChange={(e) => onChange("availabilityEnd", e.target.value)}
+              onChange={(e) => setFormData("availabilityEnd", e.target.value)}
               className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </label>

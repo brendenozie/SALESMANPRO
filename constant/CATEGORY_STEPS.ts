@@ -43,6 +43,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "Lighting":            [1,2,7,8,9,10,12,11],
   "Gardening":           [1,2,7,8,9,10,12,11],
   "Home & Garden":       [1,2,7,8,9,10,12,11],
+  "Home And Garden":       [1,2,7,8,9,10,12,11],
   "Office Supplies":     [1,2,7,8,9,10,12,11],
   "Art Supplies":        [1,2,7,8,9,10,12,11],
   "Health Products":     [1,2,7,8,9,10,12,11],

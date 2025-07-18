@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+'use client';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   TrophyIcon,
   PlusCircleIcon,
@@ -6,7 +8,8 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
-import { StoreForm } from '@/types/typings';
+import { ProductForm } from '@/components/AddProductModal';
+// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the correct type for your main form data
 
 interface PricingTier {
   name: string;
@@ -18,61 +21,73 @@ interface PricingTier {
 }
 
 interface ProductPricingAndTiersProps {
-  formData: StoreForm;
-  setFormData: React.Dispatch<React.SetStateAction<StoreForm>>;
+  formData: ProductForm; // Use the actual type for the entire form data
+  setFormData: (name: string, value: any) => void; // Matches the signature from useProductForm
 }
 
 export default function ProductPricingAndTiers({
   formData,
-  setFormData,
+  setFormData, // Renamed from setFormData
 }: ProductPricingAndTiersProps) {
   const [open, setOpen] = useState(true);
 
-  const handleAddPricingTier = () => {
-    setFormData((prev) => ({
-      ...prev,
-      pricingTiers: [...(prev.pricingTiers || []), { name: '', price: 0, features: [] }],
-    }));
-  };
+  // Memoize handler functions using useCallback
+  const handleAddPricingTier = useCallback(() => {
+    const currentTiers = formData.pricingTiers || [];
+    const newTier: PricingTier = { name: '', price: 0, features: [], isFeatured: false }; // Ensure default for isFeatured
+    setFormData('pricingTiers', [...currentTiers, newTier]);
+  }, [formData.pricingTiers, setFormData]);
 
-  const handleUpdatePricingTier = (
-    index: number,
-    field: keyof PricingTier,
-    value: string | number | boolean | string[]
-  ) => {
-    setFormData((prev) => {
-      const updatedTiers = [...(prev.pricingTiers || [])];
-      if (field === 'features' && typeof value === 'string') {
-        updatedTiers[index][field] = value
-          .split(',')
-          .map((f) => f.trim())
-          .filter(Boolean);
-      } else {
-        updatedTiers[index] = { ...updatedTiers[index], [field]: value };
+  const handleUpdatePricingTier = useCallback(
+    (
+      index: number,
+      field: keyof PricingTier,
+      value: string | number | boolean | string[]
+    ) => {
+      const currentTiers = formData.pricingTiers || [];
+      // Create a shallow copy to ensure immutability
+      const updatedTiers = [...currentTiers];
+
+      if (!updatedTiers[index]) {
+        console.warn(`Attempted to update non-existent tier at index ${index}. This might indicate a timing issue.`);
+        return;
       }
-      return { ...prev, pricingTiers: updatedTiers };
-    });
-  };
 
-  const handleRemovePricingTier = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      pricingTiers: (prev.pricingTiers || []).filter((_, i) => i !== index),
-    }));
-  };
+      // Handle 'features' field specifically: convert comma-separated string to array
+      if (field === 'features' && typeof value === 'string') {
+        updatedTiers[index] = {
+          ...updatedTiers[index],
+          [field]: value.split(',').map((f) => f.trim()).filter(Boolean),
+        } as PricingTier; // Type assertion for safety
+      } else {
+        // For other fields, directly update the property
+        updatedTiers[index] = { ...updatedTiers[index], [field]: value } as PricingTier; // Type assertion
+      }
+      setFormData('pricingTiers', updatedTiers); // Update the parent state
+    },
+    [formData.pricingTiers, setFormData]
+  );
 
+  const handleRemovePricingTier = useCallback((index: number) => {
+    const currentTiers = formData.pricingTiers || [];
+    // Filter out the tier at the given index
+    const updatedTiers = currentTiers.filter((_, i) => i !== index);
+    setFormData('pricingTiers', updatedTiers);
+  }, [formData.pricingTiers, setFormData]);
+
+  // Effect to add an initial pricing tier if none exist
   useEffect(() => {
     if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
       handleAddPricingTier();
     }
-  }, [formData.pricingTiers]);
+  }, [formData.pricingTiers, handleAddPricingTier]); // Dependency on handleAddPricingTier is crucial
 
   return (
-    <section className="max-w-4xl mx-auto overflow-hidden">
+    <section className="max-w-4xl mx-auto overflow-hidden rounded-2xl shadow-xl border border-gray-200"> {/* Added main section styling for consistency */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-400 text-white"
+        className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-400 text-white rounded-t-2xl" // Rounded top for button
       >
         <div className="flex items-center space-x-3">
           <TrophyIcon className="h-6 w-6" />
@@ -84,9 +99,9 @@ export default function ProductPricingAndTiers({
       </button>
 
       {open && (
-        <div className="px-4 sm:px-6 py-6 space-y-6">
+        <div className="px-4 sm:px-6 py-6 space-y-6 bg-white"> {/* Added bg-white */}
           <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
               <h4 className="text-2xl font-semibold text-gray-800">Pricing Tiers / Packages</h4>
               <button
                 type="button"
@@ -99,84 +114,95 @@ export default function ProductPricingAndTiers({
             </div>
 
             <div className="space-y-6">
+              {(formData.pricingTiers || []).length === 0 && (
+                <p className="text-center text-gray-500 py-4">
+                  Click "Add Pricing Tier" to get started with your pricing options.
+                </p>
+              )}
               {(formData.pricingTiers || []).map((tier, index) => (
-                <div key={index} className="relative bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h5 className="text-lg font-semibold mb-3 text-gray-800">Tier #{index + 1}</h5>
+                <div key={index} className="relative bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm">
+                  <h5 className="text-xl font-bold mb-4 text-gray-800">Tier #{index + 1}</h5>
+                  {/* Remove button moved to top right corner of each tier */}
                   <button
                     type="button"
                     onClick={() => handleRemovePricingTier(index)}
-                    className="absolute top-3 right-3 text-red-500 hover:text-red-700"
+                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 p-1 rounded-full bg-red-50 hover:bg-red-100 transition-colors"
                     aria-label="Remove pricing tier"
+                    title="Remove this pricing tier"
                   >
                     <TrashIcon className="w-5 h-5" />
                   </button>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <label className="block">
-                      <span className="text-gray-600 text-sm">Tier Name</span>
+                      <span className="text-gray-700 text-sm font-medium">Tier Name</span>
                       <input
                         type="text"
                         value={tier.name}
                         onChange={(e) => handleUpdatePricingTier(index, 'name', e.target.value)}
                         placeholder="E.g., Basic Package, Premium Plan"
-                        className="mt-1 block w-full rounded-lg border-gray-300 p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                     </label>
 
                     <label className="block">
-                      <span className="text-gray-600 text-sm">Tier Price ($)</span>
+                      <span className="text-gray-700 text-sm font-medium">Tier Price ($)</span>
                       <input
                         type="number"
                         step="0.01"
                         value={tier.price}
                         onChange={(e) => handleUpdatePricingTier(index, 'price', Number(e.target.value))}
                         placeholder="0.00"
-                        className="mt-1 block w-full rounded-lg border-gray-300 p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                     </label>
 
                     <label className="block">
-                      <span className="text-gray-600 text-sm">Duration (Optional)</span>
+                      <span className="text-gray-700 text-sm font-medium">Duration (Optional)</span>
                       <input
                         type="text"
                         value={tier.duration || ''}
                         onChange={(e) => handleUpdatePricingTier(index, 'duration', e.target.value)}
                         placeholder="E.g., 1 hour, 3 days, Monthly"
-                        className="mt-1 block w-full rounded-lg border-gray-300 p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                     </label>
                   </div>
 
-                  <label className="flex items-center gap-2 mt-6">
+                  <label className="flex items-center gap-2 mt-4">
                     <input
                       type="checkbox"
                       name="isFeatured"
-                      checked={!!tier.isFeatured}
+                      checked={!!tier.isFeatured} // Ensure boolean
                       onChange={(e) => handleUpdatePricingTier(index, 'isFeatured', e.target.checked)}
+                      className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out rounded"
                     />
-                    <span className="text-sm text-gray-700">Featured</span>
+                    <span className="text-sm text-gray-700 font-medium">Mark as Featured Tier</span>
                   </label>
 
                   <label className="block mt-4">
-                    <span className="text-gray-600 text-sm">Description</span>
+                    <span className="text-gray-700 text-sm font-medium">Description</span>
                     <textarea
                       rows={2}
                       value={tier.description || ''}
                       onChange={(e) => handleUpdatePricingTier(index, 'description', e.target.value)}
-                      placeholder="Brief description of what this tier includes."
-                      className="mt-1 block w-full rounded-lg border-gray-300 p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Brief description of what this tier includes, e.g., 'Access to all basic features plus premium support.'"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                     />
                   </label>
 
                   <label className="block mt-4">
-                    <span className="text-gray-600 text-sm">Features (comma-separated)</span>
+                    <span className="text-gray-700 text-sm font-medium">Features (comma-separated list of benefits)</span>
                     <input
                       type="text"
                       value={tier.features.join(', ')}
                       onChange={(e) => handleUpdatePricingTier(index, 'features', e.target.value)}
-                      placeholder="Feature A, Feature B, Feature C"
-                      className="mt-1 block w-full rounded-lg border-gray-300 p-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Feature A, Feature B, Unlimited access, Priority support"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Enter each feature separated by a comma. These will be displayed as a list of benefits.
+                    </p>
                   </label>
                 </div>
               ))}

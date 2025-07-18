@@ -29,7 +29,7 @@ interface AddProductModalProps {
   categories: StoreCategory[];
 }
 
-interface ProductForm {
+export interface ProductForm {
   // identifiers
   id: string;
   companyId: string;
@@ -38,15 +38,11 @@ interface ProductForm {
   name: string;
   description: string;
 
-  // category
-  // category: CategoryData | null;
-  // subCategory: any;
-  subCategoryName: string;
-  // brand: string;
   tags: string[];
 
   category: StoreCategory | null;
   subCategory: ProductCategory | null;
+  subCategoryName: string;
   brand: string | null;
 
   // specs
@@ -129,6 +125,7 @@ interface ProductForm {
   studios: any[];
   bathrooms: string;
   area: string;
+  
   propertyTypeId: string;
   serviceSchedule: string;
 
@@ -418,9 +415,15 @@ export default function AddProductModal({
 }: AddProductModalProps) {
   const { formData, updateField } = useProductForm(product, companyId);
   
-
   const [step, setStep] = useState(1);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  // Images state
   const [newImages, setNewImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<any[]>(
+    product?.images?.map((img: any, index: number) => ({ ...img, index })) || []
+  );
+
   const [loading, setLoading] = useState(false);
   
 
@@ -475,8 +478,8 @@ export default function AddProductModal({
     if (!window.confirm('Save this product?')) return;
     setLoading(true);
     try {
-      const imageUrls = newImages.length
-        ? await uploadFiles(newImages, 'image')
+      const imageUrls = imageFiles.length
+        ? await uploadFiles(imageFiles, 'image')
         : formData.images;
       const payload = buildProductPayload({ ...formData, images: imageUrls }, imageUrls);
       const res = await fetch(`${apiUrl}/admin/post-product`, {
@@ -519,7 +522,14 @@ export default function AddProductModal({
                 }}
                 categories={categories}
                 filteredBrands={formData.category?.allBrands || []}
-                onCategoryChange={cat => updateField('category', cat)}
+                onCategoryChange={cat =>{
+                   updateField('category', cat);
+                   if(cat != formData.category){
+                      updateField('subCategory', null);
+                      updateField('brand', null);
+                    }
+                  }
+                }
                 onSubCategoryChange={sub => updateField('subCategory', sub)}
                 onBrandChange={brand => updateField('brand', brand)}
               />
@@ -534,8 +544,10 @@ export default function AddProductModal({
                     : formData.category?.category?.subcategories ?? []
                 }
                 filteredBrands={filteredBrands /* from your memo for later steps */}
-                newImages={newImages}
-                setNewImages={setNewImages}
+                imageFiles={imageFiles}
+                setImageFiles={setImageFiles}
+                imagePreviews={imagePreviews}
+                setImagePreviews={setImagePreviews}
               />
             ) : (
               <p>No form for this step.</p>
@@ -543,39 +555,6 @@ export default function AddProductModal({
           </div>
         </motion.div>
 
-        {/* <motion.div
-          key={step}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          className="flex-grow overflow-y-auto"
-        >
-          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
-          <div className="flex-grow overflow-y-auto p-4">
-            {step === 1 ? (
-              <CategoryPicker
-                formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
-                categories={pickerCategories}
-                filteredBrands={filteredBrands}
-                onCategoryChange={handleCategoryChange}
-                onSubCategoryChange={handleSubCategoryChange}
-                onBrandChange={handleBrandChange}
-              />
-            ) : FormComponent ? (
-              <FormComponent
-                formData={formData}
-                setFormData={updateField as any}
-                handleInputChange={handleInputChange}
-                filteredSubCategories={filteredSubCategories}
-                filteredBrands={filteredBrands}
-                newImages={newImages}
-                setNewImages={setNewImages}
-              />
-            ) : (
-              <p>No form for this step.</p>
-            )}
-          </div>
-        </motion.div> */}
         <div className="flex justify-between pt-4 border-t">
           {/* Back button only if not on the very first step */}
           { !isFirstStep

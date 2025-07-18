@@ -1,14 +1,24 @@
-import React from "react";
+import React, { useCallback } from "react";
 import InputField from "./InputField";
 
 interface EnginePerformanceProps {
   formData: Record<string, any>;
-  onChange: (name: string, value: any) => void;
+  onChange: (name: string, value: any) => void;  
+  setFormData: (field: string, value: any) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
-const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, onChange }) => {
-  const inputClasses =
-    "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
+const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, setFormData, onChange, handleInputChange }) => {
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, value, type } = e.target;
+      setFormData(name, type === "number" ? parseFloat(value) || "" : value);
+    },
+    [setFormData]
+  );
+
+  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
@@ -28,7 +38,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, onChang
             label="Engine Type"
             name="engineType"
             value={formData.engineType ?? ""}
-            onChange={(e) => onChange("engineType", e.target.value)}
+            handleInputChange={handleInputChange}//(e) => onChange("engineType", e.target.value)}
             placeholder="e.g. V6, Inline-4"
             required
           />
@@ -36,7 +46,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, onChang
             label="Engine Size (L)"
             name="engineSize"
             value={formData.engineSize ?? ""}
-            onChange={(e) => onChange("engineSize", e.target.value)}
+            handleInputChange={handleInputChange}//onChange={(e) => onChange("engineSize", e.target.value)}
             placeholder="e.g. 3.5"
             required
           />
@@ -56,7 +66,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, onChang
               id="transmission"
               name="transmission"
               value={formData.transmission ?? ""}
-              onChange={(e) => onChange("transmission", e.target.value)}
+              onChange={handleChange}//(e) => onChange("transmission", e.target.value)}
               className={inputClasses}
               required
             >
@@ -96,7 +106,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, onChang
             name="mileage"
             type="number"
             value={formData.mileage ?? ""}
-            onChange={(e) => onChange("mileage", e.target.value)}
+            handleInputChange={handleInputChange}//onChange={(e) => onChange("mileage", e.target.value)}
             placeholder="e.g. 50000"
           />
         </div>

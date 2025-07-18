@@ -5,9 +5,11 @@ import CommissionSection from "./CommissionSection";
 interface GeneralDetailsProps {
   formData: Record<string, any>;
   setFormData: (field: string, value: any) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }) => {
+  
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target;
@@ -16,10 +18,8 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
     [setFormData]
   );
 
-  const selectClasses =
-    "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
-  const textareaClasses =
-    "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none";
+  const selectClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
+  const textareaClasses =  "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none";
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
@@ -42,7 +42,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
               name={name}
               type={type}
               value={formData[name] ?? ""}
-              onChange={handleChange}
+              handleInputChange={handleChange}
               required={required}
             />
           ))}
@@ -141,7 +141,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, setFormData }
       {/* ── Commission & Pricing ── */}
       <div className="bg-gray-50 p-4 rounded-lg space-y-4">
         <h3 className="text-lg font-semibold text-gray-700">Commission & Pricing</h3>
-        <CommissionSection formData={formData} onChange={handleChange} />
+        <CommissionSection formData={formData} handleChange={handleChange} />
       </div>
     </section>
   );
