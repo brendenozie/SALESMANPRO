@@ -46,7 +46,7 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({ formData, setFormData }
       setFormData('profitMargin', calculatedProfitMargin);
     }
 
-  }, [formData.sellingPrice, formData.costPrice, formData.discount, formData.finalPrice, formData.profitMargin, updateField]); // Dependencies for recalculation
+  }, [formData.sellingPrice, formData.costPrice, formData.discount, formData.finalPrice, formData.profitMargin, setFormData]); // Dependencies for recalculation
 
   // Formatters
   // We'll format KSh with commas and 2 decimal places.

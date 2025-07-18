@@ -48,7 +48,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, setForm
             label="Engine Type"
             name="engineType"
             value={formData.engineType ?? ""}
-            onChange={handleChange} {/* Use the local handleChange */}
+            handleInputChange={handleChange} //{/* Use the local handleChange */}
             placeholder="e.g., V6, Inline-4, Electric"
             required
             className={inputClasses}
@@ -58,7 +58,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, setForm
             name="engineSize"
             type="number"
             value={formData.engineSize ?? ""}
-            onChange={handleChange} {/* Use the local handleChange */}
+            handleInputChange={handleChange} //{/* Use the local handleChange */}
             placeholder="e.g., 3.5 (for 3.5L)"
             required
             className={inputClasses}
@@ -101,7 +101,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, setForm
               id="transmission"
               name="transmission"
               value={formData.transmission ?? ""}
-              onChange={handleChange} {/* Use the local handleChange */}
+              onChange={handleChange} //{/* Use the local handleChange */}
               className={inputClasses}
               required
             >
@@ -124,7 +124,7 @@ const EnginePerformance: React.FC<EnginePerformanceProps> = ({ formData, setForm
               id="drivetrain"
               name="drivetrain"
               value={formData.drivetrain ?? ""}
-              onChange={handleChange} {/* Use the local handleChange */}
+              onChange={handleChange} //{/* Use the local handleChange */}
               className={inputClasses}
               required
             >

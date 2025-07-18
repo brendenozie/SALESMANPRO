@@ -14,7 +14,9 @@ import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
-import { ProductCategory, StoreCategory } from '@/app/admin/[slug]/categories/page';
+
+// Assuming ProductForm, StoreCategory, ProductCategory, BookingSlotType are defined in typings.ts
+import { ProductForm, StoreCategory } from '@/types/typings'; 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -33,137 +35,6 @@ export interface BookingSlotType {
   date: string;
   time: string;
   capacity: number;
-}
-
-export interface ProductForm {
-  // identifiers
-  id: string;
-  companyId: string;
-
-  // basic info
-  name: string;
-  description: string;
-
-  tags: string[];
-
-  category: StoreCategory | null;
-  subCategory: ProductCategory | null;
-  subCategoryName: string;
-  brand: string | null;
-
-  // specs
-  model: string;
-  color: string[];
-  size: string[];
-  weight: string;
-  condition: string;
-  dimension: string;
-  material: string | string[];
-
-  // media
-  images: string[];
-  video: string | null;
-  digitalUrl: string;
-  autoDeliver: boolean;
-
-  // flags
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-
-  // pricing
-  quantity: number;
-  costPrice: number;
-  salesPrice: number;
-  discount: number;
-  finalPrice: number;
-  profitMargin: number;
-
-  // deals
-  startDealDate: string | null;
-  endDealDate: string | null;
-
-  // vehicle
-  make: string;
-  trim: string;
-  type: string;
-  mileage: string;
-  engineType: string;
-  engineSize: string;
-  transmission: string;
-  drivetrain: string;
-  vin: string;
-  logbookStatus: string;
-  serviceHistory: string;
-  negotiable: boolean;
-  financingAvailable: boolean;
-  tradeIn: boolean;
-  features: any[];
-
-  // books
-  author: string;
-  publisher: string;
-  isbn: string;
-
-  // fashion
-  fabricComposition: string;
-  careInstructions: string;
-
-  // appliances
-  energyRating: string;
-  warrantyPeriod: string;
-  dimensions: string;
-
-  // beauty
-  ingredients: string;
-  usageInstructions: string;
-  expirationDate: string | null;
-
-  // options & amenities
-  option: any[];
-  amenities: string[];
-
-  // property
-  bedrooms: any[];
-  studios: any[];
-  bathrooms: string;
-  area: string;
-  
-  propertyTypeId: string;
-  serviceSchedule: string;
-
-  // year & scheduling
-  year: string;
-  availabilityStart: string;
-  availabilityEnd: string;
-
-  // location & contact
-  location: any;
-  locationName: string;
-  latitude: number | null;
-  longitude: number | null;
-  contact: string;
-  contactName: string;
-  email: string;
-
-  // admin
-  status: string;
-  collectionId: string;
-
-  // quantity?: number;
-  // serviceSchedule?: string;
-  hourlyRate?: number;
-  minimumHours?: number;
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  totalCapacity?: number;
-  deliveryMethod?: string;
-  fulfillmentStatus?: string;
-  providerRating?: number;
-  bookingSlots?: BookingSlotType[];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -207,7 +78,7 @@ function buildProductPayload(f: ProductForm, imageUrls: string[]): any {
     size: f.size,
     weight: f.weight,
     condition: f.condition,
-    dimension: f.dimension,
+    dimension: f.dimensions,
     material: Array.isArray(f.material) ? f.material : [f.material],
 
     // media
@@ -227,7 +98,7 @@ function buildProductPayload(f: ProductForm, imageUrls: string[]): any {
     // pricing
     quantity: f.quantity,
     costPrice: f.costPrice,
-    salesPrice: f.salesPrice,
+    sellingPrice: f.sellingPrice,
     discount: f.discount,
     finalPrice: f.finalPrice,
     profitMargin: f.profitMargin,
@@ -306,59 +177,62 @@ function buildProductPayload(f: ProductForm, imageUrls: string[]): any {
 ////////////////////////////////////////////////////////////////////////////////
 // 3) Hook: initialize & recalc
 ////////////////////////////////////////////////////////////////////////////////
+
 function useProductForm(
-  product: any | null,
+  product: Partial<ProductForm> | null, // Use Partial for initial 'product' argument
   companyId: string
 ) {
-  const getInitial = (): ProductForm => {
-    const p = product || {};
+  const getInitial = useCallback((): ProductForm => {
+    const p = product || {}; // Ensure p is an object even if product is null
     return {
       id: p.id || '',
-      companyId,
+      companyId, // Directly use companyId passed as prop
       name: p.name || '',
       description: p.description || '',
-      
-      subCategoryName: p.subCategoryName || '',
-
+      longDescription: p.longDescription || '', // New
+      tags: p.tags || [],
       category: p.category || null,
       subCategory: p.subCategory || null,
+      subCategoryName: p.subCategoryName || '',
       brand: p.brand || null,
 
-      tags: p.tags || [],
-      collectionId: p.collectionId || '',
-      
       model: p.model || '',
       color: p.color || [],
       size: p.size || [],
       weight: p.weight || '',
       condition: p.condition || '',
-      dimension: p.dimension || '',
-      dimensions: p.dimensions || '',
-      material: p.material || [],
+      dimensions: p.dimensions || '', // Corrected to dimensions
+      material: p.material || [], // Default to empty array for string | string[]
+      
       images: p.images || [],
       video: p.video || null,
       digitalUrl: p.digitalUrl || '',
       autoDeliver: !!p.autoDeliver,
+
       isAvailable: p.isAvailable ?? false,
       isOnOffer: p.isOnOffer ?? false,
       isFlashDeal: p.isFlashDeal ?? false,
       isNewArrival: p.isNewArrival ?? false,
       isDiscounted: p.isDiscounted ?? false,
       isFeatured: p.isFeatured ?? false,
-      quantity: p.companyStock ?? 1,
+
+      quantity: p.quantity ?? 1, // Default quantity to 1
       costPrice: p.costPrice ?? 0,
-      salesPrice: p.salesPrice ?? 0,
+      sellingPrice: p.sellingPrice ?? 0,
       discount: p.discount ?? 0,
       finalPrice: p.finalPrice ?? 0,
       profitMargin: p.profitMargin ?? 0,
+      pricingTiers: p.pricingTiers || [], // New: Initialized
+
       startDealDate: p.startDealDate || null,
       endDealDate: p.endDealDate || null,
+
       make: p.make || '',
       trim: p.trim || '',
       type: p.type || '',
       mileage: p.mileage || '',
       engineType: p.engineType || '',
-      engineSize: p.engineSize || '',
+      engineSize: p.engineSize ?? 0, // New: Initialized as number
       transmission: p.transmission || '',
       drivetrain: p.drivetrain || '',
       vin: p.vin || '',
@@ -368,51 +242,97 @@ function useProductForm(
       financingAvailable: p.financingAvailable ?? false,
       tradeIn: p.tradeIn ?? false,
       features: p.features || [],
+
+      // New vehicle-related fields
+      horsepower: p.horsepower ?? 0, // New: Initialized as number
+      torque: p.torque ?? 0, // New: Initialized as number
+      fuelType: p.fuelType || '', // New
+      fuelEconomy: p.fuelEconomy || '', // New
+
+      // New ownership-related fields
+      previousOwners: p.previousOwners ?? 0, // New: Initialized as number
+      tireCondition: p.tireCondition || '', // New
+      accidentalHistory: p.accidentalHistory ?? false, // New: Initialized as boolean
+
       author: p.author || '',
       publisher: p.publisher || '',
       isbn: p.isbn || '',
+
       fabricComposition: p.fabricComposition || '',
       careInstructions: p.careInstructions || '',
+
       energyRating: p.energyRating || '',
       warrantyPeriod: p.warrantyPeriod || '',
+      // dimensions handled above, so no duplicate here
+
       ingredients: p.ingredients || '',
       usageInstructions: p.usageInstructions || '',
       expirationDate: p.expirationDate || null,
+
       option: p.option || [],
       amenities: p.amenities || [],
-      bedrooms: p.bedrooms || [],
-      studios: p.studios || [],
-      bathrooms: p.bathrooms || '',
+
+      bedrooms: p.bedrooms ?? 0, // Initialized as number
+      studios: p.studios ?? 0, // Initialized as number
+      bathrooms: p.bathrooms ?? 0, // Initialized as number
       area: p.area || '',
+
       propertyTypeId: p.propertyTypeId || '',
       serviceSchedule: p.serviceSchedule || '',
-      year: p.year || '',
+
+      year: p.year ?? new Date().getFullYear(), // Initialized as number, default to current year
       availabilityStart: p.availabilityStart || '',
       availabilityEnd: p.availabilityEnd || '',
-      location: p.location || {},
+
+      location: p.location || {}, // Default to empty object
       locationName: p.locationName || '',
       latitude: p.latitude ?? null,
       longitude: p.longitude ?? null,
       contact: p.contact || '',
       contactName: p.contactName || '',
       email: p.email || '',
+
       status: p.status || 'ACTIVE',
+      collectionId: p.collectionId || '',
+
+      // Optional fields, ensure they are correctly initialized as undefined or null if not present
+      hourlyRate: p.hourlyRate,
+      minimumHours: p.minimumHours,
+      minNoticePeriod: p.minNoticePeriod,
+      maxBookingAhead: p.maxBookingAhead,
+      totalCapacity: p.totalCapacity,
+      deliveryMethod: p.deliveryMethod,
+      fulfillmentStatus: p.fulfillmentStatus,
+      providerRating: p.providerRating,
+      bookingSlots: p.bookingSlots,
     };
-  };
+  }, [product, companyId]); // Depend on product and companyId
 
   const [formData, setFormData] = useState<ProductForm>(getInitial);
 
+  // Recalculate finalPrice and profitMargin using a dedicated useEffect
   useEffect(() => {
-    const cost = formData.costPrice;
-    const sale = formData.salesPrice;
-    const disc = formData.discount;
-    const finalPrice = sale - (sale * disc) / 100;
-    const profitMargin = cost > 0 ? ((sale - cost) / cost) * 100 : 0;
-    setFormData((f) => ({ ...f, finalPrice, profitMargin }));
-  }, [formData.costPrice, formData.salesPrice, formData.discount]);
+    const sellingPrice = formData.sellingPrice;
+    const costPrice = formData.costPrice;
+    const discount = formData.discount;
+
+    const calculatedFinalPrice = Math.max(sellingPrice - (sellingPrice * discount) / 100, 0);
+    const calculatedProfitMargin = costPrice > 0 ? ((calculatedFinalPrice - costPrice) / costPrice) * 100 : 0;
+
+    // Only update if values have actually changed to prevent unnecessary re-renders
+    if (formData.finalPrice !== calculatedFinalPrice || formData.profitMargin !== calculatedProfitMargin) {
+      setFormData((f) => ({
+        ...f,
+        finalPrice: calculatedFinalPrice,
+        profitMargin: calculatedProfitMargin,
+      }));
+    }
+  }, [formData.costPrice, formData.sellingPrice, formData.discount, formData.finalPrice, formData.profitMargin]);
+  // Added finalPrice, profitMargin to dependencies to prevent infinite loop
+  // if their values change due to external factors or initial state setting.
 
   const updateField = useCallback(
-    (name: keyof ProductForm, value: any) => {
+    <K extends keyof ProductForm>(name: K, value: ProductForm[K]) => {
       setFormData((f) => ({ ...f, [name]: value }));
     },
     []
@@ -420,6 +340,8 @@ function useProductForm(
 
   return { formData, updateField };
 }
+
+// export default useProductForm; // Export the hook
 
 ////////////////////////////////////////////////////////////////////////////////
 // 4) Main Component

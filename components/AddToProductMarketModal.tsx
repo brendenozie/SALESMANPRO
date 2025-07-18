@@ -19,7 +19,7 @@ import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker  from './CategoryPicker';
-import { StoreCategory } from '@/app/admin/[slug]/categories/page';
+import { StoreCategory } from '@/types/typings';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 

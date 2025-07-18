@@ -62,7 +62,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
               id="logbookStatus"
               name="logbookStatus"
               value={formData.logbookStatus ?? ""}
-              onChange={handleChange} {/* Use the local handleChange */}
+              onChange={handleChange} // {/* Use the local handleChange */}
               className={inputClasses}
               required
             >
@@ -82,13 +82,14 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
         <h4 className="text-xl font-semibold text-gray-700">Set Your Price</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
           <InputField
-            label="Asking Price (KSh)" //{/* Updated currency to KSh */}
-            name="price"
+            label="Asking Price" //{/* Updated currency to KSh */}
+            name="finalPrice"
             type="number"
-            value={formData.price ?? ""}
+            value={formData.finalPrice ?? ""}
             handleInputChange={handleChange} //{/* Use the local handleChange */}
             placeholder="e.g., 1,500,000"
             required
+            prefix={"(KSh)"}
             className={inputClasses}
             min="0" // Price cannot be negative
             step="1000" // Suggests common price increments
@@ -152,7 +153,7 @@ const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormDa
               id="serviceHistory"
               name="serviceHistory"
               value={formData.serviceHistory ?? ""}
-              onChange={handleChange} {/* Use the local handleChange */}
+              onChange={handleChange} //{/* Use the local handleChange */}
               className={inputClasses}
               required
             >

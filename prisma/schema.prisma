@@ -467,22 +467,43 @@ model AppPromo {
   screenshots String[] // array of image URLs
 }
 
-model Product {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  description  String?
-  category     String?
-  subCategory  Json?
-  images       Json[]
-  video        String?
-  tags         String[]
-  profitMargin Float?   @default(0)
-  brand        String?
-  companyId    String?  @db.ObjectId
-  company      Company? @relation(fields: [companyId], references: [id])
+// Use your actual enum definitions if they exist in your schema.prisma
+// For demonstration, I'm assuming 'ListingStatus' is defined elsewhere.
+// If not, you'll need to define it:
+enum ListingStatus {
+  ACTIVE
+  PENDING
+  SOLD
+  INACTIVE
+  DRAFT
+  REJECTED
+  BUY
+  RENT
+  RENTED
+}
 
-  productCategoryId   String?               @db.ObjectId
-  productCategory     ProductCategory?      @relation(fields: [productCategoryId], references: [id])
+model Product {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String?
+  longDescription String? // Added: From General Details section
+  category        String? // Consider making this an enum or relation if fixed categories
+  subCategory     Json? // Consider a specific model if structure is fixed
+  subCategoryName String? // Added: From General Details
+  images          Json[] // Store URLs or paths
+  video           String?
+  tags            String[] // Array of strings for search/filtering
+  brand           String?
+
+  // Company relation
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Product Category relation
+  productCategoryId String?          @db.ObjectId
+  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
+
+  // Inventory & Request Management
   inventoryItems      InventoryItem[]
   requests            Request[]             @relation("ProductRequests")
   commissions         Commission[]
@@ -490,108 +511,126 @@ model Product {
   CommissionRate      CommissionRate?
   marketplaceListings marketplaceListings[]
 
-  model     String?
-  color     String[]
-  size      String[]
-  weight    String?
-  condition String?
-  dimension String?
-  material  String[]
+  // General Specifications (from General Details)
+  model      String?
+  color      String[] // Array of colors (e.g., ["Red", "Blue"])
+  size       String[] // Array of sizes (e.g., ["S", "M", "L"])
+  weight     String? // e.g., "5 kg"
+  condition  String? // e.g., "New", "Used", "Refurbished"
+  dimensions String? // e.g., "10x5x2 cm" - Renamed from 'dimension' for consistency
+  material   String[] // Array for multiple materials, or a single String for one
 
-  // New fields for category-specific details:
-  author    String? // For Books
-  publisher String? // For Books
-  isbn      String? // For Books
+  // Pricing & Quantity
+  quantity     Int    @default(1) // Default to 1
+  costPrice    Float  @default(0)
+  sellingPrice Float  @default(0)
+  discount     Int    @default(0) // Percentage (0-100)
+  finalPrice   Float  @default(0) // Price after discount
+  profitMargin Float  @default(0) // Calculated profit margin
+  pricingTiers Json[] // Added: For complex pricing structures (e.g., [{ quantity: 5, price: 9.99 }])
 
-  fabricComposition String? // For Clothing/Fashion
-  careInstructions  String? // For Clothing/Fashion
-
-  energyRating        String? // For Home Appliances
-  warrantyPeriod      String? // For Home Appliances
-  applianceDimensions String? // For Home Appliances – renamed to avoid conflict with 'dimension'
-
-  ingredients       String? // For Beauty Products
-  usageInstructions String? // For Beauty Products
-  expirationDate    DateTime? // For Beauty Products
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-  discount Int? @default(0)
-
-  isAvailable  Boolean @default(true)
-  isOnOffer    Boolean @default(false)
-  isFlashDeal  Boolean @default(false)
-  isNewArrival Boolean @default(false)
-  isDiscounted Boolean @default(false)
-  isFeatured   Boolean @default(false)
-
+  // Deal Specifics
+  isOnOffer     Boolean   @default(false)
+  isFlashDeal   Boolean   @default(false)
+  isDiscounted  Boolean   @default(false)
   startDealDate DateTime?
   endDealDate   DateTime?
 
-  costPrice  Float
-  salesPrice Float
-  finalPrice Float? @default(0) //Price inclusive discount
+  // Flags
+  isAvailable  Boolean @default(true)
+  isNewArrival Boolean @default(false)
+  isFeatured   Boolean @default(false)
 
-  contact   String?
-  location  Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
-  amenities String[]
+  // Vehicle Specifics (Engine & Performance, Ownership & Pricing)
+  make               String?
+  trim               String?
+  type               String?
+  mileage            String? // e.g., "50000 km"
+  engineType         String? // e.g., "V6", "Inline-4"
+  engineSize         Float? // e.g., 3.5 (for 3.5L) - Changed to Float
+  horsepower         Int? // Added: Horsepower (e.g., 250) - Changed to Int
+  torque             Int? // Added: Torque (e.g., 280) - Changed to Int
+  fuelType           String? // Added: e.g., "Petrol", "Electric"
+  fuelEconomy        String? // Added: e.g., "7.5 L/100km", "32 MPG"
+  transmission       String? // e.g., "Automatic", "Manual"
+  drivetrain         String? // e.g., "FWD", "RWD", "AWD"
+  vin                String? // Vehicle Identification Number
+  logbookStatus      String? // e.g., "Available", "Missing"
+  serviceHistory     String? // e.g., "Full", "Partial", "None"
+  negotiable         Boolean @default(false) // Pricing option
+  financingAvailable Boolean @default(false) // Sales feature
+  tradeIn            Boolean @default(false) // Sales feature
+  features           Json[] // Array of miscellaneous vehicle features (e.g., safety, tech)
 
-  myLocation Location? @relation(fields: [locationId], references: [id])
-  locationId String?   @db.ObjectId
+  // New Ownership & Pricing fields
+  previousOwners    Int? // Added: Number of previous owners - Changed to Int
+  tireCondition     String? // Added: e.g., "New", "Good", "Fair", "Poor"
+  accidentalHistory Boolean? @default(false) // Added: Has reported accidental history
 
-  // 15. Property-specific
+  // Books Specifics
+  author    String?
+  publisher String?
+  isbn      String?
+
+  // Fashion Specifics
+  fabricComposition String?
+  careInstructions  String?
+
+  // Home Appliances Specifics
+  energyRating        String?
+  warrantyPeriod      String?
+  applianceDimensions String? // To avoid conflict, renamed from 'dimensions'
+
+  // Beauty Products Specifics
+  ingredients       String?
+  usageInstructions String?
+  expirationDate    DateTime?
+
+  // Options & Amenities
+  option    Json[] // Generic options (e.g., for configurable products)
+  amenities String[] // Specific for properties/services
+
+  // Property Specifics
   propertyType   PropertyType? @relation(fields: [propertyTypeId], references: [id])
   propertyTypeId String?       @db.ObjectId
+  bathrooms      Int? // Changed to Int
+  area           String? // e.g., "1500 sqft"
+  bedrooms       Int? // Changed to Int
+  studios        Int? // Changed to Int
 
-  bathrooms String?
-  area      String?
-  bedrooms  Json? // Updated to support multiple bedroom types
-  studios   Json? // Updated to support multiple bedroom types
+  // Service & Scheduling Specifics
+  serviceSchedule   String?
+  year              Int? // Changed to Int (e.g., vehicle model year, or year of service)
+  availabilityStart DateTime? // For services/rentals
+  availabilityEnd   DateTime? // For services/rentals
 
-  serviceSchedule String?
-  // Marketplace-specific
-  delivery        Boolean  @default(false)
-  paymentOption   String   @default("AT SHOP")
-  showOnGhuba     Boolean? @default(true)
-  subCategoryName String?
-  make            String?
-  trim            String?
-  type            String?
-  mileage         String?
-  engineType      String?
-  engineSize      String?
-  transmission    String?
-  drivetrain      String?
-  vin             String?
-  logbookStatus   String?
-  serviceHistory  String?
-
-  // 11. Digital-Goods-specific
-  digitalUrl  String?
-  autoDeliver Boolean? @default(false)
-
-  // 3. Vehicle Flags
-  negotiable         Boolean? @default(false)
-  financingAvailable Boolean? @default(false)
-  tradeIn            Boolean? @default(false)
-
-  // 5. Pricing Breakdown
-  tax          Float? @default(0)
-  shippingCost Float? @default(0)
-
-  // 6. Availability Scheduling
-  availabilityStart DateTime?
-  availabilityEnd   DateTime?
-
-  // 7. Structured Location / Contact
-  email        String?
+  // Location & Contact
+  location     Json? // GeoJSON format { type: "Point", coordinates: [lng, lat] }
   locationName String?
   latitude     Float?
   longitude    Float?
+  contact      String? // General contact number
   contactName  String?
+  email        String?
 
-  status         ListingStatus    @default(ACTIVE)
+  // Marketplace & Fulfillment
+  delivery          Boolean  @default(false)
+  paymentOption     String   @default("AT SHOP")
+  showOnGhuba       Boolean? @default(true)
+  digitalUrl        String?
+  autoDeliver       Boolean? @default(false)
+  hourlyRate        Float?
+  minimumHours      Int?
+  minNoticePeriod   String?
+  maxBookingAhead   String?
+  totalCapacity     Int?
+  deliveryMethod    String?
+  fulfillmentStatus String? // Consider an enum
+  providerRating    Float? // e.g., 4.5 stars
+  bookingSlots      Json[] // Store complex booking slot data as JSON
+
+  // Admin & Auditing
+  status         ListingStatus    @default(ACTIVE) // Assuming ListingStatus enum exists
   Collection     Collection?      @relation(fields: [collectionId], references: [id])
   collectionId   String?          @db.ObjectId
   CollectionItem CollectionItem[]
@@ -601,11 +640,25 @@ model Product {
   WishlistItem   WishlistItem[]
   ProductMetrics ProductMetrics[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Additional fields from original schema, check if still relevant or duplicated
+  tax          Float? @default(0)
+  shippingCost Float? @default(0)
+
+  // Relations that might need to be defined elsewhere in schema.prisma
+  myLocation Location? @relation(fields: [locationId], references: [id])
+  locationId String?   @db.ObjectId
+
+  // Indexes for performance
   @@index([name])
   @@index([finalPrice])
   @@index([isFeatured])
   @@index([createdAt])
   @@index([status])
+  @@index([companyId]) // Good for fetching products by company
+  @@index([productCategoryId]) // Good for filtering by category
 }
 
 model Payment {
@@ -709,15 +762,6 @@ enum BlogStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
-}
-
-enum ListingStatus {
-  BUY
-  RENT
-  SOLD
-  RENTED
-  ACTIVE
-  INACTIVE
 }
 
 model Task {
@@ -1249,6 +1293,7 @@ enum SellerType {
   CONSUMER
   ADMIN
   COMPANY
+  INDIVIDUAL
 }
 
 model marketplaceListings {
@@ -1256,46 +1301,45 @@ model marketplaceListings {
   companyId  String?     @db.ObjectId
   company    Company?    @relation(fields: [companyId], references: [id])
   sellerId   String?     @db.ObjectId
-  sellerType SellerType?
+  sellerType SellerType? // Enum for seller type (e.g., Company, Individual)
   productId  String?     @db.ObjectId
   product    Product?    @relation(fields: [productId], references: [id])
 
   productCategoryId String          @db.ObjectId
   productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
-  category          String?
-  subCategory       Json
-  subCategoryName   String?
+  category          String? // Consider enum or relation
+  subCategory       Json // Consider specific model if structure is fixed
+  subCategoryName   String? // Matches Product model
   tags              String[]
   brand             String?
-  model             String?
-  color             String[]
-  size              String[]
-  weight            String?
-  condition         String?
-  dimension         String?
-  material          String[]
-  name              String          @default("New Name")
-  description       String?         @default("New Description")
-  quantity          Int
-  images            Json[]
-  video             String?
-  profitMargin      Float?          @default(0)
 
-  // Category-specific fields
-  author              String?
-  publisher           String?
-  isbn                String?
-  fabricComposition   String?
-  careInstructions    String?
-  energyRating        String?
-  warrantyPeriod      String?
-  applianceDimensions String?
-  ingredients         String?
-  usageInstructions   String?
-  expirationDate      DateTime?
+  // Basic Info & General Specs (Mirroring Product Model)
+  name            String   @default("New Name")
+  description     String?  @default("New Description")
+  longDescription String? // Added: From Product model
+  model           String?
+  color           String[]
+  size            String[]
+  weight          String?
+  condition       String?
+  dimensions      String? // Changed from 'dimension' for consistency with Product
+  material        String[] // Matches Product model
 
-  // Deal flags
-  discount     Int?    @default(0)
+  quantity     Int     @default(1)
+  images       Json[]
+  video        String?
+  profitMargin Float?  @default(0)
+
+  // Pricing
+  buyingPrice  Float  @default(0) // Assuming this is distinct from costPrice on Product
+  sellingPrice Float  @default(0)
+  finalPrice   Float? @default(0)
+  discount     Int?   @default(0)
+  tax          Float? @default(0)
+  shippingCost Float? @default(0)
+  pricingTiers Json[] // Added: For complex pricing structures, matches Product
+
+  // Deal Flags (Mirroring Product Model)
   isAvailable  Boolean @default(true)
   isOnOffer    Boolean @default(false)
   isFlashDeal  Boolean @default(false)
@@ -1303,64 +1347,97 @@ model marketplaceListings {
   isDiscounted Boolean @default(false)
   isFeatured   Boolean @default(false)
 
-  // Product type-specific
-  bathrooms       String?
+  // Deal Scheduling (Mirroring Product Model)
+  startDealDate DateTime?
+  endDealDate   DateTime?
+
+  // Category-specific fields (Mirroring Product Model)
+  author    String? // For Books
+  publisher String? // For Books
+  isbn      String? // For Books
+
+  fabricComposition String? // For Clothing/Fashion
+  careInstructions  String? // For Clothing/Fashion
+
+  energyRating        String? // For Home Appliances
+  warrantyPeriod      String? // For Home Appliances
+  applianceDimensions String? // For Home Appliances – renamed to avoid conflict
+
+  ingredients       String? // For Beauty Products
+  usageInstructions String? // For Beauty Products
+  expirationDate    DateTime? // For Beauty Products
+
+  // Property-specific (Mirroring Product Model)
+  bathrooms       Int? // Changed to Int
   area            String?
-  bedrooms        Json?
-  studios         Json?
+  bedrooms        Int? // Changed to Int
+  studios         Int? // Changed to Int
   propertyTypeId  String?       @db.ObjectId
   propertyType    PropertyType? @relation(fields: [propertyTypeId], references: [id])
   serviceSchedule String?
 
+  // Digital-Goods-specific (Mirroring Product Model)
   digitalUrl  String?
   autoDeliver Boolean? @default(false)
 
-  // Pricing
-  buyingPrice  Float
-  sellingPrice Float
-  finalPrice   Float? @default(0)
-  tax          Float? @default(0)
-  shippingCost Float? @default(0)
+  // Vehicle-specific (Mirroring Product Model)
+  make               String?
+  trim               String?
+  type               String?
+  mileage            String?
+  engineType         String?
+  engineSize         Float? // Matches Product
+  horsepower         Int? // Added: Matches Product
+  torque             Int? // Added: Matches Product
+  fuelType           String? // Added: Matches Product
+  fuelEconomy        String? // Added: Matches Product
+  transmission       String?
+  drivetrain         String?
+  vin                String?
+  logbookStatus      String?
+  serviceHistory     String?
+  negotiable         Boolean? @default(false)
+  financingAvailable Boolean? @default(false)
+  tradeIn            Boolean? @default(false)
+  features           Json[] // Added: Matches Product
 
-  // Scheduling
-  startDealDate     DateTime?
-  endDealDate       DateTime?
-  availabilityStart DateTime?
-  availabilityEnd   DateTime?
+  // New Ownership & Pricing fields (Mirroring Product Model)
+  previousOwners    Int? // Added: Matches Product
+  tireCondition     String? // Added: Matches Product
+  accidentalHistory Boolean? @default(false) // Added: Matches Product
 
-  bookingSlots    Json[] // [{ date: "2025-06-20", time: "10:00", capacity: 1 }, ...]
-  minNoticePeriod String?
-  maxBookingAhead String?
-  pricingTiers    Json[] // ServicePricingTier name, description, price, duration, features[]
+  // Scheduling & Booking for Services/Rentals
+  year               Int? // Added: Matches Product (e.g., model year or service year)
+  availabilityStart  DateTime?
+  availabilityEnd    DateTime?
+  bookingSlots       Json[] // Array of booking slot details
+  minNoticePeriod    String?
+  maxBookingAhead    String?
+  requiredClientInfo String[] // e.g., ["vehicle make", "pet type"]
+  fulfillmentStatus  String? // e.g., PENDING_CONFIRMATION, IN_PROGRESS
+  totalCapacity      Int?
+  currentBookedCount Int?
+  providerRating     Float? // e.g., 4.5 stars
+  hourlyRate         Float?
+  minimumHours       Int?
+  deliveryMethod     String? // e.g., "On-site", "Remote/Virtual"
 
-  requiredClientInfo String[] //(e.g., ["vehicle make", "pet type", "number of attendees"]
-  fulfillmentStatus  String? //(e.g., PENDING_CONFIRMATION, IN_PROGRESS, COMPLETED, CANCELLED_BY_CLIENT, CANCELLED_BY_PROVIDER
-
-  totalCapacity      Int? // (e.g., for a workshop with 20 seats).
-  currentBookedCount Int? // (how many seats are currently booked).
-
-  providerRating Float?
-
-  hourlyRate     Float?
-  minimumHours   Int?
-  deliveryMethod String? // (e.g., "On-site", "Remote/Virtual", "At Location")
-
-  // Contact & Location
+  // Contact & Location (Mirroring Product Model)
   contact      String?
   email        String?
   contactName  String?
-  location     Json?
+  location     Json? // GeoJSON
   locationName String?
   latitude     Float?
   longitude    Float?
+  amenities    String[]
 
-  amenities String[]
-
-  // Marketplace-specific
+  // Marketplace-specific flags/settings
   delivery      Boolean  @default(false)
   paymentOption String   @default("AT SHOP")
   showOnGhuba   Boolean? @default(true)
 
+  // Admin & Auditing
   status    ListingStatus @default(ACTIVE)
   createdAt DateTime?     @default(now())
   updatedAt DateTime?     @updatedAt
@@ -1371,42 +1448,28 @@ model marketplaceListings {
   ProductMetrics ProductMetrics[]
   ProductReview  ProductReview[]
 
-  //product 
   myLocation Location? @relation(fields: [locationId], references: [id])
   locationId String?   @db.ObjectId
-
-  make           String?
-  trim           String?
-  type           String?
-  mileage        String?
-  engineType     String?
-  engineSize     String?
-  transmission   String?
-  drivetrain     String?
-  vin            String?
-  logbookStatus  String?
-  serviceHistory String?
-
-  // 3. Vehicle Flags
-  negotiable         Boolean? @default(false)
-  financingAvailable Boolean? @default(false)
-  tradeIn            Boolean? @default(false)
 
   Collection       Collection?      @relation(fields: [collectionId], references: [id])
   collectionId     String?          @db.ObjectId
   CollectionItem   CollectionItem[]
-  Review           Review[]
-  Question         Question[]
-  RecentlyViewed   RecentlyViewed[]
-  WishlistItem     WishlistItem[]
+  Review           Review[] // Assuming these are related to listings directly
+  Question         Question[] // Assuming these are related to listings directly
+  RecentlyViewed   RecentlyViewed[] // Assuming these are related to listings directly
+  WishlistItem     WishlistItem[] // Assuming these are related to listings directly
   CommissionRate   CommissionRate?  @relation(fields: [commissionRateId], references: [id])
   commissionRateId String?          @db.ObjectId
 
+  // Indexes for performance
   @@index([name])
   @@index([finalPrice])
   @@index([isFeatured])
   @@index([createdAt])
   @@index([status])
+  @@index([companyId])
+  @@index([productCategoryId])
+  @@index([productId]) // Important for linking to the base product
 }
 
 model ProductReview {
@@ -3022,12 +3085,13 @@ enum PropertyStatus {
 }
 
 model PropertyCategory {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  name             String             @unique
-  description      String?
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique
+  description String?
+
   // Optional: for hierarchical categories, e.g., "Apartment" belongs to "Residential"
   parentCategoryId String?            @db.ObjectId
-  parentCategory   PropertyCategory?  @relation("SubCategories", fields: [parentCategoryId], references: [id])
+  parentCategory   PropertyCategory?  @relation("SubCategories", fields: [parentCategoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subCategories    PropertyCategory[] @relation("SubCategories")
 
   properties Property[] // Link categories to properties
@@ -3037,19 +3101,26 @@ model PropertyCategory {
 }
 
 model PropertyLocation {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  name             String             @unique
-  description      String?
-  latitude         Float?
-  longitude        Float?
-  // Optional: for hierarchical locations, e.g., "Kilimani" belongs to "Nairobi"
-  parentLocationId String?            @db.ObjectId
-  parentLocation   PropertyLocation?  @relation("SubLocations", fields: [parentLocationId], references: [id])
-  subLocations     PropertyLocation[] @relation("SubLocations")
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique // Unique name for the location (e.g., "Kilimani", "Lavington")
+  description String?
+  latitude    Float? // Latitude coordinate for the location
+  longitude   Float? // Longitude coordinate for the location
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Property  Property[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationship to Properties (if properties directly reference a PropertyLocation model)
+  // Assuming 'Property' model has a field like 'locationId String? @db.ObjectId'
+  // and a relation 'location PropertyLocation? @relation(fields: [locationId], references: [id])'
+  properties Property[] // Changed from 'Property' to 'properties' for plural naming convention
+
+  // Hierarchical relationship for parent/child locations (e.g., City -> Neighborhood)
+  // 'parentId' establishes the link to the parent location
+  parentId       String?            @db.ObjectId
+  parentLocation PropertyLocation?  @relation("SubLocations", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // 'subLocations' is the reverse relation, listing all children of this location
+  subLocations   PropertyLocation[] @relation("SubLocations")
 }
 
 model Prescription {

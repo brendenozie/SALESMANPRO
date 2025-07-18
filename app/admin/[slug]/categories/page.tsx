@@ -1,48 +1,8 @@
 import React from 'react';
 import CategoryManagerClient from './CategoryManagerClient';
+import { StoreCategory } from '@/types/typings';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-
-// Define StoreCategory and ProductCategory shapes
-export type StoreCategory = {
-  id: string;
-  companyId: string;
-  categoryId: string;
-  displayName: string;
-  icon?: string;
-  sortOrder: number;
-  visible: boolean;
-  items: Subcategory[]; // always an array
-  allBrands?: any[] | null;
-  category: ProductCategory;
-};
-
-export type Subcategory = {
-  id: string;
-  name: string;
-  slug: string;
-  sortOrder: number;
-  visible: boolean;
-};
-
-export type ProductCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  longDescription?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  metaKeywords?: string[];
-  sortOrder?: number;
-  visible?: boolean;
-  isFeatured?: boolean;
-  showInHomepage?: boolean;
-  attributes?: Record<string, any>;
-  subcategories?: Subcategory[] | null;
-  icon?: string;
-  image?: string;
-};
 
 interface PageProps {
   params: {
