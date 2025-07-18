@@ -53,7 +53,7 @@ export default function AdminLayout({ children, params }: {
 
   // 1. This is the core logic.
   // It checks if the current URL path ends with '/pos'.
-  const shouldHideNav = pathname.endsWith('/pos');
+  const shouldHideNav = pathname.endsWith('/pos') || pathname.endsWith('/storepos');
 
   // 2. If the navigation should be hidden, return a simplified layout.
   // This renders only the main content area, making it take up the full screen.

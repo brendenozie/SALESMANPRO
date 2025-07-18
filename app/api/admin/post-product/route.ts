@@ -123,9 +123,9 @@ export async function POST(req: Request) {
       !name ||
       !companyId ||
       costPrice === undefined ||
-      sellingPrice === undefined || // Corrected: sellingPrice
-      commissionType === undefined ||
-      commissionRate === undefined
+      sellingPrice === undefined //|| // Corrected: sellingPrice
+      // commissionType === undefined ||
+      // commissionRate === undefined
     ) {
       return NextResponse.json(
         { message: "Missing required fields: name, companyId, costPrice, sellingPrice, commissionType, commissionRate." }, // Corrected message
@@ -138,7 +138,8 @@ export async function POST(req: Request) {
     // ———————————————
     const parsedCostPrice = parseFloat(costPrice as any);
     const parsedSellingPrice = parseFloat(sellingPrice as any); // Corrected: sellingPrice
-    const parsedCommissionRate = parseFloat(commissionRate as any);
+    const parsedCommissionRate = commissionRate !== undefined ? parseFloat(commissionRate as any) : 0;
+    const parsedcommissionType = commissionType !== undefined ? commissionType : "COST";
 
     let parsedProfitMargin = profitMargin !== undefined ? parseFloat(profitMargin as any) : 0;
     let parsedDiscount = discount !== undefined ? parseInt(discount as any, 10) : 0;
@@ -197,7 +198,7 @@ export async function POST(req: Request) {
 
     // Commission dates
     const parsedCommissionStart = commissionStartDate ? new Date(commissionStartDate) : new Date();
-    const parsedCommissionEnd = commissionEndDate ? new Date(commissionEndDate) : null;
+    const parsedCommissionEnd = commissionEndDate ? new Date(commissionEndDate) : new Date();//null;
 
     // ———————————————
     // 4. Parse tags & arrays (ensure they are arrays, default to empty)
@@ -391,14 +392,17 @@ export async function POST(req: Request) {
     const commissionRateRecord = await prisma.commissionRate.upsert({
       where: { productId: productRecord.id },
       update: {
-        commissionType,
+        commissionType:parsedcommissionType,
         commissionRate: parsedCommissionRate,
         startDate: parsedCommissionStart,
         endDate: parsedCommissionEnd,
       },
       create: {
         productId: productRecord.id,
-        commissionType,
+        name:parsedcommissionType,
+        rate:parsedCommissionRate,
+        appliesTo:"",
+        commissionType:parsedcommissionType,
         commissionRate: parsedCommissionRate,
         startDate: parsedCommissionStart,
         endDate: parsedCommissionEnd,

@@ -80,7 +80,7 @@ export async function GET(req: Request) {
         companyStock,
         agentStock,
         costPrice: product.costPrice,
-        salesPrice: product.salesPrice,
+        salesPrice: product.sellingPrice,
         commissionRate,
         commissionType,
       };

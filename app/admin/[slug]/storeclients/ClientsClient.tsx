@@ -1,4 +1,4 @@
-// app/admin/agents/AgentsClient.tsx
+// app/admin/clients/ClientsClient.tsx
 
 "use client";
 
@@ -14,42 +14,35 @@ import {
   Legend,
 } from "chart.js";
 import {
-  UsersIcon,
-  CurrencyDollarIcon,
-  BanknotesIcon,
-  PencilSquareIcon,
-  TrashIcon,
-  PlusCircleIcon,
-  XMarkIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-} from "@heroicons/react/24/outline"; // Importing new icons
-import Modal from "@/components/Modal"; // Assuming you have a generic Modal component
+  UsersIcon,       // For total clients
+  ShoppingBagIcon,  // For total purchases
+  ChartBarIcon,     // For average order value
+  PencilSquareIcon, // Edit icon
+  TrashIcon,        // Delete icon
+  PlusCircleIcon,   // Add icon
+  XMarkIcon,        // Clear search icon
+  CheckCircleIcon,  // Save icon in modal
+  ExclamationTriangleIcon, // Warning icon in delete modal
+} from "@heroicons/react/24/outline"; // Importing relevant icons
+
+import Modal from "@/components/Modal"; // Re-using the generic Modal component
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// Type definitions for Agent
-export type Agent = {
+// Type definition for Client
+export type Client = {
   id: string;
   name: string;
   email: string;
   phoneNumber: string;
-  totalSales: number;
-  totalCommissions: number;
-  recentTransaction: {
-    amount: number;
-    date: string | null;
-  };
-  recentCommission: {
-    amount: number;
-    date: string | null;
-    status: string;
-  };
+  totalPurchases: number;
+  lastPurchaseDate: string | null; // e.g., "YYYY-MM-DD"
+  averageOrderValue: number; // Calculated or provided
 };
 
 interface ClientProps {
-  agentsData: Agent[];
+  clientsData: Client[];
 }
 
 // -----------------------------------------------------------------------------
@@ -79,57 +72,45 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
   </div>
 );
 
-interface AgentCardProps {
-  agent: Agent;
-  onEdit: (agent: Agent) => void;
+interface ClientCardProps {
+  client: Client;
+  onEdit: (client: Client) => void;
   onDelete: (id: string) => void;
 }
 
-const AgentCard: React.FC<AgentCardProps> = ({ agent, onEdit, onDelete }) => (
-  <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 text-gray-100 p-7 rounded-xl shadow-xl border-b-4 border-indigo-600 hover:border-indigo-400 transition-all duration-300 flex flex-col justify-between">
+const ClientCard: React.FC<ClientCardProps> = ({ client, onEdit, onDelete }) => (
+  <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 text-gray-100 p-7 rounded-xl shadow-xl border-b-4 border-emerald-600 hover:border-emerald-400 transition-all duration-300 flex flex-col justify-between">
     <div className="mb-4">
-      <h3 className="text-3xl font-extrabold text-indigo-400 mb-2 truncate">
-        {agent.name}
+      <h3 className="text-3xl font-extrabold text-emerald-400 mb-2 truncate">
+        {client.name}
       </h3>
       <p className="text-sm text-gray-300 mb-1 flex items-center">
         <span className="font-semibold w-24">Email:</span>{" "}
-        <span className="text-gray-200 ml-2 truncate">{agent.email}</span>
+        <span className="text-gray-200 ml-2 truncate">{client.email}</span>
       </p>
       <p className="text-sm text-gray-300 mb-1 flex items-center">
         <span className="font-semibold w-24">Phone:</span>{" "}
-        <span className="text-gray-200 ml-2">{agent.phoneNumber}</span>
+        <span className="text-gray-200 ml-2">{client.phoneNumber}</span>
       </p>
     </div>
 
     <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm">
       <div className="flex flex-col">
-        <span className="text-gray-400 font-medium">Total Sales:</span>
-        <span className="text-green-400 text-lg font-bold">
-          ${agent.totalSales.toFixed(2)}
+        <span className="text-gray-400 font-medium">Total Purchases:</span>
+        <span className="text-lime-400 text-lg font-bold">
+          ${client.totalPurchases.toFixed(2)}
         </span>
       </div>
       <div className="flex flex-col">
-        <span className="text-gray-400 font-medium">Total Commissions:</span>
-        <span className="text-yellow-400 text-lg font-bold">
-          ${agent.totalCommissions.toFixed(2)}
-        </span>
-      </div>
-      <div className="flex flex-col">
-        <span className="text-gray-400 font-medium">Last Txn:</span>
+        <span className="text-gray-400 font-medium">Last Purchase:</span>
         <span className="text-blue-400 font-bold">
-          ${agent.recentTransaction.amount.toFixed(2)}
+          {client.lastPurchaseDate || "N/A"}
         </span>
       </div>
-      <div className="flex flex-col">
-        <span className="text-gray-400 font-medium">Last Comm. Status:</span>
-        <span
-          className={`font-bold ${
-            agent.recentCommission.status === "Paid"
-              ? "text-green-500"
-              : "text-red-500"
-          }`}
-        >
-          {agent.recentCommission.status}
+      <div className="flex flex-col col-span-2">
+        <span className="text-gray-400 font-medium">Avg. Order Value:</span>
+        <span className="text-sky-400 text-lg font-bold">
+          ${client.averageOrderValue.toFixed(2)}
         </span>
       </div>
     </div>
@@ -138,15 +119,15 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onEdit, onDelete }) => (
     <div className="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-700">
       <button
         className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200 text-sm font-medium"
-        onClick={() => onEdit(agent)}
-        aria-label={`Edit ${agent.name}`}
+        onClick={() => onEdit(client)}
+        aria-label={`Edit ${client.name}`}
       >
         <PencilSquareIcon className="h-5 w-5 mr-1" /> Edit
       </button>
       <button
         className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all duration-200 text-sm font-medium"
-        onClick={() => onDelete(agent.id)}
-        aria-label={`Delete ${agent.name}`}
+        onClick={() => onDelete(client.id)}
+        aria-label={`Delete ${client.name}`}
       >
         <TrashIcon className="h-5 w-5 mr-1" /> Delete
       </button>
@@ -158,75 +139,70 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, onEdit, onDelete }) => (
 // Modals for Add/Edit/Delete
 // -----------------------------------------------------------------------------
 
-interface AddEditAgentModalProps {
+interface AddEditClientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  agent?: Agent | null; // Agent data for editing, null for adding
-  onSave: (agent: Agent) => void;
+  client?: Client | null; // Client data for editing, null for adding
+  onSave: (client: Client) => void;
 }
 
-const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
+const AddEditClientModal: React.FC<AddEditClientModalProps> = ({
   isOpen,
   onClose,
-  agent,
+  client,
   onSave,
 }) => {
-  const [formData, setFormData] = useState<Agent>(
-    agent || {
+  const [formData, setFormData] = useState<Client>(
+    client || {
       id: "",
       name: "",
       email: "",
       phoneNumber: "",
-      totalSales: 0,
-      totalCommissions: 0,
-      recentTransaction: { amount: 0, date: null },
-      recentCommission: { amount: 0, date: null, status: "Pending" },
+      totalPurchases: 0,
+      lastPurchaseDate: null,
+      averageOrderValue: 0,
     }
   );
 
-  // Reset form data when agent prop changes (for editing)
+  // Reset form data when client prop changes (for editing) or modal opens/closes
   React.useEffect(() => {
-    if (agent) {
-      setFormData(agent);
+    if (client) {
+      setFormData(client);
     } else {
-      // Clear form for adding new agent
+      // Clear form for adding new client
       setFormData({
         id: "",
         name: "",
         email: "",
         phoneNumber: "",
-        totalSales: 0,
-        totalCommissions: 0,
-        recentTransaction: { amount: 0, date: null },
-        recentCommission: { amount: 0, date: null, status: "Pending" },
+        totalPurchases: 0,
+        lastPurchaseDate: null,
+        averageOrderValue: 0,
       });
     }
-  }, [agent, isOpen]); // Also reset when modal opens to ensure fresh state
+  }, [client, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        name === "totalSales" || name === "totalCommissions"
-          ? parseFloat(value) || 0
-          : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd generate a unique ID for new agents here if not from backend
-    const savedAgent = { ...formData, id: formData.id || `agent-${Date.now()}` };
-    onSave(savedAgent);
+    // In a real app, you'd generate a unique ID for new clients here if not from backend
+    const savedClient = { ...formData, id: formData.id || `client-${Date.now()}` };
+    onSave(savedClient);
     onClose(); // Close modal after saving
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-md mx-auto">
-        <h2 className="text-3xl font-bold text-indigo-400 mb-6 text-center">
-          {agent ? "Edit Agent" : "Add New Agent"}
+        <h2 className="text-3xl font-bold text-emerald-400 mb-6 text-center">
+          {client ? "Edit Client" : "Add New Client"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -239,7 +215,7 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               required
             />
           </div>
@@ -253,7 +229,7 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               required
             />
           </div>
@@ -267,39 +243,53 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               required
             />
           </div>
-          {/* Read-only fields for totalSales and totalCommissions in edit mode */}
-          {agent && (
+          {/* Read-only fields for derived data in edit mode */}
+          {client && (
             <>
               <div>
-                <label htmlFor="totalSales" className="block text-gray-300 text-sm font-semibold mb-2">
-                  Total Sales
+                <label htmlFor="totalPurchases" className="block text-gray-300 text-sm font-semibold mb-2">
+                  Total Purchases
                 </label>
                 <input
                   type="number"
-                  id="totalSales"
-                  name="totalSales"
-                  value={formData.totalSales.toFixed(2)}
+                  id="totalPurchases"
+                  name="totalPurchases"
+                  value={formData.totalPurchases.toFixed(2)}
                   readOnly
                   className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-gray-400 cursor-not-allowed"
-                  title="Total Sales are calculated automatically"
+                  title="Total Purchases are calculated automatically"
                 />
               </div>
               <div>
-                <label htmlFor="totalCommissions" className="block text-gray-300 text-sm font-semibold mb-2">
-                  Total Commissions
+                <label htmlFor="lastPurchaseDate" className="block text-gray-300 text-sm font-semibold mb-2">
+                  Last Purchase Date
+                </label>
+                <input
+                  type="text" // Or date type if you want a date picker
+                  id="lastPurchaseDate"
+                  name="lastPurchaseDate"
+                  value={formData.lastPurchaseDate || "N/A"}
+                  readOnly
+                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-gray-400 cursor-not-allowed"
+                  title="Last Purchase Date is updated automatically"
+                />
+              </div>
+              <div>
+                <label htmlFor="averageOrderValue" className="block text-gray-300 text-sm font-semibold mb-2">
+                  Average Order Value
                 </label>
                 <input
                   type="number"
-                  id="totalCommissions"
-                  name="totalCommissions"
-                  value={formData.totalCommissions.toFixed(2)}
+                  id="averageOrderValue"
+                  name="averageOrderValue"
+                  value={formData.averageOrderValue.toFixed(2)}
                   readOnly
                   className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-gray-400 cursor-not-allowed"
-                  title="Total Commissions are calculated automatically"
+                  title="Average Order Value is calculated automatically"
                 />
               </div>
             </>
@@ -315,9 +305,9 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 font-semibold flex items-center"
+              className="px-6 py-3 bg-emerald-600 text-white rounded-lg shadow-md hover:bg-emerald-700 transition-all duration-200 font-semibold flex items-center"
             >
-              <CheckCircleIcon className="h-5 w-5 mr-2" /> {agent ? "Save Changes" : "Add Agent"}
+              <CheckCircleIcon className="h-5 w-5 mr-2" /> {client ? "Save Changes" : "Add Client"}
             </button>
           </div>
         </form>
@@ -330,14 +320,14 @@ interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  agentName: string;
+  clientName: string;
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  agentName,
+  clientName,
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -345,7 +335,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         <ExclamationTriangleIcon className="h-20 w-20 text-red-500 mx-auto mb-6" />
         <h2 className="text-2xl font-bold text-red-400 mb-4">Confirm Deletion</h2>
         <p className="text-lg text-gray-300 mb-7">
-          Are you sure you want to delete agent <span className="font-bold text-white">"{agentName}"</span>? This action cannot be undone.
+          Are you sure you want to delete client <span className="font-bold text-white">"{clientName}"</span>? This action cannot be undone.
         </p>
         <div className="flex justify-center space-x-5">
           <button
@@ -367,67 +357,71 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 };
 
 // -----------------------------------------------------------------------------
-// Main AgentsClient Component
+// Main ClientsClient Component
 // -----------------------------------------------------------------------------
 
-const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) => {
-  const [agents, setAgents] = useState<Agent[]>(initialAgentsData); // Use internal state for agents
+const ClientsClient: React.FC<ClientProps> = ({ clientsData: initialClientsData }) => {
+  const [clients, setClients] = useState<Client[]>(initialClientsData); // Use internal state for clients
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 6;
 
   // Modals state
   const [showAddEditModal, setShowAddEditModal] = useState(false);
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null); // For editing
+  const [editingClient, setEditingClient] = useState<Client | null>(null); // For editing
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [agentToDelete, setAgentToDelete] = useState<string | null>(null);
-  const [agentToDeleteName, setAgentToDeleteName] = useState<string>("");
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+  const [clientToDeleteName, setClientToDeleteName] = useState<string>("");
 
   // Filter by name
-  const filteredAgents = useMemo(() => {
-    return agents.filter((agent) =>
-      agent.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredClients = useMemo(() => {
+    return clients.filter((client) =>
+      client.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [agents, searchTerm]);
+  }, [clients, searchTerm]);
 
   // Summaries
-  const totalSales = useMemo(
-    () => agents.reduce((sum, agent) => sum + agent.totalSales, 0),
-    [agents]
+  const totalClients = useMemo(() => clients.length, [clients]);
+  const totalPurchases = useMemo(
+    () => clients.reduce((sum, client) => sum + client.totalPurchases, 0),
+    [clients]
   );
-  const totalCommissions = useMemo(
-    () => agents.reduce((sum, agent) => sum + agent.totalCommissions, 0),
-    [agents]
+  const totalAverageOrderValue = useMemo(
+    () => {
+      const sumOfAOV = clients.reduce((sum, client) => sum + client.averageOrderValue, 0);
+      return clients.length > 0 ? sumOfAOV / clients.length : 0;
+    },
+    [clients]
   );
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredAgents.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const paginatedAgents = filteredAgents.slice(
+  const paginatedClients = filteredClients.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
 
-  // Chart data (based on filteredAgents)
+  // Chart data (based on filteredClients)
   const chartData = {
-    labels: filteredAgents.map((agent) => agent.name),
+    labels: filteredClients.map((client) => client.name),
     datasets: [
       {
-        label: "Total Sales",
-        data: filteredAgents.map((agent) => agent.totalSales),
-        backgroundColor: "rgba(41, 182, 246, 0.8)", // Brighter blue
-        borderColor: "#0288D1",
+        label: "Total Purchases",
+        data: filteredClients.map((client) => client.totalPurchases),
+        backgroundColor: "rgba(102, 204, 153, 0.8)", // Greenish
+        borderColor: "#4CAF50",
         borderWidth: 1,
-        borderRadius: 5, // Rounded bars
+        borderRadius: 5,
       },
       {
-        label: "Total Commissions",
-        data: filteredAgents.map((agent) => agent.totalCommissions),
-        backgroundColor: "rgba(255, 167, 38, 0.8)", // Brighter orange
-        borderColor: "#FB8C00",
+        label: "Average Order Value",
+        data: filteredClients.map((client) => client.averageOrderValue),
+        backgroundColor: "rgba(77, 182, 172, 0.8)", // Tealish
+        borderColor: "#009688",
         borderWidth: 1,
-        borderRadius: 5, // Rounded bars
+        borderRadius: 5,
       },
     ],
   };
@@ -436,44 +430,44 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
   // CRUD Operations Handlers
   // -----------------------
 
-  const handleAddAgent = () => {
-    setEditingAgent(null); // Clear any previous editing state
+  const handleAddClient = () => {
+    setEditingClient(null); // Clear any previous editing state
     setShowAddEditModal(true);
   };
 
-  const handleEditAgent = (agent: Agent) => {
-    setEditingAgent(agent);
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
     setShowAddEditModal(true);
   };
 
-  const handleSaveAgent = (updatedAgent: Agent) => {
+  const handleSaveClient = (updatedClient: Client) => {
     // In a real application, you'd send this to your backend API
-    console.log("Saving agent:", updatedAgent);
-    if (updatedAgent.id && agents.find(a => a.id === updatedAgent.id)) {
-      // Update existing agent
-      setAgents(agents.map((a) => (a.id === updatedAgent.id ? updatedAgent : a)));
-      alert("Agent updated successfully!");
+    console.log("Saving client:", updatedClient);
+    if (updatedClient.id && clients.find(c => c.id === updatedClient.id)) {
+      // Update existing client
+      setClients(clients.map((c) => (c.id === updatedClient.id ? updatedClient : c)));
+      alert("Client updated successfully!");
     } else {
-      // Add new agent
-      setAgents([...agents, { ...updatedAgent, id: `agent-${Date.now()}` }]); // Assign a temporary ID
-      alert("Agent added successfully!");
+      // Add new client (assign a temporary ID)
+      setClients([...clients, { ...updatedClient, id: `client-${Date.now()}` }]);
+      alert("Client added successfully!");
     }
   };
 
-  const handleDeleteAgent = (id: string) => {
-    const agentName = agents.find(a => a.id === id)?.name || "this agent";
-    setAgentToDelete(id);
-    setAgentToDeleteName(agentName);
+  const handleDeleteClient = (id: string) => {
+    const clientName = clients.find(c => c.id === id)?.name || "this client";
+    setClientToDelete(id);
+    setClientToDeleteName(clientName);
     setShowDeleteConfirmModal(true);
   };
 
-  const confirmDeleteAgent = () => {
-    if (agentToDelete) {
+  const confirmDeleteClient = () => {
+    if (clientToDelete) {
       // In a real application, you'd send this to your backend API
-      setAgents(agents.filter((a) => a.id !== agentToDelete));
-      alert(`Agent ${agentToDeleteName} deleted successfully!`);
-      setAgentToDelete(null);
-      setAgentToDeleteName("");
+      setClients(clients.filter((c) => c.id !== clientToDelete));
+      alert(`Client ${clientToDeleteName} deleted successfully!`);
+      setClientToDelete(null);
+      setClientToDeleteName("");
       setShowDeleteConfirmModal(false);
     }
   };
@@ -482,31 +476,31 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
     <main className="flex-grow container mx-auto px-6 py-12 bg-gray-900 min-h-screen text-gray-100">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-          <h1 className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-600 mb-6 md:mb-0 drop-shadow-lg text-center md:text-left">
-            Agents Dashboard
+          <h1 className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-600 mb-6 md:mb-0 drop-shadow-lg text-center md:text-left">
+            Client Hub
           </h1>
           <button
-            onClick={handleAddAgent}
+            onClick={handleAddClient}
             className="flex items-center px-8 py-4 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold"
-            aria-label="Add New Agent"
+            aria-label="Add New Client"
           >
-            <PlusCircleIcon className="h-7 w-7 mr-3" /> Add New Agent
+            <PlusCircleIcon className="h-7 w-7 mr-3" /> Add New Client
           </button>
         </div>
 
-        {/* Search Bar & Add Button */}
+        {/* Search Bar */}
         <div className="flex flex-col sm:flex-row justify-center items-center mb-10 space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="relative w-full max-w-lg">
             <input
               type="text"
-              placeholder="Search agents by name..."
+              placeholder="Search clients by name or email..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full p-4 pl-12 rounded-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-xl transition-all duration-300"
-              aria-label="Search agents"
+              className="w-full p-4 pl-12 rounded-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-xl transition-all duration-300"
+              aria-label="Search clients"
             />
             <svg
               className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400"
@@ -540,29 +534,29 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
         {/* Summary Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           <SummaryCard
-            title="Total Agents"
-            value={agents.length}
+            title="Total Clients"
+            value={totalClients}
             icon={UsersIcon}
-            gradientClass="from-indigo-600 to-purple-700"
+            gradientClass="from-blue-600 to-cyan-700"
           />
           <SummaryCard
-            title="Total Sales"
-            value={`$${totalSales.toFixed(2)}`}
-            icon={CurrencyDollarIcon}
+            title="Total Purchases Value"
+            value={`$${totalPurchases.toFixed(2)}`}
+            icon={ShoppingBagIcon}
             gradientClass="from-green-600 to-teal-700"
           />
           <SummaryCard
-            title="Total Commissions"
-            value={`$${totalCommissions.toFixed(2)}`}
-            icon={BanknotesIcon}
-            gradientClass="from-yellow-600 to-orange-700"
+            title="Average Order Value"
+            value={`$${totalAverageOrderValue.toFixed(2)}`}
+            icon={ChartBarIcon}
+            gradientClass="from-purple-600 to-pink-700"
           />
         </div>
 
         {/* Chart Section */}
         <div className="bg-gray-800 p-8 rounded-xl shadow-2xl flex flex-col mb-12 border border-gray-700">
           <h2 className="text-3xl font-bold text-gray-100 mb-6 border-b border-gray-700 pb-4">
-            Performance Overview
+            Client Purchase Overview
           </h2>
           <div className="chart-container h-80 md:h-96">
             <Bar
@@ -579,7 +573,7 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
                     backgroundColor: "rgba(0,0,0,0.7)",
                     titleColor: "#fff",
                     bodyColor: "#fff",
-                    borderColor: "#6366F1",
+                    borderColor: "#60A5FA",
                     borderWidth: 1,
                     cornerRadius: 6,
                   },
@@ -590,7 +584,7 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
                     ticks: { color: "#ddd", font: { size: 12 } },
                     title: {
                       display: true,
-                      text: "Agent Name",
+                      text: "Client Name",
                       color: "#9CA3AF",
                       font: { size: 16, weight: "bold" },
                     },
@@ -611,20 +605,20 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
           </div>
         </div>
 
-        {/* Agents List */}
+        {/* Clients List */}
         <section>
           <h2 className="text-3xl font-bold text-gray-100 mb-8 border-b border-gray-700 pb-4">
-            All Agents
+            All Clients
           </h2>
-          {paginatedAgents.length === 0 ? (
+          {paginatedClients.length === 0 ? (
             <div className="bg-gray-800 p-16 rounded-xl shadow-2xl text-center">
               <p className="text-2xl text-gray-400 font-semibold">
-                No agents found matching your criteria. 😞
+                No clients found matching your criteria. 😞
               </p>
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition"
+                  className="mt-6 px-6 py-3 bg-emerald-600 text-white rounded-lg shadow-md hover:bg-emerald-700 transition"
                 >
                   Clear Search
                 </button>
@@ -632,12 +626,12 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {paginatedAgents.map((agent) => (
-                <AgentCard
-                  key={agent.id}
-                  agent={agent}
-                  onEdit={handleEditAgent}
-                  onDelete={handleDeleteAgent}
+              {paginatedClients.map((client) => (
+                <ClientCard
+                  key={client.id}
+                  client={client}
+                  onEdit={handleEditClient}
+                  onDelete={handleDeleteClient}
                 />
               ))}
             </div>
@@ -669,7 +663,7 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
               </svg>{" "}
               Previous
             </button>
-            <span className="px-5 py-2 bg-indigo-600 text-white rounded-full font-bold shadow-lg">
+            <span className="px-5 py-2 bg-emerald-600 text-white rounded-full font-bold shadow-lg">
               {`Page ${currentPage} of ${totalPages}`}
             </span>
             <button
@@ -700,23 +694,23 @@ const AgentsClient: React.FC<ClientProps> = ({ agentsData: initialAgentsData }) 
         )}
       </div>
 
-      {/* Add/Edit Agent Modal */}
-      <AddEditAgentModal
+      {/* Add/Edit Client Modal */}
+      <AddEditClientModal
         isOpen={showAddEditModal}
         onClose={() => setShowAddEditModal(false)}
-        agent={editingAgent}
-        onSave={handleSaveAgent}
+        client={editingClient}
+        onSave={handleSaveClient}
       />
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={showDeleteConfirmModal}
         onClose={() => setShowDeleteConfirmModal(false)}
-        onConfirm={confirmDeleteAgent}
-        agentName={agentToDeleteName}
+        onConfirm={confirmDeleteClient}
+        clientName={clientToDeleteName}
       />
     </main>
   );
 };
 
-export default AgentsClient;
+export default ClientsClient;

@@ -58,7 +58,7 @@ import {
 export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "E-commerce": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
+    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     {
       label: "Products",
@@ -73,7 +73,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Clients", href: `/admin/${adminSlug}/clients` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {

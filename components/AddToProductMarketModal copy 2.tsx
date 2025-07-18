@@ -19,7 +19,7 @@ import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
-import { ProductForm, StoreCategory } from '@/types/typings'; // Assuming StoreCategory is correctly defined
+import { MarketListingForm, ProductForm, StoreCategory } from '@/types/typings'; // Assuming StoreCategory is correctly defined
 
 // Define ProductPayload and MarketListItemPayload based on your actual Prisma models if possible
 // For simplicity, using 'any' for now, but strongly recommend defining these types.
@@ -30,9 +30,8 @@ interface ProductPayload {
   longDescription?: string;
   quantity?: number;
   // ... other fields from your Product schema that might be pre-filled
-  productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
-  productCategoryId?: string;
-  subCategory?: any; // JSON
+  productCategory?: { id: string; displayName: string };
+  subCategory?: any;
   subCategoryName?: string;
   tags?: string[];
   brand?: string;
@@ -43,8 +42,9 @@ interface ProductPayload {
   condition?: string;
   dimensions?: string; // Corrected
   material?: string[];
+  salesPrice?: number; // Check if this should be sellingPrice
+  sellingPrice?: number; // Assuming product also has sellingPrice
   costPrice?: number;
-  sellingPrice?: number;
   discount?: number;
   profitMargin?: number;
   finalPrice?: number;
@@ -65,8 +65,9 @@ interface ProductPayload {
   locationName?: string;
   location?: any;
   locationId?: string;
+  latitude?: number;
+  longitude?: number;
   propertyType?: { id: string }; // Assuming PropertyType relation on Product
-  propertyTypeId?: string;
   bathrooms?: number;
   area?: string;
   bedrooms?: number;
@@ -110,10 +111,7 @@ interface ProductPayload {
   deliveryMethod?: string;
   fulfillmentStatus?: string;
   pricingTiers?: any[];
-  commissionStartDate?: string | Date; // Added
-  commissionEndDate?: string | Date; // Added
-  commissionType?: string; // Added
-  commissionRate?: number; // Added
+  // ... potentially more
 }
 
 interface MarketListItemPayload {
@@ -228,7 +226,6 @@ interface MarketListItemPayload {
   // Timestamps
   createdAt?: string | Date;
   updatedAt?: string | Date;
-  commissionRateId?: string;
 }
 
 // -----------------------------------------------------------------------------
@@ -241,159 +238,6 @@ interface AddToProductMarketModalProps {
   marketListItem?: MarketListItemPayload; // Use the more specific type
   companyId: string;
   categories: StoreCategory[];
-}
-
-interface MarketListingForm {
-  // Identifiers & relations
-  id: string;
-  productId: string;
-  sellerType: string;
-  companyId: string;
-  productTypeId?: string; // Added: For propertyType relation
-  commissionRateId?: string; // Added for the relation ID
-
-  // Title & description
-  name: string;
-  description?: string; // Made optional
-  longDescription?: string; // Added: Matches schema
-
-  // Category hierarchy & tagging
-  productCategoryId: string; // This will hold the ID of the actual ProductCategory
-  category: StoreCategory | null; // This holds the *selected StoreCategory object*
-  subCategory: any; // JSON from StoreCategory.items or ProductCategory.subcategories
-  subCategoryName: string; // If you derive a name from subCategory JSON
-  tags: string[];
-
-  // Branding & specs
-  brand: string | null;
-  model: string;
-  color: string[];
-  size: string[];
-  weight: string;
-  condition: string;
-  dimensions: string; // Corrected: From dimension to dimensions
-  material: string[];
-
-  // Profit & pricing
-  quantity: number;
-  buyingPrice: number;
-  sellingPrice: number; // Corrected: From salesPrice to sellingPrice
-  discount: number;
-  finalPrice: number;
-  profitMargin: number;
-  pricingTiers: any[]; // Added: For JSON array of pricing tiers
-
-  // Deal scheduling
-  startDealDate: string | null;
-  endDealDate: string | null;
-
-  // Feature flags
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-
-  // Marketplace-specific
-  delivery: boolean;
-  paymentOption: string;
-  showOnGhuba: boolean;
-
-  // Contact & location
-  contactName: string;
-  contact: string;
-  email?: string; // Added: As per schema
-  locationName: string;
-  location: any; // JSON for GeoJSON or similar
-  locationId: string; // ID for PropertyLocation relation
-  latitude: number | null;
-  longitude: number | null;
-  amenities: string[]; // Moved here, was under Property-specific
-
-  // Vehicle-specific
-  make: string;
-  trim: string;
-  type: string;
-  mileage: string;
-  engineType: string;
-  engineSize: number | null; // Corrected to number | null
-  horsepower: number | null; // Added: Matches schema
-  torque: number | null; // Added: Matches schema
-  fuelType: string; // Added: Matches schema
-  fuelEconomy: string; // Added: Matches schema
-  transmission: string;
-  drivetrain: string;
-  vin: string;
-  logbookStatus: string;
-  serviceHistory: string;
-  negotiable: boolean;
-  financingAvailable: boolean;
-  tradeIn: boolean;
-  features: any[]; // Added: For JSON array of features
-
-  // Ownership & Pricing (New fields for Vehicle/General)
-  previousOwners: number | null; // Added: Matches schema
-  tireCondition: string; // Added: Matches schema
-  accidentalHistory: boolean; // Added: Matches schema
-  tax?: number; // Added
-  shippingCost?: number; // Added
-
-  // Books
-  author: string;
-  publisher: string;
-  isbn: string;
-
-  // Clothing/Fashion
-  fabricComposition: string;
-  careInstructions: string;
-
-  // Home Appliances
-  energyRating: string;
-  warrantyPeriod: string;
-  applianceDimensions: string;
-
-  // Beauty Products
-  ingredients: string;
-  usageInstructions: string;
-  expirationDate: string | null;
-
-  // Property-specific
-  bedrooms: number | null; // Corrected to number | null
-  studios: number | null; // Corrected to number | null
-  bathrooms: number | null; // Corrected to number | null
-  area: string;
-  serviceSchedule: string;
-
-  // Service/Booking related fields
-  availabilityStart: string | null; // Nullable
-  availabilityEnd: string | null; // Nullable
-  bookingSlots: any[]; // JSON array
-  minNoticePeriod: string;
-  maxBookingAhead: string;
-  requiredClientInfo: string;
-  fulfillmentStatus: string;
-  totalCapacity: number | null; // Corrected to number | null
-  currentBookedCount: number | null; // Corrected to number | null
-  providerRating: number | null; // Corrected to number | null
-  hourlyRate: number | null; // Corrected to number | null
-  minimumHours: number | null; // Corrected to number | null
-  deliveryMethod: string;
-
-  // Digital goods
-  digitalUrl: string;
-  autoDeliver: boolean;
-
-  // Admin-only
-  status: string;
-  collectionId?: string; // Added: Matches schema
-  year?: number | null; // Added: As per schema (vehicle/service year)
-
-  // Commission fields
-  commissionType: string;
-  commissionRate: number;
-  commissionStartDate: string | null;
-  commissionEndDate: string | null;
 }
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
@@ -428,15 +272,13 @@ function buildListingPayload(
     productId: f.productId,
     images: imageUrls,
     video: videoUrls[0] || null,
+    // books: [], // map book covers here if needed - removed if not in schema directly
     name: f.name,
     description: f.description || null, // Ensure null for optional strings
     longDescription: f.longDescription || null, // Added
     quantity: f.quantity,
-    // IMPORTANT: Use the productCategoryId derived from StoreCategory
     productCategoryId: f.productCategoryId,
-    // Use the displayName from the StoreCategory for the denormalized 'category' string field
-    category: f.category?.displayName || null,
-    // Use the `items` from the selected StoreCategory for `subCategory` JSON
+    category: f.category?.displayName || null, // Ensure null for optional strings
     subCategory: f.subCategory || null,
     subCategoryName: f.subCategoryName || null,
     tags: f.tags,
@@ -467,7 +309,7 @@ function buildListingPayload(
     showOnGhuba: f.showOnGhuba,
     contactName: f.contactName || null,
     contact: f.contact || null,
-    email: f.email || null,
+    email: f.email || null, // Added
     locationName: f.locationName || null,
     location: f.location || null,
     locationId: f.locationId || null,
@@ -479,10 +321,10 @@ function buildListingPayload(
     mileage: f.mileage || null,
     engineType: f.engineType || null,
     engineSize: f.engineSize,
-    horsepower: f.horsepower,
-    torque: f.torque,
-    fuelType: f.fuelType || null,
-    fuelEconomy: f.fuelEconomy || null,
+    horsepower: f.horsepower, // Added
+    torque: f.torque, // Added
+    fuelType: f.fuelType || null, // Added
+    fuelEconomy: f.fuelEconomy || null, // Added
     transmission: f.transmission || null,
     drivetrain: f.drivetrain || null,
     vin: f.vin || null,
@@ -491,12 +333,12 @@ function buildListingPayload(
     negotiable: f.negotiable,
     financingAvailable: f.financingAvailable,
     tradeIn: f.tradeIn,
-    features: f.features || [],
-    previousOwners: f.previousOwners,
-    tireCondition: f.tireCondition || null,
-    accidentalHistory: f.accidentalHistory,
-    tax: f.tax,
-    shippingCost: f.shippingCost,
+    features: f.features || [], // Added
+    previousOwners: f.previousOwners, // Added
+    tireCondition: f.tireCondition || null, // Added
+    accidentalHistory: f.accidentalHistory, // Added
+    tax: f.tax, // Added
+    shippingCost: f.shippingCost, // Added
     author: f.author || null,
     publisher: f.publisher || null,
     isbn: f.isbn || null,
@@ -530,9 +372,9 @@ function buildListingPayload(
     digitalUrl: f.digitalUrl || null,
     autoDeliver: f.autoDeliver,
     status: f.status,
-    collectionId: f.collectionId || null,
-    year: f.year,
-    productTypeId: f.productTypeId || null,
+    collectionId: f.collectionId || null, // Added
+    year: f.year, // Added
+    productTypeId: f.productTypeId || null, // Added for relation
     commissionType: f.commissionType,
     commissionRate: f.commissionRate,
     commissionStartDate: f.commissionStartDate,
@@ -544,59 +386,48 @@ function buildListingPayload(
 // 3) Custom Hook to manage form data & calculations
 // -----------------------------------------------------------------------------
 function useMarketListingForm(
-  product: ProductForm,
+  product: ProductPayload,
   marketListItem: MarketListItemPayload | undefined,
-  companyId: string,
-  categories: StoreCategory[] // Added categories to hook parameters
+  companyId: string
 ) {
-  const getInitial = useCallback((): MarketListingForm => {
-    const raw : MarketListItemPayload | any = marketListItem || {};
-    const p : ProductForm = product || {};
-
-    // Find the initial StoreCategory object if productCategoryId is set
-    let initialCategory: StoreCategory | null = null;
-    const initialProductCategoryId = raw.productCategoryId || p.category?.id || '';
-
-    if (initialProductCategoryId) {
-      initialCategory = categories.find(
-        (cat) => cat.categoryId === initialProductCategoryId
-      ) || null;
-    }
+  const getInitial = (): MarketListingForm => {
+    const raw : MarketListingForm | any = marketListItem || {};
+    const p :ProductForm | any = product || {}; // Use product directly, not p.product
 
     return {
       id: raw.id || '',
       productId: raw.productId || p.id || '',
       sellerType: raw.sellerType || 'ADMIN',
       companyId: raw.companyId || p.companyId || companyId,
-      productTypeId: raw.propertyTypeId || p.propertyType?.id || '',
-      commissionRateId: raw.commissionRateId || '',
+      productTypeId: raw.propertyTypeId || p.propertyType?.id || '', // Initialize propertyTypeId
+      commissionRateId: raw.commissionRateId || '', // Initialize commissionRateId
 
       name: raw.name || p.name || '',
-      description: raw.description || p.description || undefined,
-      longDescription: raw.longDescription || p.longDescription || undefined,
+      description: raw.description || p.description || undefined, // Use undefined for optional string
+      longDescription: raw.longDescription || p.longDescription || undefined, // Added
 
-      productCategoryId: initialProductCategoryId, // Set the actual ProductCategory ID
-      category: initialCategory, // Store the full StoreCategory object
-      subCategory: raw.subCategory || initialCategory?.items || {}, // Initialize subCategory from StoreCategory.items
+      productCategoryId: raw.productCategoryId || p.productCategory?.id || '',
+      category: raw.category ? { id: '', displayName: raw.category } : p.productCategory || null, // Simplified for string `category`
+      subCategory: raw.subCategory || p.subCategory || {},
       subCategoryName: raw.subCategoryName || p.subCategoryName || '',
       tags: raw.tags || p.tags || [],
 
-      brand: raw.brand || p.brand || undefined,
+      brand: raw.brand || p.brand || undefined, // Use undefined for optional string
       model: raw.model || p.model || '',
       color: raw.color || p.color || [],
       size: raw.size || p.size || [],
       weight: raw.weight || p.weight || '',
       condition: raw.condition || p.condition || '',
-      dimensions: raw.dimensions || p.dimensions || '',
+      dimensions: raw.dimensions || p.dimensions || '', // Corrected
       material: raw.material || p.material || [],
 
       quantity: raw.quantity ?? p.quantity ?? 1,
-      buyingPrice: raw.buyingPrice ?? p.costPrice ?? 0,
-      sellingPrice: raw.sellingPrice ?? p.sellingPrice ?? 0,
+      buyingPrice: raw.buyingPrice ?? p.costPrice ?? 0, // Using p.costPrice as initial for buyingPrice
+      sellingPrice: raw.sellingPrice ?? p.sellingPrice ?? 0, // Using p.sellingPrice
       discount: raw.discount ?? p.discount ?? 0,
       finalPrice: raw.finalPrice ?? 0, // Will be calculated by useEffect
       profitMargin: raw.profitMargin ?? 0, // Will be calculated by useEffect
-      pricingTiers: raw.pricingTiers || [],
+      pricingTiers: raw.pricingTiers || [], // Added
 
       startDealDate: (raw.startDealDate || p.startDealDate)?.toString() || null,
       endDealDate: (raw.endDealDate || p.endDealDate)?.toString() || null,
@@ -614,24 +445,24 @@ function useMarketListingForm(
 
       contactName: raw.contactName || p.contactName || '',
       contact: raw.contact || p.contact || '',
-      email: raw.email || p.email || undefined,
+      email: raw.email || p.email || undefined, // Added
       locationName: raw.locationName || p.locationName || '',
       location: raw.location || p.location || {},
       locationId: raw.locationId || p.locationId || '',
       latitude: raw.latitude ?? p.latitude ?? null,
       longitude: raw.longitude ?? p.longitude ?? null,
-      amenities: raw.amenities || p.amenities || [],
+      amenities: raw.amenities || p.amenities || [], // Corrected position
 
       make: raw.make || p.make || '',
       trim: raw.trim || p.trim || '',
       type: raw.type || p.type || '',
       mileage: raw.mileage || p.mileage || '',
       engineType: raw.engineType || p.engineType || '',
-      engineSize: raw.engineSize ?? p.engineSize ?? null,
-      horsepower: raw.horsepower ?? p.horsepower ?? null,
-      torque: raw.torque ?? p.torque ?? null,
-      fuelType: raw.fuelType || p.fuelType || '',
-      fuelEconomy: raw.fuelEconomy || p.fuelEconomy || '',
+      engineSize: raw.engineSize ?? p.engineSize ?? null, // Corrected to number | null
+      horsepower: raw.horsepower ?? p.horsepower ?? null, // Added
+      torque: raw.torque ?? p.torque ?? null, // Added
+      fuelType: raw.fuelType || p.fuelType || '', // Added
+      fuelEconomy: raw.fuelEconomy || p.fuelEconomy || '', // Added
       transmission: raw.transmission || p.transmission || '',
       drivetrain: raw.drivetrain || p.drivetrain || '',
       vin: raw.vin || p.vin || '',
@@ -640,13 +471,13 @@ function useMarketListingForm(
       negotiable: raw.negotiable ?? p.negotiable ?? false,
       financingAvailable: raw.financingAvailable ?? p.financingAvailable ?? false,
       tradeIn: raw.tradeIn ?? p.tradeIn ?? false,
-      features: raw.features || [],
+      features: raw.features || [], // Added
 
-      previousOwners: raw.previousOwners ?? p.previousOwners ?? null,
-      tireCondition: raw.tireCondition || p.tireCondition || '',
-      accidentalHistory: raw.accidentalHistory ?? p.accidentalHistory ?? false,
-      tax: raw.tax ?? undefined,
-      shippingCost: raw.shippingCost ?? undefined,
+      previousOwners: raw.previousOwners ?? p.previousOwners ?? null, // Added
+      tireCondition: raw.tireCondition || p.tireCondition || '', // Added
+      accidentalHistory: raw.accidentalHistory ?? p.accidentalHistory ?? false, // Added
+      tax: raw.tax ?? undefined, // Added
+      shippingCost: raw.shippingCost ?? undefined, // Added
 
       author: raw.author || p.author || '',
       publisher: raw.publisher || p.publisher || '',
@@ -663,41 +494,44 @@ function useMarketListingForm(
       usageInstructions: raw.usageInstructions || p.usageInstructions || '',
       expirationDate: (raw.expirationDate || p.expirationDate)?.toString() || null,
 
-      bedrooms: raw.bedrooms ?? p.bedrooms ?? null,
-      studios: raw.studios ?? p.studios ?? null,
-      bathrooms: raw.bathrooms ?? p.bathrooms ?? null,
+      // Property-specific
+      bedrooms: raw.bedrooms ?? p.bedrooms ?? null, // Corrected to number | null
+      studios: raw.studios ?? p.studios ?? null, // Corrected to number | null
+      bathrooms: raw.bathrooms ?? p.bathrooms ?? null, // Corrected to number | null
       area: raw.area || p.area || '',
       serviceSchedule: raw.serviceSchedule || p.serviceSchedule || '',
 
+      // Service/Booking related fields
       availabilityStart: (raw.availabilityStart || p.availabilityStart)?.toString() || null,
       availabilityEnd: (raw.availabilityEnd || p.availabilityEnd)?.toString() || null,
       bookingSlots: raw.bookingSlots || [],
       minNoticePeriod: raw.minNoticePeriod || '',
       maxBookingAhead: raw.maxBookingAhead || '',
-      requiredClientInfo: raw.requiredClientInfo || '',
+      requiredClientInfo: raw.requiredClientInfo || '', // Assuming this is a form field
       fulfillmentStatus: raw.fulfillmentStatus || '',
-      totalCapacity: raw.totalCapacity ?? p.totalCapacity ?? null,
-      currentBookedCount: raw.currentBookedCount ?? p.currentBookedCount ?? null,
-      providerRating: raw.providerRating ?? p.providerRating ?? null,
-      hourlyRate: raw.hourlyRate ?? p.hourlyRate ?? null,
-      minimumHours: raw.minimumHours ?? p.minimumHours ?? null,
+      totalCapacity: raw.totalCapacity ?? p.totalCapacity ?? null, // Corrected to number | null
+      currentBookedCount: raw.currentBookedCount ?? p.currentBookedCount ?? null, // Corrected to number | null
+      providerRating: raw.providerRating ?? p.providerRating ?? null, // Corrected to number | null
+      hourlyRate: raw.hourlyRate ?? p.hourlyRate ?? null, // Corrected to number | null
+      minimumHours: raw.minimumHours ?? p.minimumHours ?? null, // Corrected to number | null
       deliveryMethod: raw.deliveryMethod || '',
 
       digitalUrl: raw.digitalUrl || p.digitalUrl || '',
       autoDeliver: raw.autoDeliver ?? p.autoDeliver ?? false,
 
       status: raw.status || p.status || 'ACTIVE',
-      collectionId: raw.collectionId || p.collectionId || undefined,
-      year: raw.year ?? p.year ?? null,
+      collectionId: raw.collectionId || p.collectionId || undefined, // Added
+      year: raw.year ?? p.year ?? null, // Added
 
-      commissionType: raw.commissionType || '',
-      commissionRate: raw.commissionRate ?? 0,
+      // Commission fields
+      commissionType: raw.commissionType || '', // Default or get from product if applicable
+      commissionRate: raw.commissionRate ?? 0, // Default or get from product if applicable
       commissionStartDate: (raw.commissionStartDate || p.commissionStartDate)?.toString() || null,
       commissionEndDate: (raw.commissionEndDate || p.commissionEndDate)?.toString() || null,
     };
-  }, [product, marketListItem, companyId, categories]); // Added categories to the useCallback dependencies
+  };
 
-  const [formData, setFormData] = useState<MarketListingForm>(getInitial); // Initialize with the memoized function
+  const [formData, setFormData] = useState<MarketListingForm>(getInitial);
 
   // update price calculations
   useEffect(() => {
@@ -714,11 +548,6 @@ function useMarketListingForm(
     []
   );
 
-  // Use an effect to re-initialize form data if product, marketListItem, companyId, or categories change
-  useEffect(() => {
-    setFormData(getInitial());
-  }, [getInitial]); // `getInitial` is a useCallback, so it only changes if its dependencies change.
-
   return { formData, updateField };
 }
 
@@ -733,7 +562,7 @@ export default function AddToProductMarketModal({
   companyId,
   categories,
 }: AddToProductMarketModalProps) {
-  const { formData, updateField } = useMarketListingForm(product, marketListItem, companyId, categories); // Pass categories
+  const { formData, updateField } = useMarketListingForm(product, marketListItem, companyId);
 
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -763,7 +592,6 @@ export default function AddToProductMarketModal({
         icon: raw.icon,
         items: raw.items,
         allBrands: raw.allBrands ?? [],
-        categoryId: raw.categoryId, // Ensure categoryId is available here
       })),
     [categories]
   );
@@ -781,8 +609,7 @@ export default function AddToProductMarketModal({
           'discount', 'buyingPrice', 'sellingPrice', 'finalPrice', 'profitMargin',
           'quantity', 'engineSize', 'horsepower', 'torque', 'previousOwners',
           'year', 'bathrooms', 'bedrooms', 'studios', 'hourlyRate', 'minimumHours',
-          'totalCapacity', 'currentBookedCount', 'providerRating', 'tax', 'shippingCost',
-          'commissionRate'
+          'totalCapacity', 'currentBookedCount', 'providerRating', 'tax', 'shippingCost'
         ].includes(name)
       ) {
         parsedValue = parseFloat(value) || 0;
@@ -803,22 +630,11 @@ export default function AddToProductMarketModal({
   );
 
   const handleCategoryChange = useCallback(
-    (cat: StoreCategory | null) => {
-      updateField('category', cat); // Store the full StoreCategory object
-      updateField('productCategoryId', cat?.categoryId || ''); // Crucial: Store the ID from StoreCategory
-      updateField('subCategory', cat?.items || []); // If StoreCategory.items holds subcategories
-      updateField('subCategoryName', ''); // Reset subCategoryName or derive it
-      // Optionally reset brand if brands are category-specific
-      // updateField('brand', null);
-    },
+    (cat: StoreCategory | null) => updateField('category', cat),
     [updateField]
   );
   const handleSubCategoryChange = useCallback(
-    (sub: any) => {
-      updateField('subCategory', sub);
-      // You might also want to set subCategoryName based on the selected sub
-      updateField('subCategoryName', sub?.name || ''); // Assuming sub has a 'name' property
-    },
+    (sub: any) => updateField('subCategory', sub),
     [updateField]
   );
   const handleBrandChange = useCallback(
@@ -934,6 +750,7 @@ export default function AddToProductMarketModal({
               Back
             </button>
           ) : (
+            // empty div to keep spacing if you want
             <div />
           )}
 

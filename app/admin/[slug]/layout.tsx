@@ -3,10 +3,10 @@
 import React, { ReactNode, Suspense } from "react";
 import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
-import AdminLayout from "@/components/AdminLayout"; // This is the client component
+import AdminLayout from "@/components/AdminLayout";
 import { StoreContextProvider } from "@/contexts/StoreContext";
 import { transformCompanyToStoreForm } from "@/utils/transformPrismaToStoreForm";
-import { getAuthSession } from '../../../lib/auth'; // Import getAuthSession
+import { getAuthSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
