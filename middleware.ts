@@ -1,7 +1,7 @@
 // middleware.ts
 import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-import prisma  from "@/server/db/prismadb";           // your prisma client
+// import prisma  from "@/server/db/prismadb";           // your prisma client
 
 // 1) Your primary host — update to your own production app domain:
 const PRIMARY_HOST = "app.your-production-domain.com";
@@ -40,21 +40,21 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   // ---- CUSTOM DOMAIN RESOLUTION ----
   //
-  if (host && host !== PRIMARY_HOST) {
-    // Try to find a company by this custom domain
-    const company = await prisma.company.findUnique({
-      where: { domain: host },
-      select: { id: true },
-    });
+  // if (host && host !== PRIMARY_HOST) {
+  //   // Try to find a company by this custom domain
+  //   const company = await prisma.company.findUnique({
+  //     where: { domain: host },
+  //     select: { id: true },
+  //   });
 
-    if (company) {
-      // inject company ID for your pages / layouts / data loading
-      const res = NextResponse.next();
-      res.headers.set("x-company-id", company.id);
-      return res;
-    }
-    // if no company, just fall through (404s or public pages will handle it)
-  }
+  //   if (company) {
+  //     // inject company ID for your pages / layouts / data loading
+  //     const res = NextResponse.next();
+  //     res.headers.set("x-company-id", company.id);
+  //     return res;
+  //   }
+  //   // if no company, just fall through (404s or public pages will handle it)
+  // }
 
   //
   // ---- API KEY PROTECTION ----
