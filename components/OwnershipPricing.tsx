@@ -1,141 +1,219 @@
+'use client'; // For Next.js App Router
+
 import React, { useCallback } from "react";
-import InputField from "./InputField";
+import InputField from "./InputField"; // Ensure this component accepts an 'onChange' prop
+import { ProductForm } from "./AddProductModal";
+// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type
 
 interface OwnershipPricingProps {
-  formData: Record<string, any>;
-  onChange: (name: string, value: any) => void;
-  setFormData: (field: string, value: any) => void;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  formData: ProductForm; // Use the comprehensive form type for better type safety
+  setFormData: (name: string, value: any) => void; // Consolidated prop for updating form data
 }
 
-const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, onChange, setFormData, handleInputChange }) => {
-  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200";
-  const checkboxClasses = "h-5 w-5 text-blue-600 border-gray-300 rounded";
+const OwnershipPricing: React.FC<OwnershipPricingProps> = ({ formData, setFormData }) => {
 
+  // Common Tailwind CSS classes for inputs and selects
+  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm";
+  const checkboxClasses = "h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500";
+
+  // Centralized change handler for all inputs in this section
   const handleChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, value, type, checked } = e.target as HTMLInputElement; // Type assertion for 'checked'
+
+      if (type === "checkbox") {
+        setFormData(name, checked);
+      } else {
+        // Convert number inputs to actual numbers, otherwise keep as string
         setFormData(name, type === "number" ? parseFloat(value) || "" : value);
-      },
-      [setFormData]
-    );
-  
+      }
+    },
+    [setFormData] // Dependency on updateField ensures memoization works correctly
+  );
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
       {/* ── Section Header ── */}
       <div>
-        <h3 className="text-2xl font-semibold text-gray-800">Ownership & Pricing</h3>
+        <h2 className="text-2xl font-bold text-gray-800">Ownership & Pricing 💰</h2>
         <p className="text-gray-500 mt-1">
-          Fill in vehicle ownership details and set your pricing preferences.
+          Provide essential vehicle identification details and set your pricing preferences.
         </p>
       </div>
 
       {/* ── Vehicle Identification ── */}
-      <div className="bg-gray-50 p-5 rounded-lg space-y-4">
-        <h4 className="text-lg font-medium text-gray-700">Vehicle Identification</h4>
+      <div className="bg-gray-50 p-6 rounded-lg space-y-5 border border-gray-100">
+        <h4 className="text-xl font-semibold text-gray-700">Vehicle Identification Numbers</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputField
-            label="VIN Number"
+            label="Vehicle Identification Number (VIN)"
             name="vin"
             value={formData.vin ?? ""}
-            handleInputChange={handleInputChange}//(e) => onChange("vin", e.target.value)}
-            placeholder="e.g. 1HGCM82633A004352"
+            handleInputChange={handleChange} //{/* Use the local handleChange */}
+            placeholder="e.g., 1HGCM82633A004352"
             required
+            className={inputClasses}
           />
           <div>
-            <label htmlFor="logbookStatus" className="block text-sm font-medium text-gray-700">
-              Logbook Status
+            <label htmlFor="logbookStatus" className="block text-sm font-medium text-gray-700 mb-1">
+              Logbook Status <span className="text-red-500">*</span>
             </label>
             <select
               id="logbookStatus"
               name="logbookStatus"
               value={formData.logbookStatus ?? ""}
-              onChange={(e) => onChange("logbookStatus", e.target.value)}
+              onChange={handleChange} {/* Use the local handleChange */}
               className={inputClasses}
               required
             >
               <option value="" disabled>
-                Select status
+                — Select logbook status —
               </option>
-              <option value="Available">Available</option>
-              <option value="Missing">Missing</option>
-              <option value="Pending">Pending</option>
+              <option value="Available">Available (Present and validated)</option>
+              <option value="Missing">Missing (Not available)</option>
+              <option value="Pending">Pending (In process of acquisition/transfer)</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* ── Pricing Options ── */}
-      <div className="bg-gray-50 p-5 rounded-lg space-y-4">
-        <h4 className="text-lg font-medium text-gray-700">Pricing Options</h4>
+      <div className="bg-gray-50 p-6 rounded-lg space-y-5 border border-gray-100">
+        <h4 className="text-xl font-semibold text-gray-700">Set Your Price</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
           <InputField
-            label="Asking Price (USD)"
+            label="Asking Price (KSh)" //{/* Updated currency to KSh */}
             name="price"
             type="number"
             value={formData.price ?? ""}
-            handleInputChange={handleInputChange}//onChange={(e) => onChange("price", e.target.value)}
-            placeholder="e.g. 15000"
+            handleInputChange={handleChange} //{/* Use the local handleChange */}
+            placeholder="e.g., 1,500,000"
             required
+            className={inputClasses}
+            min="0" // Price cannot be negative
+            step="1000" // Suggests common price increments
           />
-          <label className="flex items-center space-x-2 mt-4 md:mt-0">
+          <div className="flex items-center mt-4 md:mt-0"> {/* Added wrapper div */}
             <input
               type="checkbox"
+              id="negotiable" // Added id for better accessibility with label
               name="negotiable"
-              checked={!!formData.negotiable}
-              onChange={handleChange}//onChange={(e) => onChange("negotiable", e.target.checked)}
+              checked={!!formData.negotiable} // Ensure boolean check
+              onChange={handleChange} // {/* Use the local handleChange */}
               className={checkboxClasses}
             />
-            <span className="text-sm text-gray-700">Price Negotiable</span>
-          </label>
+            <label htmlFor="negotiable" className="ml-2 text-sm text-gray-700 font-medium cursor-pointer">
+              Price is Negotiable
+            </label>
+          </div>
         </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Set the price you are willing to sell for. Checking 'Price is Negotiable' allows buyers to offer a different amount.
+        </p>
       </div>
 
-      {/* ── Additional Features ── */}
-      <div className="bg-gray-50 p-5 rounded-lg space-y-4">
-        <h4 className="text-lg font-medium text-gray-700">Additional Features</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-          <label className="flex items-center space-x-2">
+      {/* ── Additional Sales Features ── */}
+      <div className="bg-gray-50 p-6 rounded-lg space-y-5 border border-gray-100">
+        <h4 className="text-xl font-semibold text-gray-700">Sales & Ownership Features</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> {/* Adjusted grid layout */}
+          <div className="flex items-center">
             <input
               type="checkbox"
+              id="financingAvailable"
               name="financingAvailable"
               checked={!!formData.financingAvailable}
-              onChange={handleChange}//onChange={(e) => onChange("financingAvailable", e.target.checked)}
+              onChange={handleChange}
               className={checkboxClasses}
             />
-            <span className="text-sm text-gray-700">Financing Available</span>
-          </label>
+            <label htmlFor="financingAvailable" className="ml-2 text-sm text-gray-700 font-medium cursor-pointer">
+              Financing Available
+            </label>
+          </div>
 
-          <label className="flex items-center space-x-2">
+          <div className="flex items-center">
             <input
               type="checkbox"
+              id="tradeIn"
               name="tradeIn"
               checked={!!formData.tradeIn}
-              onChange={handleChange}//onChange={(e) => onChange("tradeIn", e.target.checked)}
+              onChange={handleChange}
               className={checkboxClasses}
             />
-            <span className="text-sm text-gray-700">Trade‐in Accepted</span>
-          </label>
+            <label htmlFor="tradeIn" className="ml-2 text-sm text-gray-700 font-medium cursor-pointer">
+              Trade-in Accepted
+            </label>
+          </div>
 
           <div>
-            <label htmlFor="serviceHistory" className="block text-sm font-medium text-gray-700">
-              Service History
+            <label htmlFor="serviceHistory" className="block text-sm font-medium text-gray-700 mb-1">
+              Service History <span className="text-red-500">*</span>
             </label>
             <select
               id="serviceHistory"
               name="serviceHistory"
               value={formData.serviceHistory ?? ""}
-              onChange={handleChange}//onChange={(e) => onChange("serviceHistory", e.target.value)}
+              onChange={handleChange} {/* Use the local handleChange */}
+              className={inputClasses}
+              required
+            >
+              <option value="" disabled>
+                — Select service history —
+              </option>
+              <option value="Full">Full (Comprehensive records)</option>
+              <option value="Partial">Partial (Some records available)</option>
+              <option value="None">None (No records available)</option>
+            </select>
+          </div>
+
+          {/* New field: Number of previous owners */}
+          <InputField
+            label="Previous Owners"
+            name="previousOwners"
+            type="number"
+            value={formData.previousOwners ?? ""}
+            handleInputChange={handleChange}
+            placeholder="e.g., 1"
+            className={inputClasses}
+            min="0"
+            step="1"
+          />
+
+          {/* New field: Condition of tires */}
+          <div>
+            <label htmlFor="tireCondition" className="block text-sm font-medium text-gray-700 mb-1">
+              Tire Condition
+            </label>
+            <select
+              id="tireCondition"
+              name="tireCondition"
+              value={formData.tireCondition ?? ""}
+              onChange={handleChange}
               className={inputClasses}
             >
               <option value="" disabled>
-                Select history
+                — Select tire condition —
               </option>
-              <option value="Full">Full</option>
-              <option value="Partial">Partial</option>
-              <option value="None">None</option>
+              <option value="New">New</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Good">Good</option>
+              <option value="Fair">Fair</option>
+              <option value="Poor">Poor</option>
             </select>
+          </div>
+
+          {/* New field: Accidental History (Checkbox) */}
+          <div className="flex items-center mt-4 md:mt-0">
+            <input
+              type="checkbox"
+              id="accidentalHistory"
+              name="accidentalHistory"
+              checked={!!formData.accidentalHistory}
+              onChange={handleChange}
+              className={checkboxClasses}
+            />
+            <label htmlFor="accidentalHistory" className="ml-2 text-sm text-gray-700 font-medium cursor-pointer">
+              Reported Accidental History
+            </label>
           </div>
         </div>
       </div>

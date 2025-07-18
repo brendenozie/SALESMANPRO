@@ -1,103 +1,115 @@
-import React, { useState, useEffect } from "react";
+'use client'; // For Next.js App Router compatibility
+
+import React, { useEffect, useCallback } from "react";
+import InputField from "./InputField"; // Assuming InputField is a generic component for inputs
+import { ProductForm } from "./AddProductModal";
+// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type for your main form data
 
 interface PricingDetailsProps {
-  formData: {
-    costPrice?: string;
-    salesPrice?: string;
-    discount?: string;
-    finalPrice?: number;
-    profitMargin?: number;
-    [key: string]: any;
-  };
-  setFormData: (data: Record<string, any>) => void;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  formData: ProductForm; // Use the comprehensive form type for better type safety
+  setFormData: (name: string, value: any) => void; // Consolidated prop for updating form data
 }
 
-const PricingDetails: React.FC<PricingDetailsProps> = ({
-  formData,
-  setFormData,
-  handleInputChange,
-}) => {
-  // When costPrice, salesPrice, or discount changes, recalc finalPrice & profitMargin
+const PricingDetails: React.FC<PricingDetailsProps> = ({ formData, setFormData }) => {
+
+  // Centralized change handler for all inputs in this section
+  // This will be passed to InputField components and direct HTML elements
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      const { name, value, type } = e.target;
+      // For number inputs, parse to float; otherwise, keep as string.
+      // Ensure empty strings don't become 0 for number inputs if the user deletes input.
+      setFormData(name, type === "number" ? (value === "" ? "" : parseFloat(value)) : value);
+    },
+    [setFormData]
+  );
+
+  // Effect to recalculate finalPrice and profitMargin whenever relevant inputs change
   useEffect(() => {
-    const sellingPrice = parseFloat(formData.salesPrice || formData.sellingPrice || "0") || 0;
-    const buyingPrice = parseFloat(formData.costPrice || formData.buyingPrice || "0") || 0;
-    const discountValue = parseFloat(formData.discount || "0") || 0;
+    // Use consistent names: `sellingPrice` and `costPrice` (or `buyingPrice`)
+    const sellingPrice = parseFloat(formData.sellingPrice?.toString() || "0") || 0;
+    const costPrice = parseFloat(formData.costPrice?.toString() || "0") || 0;
+    const discount = parseFloat(formData.discount?.toString() || "0") || 0; // Discount is a percentage
 
-    // Calculate discounted price
-    const discountedPrice = Math.max(sellingPrice - (sellingPrice * discountValue) / 100, 0);
-    // Calculate margin: ((final - cost) / cost) * 100
-    const margin = buyingPrice > 0 ? ((discountedPrice - buyingPrice) / buyingPrice) * 100 : 0;
+    // Calculate discounted price: selling price minus (selling price * discount percentage)
+    const calculatedFinalPrice = Math.max(sellingPrice - (sellingPrice * discount) / 100, 0);
 
-    setFormData({
-      ...formData,
-      sellingPrice:sellingPrice,
-      finalPrice: discountedPrice,
-      profitMargin: margin,
-    });
-    // Only recalc when those three fields change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.salesPrice, formData.costPrice, formData.discount]);
+    // Calculate profit margin: ((final price - cost price) / cost price) * 100
+    const calculatedProfitMargin = costPrice > 0 
+      ? ((calculatedFinalPrice - costPrice) / costPrice) * 100 
+      : 0;
+
+    // Update only these two fields.
+    // Check if values actually changed to prevent infinite re-renders if updateField triggers an effect
+    if (formData.finalPrice !== calculatedFinalPrice || formData.profitMargin !== calculatedProfitMargin) {
+      setFormData('finalPrice', calculatedFinalPrice);
+      setFormData('profitMargin', calculatedProfitMargin);
+    }
+
+  }, [formData.sellingPrice, formData.costPrice, formData.discount, formData.finalPrice, formData.profitMargin, updateField]); // Dependencies for recalculation
 
   // Formatters
-  const formatCurrency = (value: number) => value.toFixed(2);
-  const formatPercentage = (value: number) => value.toFixed(2);
+  // We'll format KSh with commas and 2 decimal places.
+  // Using Intl.NumberFormat for robust currency formatting
+  const formatCurrency = useCallback((value: number | undefined | null) => {
+    if (value === undefined || value === null) return "0.00";
+    return new Intl.NumberFormat('en-KE', { 
+      style: 'currency', 
+      currency: 'KSh', // Kenyan Shillings
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  }, []);
+
+  const formatPercentage = useCallback((value: number | undefined | null) => {
+    if (value === undefined || value === null) return "0.00";
+    return value.toFixed(2);
+  }, []);
+
+  // Common Tailwind CSS classes for consistency
+  const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm";
 
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
       {/* ── Header ── */}
       <div>
-        <h3 className="text-2xl font-bold text-gray-800">Pricing Details</h3>
+        <h2 className="text-2xl font-bold text-gray-800">Pricing Details 📊</h2>
         <p className="text-gray-500 mt-1">
-          Set your cost, selling price, and discount to see the final price and profit margin in real time.
+          Set your cost, selling price, and discount. The final price and profit margin will update automatically.
         </p>
       </div>
 
       {/* ── Input Card ── */}
-      <div className="bg-gray-50 p-6 rounded-lg space-y-6">
-        <h4 className="text-lg font-semibold text-gray-700">Enter Costs & Discount</h4>
+      <div className="bg-gray-50 p-6 rounded-lg space-y-6 border border-gray-100">
+        <h3 className="text-xl font-semibold text-gray-700">Enter Costs & Discount</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {/* Cost Price */}
-          <div>
-            <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 mb-1">
-              Cost Price
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                $
-              </span>
-              <input
-                type="number"
-                id="costPrice"
-                name="costPrice"
-                value={formData.costPrice || formData.buyingPrice || ""}
-                onChange={handleInputChange}
-                placeholder="0.00"
-                className="w-full pl-8 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+          <InputField
+            label="Cost Price (KSh)"
+            name="costPrice"
+            type="number"
+            value={formData.costPrice ?? ""} // Use ?? for nullish coalescing
+            handleInputChange={handleChange}
+            placeholder="0.00"
+            className={`${inputClasses} pl-10`} // Added pl-10 for currency symbol
+            min="0"
+            step="0.01"
+            prefix="KSh" // Passed to InputField for dynamic prefix rendering
+          />
 
           {/* Selling Price */}
-          <div>
-            <label htmlFor="salesPrice" className="block text-sm font-medium text-gray-700 mb-1">
-              Selling Price
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                $
-              </span>
-              <input
-                type="number"
-                id="salesPrice"
-                name="salesPrice"
-                value={formData.salesPrice || formData.sellingPrice || ""}
-                onChange={handleInputChange}
-                placeholder="0.00"
-                className="w-full pl-8 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+          <InputField
+            label="Selling Price (KSh)"
+            name="sellingPrice" // Standardized name to sellingPrice
+            type="number"
+            value={formData.sellingPrice ?? ""} // Use ?? for nullish coalescing
+            handleInputChange={handleChange}
+            placeholder="0.00"
+            className={`${inputClasses} pl-10`} // Added pl-10 for currency symbol
+            min="0"
+            step="0.01"
+            prefix="KSh" // Passed to InputField for dynamic prefix rendering
+          />
 
           {/* Discount */}
           <div>
@@ -109,48 +121,55 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({
                 id="discount"
                 type="number"
                 name="discount"
-                value={formData.discount || "0"}
-                onChange={handleInputChange}
+                value={formData.discount ?? "0"}
+                onChange={handleChange}
                 placeholder="0"
-                className="w-20 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-20 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm text-center"
                 min="0"
                 max="100"
+                step="1"
               />
               <span className="text-gray-700 font-medium">%</span>
             </div>
+            {/* Range slider for discount */}
             <input
               type="range"
               name="discount"
               min="0"
               max="100"
-              value={formData.discount || "0"}
-              onChange={handleInputChange}
-              className="mt-4 w-full accent-blue-500"
+              value={formData.discount ?? "0"}
+              onChange={handleChange}
+              className="mt-4 w-full accent-blue-500 h-2 rounded-lg appearance-none cursor-pointer"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Adjust the discount percentage using the slider or direct input.
+            </p>
           </div>
         </div>
       </div>
 
       {/* ── Summary Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Final Price */}
-        <div className="bg-blue-50 p-5 rounded-lg flex justify-between items-center shadow-sm">
+        {/* Final Price Display */}
+        <div className="bg-blue-50 p-5 rounded-lg flex justify-between items-center shadow-md border border-blue-100">
           <div>
-            <p className="text-gray-700 text-sm">Final Price</p>
-            <p className="text-blue-800 font-extrabold text-2xl">
-              ${formatCurrency(formData.finalPrice || 0)}
+            <p className="text-gray-700 text-sm">Calculated Final Price</p>
+            <p className="text-blue-800 font-extrabold text-3xl">
+              {formatCurrency(formData.finalPrice)}
             </p>
           </div>
+          <span className="text-blue-600 text-3xl">💰</span>
         </div>
 
-        {/* Profit Margin */}
-        <div className="bg-green-50 p-5 rounded-lg flex justify-between items-center shadow-sm">
+        {/* Profit Margin Display */}
+        <div className="bg-green-50 p-5 rounded-lg flex justify-between items-center shadow-md border border-green-100">
           <div>
-            <p className="text-gray-700 text-sm">Profit Margin</p>
-            <p className="text-green-800 font-extrabold text-2xl">
-              {formatPercentage(formData.profitMargin || 0)}%
+            <p className="text-gray-700 text-sm">Estimated Profit Margin</p>
+            <p className="text-green-800 font-extrabold text-3xl">
+              {formatPercentage(formData.profitMargin)}%
             </p>
           </div>
+          <span className="text-green-600 text-3xl">📈</span>
         </div>
       </div>
     </section>

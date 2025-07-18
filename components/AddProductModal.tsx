@@ -21,12 +21,18 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 ////////////////////////////////////////////////////////////////////////////////
 // 1) Props & Form Type
 ////////////////////////////////////////////////////////////////////////////////
-interface AddProductModalProps {
+export interface AddProductModalProps {
   showRequestProductModal: boolean;
   setShowRequestProductModal: (open: boolean) => void;
   product: any | null;           // TODO: replace with your Product type
   companyId: string;
   categories: StoreCategory[];
+}
+
+export interface BookingSlotType {
+  date: string;
+  time: string;
+  capacity: number;
 }
 
 export interface ProductForm {
@@ -146,6 +152,18 @@ export interface ProductForm {
   // admin
   status: string;
   collectionId: string;
+
+  // quantity?: number;
+  // serviceSchedule?: string;
+  hourlyRate?: number;
+  minimumHours?: number;
+  minNoticePeriod?: string;
+  maxBookingAhead?: string;
+  totalCapacity?: number;
+  deliveryMethod?: string;
+  fulfillmentStatus?: string;
+  providerRating?: number;
+  bookingSlots?: BookingSlotType[];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

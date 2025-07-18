@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+'use client'; // This directive might be for Next.js 13+ App Router
+
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   CalendarIcon,
   PlusCircleIcon,
@@ -7,6 +9,8 @@ import {
   ChevronDownIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { ProductForm } from '@/components/AddProductModal';
+// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type
 
 interface BookingSlotType {
   date: string;
@@ -14,51 +18,72 @@ interface BookingSlotType {
   capacity: number;
 }
 
-interface ServiceFormData {
-  quantity?: number;
-  serviceSchedule?: string;
-  hourlyRate?: number;
-  minimumHours?: number;
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  totalCapacity?: number;
-  deliveryMethod?: string;
-  fulfillmentStatus?: string;
-  providerRating?: number;
-  bookingSlots?: BookingSlotType[];
-}
-
-interface Props {
-  formData: ServiceFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ServiceFormData>>;
+// Assuming ServiceFormData is a sub-part of ProductForm.
+// If not, and this component truly operates on a distinct ServiceFormData,
+// you might need to adjust how it integrates with the parent's main form state.
+interface ServiceSpecificsProps {
+  formData: ProductForm; // Use the comprehensive form type
+  updateField: (name: string, value: any) => void; // Matches the useProductForm signature
 }
 
 const deliveryMethods = ['In-person', 'Online', 'Hybrid'];
 
-export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => {
+export const ServiceSpecifics: React.FC<ServiceSpecificsProps> = ({ formData, updateField }) => {
   const [open, setOpen] = useState(true);
 
   // Initialize bookingSlots with a default slot if empty
   useEffect(() => {
     if (!formData.bookingSlots || formData.bookingSlots.length === 0) {
-      setFormData((prev) => ({
-        ...prev,
-        bookingSlots: [{ date: '', time: '', capacity: 1 }],
-      }));
+      updateField('bookingSlots', [{ date: '', time: '', capacity: 1 }]);
     }
-  }, [formData.bookingSlots, setFormData]);
+  }, [formData.bookingSlots, updateField]); // Depend on updateField
+
+  const handleSlotChange = useCallback(
+    (index: number, field: keyof BookingSlotType, value: string | number) => {
+      const currentSlots = formData.bookingSlots || [];
+      const updatedSlots = [...currentSlots]; // Create a shallow copy for immutability
+
+      if (!updatedSlots[index]) {
+        console.warn(`Attempted to update non-existent slot at index ${index}. This might indicate a timing issue.`);
+        return;
+      }
+
+      // Update the specific field for the chosen slot
+      updatedSlots[index] = {
+        ...updatedSlots[index],
+        [field]: field === 'capacity' ? Number(value) : value, // Ensure capacity is a number
+      };
+      updateField('bookingSlots', updatedSlots); // Update the parent state
+    },
+    [formData.bookingSlots, updateField]
+  );
+
+  const handleAddSlot = useCallback(() => {
+    const currentSlots = formData.bookingSlots || [];
+    const newSlot: BookingSlotType = { date: '', time: '', capacity: 1 };
+    updateField('bookingSlots', [...currentSlots, newSlot]); // Add new slot and update parent state
+  }, [formData.bookingSlots, updateField]);
+
+  const handleRemoveSlot = useCallback(
+    (index: number) => {
+      const currentSlots = formData.bookingSlots || [];
+      const filteredSlots = currentSlots.filter((_, i) => i !== index); // Remove slot by index
+      updateField('bookingSlots', filteredSlots); // Update parent state
+    },
+    [formData.bookingSlots, updateField]
+  );
 
   return (
-    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
       {/* Accordion Header */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-400 text-white"
+        className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-400 text-white rounded-t-2xl"
       >
         <div className="flex items-center space-x-3">
           <CalendarIcon className="h-6 w-6" />
-          <h3 className="text-lg font-semibold">Service Specifics</h3>
+          <h3 className="text-lg font-semibold">Service Specifics 📅</h3> {/* Added emoji */}
         </div>
         <span className="flex items-center">
           {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
@@ -67,67 +92,64 @@ export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => 
 
       {/* Accordion Content */}
       {open && (
-        <div className="px-4 sm:px-6 py-6 space-y-6">
+        <div className="p-6 space-y-8">
+          {/* Service Fields */}
           <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h4 className="text-2xl font-semibold mb-4 text-gray-800">Service Details</h4>
+            <h4 className="text-2xl font-bold mb-4 text-gray-800">General Service Details</h4> {/* Changed title for clarity */}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Added lg:grid-cols-3 */}
               <FormNumberField
-                label="Quantity (e.g., number of seats)"
+                label="Available Quantity (e.g., number of seats, items)"
                 placeholder="1"
                 value={formData.quantity}
-                onChange={(val) => setFormData({ ...formData, quantity: val })}
+                onChange={(val) => updateField('quantity', val)} // Updated
+                step={1}
               />
 
               <FormNumberField
-                label="Hourly Rate ($)"
+                label="Hourly Rate ($) (if applicable)"
                 placeholder="0.00"
                 step={0.01}
                 value={formData.hourlyRate}
-                onChange={(val) => setFormData({ ...formData, hourlyRate: val })}
+                onChange={(val) => updateField('hourlyRate', val)} // Updated
               />
 
               <FormNumberField
-                label="Minimum Hours"
+                label="Minimum Hours (for hourly services)"
                 placeholder="1"
                 step={1}
                 value={formData.minimumHours}
-                onChange={(val) => setFormData({ ...formData, minimumHours: val })}
+                onChange={(val) => updateField('minimumHours', val)} // Updated
               />
 
               <FormTextField
-                label="Min. Notice Period"
+                label="Minimum Notice Period (e.g., 24 hours, 3 days)"
                 placeholder="24 hours"
                 value={formData.minNoticePeriod}
-                onChange={(val) => setFormData({ ...formData, minNoticePeriod: val })}
+                onChange={(val) => updateField('minNoticePeriod', val)} // Updated
               />
 
               <FormTextField
-                label="Max Booking Ahead"
+                label="Max Booking Lead Time (e.g., 3 months, 1 year)"
                 placeholder="3 months"
                 value={formData.maxBookingAhead}
-                onChange={(val) => setFormData({ ...formData, maxBookingAhead: val })}
+                onChange={(val) => updateField('maxBookingAhead', val)} // Updated
               />
 
               <FormNumberField
-                label="Total Capacity"
+                label="Total Service Capacity (overall limit)"
                 placeholder="100"
                 step={1}
                 value={formData.totalCapacity}
-                onChange={(val) => setFormData({ ...formData, totalCapacity: val })}
+                onChange={(val) => updateField('totalCapacity', val)} // Updated
               />
 
               <div>
-                <label className="text-gray-700 font-medium text-sm block mb-1">Delivery Method</label>
+                <label className="text-gray-700 font-medium text-sm block mb-1">Service Delivery Method</label>
                 <select
-                  className="block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="block w-full rounded-xl border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   value={formData.deliveryMethod || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      deliveryMethod: e.target.value || undefined,
-                    })
-                  }
+                  onChange={(e) => updateField('deliveryMethod', e.target.value || undefined)} // Updated
                 >
                   <option value="">Select Method</option>
                   {deliveryMethods.map((method) => (
@@ -139,18 +161,85 @@ export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => 
               </div>
 
               <FormTextField
-                label="Fulfillment Status"
+                label="Fulfillment Status (e.g., PENDING_CONFIRMATION, CONFIRMED)"
                 placeholder="e.g., PENDING_CONFIRMATION"
                 value={formData.fulfillmentStatus}
-                onChange={(val) => setFormData({ ...formData, fulfillmentStatus: val })}
+                onChange={(val) => updateField('fulfillmentStatus', val)} // Updated
               />
 
               <FormNumberField
-                label="Provider Rating (Read-only)"
+                label="Provider Rating (Read-only, calculated automatically)"
                 placeholder="N/A"
                 value={formData.providerRating}
                 readOnly
               />
+            </div>
+          </section>
+
+          {/* Booking Slots */}
+          <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
+              <h4 className="text-2xl font-bold text-gray-800">Specific Booking Slots</h4>
+              <button
+                type="button"
+                onClick={handleAddSlot}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                <PlusCircleIcon className="-ml-1 mr-2 h-5 w-5" />
+                Add Booking Slot
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {(formData.bookingSlots || []).length === 0 && (
+                <p className="text-center text-gray-500 py-4">
+                  Define specific dates and times for your service.
+                </p>
+              )}
+              {(formData.bookingSlots || []).map((slot, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg border border-gray-200 p-4 relative grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h5 className="text-lg font-semibold text-gray-700 md:col-span-3 mb-2">Slot #{index + 1}</h5>
+                  <button
+                    onClick={() => handleRemoveSlot(index)}
+                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 p-1 rounded-full bg-red-50 hover:bg-red-100 transition-colors"
+                    aria-label="Remove booking slot"
+                    title="Remove this booking slot"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+
+                  <label className="block">
+                    <span className="text-gray-700 text-sm font-medium">Date</span>
+                    <input
+                      type="date"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      value={slot.date}
+                      onChange={(e) => handleSlotChange(index, 'date', e.target.value)}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="text-gray-700 text-sm font-medium">Time</span>
+                    <input
+                      type="time"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      value={slot.time}
+                      onChange={(e) => handleSlotChange(index, 'time', e.target.value)}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="text-gray-700 text-sm font-medium">Capacity for this slot</span>
+                    <input
+                      type="number"
+                      min={1}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      value={slot.capacity}
+                      onChange={(e) => handleSlotChange(index, 'capacity', e.target.value)}
+                    />
+                  </label>
+                </div>
+              ))}
             </div>
           </section>
         </div>
@@ -159,12 +248,12 @@ export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => 
   );
 };
 
-/* ----------------------- Reusable Field Components ----------------------- */
+/* ----------------------- Reusable Field Components (Updated for consistency) ----------------------- */
 
 interface FormNumberFieldProps {
   label: string;
   value?: number;
-  onChange?: (val: number) => void;
+  onChange?: (val: number | undefined) => void; // Allow undefined for clearing input
   placeholder?: string;
   step?: number;
   readOnly?: boolean;
@@ -183,11 +272,15 @@ const FormNumberField: React.FC<FormNumberFieldProps> = ({
     <input
       type="number"
       step={step}
-      value={value ?? ''}
-      onChange={(e) => !readOnly && onChange?.(parseFloat(e.target.value) || 0)}
-      placeholder={placeholder}
+      value={value ?? ''} // Use nullish coalescing to show empty string for undefined/null
       readOnly={readOnly}
-      className={`mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500 ${
+      onChange={(e) => {
+        if (readOnly) return;
+        const val = e.target.value;
+        onChange?.(val === '' ? undefined : parseFloat(val)); // Pass undefined if input is cleared
+      }}
+      placeholder={placeholder}
+      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500 ${
         readOnly ? 'bg-gray-100 cursor-not-allowed' : ''
       }`}
     />
@@ -197,7 +290,7 @@ const FormNumberField: React.FC<FormNumberFieldProps> = ({
 interface FormTextFieldProps {
   label: string;
   value?: string;
-  onChange: (val: string) => void;
+  onChange: (val: string | undefined) => void; // Allow undefined for clearing input
   placeholder?: string;
 }
 
@@ -206,246 +299,10 @@ const FormTextField: React.FC<FormTextFieldProps> = ({ label, value, onChange, p
     <span className="text-gray-700 font-medium text-sm">{label}</span>
     <input
       type="text"
-      value={value ?? ''}
-      onChange={(e) => onChange(e.target.value)}
+      value={value ?? ''} // Use nullish coalescing to show empty string for undefined/null
+      onChange={(e) => onChange(e.target.value === '' ? undefined : e.target.value)} // Pass undefined if input is cleared
       placeholder={placeholder}
-      className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
     />
   </label>
 );
-
-
-// import React, { useEffect, useState } from 'react';
-// import {
-//   CalendarIcon,
-//   PlusCircleIcon,
-//   TrashIcon,
-//   ChevronUpIcon,
-//   ChevronDownIcon,
-//   XMarkIcon,
-// } from '@heroicons/react/24/outline';
-
-// interface BookingSlotType {
-//   date: string;
-//   time: string;
-//   capacity: number;
-// }
-
-// interface ServiceFormData {
-//   quantity?: number;
-//   serviceSchedule?: string;
-//   hourlyRate?: number;
-//   minimumHours?: number;
-//   minNoticePeriod?: string;
-//   maxBookingAhead?: string;
-//   totalCapacity?: number;
-//   deliveryMethod?: string;
-//   fulfillmentStatus?: string;
-//   providerRating?: number;
-//   bookingSlots?: BookingSlotType[];
-// }
-
-// interface Props {
-//   formData: ServiceFormData;
-//   setFormData: React.Dispatch<React.SetStateAction<ServiceFormData>>;
-// }
-
-// const deliveryMethods = ['In-person', 'Online', 'Hybrid'];
-
-// export const ServiceSpecifics: React.FC<Props> = ({ formData, setFormData }) => {
-//   const [open, setOpen] = useState(true);
-
-//   useEffect(() => {
-//     if (!formData.bookingSlots || formData.bookingSlots.length === 0) {
-//       setFormData((prev) => ({
-//         ...prev,
-//         bookingSlots: [{ date: '', time: '', capacity: 1 }],
-//       }));
-//     }
-//   }, [formData.bookingSlots, setFormData]);
-
-//   const handleSlotChange = (index: number, field: keyof BookingSlotType, value: string | number) => {
-//     const updatedSlots = [...(formData.bookingSlots || [])];
-//     updatedSlots[index] = { ...updatedSlots[index], [field]: field === 'capacity' ? Number(value) : value };
-//     setFormData({ ...formData, bookingSlots: updatedSlots });
-//   };
-
-//   const handleAddSlot = () => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       bookingSlots: [...(prev.bookingSlots || []), { date: '', time: '', capacity: 1 }],
-//     }));
-//   };
-
-//   const handleRemoveSlot = (index: number) => {
-//     const filtered = (formData.bookingSlots || []).filter((_, i) => i !== index);
-//     setFormData({ ...formData, bookingSlots: filtered });
-//   };
-
-//   return (
-//     <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-//       {/* Header */}
-//       <button
-//         type="button"
-//         onClick={() => setOpen((prev) => !prev)}
-//         className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-400 text-white"
-//       >
-//         <div className="flex items-center space-x-3">
-//           <CalendarIcon className="h-6 w-6" />
-//           <h3 className="text-lg font-semibold">Service Specifics</h3>
-//         </div>
-//         <span className="flex items-center">
-//           {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
-//         </span>
-//       </button>
-
-//       {open && (
-//         <div className="px-4 sm:px-6 py-6 space-y-8">
-//           {/* Service Fields */}
-//           <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-//             <h4 className="text-2xl font-semibold mb-4 text-gray-800">Service Details</h4>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//               <FormNumberField label="Quantity" value={formData.quantity} onChange={(val) => setFormData({ ...formData, quantity: val })} placeholder="1" />
-//               <FormNumberField label="Hourly Rate ($)" step={0.01} value={formData.hourlyRate} onChange={(val) => setFormData({ ...formData, hourlyRate: val })} placeholder="0.00" />
-//               <FormNumberField label="Minimum Hours" value={formData.minimumHours} onChange={(val) => setFormData({ ...formData, minimumHours: val })} placeholder="1" />
-//               <FormTextField label="Min. Notice Period" value={formData.minNoticePeriod} onChange={(val) => setFormData({ ...formData, minNoticePeriod: val })} placeholder="24 hours" />
-//               <FormTextField label="Max Booking Ahead" value={formData.maxBookingAhead} onChange={(val) => setFormData({ ...formData, maxBookingAhead: val })} placeholder="3 months" />
-//               <FormNumberField label="Total Capacity" value={formData.totalCapacity} onChange={(val) => setFormData({ ...formData, totalCapacity: val })} placeholder="100" />
-//               <div>
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Method</label>
-//                 <select
-//                   className="block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-//                   value={formData.deliveryMethod || ''}
-//                   onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value })}
-//                 >
-//                   <option value="">Select Method</option>
-//                   {deliveryMethods.map((method) => (
-//                     <option key={method} value={method}>{method}</option>
-//                   ))}
-//                 </select>
-//               </div>
-//               <FormTextField label="Fulfillment Status" value={formData.fulfillmentStatus} onChange={(val) => setFormData({ ...formData, fulfillmentStatus: val })} placeholder="e.g., CONFIRMED" />
-//               <FormNumberField label="Provider Rating" value={formData.providerRating} readOnly />
-//             </div>
-//           </section>
-
-//           {/* Booking Slots */}
-//           <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-//             <div className="flex justify-between items-center mb-4">
-//               <h4 className="text-2xl font-semibold text-gray-800">Booking Slots</h4>
-//               <button
-//                 type="button"
-//                 onClick={handleAddSlot}
-//                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
-//               >
-//                 <PlusCircleIcon className="w-5 h-5 mr-2" />
-//                 Add Slot
-//               </button>
-//             </div>
-
-//             <div className="space-y-4">
-//               {(formData.bookingSlots || []).map((slot, index) => (
-//                 <div key={index} className="bg-gray-50 rounded-lg border border-gray-200 p-4 relative grid grid-cols-1 md:grid-cols-3 gap-4">
-//                   <button
-//                     onClick={() => handleRemoveSlot(index)}
-//                     className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-//                     aria-label="Remove booking slot"
-//                   >
-//                     <XMarkIcon className="w-5 h-5" />
-//                   </button>
-
-//                   <label className="block">
-//                     <span className="text-gray-700 text-sm">Date</span>
-//                     <input
-//                       type="date"
-//                       className="mt-1 block w-full rounded-lg border-gray-300 p-2 focus:ring-indigo-500 focus:border-indigo-500"
-//                       value={slot.date}
-//                       onChange={(e) => handleSlotChange(index, 'date', e.target.value)}
-//                     />
-//                   </label>
-
-//                   <label className="block">
-//                     <span className="text-gray-700 text-sm">Time</span>
-//                     <input
-//                       type="time"
-//                       className="mt-1 block w-full rounded-lg border-gray-300 p-2 focus:ring-indigo-500 focus:border-indigo-500"
-//                       value={slot.time}
-//                       onChange={(e) => handleSlotChange(index, 'time', e.target.value)}
-//                     />
-//                   </label>
-
-//                   <label className="block">
-//                     <span className="text-gray-700 text-sm">Capacity</span>
-//                     <input
-//                       type="number"
-//                       min={1}
-//                       className="mt-1 block w-full rounded-lg border-gray-300 p-2 focus:ring-indigo-500 focus:border-indigo-500"
-//                       value={slot.capacity}
-//                       onChange={(e) => handleSlotChange(index, 'capacity', e.target.value)}
-//                     />
-//                   </label>
-//                 </div>
-//               ))}
-//             </div>
-//           </section>
-//         </div>
-//       )}
-//     </section>
-//   );
-// };
-
-// /* ------------------ Reusable Input Components ------------------ */
-
-// interface FormNumberFieldProps {
-//   label: string;
-//   value?: number;
-//   onChange?: (val: number) => void;
-//   placeholder?: string;
-//   step?: number;
-//   readOnly?: boolean;
-// }
-
-// const FormNumberField: React.FC<FormNumberFieldProps> = ({
-//   label,
-//   value,
-//   onChange,
-//   placeholder,
-//   step = 1,
-//   readOnly = false,
-// }) => (
-//   <label className="block">
-//     <span className="text-gray-700 font-medium text-sm">{label}</span>
-//     <input
-//       type="number"
-//       step={step}
-//       value={value ?? ''}
-//       readOnly={readOnly}
-//       onChange={(e) => !readOnly && onChange?.(parseFloat(e.target.value) || 0)}
-//       placeholder={placeholder}
-//       className={`mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500 ${
-//         readOnly ? 'bg-gray-100 cursor-not-allowed' : ''
-//       }`}
-//     />
-//   </label>
-// );
-
-// interface FormTextFieldProps {
-//   label: string;
-//   value?: string;
-//   onChange: (val: string) => void;
-//   placeholder?: string;
-// }
-
-// const FormTextField: React.FC<FormTextFieldProps> = ({ label, value, onChange, placeholder }) => (
-//   <label className="block">
-//     <span className="text-gray-700 font-medium text-sm">{label}</span>
-//     <input
-//       type="text"
-//       value={value ?? ''}
-//       onChange={(e) => onChange(e.target.value)}
-//       placeholder={placeholder}
-//       className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
-//     />
-//   </label>
-// );
