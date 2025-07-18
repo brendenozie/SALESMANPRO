@@ -54,151 +54,161 @@ function productToListingForm(
   p: ProductForm,
   categories: StoreCategory[]
 ): MarketListingForm {
-  const cat = categories.find(c => c.categoryId === p.category?.id) ?? null;
+  const cat = categories.find(c => c.categoryId === p?.category?.id) ?? null;
 
   return {
-    // identifiers & metadata
-    id: '',
-    productId: p.id,
-    sellerType: 'ADMIN',
-    companyId: p.companyId,
-    productTypeId: p.propertyTypeId || '',
-    commissionRateId: '',
+  // identifiers & metadata
+  id: '',
+  productId: p?.id,
+  sellerType: 'ADMIN',
+  companyId: p?.companyId,
+  productTypeId: p?.propertyTypeId || '',
+  commissionRateId: '',
 
-    // titles & descriptions
-    name: p.name,
-    description: p.description || undefined,
-    longDescription: p.longDescription || undefined,
+  // titles & descriptions
+  name: p?.name,
+  description: p?.description || undefined,
+  longDescription: p?.longDescription || undefined,
 
-    // categorization
-    productCategoryId: p.category?.id || '',
-    category: cat,
-    subCategory: p.subCategory || cat?.items || {},
-    subCategoryName: p.subCategoryName,
-    tags: p.tags,
+  // categorization
+  productCategoryId: p?.category?.id || '',
+  category: cat,
+  subCategory: p?.subCategory || cat?.items || {},
+  subCategoryName: p?.subCategoryName,
+  tags: p?.tags,
 
-    // visual media (filled later)
-    // images/videos are handled in payload builder
+  // visual media (filled later)
+  // images/videos are handled in payload builder
+  // pricing & inventory
+  quantity: p?.quantity,
+  buyingPrice: p?.costPrice,
+  sellingPrice: p?.sellingPrice,
+  discount: p?.discount,
+  finalPrice: p?.finalPrice,
+  profitMargin: p?.profitMargin,
+  pricingTiers: p?.pricingTiers,
 
-    // pricing & inventory
-    quantity: p.quantity,
-    buyingPrice: p.costPrice,
-    sellingPrice: p.sellingPrice,
-    discount: p.discount,
-    finalPrice: p.finalPrice,
-    profitMargin: p.profitMargin,
-    pricingTiers: p.pricingTiers,
+  // deal dates
+  startDealDate: p?.startDealDate?.toString() || null,
+  endDealDate: p?.endDealDate?.toString() || null,
 
-    // deal dates
-    startDealDate: p.startDealDate?.toString() || null,
-    endDealDate: p.endDealDate?.toString() || null,
+  // availability flags
+  isAvailable: p?.isAvailable,
+  isOnOffer: p?.isOnOffer,
+  isFlashDeal: p?.isFlashDeal,
+  isNewArrival: p?.isNewArrival,
+  isDiscounted: p?.isDiscounted,
+  isFeatured: p?.isFeatured,
 
-    // availability flags
-    isAvailable: p.isAvailable,
-    isOnOffer: p.isOnOffer,
-    isFlashDeal: p.isFlashDeal,
-    isNewArrival: p.isNewArrival,
-    isDiscounted: p.isDiscounted,
-    isFeatured: p.isFeatured,
+  // delivery & payment
+  delivery: p?.deliveryMethod === 'DELIVERY',
+  paymentOption: p?.paymentOption || 'AT SHOP',
+  showOnGhuba: true,
 
-    // delivery & payment
-    delivery: p.deliveryMethod === 'DELIVERY',
-    paymentOption: p.paymentOption || 'AT SHOP',
-    showOnGhuba: true,
+  // contact & location
+  contactName: p?.contactName,
+  contact: p?.contact,
+  email: p?.email,
+  locationName: p?.locationName,
+  location: p?.location,
+  locationId: p?.locationId,
+  latitude: p?.latitude,
+  longitude: p?.longitude,
 
-    // contact & location
-    contactName: p.contactName,
-    contact: p.contact,
-    email: p.email,
-    locationName: p.locationName,
-    location: p.location,
-    locationId: p.locationId,
-    latitude: p.latitude,
-    longitude: p.longitude,
+  // core product fields
+  model: p?.model,
+  color: p?.color,
+  size: p?.size,
+  weight: p?.weight,
+  condition: p?.condition,
+  dimensions: p?.dimensions,
+  material: p?.material,
 
-    // core product fields
-    model: p.model,
-    color: p.color,
-    size: p.size,
-    weight: p.weight,
-    condition: p.condition,
-    dimensions: p.dimensions,
-    material: p.material,
+  // vehicle-specific
+  make: p?.make,
+  trim: p?.trim,
+  type: p?.type,
+  mileage: p?.mileage,
+  engineType: p?.engineType,
+  engineSize: p?.engineSize,
+  horsepower: p?.horsepower,
+  torque: p?.torque,
+  fuelType: p?.fuelType,
+  fuelEconomy: p?.fuelEconomy,
+  transmission: p?.transmission,
+  drivetrain: p?.drivetrain,
+  vin: p?.vin,
+  logbookStatus: p?.logbookStatus,
+  serviceHistory: p?.serviceHistory,
+  negotiable: p?.negotiable,
+  financingAvailable: p?.financingAvailable,
+  tradeIn: p?.tradeIn,
+  features: p?.features,
 
-    // vehicle-specific
-    make: p.make,
-    trim: p.trim,
-    type: p.type,
-    mileage: p.mileage,
-    engineType: p.engineType,
-    engineSize: p.engineSize,
-    horsepower: p.horsepower,
-    torque: p.torque,
-    fuelType: p.fuelType,
-    fuelEconomy: p.fuelEconomy,
-    transmission: p.transmission,
-    drivetrain: p.drivetrain,
-    vin: p.vin,
-    logbookStatus: p.logbookStatus,
-    serviceHistory: p.serviceHistory,
-    negotiable: p.negotiable,
-    financingAvailable: p.financingAvailable,
-    tradeIn: p.tradeIn,
-    features: p.features,
+  // bookable/service-specific
+  hourlyRate: p?.hourlyRate,
+  minimumHours: p?.minimumHours,
+  minNoticePeriod: p?.minNoticePeriod,
+  maxBookingAhead: p?.maxBookingAhead,
+  totalCapacity: p?.totalCapacity,
+  currentBookedCount: p?.currentBookedCount,
+  providerRating: p?.providerRating,
+  bookingSlots: p?.bookingSlots,
+  requiredClientInfo: p?.requiredClientInfo,
+  fulfillmentStatus: p?.fulfillmentStatus,
+  deliveryMethod: p?.deliveryMethod,
 
-    // bookable/service-specific
-    hourlyRate: p.hourlyRate,
-    minimumHours: p.minimumHours,
-    minNoticePeriod: p.minNoticePeriod,
-    maxBookingAhead: p.maxBookingAhead,
-    totalCapacity: p.totalCapacity,
-    currentBookedCount: p.currentBookedCount,
-    providerRating: p.providerRating,
-    bookingSlots: p.bookingSlots,
-    requiredClientInfo: p.requiredClientInfo,
-    fulfillmentStatus: p.fulfillmentStatus,
-    deliveryMethod: p.deliveryMethod,
+  // property-specific
+  bedrooms: p?.bedrooms,
+  studios: p?.studios,
+  bathrooms: p?.bathrooms,
+  area: p?.area,
+  serviceSchedule: p?.serviceSchedule,
+  availabilityStart: p?.availabilityStart?.toString() || null,
+  availabilityEnd: p?.availabilityEnd?.toString() || null,
+  amenities: p?.amenities,
 
-    // property-specific
-    bedrooms: p.bedrooms,
-    studios: p.studios,
-    bathrooms: p.bathrooms,
-    area: p.area,
-    serviceSchedule: p.serviceSchedule,
-    availabilityStart: p.availabilityStart?.toString() || null,
-    availabilityEnd: p.availabilityEnd?.toString() || null,
-    amenities: p.amenities,
+  // bookable consumables
+  ingredients: p?.ingredients,
+  usageInstructions: p?.usageInstructions,
+  expirationDate: p?.expirationDate?.toString() || null,
 
-    // bookable consumables
-    ingredients: p.ingredients,
-    usageInstructions: p.usageInstructions,
-    expirationDate: p.expirationDate?.toString() || null,
+  // textiles & appliances
+  fabricComposition: p?.fabricComposition,
+  careInstructions: p?.careInstructions,
+  energyRating: p?.energyRating,
+  warrantyPeriod: p?.warrantyPeriod,
+  applianceDimensions: p?.applianceDimensions,
 
-    // textiles & appliances
-    fabricComposition: p.fabricComposition,
-    careInstructions: p.careInstructions,
-    energyRating: p.energyRating,
-    warrantyPeriod: p.warrantyPeriod,
-    applianceDimensions: p.applianceDimensions,
+  // commission
+  commissionType: '',
+  commissionRate: 0,
+  commissionStartDate: null,
+  commissionEndDate: null,
 
-    // commission
-    commissionType: '',
-    commissionRate: 0,
-    commissionStartDate: null,
-    commissionEndDate: null,
+  // misc
+  author: p?.author,
+  publisher: p?.publisher,
+  isbn: p?.isbn,
+  tax: p?.tax,
+  shippingCost: p?.shippingCost,
 
-    // misc
-    author: p.author,
-    publisher: p.publisher,
-    isbn: p.isbn,
-    tax: p.tax,
-    shippingCost: p.shippingCost,
-
-    // status & grouping
-    status: 'ACTIVE',
-    collectionId: p.collectionId,
-    year: p.year,
-  };
+  // status & grouping
+  status: 'ACTIVE',
+  collectionId: p?.collectionId,
+  year: p?.year,
+  
+  brand: null,
+  option: [],
+  
+  previousOwners: null,
+  tireCondition: '',
+  accidentalHistory: false,
+  
+  digitalUrl: '',
+  autoDeliver: false,
+  
+};
 }
 
 // -----------------------------------------------------------------------------
@@ -339,8 +349,7 @@ function useMarketListingForm(
     const p: ProductForm = product;
 
     let initialCategory: StoreCategory | null = null;
-    const initialProductCategoryId =
-      raw.productCategoryId || p.category?.id || '';
+    const initialProductCategoryId = raw.productCategoryId || p?.category?.id || '';
 
     if (initialProductCategoryId) {
       initialCategory =
@@ -533,7 +542,7 @@ export default function AddToProductMarketModal({
         videoUrls
       );
 
-      const res = await fetch(`${apiUrl}/marketplace-listings`, {
+      const res = await fetch(`${apiUrl}/admin/post-market-list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -603,7 +612,7 @@ export default function AddToProductMarketModal({
                 filteredBrands={formData.category?.allBrands || []}
                 onCategoryChange={handleCategoryChange}
                 onSubCategoryChange={handleSubCategoryChange}
-                onBrandChange={handleBrandChange}
+                onBrandChange={(b) => updateField('brand', b)}
               />
             ) : (
               <FormComponent

@@ -41,7 +41,7 @@ const TagInput: React.FC<TagInputProps> = ({
     <section className="space-y-2">
       <label className="block text-gray-300 font-medium text-sm">{label}</label>
       <div className="flex flex-wrap gap-2 mb-2">
-        {tags.map((tag, index) => (
+        {tags && tags.map((tag, index) => (
           <span
             key={index}
             className="flex items-center bg-indigo-600 text-white text-sm px-3 py-1 rounded-full shadow-md transition-all duration-200 hover:bg-indigo-700"

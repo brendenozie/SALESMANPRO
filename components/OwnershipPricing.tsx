@@ -2,11 +2,10 @@
 
 import React, { useCallback } from "react";
 import InputField from "./InputField"; // Ensure this component accepts an 'onChange' prop
-import { ProductForm } from "./AddProductModal";
-// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type
+// import { ProductForm } from "@/types/typings";
 
 interface OwnershipPricingProps {
-  formData: ProductForm; // Use the comprehensive form type for better type safety
+  formData: any; // Use the comprehensive form type for better type safety
   setFormData: (name: string, value: any) => void; // Consolidated prop for updating form data
 }
 

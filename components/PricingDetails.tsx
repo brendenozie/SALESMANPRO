@@ -2,11 +2,11 @@
 
 import React, { useEffect, useCallback } from "react";
 import InputField from "./InputField"; // Assuming InputField is a generic component for inputs
-import { ProductForm } from "./AddProductModal";
-// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type for your main form data
+// import { ProductForm } from "@/types/typings";
+
 
 interface PricingDetailsProps {
-  formData: ProductForm; // Use the comprehensive form type for better type safety
+  formData: any; // Use the comprehensive form type for better type safety
   setFormData: (name: string, value: any) => void; // Consolidated prop for updating form data
 }
 
@@ -28,7 +28,7 @@ const PricingDetails: React.FC<PricingDetailsProps> = ({ formData, setFormData }
   useEffect(() => {
     // Use consistent names: `sellingPrice` and `costPrice` (or `buyingPrice`)
     const sellingPrice = parseFloat(formData.sellingPrice?.toString() || "0") || 0;
-    const costPrice = parseFloat(formData.costPrice?.toString() || "0") || 0;
+    const costPrice = parseFloat(formData.costPrice?.toString() || formData.buyingPrice?.toString() || "0") || 0;
     const discount = parseFloat(formData.discount?.toString() || "0") || 0; // Discount is a percentage
 
     // Calculate discounted price: selling price minus (selling price * discount percentage)

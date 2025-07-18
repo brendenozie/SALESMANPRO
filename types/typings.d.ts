@@ -428,7 +428,7 @@ export interface ProductForm {
   weight: string; // Kept as string as it might include units (e.g., "5 kg")
   condition: string;
   dimensions: string; // Corrected to `dimensions` from `dimension` for consistency
-  material: string | string[]; // Can be a single string or an array of materials
+  material: string[]; // Can be a single string or an array of materials
 
   // media
   images: string[];
@@ -452,7 +452,6 @@ export interface ProductForm {
   finalPrice: number;
   profitMargin: number;
   pricingTiers: PricingTier[]; // New: Added for more complex pricing structures
-
 
   // vehicle (Engine & Performance, Ownership & Pricing sections)
   make: string;
@@ -524,11 +523,8 @@ export interface ProductForm {
   availabilityStart: string;
   availabilityEnd: string;
   
-  // "availabilityStart": "2025-07-30T19:54:00.000Z",
-  // "availabilityEnd": "2025-07-31T19:54:00.000Z",
-      
-  // "startDealDate": "2025-07-23T22:54",
-  // "endDealDate": "2025-07-30T22:54",
+  tax?: number | null;
+  shippingCost?: number | null; 
 
   // location & contact
   location: any; // Consider a more specific type if possible (e.g., { lat: number, lng: number })
@@ -546,16 +542,17 @@ export interface ProductForm {
   applianceDimensions: string?;
 
   // Service/Booking related fields (from previous snippet, kept for completeness)
-  hourlyRate?: number;
-  minimumHours?: number;
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  totalCapacity?: number;
-  deliveryMethod?: string;
-  fulfillmentStatus?: string;
-  providerRating?: number;
-  bookingSlots?: BookingSlotType[];
-// interface ProductPayload {
+  hourlyRate?: number | null;
+  minimumHours?: number | null;
+  minNoticePeriod?: string | null;
+  maxBookingAhead?: string | null;
+  totalCapacity?: number | null;
+  deliveryMethod?: string  | null;
+  fulfillmentStatus?: string | null;
+  providerRating?: number | null;
+  
+  requiredClientInfo?: string[] | null;
+  bookingSlots?: Json[]; // JSON array
 
   productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
   productCategoryId?: string;
@@ -564,10 +561,10 @@ export interface ProductForm {
   paymentOption?: string;
   showOnGhuba?: boolean;
   
-  locationId?: string;
+  locationId?: string | null;
   propertyType?: { id: string }; // Assuming PropertyType relation on Product
   
-  currentBookedCount?: number;
+  currentBookedCount?: number | null;
   
   commissionStartDate?: string | Date; // Added
   commissionEndDate?: string | Date; // Added
@@ -654,7 +651,7 @@ export interface MarketListingForm {
   email?: string; // Added: As per schema
   locationName: string;
   location: any; // JSON for GeoJSON or similar
-  locationId: string; // ID for PropertyLocation relation
+  locationId?: string | null; // ID for PropertyLocation relation
   latitude: number | null;
   longitude: number | null;
   
@@ -686,8 +683,8 @@ export interface MarketListingForm {
   previousOwners: number | null; // Added: Matches schema
   tireCondition: string; // Added: Matches schema
   accidentalHistory: boolean; // Added: Matches schema
-  tax?: number; // Added
-  shippingCost?: number; // Added
+  tax?: number | null; // Added
+  shippingCost?: number | null; // Added
 
   // Books
   author: string;
@@ -719,17 +716,18 @@ export interface MarketListingForm {
   availabilityStart: string | null; // Nullable
   availabilityEnd: string | null; // Nullable
 
-  bookingSlots: Json[]; // JSON array
-  minNoticePeriod: string;
-  maxBookingAhead: string;
-  requiredClientInfo: string[];
-  fulfillmentStatus: string;
-  totalCapacity: number | null; // Corrected to number | null
-  currentBookedCount: number | null; // Corrected to number | null
-  providerRating: number | null; // Corrected to number | null
-  hourlyRate: number | null; // Corrected to number | null
-  minimumHours: number | null; // Corrected to number | null
-  deliveryMethod: string;
+  bookingSlots?: Json[]; // JSON array
+  minNoticePeriod?: string | null;
+  maxBookingAhead?: string | null;
+  requiredClientInfo?: string[] | null;
+  fulfillmentStatus?: string | null;
+  totalCapacity?: number | null; // Corrected to number | null
+
+  currentBookedCount?: number | null; // Corrected to number | null
+  providerRating?: number | null; // Corrected to number | null
+  hourlyRate?: number | null; // Corrected to number | null
+  minimumHours?: number | null; // Corrected to number | null
+  deliveryMethod?: string | null;
 
   // Digital goods
   digitalUrl: string;

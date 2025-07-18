@@ -309,13 +309,13 @@ export async function POST(req: Request) {
     let listing;
     await prisma.$transaction(async (tx) => {
       if (id) {
-        const existing = await tx.marketplaceListing.findUnique({ where: { id } });
+        const existing = await tx.marketplaceListings.findUnique({ where: { id } });
         if (existing) {
-          listing = await tx.marketplaceListing.update({ where: { id }, data: commonData });
+          listing = await tx.marketplaceListings.update({ where: { id }, data: commonData });
           return;
         }
       }
-      listing = await tx.marketplaceListing.create({ data: { ...commonData, createdAt: now } });
+      listing = await tx.marketplaceListings.create({ data: { ...commonData, createdAt: now } });
     });
 
     return NextResponse.json(
