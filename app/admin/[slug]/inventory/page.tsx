@@ -44,7 +44,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     );
 
     if (productsRes.ok) {
-      productsData = (await productsRes.json()) as InventoryItem[];
+      productsData = (await productsRes.json()).data as InventoryItem[];
     }
 
     // Fetch all categories for this company
