@@ -451,11 +451,8 @@ export interface ProductForm {
   discount: number;
   finalPrice: number;
   profitMargin: number;
-  pricingTiers: any[]; // New: Added for more complex pricing structures
+  pricingTiers: PricingTier[]; // New: Added for more complex pricing structures
 
-  // deals
-  startDealDate: string | null;
-  endDealDate: string | null;
 
   // vehicle (Engine & Performance, Ownership & Pricing sections)
   make: string;
@@ -504,7 +501,7 @@ export interface ProductForm {
   expirationDate: string | null;
 
   // options & amenities
-  option: any[]; // Generic array for various options
+  option: Json[]; // Generic array for various options
   amenities: string[]; // Specific for properties/services
 
   // property
@@ -518,8 +515,20 @@ export interface ProductForm {
 
   // year & scheduling
   year: number; // Changed to number
+
+  
+  // deals
+  startDealDate: string | null;
+  endDealDate: string | null;
+
   availabilityStart: string;
   availabilityEnd: string;
+  
+  // "availabilityStart": "2025-07-30T19:54:00.000Z",
+  // "availabilityEnd": "2025-07-31T19:54:00.000Z",
+      
+  // "startDealDate": "2025-07-23T22:54",
+  // "endDealDate": "2025-07-30T22:54",
 
   // location & contact
   location: any; // Consider a more specific type if possible (e.g., { lat: number, lng: number })
@@ -533,6 +542,8 @@ export interface ProductForm {
   // admin
   status: string;
   collectionId: string;
+  
+  applianceDimensions: string?;
 
   // Service/Booking related fields (from previous snippet, kept for completeness)
   hourlyRate?: number;
@@ -546,7 +557,7 @@ export interface ProductForm {
   bookingSlots?: BookingSlotType[];
 // interface ProductPayload {
 
- productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
+  productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
   productCategoryId?: string;
   
   delivery?: boolean;
@@ -580,8 +591,7 @@ export interface InventoryItem {
   commissionType: number;
 }
 
-export 
-interface MarketListingForm {
+export interface MarketListingForm {
   // Identifiers & relations
   id: string;
   productId: string;
@@ -647,6 +657,8 @@ interface MarketListingForm {
   locationId: string; // ID for PropertyLocation relation
   latitude: number | null;
   longitude: number | null;
+  
+  option: Json[]; // Generic array for various options
   amenities: string[]; // Moved here, was under Property-specific
 
   // Vehicle-specific
@@ -689,7 +701,7 @@ interface MarketListingForm {
   // Home Appliances
   energyRating: string;
   warrantyPeriod: string;
-  applianceDimensions: string;
+  applianceDimensions: string?;
 
   // Beauty Products
   ingredients: string;
@@ -706,10 +718,11 @@ interface MarketListingForm {
   // Service/Booking related fields
   availabilityStart: string | null; // Nullable
   availabilityEnd: string | null; // Nullable
-  bookingSlots: any[]; // JSON array
+
+  bookingSlots: Json[]; // JSON array
   minNoticePeriod: string;
   maxBookingAhead: string;
-  requiredClientInfo: string;
+  requiredClientInfo: string[];
   fulfillmentStatus: string;
   totalCapacity: number | null; // Corrected to number | null
   currentBookedCount: number | null; // Corrected to number | null

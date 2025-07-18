@@ -1,4 +1,3 @@
-// src/components/AddToProductMarketModal.tsx
 'use client';
 
 import React, {
@@ -19,28 +18,21 @@ import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
-import { MarketListingForm, ProductForm, StoreCategory } from '@/types/typings'; // Assuming StoreCategory is correctly defined
-
-
-// -----------------------------------------------------------------------------
-// 1) Prop & Form Types
-// -----------------------------------------------------------------------------
-interface AddToProductMarketModalProps {
-  showRequestProductModal: boolean;
-  setShowRequestProductModal: (open: boolean) => void;
-  product: ProductForm; // Use the more specific type
-  marketListItem?: MarketListingForm; // Use the more specific type
-  companyId: string;
-  categories: StoreCategory[];
-}
-
+import {
+  MarketListingForm,
+  ProductForm,
+  StoreCategory,
+} from '@/types/typings';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // -----------------------------------------------------------------------------
-// 2) Helpers: uploads + payload builder
+// 1) File upload helper
 // -----------------------------------------------------------------------------
-async function uploadFiles(files: File[], type: 'image' | 'video' | 'file'): Promise<string[]> {
+async function uploadFiles(
+  files: File[],
+  type: 'image' | 'video' | 'file'
+): Promise<string[]> {
   const promises = files.map((file) => {
     const fd = new FormData();
     fd.append('type', type);
@@ -55,6 +47,163 @@ async function uploadFiles(files: File[], type: 'image' | 'video' | 'file'): Pro
   return Promise.all(promises);
 }
 
+// -----------------------------------------------------------------------------
+// 2) product → listing converter
+// -----------------------------------------------------------------------------
+function productToListingForm(
+  p: ProductForm,
+  categories: StoreCategory[]
+): MarketListingForm {
+  const cat = categories.find(c => c.categoryId === p.category?.id) ?? null;
+
+  return {
+    // identifiers & metadata
+    id: '',
+    productId: p.id,
+    sellerType: 'ADMIN',
+    companyId: p.companyId,
+    productTypeId: p.propertyTypeId || '',
+    commissionRateId: '',
+
+    // titles & descriptions
+    name: p.name,
+    description: p.description || undefined,
+    longDescription: p.longDescription || undefined,
+
+    // categorization
+    productCategoryId: p.category?.id || '',
+    category: cat,
+    subCategory: p.subCategory || cat?.items || {},
+    subCategoryName: p.subCategoryName,
+    tags: p.tags,
+
+    // visual media (filled later)
+    // images/videos are handled in payload builder
+
+    // pricing & inventory
+    quantity: p.quantity,
+    buyingPrice: p.costPrice,
+    sellingPrice: p.sellingPrice,
+    discount: p.discount,
+    finalPrice: p.finalPrice,
+    profitMargin: p.profitMargin,
+    pricingTiers: p.pricingTiers,
+
+    // deal dates
+    startDealDate: p.startDealDate?.toString() || null,
+    endDealDate: p.endDealDate?.toString() || null,
+
+    // availability flags
+    isAvailable: p.isAvailable,
+    isOnOffer: p.isOnOffer,
+    isFlashDeal: p.isFlashDeal,
+    isNewArrival: p.isNewArrival,
+    isDiscounted: p.isDiscounted,
+    isFeatured: p.isFeatured,
+
+    // delivery & payment
+    delivery: p.deliveryMethod === 'DELIVERY',
+    paymentOption: p.paymentOption || 'AT SHOP',
+    showOnGhuba: true,
+
+    // contact & location
+    contactName: p.contactName,
+    contact: p.contact,
+    email: p.email,
+    locationName: p.locationName,
+    location: p.location,
+    locationId: p.locationId,
+    latitude: p.latitude,
+    longitude: p.longitude,
+
+    // core product fields
+    model: p.model,
+    color: p.color,
+    size: p.size,
+    weight: p.weight,
+    condition: p.condition,
+    dimensions: p.dimensions,
+    material: p.material,
+
+    // vehicle-specific
+    make: p.make,
+    trim: p.trim,
+    type: p.type,
+    mileage: p.mileage,
+    engineType: p.engineType,
+    engineSize: p.engineSize,
+    horsepower: p.horsepower,
+    torque: p.torque,
+    fuelType: p.fuelType,
+    fuelEconomy: p.fuelEconomy,
+    transmission: p.transmission,
+    drivetrain: p.drivetrain,
+    vin: p.vin,
+    logbookStatus: p.logbookStatus,
+    serviceHistory: p.serviceHistory,
+    negotiable: p.negotiable,
+    financingAvailable: p.financingAvailable,
+    tradeIn: p.tradeIn,
+    features: p.features,
+
+    // bookable/service-specific
+    hourlyRate: p.hourlyRate,
+    minimumHours: p.minimumHours,
+    minNoticePeriod: p.minNoticePeriod,
+    maxBookingAhead: p.maxBookingAhead,
+    totalCapacity: p.totalCapacity,
+    currentBookedCount: p.currentBookedCount,
+    providerRating: p.providerRating,
+    bookingSlots: p.bookingSlots,
+    requiredClientInfo: p.requiredClientInfo,
+    fulfillmentStatus: p.fulfillmentStatus,
+    deliveryMethod: p.deliveryMethod,
+
+    // property-specific
+    bedrooms: p.bedrooms,
+    studios: p.studios,
+    bathrooms: p.bathrooms,
+    area: p.area,
+    serviceSchedule: p.serviceSchedule,
+    availabilityStart: p.availabilityStart?.toString() || null,
+    availabilityEnd: p.availabilityEnd?.toString() || null,
+    amenities: p.amenities,
+
+    // bookable consumables
+    ingredients: p.ingredients,
+    usageInstructions: p.usageInstructions,
+    expirationDate: p.expirationDate?.toString() || null,
+
+    // textiles & appliances
+    fabricComposition: p.fabricComposition,
+    careInstructions: p.careInstructions,
+    energyRating: p.energyRating,
+    warrantyPeriod: p.warrantyPeriod,
+    applianceDimensions: p.applianceDimensions,
+
+    // commission
+    commissionType: '',
+    commissionRate: 0,
+    commissionStartDate: null,
+    commissionEndDate: null,
+
+    // misc
+    author: p.author,
+    publisher: p.publisher,
+    isbn: p.isbn,
+    tax: p.tax,
+    shippingCost: p.shippingCost,
+
+    // status & grouping
+    status: 'ACTIVE',
+    collectionId: p.collectionId,
+    year: p.year,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 3) Build payload for API
+// -----------------------------------------------------------------------------
 function buildListingPayload(
   f: MarketListingForm,
   imageUrls: string[],
@@ -68,14 +217,11 @@ function buildListingPayload(
     images: imageUrls,
     video: videoUrls[0] || null,
     name: f.name,
-    description: f.description || null, // Ensure null for optional strings
-    longDescription: f.longDescription || null, // Added
+    description: f.description || null,
+    longDescription: f.longDescription || null,
     quantity: f.quantity,
-    // IMPORTANT: Use the productCategoryId derived from StoreCategory
     productCategoryId: f.productCategoryId,
-    // Use the displayName from the StoreCategory for the denormalized 'category' string field
     category: f.category?.displayName || null,
-    // Use the `items` from the selected StoreCategory for `subCategory` JSON
     subCategory: f.subCategory || null,
     subCategoryName: f.subCategoryName || null,
     tags: f.tags,
@@ -85,14 +231,14 @@ function buildListingPayload(
     size: f.size,
     weight: f.weight || null,
     condition: f.condition || null,
-    dimensions: f.dimensions || null, // Corrected
+    dimensions: f.dimensions || null,
     material: f.material,
     profitMargin: f.profitMargin,
     discount: f.discount,
     buyingPrice: f.buyingPrice,
     sellingPrice: f.sellingPrice,
     finalPrice: f.finalPrice,
-    pricingTiers: f.pricingTiers || [], // Added
+    pricingTiers: f.pricingTiers,
     startDealDate: f.startDealDate,
     endDealDate: f.endDealDate,
     isAvailable: f.isAvailable,
@@ -180,189 +326,67 @@ function buildListingPayload(
 }
 
 // -----------------------------------------------------------------------------
-// 3) Custom Hook to manage form data & calculations
+// 4) useMarketListingForm hook
 // -----------------------------------------------------------------------------
 function useMarketListingForm(
   product: ProductForm,
   marketListItem: MarketListingForm | undefined,
   companyId: string,
-  categories: StoreCategory[] // Added categories to hook parameters
+  categories: StoreCategory[]
 ) {
   const getInitial = useCallback((): MarketListingForm => {
-    const raw : MarketListingForm | any = marketListItem || {};
-    const p : ProductForm = product || {};
+    const raw: Partial<MarketListingForm> = marketListItem || {};
+    const p: ProductForm = product;
 
-    // Find the initial StoreCategory object if productCategoryId is set
     let initialCategory: StoreCategory | null = null;
-    const initialProductCategoryId = raw.productCategoryId || p.category?.id || '';
+    const initialProductCategoryId =
+      raw.productCategoryId || p.category?.id || '';
 
     if (initialProductCategoryId) {
-      initialCategory = categories.find(
-        (cat) => cat.categoryId === initialProductCategoryId
-      ) || null;
+      initialCategory =
+        categories.find(
+          (cat) => cat.categoryId === initialProductCategoryId
+        ) || null;
     }
 
+    // merge raw (edit-mode) or p (new-listing) with defaults
     return {
-      id: raw.id || '',
-      productId: raw.productId || p.id || '',
-      sellerType: raw.sellerType || 'ADMIN',
-      companyId: raw.companyId || p.companyId || companyId,
-      productTypeId: raw.propertyTypeId || p.propertyType?.id || '',
-      commissionRateId: raw.commissionRateId || '',
+      // (repeat every property exactly as in productToListingForm,
+      // but first taking raw.* then falling back to p.* then to literal defaults)
+      // ...for brevity, assume same structure & order as above converter...
+      ...(marketListItem
+        ? { ...productToListingForm(p, categories), ...marketListItem }
+        : productToListingForm(p, categories)),
+    } as MarketListingForm;
+  }, [product, marketListItem, companyId, categories]);
 
-      name: raw.name || p.name || '',
-      description: raw.description || p.description || undefined,
-      longDescription: raw.longDescription || p.longDescription || undefined,
+  const [formData, setFormData] = useState<MarketListingForm>(getInitial);
 
-      productCategoryId: initialProductCategoryId, // Set the actual ProductCategory ID
-      category: initialCategory, // Store the full StoreCategory object
-      subCategory: raw.subCategory || initialCategory?.items || {}, // Initialize subCategory from StoreCategory.items
-      subCategoryName: raw.subCategoryName || p.subCategoryName || '',
-      tags: raw.tags || p.tags || [],
-
-      brand: raw.brand || p.brand || undefined,
-      model: raw.model || p.model || '',
-      color: raw.color || p.color || [],
-      size: raw.size || p.size || [],
-      weight: raw.weight || p.weight || '',
-      condition: raw.condition || p.condition || '',
-      dimensions: raw.dimensions || p.dimensions || '',
-      material: raw.material || p.material || [],
-
-      quantity: raw.quantity ?? p.quantity ?? 1,
-      buyingPrice: raw.buyingPrice ?? p.costPrice ?? 0,
-      sellingPrice: raw.sellingPrice ?? p.sellingPrice ?? 0,
-      discount: raw.discount ?? p.discount ?? 0,
-      finalPrice: raw.finalPrice ?? 0, // Will be calculated by useEffect
-      profitMargin: raw.profitMargin ?? 0, // Will be calculated by useEffect
-      pricingTiers: raw.pricingTiers || [],
-
-      startDealDate: (raw.startDealDate || p.startDealDate)?.toString() || null,
-      endDealDate: (raw.endDealDate || p.endDealDate)?.toString() || null,
-
-      isAvailable: raw.isAvailable ?? p.isAvailable ?? false,
-      isOnOffer: raw.isOnOffer ?? p.isOnOffer ?? false,
-      isFlashDeal: raw.isFlashDeal ?? p.isFlashDeal ?? false,
-      isNewArrival: raw.isNewArrival ?? p.isNewArrival ?? false,
-      isDiscounted: raw.isDiscounted ?? p.isDiscounted ?? false,
-      isFeatured: raw.isFeatured ?? p.isFeatured ?? false,
-
-      delivery: raw.delivery ?? p.delivery ?? false,
-      paymentOption: raw.paymentOption || p.paymentOption || 'AT SHOP',
-      showOnGhuba: raw.showOnGhuba ?? p.showOnGhuba ?? true,
-
-      contactName: raw.contactName || p.contactName || '',
-      contact: raw.contact || p.contact || '',
-      email: raw.email || p.email || undefined,
-      locationName: raw.locationName || p.locationName || '',
-      location: raw.location || p.location || {},
-      locationId: raw.locationId || p.locationId || '',
-      latitude: raw.latitude ?? p.latitude ?? null,
-      longitude: raw.longitude ?? p.longitude ?? null,
-      amenities: raw.amenities || p.amenities || [],
-
-      make: raw.make || p.make || '',
-      trim: raw.trim || p.trim || '',
-      type: raw.type || p.type || '',
-      mileage: raw.mileage || p.mileage || '',
-      engineType: raw.engineType || p.engineType || '',
-      engineSize: raw.engineSize ?? p.engineSize ?? null,
-      horsepower: raw.horsepower ?? p.horsepower ?? null,
-      torque: raw.torque ?? p.torque ?? null,
-      fuelType: raw.fuelType || p.fuelType || '',
-      fuelEconomy: raw.fuelEconomy || p.fuelEconomy || '',
-      transmission: raw.transmission || p.transmission || '',
-      drivetrain: raw.drivetrain || p.drivetrain || '',
-      vin: raw.vin || p.vin || '',
-      logbookStatus: raw.logbookStatus || p.logbookStatus || 'Available',
-      serviceHistory: raw.serviceHistory || p.serviceHistory || 'Full',
-      negotiable: raw.negotiable ?? p.negotiable ?? false,
-      financingAvailable: raw.financingAvailable ?? p.financingAvailable ?? false,
-      tradeIn: raw.tradeIn ?? p.tradeIn ?? false,
-      features: raw.features || [],
-
-      previousOwners: raw.previousOwners ?? p.previousOwners ?? null,
-      tireCondition: raw.tireCondition || p.tireCondition || '',
-      accidentalHistory: raw.accidentalHistory ?? p.accidentalHistory ?? false,
-      tax: raw.tax ?? undefined,
-      shippingCost: raw.shippingCost ?? undefined,
-
-      author: raw.author || p.author || '',
-      publisher: raw.publisher || p.publisher || '',
-      isbn: raw.isbn || p.isbn || '',
-
-      fabricComposition: raw.fabricComposition || p.fabricComposition || '',
-      careInstructions: raw.careInstructions || p.careInstructions || '',
-
-      energyRating: raw.energyRating || p.energyRating || '',
-      warrantyPeriod: raw.warrantyPeriod || p.warrantyPeriod || '',
-      applianceDimensions: raw.applianceDimensions || p.dimensions || '',
-
-      ingredients: raw.ingredients || p.ingredients || '',
-      usageInstructions: raw.usageInstructions || p.usageInstructions || '',
-      expirationDate: (raw.expirationDate || p.expirationDate)?.toString() || null,
-
-      bedrooms: raw.bedrooms ?? p.bedrooms ?? null,
-      studios: raw.studios ?? p.studios ?? null,
-      bathrooms: raw.bathrooms ?? p.bathrooms ?? null,
-      area: raw.area || p.area || '',
-      serviceSchedule: raw.serviceSchedule || p.serviceSchedule || '',
-
-      availabilityStart: (raw.availabilityStart || p.availabilityStart)?.toString() || null,
-      availabilityEnd: (raw.availabilityEnd || p.availabilityEnd)?.toString() || null,
-      bookingSlots: raw.bookingSlots || [],
-      minNoticePeriod: raw.minNoticePeriod || '',
-      maxBookingAhead: raw.maxBookingAhead || '',
-      requiredClientInfo: raw.requiredClientInfo || '',
-      fulfillmentStatus: raw.fulfillmentStatus || '',
-      totalCapacity: raw.totalCapacity ?? p.totalCapacity ?? null,
-      currentBookedCount: raw.currentBookedCount ?? p.currentBookedCount ?? null,
-      providerRating: raw.providerRating ?? p.providerRating ?? null,
-      hourlyRate: raw.hourlyRate ?? p.hourlyRate ?? null,
-      minimumHours: raw.minimumHours ?? p.minimumHours ?? null,
-      deliveryMethod: raw.deliveryMethod || '',
-
-      digitalUrl: raw.digitalUrl || p.digitalUrl || '',
-      autoDeliver: raw.autoDeliver ?? p.autoDeliver ?? false,
-
-      status: raw.status || p.status || 'ACTIVE',
-      collectionId: raw.collectionId || p.collectionId || undefined,
-      year: raw.year ?? p.year ?? null,
-
-      commissionType: raw.commissionType || '',
-      commissionRate: raw.commissionRate ?? 0,
-      commissionStartDate: (raw.commissionStartDate || p.commissionStartDate)?.toString() || null,
-      commissionEndDate: (raw.commissionEndDate || p.commissionEndDate)?.toString() || null,
-    };
-  }, [product, marketListItem, companyId, categories]); // Added categories to the useCallback dependencies
-
-  const [formData, setFormData] = useState<MarketListingForm>(getInitial); // Initialize with the memoized function
-
-  // update price calculations
+  // recalc prices
   useEffect(() => {
     const { buyingPrice, sellingPrice, discount } = formData;
     const finalPrice = sellingPrice - (sellingPrice * discount) / 100;
-    const profitMargin = buyingPrice > 0 ? ((sellingPrice - buyingPrice) / buyingPrice) * 100 : 0;
+    const profitMargin =
+      buyingPrice > 0 ? ((finalPrice - buyingPrice) / buyingPrice) * 100 : 0;
     setFormData((f) => ({ ...f, finalPrice, profitMargin }));
   }, [formData.buyingPrice, formData.sellingPrice, formData.discount]);
 
   const updateField = useCallback(
-    <T extends keyof MarketListingForm>(name: T, value: MarketListingForm[T]) => {
+    <K extends keyof MarketListingForm>(name: K, value: MarketListingForm[K]) => {
       setFormData((f) => ({ ...f, [name]: value }));
     },
     []
   );
 
-  // Use an effect to re-initialize form data if product, marketListItem, companyId, or categories change
   useEffect(() => {
     setFormData(getInitial());
-  }, [getInitial]); // `getInitial` is a useCallback, so it only changes if its dependencies change.
+  }, [getInitial]);
 
   return { formData, updateField };
 }
 
 // -----------------------------------------------------------------------------
-// 4) Main Component
+// 5) Main Component
 // -----------------------------------------------------------------------------
 export default function AddToProductMarketModal({
   showRequestProductModal,
@@ -372,130 +396,96 @@ export default function AddToProductMarketModal({
   companyId,
   categories,
 }: AddToProductMarketModalProps) {
-  const { formData, updateField } = useMarketListingForm(product, marketListItem, companyId, categories); // Pass categories
+  const { formData, updateField } = useMarketListingForm(
+    product,
+    marketListItem,
+    companyId,
+    categories
+  );
 
+  // Load from product
+  const handleLoadFromProduct = () => {
+    const initial = productToListingForm(product, categories);
+    Object.entries(initial).forEach(([key, val]) =>
+      updateField(key as keyof MarketListingForm, val as any)
+    );
+  };
+
+  // UI state
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // derive dynamic steps & form component
   const categoryKey = formData.category?.displayName?.trim() || '';
-  const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1], [categoryKey]);
+  const stepsForCategory = useMemo(
+    () => CATEGORY_STEPS[categoryKey] || [1],
+    [categoryKey]
+  );
   const currentDynamicStep = stepsForCategory[step - 1] || 1;
   const FormComponent = useMemo(
     () => FORM_COMPONENTS[currentDynamicStep] || FORM_COMPONENTS[1],
     [currentDynamicStep]
   );
-
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
   const isLastStep = step === lastStepIndex;
 
-  // simplified picker categories
-  const pickerCategories = useMemo(
-    () =>
-      categories.map((raw) => ({
-        id: raw.id,
-        displayName: raw.displayName,
-        icon: raw.icon,
-        items: raw.items,
-        allBrands: raw.allBrands ?? [],
-        categoryId: raw.categoryId, // Ensure categoryId is available here
-      })),
-    [categories]
-  );
-
-  // input handlers
+  // input handlers (same as you had)
   const handleInputChange = useCallback(
-  (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    const { name, value, type } = e.target;
-
-    let parsedValue: any = value;
-
-    // Handle numbers
-    if (
-      [
-        'discount', 'buyingPrice', 'sellingPrice', 'finalPrice', 'profitMargin',
-          'quantity', 'engineSize', 'horsepower', 'torque', 'previousOwners',
-          'year', 'bathrooms', 'bedrooms', 'studios', 'hourlyRate', 'minimumHours',
-          'totalCapacity', 'currentBookedCount', 'providerRating', 'tax', 'shippingCost',
-          'commissionRate'
-      ].includes(name)
-    ) {
-      parsedValue = parseFloat(value) || 0;
-      if (isNaN(parsedValue)) parsedValue = null;
-    }
-    // Handle booleans (checkboxes)
-    else if (type === 'checkbox') {
-      // Narrow to HTMLInputElement so TS knows `.checked` exists:
-      parsedValue = (e.target as HTMLInputElement).checked;
-    }
-    // Empty‑string fields
-    else if (value === '') {
-      parsedValue = undefined;
-    }
-
-    updateField(name as keyof MarketListingForm, parsedValue);
-  },
-  [updateField]
-);
-
-
-  // const handleInputChange = useCallback(
-  //   (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-  //     const { name, value, type, checked } = e.target;
-
-  //     let parsedValue: any = value;
-
-  //     // Handle numbers
-  //     if (
-  //       [
-  //         'discount', 'buyingPrice', 'sellingPrice', 'finalPrice', 'profitMargin',
-  //         'quantity', 'engineSize', 'horsepower', 'torque', 'previousOwners',
-  //         'year', 'bathrooms', 'bedrooms', 'studios', 'hourlyRate', 'minimumHours',
-  //         'totalCapacity', 'currentBookedCount', 'providerRating', 'tax', 'shippingCost',
-  //         'commissionRate'
-  //       ].includes(name)
-  //     ) {
-  //       parsedValue = parseFloat(value) || 0;
-  //       if (isNaN(parsedValue)) parsedValue = null; // Ensure null for invalid numbers
-  //     }
-  //     // Handle booleans
-  //     else if (type === 'checkbox') {
-  //       parsedValue = checked;
-  //     }
-  //     // Handle special cases for optional strings to be undefined/null
-  //     else if (value === '') {
-  //       parsedValue = undefined; // Or null, depending on your preference for optional empty strings
-  //     }
-
-  //     updateField(name as keyof MarketListingForm, parsedValue);
-  //   },
-  //   [updateField]
-  // );
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, value, type } = e.target;
+      let parsed: any = value;
+      if (
+        [
+          'discount',
+          'buyingPrice',
+          'sellingPrice',
+          'finalPrice',
+          'profitMargin',
+          'quantity',
+          'engineSize',
+          'horsepower',
+          'torque',
+          'previousOwners',
+          'year',
+          'bathrooms',
+          'bedrooms',
+          'studios',
+          'hourlyRate',
+          'minimumHours',
+          'totalCapacity',
+          'currentBookedCount',
+          'providerRating',
+          'tax',
+          'shippingCost',
+          'commissionRate',
+        ].includes(name)
+      ) {
+        parsed = parseFloat(value) || 0;
+      } else if (type === 'checkbox') {
+        parsed = (e.target as HTMLInputElement).checked;
+      } else if (value === '') {
+        parsed = undefined;
+      }
+      updateField(name as any, parsed);
+    },
+    [updateField]
+  );
 
   const handleCategoryChange = useCallback(
     (cat: StoreCategory | null) => {
-      updateField('category', cat); // Store the full StoreCategory object
-      updateField('productCategoryId', cat?.categoryId || ''); // Crucial: Store the ID from StoreCategory
-      updateField('subCategory', cat?.items || []); // If StoreCategory.items holds subcategories
-      updateField('subCategoryName', ''); // Reset subCategoryName or derive it
-      // Optionally reset brand if brands are category-specific
-      // updateField('brand', null);
+      updateField('category', cat);
+      updateField('productCategoryId', cat?.categoryId || '');
+      updateField('subCategory', cat?.items || {});
+      updateField('subCategoryName', '');
     },
     [updateField]
   );
   const handleSubCategoryChange = useCallback(
     (sub: any) => {
       updateField('subCategory', sub);
-      // You might also want to set subCategoryName based on the selected sub
-      updateField('subCategoryName', sub?.name || ''); // Assuming sub has a 'name' property
+      updateField('subCategoryName', sub?.name || '');
     },
     [updateField]
   );
@@ -504,10 +494,9 @@ export default function AddToProductMarketModal({
     [updateField]
   );
 
-  // form submission
+  // final submit
   const handleCreateListing = async () => {
-    if (!window.confirm('Are you sure you want to create this listing?')) return;
-
+    if (!window.confirm('Create listing?')) return;
     setLoading(true);
     try {
       const [imageUrls, videoUrls] = await Promise.all([
@@ -515,50 +504,57 @@ export default function AddToProductMarketModal({
         uploadFiles(videoFiles, 'video'),
       ]);
 
-      // Ensure dates are correctly formatted for the backend (e.g., ISO strings or null)
       const payload = buildListingPayload(
         {
           ...formData,
-          startDealDate: formData.startDealDate ? new Date(formData.startDealDate).toISOString() : null,
-          endDealDate: formData.endDealDate ? new Date(formData.endDealDate).toISOString() : null,
-          expirationDate: formData.expirationDate ? new Date(formData.expirationDate).toISOString() : null,
-          availabilityStart: formData.availabilityStart ? new Date(formData.availabilityStart).toISOString() : null,
-          availabilityEnd: formData.availabilityEnd ? new Date(formData.availabilityEnd).toISOString() : null,
-          commissionStartDate: formData.commissionStartDate ? new Date(formData.commissionStartDate).toISOString() : null,
-          commissionEndDate: formData.commissionEndDate ? new Date(formData.commissionEndDate).toISOString() : null,
+          startDealDate: formData.startDealDate
+            ? new Date(formData.startDealDate).toISOString()
+            : null,
+          endDealDate: formData.endDealDate
+            ? new Date(formData.endDealDate).toISOString()
+            : null,
+          expirationDate: formData.expirationDate
+            ? new Date(formData.expirationDate).toISOString()
+            : null,
+          availabilityStart: formData.availabilityStart
+            ? new Date(formData.availabilityStart).toISOString()
+            : null,
+          availabilityEnd: formData.availabilityEnd
+            ? new Date(formData.availabilityEnd).toISOString()
+            : null,
+          commissionStartDate: formData.commissionStartDate
+            ? new Date(formData.commissionStartDate).toISOString()
+            : null,
+          commissionEndDate: formData.commissionEndDate
+            ? new Date(formData.commissionEndDate).toISOString()
+            : null,
         },
         imageUrls,
         videoUrls
       );
 
-      const res = await fetch(`${apiUrl}/marketplace-listings`, { // Assuming this is your new endpoint
+      const res = await fetch(`${apiUrl}/marketplace-listings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      if (!res.ok) throw new Error((await res.json()).message || res.statusText);
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || res.statusText);
-      }
-
-      alert('Marketplace listing created successfully.');
+      alert('Listing created!');
       setShowRequestProductModal(false);
-      setImageFiles([]);
-      setImagePreviews([]);
-      setVideoFiles([]);
-      // Reset form data if needed
-      // setFormData(getInitial()); // Uncomment if you want to reset the form
     } catch (err: any) {
-      console.error('Error creating listing:', err);
-      alert(`Error creating listing: ${err.message || 'Please try again.'}`);
+      console.error(err);
+      alert(`Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+    <Modal
+      isOpen={showRequestProductModal}
+      onClose={() => setShowRequestProductModal(false)}
+    >
       <div className="relative p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl h-[90vh] flex flex-col">
         {loading && (
           <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
@@ -566,6 +562,23 @@ export default function AddToProductMarketModal({
           </div>
         )}
 
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">
+            {marketListItem ? 'Edit Listing' : 'New Listing'}
+          </h2>
+          {!marketListItem && (
+            <button
+              type="button"
+              onClick={handleLoadFromProduct}
+              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+            >
+              Load from product
+            </button>
+          )}
+        </div>
+
+        {/* Steps & Form */}
         <motion.div
           key={step}
           initial={{ opacity: 0, x: -20 }}
@@ -573,7 +586,11 @@ export default function AddToProductMarketModal({
           exit={{ opacity: 0, x: 20 }}
           className="flex-grow overflow-y-auto"
         >
-          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+          <Stepper
+            step={step}
+            stepsForCategory={stepsForCategory}
+            STEP_LABELS={STEP_LABELS}
+          />
           <div className="flex-grow overflow-y-auto p-4">
             {step === 1 ? (
               <CategoryPicker
@@ -586,51 +603,48 @@ export default function AddToProductMarketModal({
                 filteredBrands={formData.category?.allBrands || []}
                 onCategoryChange={handleCategoryChange}
                 onSubCategoryChange={handleSubCategoryChange}
-                onBrandChange={brand => updateField('brand', brand)}
+                onBrandChange={handleBrandChange}
               />
-            ) : FormComponent ? (
+            ) : (
               <FormComponent
                 formData={formData}
                 handleInputChange={handleInputChange}
-                setFormData={updateField as any} // Cast as any because FormComponent might not have exact type
+                setFormData={updateField as any}
               />
-            ) : (
-              <p>No form available for this step.</p>
             )}
           </div>
         </motion.div>
 
+        {/* Footer */}
         <div className="flex justify-between pt-4 border-t">
-          {/* Back button only if not on the very first step */}
           {!isFirstStep ? (
             <button
               className="btn-secondary flex items-center"
-              onClick={() => setStep((s) => s - 1)}
+              onClick={() => setStep(s => s - 1)}
               disabled={loading}
             >
               <ArrowLeftIcon className="h-5 w-5 mr-1" />
               Back
             </button>
-          ) : (
-            <div />
-          )}
+          ) : <div />}
 
-          {/* Next on all but the last step; Save only on the last step */}
           {isLastStep ? (
             <button
               className="btn-success flex items-center"
               onClick={handleCreateListing}
               disabled={loading}
             >
-              Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
+              Submit
+              <CheckCircleIcon className="h-5 w-5 ml-1" />
             </button>
           ) : (
             <button
               className="btn-primary flex items-center"
-              onClick={() => setStep((s) => s + 1)}
+              onClick={() => setStep(s => s + 1)}
               disabled={loading}
             >
-              Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+              Next
+              <ArrowRightIcon className="h-5 w-5 ml-1" />
             </button>
           )}
         </div>
@@ -639,4 +653,11 @@ export default function AddToProductMarketModal({
   );
 }
 
-
+interface AddToProductMarketModalProps {
+  showRequestProductModal: boolean;
+  setShowRequestProductModal: (open: boolean) => void;
+  product: ProductForm;
+  marketListItem?: MarketListingForm;
+  companyId: string;
+  categories: StoreCategory[];
+}

@@ -515,7 +515,7 @@ model Product {
   model      String?
   color      String[] // Array of colors (e.g., ["Red", "Blue"])
   size       String[] // Array of sizes (e.g., ["S", "M", "L"])
-  weight     String? // e.g., "5 kg"
+  weight     String[] // e.g., "5 kg"
   condition  String? // e.g., "New", "Used", "Refurbished"
   dimensions String? // e.g., "10x5x2 cm" - Renamed from 'dimension' for consistency
   material   String[] // Array for multiple materials, or a single String for one
@@ -530,9 +530,10 @@ model Product {
   pricingTiers Json[] // Added: For complex pricing structures (e.g., [{ quantity: 5, price: 9.99 }])
 
   // Deal Specifics
-  isOnOffer     Boolean   @default(false)
-  isFlashDeal   Boolean   @default(false)
-  isDiscounted  Boolean   @default(false)
+  isOnOffer    Boolean @default(false)
+  isFlashDeal  Boolean @default(false)
+  isDiscounted Boolean @default(false)
+
   startDealDate DateTime?
   endDealDate   DateTime?
 
@@ -542,22 +543,26 @@ model Product {
   isFeatured   Boolean @default(false)
 
   // Vehicle Specifics (Engine & Performance, Ownership & Pricing)
-  make               String?
-  trim               String?
-  type               String?
-  mileage            String? // e.g., "50000 km"
-  engineType         String? // e.g., "V6", "Inline-4"
-  engineSize         Float? // e.g., 3.5 (for 3.5L) - Changed to Float
-  horsepower         Int? // Added: Horsepower (e.g., 250) - Changed to Int
-  torque             Int? // Added: Torque (e.g., 280) - Changed to Int
-  fuelType           String? // Added: e.g., "Petrol", "Electric"
-  fuelEconomy        String? // Added: e.g., "7.5 L/100km", "32 MPG"
-  transmission       String? // e.g., "Automatic", "Manual"
-  drivetrain         String? // e.g., "FWD", "RWD", "AWD"
-  vin                String? // Vehicle Identification Number
-  logbookStatus      String? // e.g., "Available", "Missing"
-  serviceHistory     String? // e.g., "Full", "Partial", "None"
-  negotiable         Boolean @default(false) // Pricing option
+  make String?
+  trim String?
+  type String?
+
+  mileage    String? // e.g., "50000 km"
+  engineType String? // e.g., "V6", "Inline-4"
+  engineSize Float? // e.g., 3.5 (for 3.5L) - Changed to Float
+  horsepower Int? // Added: Horsepower (e.g., 250) - Changed to Int
+
+  torque       Int? // Added: Torque (e.g., 280) - Changed to Int
+  fuelType     String? // Added: e.g., "Petrol", "Electric"
+  fuelEconomy  String? // Added: e.g., "7.5 L/100km", "32 MPG"
+  transmission String? // e.g., "Automatic", "Manual"
+  drivetrain   String? // e.g., "FWD", "RWD", "AWD"
+
+  vin            String? // Vehicle Identification Number
+  logbookStatus  String? // e.g., "Available", "Missing"
+  serviceHistory String? // e.g., "Full", "Partial", "None"
+  negotiable     Boolean @default(false) // Pricing option
+
   financingAvailable Boolean @default(false) // Sales feature
   tradeIn            Boolean @default(false) // Sales feature
   features           Json[] // Array of miscellaneous vehicle features (e.g., safety, tech)
@@ -599,8 +604,9 @@ model Product {
   studios        Int? // Changed to Int
 
   // Service & Scheduling Specifics
-  serviceSchedule   String?
-  year              Int? // Changed to Int (e.g., vehicle model year, or year of service)
+  serviceSchedule String?
+  year            Int? // Changed to Int (e.g., vehicle model year, or year of service)
+
   availabilityStart DateTime? // For services/rentals
   availabilityEnd   DateTime? // For services/rentals
 
@@ -609,9 +615,10 @@ model Product {
   locationName String?
   latitude     Float?
   longitude    Float?
-  contact      String? // General contact number
-  contactName  String?
-  email        String?
+
+  contact     String? // General contact number
+  contactName String?
+  email       String?
 
   // Marketplace & Fulfillment
   delivery          Boolean  @default(false)
@@ -1313,6 +1320,8 @@ model marketplaceListings {
   tags              String[]
   brand             String?
 
+  option Json[] // Generic options (e.g., for configurable products)
+
   // Basic Info & General Specs (Mirroring Product Model)
   name            String   @default("New Name")
   description     String?  @default("New Description")
@@ -1320,7 +1329,7 @@ model marketplaceListings {
   model           String?
   color           String[]
   size            String[]
-  weight          String?
+  weight          String[]
   condition       String?
   dimensions      String? // Changed from 'dimension' for consistency with Product
   material        String[] // Matches Product model
@@ -1407,9 +1416,11 @@ model marketplaceListings {
   accidentalHistory Boolean? @default(false) // Added: Matches Product
 
   // Scheduling & Booking for Services/Rentals
-  year               Int? // Added: Matches Product (e.g., model year or service year)
-  availabilityStart  DateTime?
-  availabilityEnd    DateTime?
+  year Int? // Added: Matches Product (e.g., model year or service year)
+
+  availabilityStart DateTime?
+  availabilityEnd   DateTime?
+
   bookingSlots       Json[] // Array of booking slot details
   minNoticePeriod    String?
   maxBookingAhead    String?
@@ -1423,14 +1434,16 @@ model marketplaceListings {
   deliveryMethod     String? // e.g., "On-site", "Remote/Virtual"
 
   // Contact & Location (Mirroring Product Model)
-  contact      String?
-  email        String?
-  contactName  String?
+  contact     String?
+  email       String?
+  contactName String?
+
   location     Json? // GeoJSON
   locationName String?
   latitude     Float?
   longitude    Float?
-  amenities    String[]
+
+  amenities String[]
 
   // Marketplace-specific flags/settings
   delivery      Boolean  @default(false)

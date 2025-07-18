@@ -13,10 +13,10 @@ interface ProductVariantsProps {
 }
 
 const VARIANT_OPTIONS = {
-  colors: ["Red", "Blue", "Green", "Black", "White"],
-  sizes: ["S", "M", "L", "XL"],
-  materials: ["Cotton", "Leather", "Metal", "Plastic"],
-  weights: ["Light", "Medium", "Heavy"],
+  color: ["Red", "Blue", "Green", "Black", "White"],
+  size: ["S", "M", "L", "XL"],
+  material: ["Cotton", "Leather", "Metal", "Plastic"],
+  weight: ["Light", "Medium", "Heavy"],
 } as const;
 
 const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData }) => {
