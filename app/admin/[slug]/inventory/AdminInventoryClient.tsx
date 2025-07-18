@@ -12,31 +12,8 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
-import { StoreCategory } from "@/types/typings";
+import { InventoryItem, ProductForm, StoreCategory } from "@/types/typings";
 
-
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: StoreCategory;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
-
-// type Category = {
-//   id: string;
-//   name: string;
-//   image: string;
-//   tags: string[];
-//   status: string;
-// };
 
 type Agent = {
   id: string;
@@ -45,7 +22,7 @@ type Agent = {
 
 interface ClientProps {
   companyId: string;
-  productsData: Product[];
+  productsData: InventoryItem[];
   categoriesData: StoreCategory[];
   agentsData: Agent[];
 }
@@ -65,7 +42,7 @@ export default function AdminInventoryClient({
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
 
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductForm | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [stockAmount, setStockAmount] = useState(0);
 
@@ -126,7 +103,7 @@ export default function AdminInventoryClient({
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => {
-                      setSelectedProduct(product);
+                      setSelectedProduct(product.productItem);
                       setShowEditProductModal(true);
                     }}
                     className="bg-yellow-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-yellow-600 transition duration-300 transform hover:scale-105"
@@ -136,7 +113,7 @@ export default function AdminInventoryClient({
 
                   <button
                     onClick={() => {
-                      setSelectedProduct(product);
+                      setSelectedProduct(product.productItem);
                       setShowReturnProductModal(true);
                     }}
                     className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-600 transition duration-300 transform hover:scale-105"
@@ -146,7 +123,7 @@ export default function AdminInventoryClient({
 
                   <button
                     onClick={() => {
-                      setSelectedProduct(product);
+                      setSelectedProduct(product.productItem);
                       setShowRestockProductModal(true);
                     }}
                     className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition duration-300 transform hover:scale-105"
@@ -156,7 +133,7 @@ export default function AdminInventoryClient({
 
                   <button
                     onClick={() => {
-                      setSelectedProduct(product);
+                      setSelectedProduct(product.productItem);
                       setShowAssignProductModal(true);
                     }}
                     className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-300 transform hover:scale-105"
@@ -166,7 +143,7 @@ export default function AdminInventoryClient({
 
                   <button
                     onClick={() => {
-                      setSelectedProduct(product);
+                      setSelectedProduct(product.productItem);
                       setShowAddToMarketProductModal(true);
                     }}
                     className="bg-orange-500 col-span-2 text-white px-6 py-3 rounded-lg shadow-md hover:bg-orange-600 transition duration-300 transform hover:scale-105"

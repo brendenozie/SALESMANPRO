@@ -19,217 +19,8 @@ import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
-import { ProductForm, StoreCategory } from '@/types/typings'; // Assuming StoreCategory is correctly defined
+import { MarketListingForm, ProductForm, StoreCategory } from '@/types/typings'; // Assuming StoreCategory is correctly defined
 
-// Define ProductPayload and MarketListItemPayload based on your actual Prisma models if possible
-// For simplicity, using 'any' for now, but strongly recommend defining these types.
-interface ProductPayload {
-  id: string;
-  name: string;
-  description?: string;
-  longDescription?: string;
-  quantity?: number;
-  // ... other fields from your Product schema that might be pre-filled
-  productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
-  productCategoryId?: string;
-  subCategory?: any; // JSON
-  subCategoryName?: string;
-  tags?: string[];
-  brand?: string;
-  model?: string;
-  color?: string[];
-  size?: string[];
-  weight?: string;
-  condition?: string;
-  dimensions?: string; // Corrected
-  material?: string[];
-  costPrice?: number;
-  sellingPrice?: number;
-  discount?: number;
-  profitMargin?: number;
-  finalPrice?: number;
-  startDealDate?: string | Date;
-  endDealDate?: string | Date;
-  isAvailable?: boolean;
-  isOnOffer?: boolean;
-  isFlashDeal?: boolean;
-  isNewArrival?: boolean;
-  isDiscounted?: boolean;
-  isFeatured?: boolean;
-  delivery?: boolean;
-  paymentOption?: string;
-  showOnGhuba?: boolean;
-  contactName?: string;
-  contact?: string;
-  email?: string;
-  locationName?: string;
-  location?: any;
-  locationId?: string;
-  propertyType?: { id: string }; // Assuming PropertyType relation on Product
-  propertyTypeId?: string;
-  bathrooms?: number;
-  area?: string;
-  bedrooms?: number;
-  studios?: number;
-  serviceSchedule?: string;
-  year?: number; // New for Product
-  make?: string;
-  trim?: string;
-  type?: string;
-  mileage?: string;
-  engineType?: string;
-  engineSize?: number; // Corrected to number
-  horsepower?: number; // New for Product
-  torque?: number; // New for Product
-  fuelType?: string; // New for Product
-  fuelEconomy?: string; // New for Product
-  transmission?: string;
-  drivetrain?: string;
-  vin?: string;
-  logbookStatus?: string;
-  serviceHistory?: string;
-  negotiable?: boolean;
-  financingAvailable?: boolean;
-  tradeIn?: boolean;
-  features?: any[]; // New for Product
-  previousOwners?: number; // New for Product
-  tireCondition?: string; // New for Product
-  accidentalHistory?: boolean; // New for Product
-  digitalUrl?: string;
-  autoDeliver?: boolean;
-  status?: string;
-  collectionId?: string;
-  hourlyRate?: number;
-  minimumHours?: number;
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  totalCapacity?: number;
-  currentBookedCount?: number;
-  providerRating?: number;
-  bookingSlots?: any[];
-  deliveryMethod?: string;
-  fulfillmentStatus?: string;
-  pricingTiers?: any[];
-  commissionStartDate?: string | Date; // Added
-  commissionEndDate?: string | Date; // Added
-  commissionType?: string; // Added
-  commissionRate?: number; // Added
-}
-
-interface MarketListItemPayload {
-  id?: string; // Can be undefined for new items
-  productId: string;
-  sellerType: string;
-  companyId: string;
-  name: string;
-  description?: string;
-  longDescription?: string; // Added
-  quantity: number;
-  images?: string[];
-  video?: string;
-  productCategoryId?: string;
-  category?: string; // This is displayName from StoreCategory
-  subCategory?: any; // JSON
-  subCategoryName?: string;
-  tags?: string[];
-  brand?: string;
-  model?: string;
-  color?: string[];
-  size?: string[];
-  weight?: string;
-  condition?: string;
-  dimensions?: string; // Corrected
-  material?: string[];
-  buyingPrice: number;
-  sellingPrice: number;
-  finalPrice: number;
-  profitMargin: number;
-  discount: number;
-  pricingTiers?: any[]; // Added
-  startDealDate?: string | Date;
-  endDealDate?: string | Date;
-  isAvailable: boolean;
-  isOnOffer?: boolean;
-  isFlashDeal?: boolean;
-  isNewArrival?: boolean;
-  isDiscounted?: boolean;
-  isFeatured?: boolean;
-  delivery: boolean;
-  paymentOption?: string;
-  showOnGhuba: boolean;
-  contactName?: string;
-  contact?: string;
-  email?: string;
-  locationName?: string;
-  location?: any; // JSON
-  locationId?: string;
-  latitude?: number;
-  longitude?: number;
-  propertyTypeId?: string; // Relation ID
-  bathrooms?: number;
-  area?: string;
-  bedrooms?: number;
-  studios?: number;
-  serviceSchedule?: string;
-  year?: number; // Added
-  make?: string;
-  trim?: string;
-  type?: string;
-  mileage?: string;
-  engineType?: string;
-  engineSize?: number; // Corrected
-  horsepower?: number; // Added
-  torque?: number; // Added
-  fuelType?: string; // Added
-  fuelEconomy?: string; // Added
-  transmission?: string;
-  drivetrain?: string;
-  vin?: string;
-  logbookStatus?: string;
-  serviceHistory?: string;
-  negotiable?: boolean;
-  financingAvailable?: boolean;
-  tradeIn?: boolean;
-  features?: any[]; // Added
-  previousOwners?: number; // Added
-  tireCondition?: string; // Added
-  accidentalHistory?: boolean; // Added
-  author?: string;
-  publisher?: string;
-  isbn?: string;
-  fabricComposition?: string;
-  careInstructions?: string;
-  energyRating?: string;
-  warrantyPeriod?: string;
-  applianceDimensions?: string;
-  ingredients?: string;
-  usageInstructions?: string;
-  expirationDate?: string | Date;
-  amenities?: string[];
-  hourlyRate?: number;
-  minimumHours?: number;
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  totalCapacity?: number;
-  currentBookedCount?: number;
-  providerRating?: number;
-  bookingSlots?: any[];
-  deliveryMethod?: string;
-  fulfillmentStatus?: string;
-  digitalUrl?: string;
-  autoDeliver?: boolean;
-  status?: string;
-  collectionId?: string;
-  // Commission fields for the nested CommissionRate
-  commissionType?: string;
-  commissionRate?: number;
-  commissionStartDate?: string | Date;
-  commissionEndDate?: string | Date;
-  // Timestamps
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  commissionRateId?: string;
-}
 
 // -----------------------------------------------------------------------------
 // 1) Prop & Form Types
@@ -237,164 +28,12 @@ interface MarketListItemPayload {
 interface AddToProductMarketModalProps {
   showRequestProductModal: boolean;
   setShowRequestProductModal: (open: boolean) => void;
-  product: ProductPayload; // Use the more specific type
-  marketListItem?: MarketListItemPayload; // Use the more specific type
+  product: ProductForm; // Use the more specific type
+  marketListItem?: MarketListingForm; // Use the more specific type
   companyId: string;
   categories: StoreCategory[];
 }
 
-interface MarketListingForm {
-  // Identifiers & relations
-  id: string;
-  productId: string;
-  sellerType: string;
-  companyId: string;
-  productTypeId?: string; // Added: For propertyType relation
-  commissionRateId?: string; // Added for the relation ID
-
-  // Title & description
-  name: string;
-  description?: string; // Made optional
-  longDescription?: string; // Added: Matches schema
-
-  // Category hierarchy & tagging
-  productCategoryId: string; // This will hold the ID of the actual ProductCategory
-  category: StoreCategory | null; // This holds the *selected StoreCategory object*
-  subCategory: any; // JSON from StoreCategory.items or ProductCategory.subcategories
-  subCategoryName: string; // If you derive a name from subCategory JSON
-  tags: string[];
-
-  // Branding & specs
-  brand: string | null;
-  model: string;
-  color: string[];
-  size: string[];
-  weight: string;
-  condition: string;
-  dimensions: string; // Corrected: From dimension to dimensions
-  material: string[];
-
-  // Profit & pricing
-  quantity: number;
-  buyingPrice: number;
-  sellingPrice: number; // Corrected: From salesPrice to sellingPrice
-  discount: number;
-  finalPrice: number;
-  profitMargin: number;
-  pricingTiers: any[]; // Added: For JSON array of pricing tiers
-
-  // Deal scheduling
-  startDealDate: string | null;
-  endDealDate: string | null;
-
-  // Feature flags
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-
-  // Marketplace-specific
-  delivery: boolean;
-  paymentOption: string;
-  showOnGhuba: boolean;
-
-  // Contact & location
-  contactName: string;
-  contact: string;
-  email?: string; // Added: As per schema
-  locationName: string;
-  location: any; // JSON for GeoJSON or similar
-  locationId: string; // ID for PropertyLocation relation
-  latitude: number | null;
-  longitude: number | null;
-  amenities: string[]; // Moved here, was under Property-specific
-
-  // Vehicle-specific
-  make: string;
-  trim: string;
-  type: string;
-  mileage: string;
-  engineType: string;
-  engineSize: number | null; // Corrected to number | null
-  horsepower: number | null; // Added: Matches schema
-  torque: number | null; // Added: Matches schema
-  fuelType: string; // Added: Matches schema
-  fuelEconomy: string; // Added: Matches schema
-  transmission: string;
-  drivetrain: string;
-  vin: string;
-  logbookStatus: string;
-  serviceHistory: string;
-  negotiable: boolean;
-  financingAvailable: boolean;
-  tradeIn: boolean;
-  features: any[]; // Added: For JSON array of features
-
-  // Ownership & Pricing (New fields for Vehicle/General)
-  previousOwners: number | null; // Added: Matches schema
-  tireCondition: string; // Added: Matches schema
-  accidentalHistory: boolean; // Added: Matches schema
-  tax?: number; // Added
-  shippingCost?: number; // Added
-
-  // Books
-  author: string;
-  publisher: string;
-  isbn: string;
-
-  // Clothing/Fashion
-  fabricComposition: string;
-  careInstructions: string;
-
-  // Home Appliances
-  energyRating: string;
-  warrantyPeriod: string;
-  applianceDimensions: string;
-
-  // Beauty Products
-  ingredients: string;
-  usageInstructions: string;
-  expirationDate: string | null;
-
-  // Property-specific
-  bedrooms: number | null; // Corrected to number | null
-  studios: number | null; // Corrected to number | null
-  bathrooms: number | null; // Corrected to number | null
-  area: string;
-  serviceSchedule: string;
-
-  // Service/Booking related fields
-  availabilityStart: string | null; // Nullable
-  availabilityEnd: string | null; // Nullable
-  bookingSlots: any[]; // JSON array
-  minNoticePeriod: string;
-  maxBookingAhead: string;
-  requiredClientInfo: string;
-  fulfillmentStatus: string;
-  totalCapacity: number | null; // Corrected to number | null
-  currentBookedCount: number | null; // Corrected to number | null
-  providerRating: number | null; // Corrected to number | null
-  hourlyRate: number | null; // Corrected to number | null
-  minimumHours: number | null; // Corrected to number | null
-  deliveryMethod: string;
-
-  // Digital goods
-  digitalUrl: string;
-  autoDeliver: boolean;
-
-  // Admin-only
-  status: string;
-  collectionId?: string; // Added: Matches schema
-  year?: number | null; // Added: As per schema (vehicle/service year)
-
-  // Commission fields
-  commissionType: string;
-  commissionRate: number;
-  commissionStartDate: string | null;
-  commissionEndDate: string | null;
-}
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -545,12 +184,12 @@ function buildListingPayload(
 // -----------------------------------------------------------------------------
 function useMarketListingForm(
   product: ProductForm,
-  marketListItem: MarketListItemPayload | undefined,
+  marketListItem: MarketListingForm | undefined,
   companyId: string,
   categories: StoreCategory[] // Added categories to hook parameters
 ) {
   const getInitial = useCallback((): MarketListingForm => {
-    const raw : MarketListItemPayload | any = marketListItem || {};
+    const raw : MarketListingForm | any = marketListItem || {};
     const p : ProductForm = product || {};
 
     // Find the initial StoreCategory object if productCategoryId is set
@@ -657,7 +296,7 @@ function useMarketListingForm(
 
       energyRating: raw.energyRating || p.energyRating || '',
       warrantyPeriod: raw.warrantyPeriod || p.warrantyPeriod || '',
-      applianceDimensions: raw.applianceDimensions || p.applianceDimensions || '',
+      applianceDimensions: raw.applianceDimensions || p.dimensions || '',
 
       ingredients: raw.ingredients || p.ingredients || '',
       usageInstructions: raw.usageInstructions || p.usageInstructions || '',
@@ -770,37 +409,76 @@ export default function AddToProductMarketModal({
 
   // input handlers
   const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      const { name, value, type, checked } = e.target;
+  (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value, type } = e.target;
 
-      let parsedValue: any = value;
+    let parsedValue: any = value;
 
-      // Handle numbers
-      if (
-        [
-          'discount', 'buyingPrice', 'sellingPrice', 'finalPrice', 'profitMargin',
+    // Handle numbers
+    if (
+      [
+        'discount', 'buyingPrice', 'sellingPrice', 'finalPrice', 'profitMargin',
           'quantity', 'engineSize', 'horsepower', 'torque', 'previousOwners',
           'year', 'bathrooms', 'bedrooms', 'studios', 'hourlyRate', 'minimumHours',
           'totalCapacity', 'currentBookedCount', 'providerRating', 'tax', 'shippingCost',
           'commissionRate'
-        ].includes(name)
-      ) {
-        parsedValue = parseFloat(value) || 0;
-        if (isNaN(parsedValue)) parsedValue = null; // Ensure null for invalid numbers
-      }
-      // Handle booleans
-      else if (type === 'checkbox') {
-        parsedValue = checked;
-      }
-      // Handle special cases for optional strings to be undefined/null
-      else if (value === '') {
-        parsedValue = undefined; // Or null, depending on your preference for optional empty strings
-      }
+      ].includes(name)
+    ) {
+      parsedValue = parseFloat(value) || 0;
+      if (isNaN(parsedValue)) parsedValue = null;
+    }
+    // Handle booleans (checkboxes)
+    else if (type === 'checkbox') {
+      // Narrow to HTMLInputElement so TS knows `.checked` exists:
+      parsedValue = (e.target as HTMLInputElement).checked;
+    }
+    // Empty‑string fields
+    else if (value === '') {
+      parsedValue = undefined;
+    }
 
-      updateField(name as keyof MarketListingForm, parsedValue);
-    },
-    [updateField]
-  );
+    updateField(name as keyof MarketListingForm, parsedValue);
+  },
+  [updateField]
+);
+
+
+  // const handleInputChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  //     const { name, value, type, checked } = e.target;
+
+  //     let parsedValue: any = value;
+
+  //     // Handle numbers
+  //     if (
+  //       [
+  //         'discount', 'buyingPrice', 'sellingPrice', 'finalPrice', 'profitMargin',
+  //         'quantity', 'engineSize', 'horsepower', 'torque', 'previousOwners',
+  //         'year', 'bathrooms', 'bedrooms', 'studios', 'hourlyRate', 'minimumHours',
+  //         'totalCapacity', 'currentBookedCount', 'providerRating', 'tax', 'shippingCost',
+  //         'commissionRate'
+  //       ].includes(name)
+  //     ) {
+  //       parsedValue = parseFloat(value) || 0;
+  //       if (isNaN(parsedValue)) parsedValue = null; // Ensure null for invalid numbers
+  //     }
+  //     // Handle booleans
+  //     else if (type === 'checkbox') {
+  //       parsedValue = checked;
+  //     }
+  //     // Handle special cases for optional strings to be undefined/null
+  //     else if (value === '') {
+  //       parsedValue = undefined; // Or null, depending on your preference for optional empty strings
+  //     }
+
+  //     updateField(name as keyof MarketListingForm, parsedValue);
+  //   },
+  //   [updateField]
+  // );
 
   const handleCategoryChange = useCallback(
     (cat: StoreCategory | null) => {
@@ -904,11 +582,11 @@ export default function AddToProductMarketModal({
                   subCategory: formData.subCategory,
                   brand: formData.brand,
                 }}
-                categories={pickerCategories}
+                categories={categories}
                 filteredBrands={formData.category?.allBrands || []}
                 onCategoryChange={handleCategoryChange}
                 onSubCategoryChange={handleSubCategoryChange}
-                onBrandChange={handleBrandChange}
+                onBrandChange={brand => updateField('brand', brand)}
               />
             ) : FormComponent ? (
               <FormComponent
@@ -960,3 +638,5 @@ export default function AddToProductMarketModal({
     </Modal>
   );
 }
+
+

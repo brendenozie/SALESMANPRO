@@ -2,25 +2,9 @@
 
 import React from "react";
 import AdminInventoryClient from "./AdminInventoryClient";
-import { StoreCategory } from "@/types/typings";
+import { InventoryItem, StoreCategory } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: StoreCategory;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
-
 
 
 type Tag = {
@@ -49,7 +33,7 @@ interface Props {
 export default async function AdminInventoryPage({ params }: Props) {
   const companyId = params.slug;
 
-  let productsData: Product[] = [];
+  let productsData: InventoryItem[] = [];
   let categoriesData: StoreCategory[] = [];
   let agentsData: Agent[] = [];
 
@@ -60,7 +44,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     );
 
     if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
+      productsData = (await productsRes.json()) as InventoryItem[];
     }
 
     // Fetch all categories for this company
@@ -99,8 +83,8 @@ export default async function AdminInventoryPage({ params }: Props) {
 
 
   console.log(productsData);
-  console.log(categoriesData);
-  console.log(agentsData);
+  // console.log(categoriesData);
+  // console.log(agentsData);
 
 
   return (

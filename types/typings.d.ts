@@ -276,315 +276,6 @@ export type ProductCategory = {
   image?: string;
 };
 
-interface MarketListingForm {
-  // Identifiers & relations
-  id: string;
-  productId: string;
-  sellerType: string;
-  companyId: string;
-  productTypeId?: string; // Added: For propertyType relation
-  commissionRateId?: string; // Added for the relation ID
-
-  // Title & description
-  name: string;
-  description?: string; // Made optional
-  longDescription?: string; // Added: Matches schema
-
-  // Category hierarchy & tagging
-  productCategoryId: string;
-  category: StoreCategory | null; // This represents the main category, e.g., 'Vehicles'
-  subCategory: any; // JSON for sub-category details if any
-  subCategoryName: string;
-  tags: string[];
-
-  // Branding & specs
-  brand: string | null;
-  model: string;
-  color: string[];
-  size: string[];
-  weight: string;
-  condition: string;
-  dimensions: string; // Corrected: From dimension to dimensions
-  material: string[];
-
-  // Profit & pricing
-  quantity: number;
-  buyingPrice: number;
-  sellingPrice: number; // Corrected: From salesPrice to sellingPrice
-  discount: number;
-  finalPrice: number;
-  profitMargin: number;
-  pricingTiers: any[]; // Added: For JSON array of pricing tiers
-
-  // Deal scheduling
-  startDealDate: string | null;
-  endDealDate: string | null;
-
-  // Feature flags
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-
-  // Marketplace-specific
-  delivery: boolean;
-  paymentOption: string;
-  showOnGhuba: boolean;
-
-  // Contact & location
-  contactName: string;
-  contact: string;
-  email?: string; // Added: As per schema
-  locationName: string;
-  location: any; // JSON for GeoJSON or similar
-  locationId: string; // ID for PropertyLocation relation
-  latitude: number | null;
-  longitude: number | null;
-  amenities: string[]; // Moved here, was under Property-specific
-
-  // Vehicle-specific
-  make: string;
-  trim: string;
-  type: string;
-  mileage: string;
-  engineType: string;
-  engineSize: number | null; // Corrected to number | null
-  horsepower: number | null; // Added: Matches schema
-  torque: number | null; // Added: Matches schema
-  fuelType: string; // Added: Matches schema
-  fuelEconomy: string; // Added: Matches schema
-  transmission: string;
-  drivetrain: string;
-  vin: string;
-  logbookStatus: string;
-  serviceHistory: string;
-  negotiable: boolean;
-  financingAvailable: boolean;
-  tradeIn: boolean;
-  features: any[]; // Added: For JSON array of features
-
-  // Ownership & Pricing (New fields for Vehicle/General)
-  previousOwners: number | null; // Added: Matches schema
-  tireCondition: string; // Added: Matches schema
-  accidentalHistory: boolean; // Added: Matches schema
-  tax?: number; // Added
-  shippingCost?: number; // Added
-
-  // Books
-  author: string;
-  publisher: string;
-  isbn: string;
-
-  // Clothing/Fashion
-  fabricComposition: string;
-  careInstructions: string;
-
-  // Home Appliances
-  energyRating: string;
-  warrantyPeriod: string;
-  applianceDimensions: string;
-
-  // Beauty Products
-  ingredients: string;
-  usageInstructions: string;
-  expirationDate: string | null;
-
-  // Property-specific
-  bedrooms: number | null; // Corrected to number | null
-  studios: number | null; // Corrected to number | null
-  bathrooms: number | null; // Corrected to number | null
-  area: string;
-  serviceSchedule: string;
-
-  // Service/Booking related fields
-  availabilityStart: string | null; // Nullable
-  availabilityEnd: string | null; // Nullable
-  bookingSlots: any[]; // JSON array
-  minNoticePeriod: string;
-  maxBookingAhead: string;
-  requiredClientInfo: string;
-  fulfillmentStatus: string;
-  totalCapacity: number | null; // Corrected to number | null
-  currentBookedCount: number | null; // Corrected to number | null
-  providerRating: number | null; // Corrected to number | null
-  hourlyRate: number | null; // Corrected to number | null
-  minimumHours: number | null; // Corrected to number | null
-  deliveryMethod: string;
-
-  // Digital goods
-  digitalUrl: string;
-  autoDeliver: boolean;
-
-  // Admin-only
-  status: string;
-  collectionId?: string; // Added: Matches schema
-  year?: number | null; // Added: As per schema (vehicle/service year)
-
-  // Commission fields
-  commissionType: string;
-  commissionRate: number;
-  commissionStartDate: string | null;
-  commissionEndDate: string | null;
-}
-export interface MarketplaceListingFormV1 {
-  id: string;
-  name: string; // Corresponds to the 'name' field in marketplaceListings
-  description?: string;
-  longDescription?: string; // Added: Matches schema
-  category?: string;
-  subCategory?: Record<string, any>; // JSON in Prisma, typically an object in TS
-  subCategoryName?: string;
-  tags?: string[];
-  brand?: string;
-  model?: string;
-  color?: string[];
-  size?: string[];
-  weight?: string;
-  condition?: string;
-  dimensions?: string; // Corrected from 'dimension'
-  material?: string[];
-
-  // Pricing & Quantity
-  quantity: number;
-  buyingPrice: number;
-  sellingPrice: number;
-  finalPrice?: number;
-  discount?: number;
-  profitMargin?: number;
-  pricingTiers?: Record<string, any>[]; // Added: Matches schema for array of JSON objects
-
-  // Deal Flags
-  isAvailable: boolean;
-  isOnOffer?: boolean;
-  isFlashDeal?: boolean;
-  isNewArrival?: boolean;
-  isDiscounted?: boolean;
-  isFeatured?: boolean;
-
-  // Deal Scheduling
-  startDealDate?: Date | string; // Dates can come as Date objects or ISO strings
-  endDealDate?: Date | string;
-
-  // Category-specific fields
-  author?: string; // For Books
-  publisher?: string; // For Books
-  isbn?: string; // For Books
-
-  fabricComposition?: string; // For Clothing/Fashion
-  careInstructions?: string; // For Clothing/Fashion
-
-  energyRating?: string; // For Home Appliances
-  warrantyPeriod?: string; // For Home Appliances
-  applianceDimensions?: string; // For Home Appliances
-
-  ingredients?: string; // For Beauty Products
-  usageInstructions?: string; // For Beauty Products
-  expirationDate?: Date | string; // For Beauty Products
-
-  // Product type-specific (Property, Vehicle, Digital Goods, Services)
-  bathrooms?: number; // Changed to number
-  area?: string;
-  bedrooms?: number; // Changed to number
-  studios?: number; // Changed to number
-  propertyTypeId?: string; // ID for PropertyType relation
-  serviceSchedule?: string;
-  year?: number; // Added: For vehicles/services
-
-  digitalUrl?: string;
-  autoDeliver?: boolean;
-
-  // Vehicle-specific
-  make?: string;
-  trim?: string;
-  type?: string;
-  mileage?: string;
-  engineType?: string;
-  engineSize?: number; // Changed to number
-  horsepower?: number; // Added: Matches schema
-  torque?: number; // Added: Matches schema
-  fuelType?: string; // Added: Matches schema
-  fuelEconomy?: string; // Added: Matches schema
-  transmission?: string;
-  drivetrain?: string;
-  vin?: string;
-  logbookStatus?: string;
-  serviceHistory?: string;
-  negotiable?: boolean;
-  financingAvailable?: boolean;
-  tradeIn?: boolean;
-  features?: Record<string, any>[]; // Added: Matches schema for array of JSON objects
-
-  // Ownership & Pricing (New fields)
-  previousOwners?: number; // Added: Matches schema
-  tireCondition?: string; // Added: Matches schema
-  accidentalHistory?: boolean; // Added: Matches schema
-
-  // Pricing breakdown
-  tax?: number;
-  shippingCost?: number;
-
-  // Scheduling for services/rentals
-  availabilityStart?: Date | string;
-  availabilityEnd?: Date | string;
-  bookingSlots?: Record<string, any>[]; // Added: Array of JSON
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  totalCapacity?: number; // Added: Matches schema
-  currentBookedCount?: number; // Added: Matches schema
-  providerRating?: number; // Added: Matches schema
-  hourlyRate?: number; // Added: Matches schema
-  minimumHours?: number; // Added: Matches schema
-  deliveryMethod?: string; // Added: Matches schema
-  fulfillmentStatus?: string; // Added: Matches schema
-
-  // Contact & Location
-  contact?: string;
-  email?: string;
-  contactName?: string;
-  location?: Record<string, any>; // JSON in Prisma, typically an object for GeoJSON
-  locationId?: string; // ID for Location relation
-  locationName?: string;
-  latitude?: number;
-  longitude?: number;
-  amenities?: string[];
-
-  // Marketplace-specific
-  delivery?: boolean;
-  paymentOption?: string;
-  showOnGhuba?: boolean;
-
-  // Admin / Meta
-  status?: string; // Corresponds to ListingStatus enum, can be string in TS
-  collectionId?: string; // ID for Collection relation
-
-  // Commission fields (if directly passed through the form for a new/updated listing)
-  commissionType?: string;
-  commissionRate?: number;
-  commissionStartDate?: Date | string;
-  commissionEndDate?: Date | string;
-  commissionRateId?: string; // Added for the relation ID
-
-  // Timestamps
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-
-  // The `product` nested object is likely for displaying details from the base product
-  // but if the form itself handles all these fields, it might be redundant or for specific scenarios.
-  // I've kept it but note that most fields are now direct properties of MarketplaceListingForm
-  product?: {
-    id: string;
-    name: string;
-    description?: string;
-    brand?: string;
-    color?: string[];
-    size?: string[];
-    // ... all other relevant product fields if you intend to display/edit them through this nested object
-    // It's generally better for the form to directly map to the listing's properties
-    // unless there's a specific reason for this nested structure.
-  };
-}
 
 // Handlers signature
 interface Handlers {
@@ -709,9 +400,9 @@ export type AcademicLevelOption = {
 
 
 // Assuming these types are defined elsewhere, e.g., in '@/types/typings'
-type StoreCategory = string; // Placeholder, replace with your actual type
-type ProductCategory = string; // Placeholder, replace with your actual type
-type BookingSlotType = any; // Placeholder, replace with your actual type
+// type StoreCategory = string; // Placeholder, replace with your actual type
+// type ProductCategory = string; // Placeholder, replace with your actual type
+// type BookingSlotType = any; // Placeholder, replace with your actual type
 
 export interface ProductForm {
   // identifiers
@@ -853,4 +544,217 @@ export interface ProductForm {
   fulfillmentStatus?: string;
   providerRating?: number;
   bookingSlots?: BookingSlotType[];
+// interface ProductPayload {
+
+ productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
+  productCategoryId?: string;
+  
+  delivery?: boolean;
+  paymentOption?: string;
+  showOnGhuba?: boolean;
+  
+  locationId?: string;
+  propertyType?: { id: string }; // Assuming PropertyType relation on Product
+  
+  currentBookedCount?: number;
+  
+  commissionStartDate?: string | Date; // Added
+  commissionEndDate?: string | Date; // Added
+  commissionType?: string; // Added
+  commissionRate?: number; // Added
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  companyId: string;
+  productItem: ProductForm;
+  inventoryId: string;
+  category: StoreCategory;
+  agentStock: number;
+  companyStock: number;
+  sales: number;
+  costPrice: number;
+  salesPrice: number;
+  commissionRate: number;
+  commissionType: number;
+}
+
+export 
+interface MarketListingForm {
+  // Identifiers & relations
+  id: string;
+  productId: string;
+  sellerType: string;
+  companyId: string;
+  productTypeId?: string; // Added: For propertyType relation
+  commissionRateId?: string; // Added for the relation ID
+
+  // Title & description
+  name: string;
+  description?: string; // Made optional
+  longDescription?: string; // Added: Matches schema
+
+  // Category hierarchy & tagging
+  productCategoryId: string; // This will hold the ID of the actual ProductCategory
+  category: StoreCategory | null; // This holds the *selected StoreCategory object*
+  subCategory: any; // JSON from StoreCategory.items or ProductCategory.subcategories
+  subCategoryName: string; // If you derive a name from subCategory JSON
+  tags: string[];
+
+  // Branding & specs
+  brand: string | null;
+  model: string;
+  color: string[];
+  size: string[];
+  weight: string;
+  condition: string;
+  dimensions: string; // Corrected: From dimension to dimensions
+  material: string[];
+
+  // Profit & pricing
+  quantity: number;
+  buyingPrice: number;
+  sellingPrice: number; // Corrected: From salesPrice to sellingPrice
+  discount: number;
+  finalPrice: number;
+  profitMargin: number;
+  pricingTiers: any[]; // Added: For JSON array of pricing tiers
+
+  // Deal scheduling
+  startDealDate: string | null;
+  endDealDate: string | null;
+
+  // Feature flags
+  isAvailable: boolean;
+  isOnOffer: boolean;
+  isFlashDeal: boolean;
+  isNewArrival: boolean;
+  isDiscounted: boolean;
+  isFeatured: boolean;
+
+  // Marketplace-specific
+  delivery: boolean;
+  paymentOption: string;
+  showOnGhuba: boolean;
+
+  // Contact & location
+  contactName: string;
+  contact: string;
+  email?: string; // Added: As per schema
+  locationName: string;
+  location: any; // JSON for GeoJSON or similar
+  locationId: string; // ID for PropertyLocation relation
+  latitude: number | null;
+  longitude: number | null;
+  amenities: string[]; // Moved here, was under Property-specific
+
+  // Vehicle-specific
+  make: string;
+  trim: string;
+  type: string;
+  mileage: string;
+  engineType: string;
+  engineSize: number | null; // Corrected to number | null
+  horsepower: number | null; // Added: Matches schema
+  torque: number | null; // Added: Matches schema
+  fuelType: string; // Added: Matches schema
+  fuelEconomy: string; // Added: Matches schema
+  transmission: string;
+  drivetrain: string;
+  vin: string;
+  logbookStatus: string;
+  serviceHistory: string;
+  negotiable: boolean;
+  financingAvailable: boolean;
+  tradeIn: boolean;
+  features: any[]; // Added: For JSON array of features
+
+  // Ownership & Pricing (New fields for Vehicle/General)
+  previousOwners: number | null; // Added: Matches schema
+  tireCondition: string; // Added: Matches schema
+  accidentalHistory: boolean; // Added: Matches schema
+  tax?: number; // Added
+  shippingCost?: number; // Added
+
+  // Books
+  author: string;
+  publisher: string;
+  isbn: string;
+
+  // Clothing/Fashion
+  fabricComposition: string;
+  careInstructions: string;
+
+  // Home Appliances
+  energyRating: string;
+  warrantyPeriod: string;
+  applianceDimensions: string;
+
+  // Beauty Products
+  ingredients: string;
+  usageInstructions: string;
+  expirationDate: string | null;
+
+  // Property-specific
+  bedrooms: number | null; // Corrected to number | null
+  studios: number | null; // Corrected to number | null
+  bathrooms: number | null; // Corrected to number | null
+  area: string;
+  serviceSchedule: string;
+
+  // Service/Booking related fields
+  availabilityStart: string | null; // Nullable
+  availabilityEnd: string | null; // Nullable
+  bookingSlots: any[]; // JSON array
+  minNoticePeriod: string;
+  maxBookingAhead: string;
+  requiredClientInfo: string;
+  fulfillmentStatus: string;
+  totalCapacity: number | null; // Corrected to number | null
+  currentBookedCount: number | null; // Corrected to number | null
+  providerRating: number | null; // Corrected to number | null
+  hourlyRate: number | null; // Corrected to number | null
+  minimumHours: number | null; // Corrected to number | null
+  deliveryMethod: string;
+
+  // Digital goods
+  digitalUrl: string;
+  autoDeliver: boolean;
+
+  // Admin-only
+  status: string;
+  collectionId?: string; // Added: Matches schema
+  year?: number | null; // Added: As per schema (vehicle/service year)
+
+  // Commission fields
+  commissionType: string;
+  commissionRate: number;
+  commissionStartDate: string | null;
+  commissionEndDate: string | null;
+
+  images?: string[];
+  video?: string;
+  
+  propertyTypeId?: string; // Relation ID
+  
+  // Timestamps
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  
+
+  // The `product` nested object is likely for displaying details from the base product
+  // but if the form itself handles all these fields, it might be redundant or for specific scenarios.
+  // I've kept it but note that most fields are now direct properties of MarketplaceListingForm
+  product?: {
+    id: string;
+    name: string;
+    description?: string;
+    brand?: string;
+    color?: string[];
+    size?: string[];
+    // ... all other relevant product fields if you intend to display/edit them through this nested object
+    // It's generally better for the form to directly map to the listing's properties
+    // unless there's a specific reason for this nested structure.
+  }
 }

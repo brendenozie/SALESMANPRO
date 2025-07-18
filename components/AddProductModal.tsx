@@ -26,7 +26,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 export interface AddProductModalProps {
   showRequestProductModal: boolean;
   setShowRequestProductModal: (open: boolean) => void;
-  product: any | null;           // TODO: replace with your Product type
+  product: ProductForm | null;           // TODO: replace with your Product type
   companyId: string;
   categories: StoreCategory[];
 }
@@ -424,7 +424,7 @@ export default function AddProductModal({
     try {
       const imageUrls = imageFiles.length ? await uploadFiles(imageFiles, 'image') : formData.images;
       const payload = buildProductPayload({ ...formData, images: imageUrls }, imageUrls);
-      
+
       console.log(formData);
 
       const res = await fetch(`${apiUrl}/admin/post-product`, {
