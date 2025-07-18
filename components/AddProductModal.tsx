@@ -65,7 +65,7 @@ function buildProductPayload(f: ProductForm, imageUrls: string[]): any {
     collectionId: f.collectionId,
 
     // category
-    productCategoryId: f.category?.id || '',
+    productCategoryId: f.category?.categoryId || '',
     category: f.category?.displayName || '',
     subCategory: f.subCategory,
     subCategoryName: f.subCategoryName,

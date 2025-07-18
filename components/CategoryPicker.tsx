@@ -1,6 +1,6 @@
 'use client';
 
-import { ProductCategory, StoreCategory } from "@/app/admin/[slug]/categories/page";
+import { ProductCategory, StoreCategory } from "@/types/typings";
 import React, { useState, useEffect, useRef } from "react";
 
 // --- Type Definitions ---

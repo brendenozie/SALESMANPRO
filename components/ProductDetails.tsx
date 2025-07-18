@@ -1,4 +1,77 @@
-import React from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import React, { useCallback, useState } from "react";
+
+
+// -----------------------------------------------------------------------------
+// NEW: TagInput Component
+// -----------------------------------------------------------------------------
+interface TagInputProps {
+  label: string;
+  placeholder: string;
+  tags: string[];
+  onTagsChange: (newTags: string[]) => void;
+  inputClasses?: string; // For Tailwind classes to match form styling
+}
+
+const TagInput: React.FC<TagInputProps> = ({
+  label,
+  placeholder,
+  tags,
+  onTagsChange,
+  inputClasses = "w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+}) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault(); // Prevent form submission or comma from appearing in input
+      const newTag = inputValue.trim();
+      if (newTag && !tags.includes(newTag)) {
+        onTagsChange([...tags, newTag]);
+        setInputValue('');
+      }
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    onTagsChange(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  return (
+    <section className="space-y-2">
+      <label className="block text-gray-300 font-medium text-sm">{label}</label>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {tags.map((tag, index) => (
+          <span
+            key={index}
+            className="flex items-center bg-indigo-600 text-white text-sm px-3 py-1 rounded-full shadow-md transition-all duration-200 hover:bg-indigo-700"
+          >
+            {tag}
+            <button
+              type="button"
+              onClick={() => handleRemoveTag(tag)}
+              className="ml-2 text-white hover:text-gray-200 focus:outline-none"
+              aria-label={`Remove tag ${tag}`}
+            >
+              <XMarkIcon className="h-4 w-4" />
+            </button>
+          </span>
+        ))}
+      </div>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className={inputClasses}
+        aria-label={label}
+      />
+      <p className="text-xs text-gray-400 mt-1">Type a tag and press Enter or comma to add.</p>
+    </section>
+  );
+};
+
 
 interface ProductDetailsProps {
   formData: any;
@@ -44,8 +117,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
   const primaryLabel = formData.category?.name === "Books" ? "Book Title" : "Product Title";
 
-  const inputClasses =
-    "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const inputClasses = "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500";
+  
+  // NEW: Tag input handler
+    const handleTagsChange = useCallback(
+      (newTags: string[]) => {
+        setFormData('tags', newTags);
+      },
+      [setFormData]
+    );
 
   return (
     <div className="mx-auto p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
@@ -237,20 +317,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
       )}
 
       <section className="space-y-2">
-        <label className="block text-gray-600 font-medium">Tags (comma‐separated)</label>
-        <input
-          type="text"
-          name="tags"
+        <TagInput
+          label="Product Tags"
           placeholder="e.g. new, sale, popular"
-          className={inputClasses}
-          value={Array.isArray(formData.tags) ? formData.tags.join(", ") : ""}
-          onChange={(e) => {
-            const tags = e.target.value
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean);
-            setFormData("tags", tags);
-          }}
+          tags={formData.tags}
+          onTagsChange={handleTagsChange}
+          inputClasses="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         />
       </section>
     </div>
