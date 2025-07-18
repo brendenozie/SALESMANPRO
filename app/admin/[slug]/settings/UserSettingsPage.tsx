@@ -12,7 +12,8 @@ import {
   PhoneIcon, // For phone input
   CheckCircleIcon, // For success message
   ExclamationCircleIcon, // For error message
-  ArrowRightOnRectangleIcon, // For Logout button
+  ArrowRightOnRectangleIcon,
+  GlobeAltIcon, // For Logout button
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 
@@ -136,6 +137,12 @@ export default function UserSettingsPage() {
   const [smsAlerts, setSmsAlerts] = useState(user.notifications.smsAlerts);
   const [inAppNotifications, setInAppNotifications] = useState(user.notifications.inAppNotifications);
 
+  // Custom Domain
+  const [customDomain, setCustomDomain] = useState('');
+  const [domainStatus, setDomainStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null); // success | error
+
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
     // Update local form states when user data from context changes
     setProfileName(user.name);
@@ -226,6 +233,35 @@ export default function UserSettingsPage() {
     }
   };
 
+  const handleDomainSubmit = async (e: React.FormEvent) => {
+
+    e.preventDefault();
+    setDomainStatus(null);
+
+    if (loading) return
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/custom-domain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: customDomain }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Unknown error');
+
+      setDomainStatus({ type: 'success', message: data.message });
+      setCustomDomain('');
+      setLoading(false);
+    } catch (err: any) {
+      setDomainStatus({ type: 'error', message: err.message });
+      setLoading(false);
+    }
+  };
+
+
   // Variants for tab content transition
   const contentVariants = {
     hidden: { opacity: 0, x: 20 },
@@ -297,6 +333,15 @@ export default function UserSettingsPage() {
               <TrashIcon className={`h-6 w-6 ${activeTab === 'account' ? 'text-white' : 'text-red-500'}`} />
               Account
             </button>
+
+            <button 
+              onClick={()=>setActiveTab('domain')} 
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left font-medium transition-colors duration-200
+                          ${activeTab === 'account' ? `bg-red-500 text-white shadow-md` : 'text-gray-700 hover:bg-gray-100'}`}>
+                <GlobeAltIcon className={`h-6 w-6 ${activeTab === 'account' ? 'text-white' : 'text-red-500'}`} />
+                Custom Domain
+            </button>
+            
             {/* Logout Button */}
             <button
               onClick={handleLogout}
@@ -481,6 +526,39 @@ export default function UserSettingsPage() {
                         Save Preferences
                       </button>
                     </div>
+                  </form>
+                )}
+
+                {activeTab==='domain' && (
+                  <form onSubmit={handleDomainSubmit} className="space-y-4">
+                    <h2 className="text-2xl font-bold">Custom Domain</h2>
+                    <input type="text" value={customDomain} onChange={e=>setCustomDomain(e.target.value)} placeholder="yourdomain.com" className="w-full p-2 border rounded" />
+                    <button type="submit" className="px-4 py-2 bg-[${primaryColor}] text-white rounded">Connect Domain</button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-4 py-2 bg-[${primaryColor}] text-white rounded disabled:opacity-50"
+                    >
+                      {loading ? 'Connecting…' : 'Connect Domain'}
+                    </button>
+                    {domainStatus && (
+                      <p className={`${domainStatus.type==='success'?'text-green-600':'text-red-600'}`}>{domainStatus.message}</p>
+                    )}
+                    <p className="text-sm text-gray-500">Add a CNAME record pointing to <code>yourapp.example.com</code> in your DNS settings.</p>
+                      {/* Deploy your Next.js app so it’s live at e.g. app.your-production-domain.com.
+
+                        Advise your customers to add a CNAME (or ALIAS/TXT) record:
+
+                        makefile
+                        Copy
+                        Edit
+                        Host:    www (or @ for root)
+                        Type:    CNAME
+                        Value:   app.your-production-domain.com
+                        Once DNS propagates, they hit Connect Domain and your API will verify & save it.
+
+                        Most hosts (Vercel, Netlify) then auto‑issue HTTPS certificates behind the scenes. */}
+                        
                   </form>
                 )}
 
