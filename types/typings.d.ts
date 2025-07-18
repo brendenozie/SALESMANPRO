@@ -622,7 +622,7 @@ export interface MarketListingForm {
   // Profit & pricing
   quantity: number;
   buyingPrice: number;
-  sellingPrice: number; // Corrected: From salesPrice to sellingPrice
+  sellingPrice: number;
   discount: number;
   finalPrice: number;
   profitMargin: number;

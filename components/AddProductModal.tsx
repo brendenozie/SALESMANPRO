@@ -17,6 +17,7 @@ import CategoryPicker from './CategoryPicker';
 
 // Assuming ProductForm, StoreCategory, ProductCategory, BookingSlotType are defined in typings.ts
 import { ProductForm, StoreCategory } from '@/types/typings'; 
+import PricingDetails from './PricingDetails';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -185,127 +186,128 @@ function useProductForm(
   const getInitial = useCallback((): ProductForm => {
     const p = product || {}; // Ensure p is an object even if product is null
     return {
-      id: p.id || '',
-      companyId, // Directly use companyId passed as prop
-      name: p.name || '',
-      description: p.description || '',
-      longDescription: p.longDescription || '', // New
-      tags: p.tags || [],
-      category: p.category || null,
-      subCategory: p.subCategory || null,
-      subCategoryName: p.subCategoryName || '',
-      brand: p.brand || null,
+        id: p.id || '',
+        companyId, // Directly use companyId passed as prop
+        name: p.name || '',
+        description: p.description || '',
+        longDescription: p.longDescription || '', // New
+        tags: p.tags || [],
+        category: p.category || null,
+        subCategory: p.subCategory || null,
+        subCategoryName: p.subCategoryName || '',
+        brand: p.brand || null,
 
-      model: p.model || '',
-      color: p.color || [],
-      size: p.size || [],
-      weight: p.weight || '',
-      condition: p.condition || '',
-      dimensions: p.dimensions || '', // Corrected to dimensions
-      material: p.material || [], // Default to empty array for string | string[]
-      
-      images: p.images || [],
-      video: p.video || null,
-      digitalUrl: p.digitalUrl || '',
-      autoDeliver: !!p.autoDeliver,
+        model: p.model || '',
+        color: p.color || [],
+        size: p.size || [],
+        weight: p.weight || '',
+        condition: p.condition || '',
+        dimensions: p.dimensions || '', // Corrected to dimensions
+        material: p.material || [], // Default to empty array for string | string[]
 
-      isAvailable: p.isAvailable ?? false,
-      isOnOffer: p.isOnOffer ?? false,
-      isFlashDeal: p.isFlashDeal ?? false,
-      isNewArrival: p.isNewArrival ?? false,
-      isDiscounted: p.isDiscounted ?? false,
-      isFeatured: p.isFeatured ?? false,
+        images: p.images || [],
+        video: p.video || null,
+        digitalUrl: p.digitalUrl || '',
+        autoDeliver: !!p.autoDeliver,
 
-      quantity: p.quantity ?? 1, // Default quantity to 1
-      costPrice: p.costPrice ?? 0,
-      sellingPrice: p.sellingPrice ?? 0,
-      discount: p.discount ?? 0,
-      finalPrice: p.finalPrice ?? 0,
-      profitMargin: p.profitMargin ?? 0,
-      pricingTiers: p.pricingTiers || [], // New: Initialized
+        isAvailable: p.isAvailable ?? false,
+        isOnOffer: p.isOnOffer ?? false,
+        isFlashDeal: p.isFlashDeal ?? false,
+        isNewArrival: p.isNewArrival ?? false,
+        isDiscounted: p.isDiscounted ?? false,
+        isFeatured: p.isFeatured ?? false,
 
-      startDealDate: p.startDealDate || null,
-      endDealDate: p.endDealDate || null,
+        quantity: p.quantity ?? 1, // Default quantity to 1
+        costPrice: p.costPrice ?? 0,
+        sellingPrice: p.sellingPrice ?? 0,
+        discount: p.discount ?? 0,
+        finalPrice: p.finalPrice ?? 0,
+        profitMargin: p.profitMargin ?? 0,
+        pricingTiers: p.pricingTiers || [], // New: Initialized
 
-      make: p.make || '',
-      trim: p.trim || '',
-      type: p.type || '',
-      mileage: p.mileage || '',
-      engineType: p.engineType || '',
-      engineSize: p.engineSize ?? 0, // New: Initialized as number
-      transmission: p.transmission || '',
-      drivetrain: p.drivetrain || '',
-      vin: p.vin || '',
-      logbookStatus: p.logbookStatus || 'Available',
-      serviceHistory: p.serviceHistory || 'Full',
-      negotiable: p.negotiable ?? false,
-      financingAvailable: p.financingAvailable ?? false,
-      tradeIn: p.tradeIn ?? false,
-      features: p.features || [],
+        startDealDate: p.startDealDate || null,
+        endDealDate: p.endDealDate || null,
 
-      // New vehicle-related fields
-      horsepower: p.horsepower ?? 0, // New: Initialized as number
-      torque: p.torque ?? 0, // New: Initialized as number
-      fuelType: p.fuelType || '', // New
-      fuelEconomy: p.fuelEconomy || '', // New
+        make: p.make || '',
+        trim: p.trim || '',
+        type: p.type || '',
+        mileage: p.mileage || '',
+        engineType: p.engineType || '',
+        engineSize: p.engineSize ?? 0, // New: Initialized as number
+        transmission: p.transmission || '',
+        drivetrain: p.drivetrain || '',
+        vin: p.vin || '',
+        logbookStatus: p.logbookStatus || 'Available',
+        serviceHistory: p.serviceHistory || 'Full',
+        negotiable: p.negotiable ?? false,
+        financingAvailable: p.financingAvailable ?? false,
+        tradeIn: p.tradeIn ?? false,
+        features: p.features || [],
 
-      // New ownership-related fields
-      previousOwners: p.previousOwners ?? 0, // New: Initialized as number
-      tireCondition: p.tireCondition || '', // New
-      accidentalHistory: p.accidentalHistory ?? false, // New: Initialized as boolean
+        // New vehicle-related fields
+        horsepower: p.horsepower ?? 0, // New: Initialized as number
+        torque: p.torque ?? 0, // New: Initialized as number
+        fuelType: p.fuelType || '', // New
+        fuelEconomy: p.fuelEconomy || '', // New
 
-      author: p.author || '',
-      publisher: p.publisher || '',
-      isbn: p.isbn || '',
 
-      fabricComposition: p.fabricComposition || '',
-      careInstructions: p.careInstructions || '',
+        // New ownership-related fields
+        previousOwners: p.previousOwners ?? 0, // New: Initialized as number
+        tireCondition: p.tireCondition || '', // New
+        accidentalHistory: p.accidentalHistory ?? false, // New: Initialized as boolean
 
-      energyRating: p.energyRating || '',
-      warrantyPeriod: p.warrantyPeriod || '',
-      // dimensions handled above, so no duplicate here
+        author: p.author || '',
+        publisher: p.publisher || '',
+        isbn: p.isbn || '',
 
-      ingredients: p.ingredients || '',
-      usageInstructions: p.usageInstructions || '',
-      expirationDate: p.expirationDate || null,
+        fabricComposition: p.fabricComposition || '',
+        careInstructions: p.careInstructions || '',
 
-      option: p.option || [],
-      amenities: p.amenities || [],
+        energyRating: p.energyRating || '',
+        warrantyPeriod: p.warrantyPeriod || '',
+        // dimensions handled above, so no duplicate here
+        ingredients: p.ingredients || '',
+        usageInstructions: p.usageInstructions || '',
+        expirationDate: p.expirationDate || null,
 
-      bedrooms: p.bedrooms ?? 0, // Initialized as number
-      studios: p.studios ?? 0, // Initialized as number
-      bathrooms: p.bathrooms ?? 0, // Initialized as number
-      area: p.area || '',
+        option: p.option || [],
+        amenities: p.amenities || [],
 
-      propertyTypeId: p.propertyTypeId || '',
-      serviceSchedule: p.serviceSchedule || '',
+        bedrooms: p.bedrooms ?? 0, // Initialized as number
+        studios: p.studios ?? 0, // Initialized as number
+        bathrooms: p.bathrooms ?? 0, // Initialized as number
+        area: p.area || '',
 
-      year: p.year ?? new Date().getFullYear(), // Initialized as number, default to current year
-      availabilityStart: p.availabilityStart || '',
-      availabilityEnd: p.availabilityEnd || '',
+        propertyTypeId: p.propertyTypeId || '',
+        serviceSchedule: p.serviceSchedule || '',
 
-      location: p.location || {}, // Default to empty object
-      locationName: p.locationName || '',
-      latitude: p.latitude ?? null,
-      longitude: p.longitude ?? null,
-      contact: p.contact || '',
-      contactName: p.contactName || '',
-      email: p.email || '',
+        year: p.year ?? new Date().getFullYear(), // Initialized as number, default to current year
+        availabilityStart: p.availabilityStart || '',
+        availabilityEnd: p.availabilityEnd || '',
 
-      status: p.status || 'ACTIVE',
-      collectionId: p.collectionId || '',
+        location: p.location || {}, // Default to empty object
+        locationName: p.locationName || '',
+        latitude: p.latitude ?? null,
+        longitude: p.longitude ?? null,
+        contact: p.contact || '',
+        contactName: p.contactName || '',
+        email: p.email || '',
 
-      // Optional fields, ensure they are correctly initialized as undefined or null if not present
-      hourlyRate: p.hourlyRate,
-      minimumHours: p.minimumHours,
-      minNoticePeriod: p.minNoticePeriod,
-      maxBookingAhead: p.maxBookingAhead,
-      totalCapacity: p.totalCapacity,
-      deliveryMethod: p.deliveryMethod,
-      fulfillmentStatus: p.fulfillmentStatus,
-      providerRating: p.providerRating,
-      bookingSlots: p.bookingSlots,
-    };
+        status: p.status || 'ACTIVE',
+        collectionId: p.collectionId || '',
+
+        // Optional fields, ensure they are correctly initialized as undefined or null if not present
+        hourlyRate: p.hourlyRate,
+        minimumHours: p.minimumHours,
+        minNoticePeriod: p.minNoticePeriod,
+        maxBookingAhead: p.maxBookingAhead,
+        totalCapacity: p.totalCapacity,
+        deliveryMethod: p.deliveryMethod,
+        fulfillmentStatus: p.fulfillmentStatus,
+        providerRating: p.providerRating,
+        bookingSlots: p.bookingSlots,
+        applianceDimensions: null
+      };
   }, [product, companyId]); // Depend on product and companyId
 
   const [formData, setFormData] = useState<ProductForm>(getInitial);
@@ -474,7 +476,20 @@ export default function AddProductModal({
                 onSubCategoryChange={sub => updateField('subCategory', sub)}
                 onBrandChange={brand => updateField('brand', brand)}
               />
-            ) : FormComponent ? (
+            ) : 
+            currentDynamicStep === 7 ? (
+              <PricingDetails<ProductForm>
+                formData={formData}
+                setFormData={updateField}
+                costField="costPrice"
+                revenueField="sellingPrice"
+                discountField="discount"
+                finalField="finalPrice"
+                marginField="profitMargin"
+              />
+            ) : 
+            FormComponent ?             
+            (
               <FormComponent
                 formData={formData}
                 setFormData={updateField as any}
@@ -490,7 +505,8 @@ export default function AddProductModal({
                 imagePreviews={imagePreviews}
                 setImagePreviews={setImagePreviews}
               />
-            ) : (
+            ) : 
+            (
               <p>No form for this step.</p>
             )}
           </div>

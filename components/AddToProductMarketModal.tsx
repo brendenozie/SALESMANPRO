@@ -23,6 +23,7 @@ import {
   ProductForm,
   StoreCategory,
 } from '@/types/typings';
+import PricingDetails from './PricingDetails';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -72,7 +73,7 @@ function productToListingForm(
 
   // categorization
   productCategoryId: p?.category?.id || '',
-  category: cat,
+  category: p?.category,
   subCategory: p?.subCategory || cat?.items || {},
   subCategoryName: p?.subCategoryName,
   tags: p?.tags,
@@ -81,8 +82,13 @@ function productToListingForm(
   // images/videos are handled in payload builder
   // pricing & inventory
   quantity: p?.quantity,
-  buyingPrice: p?.costPrice,
-  sellingPrice: p?.sellingPrice,
+
+  // buyingPrice: p?.costPrice,
+  // sellingPrice: p?.sellingPrice,
+
+  buyingPrice: p.sellingPrice,
+  sellingPrice: p.sellingPrice, 
+
   discount: p?.discount,
   finalPrice: p?.finalPrice,
   profitMargin: p?.profitMargin,
@@ -614,13 +620,25 @@ export default function AddToProductMarketModal({
                 onSubCategoryChange={handleSubCategoryChange}
                 onBrandChange={(b) => updateField('brand', b)}
               />
-            ) : (
-              <FormComponent
-                formData={formData}
-                handleInputChange={handleInputChange}
-                setFormData={updateField as any}
-              />
-            )}
+            ) :  currentDynamicStep === 7 ? (
+                    // PricingDetails is mapped to step 7
+                    <PricingDetails<MarketListingForm>
+                      formData={formData}
+                      setFormData={updateField}
+                      costField="buyingPrice"
+                      revenueField="sellingPrice"
+                      discountField="discount"
+                      finalField="finalPrice"
+                      marginField="profitMargin"
+                    />
+                  ) :
+                  (
+                    <FormComponent
+                      formData={formData}
+                      handleInputChange={handleInputChange}
+                      setFormData={updateField as any}
+                    />
+                  )}
           </div>
         </motion.div>
 
