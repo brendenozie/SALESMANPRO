@@ -12,14 +12,15 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
-import { StoreCategory } from "../categories/page";
+import { StoreCategory } from "@/types/typings";
+
 
 type Product = {
   id: string;
   name: string;
   companyId: string;
   inventoryId: string;
-  category: string;
+  category: StoreCategory;
   agentStock: number;
   companyStock: number;
   sales: number;
@@ -96,7 +97,7 @@ export default function AdminInventoryClient({
                     {product.name}
                   </h3>
                   <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full uppercase font-medium tracking-wide">
-                    {product.category}
+                    {product.category.displayName}
                   </span>
                 </div>
 

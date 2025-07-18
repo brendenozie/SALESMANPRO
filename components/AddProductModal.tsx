@@ -368,7 +368,12 @@ export default function AddProductModal({
   
 
   // Category steps & component
-  const categoryKey = formData.category?.displayName.trim() || '';
+  const categoryKey = formData.category?.displayName?.trim() || '';
+  console.log("formData.category");
+  console.log(categoryKey);
+  console.log("categoryKey");
+  console.log("zzzzzzzzzzzzzzz");
+  console.log(formData.category);
   const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1], [categoryKey]);
   const currentDynamicStep = stepsForCategory[step - 1] || 1;
   const FormComponent = FORM_COMPONENTS[currentDynamicStep];

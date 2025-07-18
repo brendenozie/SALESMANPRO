@@ -2,7 +2,7 @@
 
 import React from "react";
 import AdminInventoryClient from "./AdminInventoryClient";
-import { StoreCategory } from "../categories/page";
+import { StoreCategory } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -11,7 +11,7 @@ type Product = {
   name: string;
   companyId: string;
   inventoryId: string;
-  category: string;
+  category: StoreCategory;
   agentStock: number;
   companyStock: number;
   sales: number;

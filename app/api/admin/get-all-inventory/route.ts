@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; 
+import prisma from "@/server/db/prismadb";
 import { OrderStatus } from "@prisma/client";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const status = searchParams.get("status") || "all";
+  // Parse and validate query params
+  const limit = Math.max(1, parseInt(searchParams.get("limit") || "10", 10));
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const status = (searchParams.get("status") || "all") as string;
   const search = searchParams.get("search") || "";
   const companyId = searchParams.get("companyId");
 
@@ -15,79 +16,81 @@ export async function GET(req: Request) {
     return NextResponse.json({ message: "Missing companyId" }, { status: 400 });
   }
 
-  if (isNaN(limit) || isNaN(page) || limit <= 0 || page <= 0) {
-    return NextResponse.json(
-      { message: "Invalid pagination parameters." },
-      { status: 400 }
-    );
-  }
-
   const skip = (page - 1) * limit;
 
   try {
-    const where: any = {
-      companyId,
-      AND: [],
-    };
-
+    // Build filters
+    const andFilters: any[] = [];
     if (status !== "all") {
-      where.AND.push({ status: status as OrderStatus });
+      andFilters.push({ status: status as OrderStatus });
     }
-
     if (search) {
-      where.AND.push({
-        name: { contains: search, mode: "insensitive" },
-      });
+      andFilters.push({ name: { contains: search, mode: "insensitive" } });
     }
 
+    // Fetch products with related data
     const products = await prisma.product.findMany({
-      where,
+      where: {
+        companyId,
+        AND: andFilters,
+      },
       include: {
-        productCategory: true,
+        productCategory: {
+          include: { StoreCategory: true },
+        },
         inventoryItems: {
-          include: {
-            AgentInventory: true,
-          },
+          include: { AgentInventory: true },
         },
         CommissionRate: true,
       },
       skip,
       take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
-    const formattedProducts = products.map((product) => {
-      const inventoryId = product.inventoryItems.map((item) => item.id);
-      const companyStock = product.inventoryItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-      const agentStock = product.inventoryItems.reduce((sum, item) => {
-        return (
+    // Format the response
+    const formatted = products.map((prod) => {
+      // Compute stocks
+      const companyStock = prod.inventoryItems.reduce(
+        (sum, item) => sum + (item.quantity || 0),
+        0
+      );
+      const agentStock = prod.inventoryItems.reduce(
+        (sum, item) =>
           sum +
-          item.AgentInventory.reduce((agentSum, aItem) => agentSum + (aItem.quantity || 0), 0)
-        );
-      }, 0);
+          item.AgentInventory.reduce(
+            (aSum, ai) => aSum + (ai.quantity || 0),
+            0
+          ),
+        0
+      );
 
-      const commissionRate = product.CommissionRate?.commissionRate || 0;
-      const commissionType = product.CommissionRate?.commissionType || "COST";
+      // Find the store-specific category override
+      const storeCat = prod.productCategory?.StoreCategory.find(
+        (sc) => sc.companyId === prod.companyId
+      );
 
       return {
-        id: product.id,
-        name: product.name,
-        companyId: product.companyId!,
-        inventoryId,
-        category: product.productCategory?.name || "Uncategorized",
+        id: prod.id,
+        name: prod.name,
+        companyId: prod.companyId!,
+        inventoryIds: prod.inventoryItems.map((i) => i.id),
+        category: storeCat || null,
         companyStock,
         agentStock,
-        costPrice: product.costPrice,
-        salesPrice: product.sellingPrice,
-        commissionRate,
-        commissionType,
+        costPrice: prod.costPrice,
+        salesPrice: prod.sellingPrice,
+        commissionRate: prod.CommissionRate?.commissionRate || 0,
+        commissionType: prod.CommissionRate?.commissionType || "COST",
       };
     });
 
-    return NextResponse.json(formattedProducts);
-  } catch (error) {
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(formatted);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

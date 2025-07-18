@@ -22,16 +22,16 @@ const TagInput: React.FC<TagInputProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault(); // Prevent form submission or comma from appearing in input
-      const newTag = inputValue.trim();
-      if (newTag && !tags.includes(newTag)) {
-        onTagsChange([...tags, newTag]);
-        setInputValue('');
-      }
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault(); // Prevent form submission or comma from appearing in input
+    const newTag = inputValue.trim();
+    if (newTag && !tags.includes(newTag)) {
+      onTagsChange([...tags, newTag]);
+      setInputValue('');
     }
-  };
+  }
+};
 
   const handleRemoveTag = (tagToRemove: string) => {
     onTagsChange(tags.filter(tag => tag !== tagToRemove));
