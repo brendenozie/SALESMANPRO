@@ -366,7 +366,6 @@ export default function AddProductModal({
 
   const [loading, setLoading] = useState(false);
   
-
   // Category steps & component
   const categoryKey = formData.category?.displayName?.trim() || '';
   console.log("formData.category");
@@ -423,10 +422,11 @@ export default function AddProductModal({
     if (!window.confirm('Save this product?')) return;
     setLoading(true);
     try {
-      const imageUrls = imageFiles.length
-        ? await uploadFiles(imageFiles, 'image')
-        : formData.images;
+      const imageUrls = imageFiles.length ? await uploadFiles(imageFiles, 'image') : formData.images;
       const payload = buildProductPayload({ ...formData, images: imageUrls }, imageUrls);
+      
+      console.log(formData);
+
       const res = await fetch(`${apiUrl}/admin/post-product`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
