@@ -236,7 +236,7 @@ function buildListingPayload(
     description: f.description || null,
     longDescription: f.longDescription || null,
     quantity: f.quantity,
-    productCategoryId: f.productCategoryId,
+    productCategoryId: f.category?.categoryId,
     category: f.category?.displayName || null,
     subCategory: f.subCategory || null,
     subCategoryName: f.subCategoryName || null,
