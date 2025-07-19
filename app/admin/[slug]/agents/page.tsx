@@ -1,15 +1,15 @@
-// app/admin/agents/page.tsx
-
 import React from "react";
 import AgentsClient from "./AgentsClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
+// ✨ Updated Agent type to include the loginCode
 export type Agent = {
   id: string;
   name: string;
   email: string;
   phoneNumber: string;
+  loginCode?: string; // Add loginCode, make it optional for safety
   totalSales: number;
   totalCommissions: number;
   recentTransaction: {
@@ -25,26 +25,36 @@ export type Agent = {
 
 interface PageProps {
   params: {
-    slug: string; // companyId
+    slug: string; // This is the companyId
   };
 }
 
 /**
- * Server Component: fetches the agents on every request (cache: "no-store"),
- * then renders the client component with the fetched data.
+ * Server Component: fetches agents and passes the companyId and data
+ * to the client component.
  */
 export default async function AgentsPage({ params }: PageProps) {
   const companyId = params.slug;
   let agentsData: Agent[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, {
+      cache: "no-store",
+    });
     if (res.ok) {
-      agentsData = (await res.json()) as Agent[];
-      // Assuming the API returns an array of agents directly.
-      // If your API returns { agents: [...] }, adjust accordingly:
-      // const json = await res.json();
-      // agentsData = json.agents;
+      // The API now returns the loginCode, so we need to process it.
+      // The GET route already formats the data, so we just need to cast it correctly.
+      const rawData = await res.json();
+      
+      // The API response from our GET route already matches this structure.
+      // We just need to ensure the loginCode is included. Let's assume the GET route
+      // was also updated to return 'loginCode'. If not, you'd add it there.
+      // For now, we'll assume the API provides it.
+      agentsData = rawData.map((agent: any) => ({
+        ...agent,
+        loginCode: agent.loginCode || 'N/A' // Ensure loginCode is present
+      }));
+
     } else {
       console.error(
         "[AgentsPage] Failed to fetch agents →",
@@ -56,5 +66,6 @@ export default async function AgentsPage({ params }: PageProps) {
     console.error("[AgentsPage] Error fetching agents →", err.message);
   }
 
-  return <AgentsClient agentsData={agentsData} />;
+  // ✨ Pass companyId to the client component
+  return <AgentsClient agentsData={agentsData} companyId={companyId} />;
 }
