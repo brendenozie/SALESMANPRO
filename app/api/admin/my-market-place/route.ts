@@ -26,12 +26,12 @@ export async function GET(req: Request) {
 
   try {
     // 1. Total count for pagination UI
-    const total = await prisma.marketplaceListing.count({
+    const total = await prisma.marketplaceListings.count({
       where: { companyId },
     });
 
     // 2. Fetch the paginated slice
-    const listings = await prisma.marketplaceListing.findMany({
+    const listings = await prisma.marketplaceListings.findMany({
       where: { companyId },
       orderBy: { createdAt: "desc" },  // newest first
       skip: offset,

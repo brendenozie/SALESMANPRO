@@ -1,31 +1,8 @@
-// app/admin/[slug]/client-inventory/page.tsx
-
 import React from "react";
 import ClientInventoryClient from "./ClientInventoryClient";
+import { MarketListingForm } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-type MarketplaceProduct = {
-  _id: string;
-  sellerId: string;
-  sellerType: string;
-  productId: string;
-  title: string;
-  name: string;
-  description: string;
-  quantity: number;
-  createdAt: string;
-  updatedAt: string;
-  salesPrice: number;
-  discount: number;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-  buyingPrice: number;
-  sellingPrice: number;
-};
 
 type Category = {
   id: string;
@@ -35,48 +12,27 @@ type Category = {
   status: string;
 };
 
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
-
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
-
 interface PageProps {
   params: {
     slug: string; // this is companyId
   };
 }
 
-/**
- * Server Component: runs on each request (no-store), fetches marketplace products,
- * then renders the ClientInventoryClient with those props.
- */
 export default async function ClientInventoryPage({ params }: PageProps) {
   const companyId = params.slug;
 
-  let productsData: MarketplaceProduct[] = [];
+  let productsData: MarketListingForm[] = [];
   let categoriesData: Category[] = [];
 
   try {
+    // --- Fetch marketplace listings ---
     const res = await fetch(
       `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
     if (res.ok) {
-      const data = (await res.json()) as { products: MarketplaceProduct[] };
-      productsData = data.products;
+      const json = await res.json();
+      productsData = json.results as MarketListingForm[];
     } else {
       console.error(
         "[ClientInventoryPage] Failed to fetch marketplace products:",
@@ -85,26 +41,32 @@ export default async function ClientInventoryPage({ params }: PageProps) {
       );
     }
 
-    
-    // Fetch all categories for this company
+    // --- Fetch store categories ---
     const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
+      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
+
     if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
+      const json = await categoriesRes.json();
+      categoriesData = json.results ?? [];
+    } else {
+      console.error(
+        "[ClientInventoryPage] Failed to fetch store categories:",
+        categoriesRes.status,
+        categoriesRes.statusText
+      );
     }
 
   } catch (err: any) {
-    console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
+    console.error("[ClientInventoryPage] Error during fetch:", err?.message || err);
   }
 
-  
-
-  return <ClientInventoryClient companyId={companyId} productsData={productsData} categoriesData={categoriesData} />;
+  return (
+    <ClientInventoryClient
+      companyId={companyId}
+      productsData={productsData}
+      categoriesData={categoriesData}
+    />
+  );
 }

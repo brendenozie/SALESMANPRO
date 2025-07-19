@@ -5,28 +5,29 @@
 import React, { useState } from "react";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
+import { MarketListingForm } from "@/types/typings";
 
-type MarketplaceProduct = {
-  _id: string;
-  sellerId: string;
-  sellerType: string;
-  productId: string;
-  title?: string;
-  name?: string;
-  description: string;
-  quantity: number;
-  createdAt: string;
-  updatedAt: string;
-  salesPrice: number;
-  discount: number;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-  buyingPrice: number;
-  sellingPrice: number;
-};
+// type MarketListingForm = {
+//   _id: string;
+//   sellerId: string;
+//   sellerType: string;
+//   productId: string;
+//   title?: string;
+//   name?: string;
+//   description: string;
+//   quantity: number;
+//   createdAt: string;
+//   updatedAt: string;
+//   salesPrice: number;
+//   discount: number;
+//   isOnOffer: boolean;
+//   isFlashDeal: boolean;
+//   isNewArrival: boolean;
+//   isDiscounted: boolean;
+//   isFeatured: boolean;
+//   buyingPrice: number;
+//   sellingPrice: number;
+// };
 
 type Category = {
   id: string;
@@ -38,7 +39,7 @@ type Category = {
 
 interface ClientProps {
   companyId: string;
-  productsData: MarketplaceProduct[];  
+  productsData: MarketListingForm[];  
   categoriesData: Category[];
 }
 
@@ -47,7 +48,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
   const [showRemoveProductModal, setShowRemoveProductModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAddToMarketModal, setShowAddToMarketModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<MarketListingForm | null>(null);
 
   return (    
         <div className="container mx-auto p-10">
@@ -74,7 +75,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
                   className="bg-gray-100 border border-gray-200 rounded-xl p-6 transition transform hover:scale-105 shadow-md hover:shadow-xl duration-300"
                 >
                   <h3 className="text-2xl font-bold text-gray-800 mb-3 hover:text-blue-600 transition-colors">
-                    {product.name || product.title}
+                    {product.name}
                   </h3>
                   <p className="text-sm text-gray-600 mb-1">
                     Description: {product.description}
@@ -134,7 +135,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
             <AddToProductMarketModal
                     showRequestProductModal={showAddToMarketModal}
                     setShowRequestProductModal={setShowAddToMarketModal}
-                    product={null}
+                    // product={null}
                     // sellerId={""}
                     // sellerType={""}
                     marketListItem={selectedProduct}
