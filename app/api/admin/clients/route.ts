@@ -1,64 +1,97 @@
+// app/api/admin/clients/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb";
 
-
-export default async function GET( req : Request ) {
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed" });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId") || "";
+  if (!companyId) {
+    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
   }
 
   try {
+    // 1) Fetch clients + user info
     const clients = await prisma.client.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phoneNumber: true,
-        // orders: {
-        //   select: {
-        //     totalPrice: true, // Assuming 'totalPrice' exists in your 'Order' model
-        //     createdAt: true,
-        //   },
-        //   orderBy: {
-        //     createdAt: "desc", // Sort orders by most recent
-        //   },
-        //   take: 1, // Fetch only the most recent order
-        // },
-        communications: {
-          select: {
-            createdAt: true, // Date of last communication
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1, // Get the most recent communication
-        },
+      where: { companyId },
+      include: {
+        user: { select: { name: true, email: true, phone: true } },
       },
     });
 
-    // Process each client to include calculated or derived values
-    const processedClients = clients.map((client) => {
-      const recentOrder = {totalPrice:0,createdAt:""};//client.orders[0]; // Get the most recent order
-      const recentCommunication = client.communications[0]; // Get the most recent communication
+    // 2) For each client, load their orders and compute stats
+    const enriched = await Promise.all(
+      clients.map(async (c) => {
+        const orders = await prisma.customerOrder.findMany({
+          where: { companyId, consumerId: c.userId },
+          select: { totalPrice: true, createdAt: true },
+        });
 
-      return {
-        id: client.id,
-        name: client.name,
-        email: client.email,
-        phoneNumber: client.phoneNumber,
-        // Calculate total sales by summing all orders (if needed)
-        totalSales: recentOrder?.totalPrice || 0, // Replace with aggregation if needed
-        // Set recentTransactionAmount and recentTransactionDate
-        recentTransactionAmount: recentOrder?.totalPrice || 0,
-        recentTransactionDate: recentOrder?.createdAt || null,
-        // Derive status (default to 'active' if no communication is present)
-        status: recentCommunication ? "engaged" : "inactive",
-      };
+        const totalPurchases = orders.reduce((sum, o) => sum + o.totalPrice, 0);
+        const averageOrderValue = orders.length
+          ? totalPurchases / orders.length
+          : 0;
+        const lastPurchaseDate = orders.length
+          ? new Date(
+              Math.max(...orders.map((o) => o.createdAt!.getTime()))
+            ).toISOString()
+          : null;
+
+        return {
+          id: c.id,
+          name: c.user.name,
+          email: c.user.email,
+          phoneNumber: c.user.phone,
+          totalPurchases,
+          averageOrderValue,
+          lastPurchaseDate,
+        };
+      })
+    );
+
+    return NextResponse.json(enriched);
+  } catch (err: any) {
+    console.error("GET /api/admin/clients error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  const { name, email, phoneNumber, companyId } = body;
+
+  if (!companyId || !email) {
+    return NextResponse.json(
+      { error: "companyId and email are required" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // 1) Create User
+    const user = await prisma.user.create({
+      data: { name, email, phone: phoneNumber },
     });
 
-    NextResponse.json(processedClients);
-  } catch (error) {
-    console.error("Error fetching clients:", error);
-    NextResponse.json({ error: "Internal server error" });
+    // 2) Create Client profile
+    const client = await prisma.client.create({
+      data: { companyId, userId: user.id },
+    });
+
+    // No orders yet, so stats are zero/null
+    return NextResponse.json(
+      {
+        id: client.id,
+        name: user.name,
+        email: user.email,
+        phoneNumber: user.phone,
+        totalPurchases: 0,
+        averageOrderValue: 0,
+        lastPurchaseDate: null,
+      },
+      { status: 201 }
+    );
+  } catch (err: any) {
+    console.error("POST /api/admin/clients error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

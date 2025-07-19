@@ -818,36 +818,56 @@ enum TaskPriority {
 }
 
 //One on One relationship with user
-model Client {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String?
-  password    String?
-  email       String   @unique
-  phoneNumber String?
-  companyId   String   @db.ObjectId
-  company     Company? @relation(fields: [companyId], references: [id])
 
-  userId String @unique @db.ObjectId // Link to User model
+model Client {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String   @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // This establishes the one-to-one link to the User model
+  userId String @unique @db.ObjectId
   user   User   @relation("ClientProfile", fields: [userId], references: [id])
 
+  // Fields specific to the Client role
   salesAgentId      String?             @db.ObjectId
   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
   createdAt         DateTime?           @default(now())
   updatedAt         DateTime?           @updatedAt
-  ClientInventory   ClientInventory[]
   AgentInventoryLog AgentInventoryLog[]
-  emailVerified     DateTime?
-  image             String?
-  phone             String?
-  username          String?
-  bio               String?
-  address           String?
-  profilePicture    String?
-  role              ROLE?               @default(CLIENT)
-  // accounts          Account[]
-  // sessions          Session[]
+  ClientInventory   ClientInventory[]
   Return            Return[]
 }
+
+// model Client {
+//   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name        String?
+//   password    String?
+//   email       String   @unique
+//   phoneNumber String?
+//   companyId   String   @db.ObjectId
+//   company     Company? @relation(fields: [companyId], references: [id])
+
+//   userId String @unique @db.ObjectId // Link to User model
+//   user   User   @relation("ClientProfile", fields: [userId], references: [id])
+
+//   salesAgentId      String?             @db.ObjectId
+//   salesAgent        SalesAgent?         @relation(fields: [salesAgentId], references: [id])
+//   createdAt         DateTime?           @default(now())
+//   updatedAt         DateTime?           @updatedAt
+//   ClientInventory   ClientInventory[]
+//   AgentInventoryLog AgentInventoryLog[]
+//   emailVerified     DateTime?
+//   image             String?
+//   phone             String?
+//   username          String?
+//   bio               String?
+//   address           String?
+//   profilePicture    String?
+//   role              ROLE?               @default(CLIENT)
+//   // accounts          Account[]
+//   // sessions          Session[]
+//   Return            Return[]
+// }
 
 // Conversation Model
 // Represents a message thread or chat between multiple participants.
@@ -942,6 +962,7 @@ enum MessageType {
 model SalesAgent {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
+  loginCode   String?  @unique
   phoneNumber String?
   companyId   String?  @db.ObjectId
   company     Company? @relation(fields: [companyId], references: [id])

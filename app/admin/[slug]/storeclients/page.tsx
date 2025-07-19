@@ -1,18 +1,6 @@
-// app/admin/clients/page.tsx (Recommended file path change for clarity)
-
+// app/admin/clients/page.tsx
 import React from "react";
-import ClientsClient from "./ClientsClient"; // Import the ClientsClient component
-
-// Define the Client type, matching the one in ClientsClient.tsx
-export type Client = {
-  id: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  totalPurchases: number;
-  lastPurchaseDate: string | null;
-  averageOrderValue: number;
-};
+import ClientsClient, { Client } from "./ClientsClient"; // Import the ClientsClient component and Client type
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -26,29 +14,34 @@ interface PageProps {
  * Server Component: fetches the clients on every request (cache: "no-store"),
  * then renders the client component with the fetched data.
  */
-export default async function ClientsPage({ params }: PageProps) { // Changed component name to ClientsPage
+export default async function ClientsPage({ params }: PageProps) {
   const companyId = params.slug;
-  let clientsData: Client[] = []; // Changed variable name to clientsData
+  let clientsData: Client[] = [];
 
   try {
-    // Update the API endpoint to fetch client data
-    const res = await fetch(`${apiUrl}/admin/clients?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(
+      `${apiUrl}/admin/clients?companyId=${companyId}`,
+      { cache: "no-store" }
+    );
+
     if (res.ok) {
       clientsData = (await res.json()) as Client[];
-      // Assuming the API returns an array of clients directly.
-      // If your API returns { clients: [...] }, adjust accordingly:
-      // const json = await res.json();
-      // clientsData = json.clients;
     } else {
       console.error(
-        "[ClientsPage] Failed to fetch clients →", // Updated console log message
+        "[ClientsPage] Failed to fetch clients →",
         res.status,
         res.statusText
       );
     }
   } catch (err: any) {
-    console.error("[ClientsPage] Error fetching clients →", err.message); // Updated console log message
+    console.error("[ClientsPage] Error fetching clients →", err.message);
   }
 
-  return <ClientsClient clientsData={clientsData} />; // Pass clientsData to ClientsClient
+  // Pass companyId so ClientsClient can include it in POST/PATCH/DELETE calls
+  return (
+    <ClientsClient
+      companyId={companyId}
+      clientsData={clientsData}
+    />
+  );
 }
