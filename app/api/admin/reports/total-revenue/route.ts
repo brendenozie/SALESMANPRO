@@ -1,43 +1,52 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+// app/api/admin/reports/total-revenue/route.ts
+// import { NextRequest, NextResponse } from 'next/server';
+// import prisma from '@/lib/prisma'; // Adjust path as needed
 
-
-const getTotalRevenue = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { startDate, endDate } = req.query;
-  const { searchParams } = new URL(req.url);
-
-  const agentId = searchParams.get("agentId");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
-
-  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-    return NextResponse.json(
-      { message: "Invalid pagination parameters." },
-      { status: 400 }
-    );
-  }
-
+export async function GET(req: NextRequest) {
+  // --- AUTHENTICATION & AUTHORIZATION PLACEHOLDER ---
+  // Only ADMINs or authorized personnel should access reports.
+  // --- END PLACEHOLDER ---
 
   try {
-    // const totalRevenue = await prisma.order.aggregate({
-    //   _sum: {
-    //     totalPrice: true,
-    //   },
-    //   where: {
-    //     createdAt: {
-    //       gte: startDate ? new Date(startDate as string) : undefined,
-    //       lte: endDate ? new Date(endDate as string) : undefined,
-    //     },
-    //   },
-    // });
+    const { searchParams } = req.nextUrl;
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const companyId = searchParams.get('companyId');
 
-    // const revenue = totalRevenue._sum.totalPrice || 0;
+    if (!startDate || !endDate) {
+      return NextResponse.json({ message: 'startDate and endDate are required.' }, { status: 400 });
+    }
 
-    res.status(200).json({ totalRevenue: "revenue" });
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    endDateTime.setHours(23, 59, 59, 999); // Include the whole end day
+
+    const whereClause: any = {
+      createdAt: {
+        gte: startDateTime,
+        lte: endDateTime,
+      },
+    };
+
+    if (companyId) {
+      whereClause.companyId = companyId;
+    }
+
+    const totalRevenueResult = await prisma.customerOrder.aggregate({
+      _sum: {
+        totalPrice: true,
+      },
+      where: whereClause,
+    });
+
+    return NextResponse.json({ totalRevenue: totalRevenueResult._sum.totalPrice || 0 });
   } catch (error) {
-    console.error("Error fetching total revenue:", error);
-    NextResponse.json({ error: "Failed to fetch total revenue" });
+    console.error('Error fetching total revenue:', error);
+    return NextResponse.json(
+      { message: 'Failed to fetch total revenue', error: "error.message" },
+      { status: 500 }
+    );
   }
-};
-
-export default getTotalRevenue;
+}

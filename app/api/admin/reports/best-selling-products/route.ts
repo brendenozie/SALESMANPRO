@@ -1,73 +1,82 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+// app/api/admin/reports/best-selling-products/route.ts
+// import { NextRequest, NextResponse } from 'next/server';
+// import prisma from '@/lib/prisma'; // Adjust path as needed
 
-// GET /api/best-selling-products?agentId=&limit=&offset=&startDate=&endDate=
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const agentId = searchParams.get("agentId");
-  const startDateParam = searchParams.get("startDate");
-  const endDateParam = searchParams.get("endDate");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
-
-  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-    return NextResponse.json(
-      { error: "Invalid pagination parameters." },
-      { status: 400 }
-    );
-  }
-
-  let startDate: Date | undefined;
-  let endDate: Date | undefined;
-  if (startDateParam) {
-    const d = new Date(startDateParam);
-    if (isNaN(d.getTime())) {
-      return NextResponse.json({ error: "Invalid startDate format." }, { status: 400 });
-    }
-    startDate = d;
-  }
-  if (endDateParam) {
-    const d = new Date(endDateParam);
-    if (isNaN(d.getTime())) {
-      return NextResponse.json({ error: "Invalid endDate format." }, { status: 400 });
-    }
-    endDate = d;
-  }
+export async function GET(req: NextRequest) {
+  // --- AUTHENTICATION & AUTHORIZATION PLACEHOLDER ---
+  // Only ADMINs or authorized personnel should access reports.
+  // --- END PLACEHOLDER ---
 
   try {
-    // Aggregate total sold per product
-    const sales = await prisma.order.groupBy({
-      by: ["productId"],
-      where: {
-        ...(agentId && { salesAgentId: agentId }),
-        ...(startDate && { createdAt: { gte: startDate } }),
-        ...(endDate && { createdAt: { lte: endDate } }),
+    const { searchParams } = req.nextUrl;
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const companyId = searchParams.get('companyId');
+    const limit = searchParams.get('limit') || '10';
+
+    if (!startDate || !endDate) {
+      return NextResponse.json({ message: 'startDate and endDate are required.' }, { status: 400 });
+    }
+
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    endDateTime.setHours(23, 59, 59, 999); // Include the whole end day
+
+    const whereClause: any = {
+      createdAt: {
+        gte: startDateTime,
+        lte: endDateTime,
       },
-      _sum: { quantity: true },
-      orderBy: { _sum: { quantity: "desc" } },
-      take: limit,
-      skip: offset,
-    });
+    };
 
-    const productIds = sales.map((s) => s.productId);
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
-    });
-
-    const result = sales.map((s) => {
-      const p = products.find((prod) => prod.id === s.productId)!;
-      return {
-        id: p.id,
-        name: p.name,
-        totalSold: s._sum.quantity || 0,
+    // Filter OrderItems by companyId via CustomerOrder
+    if (companyId) {
+      whereClause.order = {
+        companyId: companyId,
       };
+    }
+
+    // Aggregate OrderItems by marketplaceListingId to find total quantity sold
+    const bestSellingProducts = await prisma.orderItem.groupBy({
+      by: ['marketplaceListingId'],
+      _sum: {
+        quantity: true,
+      },
+      where: whereClause,
+      orderBy: {
+        _sum: {
+          quantity: 'desc', // Order by highest quantity sold
+        },
+      },
+      take: parseInt(limit), // Take top N products
     });
 
-    return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
-    console.error("Error fetching best-selling products:", error);
+    // Fetch product names from marketplaceListings
+    const listingIds = bestSellingProducts.map(item => item.marketplaceListingId);
+    const listings = await prisma.marketplaceListings.findMany({
+      where: {
+        id: { in: listingIds },
+      },
+      select: {
+        id: true,
+        name: true, // Get the product name from the listing
+      },
+    });
+
+    const listingMap = new Map(listings.map(listing => [listing.id, listing.name || 'Unknown Product']));
+
+    const formattedProducts = bestSellingProducts.map(item => ({
+      name: listingMap.get(item.marketplaceListingId) || 'Unknown Product',
+      totalSold: item._sum.quantity || 0,
+    }));
+
+    return NextResponse.json(formattedProducts);
+  } catch (error) {
+    console.error('Error fetching best-selling products:', error);
     return NextResponse.json(
-      { error: "Failed to fetch best-selling products", detail: error.message },
+      { message: 'Failed to fetch best-selling products', error: "error.message" },
       { status: 500 }
     );
   }

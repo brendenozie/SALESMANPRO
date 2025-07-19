@@ -85,7 +85,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
       ],
     },
-    { label: "Reports", href: `/admin/${adminSlug}/reports`, icon: ChartBarIcon },
+    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],

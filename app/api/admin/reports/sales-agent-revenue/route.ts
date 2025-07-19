@@ -1,54 +1,76 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
+// app/api/admin/reports/sales-agent-revenue/route.ts
+// import { NextRequest, NextResponse } from 'next/server';
+// import prisma from '@/lib/prisma'; // Adjust path as needed
 
-const getSalesAgentRevenue = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { startDate, endDate } = req.query;
-  const { searchParams } = new URL(req.url);
-
-  const agentId = searchParams.get("agentId");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
-
-  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-    return NextResponse.json(
-      { message: "Invalid pagination parameters." },
-      { status: 400 }
-    );
-  }
-
+export async function GET(req: NextRequest) {
+  // --- AUTHENTICATION & AUTHORIZATION PLACEHOLDER ---
+  // Only ADMINs or authorized personnel should access reports.
+  // --- END PLACEHOLDER ---
 
   try {
-    const salesAgentRevenue = await prisma.salesAgent.findMany({
+    const { searchParams } = req.nextUrl;
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const companyId = searchParams.get('companyId');
+
+    if (!startDate || !endDate) {
+      return NextResponse.json({ message: 'startDate and endDate are required.' }, { status: 400 });
+    }
+
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    endDateTime.setHours(23, 59, 59, 999); // Include the whole end day
+
+    const whereClause: any = {
+      createdAt: {
+        gte: startDateTime,
+        lte: endDateTime,
+      },
+    };
+
+    if (companyId) {
+      whereClause.companyId = companyId;
+    }
+
+    // Aggregate commissions by sales agent
+    const salesAgentRevenue = await prisma.commission.groupBy({
+      by: ['salesAgentId'],
+      _sum: {
+        commissionEarned: true,
+      },
+      where: whereClause,
+    });
+
+    // Fetch sales agent names
+    const agentIds = salesAgentRevenue.map(item => item.salesAgentId);
+    const agents = await prisma.salesAgent.findMany({
+      where: {
+        id: { in: agentIds },
+      },
       select: {
         id: true,
-        name: true,
-        // orders: {
-        //   where: {
-        //     createdAt: {
-        //       gte: startDate ? new Date(startDate as string) : undefined,
-        //       lte: endDate ? new Date(endDate as string) : undefined,
-        //     },
-        //   },
-        //   select: {
-        //     totalPrice: true,
-        //   },
-        // },
+        user: {
+          select: { name: true }, // Assuming SalesAgent has a relation to User for name
+        },
       },
     });
 
-    const revenueData = salesAgentRevenue.map((agent) => ({
-      id: agent.id,
-      name: agent.name,
-      // totalRevenue: agent.orders.reduce((sum, order) => sum + order.totalPrice, 0),
-      // totalOrders: agent.orders.length,
+    const agentMap = new Map(agents.map(agent => [agent.id, agent.user?.name || 'Unknown Agent']));
+
+    const formattedRevenue = salesAgentRevenue.map(item => ({
+      name: agentMap.get(item.salesAgentId) || 'Unknown Agent',
+      totalRevenue: item._sum.commissionEarned || 0,
     }));
 
-    res.status(200).json(revenueData);
+    return NextResponse.json(formattedRevenue);
   } catch (error) {
-    console.error("Error fetching sales agent revenue:", error);
-    NextResponse.json({ error: "Failed to fetch sales agent revenue" });
+    console.error('Error fetching sales agent revenue:', error);
+    return NextResponse.json(
+      { message: 'Failed to fetch sales agent revenue', error: "error.message" },
+      { status: 500 }
+    );
   }
-};
-
-export default getSalesAgentRevenue;
+}
