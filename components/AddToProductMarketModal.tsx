@@ -86,8 +86,8 @@ function productToListingForm(
   // buyingPrice: p?.costPrice,
   // sellingPrice: p?.sellingPrice,
 
-  buyingPrice: p.sellingPrice,
-  sellingPrice: p.sellingPrice, 
+  buyingPrice: p?.sellingPrice,
+  sellingPrice: p?.sellingPrice, 
 
   discount: p?.discount,
   finalPrice: p?.finalPrice,
