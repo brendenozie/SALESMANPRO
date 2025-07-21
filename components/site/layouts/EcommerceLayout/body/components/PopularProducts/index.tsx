@@ -2,7 +2,6 @@
 
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { MarketplaceListingForm } from '@/types/typings';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import ProductCard from '../ProductCard';
@@ -29,7 +28,7 @@ export default function PopularProducts() {
           </button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {storeFormData.marketplaceListings.map((product) => (
+          {storeFormData && storeFormData.marketplaceListings.map((product) => (
             <ProductCard key={product.id} product={product} primary={primary}/>
           ))}
         </div>

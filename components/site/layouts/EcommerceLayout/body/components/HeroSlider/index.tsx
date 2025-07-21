@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import Link from 'next/link'; // Use Link for internal navigation
 import { useStoreContext } from '../../../../../../../contexts/StoreContext';
 
 // Loader remains the same so Next.js can optimize your images
@@ -30,18 +31,18 @@ export default function HeroSlider() {
   // Map your backend “heroSlides” into our shape:
   const heroSlides: Slide[] = (storeFormData.heroSlides || []).map((slide: any) => ({
     imageUrl: slide.imageUrl,
-    subline: slide.subline || 'Free Shipping – orders over $100',
-    headline: slide.headline || 'Free Shipping on orders over $100',
+    subline: slide.subline || 'Exclusive Offer', // More engaging default
+    headline: slide.headline || 'Unlock Amazing Deals Now!', // More engaging default
     description:
       slide.description ||
-      'First-time customers enjoy free shipping after all discounts and promotions are applied.',
-    ctaText: slide.ctaText || 'Shop Now',
+      'Discover curated collections and exceptional savings on your favorite products.',
+    ctaText: slide.ctaText || 'Explore Collections', // More engaging default
     ctaLink: slide.ctaLink || '/shop',
   }));
 
   // These theme colors control the little progress bar at the bottom:
-  const primary = storeFormData.themeSettings?.primaryColor || '#10B981'; // default: emerald
-  const secondary = storeFormData.themeSettings?.secondaryColor || '#3B82F6'; // default: blue
+  const primary = storeFormData.themeSettings?.primaryColor || '#6B46C1'; // default: deep purple
+  const secondary = storeFormData.themeSettings?.secondaryColor || '#D53F8C'; // default: vibrant pink
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -96,106 +97,139 @@ export default function HeroSlider() {
     else if (offset > 50) prevSlide();
   };
 
+  // Variants for more dynamic entrance/exit animations
   const slideVariants = {
     enter: (dir: number) => ({
       x: dir > 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 1.02,
+      scale: 0.98, // Slightly scale down on enter
     }),
     center: {
       x: '0%',
       opacity: 1,
       scale: 1,
+      transition: {
+        x: { duration: transitionDuration, ease: 'easeInOut' },
+        opacity: { duration: transitionDuration * 0.7, ease: 'easeOut' },
+        scale: { duration: transitionDuration, ease: 'easeOut' },
+      },
     },
     exit: (dir: number) => ({
       x: dir < 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 1.02,
+      scale: 0.98, // Slightly scale down on exit
+      transition: {
+        x: { duration: transitionDuration, ease: 'easeInOut' },
+        opacity: { duration: transitionDuration * 0.7, ease: 'easeOut' },
+        scale: { duration: transitionDuration, ease: 'easeOut' },
+      },
     }),
   };
 
   return (
-    <section className="relative mt-16 py-16 bg-gray-50">
-      <div className="container mx-auto px-4 md:px-8 lg:px-16">
+    <section className="relative mt-16 py-16 overflow-hidden">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
         <AnimatePresence initial={false} custom={direction}>
           {heroSlides.map((slide, idx) =>
             idx === current ? (
               <motion.div
                 key={idx}
-                className="relative flex flex-col md:flex-row overflow-hidden rounded-3xl shadow-lg bg-white"
+                className="relative flex flex-col md:flex-row overflow-hidden rounded-3xl shadow-2xl transition-all duration-300 transform group" // Added group for hover effects
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: transitionDuration, ease: 'easeInOut' }}
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 onDragEnd={handleDragEnd}
               >
                 {/* ========= LEFT PANEL: TEXT CONTENT ========= */}
-                <div className="w-full md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex flex-col justify-center relative">
-                  {/* Semi-opaque “glass” panel behind text for contrast */}
-                  <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-3xl"></div>
-                  <div className="relative space-y-6">
-                    {/* Badge */}
-                    <span className="inline-block bg-yellow-400 text-black text-xs sm:text-sm font-semibold px-3 py-1 rounded-md">
+                <div
+                  className="w-full md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex flex-col justify-center relative bg-gradient-to-br from-white to-gray-50 text-gray-900" // Styled for contrast
+                >
+                  <div className="relative z-10 space-y-6">
+                    {/* Badge - enhanced with primary color and subtle animation */}
+                    <motion.span
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
+                      style={{ background: primary, color: 'white' }}
+                    >
                       {slide.subline}
-                    </span>
+                    </motion.span>
 
-                    {/* Headline */}
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+                    {/* Headline - dynamic color for numeric values, bold impact */}
+                    <motion.h2
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4, duration: 0.5 }}
+                      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg"
+                    >
                       {slide.headline.includes('$') ? (
                         <>
                           {slide.headline.split('$')[0]}
-                          <span className="text-green-500">${slide.headline.split('$')[1]}</span>
+                          <span style={{ color: secondary }}>${slide.headline.split('$')[1]}</span> {/* Use secondary for highlight */}
                         </>
                       ) : (
                         slide.headline
                       )}
-                    </h2>
+                    </motion.h2>
 
-                    {/* Description */}
+                    {/* Description - clearer text, increased line-clamp for more visibility */}
                     {slide.description && (
-                      <p className="text-gray-700 text-sm sm:text-base md:text-lg max-w-md h-14 overflow-hidden">
+                      <motion.p
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6, duration: 0.5 }}
+                        className="text-gray-700 text-base sm:text-lg max-w-md line-clamp-3" // Increased line-clamp
+                      >
                         {slide.description}
-                      </p>
+                      </motion.p>
                     )}
 
-                    {/* CTA Button */}
+                    {/* CTA Button - vibrant background, hover effects */}
                     {slide.ctaLink && slide.ctaText && (
-                      <a
-                        href={slide.ctaLink}
-                        style={{background:`${primary}`}}
-                        className="inline-block bg-green-500 hover:bg-green-600 text-white font-semibold text-sm sm:text-base px-6 py-3 rounded-md shadow-md transition transform hover:scale-105"
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8, duration: 0.5 }}
                       >
-                        {slide.ctaText}
-                      </a>
+                        <Link
+                          href={slide.ctaLink}
+                          className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden group-hover:after:scale-x-0" // Add group-hover
+                          style={{ background: primary, color: 'white' }}
+                        >
+                          {slide.ctaText}
+                          <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
+                        </Link>
+                      </motion.div>
                     )}
                   </div>
                 </div>
 
                 {/* ========= RIGHT PANEL: IMAGE + BLOB ACCENT ========= */}
-                <div className="block md:w-1/2 relative overflow-hidden">
-                  {/* Faint SVG “blob” behind the photo */}
+                <div className="block md:w-1/2 relative overflow-hidden min-h-[300px] md:min-h-0"> {/* Ensure min height on mobile */}
+                  {/* Faint SVG “blob” behind the photo - now uses secondary color for accent */}
                   <svg
-                    className="absolute -bottom-10 -right-20 w-[400px] h-[400px] text-green-50"
+                    className="absolute -bottom-10 -right-20 w-[400px] h-[400px] opacity-20" // Increased opacity for visibility
                     viewBox="0 0 400 400"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
                       d="M314.5 92.7C332 157.2 289 218.3 234.6 254.6C180.2 290.8 115.3 302.2 63.8 273C12.3 243.8 -2.1 175.1 11.8 118.7C25.7 62.3 68.1 18.2 122.3 7.8C176.5 -2.6 247 28.2 314.5 92.7Z"
-                      fill="currentColor"
+                      fill={secondary} // Use secondary color
                     />
                   </svg>
 
-                  {/* The actual produce image */}
+                  {/* The actual product image with subtle parallax/transform effect on drag */}
                   <Image
                     src={slide.imageUrl}
                     alt={slide.headline}
                     fill
-                    className="object-cover object-center rounded-r-3xl"
+                    className="object-cover object-center rounded-r-3xl transition-transform duration-500 ease-out group-hover:scale-105" // Subtle scale on hover
                     loader={loader}
                     priority
                   />
@@ -205,35 +239,48 @@ export default function HeroSlider() {
           )}
         </AnimatePresence>
 
-        {/* ========= PREV / NEXT BUTTONS ========= */}
+        {/* ========= PREV / NEXT BUTTONS - Enhanced Styling ========= */}
         <button
           onClick={prevSlide}
-          className="absolute top-1/2 left-6 transform -translate-y-1/2 bg-white/80 hover:bg-white/90 p-2 md:p-3 rounded-full text-gray-700 shadow-md transition z-20"
+          className="absolute top-1/2 left-6 transform -translate-y-1/2 bg-white/70 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-20 backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-900"
           aria-label="Previous slide"
         >
           <ArrowLeftIcon className="h-6 w-6 md:h-7 md:w-7" />
         </button>
         <button
           onClick={nextSlide}
-          className="absolute top-1/2 right-6 transform -translate-y-1/2 bg-white/80 hover:bg-white/90 p-2 md:p-3 rounded-full text-gray-700 shadow-md transition z-20"
+          className="absolute top-1/2 right-6 transform -translate-y-1/2 bg-white/70 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-20 backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-900"
           aria-label="Next slide"
         >
           <ArrowRightIcon className="h-6 w-6 md:h-7 md:w-7" />
         </button>
 
-        {/* ========= PAGINATION DOTS ========= */}
+        {/* ========= PAGINATION DOTS - Enhanced with dynamic colors and progress bar ========= */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
           {heroSlides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => goTo(idx, idx > current ? 1 : -1)}
-              className={`relative w-3 h-3 rounded-full overflow-hidden transition-all ${
-                idx === current ? 'bg-gray-800' : 'bg-gray-400'
-              }`}
+              className={`relative w-3.5 h-3.5 rounded-full overflow-hidden transition-all duration-300 ease-in-out border-2 ${
+                idx === current ? 'border-white scale-125' : 'border-gray-400 opacity-70 hover:scale-110'
+              } focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900`}
               aria-label={`Go to slide ${idx + 1}`}
             >
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: idx === current ? `linear-gradient(to right, ${primary}, ${secondary})` : 'transparent',
+                }}
+              />
               {idx === current && (
-                <span className="absolute inset-0 block animate-pulse opacity-60 rounded-full bg-gray-800" />
+                <div
+                  ref={progressRef}
+                  className="absolute left-0 top-0 h-full rounded-full"
+                  style={{
+                    backgroundColor: `white`, // Use white for the progress bar
+                    width: '0%', // This will be animated by JS
+                  }}
+                />
               )}
             </button>
           ))}
