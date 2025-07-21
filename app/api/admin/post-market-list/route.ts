@@ -10,8 +10,7 @@ const parseJsonSafely = (data: any, fallback: any = null) => {
   }
 };
 
-const normalizeArray = (val: any): any[] =>
-  Array.isArray(val) ? val : val ? [val] : [];
+const normalizeArray = (val: any): any[] => Array.isArray(val) ? val : val ? [val] : [];
 
 const parseDate = (val: any): Date | null => {
   if (typeof val === "string" && !isNaN(Date.parse(val))) {
@@ -251,7 +250,7 @@ export async function POST(req: Request) {
       model:           model || null,
       color:           safeColor,
       size:            safeSize,
-      weight:          weight || null,
+      weight:          weight || [],
       condition:       condition || null,
       dimensions:      dimensions || null,
       material:        safeMaterial,

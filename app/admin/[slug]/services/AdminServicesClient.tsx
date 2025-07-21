@@ -9,13 +9,14 @@ import {
   XMarkIcon,
   PlusIcon,
   ExclamationCircleIcon,
-  EyeIcon, // For view details
+  EyeIcon,
+  ArrowPathIcon, // For loading spinner
 } from "@heroicons/react/24/outline";
-import Image from "next/image"; // For displaying service images
-import ServiceListingForm from "@/components/admin/components/ServiceListingForm"; // Your revamped form component
-import { useStoreContext } from "@/contexts/StoreContext"; // To get theme settings and store categories
+import Image from "next/image";
+import { useStoreContext } from "@/contexts/StoreContext";
+import ServiceListingForm from "./components/ServiceListingForm";
 
-// Enums/types matching Prisma schema (ensure these are consistent with ServiceListingFormRedesign)
+// --- Type Definitions (aligned with ServiceListingFormRedesign's FormData) ---
 export type ListingStatus = "ACTIVE" | "PENDING" | "REJECTED" | "ARCHIVED";
 export type SellerType = "INDIVIDUAL" | "COMPANY";
 
@@ -33,65 +34,74 @@ interface PricingTier {
   features: string[];
 }
 
-export interface ServiceItem {
-  id: string;
-  title?: string;
-  name?: string; // Sometimes title is 'name' in data
-  description?: string;
+// Full FormData structure from ServiceListingFormRedesign
+interface FormDataForPayload {
+  id?: string;
+  name: string;
+  description: string;
   productCategoryId: string;
-  subCategory?: any; // Consider a more specific type if possible
-  subCategoryName?: string;
-  tags: string[];
-  images: string[]; // Changed to string[] for image URLs
-  video?: string;
-  quantity?: number; // Made optional as not all services have quantity
+  sellerId?: string;
+  companyId?: string;
+  sellerType?: SellerType;
+  sellingPrice: number;
+  finalPrice: number;
+  buyingPrice: number;
   profitMargin?: number;
-  buyingPrice?: number; // Made optional
-  sellingPrice?: number; // Made optional
-  finalPrice?: number;
   tax?: number;
   shippingCost?: number;
   discount?: number;
+  quantity?: number;
+  serviceSchedule?: string;
+  hourlyRate?: number;
+  minimumHours?: number;
+  minNoticePeriod?: string;
+  maxBookingAhead?: string;
+  totalCapacity?: number;
+  deliveryMethod?: string;
+  fulfillmentStatus?: string;
+  providerRating?: number;
+  bookingSlots: BookingSlot[];
+  pricingTiers: PricingTier[];
+  tags: string[];
+  amenities: string[];
+  requiredClientInfo: string[];
+  images: string[]; // Expecting string URLs
+  video?: string; // Expecting string URL
+  contactName?: string;
+  contact?: string;
+  email?: string;
+  locationName?: string;
+  latitude?: number;
+  longitude?: number;
   isAvailable: boolean;
   isOnOffer: boolean;
   isFlashDeal: boolean;
   isNewArrival: boolean;
   isDiscounted: boolean;
   isFeatured: boolean;
-  startDealDate?: string; // Changed to string for consistency with datetime-local
-  endDealDate?: string; // Changed to string
-  availabilityStart?: string; // Changed to string
-  availabilityEnd?: string; // Changed to string
-  bookingSlots: BookingSlot[];
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  pricingTiers: PricingTier[];
-  requiredClientInfo: string[];
-  fulfillmentStatus?: string;
-  totalCapacity?: number;
-  currentBookedCount?: number;
-  providerRating?: number;
-  hourlyRate?: number;
-  minimumHours?: number;
-  deliveryMethod?: string;
-  serviceSchedule?: string;
-  companyId?: string;
-  sellerId?: string;
-  sellerType?: SellerType;
-  contact?: string; // Phone number
-  email?: string;
-  contactName?: string;
-  location?: any; // Consider a more specific type
-  locationName?: string;
-  latitude?: number;
-  longitude?: number;
-  amenities: string[];
+  startDealDate?: string; // Expecting string for datetime-local
+  endDealDate?: string; // Expecting string for datetime-local
+  availabilityStart?: string; // Expecting string for datetime-local
+  availabilityEnd?: string; // Expecting string for datetime-local
   delivery: boolean;
-  paymentOption?: string; // Made optional
   showOnGhuba?: boolean;
+  paymentOption?: string;
   status: ListingStatus;
-  createdAt?: Date;
-  updatedAt?: Date;
+  // Note: createdAt and updatedAt are typically handled by backend
+}
+
+// ServiceItem interface for displaying in the list (should be compatible with FormDataForPayload)
+export interface ServiceItem extends Omit<FormDataForPayload, 'startDealDate' | 'endDealDate' | 'availabilityStart' | 'availabilityEnd'> {
+    id: string; // ID is required for existing items
+    createdAt?: Date;
+    updatedAt?: Date;
+    // Dates might come back as Date objects from backend, handle conversion if needed for display
+    startDealDate?: Date;
+    endDealDate?: Date;
+    availabilityStart?: Date;
+    availabilityEnd?: Date;
+    // Add any other fields specific to the display in the list
+    category?: { displayName?: string; name?: string; icon?: string }; // For category lookup
 }
 
 // Props for this AdminServicesClient component
@@ -102,7 +112,7 @@ interface Props {
   deliveryMethods: string[];
   sellers?: { id: string; name: string }[];
   companies?: { id: string; name: string }[];
-  companyId?: string; // Made optional as it might come from context or parent
+  companyId?: string;
   categoriesData: any[]; // Full category data for ServiceListingForm
 }
 
@@ -110,68 +120,231 @@ interface Props {
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
+// --- Helper function to build the API payload ---
+// This function maps the frontend FormData to the backend's expected MarketListingForm structure.
+// It explicitly handles image and video URLs, as well as date formats.
+function buildListingPayload(formData: FormDataForPayload): any {
+  // Ensure dates are in ISO string format if they are Date objects for API
+  // (Assuming formData already has them as strings from datetime-local inputs)
+  const formatDateTimeForAPI = (dateString?: string) => {
+    if (!dateString) return null;
+    try {
+      // Ensure it's a valid date string before converting
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) ? null : date.toISOString();
+    } catch (e) {
+      console.error("Invalid date string for API payload:", dateString, e);
+      return null;
+    }
+  };
+
+  return {
+    id: formData.id || undefined, // Only include ID if it's an update
+    sellerType: formData.sellerType,
+    companyId: formData.companyId,
+    // productId: formData.productId, // If your backend uses productId, ensure it's in FormDataForPayload
+    images: formData.images || [],
+    video: formData.video || null,
+    // books: [], // Not relevant for services, remove if not needed by backend
+    name: formData.name, // Map frontend 'title' to backend 'name'
+    description: formData.description,
+    quantity: formData.quantity,
+    productCategoryId: formData.productCategoryId,
+    // category: formData.category?.displayName || '', // Backend might prefer just ID
+    // subCategory: formData.subCategory,
+    // subCategoryName: formData.subCategoryName,
+    tags: formData.tags || [],
+    // brand: formData.brand, // Not relevant for services
+    // model: formData.model, // Not relevant for services
+    // color: formData.color, // Not relevant for services
+    // size: formData.size, // Not relevant for services
+    // weight: formData.weight, // Not relevant for services
+    // condition: formData.condition, // Not relevant for services
+    // dimension: formData.dimension, // Not relevant for services
+    // material: formData.material, // Not relevant for services
+    profitMargin: formData.profitMargin,
+    discount: formData.discount,
+    buyingPrice: formData.buyingPrice,
+    sellingPrice: formData.sellingPrice,
+    finalPrice: formData.finalPrice, // Ensure this is calculated or passed correctly
+    startDealDate: formatDateTimeForAPI(formData.startDealDate),
+    endDealDate: formatDateTimeForAPI(formData.endDealDate),
+    isAvailable: formData.isAvailable,
+    isOnOffer: formData.isOnOffer,
+    isFlashDeal: formData.isFlashDeal,
+    isNewArrival: formData.isNewArrival,
+    isDiscounted: formData.isDiscounted,
+    isFeatured: formData.isFeatured,
+    delivery: formData.delivery,
+    paymentOption: formData.paymentOption,
+    showOnGhuba: formData.showOnGhuba,
+    contactName: formData.contactName,
+    contact: formData.contact,
+    locationName: formData.locationName,
+    // location: formData.location, // If backend expects a specific location object
+    // locationId: formData.locationId,
+    latitude: formData.latitude,
+    longitude: formData.longitude,
+    // make: formData.make, // Vehicle specific
+    // trim: formData.trim,
+    // type: formData.type,
+    // mileage: formData.mileage,
+    // engineType: formData.engineType,
+    // engineSize: formData.engineSize,
+    // transmission: formData.transmission,
+    // drivetrain: formData.drivetrain,
+    // vin: formData.vin,
+    // logbookStatus: formData.logbookStatus,
+    // serviceHistory: formData.serviceHistory,
+    // negotiable: formData.negotiable,
+    // financingAvailable: formData.financingAvailable,
+    // tradeIn: formData.tradeIn,
+    // author: formData.author, // Book specific
+    // publisher: formData.publisher,
+    // isbn: formData.isbn,
+    // fabricComposition: formData.fabricComposition, // Clothing specific
+    // careInstructions: formData.careInstructions,
+    // energyRating: formData.energyRating, // Appliance specific
+    // warrantyPeriod: formData.warrantyPeriod,
+    // applianceDimensions: formData.applianceDimensions,
+    // ingredients: formData.ingredients, // Beauty product specific
+    // usageInstructions: formData.usageInstructions,
+    // expirationDate: formData.expirationDate,
+    amenities: formData.amenities || [],
+    // bedrooms: formData.bedrooms, // Property specific
+    // studios: formData.studios,
+    // bathrooms: formData.bathrooms,
+    // area: formData.area,
+    serviceSchedule: formData.serviceSchedule,
+    availabilityStart: formatDateTimeForAPI(formData.availabilityStart),
+    availabilityEnd: formatDateTimeForAPI(formData.availabilityEnd),
+    bookingSlots: formData.bookingSlots || [],
+    minNoticePeriod: formData.minNoticePeriod,
+    maxBookingAhead: formData.maxBookingAhead,
+    pricingTiers: formData.pricingTiers || [],
+    requiredClientInfo: formData.requiredClientInfo || [],
+    fulfillmentStatus: formData.fulfillmentStatus,
+    totalCapacity: formData.totalCapacity,
+    currentBookedCount: 0,
+    providerRating: formData.providerRating,
+    hourlyRate: formData.hourlyRate,
+    minimumHours: formData.minimumHours,
+    deliveryMethod: formData.deliveryMethod,
+    // digitalUrl: formData.digitalUrl, // Digital goods specific
+    // autoDeliver: formData.autoDeliver,
+    status: formData.status,
+  };
+}
+
+const apiUrl = '/api'; // Define your API base URL here
+
 export default function AdminServicesClient({
   initialServices,
-  productCategories, // Used for simplified category name lookup
+  productCategories,
   paymentOptions,
   deliveryMethods,
-  // sellers = [],
-  // companies = [],
+  sellers = [],
+  companies = [],
   companyId = "",
-  categoriesData, // Full category data passed to the form
+  categoriesData,
 }: Props) {
   const [services, setServices] = useState<ServiceItem[]>(initialServices);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState<ServiceItem | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null); // null: no action, true: success, false: error
+  const [message, setMessage] = useState<string>("");
 
-  const { storeFormData } = useStoreContext(); // Access global store data for theme
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488'; // Teal fallback
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316'; // Orange fallback
+  const { storeFormData } = useStoreContext();
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316';
 
-  // Update services state when initialServices prop changes
   useEffect(() => {
     setServices(initialServices);
   }, [initialServices]);
 
   // Handle opening the form modal for creation
   const handleOpenCreate = () => {
-    setServiceToEdit(null); // Clear any previous data
+    setServiceToEdit(null);
     setIsFormModalOpen(true);
+    setIsSuccess(null); // Reset messages
+    setMessage("");
   };
 
   // Handle opening the form modal for editing
   const handleOpenEdit = (service: ServiceItem) => {
     setServiceToEdit(service);
     setIsFormModalOpen(true);
+    setIsSuccess(null); // Reset messages
+    setMessage("");
   };
 
   // Handle saving the service (from the modal form)
-  const handleSaveService = (data: ServiceItem) => {
-    console.log('Attempting to save service:', data);
-    // In a real application, you would send this data to your backend API
-    // and then update the 'services' state based on the API response.
+  const handleSaveService = async (data: FormDataForPayload) => {
+    setIsLoading(true);
+    setIsSuccess(null);
+    setMessage("");
 
-    // Mocking API call and state update
-    if (data.id) {
-      // Edit existing service
-      setServices(prevServices =>
-        prevServices.map(svc => (svc.id === data.id ? { ...svc, ...data } : svc))
-      );
-      console.log(`Service with ID ${data.id} updated.`);
-    } else {
-      // Create new service (assign a mock ID for demonstration)
-      const newService = { ...data, id: `svc_${Date.now()}` };
-      setServices(prevServices => [...prevServices, newService]);
-      console.log('New service created:', newService);
+    try {
+      const payload = buildListingPayload({...data,companyId});
+      console.log("Sending payload:", payload); // For debugging
+
+      const res = await fetch(`${apiUrl}/admin/post-market-list`, {
+        method: 'POST', // Use POST for both create and update (backend handles ID)
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization headers if needed, e.g., 'Authorization': `Bearer ${yourAuthToken}`
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || res.statusText);
+      }
+
+      const responseData = await res.json();
+      console.log("API Response:", responseData);
+
+      // Assuming responseData contains the saved/updated service item,
+      // which should ideally match ServiceItem structure.
+      const savedService: ServiceItem = {
+        ...responseData,
+        companyId,
+        // Ensure dates are converted back to Date objects if needed for display
+        startDealDate: responseData.startDealDate ? new Date(responseData.startDealDate) : undefined,
+        endDealDate: responseData.endDealDate ? new Date(responseData.endDealDate) : undefined,
+        availabilityStart: responseData.availabilityStart ? new Date(responseData.availabilityStart) : undefined,
+        availabilityEnd: responseData.availabilityEnd ? new Date(responseData.availabilityEnd) : undefined,
+      };
+
+      if (data.id) {
+        // Update existing service in state
+        setServices(prevServices =>
+          prevServices.map(svc => (svc.id === savedService.id ? savedService : svc))
+        );
+        setMessage(`Service "${savedService.name}" updated successfully!`);
+      } else {
+        // Add new service to state
+        setServices(prevServices => [...prevServices, savedService]);
+        setMessage(`New service "${savedService.name}" created successfully!`);
+      }
+      setIsSuccess(true);
+      setIsFormModalOpen(false); // Close the modal on success
+
+    } catch (error: any) {
+      console.error('Failed to save service:', error);
+      setIsSuccess(false);
+      setMessage(`Error: ${error.message || "Something went wrong. Please try again."}`);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsFormModalOpen(false); // Close the modal
   };
 
   // Helper to get category name from ID
   const getCategoryName = (categoryId: string) => {
-    const category = productCategories.find(cat => cat.id === categoryId);
-    return category ? category.name : "N/A";
+    const category = categoriesData.find((cat: any) => cat.id === categoryId);
+    return category ? (category.displayName || category.category?.name) : "N/A";
   };
 
   // Status badge component (enhanced for visual appeal)
@@ -249,21 +422,52 @@ export default function AdminServicesClient({
             style={{ backgroundColor: primaryColor, color: 'white' }}
             whileHover={{ backgroundColor: secondaryColor }}
             whileTap={{ scale: 0.95 }}
+            disabled={isLoading} // Disable button while loading
           >
-            <PlusIcon className="w-6 h-6" /> Add New Service
+            {isLoading ? (
+              <ArrowPathIcon className="w-6 h-6 animate-spin" />
+            ) : (
+              <PlusIcon className="w-6 h-6" />
+            )}
+            Add New Service
           </motion.button>
         </div>
 
+        {/* Global Message/Notification */}
+        <AnimatePresence>
+          {message && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={`mb-8 p-4 rounded-lg shadow-md text-center font-medium ${
+                isSuccess ? 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100'
+              }`}
+            >
+              {message}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Service Cards Grid */}
-        {services.length === 0 ? (
+        {services.length === 0 && !isLoading ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-2xl p-10 shadow-lg text-center h-64"
+            className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-2xl p-10 shadow-lg text-center h-64 border border-gray-200 dark:border-gray-700"
           >
             <p className="text-2xl font-semibold text-gray-600 dark:text-gray-300 mb-4">No services listed yet!</p>
             <p className="text-lg text-gray-500 dark:text-gray-400">Click "Add New Service" to get started.</p>
           </motion.div>
+        ) : isLoading && services.length === 0 ? (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-2xl p-10 shadow-lg text-center h-64 border border-gray-200 dark:border-gray-700"
+            >
+                <ArrowPathIcon className="w-12 h-12 text-gray-500 dark:text-gray-400 animate-spin mb-4" />
+                <p className="text-2xl font-semibold text-gray-600 dark:text-gray-300">Loading services...</p>
+            </motion.div>
         ) : (
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -277,26 +481,30 @@ export default function AdminServicesClient({
                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col cursor-pointer border border-gray-200 dark:border-gray-700 overflow-hidden"
                 variants={cardVariants}
                 whileHover="hover"
-                onClick={() => handleOpenEdit(svc)} // Make entire card clickable for edit
+                onClick={() => handleOpenEdit(svc)}
               >
                 {/* Image Preview */}
-                {svc.images && svc.images.length > 0 && (
+                {svc.images && svc.images.length > 0 && svc.images[0] ? (
                   <div className="relative w-full h-48 rounded-lg mb-4 overflow-hidden shadow-sm">
                     <Image
                       src={svc.images[0]}
                       loader={imageLoader}
-                      alt={svc.title || svc.name || "Service Image"}
+                      alt={svc.name || "Service Image"}
                       layout="fill"
                       objectFit="cover"
                       className="transition-transform duration-300 hover:scale-105"
                     />
+                  </div>
+                ) : (
+                  <div className="relative w-full h-48 rounded-lg mb-4 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
+                    No Image
                   </div>
                 )}
 
                 {/* Card Header */}
                 <div className="flex justify-between items-start mb-3">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight pr-4">
-                    {svc.title || svc.name || "Untitled Service"}
+                    { svc.name || "Untitled Service"}
                   </h2>
                   <StatusBadge status={svc.status} />
                 </div>
@@ -311,7 +519,7 @@ export default function AdminServicesClient({
                     <p><span className="font-semibold" style={{ color: primaryColor }}>Price:</span> ${svc.sellingPrice.toFixed(2)}</p>
                   )}
                   {svc.hourlyRate && (
-                    <p><span className="font-semibold" style={{ color: primaryColor }}>Hourly Rate:</span> ${svc.hourlyRate.toFixed(2)}</p>
+                    <p><span className="font-semibold" style={{ color: primaryColor }}>Hourly Rate:</span> ${svc.hourlyRate.toFixed(2)}/hr</p>
                   )}
                   {svc.minimumHours && (
                     <p><span className="font-semibold" style={{ color: primaryColor }}>Min. Hours:</span> {svc.minimumHours}</p>
@@ -327,10 +535,10 @@ export default function AdminServicesClient({
                 {/* Action Buttons on Card */}
                 <div className="mt-4 flex justify-end gap-2">
                   <motion.button
-                    onClick={(e : any) => {
-                      e.stopPropagation(); // Prevent card click from triggering edit modal twice
-                      // Implement view details logic or open a read-only modal
-                      alert(`Viewing details for: ${svc.title || svc.name}`);
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Implement view details logic (e.g., open a read-only modal or navigate to detail page)
+                      alert(`Viewing details for: ${svc.name}`);
                     }}
                     className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors text-sm font-medium"
                     whileHover={{ scale: 1.05 }}
@@ -339,8 +547,8 @@ export default function AdminServicesClient({
                     <EyeIcon className="w-4 h-4" /> View
                   </motion.button>
                   <motion.button
-                    onClick={(e : any ) => {
-                      e.stopPropagation(); // Prevent card click from triggering edit modal twice
+                    onClick={(e) => {
+                      e.stopPropagation();
                       handleOpenEdit(svc);
                     }}
                     className="flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition-colors text-sm font-medium"

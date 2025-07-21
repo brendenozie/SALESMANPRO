@@ -13,12 +13,7 @@ import {
     MapPinIcon,
     Cog6ToothIcon, // For Advanced Options
     PlusIcon, // For adding items
-    MinusIcon, // For removing items
-    UserIcon, // For Seller/Company
-    CurrencyDollarIcon, // For Pricing
-    TruckIcon, // For Delivery
-    CreditCardIcon, // For Payment
-    CheckCircleIcon, // For general checkboxes
+    MinusIcon, // For general checkboxes
 } from '@heroicons/react/24/outline';
 import Image from 'next/image'; // Assuming Image component is available if needed for media previews
 import { useStoreContext } from '@/contexts/StoreContext'; // Assuming this context provides themeSettings and storeCategories
@@ -44,7 +39,7 @@ interface PricingTier {
 
 interface FormData {
     id?: string; // Optional for create mode
-    title: string;
+    name: string;
     description: string;
     productCategoryId: string;
     sellerId?: string;
@@ -97,7 +92,7 @@ interface FormData {
 
 // Dummy initial form data for demonstration
 const initialFormData: FormData = {
-    title: '',
+    name: '',
     description: '',
     productCategoryId: '',
     sellingPrice: 0,
@@ -389,7 +384,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({ isOpen, onClose
 
                         {/* Header */}
                         <h3 className="text-4xl font-extrabold mb-6 text-gray-900 dark:text-gray-100 leading-tight">
-                            {initialData ? `Edit: ${initialData.title || 'Service Listing'}` : "Add New Service Listing"}
+                            {initialData ? `Edit: ${initialData.name || 'Service Listing'}` : "Add New Service Listing"}
                         </h3>
 
                         <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row flex-grow">
@@ -446,7 +441,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({ isOpen, onClose
                                                 <input
                                                     type="text"
                                                     name="title"
-                                                    value={formData.title}
+                                                    value={formData.name}
                                                     onChange={handleChange}
                                                     required
                                                     className={`mt-1 block w-full rounded-lg border ${errors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
@@ -471,56 +466,6 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({ isOpen, onClose
                                                 {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                                             </motion.label>
 
-                                            {/* <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" variants={fieldVariants}>
-                                                <label className="block">
-                                                    <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Seller Type</span>
-                                                    <select
-                                                        name="sellerType"
-                                                        value={formData.sellerType || ''}
-                                                        onChange={handleChange}
-                                                        className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
-                                                        style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                                    >
-                                                        <option value="">Select type</option>
-                                                        <option value="INDIVIDUAL">Individual</option>
-                                                        <option value="COMPANY">Company</option>
-                                                    </select>
-                                                </label> 
-                                                 {formData.sellerType === 'COMPANY' && (
-                                                    <label className="block">
-                                                        <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Company</span>
-                                                        <select
-                                                            name="companyId"
-                                                            value={formData.companyId || ''}
-                                                            onChange={handleChange}
-                                                            className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
-                                                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                                        >
-                                                            <option value="">Select company</option>
-                                                            {companies.map(comp => (
-                                                                <option key={comp.id} value={comp.id}>{comp.name}</option>
-                                                            ))}
-                                                        </select>
-                                                    </label>
-                                                )} 
-                                                {formData.sellerType === 'INDIVIDUAL' && (
-                                                    <label className="block">
-                                                        <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Seller</span>
-                                                        <select
-                                                            name="sellerId"
-                                                            value={formData.sellerId || ''}
-                                                            onChange={handleChange}
-                                                            className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
-                                                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                                        >
-                                                            <option value="">Select seller</option>
-                                                            {sellers.map(seller => (
-                                                                <option key={seller.id} value={seller.id}>{seller.name}</option>
-                                                            ))}
-                                                        </select>
-                                                    </label>
-                                                )}
-                                             </motion.div> */}
                                         </motion.section>
                                     )}
 
