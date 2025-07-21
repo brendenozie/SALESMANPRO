@@ -1,8 +1,8 @@
 // app/admin/[slug]/services/page.tsx
 import React from "react";
 import AdminServicesClient, { ServiceItem } from "./AdminServicesClient"; // Adjust path as needed
-import { StoreCategory } from "../categories/page";
-// import { Category } from "../categories/page";
+import { StoreCategory } from "@/types/typings";
+
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 

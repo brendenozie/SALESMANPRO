@@ -8,7 +8,7 @@ interface BookingFormProps {
   service: ServiceItem;
 }
 
-export default function BookingForm({ service }: BookingFormProps) {
+export default function BookingFormModal({ service }: BookingFormProps) {
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
   const [loading, setLoading] = useState(false);
