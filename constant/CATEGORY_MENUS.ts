@@ -98,11 +98,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: CalendarIcon,
       subItems: [
         { label: "Manage Appointments", href: `/admin/${adminSlug}/appointments` },
-        { label: "Clients", href: `/admin/${adminSlug}/clients` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
-    { label: "Reports", href: `/admin/${adminSlug}/reports`, icon: ChartBarIcon },
+    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
