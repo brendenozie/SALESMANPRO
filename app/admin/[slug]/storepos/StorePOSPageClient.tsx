@@ -1,24 +1,22 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   MagnifyingGlassIcon,
   ShoppingCartIcon,
   PlusIcon,
   MinusIcon,
   XMarkIcon,
-  TagIcon,
   ReceiptPercentIcon,
   CreditCardIcon,
   UserCircleIcon,
   CheckCircleIcon,
-  CurrencyDollarIcon,
+  PrinterIcon,
   ClipboardDocumentCheckIcon,
-  PrinterIcon, // New icon for print button
 } from '@heroicons/react/24/outline';
 import Modal from '@/components/Modal'; // Assuming you have a reusable Modal component
 
-// --- Chart.js Imports ---
+// --- Chart.js Imports (if needed, not directly used in the POS core logic here but kept for completeness) ---
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,10 +26,11 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { MarketListingForm, StoreCategory } from '@/types/typings';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// --- Type Definitions ---
+// --- Type Definitions (aligned with frontend needs, will be populated from API) ---
 export type Product = {
   id: string;
   name: string;
@@ -39,9 +38,10 @@ export type Product = {
   price: number;
   imageUrl: string;
   stock: number;
+  // Add other relevant fields from schema if needed for display, e.g., brand, category
 };
 
-export type CartItem = Product & {
+export type CartItem = MarketListingForm & {
   quantity: number;
   subtotal: number;
 };
@@ -53,25 +53,11 @@ export type Agent = {
   dailySalesValue: number;
 };
 
-// --- Mock Data (Replace with actual API calls) ---
-const MOCK_PRODUCTS: Product[] = [
-  { id: 'prod-001', name: 'Wireless Headphones XYZ', description: 'Premium noise-cancelling headphones.', price: 199.99, imageUrl: 'https://placehold.co/100x100/A78BFA/ffffff?text=Headphones', stock: 50 },
-  { id: 'prod-002', name: 'Smartwatch Pro 2.0', description: 'Track your fitness and notifications.', price: 249.00, imageUrl: 'https://placehold.co/100x100/60A5FA/ffffff?text=Smartwatch', stock: 30 },
-  { id: 'prod-003', name: 'Portable Bluetooth Speaker', description: 'Powerful sound on the go.', price: 79.50, imageUrl: 'https://placehold.co/100x100/34D399/ffffff?text=Speaker', stock: 120 },
-  { id: 'prod-004', name: '4K UHD Smart TV 55"', description: 'Immersive viewing experience.', price: 799.00, imageUrl: 'https://placehold.co/100x100/F472B6/ffffff?text=SmartTV', stock: 15 },
-  { id: 'prod-005', name: 'Ergonomic Office Chair', description: 'Comfort and support for long hours.', price: 299.99, imageUrl: 'https://placehold.co/100x100/FBBF24/ffffff?text=Chair', stock: 40 },
-  { id: 'prod-006', name: 'Gaming Laptop X1', description: 'High performance for serious gamers.', price: 1499.00, imageUrl: 'https://placehold.co/100x100/EF4444/ffffff?text=Laptop', stock: 10 },
-  { id: 'prod-007', name: 'Coffee Maker Deluxe', description: 'Brew perfect coffee every time.', price: 89.95, imageUrl: 'https://placehold.co/100x100/8B5CF6/ffffff?text=Coffee', stock: 75 },
-  { id: 'prod-008', name: 'External SSD 1TB', description: 'Fast and reliable portable storage.', price: 120.00, imageUrl: 'https://placehold.co/100x100/EC4899/ffffff?text=SSD', stock: 90 },
-  { id: 'prod-009', name: 'Robot Vacuum Cleaner', description: 'Automated home cleaning.', price: 350.00, imageUrl: 'https://placehold.co/100x100/10B981/ffffff?text=Vacuum', stock: 25 },
-  { id: 'prod-010', name: 'Fitness Tracker Band', description: 'Monitor your health and activity.', price: 49.99, imageUrl: 'https://placehold.co/100x100/F59E0B/ffffff?text=Tracker', stock: 200 },
-];
-
-const MOCK_AGENT: Agent = {
-  id: 'agent-001',
-  name: 'Alice Smith',
-  dailySalesCount: 15,
-  dailySalesValue: 1250.75,
+export type CompanyInfo = {
+  name: string;
+  address: string;
+  phone: string;
+  currency: string;
 };
 
 // --- Receipt Generation Helper ---
@@ -88,6 +74,7 @@ interface ReceiptDetails {
   storeName: string;
   storeAddress: string;
   storePhone: string;
+  currencySymbol: string; // Added for dynamic currency display
 }
 
 const generateReceiptHtml = (details: ReceiptDetails): string => {
@@ -95,8 +82,8 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
     <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
       <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
       <span style="width: 40px; text-align: center;">x${item.quantity}</span>
-      <span style="width: 80px; text-align: right;">KSh ${item.price.toFixed(2)}</span>
-      <span style="width: 100px; text-align: right; font-weight: bold;">KSh ${item.subtotal.toFixed(2)}</span>
+      <span style="width: 80px; text-align: right;">${details.currencySymbol} ${item.finalPrice.toFixed(2)}</span>
+      <span style="width: 100px; text-align: right; font-weight: bold;">${details.currencySymbol} ${item.subtotal.toFixed(2)}</span>
     </div>
   `).join('');
 
@@ -109,9 +96,6 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
       <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
         <span>Date:</span><span>${details.date}</span>
       </div>
-      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
-        <span>Time:</span><span>${details.time}</span>
-      </div>
       <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 15px;">
         <span>Txn ID:</span><span>${details.transactionId}</span>
       </div>
@@ -122,17 +106,17 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
 
       <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px;">
-        <span>Subtotal:</span><span style="font-weight: bold;">KSh ${details.subtotal.toFixed(2)}</span>
+        <span>Subtotal:</span><span style="font-weight: bold;">${details.currencySymbol} ${details.subtotal.toFixed(2)}</span>
       </div>
       <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px;">
-        <span>Discount:</span><span style="font-weight: bold; color: #E91E63;">- KSh ${details.totalDiscountAmount.toFixed(2)}</span>
+        <span>Discount:</span><span style="font-weight: bold; color: #E91E63;">- ${details.currencySymbol} ${details.totalDiscountAmount.toFixed(2)}</span>
       </div>
       <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 15px;">
-        <span>Tax:</span><span style="font-weight: bold;">KSh ${details.totalTax.toFixed(2)}</span>
+        <span>Tax:</span><span style="font-weight: bold;">${details.currencySymbol} ${details.totalTax.toFixed(2)}</span>
       </div>
 
       <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #6A0572; padding-top: 10px; margin-top: 10px;">
-        <span>TOTAL:</span><span>KSh ${details.finalTotal.toFixed(2)}</span>
+        <span>TOTAL:</span><span>${details.currencySymbol} ${details.finalTotal.toFixed(2)}</span>
       </div>
 
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
@@ -143,9 +127,8 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
   `;
 };
 
-// --- Print Function ---
+// --- Print Function (remains mostly the same, now uses dynamic currencySymbol) ---
 const printReceipt = (htmlContent: string) => {
-  // Option 1: Using a hidden iframe for print preview (more control than window.print())
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
@@ -160,15 +143,14 @@ const printReceipt = (htmlContent: string) => {
         <title>Receipt</title>
         <style>
           @page {
-            size: 80mm auto; /* Typical receipt paper width */
+            size: 80mm auto;
             margin: 0;
           }
           body {
             margin: 0;
             padding: 0;
-            -webkit-print-color-adjust: exact; /* For background colors */
+            -webkit-print-color-adjust: exact;
           }
-          /* Add specific styles from generateReceiptHtml here to ensure consistent rendering */
           div { font-family: 'Inter', sans-serif; width: 300px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; border: 1px solid #eee; }
           h2 { text-align: center; font-size: 24px; margin-bottom: 5px; color: #6A0572; }
           p { text-align: center; font-size: 12px; margin-bottom: 10px; color: #555; }
@@ -196,53 +178,33 @@ const printReceipt = (htmlContent: string) => {
     iframe.onload = () => {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
-      document.body.removeChild(iframe); // Clean up the iframe
+      document.body.removeChild(iframe);
     };
   } else {
-    // Fallback if iframe contentWindow is not accessible
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(htmlContent);
       printWindow.document.close();
       printWindow.print();
-      // printWindow.close(); // Might close too fast for some browsers
     } else {
       alert('Could not open print window. Please allow pop-ups for printing.');
     }
   }
-
-  // --- For a local print server (more robust for POS) ---
-  // If you had a local print server (e.g., running on http://localhost:8000/print),
-  // you would send the receipt data (could be raw text, HTML, or specific printer commands like ESC/POS)
-  // to that endpoint. This would bypass the browser print dialog.
-  /*
-  fetch('http://localhost:8000/print-receipt', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      receiptHtml: htmlContent, // Or raw text, or ESC/POS commands
-      printerId: 'your-receipt-printer-id' // Optional: if you have multiple printers
-    })
-  })
-  .then(response => {
-    if (!response.ok) {
-      console.error('Failed to send receipt to local printer:', response.statusText);
-      alert('Failed to send receipt to printer. Please check printer connection.');
-    } else {
-      console.log('Receipt sent to local printer successfully.');
-    }
-  })
-  .catch(error => {
-    console.error('Error connecting to local printer server:', error);
-    alert('Error connecting to local printer server. Ensure it is running.');
-  });
-  */
 };
 
 
 // --- Main POS Component ---
-const StorePOSPageClient: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS); // In a real app, fetch this
+// Props for initial data and company ID, passed from the server-side Page.tsx
+interface StorePOSPageClientProps {
+  initialProducts?: MarketListingForm[]; // If you pre-fetch on the server
+  initialCategories?: StoreCategory[]; // If you pre-fetch on the server
+  companyId: string; // The company ID is essential for fetching relevant data
+}
+
+const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories }) => {
+  // --- State Variables (now initialized as empty, will be populated by API calls) ---
+  const [products, setProducts] = useState<MarketListingForm[]>(initialProducts || []);
+  const [categories, setCategories] = useState<StoreCategory[]>(initialCategories || []);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [discountPercentage, setDiscountPercentage] = useState(0);
@@ -250,14 +212,98 @@ const StorePOSPageClient: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
 
-  const currentAgent = MOCK_AGENT; // In a real app, this would come from auth context
+  // State for Agent and Company Info
+  const [currentAgent, setCurrentAgent] = useState<Agent | null>(null);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+
+  const currencySymbol = useMemo(() => companyInfo?.currency === 'KES' ? 'KSh' : '$', [companyInfo]);
+
+  // --- useEffect to fetch data on component mount ---
+  useEffect(() => {
+    // 1. Fetch Products
+    const fetchProducts = async () => {
+      console.log(`Fetching products for companyId: ${companyId}`);
+      // Simulate API call for products
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+      const fetchedProducts: Product[] = [
+        { id: 'prod-001', name: 'Wireless Headphones XYZ', description: 'Premium noise-cancelling headphones.', price: 199.99, imageUrl: 'https://placehold.co/100x100/A78BFA/ffffff?text=Headphones', stock: 50 },
+        { id: 'prod-002', name: 'Smartwatch Pro 2.0', description: 'Track your fitness and notifications.', price: 249.00, imageUrl: 'https://placehold.co/100x100/60A5FA/ffffff?text=Smartwatch', stock: 30 },
+        { id: 'prod-003', name: 'Portable Bluetooth Speaker', description: 'Powerful sound on the go.', price: 79.50, imageUrl: 'https://placehold.co/100x100/34D399/ffffff?text=Speaker', stock: 120 },
+        { id: 'prod-004', name: '4K UHD Smart TV 55"', description: 'Immersive viewing experience.', price: 799.00, imageUrl: 'https://placehold.co/100x100/F472B6/ffffff?text=SmartTV', stock: 15 },
+        { id: 'prod-005', name: 'Ergonomic Office Chair', description: 'Comfort and support for long hours.', price: 299.99, imageUrl: 'https://placehold.co/100x100/FBBF24/ffffff?text=Chair', stock: 40 },
+      ];
+      // setProducts(fetchedProducts);
+      // In a real app:
+      // try {
+      //   const response = await fetch(`/api/products?companyId=${companyId}`);
+      //   if (!response.ok) throw new Error('Failed to fetch products');
+      //   const data = await response.json();
+      //   setProducts(data);
+      // } catch (error) {
+      //   console.error("Error fetching products:", error);
+      //   // Fallback to empty or previous state, or show error message
+      //   setProducts([]);
+      // }
+    };
+
+    // 2. Fetch Agent Info (assuming a current user/agent context)
+    const fetchAgentInfo = async () => {
+      console.log("Fetching current agent info");
+      await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
+      const fetchedAgent: Agent = {
+        id: 'agent-001',
+        name: 'Alice Smith',
+        dailySalesCount: 15,
+        dailySalesValue: 1250.75,
+      };
+      setCurrentAgent(fetchedAgent);
+      // In a real app:
+      // try {
+      //   // Assuming an endpoint like /api/auth/me or /api/users/{currentUserId}
+      //   const response = await fetch(`/api/users/current`); // Or get current user ID from auth context
+      //   if (!response.ok) throw new Error('Failed to fetch agent info');
+      //   const data = await response.json();
+      //   setCurrentAgent(data);
+      // } catch (error) {
+      //   console.error("Error fetching agent info:", error);
+      //   setCurrentAgent(null);
+      // }
+    };
+
+    // 3. Fetch Company Info
+    const fetchCompanyInfo = async () => {
+      console.log(`Fetching company info for companyId: ${companyId}`);
+      await new Promise(resolve => setTimeout(resolve, 400)); // Simulate network delay
+      const fetchedCompany: CompanyInfo = {
+        name: 'Your Awesome Store',
+        address: '123 Main St, Nairobi, Kenya',
+        phone: '+254 7XX XXX XXX',
+        currency: 'KES', // Default from schema, or fetched
+      };
+      setCompanyInfo(fetchedCompany);
+      // In a real app:
+      // try {
+      //   const response = await fetch(`/api/companies/${companyId}`);
+      //   if (!response.ok) throw new Error('Failed to fetch company info');
+      //   const data = await response.json();
+      //   setCompanyInfo(data);
+      // } catch (error) {
+      //   console.error("Error fetching company info:", error);
+      //   setCompanyInfo(null);
+      // }
+    };
+
+    fetchProducts();
+    fetchAgentInfo();
+    fetchCompanyInfo();
+  }, [companyId]); // Dependency array: re-run if companyId changes
 
   // Filtered products for search
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
     return products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase())
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [products, searchTerm]);
 
@@ -281,28 +327,26 @@ const StorePOSPageClient: React.FC = () => {
   }, [subtotal, totalDiscountAmount, totalTax]);
 
   // --- Cart Actions ---
-  const handleAddToCart = useCallback((product: Product) => {
+  const handleAddToCart = useCallback((product: MarketListingForm) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       if (existingItem) {
-        // Increase quantity if item already in cart
         const newQuantity = existingItem.quantity + 1;
-        if (newQuantity > product.stock) {
-          alert(`Cannot add more than available stock (${product.stock}) for ${product.name}`);
-          return prevCart;
-        }
+        // if (newQuantity > product.stock) {
+        //   alert(`Cannot add more than available stock (${product.stock}) for ${product.name}`);
+        //   return prevCart;
+        // }
         return prevCart.map(item =>
           item.id === product.id
-            ? { ...item, quantity: newQuantity, subtotal: product.price * newQuantity }
+            ? { ...item, quantity: newQuantity, subtotal: product.finalPrice * newQuantity }
             : item
         );
       } else {
-        // Add new item to cart
-        if (1 > product.stock) {
-          alert(`Cannot add ${product.name} as it's out of stock.`);
-          return prevCart;
-        }
-        return [...prevCart, { ...product, quantity: 1, subtotal: product.price }];
+        // if (1 > product.stock) {
+        //   alert(`Cannot add ${product.name} as it's out of stock.`);
+        //   return prevCart;
+        // }
+        return [...prevCart, { ...product, quantity: 1, subtotal: product.finalPrice }];
       }
     });
   }, []);
@@ -312,15 +356,15 @@ const StorePOSPageClient: React.FC = () => {
       const updatedCart = prevCart.map(item => {
         if (item.id === itemId) {
           const newQuantity = item.quantity + delta;
-          if (newQuantity <= 0) return null; // Mark for removal
-          if (newQuantity > item.stock) {
-            alert(`Cannot add more than available stock (${item.stock}) for ${item.name}`);
-            return item;
-          }
-          return { ...item, quantity: newQuantity, subtotal: item.price * newQuantity };
+          if (newQuantity <= 0) return null;
+          // if (newQuantity > item.stock) {
+          //   alert(`Cannot add more than available stock (${item.stock}) for ${item.name}`);
+          //   return item;
+          // }
+          return { ...item, quantity: newQuantity, subtotal: item.finalPrice * newQuantity };
         }
         return item;
-      }).filter(Boolean) as CartItem[]; // Filter out nulls (removed items)
+      }).filter(Boolean) as CartItem[];
       return updatedCart;
     });
   }, []);
@@ -336,27 +380,48 @@ const StorePOSPageClient: React.FC = () => {
     }
   }, []);
 
-  const handleProcessPayment = useCallback(() => {
-    if (cart.length === 0) {
-      alert('Cart is empty. Please add items before processing payment.');
-      return;
-    }
-    setShowPaymentModal(true);
-  }, [cart.length]);
-
-  const finalizeSale = useCallback(() => {
-    // Simulate payment processing
+  const finalizeSale = useCallback(async () => {
     setPaymentStatus(null); // Reset status
-    setTimeout(() => {
-      const success = Math.random() > 0.1; // 90% success rate
+    console.log("Finalizing sale...");
+
+    // Prepare payload for the /api/customer-orders API
+    const orderPayload = {
+      userId: currentAgent?.id, // Get current agent's ID
+      companyId: companyId,
+      totalAmount: finalTotal,
+      discountAmount: totalDiscountAmount,
+      taxAmount: totalTax,
+      paymentDetails: {
+        amount: finalTotal,
+        status: 'COMPLETED', // Assuming immediate completion for this simulation
+        transactionId: `TXN-${Date.now()}`, // Generate unique ID
+      },
+      items: cart.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        priceAtSale: item.finalPrice,
+        subtotal: item.subtotal,
+      })),
+    };
+
+    // Simulate API call to /api/customer-orders
+    try {
+      // In a real app:
+      // const response = await fetch('/api/customer-orders', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(orderPayload),
+      // });
+      // if (!response.ok) throw new Error('Failed to process order');
+      // const result = await response.json(); // May contain transaction ID or order ID
+
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+
+      const success = Math.random() > 0.1; // 90% success rate for simulation
       if (success) {
         setPaymentStatus('success');
-        // In a real app:
-        // 1. Send sale data to backend
-        // 2. Update product stock in backend
-        // 3. Update agent's sales metrics
 
-        // --- Receipt Printing ---
+        // --- Receipt Printing (uses dynamic company and agent info) ---
         const now = new Date();
         const receiptDetails: ReceiptDetails = {
           cart,
@@ -364,38 +429,56 @@ const StorePOSPageClient: React.FC = () => {
           totalDiscountAmount,
           totalTax,
           finalTotal,
-          agentName: currentAgent.name,
-          transactionId: `TXN-${Date.now()}`, // Generate a unique transaction ID
+          agentName: currentAgent?.name || 'N/A',
+          transactionId: orderPayload.paymentDetails.transactionId,
           date: now.toLocaleDateString(),
           time: now.toLocaleTimeString(),
-          storeName: 'Your Awesome Store', // Replace with dynamic store name
-          storeAddress: '123 Main St, City, Country', // Replace
-          storePhone: '+1 (555) 123-4567', // Replace
+          storeName: companyInfo?.name || 'Your Awesome Store',
+          storeAddress: companyInfo?.address || '123 Main St, City, Country',
+          storePhone: companyInfo?.phone || '+1 (555) 123-4567',
+          currencySymbol: currencySymbol,
         };
         const receiptHtml = generateReceiptHtml(receiptDetails);
         printReceipt(receiptHtml);
         // --- End Receipt Printing ---
 
-        // 4. Clear cart
+        // Clear cart and reset discount
         setCart([]);
         setDiscountPercentage(0);
-        // Simulate stock update (for demonstration)
+
+        // Simulate stock update on the frontend (real app would rely on backend confirmation)
         setProducts(prevProducts =>
           prevProducts.map(p => {
             const soldItem = cart.find(ci => ci.id === p.id);
-            if (soldItem) {
-              return { ...p, stock: p.stock - soldItem.quantity };
-            }
+            // if (soldItem) {
+            //   return { ...p, stock: p.stock - soldItem.quantity };
+            // }
             return p;
           })
         );
+        // Potentially update agent's displayed sales metrics if they are stateful on frontend
+        // setCurrentAgent(prev => prev ? { ...prev, dailySalesCount: prev.dailySalesCount + 1, dailySalesValue: prev.dailySalesValue + finalTotal } : null);
+
       } else {
         setPaymentStatus('failed');
       }
+    } catch (error) {
+      console.error("Error during sale finalization:", error);
+      setPaymentStatus('failed');
+    } finally {
       setShowPaymentModal(false);
       setShowConfirmationModal(true); // Show confirmation of success/failure
-    }, 1500);
-  }, [cart, subtotal, totalDiscountAmount, totalTax, finalTotal, currentAgent.name]);
+    }
+  }, [cart, subtotal, totalDiscountAmount, totalTax, finalTotal, currentAgent, companyId, companyInfo, currencySymbol]);
+
+  const handleProcessPayment = useCallback(() => {
+    if (cart.length === 0) {
+      alert('Cart is empty. Please add items before processing payment.');
+      return;
+    }
+    setShowPaymentModal(true);
+    finalizeSale(); // Call finalizeSale directly when showing payment modal
+  }, [cart.length, finalizeSale]);
 
   // --- Render ---
   return (
@@ -429,9 +512,13 @@ const StorePOSPageClient: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto flex-grow pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-            {filteredProducts.length === 0 ? (
+            {products.length === 0 && !searchTerm ? (
               <div className="col-span-full text-center py-10 text-gray-400 text-xl">
-                No products found.
+                Loading products...
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="col-span-full text-center py-10 text-gray-400 text-xl">
+                No products found matching your search.
               </div>
             ) : (
               filteredProducts.map(product => (
@@ -440,10 +527,10 @@ const StorePOSPageClient: React.FC = () => {
                   className="bg-gray-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-600"
                 >
                   <img
-                    src={product.imageUrl}
+                    src={product.images && product?.images?.length > 0 ? product.images[0] : `https://placehold.co/100x100/4B5563/ffffff?text=${product && product?.name || 'No+Image'}` }
                     alt={product.name}
                     className="w-full h-32 object-cover rounded-t-xl border-b border-gray-600"
-                    onError={(e) => { e.currentTarget.src = `https://placehold.co/100x100/4B5563/ffffff?text=No+Image`; }}
+                    onError={(e) => { e.currentTarget.src = `https://placehold.co/100x100/4B5563/ffffff?text=${product && product?.name || 'No+Image'}`; }}
                   />
                   <div className="p-4 flex-grow flex flex-col justify-between">
                     <div>
@@ -452,14 +539,15 @@ const StorePOSPageClient: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-end mt-auto">
                       <div>
-                        <p className="text-lg font-bold text-green-400">KSh {product.price.toFixed(2)}</p>
-                        <p className="text-xs text-gray-400">Stock: {product.stock}</p>
+                        <p className="text-lg font-bold text-green-400">{currencySymbol} {product.finalPrice.toFixed(2)}</p>
+                        <p className="text-xs text-gray-400">Stock: - </p> 
+                          {/* {product.stock}*/}
                       </div>
                       <button
                         onClick={() => handleAddToCart(product)}
                         className="bg-purple-600 text-white p-3 rounded-full shadow-md hover:bg-purple-700 transition-all duration-200 transform hover:scale-110"
                         aria-label={`Add ${product.name} to cart`}
-                        disabled={product.stock <= 0}
+                        // disabled={product.stock <= 0}
                       >
                         <PlusIcon className="h-5 w-5" />
                       </button>
@@ -496,14 +584,14 @@ const StorePOSPageClient: React.FC = () => {
                 <div key={item.id} className="flex items-center justify-between bg-gray-700 p-4 rounded-lg shadow-md mb-3 border border-gray-600">
                   <div className="flex items-center flex-grow">
                     <img
-                      src={item.imageUrl}
+                      src={item.images ? item.images[0] : `https://placehold.co/50x50/4B5563/ffffff?text=Img`}
                       alt={item.name}
                       className="h-12 w-12 rounded-md object-cover mr-4"
                       onError={(e) => { e.currentTarget.src = `https://placehold.co/50x50/4B5563/ffffff?text=Img`; }}
                     />
                     <div className="flex-grow">
                       <h3 className="text-lg font-semibold text-white truncate">{item.name}</h3>
-                      <p className="text-sm text-gray-400">KSh {item.price.toFixed(2)} / item</p>
+                      <p className="text-sm text-gray-400">{currencySymbol} {item.finalPrice.toFixed(2)} / item</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
@@ -551,43 +639,49 @@ const StorePOSPageClient: React.FC = () => {
               step="1"
               aria-label="Discount percentage"
             />
-            <p className="text-xs text-gray-400 mt-1">Discount applied: KSh {totalDiscountAmount.toFixed(2)}</p>
+            <p className="text-xs text-gray-400 mt-1">Discount applied: {currencySymbol} {totalDiscountAmount.toFixed(2)}</p>
           </div>
 
           {/* Order Summary */}
           <div className="space-y-3 mb-6 border-t border-gray-700 pt-4">
             <div className="flex justify-between text-lg">
               <span className="text-gray-300">Subtotal:</span>
-              <span className="font-semibold text-white">KSh {subtotal.toFixed(2)}</span>
+              <span className="font-semibold text-white">{currencySymbol} {subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg">
               <span className="text-gray-300">Discount ({discountPercentage}%):</span>
-              <span className="font-semibold text-pink-400">- KSh {totalDiscountAmount.toFixed(2)}</span>
+              <span className="font-semibold text-pink-400">- {currencySymbol} {totalDiscountAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg">
               <span className="text-gray-300">Tax (8%):</span>
-              <span className="font-semibold text-white">KSh {totalTax.toFixed(2)}</span>
+              <span className="font-semibold text-white">{currencySymbol} {totalTax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-4xl font-extrabold border-t-2 border-purple-500 pt-4 mt-4">
               <span className="text-purple-300">TOTAL:</span>
-              <span className="text-green-400">KSh {finalTotal.toFixed(2)}</span>
+              <span className="text-green-400">{currencySymbol} {finalTotal.toFixed(2)}</span>
             </div>
           </div>
 
           {/* Agent Info & Checkout Button */}
           <div className="mt-auto pt-4 border-t border-gray-700">
-            <div className="bg-gray-700 p-4 rounded-lg shadow-inner flex items-center mb-4 border border-gray-600">
-              <UserCircleIcon className="h-8 w-8 text-blue-400 mr-3" />
-              <div>
-                <p className="text-sm text-gray-300">Serving Agent:</p>
-                <p className="text-lg font-semibold text-white">{currentAgent.name}</p>
-                <p className="text-xs text-gray-400">Sales Today: {currentAgent.dailySalesCount} (KSh {currentAgent.dailySalesValue.toFixed(2)})</p>
+            {currentAgent ? (
+              <div className="bg-gray-700 p-4 rounded-lg shadow-inner flex items-center mb-4 border border-gray-600">
+                <UserCircleIcon className="h-8 w-8 text-blue-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-300">Serving Agent:</p>
+                  <p className="text-lg font-semibold text-white">{currentAgent.name}</p>
+                  <p className="text-xs text-gray-400">Sales Today: {currentAgent.dailySalesCount} ({currencySymbol} {currentAgent.dailySalesValue.toFixed(2)})</p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-gray-700 p-4 rounded-lg shadow-inner flex items-center mb-4 border border-gray-600 text-gray-400">
+                Loading agent info...
+              </div>
+            )}
             <button
               onClick={handleProcessPayment}
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl text-2xl font-bold shadow-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
-              disabled={cart.length === 0}
+              disabled={cart.length === 0 || !currentAgent || !companyInfo} // Disable if cart is empty or data not loaded
             >
               <CreditCardIcon className="h-7 w-7 mr-3" /> Process Payment
             </button>
@@ -633,9 +727,9 @@ const StorePOSPageClient: React.FC = () => {
           <h2 className="text-3xl font-bold text-indigo-400 mb-4">Processing Payment...</h2>
           <p className="text-lg text-gray-300 mb-7">Please wait while your transaction is being finalized.</p>
           <button
-            onClick={finalizeSale} // This button is disabled, but the function is called by setTimeout
+            onClick={finalizeSale}
             className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 font-semibold flex items-center justify-center"
-            disabled={true} // Disable during processing
+            disabled={true}
           >
             <ClipboardDocumentCheckIcon className="h-5 w-5 mr-2" /> Finalizing...
           </button>
@@ -646,3 +740,4 @@ const StorePOSPageClient: React.FC = () => {
 };
 
 export default StorePOSPageClient;
+

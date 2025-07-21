@@ -1,4 +1,6 @@
 // app/[slug]/products/[productId]/page.tsx
+"use client";
+
 import React from 'react';
 import { notFound } from 'next/navigation';
 import prisma from '@/server/db/prismadb';
@@ -28,13 +30,13 @@ export default async function ProductPage({ params }: PageProps) {
 
 
   // Fetch product and related items
-  const product = await prisma.marketplaceListing.findFirst({
+  const product = await prisma.marketplaceListings.findFirst({
     where: { id: productId, company: { slug } },
     // include: { images: true },
   });
   if (!product) notFound();
 
-  const related = await prisma.marketplaceListing.findMany({
+  const related = await prisma.marketplaceListings.findMany({
     where: {
       companyId: product.companyId,
       productCategoryId: product.productCategoryId,

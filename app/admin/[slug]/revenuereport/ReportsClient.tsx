@@ -74,7 +74,7 @@ const ReportsClient: React.FC = () => {
         totalRes,
       ] = await Promise.all([
         axios.get<OrdersByStatusResponse[]>(
-          "/api/admin/reports/orders-by-status",
+          "/api/admin/reports/order-by-status",
           { params }
         ),
         axios.get<SalesAgentRevenueResponse[]>(

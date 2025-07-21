@@ -1,44 +1,9 @@
 // app/admin/[slug]/pos/page.tsx
 import React from "react";
-import StorePOSPageClient from "./StorePOSPageClient";
+import StorePOSPageClient, { Product } from "./StorePOSPageClient"; // Import Product type
+import { MarketListingForm, StoreCategory } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-// Re-using Product and ProductCategory types from Menu module for consistency
-export type ProductCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image: string | null;
-  sortOrder: number;
-  visible: boolean;
-  companyId: string | null;
-};
-
-export type Product = {
-  id: string;
-  name: string;
-  description: string | null;
-  images: { url: string }[];
-  video: string | null;
-  tags: string[];
-  productCategoryId: string | null;
-  category: { name: string } | null;
-  costPrice: number;
-  salesPrice: number;
-  finalPrice: number;
-  discount: number | null;
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-  ingredients: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 interface PageProps {
   params: {
@@ -51,35 +16,57 @@ interface PageProps {
  */
 export default async function PosPage({ params }: PageProps) {
   const companyId = params.slug;
-  let categoriesData: ProductCategory[] = [];
-  let productsData: Product[] = [];
+
+  let initialCategories: StoreCategory[] = [];
+  let initialProducts: MarketListingForm[] = [];
 
   try {
-    // Fetch Product Categories for the company
-    const categoriesRes = await fetch(`${apiUrl}/admin/menu-categories?companyId=${companyId}`, { cache: "no-store" });
+    // Fetch Store Categories
+    // Correcting the API path to match your provided route: /api/store-categories
+    const categoriesRes = await fetch(`${apiUrl}/admin/pos-categories?companyId=${companyId}`, {
+      cache: "no-store",
+    });
     if (categoriesRes.ok) {
-      categoriesData = (await categoriesRes.json()) as ProductCategory[];
+      const categoriesData = await categoriesRes.json();
+      initialCategories = categoriesData.categories || []; // Ensure it's an array
     } else {
-      console.error("[PosPage] Failed to fetch categories →", categoriesRes.status, categoriesRes.statusText);
+      console.error(`Failed to fetch categories: ${categoriesRes.status} ${categoriesRes.statusText}`);
     }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
 
-    // Fetch Products (dishes) for the company
-    const productsRes = await fetch(`${apiUrl}/admin/products?companyId=${companyId}`, { cache: "no-store" });
+  try {
+    // Fetch Marketplace Listings (Products)
+    // Correcting the API path to match your provided route: /api/marketplace-list
+    const productsRes = await fetch(`${apiUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, {
+      cache: "no-store",
+    });
     if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
+      const productsData = await productsRes.json();
+      // Map marketplace listings to the Product type expected by StorePOSPageClient
+      initialProducts = productsData.results ;
+        
+      //   || []).map((listing: any) => ({
+      //   id: listing.id, // Use the listing's ID as the product ID for cart tracking
+      //   name: listing.product?.name || 'Unnamed Product',
+      //   description: listing.product?.description || 'No description available.',
+      //   price: listing.price, // Use the listing's specific price
+      //   imageUrl: listing.product?.images?.[0] || 'https://placehold.co/100x100/4B5563/ffffff?text=No+Image', // First image
+      //   stock: listing.quantityAvailable, // Listing's available quantity
+      // }));
     } else {
-      console.error("[PosPage] Failed to fetch products →", productsRes.status, productsRes.statusText);
+      console.error(`Failed to fetch products: ${productsRes.status} ${productsRes.statusText}`);
     }
-
-  } catch (err: any) {
-    console.error("[PosPage] Error fetching POS data →", err.message);
+  } catch (error) {
+    console.error("Error fetching products:", error);
   }
 
   return (
     <StorePOSPageClient
-      // initialCategories={categoriesData}
-      // initialProducts={productsData}
-      // companyId={companyId}
+      companyId={companyId}
+      initialCategories={initialCategories}
+      initialProducts={initialProducts}
     />
   );
 }

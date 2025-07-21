@@ -1,30 +1,26 @@
 // In a separate file (e.g. siteLayoutMap.ts)
 import dynamic from 'next/dynamic';
 
-const EcommerceLayout = dynamic(() =>
-  import('@/components/site/layouts/EcommerceLayout/EcommerceLayout')
-);
-const ServicesLayout = dynamic(() =>
-    import('@/components/site/layouts/ServicesLayout/ServicesLayout')
-  );
-import BookingsLayout from '@/components/site/layouts/BookingsLayout/BookingsLayout';
-import DefaultLayout from '@/components/site/layouts/DefaultLayout/DefaultLayout';
-import RealEstateLayout from '@/components/site/layouts/RealEstateLayout/RealEstateLayout';
-import PortfolioLayout from '@/components/site/layouts/PortfolioLayout/PortfolioLayout';
-import BlogLayout from '@/components/site/layouts/BlogLayout/BlogLayout';
-import CoursesLayout from '@/components/site/layouts/CoursesLayout/CoursesLayout';
-import DirectoryLayout from '@/components/site/layouts/DirectoryLayout/DirectoryLayout';
-import EventsLayout from '@/components/site/layouts/EventsLayout/EventsLayout';
-import FinanceLayout from '@/components/site/layouts/FinanceLayout/FinanceLayout';
-import FitnessLayout from '@/components/site/layouts/FitnessLayout/FitnessLayout';
-import HealthcareLayout from '@/components/site/layouts/HealthcareLayout/HealthcareLayout';
-import MarketplaceLayout from '@/components/site/layouts/MarketplaceLayout/MarketplaceLayout';
-import NonprofitLayout from '@/components/site/layouts/NonprofitLayout/NonprofitLayout';
-import MediaLayout from '@/components/site/layouts/MediaLayout/MediaLayout';
-import TravelLayout from '@/components/site/layouts/TravelLayout/TravelLayout';
-import RestaurantLayout from '@/components/site/layouts/RestaurantLayout/RestaurantLayout';
-import AutomotiveLayout from '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout';
-import SaaSLayout from '@/components/site/layouts/SaaSLayout/SaaSLayout';
+const EcommerceLayout = dynamic(() => import('@/components/site/layouts/EcommerceLayout/EcommerceLayout'));
+const ServicesLayout = dynamic(() =>  import('@/components/site/layouts/ServicesLayout/ServicesLayout'));
+const BookingsLayout = dynamic(() => import( '@/components/site/layouts/BookingsLayout/BookingsLayout'));
+const DefaultLayout = dynamic(() => import( '@/components/site/layouts/DefaultLayout/DefaultLayout'));
+const RealEstateLayout = dynamic(() => import( '@/components/site/layouts/RealEstateLayout/RealEstateLayout'));
+const PortfolioLayout = dynamic(() => import( '@/components/site/layouts/PortfolioLayout/PortfolioLayout'));
+const BlogLayout = dynamic(() => import( '@/components/site/layouts/BlogLayout/BlogLayout'));
+const CoursesLayout = dynamic(() => import( '@/components/site/layouts/CoursesLayout/CoursesLayout'));
+const DirectoryLayout = dynamic(() => import( '@/components/site/layouts/DirectoryLayout/DirectoryLayout'));
+const EventsLayout = dynamic(() => import( '@/components/site/layouts/EventsLayout/EventsLayout'));
+const FinanceLayout = dynamic(() => import( '@/components/site/layouts/FinanceLayout/FinanceLayout'));
+const FitnessLayout = dynamic(() => import( '@/components/site/layouts/FitnessLayout/FitnessLayout'));
+const HealthcareLayout = dynamic(() => import( '@/components/site/layouts/HealthcareLayout/HealthcareLayout'));
+const MarketplaceLayout = dynamic(() => import( '@/components/site/layouts/MarketplaceLayout/MarketplaceLayout'));
+const NonprofitLayout = dynamic(() => import( '@/components/site/layouts/NonprofitLayout/NonprofitLayout'));
+const MediaLayout = dynamic(() => import( '@/components/site/layouts/MediaLayout/MediaLayout'));
+const TravelLayout = dynamic(() => import( '@/components/site/layouts/TravelLayout/TravelLayout'));
+const RestaurantLayout = dynamic(() => import( '@/components/site/layouts/RestaurantLayout/RestaurantLayout'));
+const AutomotiveLayout = dynamic(() => import( '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout'));
+const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
 

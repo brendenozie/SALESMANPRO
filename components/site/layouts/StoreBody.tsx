@@ -11,7 +11,7 @@ const LoadingPlaceholder = () => {
 };
 
 // (1) Dynamically import each layout component. 
-//     `ssr: false` if you only want client‐side rendering; omit if SSR is okay.
+// `ssr: false` if you only want client‐side rendering; omit if SSR is okay.
 const AutomotiveSite  = dynamic(() => import('@/components/site/layouts/AutomotiveLayout/body/AutomotiveSite'), { loading: () => <LoadingPlaceholder /> });
 const BookingsSite    = dynamic(() => import('@/components/site/layouts/BookingsLayout/body/BookingsSite'),     { loading: () => <LoadingPlaceholder /> });
 const CoursesSite     = dynamic(() => import('@/components/site/layouts/CoursesLayout/body/CoursesSite'),       { loading: () => <LoadingPlaceholder /> });
@@ -46,7 +46,7 @@ const categoryBodyLayoutMap: Record<string, LayoutBodyComponent>  = {
   'ecommerce':      EcommerceSite,
 
   // services
-  'services':       ServiceSite,
+  'services':    ServiceSite,
   'service provider': ServiceSite,
 
   // bookings
@@ -119,50 +119,5 @@ const categoryBodyLayoutMap: Record<string, LayoutBodyComponent>  = {
   'other':                  DefaultSite,
   'default':                  DefaultSite,
 };
-
-
-// const categoryLayoutMap: Record<string, LayoutComponent> = {
-//     'ecommerce': EcommerceSite,
-//     'e‐commerce': EcommerceLayout,
-//     'services': ServicesLayout,
-//     'service provider': ServicesLayout, 
-//     'bookings':BookingsLayout,
-//     'booking & appointments':BookingsLayout,      
-//     'real estate': RealEstateLayout,    
-//     'portfolio':PortfolioLayout,
-//     'portfolio & personal branding':PortfolioLayout,     
-//     'restaurant':RestaurantLayout,
-//     'restaurant & food delivery':RestaurantLayout,
-//     'blog':BlogLayout,
-//     'blog & content':BlogLayout,
-//     'directory':DirectoryLayout,
-//     'directory & listings':DirectoryLayout,
-//     'educational':CoursesLayout,
-//     'educational & online courses':CoursesLayout,
-//     'courses':CoursesLayout,
-//     'nonprofit':NonprofitLayout,
-//     'nonprofit & community':NonprofitLayout,
-//     'event':EventsLayout,
-//     'event & ticketing':EventsLayout,
-//     'healthcare':HealthcareLayout,
-//     'healthcare & clinics':HealthcareLayout,
-//     'saas':SaaSLayout ,
-//     'saas & web apps':SaaSLayout ,
-//     'automotive':AutomotiveLayout ,
-//     'media':MediaLayout ,
-//     'media & entertainment':MediaLayout ,
-//     'finance':FinanceLayout  ,
-//     'finance & legal':FinanceLayout  ,
-//     'travel':TravelLayout ,
-//     'travel & tourism':TravelLayout ,
-//     'fitness':FitnessLayout ,
-//     'fitness & wellness':FitnessLayout ,
-//     'marketplace':MarketplaceLayout ,
-//     'other':DefaultLayout ,
-//     'Other':DefaultLayout ,      
-//     'default': DefaultLayout,
-       
-  
-// };
 
 export default categoryBodyLayoutMap;

@@ -99,7 +99,7 @@ export default async function StoreLayout({
   const storeFormData = transformCompanyToStoreForm(raw);
 
   // Normalize the category string (lowercase + trim)
-  // const rawCategory = storeFormData.category?.trim().toLowerCase() ?? 'default';
+  
   const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
   const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
 
