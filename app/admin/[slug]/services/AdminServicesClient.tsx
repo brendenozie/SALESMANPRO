@@ -12,7 +12,7 @@ import {
   EyeIcon, // For view details
 } from "@heroicons/react/24/outline";
 import Image from "next/image"; // For displaying service images
-import ServiceListingForm from "@/components/admin/components/ServiceListingFormRedesign"; // Your revamped form component
+import ServiceListingForm from "@/components/admin/components/ServiceListingForm"; // Your revamped form component
 import { useStoreContext } from "@/contexts/StoreContext"; // To get theme settings and store categories
 
 // Enums/types matching Prisma schema (ensure these are consistent with ServiceListingFormRedesign)
@@ -327,7 +327,7 @@ export default function AdminServicesClient({
                 {/* Action Buttons on Card */}
                 <div className="mt-4 flex justify-end gap-2">
                   <motion.button
-                    onClick={(e) => {
+                    onClick={(e : any) => {
                       e.stopPropagation(); // Prevent card click from triggering edit modal twice
                       // Implement view details logic or open a read-only modal
                       alert(`Viewing details for: ${svc.title || svc.name}`);
@@ -339,7 +339,7 @@ export default function AdminServicesClient({
                     <EyeIcon className="w-4 h-4" /> View
                   </motion.button>
                   <motion.button
-                    onClick={(e) => {
+                    onClick={(e : any ) => {
                       e.stopPropagation(); // Prevent card click from triggering edit modal twice
                       handleOpenEdit(svc);
                     }}
