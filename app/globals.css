@@ -257,3 +257,161 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
 }
+
+
+/* app/globals.css */
+
+/* FullCalendar Specific Overrides and Custom Styles */
+
+/* Ensure FullCalendar components adapt to dark mode */
+.fc .fc-toolbar-title {
+  color: var(--color-text-primary, #1f2937);
+  /* Default text color from theme */
+}
+
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard .fc-list-event-graphic {
+  border-color: #e2e8f0;
+
+  /* Light gray border */
+  /* For dark mode */
+  .dark & {
+    border-color: #4a5568;
+    /* Darker gray border */
+  }
+}
+
+/* Day grid cell backgrounds */
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: #f0f9ff;
+
+  /* Light blue for today's date */
+  /* For dark mode */
+  .dark & {
+    background-color: #1a202c;
+    /* Darker background for today */
+  }
+}
+
+/* Event specific styling based on type */
+.fc-event.event-appointment {
+  border-left: 4px solid var(--primary-color, #0d9488);
+  /* Use primary color from theme */
+  border-radius: 4px;
+  /* Soften edges */
+  padding-left: 6px;
+  /* Space for the border */
+  font-size: 0.85rem;
+  font-weight: 500;
+  /* Ensure text color is set in JS mapping based on background */
+}
+
+.fc-event.event-order {
+  border-left: 4px solid var(--secondary-color, #f97316);
+  /* Use secondary color from theme */
+  border-radius: 4px;
+  padding-left: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  /* Ensure text color is set in JS mapping based on background */
+}
+
+/* General event styling for better readability */
+.fc-event {
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* Subtle shadow for events */
+  transition: all 0.15s ease-in-out;
+  margin-bottom: 2px;
+  /* Small gap between events */
+}
+
+.fc-event:hover {
+  filter: brightness(1.05);
+  /* Slightly brighten on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* For list view events */
+.fc .fc-list-event {
+  background-color: var(--bg-card-light, #ffffff);
+  /* Match card background */
+  border: 1px solid var(--border-color-light, #e2e8f0);
+  margin-bottom: 8px;
+  border-radius: 8px;
+  padding: 10px 15px;
+
+  /* For dark mode */
+  .dark & {
+    background-color: var(--bg-card-dark, #1f2937);
+    border-color: var(--border-color-dark, #4a5568);
+  }
+}
+
+/* Customize toolbar buttons */
+.fc-button {
+  background-color: var(--primary-color, #0d9488) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.fc-button:hover {
+  background-color: color-mix(in srgb, var(--primary-color, #0d9488) 90%, black) !important;
+}
+
+.fc-button-active {
+  background-color: color-mix(in srgb, var(--primary-color, #0d9488) 80%, black) !important;
+}
+
+/* Custom scrollbar for modals/overflowing content */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #333;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Ensure the calendar's main text is readable in dark mode */
+.fc-col-header-cell,
+.fc-daygrid-body,
+.fc-list-table,
+.fc-timegrid-slots {
+  color: #374151;
+  /* Default for light mode */
+}
+
+.dark .fc-col-header-cell,
+.dark .fc-daygrid-body,
+.dark .fc-list-table,
+.dark .fc-timegrid-slots {
+  color: #d1d5db;
+  /* Lighter text for dark mode */
+}

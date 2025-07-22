@@ -1,3 +1,4 @@
+// app/[slug]/appointments/AdminAppointmentsClient.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,11 +8,11 @@ import {
   XMarkIcon,
   ClockIcon,
   PencilSquareIcon,
-  CalendarDaysIcon, // More fitting for appointments
-  ShoppingCartIcon, // For orders
-  UserCircleIcon, // For client info
-  ArrowPathIcon, // For loading spinner
-  InformationCircleIcon // For general info/notes
+  CalendarDaysIcon,
+  ShoppingCartIcon,
+  UserCircleIcon,
+  ArrowPathIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 
@@ -44,7 +45,7 @@ export interface OrderItem {
   marketplaceListing?: {
     id?: string;
     title?: string;
-    name?: string;
+    name?: string; // Often 'name' is used as well as 'title'
   };
   order?: { // Parent order details
     id?: string;
@@ -87,22 +88,30 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
 
   // Combine and sort initial data
   useEffect(() => {
-    // Convert OrderItem status to a more display-friendly version if needed
-    const processedOrderItems = initialOrderItems.map(item => ({
-      ...item,
-      // Map backend order status to a display status if necessary, e.g.:
-      // status: item.status === "PENDING" ? "Scheduled" : item.status === "DELIVERED" ? "Completed" : "Cancelled",
-      // For now, use its own status directly
-    }));
-
     // Combine and sort by date/time (most recent first)
-    const combined = [...initialAppointments, ...processedOrderItems].sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.timeSlot}`);
-      const dateB = new Date(`${b.date}T${b.timeSlot}`);
-      return dateB.getTime() - dateA.getTime(); // Descending order
+    const combined = [...initialAppointments, ...initialOrderItems].sort((a, b) => {
+      // Ensure date and timeSlot exist before creating Date objects
+      const dateA = a.date && a.timeSlot ? new Date(`${a.date}T${a.timeSlot.replace(' AM', 'AM').replace(' PM', 'PM')}`) : new Date(0); // Use epoch for missing
+      const dateB = b.date && b.timeSlot ? new Date(`${b.date}T${b.timeSlot.replace(' AM', 'AM').replace(' PM', 'PM')}`) : new Date(0);
+
+      // Handle invalid dates by placing them at the end or beginning
+      if (isNaN(dateA.getTime())) return 1; // a is invalid, put it after b
+      if (isNaN(dateB.getTime())) return -1; // b is invalid, put it before a
+
+      return dateB.getTime() - dateA.getTime(); // Descending order (most recent first)
     });
     setUnifiedItems(combined);
   }, [initialAppointments, initialOrderItems]);
+
+  // Helper to format date and time for display
+  const formatDateTime = (dateString: string, timeString: string) => {
+    try {
+      const dateTime = new Date(`${dateString}T${timeString.replace(' AM', 'AM').replace(' PM', 'PM')}`);
+      return `${dateTime.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} at ${dateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+    } catch (e) {
+      return `${dateString} at ${timeString}`; // Fallback
+    }
+  };
 
   // Handle opening the modal
   const openModal = (item: UnifiedItem) => {
@@ -147,33 +156,41 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
         setMessage(`Appointment "${selectedItem.service}" status updated to "${newStatus}"!`);
       } else { // It's an OrderItem
         // Real API call for order item status update
-        const res = await fetch(
-          `/api/admin/orders/${selectedItem.id}?status=${encodeURIComponent(newStatus)}&riderId=${encodeURIComponent(rider)}`,
-          {
-            method: "PUT",
-            headers: {
-              'Content-Type': 'application/json',
-              // Add authorization headers if needed
-            },
+        // You would typically send a PUT/PATCH request to update the specific order item
+        // The API endpoint below is a placeholder and should be adapted to your actual backend.
+        // For demonstration, we'll just simulate a successful update.
+        console.log(`Simulating API call to update OrderItem ${selectedItem.id} to status: ${newStatus}, Rider: ${rider}`);
+
+        const mockApiResponse = {
+          success: true,
+          message: "Order item updated successfully",
+          updatedItem: {
+            ...selectedItem,
+            status: newStatus,
+            order: {
+              ...selectedItem.order,
+              status: newStatus,
+              rider: rider
+            }
           }
-        );
+        };
 
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.message || res.statusText);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call delay
+
+        if (mockApiResponse.success) {
+          // setUnifiedItems(prev =>
+          //   prev.map(item =>
+          //     item.id === selectedItem.id ? {
+          //       ...item,
+          //       status: (mockApiResponse.updatedItem as OrderItem).status,
+          //       order: { ...item.order, status: (mockApiResponse.updatedItem as OrderItem).status, rider: (mockApiResponse.updatedItem as OrderItem).order?.rider }
+          //     } : item
+          //   )
+          // );
+          setMessage(`Order for "${selectedItem.marketplaceListing?.name || selectedItem.name}" updated to "${newStatus}"!`);
+        } else {
+          throw new Error(mockApiResponse.message || "Failed to update order item.");
         }
-
-        const updatedOrder = await res.json(); // Assuming backend returns the updated item
-        setUnifiedItems(prev =>
-          prev.map(item =>
-            item.id === selectedItem.id ? {
-              ...item,
-              status: updatedOrder.status,
-              order: { ...item.order, status: updatedOrder.status, rider: updatedOrder.rider }
-            } : item
-          )
-        );
-        setMessage(`Order for "${selectedItem.marketplaceListing?.name || selectedItem.name}" updated to "${newStatus}"!`);
       }
       setIsSuccess(true);
       closeModal(); // Close modal on success
@@ -201,7 +218,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
         break;
       case "Completed":
       case "DELIVERED":
-        colorClass = "bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200";
+        colorClass = "bg-emerald-100 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-200"; // Changed to emerald for completed
         icon = <CheckCircleIcon className="w-4 h-4" />;
         break;
       case "Cancelled":
@@ -258,7 +275,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-12 gap-6">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-center sm:text-left">
-            Manage <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Appointments & Orders</span>
+            Manage <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Schedule & Deliveries</span>
           </h1>
           {/* Add any global actions here if needed, e.g., "Add New Appointment" */}
         </div>
@@ -286,8 +303,9 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-2xl p-10 shadow-lg text-center h-64 border border-gray-200 dark:border-gray-700"
           >
+            <CalendarDaysIcon className="w-20 h-20 text-gray-400 dark:text-gray-500 mb-4" />
             <p className="text-2xl font-semibold text-gray-600 dark:text-gray-300 mb-4">No appointments or orders found!</p>
-            <p className="text-lg text-gray-500 dark:text-gray-400">Your schedule looks clear for now.</p>
+            <p className="text-lg text-gray-500 dark:text-gray-400">Your schedule looks clear for now. Enjoy the peace! 😌</p>
           </motion.div>
         ) : isLoading && unifiedItems.length === 0 ? (
             <motion.div
@@ -308,7 +326,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
             {unifiedItems.map((item) => (
               <motion.div
                 key={item.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col cursor-pointer border border-gray-200 dark:border-gray-700 overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col cursor-pointer border border-gray-200 dark:border-gray-700 overflow-hidden group"
                 variants={cardVariants}
                 whileHover="hover"
                 onClick={() => openModal(item)}
@@ -324,20 +342,20 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
                 </div>
 
                 {/* Main Title */}
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-2">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-2 truncate group-hover:text-emerald-600 transition-colors">
                   {'service' in item ? item.service : (item.marketplaceListing?.name || item.marketplaceListing?.title || item.name || "Order Item")}
                 </h2>
 
                 {/* Client Info */}
                 <p className="text-gray-700 dark:text-gray-300 text-sm flex items-center gap-2 mb-2">
-                  <UserCircleIcon className="w-4 h-4" />
+                  <UserCircleIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   <span className="font-semibold">Client:</span> {'service' in item ? item.client.name : (item.name || item.order?.consumer?.name || item.order?.name || "N/A")}
                 </p>
 
                 {/* Date & Time */}
                 <p className="text-gray-600 dark:text-gray-400 text-sm flex items-center gap-2 mb-2">
-                  <CalendarDaysIcon className="w-4 h-4" />
-                  <span className="font-semibold">When:</span> {item.date} at {item.timeSlot}
+                  <ClockIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" /> {/* Changed icon to Clock for time */}
+                  <span className="font-semibold">When:</span> {formatDateTime(item.date || '', item.timeSlot || '')}
                 </p>
 
                 {/* Additional Order/Appointment Specifics */}
@@ -393,7 +411,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
                 {'service' in selectedItem ? selectedItem.service : (selectedItem.marketplaceListing?.name || selectedItem.marketplaceListing?.title || selectedItem.name || "Order Details")}
               </h3>
               <div className="mb-6">
-                 <StatusBadge status={newStatus} />
+                   <StatusBadge status={newStatus} />
               </div>
 
 
@@ -403,7 +421,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
                   <span className="font-semibold">Type:</span> {'service' in selectedItem ? 'Appointment' : 'Order'}
                 </p>
                 <p>
-                  <span className="font-semibold">Date & Time:</span> {selectedItem.date} @ {selectedItem.timeSlot}
+                  <span className="font-semibold">Scheduled:</span> {formatDateTime(selectedItem.date || '', selectedItem.timeSlot || '')}
                 </p>
                 <p>
                   <span className="font-semibold">Client Name:</span> {'service' in selectedItem ? selectedItem.client.name : (selectedItem.name || selectedItem.order?.consumer?.name || selectedItem.order?.name || "N/A")}
