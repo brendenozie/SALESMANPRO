@@ -14,6 +14,8 @@ import NewArrivalsSection from './components/NewArrivalsSection';
 import HeroSection from './components/HeroSection';
 import TestimonialsSection from './components/TestimonialsSection';
 import CtaSection from './components/CtaSection';
+import FeaturedListingsOverviewSection from './components/FeaturedListingsOverviewSection';
+import FAQSection from './components/FAQSection';
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -64,84 +66,7 @@ function CategoryGrid({
   );
 }
 
-function ListingGrid({
-  listings,
-  slug,
-}: {
-  listings: { id: string; name: string; subtitle?: string; imageUrl: string; slug: string }[];
-  slug: string;
-}) {
-  const router = useRouter();
 
-  return (
-    <section className="bg-gradient-to-br from-white to-green-50 py-12 px-6 rounded-t-[3rem]">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 py-6 px-4">
-        {listings.map((item) => (
-          <motion.article
-            key={item.id}
-            whileHover={{ y: -6, scale: 1.02 }}
-            transition={{ type: 'spring', stiffness: 260 }}
-            onClick={() => router.push(`/${slug}/listing/${item.slug}`)}
-            role="link"
-            aria-label={`View ${item.name}`}
-            className="group bg-white/70 backdrop-blur-sm border border-white/30 rounded-3xl shadow-md hover:shadow-2xl transition-all overflow-hidden cursor-pointer"
-          >
-            <div className="relative h-48 overflow-hidden rounded-t-3xl">
-              <Image
-                src={item.imageUrl}
-                alt={item.name}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                loader={loader}
-              />
-              <span className="absolute top-2 left-2 text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                Featured
-              </span>
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-gray-800 group-hover:text-green-600 transition-colors truncate">
-                {item.name}
-              </h3>
-              {item.subtitle && <p className="text-sm text-gray-600 truncate">{item.subtitle}</p>}
-            </div>
-          </motion.article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Testimonials({ testimonials }: { testimonials: { quote: string; author: string }[] }) {
-  return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      {testimonials.map((t, i) => (
-        <motion.blockquote
-          key={i}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 * i }}
-          className="italic text-gray-700 text-center"
-        >
-          “{t.quote}”
-          <footer className="mt-2 font-semibold text-gray-900">— {t.author}</footer>
-        </motion.blockquote>
-      ))}
-    </div>
-  );
-}
-
-function FAQ({ faqs }: { faqs: { question: string; answer: string }[] }) {
-  return (
-    <div className="space-y-4">
-      {faqs.map((q, i) => (
-        <details key={i} className="bg-white p-4 rounded-lg shadow-sm">
-          <summary className="font-medium cursor-pointer">{q.question}</summary>
-          <p className="mt-2 text-gray-600">{q.answer}</p>
-        </details>
-      ))}
-    </div>
-  );
-}
 
 export default function DirectorySite() {
   const { storeFormData } = useStoreContext();
@@ -190,36 +115,15 @@ export default function DirectorySite() {
 
       <NewArrivalsSection />
 
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
-            Featured Listings
-          </h2>
-          <ListingGrid listings={listings} slug={storeFormData.slug} />
-        </div>
-      </section>
+      <FeaturedListingsOverviewSection />
 
       <TestimonialsSection />
 
       <CtaSection />
+    
+      <FAQSection /> 
       
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
-            What People Are Saying
-          </h2>
-          <Testimonials testimonials={storeFormData.testimonials} />
-        </div>
-      </section>
-
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-6 text-gray-800">
-            Help & FAQs
-          </h2>
-          <FAQ faqs={storeFormData.faqs} />
-        </div>
-      </section>
+       {/* faqs={customFaqs} */}
     </div>
   );
 }

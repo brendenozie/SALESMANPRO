@@ -1,188 +1,222 @@
-import React from "react";
-import Slider from "react-slick";
-import { motion } from "framer-motion";
+'use client';
 
+import React from 'react';
+import Slider from 'react-slick';
+import { motion } from 'framer-motion';
+import Image from 'next/image'; // Import Image for optimized avatars
+import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
+import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
+
+
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+
+// Helper to render stars (reused from previous sections)
+const renderStars = (count: number) => {
+  return (
+    <div className="flex items-center space-x-0.5">
+      {Array.from({ length: 5 }).map((_, i) =>
+        i < count ? (
+          <StarSolid key={i} className="h-4 w-4 text-yellow-500" />
+        ) : (
+          <StarOutline key={i} className="h-4 w-4 text-gray-300" />
+        )
+      )}
+    </div>
+  );
+};
+
+// Dummy data updated for variety and Next.js Image component
 const testimonials = [
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: 'Sarah L.',
+    text: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-orange-100",
-    rotate: "-rotate-1",
+    image: '/images/avatar-sarah.webp', // Updated path and format
+    title: 'Satisfied Client',
   },
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: 'Dr. Alex M.',
+    text: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-green-100",
-    rotate: "rotate-2",
+    image: '/images/avatar-alex.webp', // Updated path and format
+    title: 'Registered Therapist',
   },
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: 'Jessica P.',
+    text: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
+    rating: 4,
+    image: '/images/avatar-jessica.webp', // Updated path and format
+    title: 'Regular User',
+  },
+  {
+    name: 'Mark T.',
+    text: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-orange-100",
-    rotate: "-rotate-2",
+    image: '/images/avatar-mark.webp', // Updated path and format
+    title: 'Community Member',
   },
 ];
 
+// Carousel settings for react-slick
 const settings = {
   dots: true,
   infinite: true,
-  speed: 600,
+  speed: 800, // Slightly faster transition
   slidesToShow: 1,
   slidesToScroll: 1,
   arrows: false,
   autoplay: true,
-  autoplaySpeed: 5000,
+  autoplaySpeed: 6000, // A bit longer autoplay speed
   adaptiveHeight: true,
+  pauseOnHover: true, // Pause autoplay on hover
+  appendDots: (dots: any) => (
+    <div style={{ padding: '20px' }}>
+      <ul className="flex justify-center mt-4 space-x-2">{dots}</ul>
+    </div>
+  ),
+  customPaging: (i: number) => (
+    <div className="w-3 h-3 rounded-full bg-gray-300 hover:bg-blue-400 transition-colors cursor-pointer" />
+  ),
   responsive: [
     {
-      breakpoint: 768,
+      breakpoint: 768, // md breakpoint
       settings: {
         slidesToShow: 1,
+        dots: true,
       },
     },
     {
-      breakpoint: 1024,
-      settings: "unslick" as const, // Destroys slick on larger screens (grid layout instead)
+      breakpoint: 1024, // lg breakpoint - switch to grid
+      settings: 'unslick' as const, // Destroys slick on larger screens for grid layout
     },
   ],
 };
 
 const TestimonialsSection = () => {
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: 'easeOut',
+        when: 'beforeChildren',
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  };
+
   return (
-    <section className="bg-[#f8f1eb] py-20 px-6 lg:px-20">
+    <motion.section
+      className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 py-20 px-4 sm:px-6 lg:px-8" // Modern gradient background
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={sectionVariants}
+    >
       <div className="max-w-7xl mx-auto text-center">
+        {/* Subtitle Badge */}
         <motion.span
-          className="inline-block bg-green-100 text-green-600 text-sm font-medium px-3 py-1 rounded-full mb-4"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          className="inline-block bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 text-sm font-semibold px-4 py-1.5 rounded-full mb-4 shadow-sm" // More vibrant badge
+          variants={itemVariants}
         >
-          Testimonials
+          What Our Community Says
         </motion.span>
 
+        {/* Headline */}
         <motion.h2
-          className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4" // Larger, bolder headline
+          variants={itemVariants}
         >
-          Hear From Our Happy Clients <br /> and Therapists
+          Hear From Our <span className="text-blue-600 dark:text-blue-400">Happy Clients</span> and Service Providers
         </motion.h2>
 
+        {/* Description */}
         <motion.p
-          className="text-gray-600 max-w-2xl mx-auto mb-10"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-12" // Larger, more prominent description
+          variants={itemVariants}
         >
-          Discover how Ducun Vijed is making massage booking and therapy sessions
-          easier, more secure, and more rewarding for everyone.
+          Discover how Ducun Vijed is transforming the way people find and book services, and how providers connect with their ideal clients.
         </motion.p>
 
-        {/* Carousel on mobile, grid on desktop */}
-        <div className="block md:hidden">
+        {/* Testimonials Carousel (Mobile) */}
+        <div className="block lg:hidden"> {/* Changed md to lg for breakpoint consistency */}
           <Slider {...settings}>
             {testimonials.map((t, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className={`relative p-6 shadow-md rounded-2xl ${t.bgColor} ${t.rotate} mx-4`}>
-                  <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
-                  <div className="flex items-center gap-3">
-                    <img
+              <div key={index} className="px-2"> {/* Added padding for carousel items */}
+                <motion.div
+                  className="relative bg-white dark:bg-gray-800 p-8 shadow-xl rounded-3xl border border-gray-100 dark:border-gray-700 mx-auto" // Elevated card styling
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed">
+                    “{t.text}”
+                  </p>
+                  <div className="flex items-center gap-4 mt-6"> {/* Increased gap */}
+                    <Image
                       src={t.image}
                       alt={t.name}
-                      className="w-8 h-8 rounded-full object-cover"
+                      width={48} // Larger avatar
+                      height={48}
+                      loader={loader}
+                      className="rounded-full object-cover ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800" // Ring accent
                     />
                     <div className="text-left">
-                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                      <div className="flex text-yellow-500">
-                        {"★".repeat(t.rating)}
-                      </div>
+                      <p className="text-md font-semibold text-gray-900 dark:text-white">{t.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p> {/* Added title */}
+                      {renderStars(t.rating)}
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </div>
             ))}
           </Slider>
         </div>
 
-        {/* Desktop Grid */}
-        <div className="hidden md:flex gap-6 justify-center mt-8">
+        {/* Testimonials Grid (Desktop) */}
+        <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-12 justify-items-center"> {/* Aligned with previous grid updates, added xl grid-cols-4 */}
           {testimonials.map((t, index) => (
             <motion.div
               key={index}
-              className={`w-80 p-6 shadow-md rounded-2xl ${t.bgColor} ${t.rotate}`}
-              initial={{ opacity: 0, y: 20 }}
+              className="relative bg-white dark:bg-gray-800 p-8 shadow-xl rounded-3xl border border-gray-100 dark:border-gray-700 max-w-sm w-full" // Consistent card styling
+              initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: index * 0.15, duration: 0.6, ease: 'easeOut' }} // Staggered entrance
+              whileHover={{ y: -8, boxShadow: '0 15px 30px rgba(0,0,0,0.1)' }} // Lift and enhanced shadow on hover
             >
-              <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
-              <div className="flex items-center gap-3">
-                <img
+              <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed">
+                “{t.text}”
+              </p>
+              <div className="flex items-center gap-4 mt-6">
+                <Image
                   src={t.image}
                   alt={t.name}
-                  className="w-8 h-8 rounded-full object-cover"
+                  width={48}
+                  height={48}
+                  loader={loader}
+                  className="rounded-full object-cover ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800"
                 />
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                  <div className="flex text-yellow-500">
-                    {"★".repeat(t.rating)}
-                  </div>
+                  <p className="text-md font-semibold text-gray-900 dark:text-white">{t.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p>
+                  {renderStars(t.rating)}
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
 export default TestimonialsSection;
-
-
-{/* FAQs */}
-{/* <section id="faq" className="py-32 bg-gradient-to-b from-white via-slate-50 to-white">
-<div className="container mx-auto px-6 max-w-4xl">
-  <h2 className="text-4xl md:text-5xl font-extrabold text-center text-slate-800 mb-16">
-    Frequently Asked Questions
-  </h2>
-
-  <div className="space-y-6">
-    {faqs.map((q, i) => (
-      <Reveal key={i}>
-        <motion.details
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 + i * 0.1 }}
-          className="group bg-white/60 backdrop-blur-lg border border-slate-200 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all"
-        >
-          <summary className="flex items-center justify-between cursor-pointer text-lg font-semibold text-slate-800">
-            {q.question}
-            <svg
-              className="w-5 h-5 ml-2 text-slate-500 group-open:rotate-180 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </summary>
-          <p className="mt-4 text-slate-600 leading-relaxed">{q.answer}</p>
-        </motion.details>
-      </Reveal>
-    ))}
-  </div>
-</div>
-</section> */}
