@@ -14,7 +14,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       images,
       productCategoryId,
       costPrice,
-      salesPrice,
+      sellingPrice,
       discount,
       isAvailable,
       isOnOffer,
@@ -26,16 +26,16 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     } = body;
 
     let finalPrice;
-    if (salesPrice !== undefined && discount !== undefined) {
-      finalPrice = salesPrice * (1 - discount / 100);
-    } else if (salesPrice !== undefined) {
+    if (sellingPrice !== undefined && discount !== undefined) {
+      finalPrice = sellingPrice * (1 - discount / 100);
+    } else if (sellingPrice !== undefined) {
       // If only salesPrice is updated, calculate finalPrice based on existing discount
       const existingProduct = await prisma.product.findUnique({ where: { id }, select: { discount: true } });
-      finalPrice = salesPrice * (1 - (existingProduct?.discount || 0) / 100);
+      finalPrice = sellingPrice * (1 - (existingProduct?.discount || 0) / 100);
     } else if (discount !== undefined) {
       // If only discount is updated, calculate finalPrice based on existing salesPrice
-      const existingProduct = await prisma.product.findUnique({ where: { id }, select: { salesPrice: true } });
-      finalPrice = (existingProduct?.salesPrice || 0) * (1 - discount / 100);
+      const existingProduct = await prisma.product.findUnique({ where: { id }, select: { sellingPrice: true } });
+      finalPrice = (existingProduct?.sellingPrice || 0) * (1 - discount / 100);
     }
 
     const updatedProduct = await prisma.product.update({
@@ -46,7 +46,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         images: images || undefined,
         productCategory: productCategoryId ? { connect: { id: productCategoryId } } : undefined,
         costPrice: costPrice !== undefined ? costPrice : undefined,
-        salesPrice: salesPrice !== undefined ? salesPrice : undefined,
+        sellingPrice: sellingPrice !== undefined ? sellingPrice : undefined,
         finalPrice: finalPrice !== undefined ? finalPrice : undefined,
         discount: discount !== undefined ? discount : undefined,
         isAvailable: typeof isAvailable === 'boolean' ? isAvailable : undefined,

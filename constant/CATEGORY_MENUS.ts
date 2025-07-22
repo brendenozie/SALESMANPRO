@@ -122,9 +122,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Portfolio & Personal Branding": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    
     { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
     { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
-    { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon: ChatBubbleBottomCenterTextIcon },
+    // { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],

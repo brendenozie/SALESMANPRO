@@ -39,7 +39,7 @@ export default async function ProjectsPage({ params }: PageProps) {
 
   try {
     // Adjust the API endpoint if your projects API supports companyId filtering
-    const res = await fetch(`${apiUrl}/projects?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store" });
     if (res.ok) {
       projectsData = (await res.json()) as Project[];
     } else {

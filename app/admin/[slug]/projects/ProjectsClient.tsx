@@ -1,7 +1,7 @@
 // app/admin/projects/ProjectsClient.tsx
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -14,7 +14,9 @@ import {
   ArcElement,
 } from "chart.js";
 import { Project } from "./page";
-import Modal from "@/components/Modal"; // Adjust path as needed
+import Modal from "@/components/Modal"; // Ensure this path is correct for your Modal component
+import { toast, Toaster } from 'react-hot-toast'; // For engaging notifications
+import { ArrowsUpDownIcon, CalendarDateRangeIcon, CheckCircleIcon, CurrencyDollarIcon, ListBulletIcon, MagnifyingGlassCircleIcon, PencilIcon, PlayCircleIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 // Register Chart.js components
 ChartJS.register(
@@ -31,45 +33,54 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface ClientProps {
   projectsData: Project[];
+  companyId:string;
 }
 
-const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsData }) => {
+const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsData, companyId }) => {
+
   const [projectsData, setProjectsData] = useState<Project[]>(initialProjectsData);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const itemsPerPage = 6;
 
-  // Function to refresh data
-  const refreshProjects = async () => {
+  // Function to refresh data with a loading state and error handling
+  const refreshProjects = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/projects`, { cache: "no-store" });
+      const res = await fetch(`${apiUrl}/admin/projects`, { cache: "no-store" }); // Use the admin endpoint
       if (res.ok) {
         const data = await res.json();
         setProjectsData(data);
+        toast.success("Projects refreshed successfully! ✨");
       } else {
         throw new Error(`Failed to fetch projects: ${res.statusText}`);
       }
     } catch (err: any) {
       setError(err.message || "Failed to refresh projects.");
+      toast.error(`Error refreshing projects: ${err.message || "Unknown error"}`);
       console.error("Error refreshing projects:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Filter by project name or description
+  // Filter and sort projects for better UX
   const filteredProjects = useMemo(() => {
-    return projectsData.filter(
-      (project) =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    return projectsData
+      .filter(
+        (project) =>
+          project.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+          project.description?.toLowerCase().includes(lowerCaseSearchTerm)
+      )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Sort by most recent
   }, [projectsData, searchTerm]);
 
   // Summaries
@@ -108,8 +119,8 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
           '#B0BEC5', // ARCHIVED (Blue Grey)
           '#EF5350', // CANCELLED (Red)
         ],
-        borderColor: '#333',
-        borderWidth: 1,
+        borderColor: '#1f2937', // Darker border for contrast
+        borderWidth: 2,
       },
     ],
   };
@@ -119,7 +130,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/projects`, {
+      const res = await fetch(`${apiUrl}/admin/projects`, { // Use admin endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,99 +140,176 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
 
       if (res.ok) {
         setIsAddModalOpen(false);
-        await refreshProjects(); // Refresh the list after successful addition
+        await refreshProjects();
+        toast.success("Project added successfully! 🎉");
       } else {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to add project.');
       }
     } catch (err: any) {
       setError(err.message || "Failed to add project.");
+      toast.error(`Error adding project: ${err.message || "Unknown error"}`);
       console.error("Error adding project:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Placeholder for Edit/Delete actions
-  const handleEdit = (id: string) => alert(`Editing project with ID ${id}`);
-  const handleDelete = (id: string) => alert(`Deleting project with ID ${id}`);
+  // Handle Edit Project
+  const handleEditProject = async (updatedProject: Project) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/admin/projects/${updatedProject.id}`, { // Use admin endpoint
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProject),
+      });
 
+      if (res.ok) {
+        setIsEditModalOpen(false);
+        await refreshProjects();
+        toast.success("Project updated successfully! 🚀");
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to update project.');
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to update project.");
+      toast.error(`Error updating project: ${err.message || "Unknown error"}`);
+      console.error("Error updating project:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Delete Project
+  const handleDeleteProject = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiUrl}/admin/projects/${id}`, { // Use admin endpoint
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        await refreshProjects();
+        toast.success("Project deleted successfully! 👋");
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to delete project.');
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to delete project.");
+      toast.error(`Error deleting project: ${err.message || "Unknown error"}`);
+      console.error("Error deleting project:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openEditModal = (project: Project) => {
+    setCurrentProject(project);
+    setIsEditModalOpen(true);
+  };
 
   return (
-    <main className="flex-grow container mx-auto px-6 py-8 bg-gray-900 text-gray-100 min-h-screen">
+    <main className="flex-grow container mx-auto px-6 py-8 bg-gray-950 text-gray-100 min-h-screen font-sans">
+      <Toaster position="top-right" reverseOrder={false} /> {/* Toast notifications */}
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-5xl font-extrabold text-center text-purple-400 mb-10 drop-shadow-lg">
-          Projects Management
+        <h1 className="text-5xl font-extrabold text-center text-purple-400 mb-12 drop-shadow-lg animate-fade-in-down">
+          Projects Dashboard 📊
         </h1>
 
-        {/* Action Bar: Search and Add Button */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-          <input
-            type="text"
-            placeholder="Search projects by name or description..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full sm:max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-purple-500 focus:outline-none shadow-md"
-            aria-label="Search projects"
-          />
-          <div className="flex gap-3">
+        {/* Action Bar: Search, Add Button, Refresh */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 p-4 bg-gray-800 rounded-xl shadow-lg">
+          <div className="relative w-full sm:max-w-md">
+            <MagnifyingGlassCircleIcon className="absolute w-6 h-6 left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
+            <input
+              type="text"
+              placeholder="Search projects by name or description..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:ring-purple-500 focus:border-purple-500 focus:outline-none shadow-md transition-all duration-300 ease-in-out"
+              aria-label="Search projects"
+            />
             {searchTerm && (
               <button
                 onClick={() => {
                   setSearchTerm("");
                   setCurrentPage(1);
                 }}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400 transition-colors"
                 aria-label="Clear search"
               >
-                Clear
+                &times;
               </button>
             )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={refreshProjects}
+              className="px-5 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-all font-semibold flex items-center gap-2 transform hover:scale-105"
+              disabled={loading}
+              aria-label="Refresh projects"
+            >
+              <ArrowsUpDownIcon className={` w-6 h-6 ${loading ? "animate-spin" : ""}` }/> Refresh
+            </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="px-6 py-3 bg-purple-500 text-white rounded-lg shadow-lg hover:bg-purple-600 transition-all font-semibold"
+              className="px-6 py-3 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-all font-semibold flex items-center gap-2 transform hover:scale-105"
+              aria-label="Add new project"
             >
-              Add New Project
+              <PlusIcon className=" w-6 h-6"/> Add New Project
             </button>
           </div>
         </div>
 
-        {loading && <p className="text-center text-blue-400 mb-4">Loading projects...</p>}
-        {error && <p className="text-center text-red-500 mb-4">Error: {error}</p>}
+        {loading && <p className="text-center text-blue-400 mb-6 text-lg animate-pulse">Loading projects... Please wait. 🤔</p>}
+        {error && <p className="text-center text-red-500 mb-6 text-lg">Oops! Something went wrong: {error} 😟</p>}
 
         {/* Summary Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <SummaryCard
             title="Total Projects"
             value={totalProjects}
-            bgColor="bg-purple-600"
+            icon={<ListBulletIcon />}
+            bgColor="from-purple-600 to-purple-800"
           />
           <SummaryCard
             title="Ongoing Projects"
             value={ongoingProjects}
-            bgColor="bg-blue-600"
+            icon={<PlayCircleIcon />}
+            bgColor="from-blue-600 to-blue-800"
           />
           <SummaryCard
             title="Completed Projects"
             value={completedProjects}
-            bgColor="bg-green-600"
+            icon={<CheckCircleIcon />}
+            bgColor="from-green-600 to-green-800"
           />
           <SummaryCard
             title="Total Budget"
-            value={`$${totalBudget.toFixed(2)}`}
-            bgColor="bg-yellow-600"
+            value={`$${totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            icon={<CurrencyDollarIcon />}
+            bgColor="from-yellow-600 to-yellow-800"
           />
         </div>
 
         {/* Chart Section */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col mb-10">
-          <h2 className="text-xl font-semibold text-gray-100 mb-4">
-            Project Status Distribution
+        <div className="bg-gray-800 p-8 rounded-xl shadow-xl flex flex-col items-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-100 mb-6 text-center">
+            Project Status Distribution 📊
           </h2>
-          <div className="chart-container" style={{ height: "300px" }}>
+          <div className="chart-container w-full max-w-xl" style={{ height: "350px" }}>
             <Pie
               data={projectStatusChartData}
               options={{
@@ -232,6 +320,9 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
                     position: "right" as const,
                     labels: {
                       color: '#ddd',
+                      font: {
+                        size: 14,
+                      },
                     },
                   },
                   tooltip: {
@@ -245,31 +336,60 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
                           label += context.parsed;
                         }
                         return label;
+                      },
+                      title: function(context) {
+                        return context[0].label;
                       }
-                    }
+                    },
+                    bodyFont: {
+                      size: 14,
+                    },
+                    titleFont: {
+                      size: 16,
+                      weight: 'bold',
+                    },
+                    padding: 10,
+                    boxPadding: 5,
+                    cornerRadius: 8,
+                    backgroundColor: 'rgba(55, 65, 81, 0.9)', // Darker tooltip background
+                    borderColor: '#6b7280',
+                    borderWidth: 1,
                   }
                 },
+                elements: {
+                  arc: {
+                    borderWidth: 2,
+                    borderColor: '#1f2937', // Ensure arcs have a dark border
+                  }
+                }
               }}
             />
           </div>
         </div>
 
         {/* Projects List */}
-        <section>
+        <section className="mb-12">
           {paginatedProjects.length === 0 && !loading && !error ? (
-            <div className="text-center py-16">
-              <p className="text-lg text-gray-400">
-                No projects match your search or are available.
+            <div className="text-center py-20 bg-gray-800 rounded-xl shadow-lg">
+              <p className="text-2xl text-gray-400 font-medium">
+                No projects found. Time to create some! ✨
               </p>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="mt-6 px-6 py-3 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-all font-semibold flex items-center gap-2 mx-auto"
+                aria-label="Add new project"
+              >
+                <PlusIcon className=" w-6 h-6"/> Add Your First Project
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {paginatedProjects.map((project) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
+                  onEdit={openEditModal}
+                  onDelete={handleDeleteProject}
                 />
               ))}
             </div>
@@ -278,15 +398,15 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex justify-center space-x-4 mt-8">
+          <div className="flex justify-center space-x-4 mt-10">
             <button
               disabled={currentPage === 1 || loading}
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="px-4 py-2 bg-gray-700 rounded-lg text-white disabled:opacity-50 hover:bg-gray-600 transition"
+              className="px-6 py-3 bg-gray-700 rounded-lg text-white font-medium disabled:opacity-50 hover:bg-gray-600 transition-all transform hover:scale-105"
             >
               Previous
             </button>
-            <span className="px-4 py-2 bg-gray-800 text-white rounded-lg">
+            <span className="px-5 py-3 bg-gray-800 text-white rounded-lg font-bold flex items-center justify-center min-w-[120px]">
               {`Page ${currentPage} of ${totalPages}`}
             </span>
             <button
@@ -294,7 +414,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
-              className="px-4 py-2 bg-gray-700 rounded-lg text-white disabled:opacity-50 hover:bg-gray-600 transition"
+              className="px-6 py-3 bg-gray-700 rounded-lg text-white font-medium disabled:opacity-50 hover:bg-gray-600 transition-all transform hover:scale-105"
             >
               Next
             </button>
@@ -303,13 +423,26 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
       </div>
 
       {/* Add Project Modal */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Project">
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Create New Project ✨">
         <AddProjectForm
+          companyId={companyId}
           onSubmit={handleAddProject}
           onCancel={() => setIsAddModalOpen(false)}
           isLoading={loading}
         />
       </Modal>
+
+      {/* Edit Project Modal */}
+      {currentProject && (
+        <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Project ✍️">
+          <EditProjectForm
+            project={currentProject}
+            onSubmit={handleEditProject}
+            onCancel={() => setIsEditModalOpen(false)}
+            isLoading={loading}
+          />
+        </Modal>
+      )}
     </main>
   );
 };
@@ -317,81 +450,253 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
 export default ProjectsClient;
 
 // ----------------------
-// Helper components
+// Helper components (updated for visual appeal)
 // ----------------------
 
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  bgColor: string;
+  icon: React.ReactNode;
+  bgColor: string; // Tailwind gradient classes, e.g., "from-purple-600 to-purple-800"
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, bgColor }) => (
-  <div className={`${bgColor} text-white p-5 rounded-lg shadow-md hover:shadow-lg transition`}>
-    <h2 className="text-lg font-semibold">{title}</h2>
-    <p className="text-3xl font-bold mt-2">{value}</p>
+const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, bgColor }) => (
+  <div className={`relative p-6 rounded-xl shadow-lg text-white overflow-hidden transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer bg-gradient-to-br ${bgColor}`}>
+    <div className="absolute top-4 right-4 text-4xl opacity-30  w-6 h-6">
+      {icon}
+    </div>
+    <h2 className="text-xl font-semibold mb-2 opacity-90">{title}</h2>
+    <p className="text-4xl font-extrabold">{value}</p>
   </div>
 );
 
 interface ProjectCardProps {
   project: Project;
-  onEdit: (id: string) => void;
+  onEdit: (project: Project) => void;
   onDelete: (id: string) => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) => (
-  <div className="bg-gray-800 text-gray-200 p-6 rounded-lg shadow-lg hover:shadow-xl transition relative flex flex-col justify-between">
-    <div>
-      <h3 className="text-2xl font-bold text-purple-400 mb-2">{project.name}</h3>
-      <p className="text-sm text-gray-400 mb-1">
-        Description: <span className="text-gray-300 line-clamp-2">{project.description || 'N/A'}</span>
-      </p>
-      <p className="text-sm text-gray-400 mb-1">
-        Status: <span className={`font-medium ${
-          project.status === 'ONGOING' ? 'text-blue-400' :
-          project.status === 'COMPLETED' ? 'text-green-400' :
-          project.status === 'PLANNING' ? 'text-yellow-400' :
-          'text-red-400'
-        }`}>{project.status}</span>
-      </p>
-      <p className="text-sm text-gray-400 mb-1">
-        Start Date: <span className="text-gray-300">{project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}</span>
-      </p>
-      <p className="text-sm text-gray-400 mb-4">
-        Budget: <span className="text-yellow-400 font-medium">${(project.budget || 0).toFixed(2)}</span>
-      </p>
-    </div>
-    <div className="flex space-x-2 self-end mt-4">
-      <button
-        className="px-3 py-1 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
-        onClick={() => onEdit(project.id)}
-      >
-        Edit
-      </button>
-      <button
-        className="px-3 py-1 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition"
-        onClick={() => onDelete(project.id)}
-      >
-        Delete
-      </button>
-    </div>
-  </div>
-);
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) => {
+  const getStatusClasses = (status: Project['status']) => {
+    switch (status) {
+      case 'ONGOING':
+        return 'text-blue-400 bg-blue-900/30 ring-blue-500/30';
+      case 'COMPLETED':
+        return 'text-green-400 bg-green-900/30 ring-green-500/30';
+      case 'PLANNING':
+        return 'text-yellow-400 bg-yellow-900/30 ring-yellow-500/30';
+      case 'ARCHIVED':
+        return 'text-gray-400 bg-gray-700/30 ring-gray-500/30';
+      case 'CANCELLED':
+        return 'text-red-400 bg-red-900/30 ring-red-500/30';
+      default:
+        return 'text-gray-400 bg-gray-700/30 ring-gray-500/30';
+    }
+  };
 
-// Add Project Form Component
+  return (
+    <div className="bg-gray-800 text-gray-200 p-7 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out relative flex flex-col justify-between border border-gray-700 hover:border-purple-500">
+      <div>
+        <h3 className="text-3xl font-bold text-purple-400 mb-3 leading-tight">{project.name}</h3>
+        <p className="text-md text-gray-300 mb-4 line-clamp-3">
+          <strong className="text-gray-400">Description:</strong> {project.description || 'No description provided.'}
+        </p>
+        <div className="space-y-2 text-sm">
+          <p className="flex items-center gap-2 text-gray-400">
+            <ListBulletIcon className="text-purple-400 w-6 h-6" /> Status:
+            <span className={`font-semibold px-2 py-1 rounded-full text-xs ring-1 ${getStatusClasses(project.status)}`}>
+              {project.status.replace('_', ' ')}
+            </span>
+          </p>
+          <p className="flex items-center gap-2 text-gray-400">
+            <CalendarDateRangeIcon className="text-blue-400 w-6 h-6" /> Start Date:
+            <span className="text-gray-300">{project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}</span>
+          </p>
+          <p className="flex items-center gap-2 text-gray-400">
+            <CalendarDateRangeIcon className="text-orange-400 w-6 h-6" /> End Date:
+            <span className="text-gray-300">{project.endDate ? new Date(project.endDate).toLocaleDateString() : 'N/A'}</span>
+          </p>
+          <p className="flex items-center gap-2 text-gray-400">
+            <CurrencyDollarIcon className="text-green-400 w-6 h-6" /> Budget:
+            <span className="text-green-400 font-bold">${(project.budget || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </p>
+        </div>
+      </div>
+      <div className="flex space-x-3 mt-6 pt-4 border-t border-gray-700">
+        <button
+          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all flex items-center justify-center gap-2 font-medium transform hover:scale-105"
+          onClick={() => onEdit(project)}
+          aria-label={`Edit project ${project.name}`}
+        >
+          <PencilIcon className=" w-6 h-6"/> Edit
+        </button>
+        <button
+          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all flex items-center justify-center gap-2 font-medium transform hover:scale-105"
+          onClick={() => onDelete(project.id)}
+          aria-label={`Delete project ${project.name}`}
+        >
+          <TrashIcon className=" w-6 h-6"/> Delete
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Add Project Form Component (improved validation and styling)
 interface AddProjectFormProps {
   onSubmit: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
   isLoading: boolean;
+  companyId: string;
 }
 
-const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onCancel, isLoading }) => {
+const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onCancel, isLoading, companyId }) => {
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [status, setStatus] = useState<Project['status']>('PLANNING');
-  const [budget, setBudget] = useState<string>(''); // Use string for input, convert to number
+  const [budget, setBudget] = useState<string>('');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+
+    if (!name.trim()) {
+      setFormError('Project name is required.');
+      return;
+    }
+    if (budget && isNaN(parseFloat(budget))) {
+      setFormError('Budget must be a valid number.');
+      return;
+    }
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      setFormError('End date cannot be before start date.');
+      return;
+    }
+
+    onSubmit({
+      name,
+      description: description || null,
+      startDate: startDate ? new Date(startDate).toISOString() : null,
+      endDate: endDate ? new Date(endDate).toISOString() : null,
+      status,
+      budget: budget ? parseFloat(budget) : null,
+      companyId: companyId, // IMPORTANT: Replace with actual company ID from context/props
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 p-4">
+      {formError && <p className="text-red-400 text-sm font-medium mb-4">{formError}</p>}
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Project Name <span className="text-red-500">*</span></label>
+        <input
+          type="text"
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
+        ></textarea>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-1">Start Date</label>
+          <input
+            type="date"
+            id="startDate"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
+          />
+        </div>
+        <div>
+          <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-1">End Date</label>
+          <input
+            type="date"
+            id="endDate"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
+          />
+        </div>
+      </div>
+      <div>
+        <label htmlFor="status" className="block text-sm font-medium text-gray-300 mb-1">Status</label>
+        <select
+          id="status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as Project['status'])}
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
+        >
+          <option value="PLANNING">Planning</option>
+          <option value="ONGOING">Ongoing</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="ARCHIVED">Archived</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+      </div>
+      <div>
+        <label htmlFor="budget" className="block text-sm font-medium text-gray-300 mb-1">Budget ($)</label>
+        <input
+          type="number"
+          id="budget"
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          step="0.01"
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
+          placeholder="e.g., 15000.00"
+        />
+      </div>
+      <div className="flex justify-end space-x-3 mt-8">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-5 py-2.5 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-all disabled:opacity-50 transform hover:scale-105 font-medium"
+          disabled={isLoading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-5 py-2.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-all disabled:opacity-50 transform hover:scale-105 font-medium"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Adding... ⏳' : 'Add Project ✨'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Edit Project Form Component (new)
+interface EditProjectFormProps {
+  project: Project;
+  onSubmit: (project: Project) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}
+
+const EditProjectForm: React.FC<EditProjectFormProps> = ({ project, onSubmit, onCancel, isLoading }) => {
+  const [name, setName] = useState(project.name);
+  const [description, setDescription] = useState(project.description || '');
+  const [startDate, setStartDate] = useState(project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '');
+  const [endDate, setEndDate] = useState(project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '');
+  const [status, setStatus] = useState<Project['status']>(project.status);
+  const [budget, setBudget] = useState<string>(project.budget?.toString() || '');
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -412,69 +717,69 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onCancel, isL
     }
 
     onSubmit({
+      ...project,
       name,
       description: description || null,
       startDate: startDate ? new Date(startDate).toISOString() : null,
       endDate: endDate ? new Date(endDate).toISOString() : null,
       status,
       budget: budget ? parseFloat(budget) : null,
-      companyId: 'your_company_id_here', // Replace with actual company ID from context/props
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {formError && <p className="text-red-500 text-sm">{formError}</p>}
+    <form onSubmit={handleSubmit} className="space-y-6 p-4">
+      {formError && <p className="text-red-400 text-sm font-medium mb-4">{formError}</p>}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-300">Project Name</label>
+        <label htmlFor="edit-name" className="block text-sm font-medium text-gray-300 mb-1">Project Name <span className="text-red-500">*</span></label>
         <input
           type="text"
-          id="name"
+          id="edit-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500"
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
           required
         />
       </div>
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description</label>
+        <label htmlFor="edit-description" className="block text-sm font-medium text-gray-300 mb-1">Description</label>
         <textarea
-          id="description"
+          id="edit-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500"
+          rows={4}
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
         ></textarea>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-300">Start Date</label>
+          <label htmlFor="edit-startDate" className="block text-sm font-medium text-gray-300 mb-1">Start Date</label>
           <input
             type="date"
-            id="startDate"
+            id="edit-startDate"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500"
+            className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
           />
         </div>
         <div>
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-300">End Date</label>
+          <label htmlFor="edit-endDate" className="block text-sm font-medium text-gray-300 mb-1">End Date</label>
           <input
             type="date"
-            id="endDate"
+            id="edit-endDate"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500"
+            className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
           />
         </div>
       </div>
       <div>
-        <label htmlFor="status" className="block text-sm font-medium text-gray-300">Status</label>
+        <label htmlFor="edit-status" className="block text-sm font-medium text-gray-300 mb-1">Status</label>
         <select
-          id="status"
+          id="edit-status"
           value={status}
           onChange={(e) => setStatus(e.target.value as Project['status'])}
-          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500"
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
         >
           <option value="PLANNING">Planning</option>
           <option value="ONGOING">Ongoing</option>
@@ -484,33 +789,119 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onCancel, isL
         </select>
       </div>
       <div>
-        <label htmlFor="budget" className="block text-sm font-medium text-gray-300">Budget ($)</label>
+        <label htmlFor="edit-budget" className="block text-sm font-medium text-gray-300 mb-1">Budget ($)</label>
         <input
           type="number"
-          id="budget"
+          id="edit-budget"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
           step="0.01"
-          className="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500"
+          className="mt-1 block w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-gray-100 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-colors"
+          placeholder="e.g., 15000.00"
         />
       </div>
-      <div className="flex justify-end space-x-3 mt-6">
+      <div className="flex justify-end space-x-3 mt-8">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition"
+          className="px-5 py-2.5 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-all disabled:opacity-50 transform hover:scale-105 font-medium"
           disabled={isLoading}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition disabled:opacity-50"
+          className="px-5 py-2.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-all disabled:opacity-50 transform hover:scale-105 font-medium"
           disabled={isLoading}
         >
-          {isLoading ? 'Adding...' : 'Add Project'}
+          {isLoading ? 'Updating... ⏳' : 'Save Changes ✅'}
         </button>
       </div>
     </form>
   );
 };
+
+// Modal Component (assuming you have a basic Modal, if not, here's a simple one)
+// components/Modal.tsx
+/*
+import React from 'react';
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-lg mx-4 border border-gray-700 transform scale-95 animate-scale-in">
+        <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-6">
+          <h2 className="text-3xl font-extrabold text-purple-400">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-200 text-3xl transition-colors"
+            aria-label="Close modal"
+          >
+            &times;
+          </button>
+        </div>
+        <div>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Modal;
+*/
+
+// Add these to your global CSS or a dedicated styles file if using Tailwind JIT
+/*
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+*/

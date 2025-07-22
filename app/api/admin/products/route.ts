@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       images, // Expecting an array of { url: string }
       productCategoryId,
       costPrice,
-      salesPrice,
+      sellingPrice,
       discount,
       isAvailable,
       isOnOffer,
@@ -58,11 +58,11 @@ export async function POST(request: Request) {
     } = body;
 
     // Basic validation
-    if (!name || !productCategoryId || !companyId || costPrice === undefined || salesPrice === undefined) {
+    if (!name || !productCategoryId || !companyId || costPrice === undefined || sellingPrice === undefined) {
       return NextResponse.json({ message: 'Missing required fields: name, productCategoryId, companyId, costPrice, salesPrice' }, { status: 400 });
     }
 
-    const finalPrice = salesPrice * (1 - (discount || 0) / 100);
+    const finalPrice = sellingPrice * (1 - (discount || 0) / 100);
 
     const newProduct = await prisma.product.create({
       data: {
@@ -70,12 +70,12 @@ export async function POST(request: Request) {
         description,
         images: images || [], // Store as Json
         tags: [], // Default empty
-        profitMargin: (salesPrice - costPrice) / salesPrice || 0,
+        profitMargin: (sellingPrice - costPrice) / sellingPrice || 0,
         brand: 'Restaurant Brand', // Placeholder or dynamic
         company: { connect: { id: companyId } },
         productCategory: { connect: { id: productCategoryId } },
         costPrice,
-        salesPrice,
+        sellingPrice,
         finalPrice,
         discount: discount || 0,
         isAvailable: typeof isAvailable === 'boolean' ? isAvailable : true,
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
         isFeatured: typeof isFeatured === 'boolean' ? isFeatured : false,
         ingredients,
         // Set other required fields from schema with sensible defaults or nulls
-        model: null, color: [], size: [], weight: null, condition: null, dimension: null, material: [],
+        model: null, color: [], size: [], weight: [], condition: null, dimensions: null, material: [],
         author: null, publisher: null, isbn: null, fabricComposition: null, careInstructions: null,
         energyRating: null, warrantyPeriod: null, applianceDimensions: null, usageInstructions: null, expirationDate: null,
         contact: null, location: null, amenities: [],

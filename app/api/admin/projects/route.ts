@@ -1,49 +1,88 @@
-// pages/api/projects/index.js
-import prisma from '../../../lib/prisma';
+import { NextResponse } from 'next/server';
+import prisma from '@/server/db/prismadb';
 
-export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    // GET all projects
-    try {
-      const projects = await prisma.project.findMany({
-        include: {
-          tasks: true, // Include related tasks
-          events: true, // Include related events
-          donations: true, // Include related donations
-          members: {
-            include: {
-              user: true, // Include user details for project members
-            },
+// Define the ProjectStatus type if not already defined globally or in a shared types file
+export type ProjectStatus = 'PLANNING' | 'ONGOING' | 'COMPLETED' | 'ARCHIVED' | 'CANCELLED';
+
+// Define the expected shape for creating a new project
+interface ProjectCreateData {
+  name: string;
+  description?: string | null;
+  startDate?: string | null; // Expecting ISO string from client
+  endDate?: string | null;   // Expecting ISO string from client
+  status?: ProjectStatus;
+  budget?: number | null;
+  companyId?: string | null;
+}
+
+/**
+ * Handles GET requests to retrieve all projects.
+ * @param {Request} request The incoming Next.js request object.
+ * @returns {NextResponse} The response containing all projects or an error.
+ */
+export async function GET(request: Request) {
+  try {
+    const projects = await prisma.project.findMany({
+      include: {
+        tasks: true,
+        events: true,
+        donations: true,
+        members: {
+          include: {
+            user: true,
           },
         },
-      });
-      res.status(200).json(projects);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  } else if (req.method === 'POST') {
-    // POST a new project
-    const { name, description, startDate, endDate, status, budget, companyId } = req.body;
-    try {
-      const newProject = await prisma.project.create({
-        data: {
-          name,
-          description,
-          startDate: startDate ? new Date(startDate) : undefined,
-          endDate: endDate ? new Date(endDate) : undefined,
-          status,
-          budget,
-          companyId,
-        },
-      });
-      res.status(201).json(newProject);
-    } catch (error) {
-      console.error('Error creating project:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+      },
+    });
+    return NextResponse.json(projects, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return NextResponse.json({ message: 'Internal server error', error: (error as Error).message }, { status: 500 });
   }
+}
+
+/**
+ * Handles POST requests to create a new project.
+ * @param {Request} request The incoming Next.js request object.
+ * @returns {NextResponse} The response containing the newly created project or an error.
+ */
+export async function POST(request: Request) {
+  try {
+    const { name, description, startDate, endDate, status, budget, companyId }: ProjectCreateData = await request.json();
+
+    // Basic validation: ensure 'name' is provided
+    if (!name) {
+      return NextResponse.json({ message: 'Project name is required.' }, { status: 400 });
+    }
+
+    const newProject = await prisma.project.create({
+      data: {
+        name,
+        description,
+        startDate: startDate ? new Date(startDate) : undefined, // Convert ISO string to Date object
+        endDate: endDate ? new Date(endDate) : undefined,     // Convert ISO string to Date object
+        status,
+        budget,
+        companyId,
+      },
+    });
+
+    return NextResponse.json(newProject, { status: 201 }); // 201 Created
+  } catch (error: any) {
+    console.error('Error creating project:', error);
+    // Handle specific Prisma errors if necessary, e.g., unique constraint violation
+    if (error.code === 'P2002') {
+      return NextResponse.json({ message: 'A project with this name already exists.', error: error.message }, { status: 409 });
+    }
+    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
+  }
+}
+
+// Optionally, explicitly disallow other methods
+export async function PUT() {
+  return NextResponse.json({ message: 'Method Not Allowed' }, { status: 405 });
+}
+
+export async function DELETE() {
+  return NextResponse.json({ message: 'Method Not Allowed' }, { status: 405 });
 }
