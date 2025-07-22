@@ -20,6 +20,8 @@ interface HeaderProps {
   storeFormData: any;
 }
 
+// ... (imports and existing code)
+
 const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   const { cartItems } = useStateContext(); // Assuming you have a cartItems state for count
   const router = useRouter();
@@ -33,6 +35,21 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316'; // orange-500
   const textColor = scrolled ? 'text-gray-800 dark:text-gray-100' : 'text-white';
   const logoTextColor = scrolled ? 'text-gray-900 dark:text-gray-100' : 'text-white';
+
+  // Define dynamic CSS variables for easier use in Tailwind JIT
+  const customStyles = {
+    '--primary': primaryColor,
+    '--secondary': secondaryColor,
+    '--scrolled-bg-color': scrolled ? `rgba(255, 255, 255, 0.85)` : 'transparent', // Light mode
+    '--scrolled-dark-bg-color': scrolled ? `rgba(17, 24, 39, 0.85)` : 'transparent', // Dark mode
+    '--scrolled-border-color': scrolled ? `rgba(0, 0, 0, 0.1)` : 'transparent', // Light mode border
+    '--scrolled-dark-border-color': scrolled ? `rgba(255, 255, 255, 0.1)` : 'transparent', // Dark mode border
+    '--scrolled-text-color': scrolled ? '#1f2937' : 'white', // gray-800
+    '--scrolled-dark-text-color': scrolled ? '#f9fafb' : 'white', // gray-100
+    '--logo-text-color': scrolled ? '#1f2937' : 'white', // dark:text-gray-100 is covered by the dark mode logic
+    '--logo-dark-text-color': scrolled ? '#f9fafb' : 'white',
+  } as React.CSSProperties;
+
 
   const sections = [
     { id: 'hero', label: 'Home' },
@@ -70,6 +87,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
 
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
+
   if (!storeFormData) {
     return (
       <header className="fixed w-full z-50 top-0 left-0 bg-gray-900/80 backdrop-blur-md h-20 flex items-center justify-center">
@@ -79,18 +97,19 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   }
 
   return (
-    <header className="fixed w-full z-50 top-0 left-0" style={{ '--primary': primaryColor, '--secondary': secondaryColor } as React.CSSProperties}>
+    <header className="fixed w-full z-50 top-0 left-0" style={customStyles}>
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 120, damping: 20 }} // Spring animation for a smoother feel
-        className={`transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 shadow-lg'
+        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+        className={`transition-all duration-300 h-20 flex items-center
+          ${scrolled
+            ? 'bg-[var(--scrolled-bg-color)] dark:bg-[var(--scrolled-dark-bg-color)] backdrop-blur-lg border-b-[var(--scrolled-border-color)] dark:border-b-[var(--scrolled-dark-border-color)] shadow-lg'
             : 'bg-transparent'
-        } py-4`}
+          }
+        `}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between h-20">
+        <div className="container mx-auto px-6 flex items-center justify-between h-full"> {/* Use h-full */}
           {/* Logo */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
             <Link href={`/${storeFormData.slug}`} className="flex items-center space-x-2 relative z-20">
@@ -99,12 +118,12 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                   src={storeFormData.logoUrl}
                   loader={loader}
                   alt={storeFormData.name}
-                  width={140} // Slightly larger logo
-                  height={50}
+                  width={160} // Slightly larger for presence
+                  height={60} // Adjust height proportionally
                   className="object-contain"
                 />
               ) : (
-                <span className={`text-3xl font-extrabold ${logoTextColor}`}>
+                <span className={`text-3xl font-extrabold text-[var(--logo-text-color)] dark:text-[var(--logo-dark-text-color)]`}>
                   {storeFormData.name}
                 </span>
               )}
@@ -116,21 +135,17 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
             {sections.map(({ id, label, href }) => (
               <Link
                 key={id}
-                href={href || `#${id}`} // Use href if provided, otherwise scroll to ID
+                href={href || `#${id}`}
                 className={`
                   relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300
-                  ${textColor}
-                  ${scrolled ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'hover:bg-white/20'}
-                  ${currentPath === (href || `/#${id}`) || (currentPath === `/${storeFormData.slug}` && id === 'hero')
-                    ? 'font-bold bg-white/20 dark:bg-gray-700' // More subtle active state
+                  text-[var(--scrolled-text-color)] dark:text-[var(--scrolled-dark-text-color)]
+                  ${scrolled ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'hover:bg-white/10'}
+                  ${(currentPath === (href || `/#${id}`) || (currentPath === `/${storeFormData.slug}` && id === 'hero'))
+                    ? `font-bold ${scrolled ? 'bg-[var(--primary)]/[--active-bg-opacity-scrolled]' : 'bg-[var(--primary)]/[--active-bg-opacity-transparent]'}`
                     : ''
                   }
                 `}
-                style={{
-                  color: scrolled ? primaryColor : 'white', // Text color changes on scroll
-                  borderColor: scrolled ? 'transparent' : 'rgba(255,255,255,0.2)',
-                  backgroundColor: scrolled && (currentPath === (href || `/#${id}`) || (currentPath === `/${storeFormData.slug}` && id === 'hero')) ? `${primaryColor}1A` : '', // Active background on scroll
-                }}
+                whileHover={{ scale: 1.02 }} // Subtle scale on hover
               >
                 {label}
                 {/* Active link underline indicator */}
@@ -138,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                   <motion.span
                     layoutId="underline"
                     className="absolute left-0 bottom-0 h-[3px] w-full rounded-full"
-                    style={{ backgroundColor: scrolled ? primaryColor : secondaryColor }}
+                    style={{ backgroundColor: secondaryColor }} // Always use secondary for accent
                   />
                 )}
               </Link>
@@ -149,11 +164,13 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
               {/* Search */}
               <motion.button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className={`relative p-2 rounded-full transition-all duration-300 ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/20'}`}
+                className={`relative p-2 rounded-full transition-all duration-300
+                  ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/10'}
+                `}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <MagnifyingGlassIcon className={`w-6 h-6 ${textColor}`} />
+                <MagnifyingGlassIcon className={`w-6 h-6 text-[var(--scrolled-text-color)] dark:text-[var(--scrolled-dark-text-color)]`} />
               </motion.button>
 
               <AnimatePresence>
@@ -171,24 +188,30 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                       placeholder="Search..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className={`pl-10 pr-4 py-2 rounded-full ${scrolled ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-600' : 'bg-white/30 text-white placeholder-white border border-white/20'} focus:outline-none focus:ring-2`}
-                      style={{ focusRingColor: primaryColor }}
+                      className={`pl-10 pr-4 py-2 rounded-full
+                        ${scrolled
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-600'
+                          : 'bg-white/20 text-white placeholder-white border border-white/10'
+                        }
+                        focus:outline-none focus:ring-2 focus:ring-[var(--primary)]
+                      `}
                     />
                     <MagnifyingGlassIcon className={`w-5 h-5 absolute left-3 top-2.5 ${scrolled ? 'text-gray-500 dark:text-gray-400' : 'text-white/80'}`} />
                   </motion.form>
                 )}
               </AnimatePresence>
 
-              {/* Cart/Booking Link (replace with actual cart logic if needed) */}
+              {/* Cart/Booking Link */}
               <Link href={`/${storeFormData.slug}/booking`} passHref>
                 <motion.button
-                  className="relative p-2 rounded-full transition-all duration-300"
-                  style={{ backgroundColor: primaryColor }} // Primary color for action button
-                  whileHover={{ scale: 1.1 }}
+                  className={`relative p-2 rounded-full transition-all duration-300
+                    ${scrolled ? 'bg-[var(--primary)]' : 'border-2 border-white text-white'}
+                  `}
+                  style={{ color: 'white' }} // Icon color is white inside this button
+                  whileHover={{ scale: 1.1, backgroundColor: scrolled ? primaryColor : 'rgba(255,255,255,0.3)' }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <ShoppingCartIcon className="w-6 h-6 text-white" />
-                  {/* Optional: Cart item count badge */}
+                  <ShoppingCartIcon className="w-6 h-6" />
                   {cartItems && cartItems.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
                       {cartItems.length}
@@ -203,7 +226,9 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
           <div className="lg:hidden relative z-20">
             <button
               onClick={() => setMobileOpen((prev) => !prev)}
-              className={`p-2 rounded-full transition-all duration-300 ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/20'}`}
+              className={`p-2 rounded-full transition-all duration-300
+                ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/20'}
+              `}
               style={{ color: scrolled ? primaryColor : 'white' }}
             >
               {mobileOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
@@ -215,7 +240,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -50 }} // Slide down slightly
+              initial={{ opacity: 0, y: -50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -50 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -227,8 +252,8 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                     key={id}
                     href={href || `#${id}`}
                     className="text-3xl font-semibold text-gray-800 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-                    onClick={() => setMobileOpen(false)} // Close menu on click
-                    style={{ color: primaryColor }} // Mobile links also use primary color
+                    onClick={() => setMobileOpen(false)}
+                    style={{ color: primaryColor }}
                   >
                     {label}
                   </Link>
@@ -240,8 +265,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                     placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 pr-4 py-3 w-full rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2"
-                    style={{ focusRingColor: primaryColor }}
+                    className="pl-12 pr-4 py-3 w-full rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                   <MagnifyingGlassIcon className="w-6 h-6 absolute left-4 top-3 text-gray-500 dark:text-gray-400" />
                 </form>
@@ -267,5 +291,205 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
     </header>
   );
 };
+
+// const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
+  
+//   if (!storeFormData) {
+//     return (
+//       <header className="fixed w-full z-50 top-0 left-0 bg-gray-900/80 backdrop-blur-md h-20 flex items-center justify-center">
+//         <p className="text-white text-lg animate-pulse">Loading header...</p>
+//       </header>
+//     );
+//   }
+
+//   return (
+//     <header className="fixed w-full z-50 top-0 left-0" style={{ '--primary': primaryColor, '--secondary': secondaryColor } as React.CSSProperties}>
+//       <motion.nav
+//         initial={{ y: -100 }}
+//         animate={{ y: 0 }}
+//         transition={{ type: 'spring', stiffness: 120, damping: 20 }} // Spring animation for a smoother feel
+//         className={`transition-all duration-300 ${
+//           scrolled
+//             ? 'bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 shadow-lg'
+//             : 'bg-transparent'
+//         } py-4`}
+//       >
+//         <div className="container mx-auto px-6 flex items-center justify-between h-20">
+//           {/* Logo */}
+//           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+//             <Link href={`/${storeFormData.slug}`} className="flex items-center space-x-2 relative z-20">
+//               {storeFormData.logoUrl ? (
+//                 <Image
+//                   src={storeFormData.logoUrl}
+//                   loader={loader}
+//                   alt={storeFormData.name}
+//                   width={140} // Slightly larger logo
+//                   height={50}
+//                   className="object-contain"
+//                 />
+//               ) : (
+//                 <span className={`text-3xl font-extrabold ${logoTextColor}`}>
+//                   {storeFormData.name}
+//                 </span>
+//               )}
+//             </Link>
+//           </motion.div>
+
+//           {/* Desktop Nav */}
+//           <div className="hidden lg:flex items-center space-x-6 relative z-10">
+//             {sections.map(({ id, label, href }) => (
+//               <Link
+//                 key={id}
+//                 href={href || `#${id}`} // Use href if provided, otherwise scroll to ID
+//                 className={`
+//                   relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300
+//                   ${textColor}
+//                   ${scrolled ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'hover:bg-white/20'}
+//                   ${currentPath === (href || `/#${id}`) || (currentPath === `/${storeFormData.slug}` && id === 'hero')
+//                     ? 'font-bold bg-white/20 dark:bg-gray-700' // More subtle active state
+//                     : ''
+//                   }
+//                 `}
+//                 style={{
+//                   color: scrolled ? primaryColor : 'white', // Text color changes on scroll
+//                   borderColor: scrolled ? 'transparent' : 'rgba(255,255,255,0.2)',
+//                   backgroundColor: scrolled && (currentPath === (href || `/#${id}`) || (currentPath === `/${storeFormData.slug}` && id === 'hero')) ? `${primaryColor}1A` : '', // Active background on scroll
+//                 }}
+//               >
+//                 {label}
+//                 {/* Active link underline indicator */}
+//                 {((currentPath === href && href) || (currentPath === `/${storeFormData.slug}` && id === 'hero')) && (
+//                   <motion.span
+//                     layoutId="underline"
+//                     className="absolute left-0 bottom-0 h-[3px] w-full rounded-full"
+//                     style={{ backgroundColor: scrolled ? primaryColor : secondaryColor }}
+//                   />
+//                 )}
+//               </Link>
+//             ))}
+
+//             {/* Search and Cart/Booking Icon */}
+//             <div className="flex items-center space-x-4 ml-6">
+//               {/* Search */}
+//               <motion.button
+//                 onClick={() => setIsSearchOpen(!isSearchOpen)}
+//                 className={`relative p-2 rounded-full transition-all duration-300 ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/20'}`}
+//                 whileHover={{ scale: 1.1 }}
+//                 whileTap={{ scale: 0.9 }}
+//               >
+//                 <MagnifyingGlassIcon className={`w-6 h-6 ${textColor}`} />
+//               </motion.button>
+
+//               <AnimatePresence>
+//                 {isSearchOpen && (
+//                   <motion.form
+//                     onSubmit={handleSearchSubmit}
+//                     initial={{ width: 0, opacity: 0 }}
+//                     animate={{ width: 240, opacity: 1 }}
+//                     exit={{ width: 0, opacity: 0 }}
+//                     transition={{ duration: 0.3 }}
+//                     className="relative ml-2"
+//                   >
+//                     <input
+//                       type="search"
+//                       placeholder="Search..."
+//                       value={searchTerm}
+//                       onChange={(e) => setSearchTerm(e.target.value)}
+//                       className={`pl-10 pr-4 py-2 rounded-full ${scrolled ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-600' : 'bg-white/30 text-white placeholder-white border border-white/20'} focus:outline-none focus:ring-2`}
+//                       style={{ focusRingColor: primaryColor }}
+//                     />
+//                     <MagnifyingGlassIcon className={`w-5 h-5 absolute left-3 top-2.5 ${scrolled ? 'text-gray-500 dark:text-gray-400' : 'text-white/80'}`} />
+//                   </motion.form>
+//                 )}
+//               </AnimatePresence>
+
+//               {/* Cart/Booking Link (replace with actual cart logic if needed) */}
+//               <Link href={`/${storeFormData.slug}/booking`} passHref>
+//                 <motion.button
+//                   className="relative p-2 rounded-full transition-all duration-300"
+//                   style={{ backgroundColor: primaryColor }} // Primary color for action button
+//                   whileHover={{ scale: 1.1 }}
+//                   whileTap={{ scale: 0.9 }}
+//                 >
+//                   <ShoppingCartIcon className="w-6 h-6 text-white" />
+//                   {/* Optional: Cart item count badge */}
+//                   {cartItems && cartItems.length > 0 && (
+//                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+//                       {cartItems.length}
+//                     </span>
+//                   )}
+//                 </motion.button>
+//               </Link>
+//             </div>
+//           </div>
+
+//           {/* Hamburger Menu (Mobile) */}
+//           <div className="lg:hidden relative z-20">
+//             <button
+//               onClick={() => setMobileOpen((prev) => !prev)}
+//               className={`p-2 rounded-full transition-all duration-300 ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/20'}`}
+//               style={{ color: scrolled ? primaryColor : 'white' }}
+//             >
+//               {mobileOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Mobile Nav Overlay */}
+//         <AnimatePresence>
+//           {mobileOpen && (
+//             <motion.div
+//               initial={{ opacity: 0, y: -50 }} // Slide down slightly
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: -50 }}
+//               transition={{ duration: 0.3, ease: 'easeOut' }}
+//               className="lg:hidden fixed inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl z-40 flex flex-col items-center justify-center py-20"
+//             >
+//               <nav className="flex flex-col items-center space-y-8">
+//                 {sections.map(({ id, label, href }) => (
+//                   <Link
+//                     key={id}
+//                     href={href || `#${id}`}
+//                     className="text-3xl font-semibold text-gray-800 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+//                     onClick={() => setMobileOpen(false)} // Close menu on click
+//                     style={{ color: primaryColor }} // Mobile links also use primary color
+//                   >
+//                     {label}
+//                   </Link>
+//                 ))}
+//                 {/* Mobile Search Input */}
+//                 <form onSubmit={handleSearchSubmit} className="relative w-full max-w-xs mt-8">
+//                   <input
+//                     type="search"
+//                     placeholder="Search..."
+//                     value={searchTerm}
+//                     onChange={(e) => setSearchTerm(e.target.value)}
+//                     className="pl-12 pr-4 py-3 w-full rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2"
+//                     style={{ focusRingColor: primaryColor }}
+//                   />
+//                   <MagnifyingGlassIcon className="w-6 h-6 absolute left-4 top-3 text-gray-500 dark:text-gray-400" />
+//                 </form>
+
+//                 {/* Mobile Cart/Booking Button */}
+//                 <Link href={`/${storeFormData.slug}/booking`} passHref>
+//                   <motion.button
+//                     className="inline-flex items-center justify-center px-8 py-3 rounded-full font-bold text-lg shadow-md transition-all duration-300 mt-6"
+//                     style={{ backgroundColor: secondaryColor, color: 'white' }}
+//                     whileHover={{ scale: 1.05 }}
+//                     whileTap={{ scale: 0.95 }}
+//                     onClick={() => setMobileOpen(false)}
+//                   >
+//                     Book Now
+//                     <ShoppingCartIcon className="w-5 h-5 ml-2" />
+//                   </motion.button>
+//                 </Link>
+//               </nav>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+//       </motion.nav>
+//     </header>
+//   );
+// };
 
 export default Header;

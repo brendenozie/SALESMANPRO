@@ -30,12 +30,7 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-/**
- * ServiceSite now reads everything from StoreContext instead of using a
- * hard-coded `store` object. The hook `useStoreContext()` must return
- * your Prisma → StoreForm data (i.e. exactly what you passed as `initialStore` in
- * `StoreLayout`).
- */
+
 export default function ServiceSite() {
   
   const { storeFormData } = useStoreContext();

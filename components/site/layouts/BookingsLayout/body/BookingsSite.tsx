@@ -6,6 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Hero from './components/HeroSection';
 import FeaturesSection from './components/FeaturesSection';
 import BenefitsSection from './components/BenefitsSection';
+import PricingAndStatsSection from './components/PricingAndStatsSection';
 import MassageFeatures from './components/MessagesSection';
 import TestimonialsSection from './components/TestimonialsSection';
 import CtaSection from './components/CtaSection';
@@ -19,6 +20,8 @@ export default function BookingsSite() {
       <Hero />
 
       <FeaturesSection />
+
+      <PricingAndStatsSection />
 
       <MassageFeatures />
 

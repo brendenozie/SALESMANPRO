@@ -1,234 +1,235 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useStoreContext } from '@/contexts/StoreContext';
+import { motion } from "framer-motion";
 
-// IMPORTANT: Replace this with a truly high-quality, abstract, or inspiring image.
-// Think crisp, clean, slightly out-of-focus background textures, modern home interiors,
-// or a dynamic, abstract light pattern. Avoid literal service images for versatility.
-import bannerFallback from "@/assets/homebanner.png"; 
-import { CogIcon, RssIcon, TvIcon } from "@heroicons/react/24/outline";
-import { MapIcon } from "@heroicons/react/20/solid";
+// Placeholder for dynamic data (replace with your actual context/props)
 
-// --- ICON PLACEHOLDERS ---
-// You MUST replace these with actual, distinct SVG icons for each category.
-// Using a "dumbbell" for everything makes it not intuitive.
-// Example:
-// import laundryIcon from "@/assets/icons/laundry-machine.svg";
-// import deliveryIcon from "@/assets/icons/delivery-truck.svg";
-// import cookingIcon from "@/assets/icons/chef-hat.svg";
-// import cleaningIcon from "@/assets/icons/sparkle.svg";
-// import { GiWashingMachine, GiCook, GiDeliveryDrone, GiVacuumCleaner } from 'react-icons/gi'; // Example react-icons
+import bannerLaundry from "@/assets/homebanner.png"; // Example image
+import bannerDelivery from "@/assets/homebanner.png"; // Example image
+import bannerCatering from "@/assets/homebanner.png"; // Example image
 
+import bannerFallback from "@/assets/homebanner.png";
 
-export default function HeroSection() {
-  const { storeFormData } = useStoreContext();
-  const { scrollYProgress } = useScroll();
+// Icons (choose from a library like Heroicons or custom SVGs)
+import { LaundryOutlineIcon, DeliveryOutlineIcon, CookingOutlineIcon } from "./icons"; // Assume these are custom icons
 
-  // Parallax effect for the background: more subtle and refined
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+// --- HeroSection Component ---
+export default function HeroSection({ storeFormData }) { // Assume storeFormData is passed as a prop
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
 
-  if (!storeFormData) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-700 dark:text-gray-300 text-lg animate-pulse">Crafting your perfect experience...</p>
-      </div>
-    );
-  }
-
-  const {
-    slug,
-    bannerUrl,
-    name,
-    description,
-    storeCategories, // array of { id, name, icon, items, sortOrder, visible }
-    stats,
-    themeSettings,
-  } = storeFormData;
-
-  // Utilize the theme colors more dynamically
-  const primaryColor = themeSettings?.primaryColor ?? "#2563EB"; // Default Blue
-  const secondaryColor = themeSettings?.secondaryColor ?? "#EC4899"; // Default Pink
-
-  // Dynamic icon mapping - essential for intuitiveness
-  const getCategoryIcon = (categoryName : any) => {
-    switch (categoryName) {
-      case "Washing & Laundry": return <TvIcon className="text-4xl lg:text-5xl" />;
-      case "Deliveries": return <CogIcon className="text-4xl lg:text-5xl" />;
-      case "Cooking & Catering": return <RssIcon className="text-4xl lg:text-5xl" />;
-      case "Home Cleaning": return <MapIcon className="text-4xl lg:text-5xl" />;
-      // Add more cases for your specific categories
-      default: return <svg className="w-10 h-10 lg:w-12 lg:h-12 text-current" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-4C9.79 12.5 8 10.71 8 8.5S9.79 4.5 12 4.5s4 1.79 4 4-1.79 4-4 4z" /></svg>; // Generic fallback icon
-    }
-  };
-
-  // Animation variants for a more dynamic, layered entrance
-  const fadeInGrow = {
-    hidden: { opacity: 0, y: 40, scale: 0.98 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { duration: 0.9, ease: [0.17, 0.55, 0.55, 1], delay: 0.1 } // Custom ease for a smoother feel
+  // Fallback data for demonstration
+  const defaultStoreData = {
+    slug: "your-business",
+    name: "Your Local Service Pro",
+    description: "Making your life easier, one service at a time.",
+    themeSettings: {
+      primaryColor: "#4CAF50", // Green for welcome
+      secondaryColor: "#FFC107", // Amber for accent
     },
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15, // Increased stagger for more dramatic effect
+    storeCategories: [
+      {
+        id: "cat1",
+        name: "Washing & Laundry",
+        shortDescription: "Fresh clothes, delivered clean.",
+        icon: <LaundryOutlineIcon className="w-16 h-16" />,
+        banner: bannerLaundry.src,
+        slug: "laundry"
       },
-    },
+      {
+        id: "cat2",
+        name: "Swift Deliveries",
+        shortDescription: "Fast, reliable, every time.",
+        icon: <DeliveryOutlineIcon className="w-16 h-16" />,
+        banner: bannerDelivery.src,
+        slug: "delivery"
+      },
+      {
+        id: "cat3",
+        name: "Gourmet Catering",
+        shortDescription: "Exquisite flavors for any event.",
+        icon: <CookingOutlineIcon className="w-16 h-16" />,
+        banner: bannerCatering.src,
+        slug: "catering"
+      },
+      // Add more categories as needed
+    ],
   };
 
-  const listItemVariants = {
+  const currentStoreData = storeFormData || defaultStoreData;
+  const { slug, name, description, themeSettings, storeCategories } = currentStoreData;
+
+  const primaryColor = themeSettings?.primaryColor ?? "#4CAF50";
+  const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107";
+
+  // Auto-rotate categories every few seconds
+  useEffect(() => {
+    if (storeCategories && storeCategories.length > 1) {
+      const interval = setInterval(() => {
+        setActiveCategoryIndex((prevIndex) =>
+          (prevIndex + 1) % storeCategories.length
+        );
+      }, 7000); // Change category every 7 seconds
+      return () => clearInterval(interval);
+    }
+  }, [storeCategories]);
+
+  const activeCategory = storeCategories ? storeCategories[activeCategoryIndex] : null;
+
+  // Animation Variants
+  const textReveal = {
     hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 12 } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
   };
 
-  // Button interactive states
-  const buttonVariants = {
-    rest: { scale: 1, boxShadow: "0px 4px 15px rgba(0,0,0,0.2)" },
-    hover: { scale: 1.03, boxShadow: "0px 8px 25px rgba(0,0,0,0.3)" },
-    tap: { scale: 0.98, boxShadow: "0px 2px 10px rgba(0,0,0,0.15)" },
+  const buttonSlideIn = {
+    hidden: { opacity: 0, x: -50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.7, delay: 0.4, ease: "easeOut" } },
   };
 
-  // Card interactive states
-  const cardVariants = {
-    rest: { y: 0, scale: 1, rotateX: 0, boxShadow: "0px 5px 15px rgba(0,0,0,0.1)" },
-    hover: {
-      y: -5, // Lift effect
-      scale: 1.02,
-      rotateX: 2, // Subtle tilt
-      boxShadow: "0px 15px 30px rgba(0,0,0,0.3)",
-      transition: { duration: 0.3 }
-    },
-    tap: { scale: 0.98, y: 0, rotateX: 0, boxShadow: "0px 2px 8px rgba(0,0,0,0.1)" }
+  const categoryCardRise = {
+    hidden: { opacity: 0, y: 100, scale: 0.9 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.8, ease: "easeOut", delay: 0.6 } },
   };
 
+  const backgroundFade = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 1.5, ease: "easeInOut" } },
+  };
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden text-white">
-      {/* Immersive Background with Subtle Parallax */}
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gray-100">
+      {/* Background Image / Video (Dynamic) */}
       <motion.div
-        className="absolute inset-0 z-0 will-change-transform" // Add will-change for smoother animation
-        style={{
-          backgroundImage: `url(${bannerUrl || bannerFallback.src})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          y: backgroundY, // Apply parallax transform
-        }}
-      />
-
-      {/* Dynamic Overlay: Darker, more atmospheric, using theme colors */}
-      <div
-        className="absolute inset-0 z-10"
-        style={{
-          // background: `linear-gradient(145deg, ${primaryColor}E0, ${secondaryColor}E0)`, // E0 for ~88% opacity
-          backdropFilter: 'blur(12px) brightness(0.8)', // Stronger blur, slightly dims background
-        }}
-      />
-
-      {/* Main Content Area: Centered and Spacious */}
-      <motion.div
-        className="relative z-20 max-w-7xl mx-auto px-6 py-24 flex flex-col items-center justify-center text-center space-y-10"
-        variants={staggerContainer}
+        key={activeCategory?.banner || "default-banner"} // Key for re-animating on category change
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${activeCategory?.banner || bannerLaundry.src})` }}
+        variants={backgroundFade}
         initial="hidden"
         animate="visible"
       >
+        {/* Subtle Gradient Overlay for Readability and Mood */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 50%, ${primaryColor}40 100%)`, // Dark top, light bottom with theme color
+          }}
+        ></div>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(90deg, ${primaryColor}20 0%, transparent 50%, ${secondaryColor}20 100%)`, // Subtle horizontal accent
+          }}
+        ></div>
+        {/* Optional: Add a subtle texture or noise overlay for depth */}
+        <div className="absolute inset-0 bg-noise-overlay opacity-10"></div>
+      </motion.div>
+
+      {/* Main Content Area */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 sm:py-32 lg:py-40 text-white text-center flex flex-col items-center">
         {/* Headline */}
         <motion.h1
-          className="text-5xl sm:text-6xl lg:text-8xl font-black leading-tight tracking-tight drop-shadow-2xl" // Stronger shadow
-          variants={fadeInGrow}
+          className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight drop-shadow-lg"
+          variants={textReveal}
+          initial="hidden"
+          animate="visible"
         >
-          Your Life. Simplified.
-          <br />
-          <span
-            className="bg-clip-text text-transparent"
-            style={{ backgroundImage: `linear-gradient(to right, #fff, ${secondaryColor})` }}
-          >
-            Seamlessly Serviced.
-          </span>
+          {name || "Your Life."} <span style={{ color: secondaryColor }}>{activeCategory?.name || "Simplified."}</span>
         </motion.h1>
 
         {/* Sub-headline / Description */}
         <motion.p
-          className="mt-4 text-xl sm:text-2xl lg:text-2xl max-w-4xl text-gray-100 leading-relaxed opacity-90 font-light drop-shadow-xl" // Lighter font-weight
-          variants={fadeInGrow}
+          className="mt-4 text-xl sm:text-2xl max-w-3xl text-gray-100 leading-relaxed drop-shadow-md"
+          variants={textReveal}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.2 }}
         >
-          {description || "Discover a world where every task is handled with precision and care. From daily chores to special requests, we connect you with top-tier professionals, making your life effortlessly better."}
+          {activeCategory?.shortDescription || description || "Effortless solutions for your everyday needs."}
         </motion.p>
 
         {/* Call to Action Buttons */}
-        <motion.div className="mt-12 flex flex-wrap justify-center gap-6" variants={fadeInGrow}>
-          <Link href={`/${slug}/services`} passHref>
+        <motion.div
+          className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
+          variants={buttonSlideIn}
+          initial="hidden"
+          animate="visible"
+        >
+          <Link href={`/${slug}/services/${activeCategory?.slug || "all-services"}`} passHref>
             <motion.button
-              className="px-12 py-5 bg-white text-gray-900 font-extrabold rounded-full shadow-2xl text-xl flex items-center justify-center gap-3 transition-colors duration-300
-                         hover:bg-gray-100 active:bg-gray-200 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-50"
-              variants={buttonVariants}
-              initial="rest"
-              whileHover="hover"
-              whileTap="tap"
+              className="px-8 py-4 bg-white text-gray-800 font-bold rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              style={{ backgroundColor: secondaryColor, color: "white" }} // Use secondary color for primary CTA
+              whileHover={{ scale: 1.05, boxShadow: "0px 8px 20px rgba(0,0,0,0.3)" }}
+              whileTap={{ scale: 0.95 }}
             >
               Explore Services
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
             </motion.button>
           </Link>
-          <Link href={`/${slug}/about`} passHref>
+          <Link href={`/${slug}/contact`} passHref>
             <motion.button
-              className="px-12 py-5 border-2 border-white text-white font-bold rounded-full text-xl flex items-center justify-center gap-3 transition-colors duration-300
-                         hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-50"
-              variants={buttonVariants}
-              initial="rest"
-              whileHover="hover"
-              whileTap="tap"
+              className="px-8 py-4 border-2 border-white text-white font-semibold rounded-full text-lg hover:bg-white hover:text-gray-800 transition-all duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Our Story
+              Get a Quote
             </motion.button>
           </Link>
         </motion.div>
 
-        {/* Dynamic Category/Service Highlight Cards: More prominent, interactive */}
+        {/* Dynamic Category Navigator/Showcase */}
         {storeCategories && storeCategories.length > 0 && (
-          <motion.div
-            className="mt-20 w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-6 max-w-5xl" // Increased max-width and gap
-            variants={staggerContainer}
-          >
-            {storeCategories.slice(0, 4).map((category) => (
-              <motion.div
-                key={category.id}
-                variants={listItemVariants} // Use listItemVariants for these
-                className="relative flex flex-col items-center justify-center p-8 text-center rounded-3xl cursor-pointer transition-all duration-300 ease-in-out
-                           bg-white/15 backdrop-blur-md border border-white/20 shadow-lg text-white" // Brighter background, distinct border
-                initial="rest"
-                whileHover="hover"
-                whileTap="tap"
-                // Conditional styling for subtle unique card colors
-                style={{
-                  background: `linear-gradient(135deg, ${primaryColor}30, ${secondaryColor}30)`,
-                  borderColor: `rgba(255,255,255,0.2)`
-                }}
-              >
-                <div className="mb-4 text-white" style={{ color: secondaryColor }}>
-                  {getCategoryIcon(category.name)}
-                </div>
-                <h3 className="text-2xl font-semibold mb-1 leading-tight text-white">{category.name}</h3>
-                <p className="text-sm opacity-80 text-gray-200">{category.items?.length || 0} services</p>
-                {/* Optional: Add a subtle overlay on hover for effect */}
-                <div className="absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-300 hover:opacity-10"
-                     style={{ background: `radial-gradient(circle at center, ${secondaryColor}10, transparent 70%)` }}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="absolute bottom-0 w-full flex justify-center pb-4 lg:pb-6">
+            <div className="flex gap-4">
+              {storeCategories.map((category, index) => (
+                <motion.div
+                  key={category.id}
+                  className={`flex flex-col items-center p-4 rounded-xl cursor-pointer transition-all duration-300 border-2
+                              ${index === activeCategoryIndex ? 'scale-110 shadow-lg' : 'opacity-70'}
+                              `}
+                  style={{
+                    backgroundColor: index === activeCategoryIndex ? `white` : `rgba(255,255,255,0.15)`,
+                    borderColor: index === activeCategoryIndex ? secondaryColor : `rgba(255,255,255,0.3)`,
+                    color: index === activeCategoryIndex ? primaryColor : "white",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setActiveCategoryIndex(index)}
+                  variants={categoryCardRise}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <div className="mb-2 text-current">
+                    {category.icon}
+                  </div>
+                  <span className="text-sm font-semibold">{category.name}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         )}
-      </motion.div>
+      </div>
     </section>
   );
 }
+
+// Placeholder for custom icon components (you would define these or import from a library)
+const LaundryOutlineIcon = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.354 1.5A.5.5 0 0 1 12 2v2.5a.5.5 0 0 1-1 0V2a.5.5 0 0 1 .354-.447ZM15 3h1.5A1.5 1.5 0 0 1 18 4.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-1.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-16a7 7 0 1 1 0 14 7 7 0 0 1 0-14Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
+  </svg>
+);
+const DeliveryOutlineIcon = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5c.576 0 1.05-.474 1.05-1.05V13.5h-2.1v4.95c0 .576.474 1.05 1.05 1.05ZM12 4.5v9m0 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM10 11.5h4c.552 0 1-.448 1-1V5.5c0-.552-.448-1-1-1h-4c-.552 0-1 .448-1 1V10.5c0 .552.448 1 1 1Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v-2a.5.5 0 0 1 1 0v2" />
+  </svg>
+);
+const CookingOutlineIcon = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM12 18.375a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM5.625 12a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75Zm12.75-9.75v16.5c0 .548-.452 1-.996 1-.548 0-.996-.452-.996-1V2.25c0-.548.452-1 .996-1 .548 0 .996.452.996 1Zm-13.5 0V2.25c0-.548.452-1 .996-1 .548 0 .996.452.996 1v16.5c0 .548-.452 1-.996 1-.548 0-.996-.452-.996-1Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15.375a3.375 3.375 0 1 0 0-6.75 3.375 3.375 0 0 0 0 6.75Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM12 18.375a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM5.625 12a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM12 5.625a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM18.375 5.625a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM5.625 18.375a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75Z" />
+  </svg>
+);

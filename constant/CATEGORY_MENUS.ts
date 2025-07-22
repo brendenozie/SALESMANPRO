@@ -92,7 +92,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
 
   "Service Provider": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
+    { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
     {
       label: "Bookings",
       icon: CalendarIcon,
@@ -109,19 +109,23 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
 
   "Booking & Appointments": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
+    { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
     { label: "Calendar", href: `/admin/${adminSlug}/calendar`, icon: CalendarIcon },
     { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
     { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
-    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UsersIcon },
+    { label: "Clients", href: `/admin/${adminSlug}/storeclients`, icon: UsersIcon },
+    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
 
   "Portfolio & Personal Branding": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
     { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
     { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
     { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
 
