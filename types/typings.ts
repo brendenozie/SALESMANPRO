@@ -1,5 +1,7 @@
 import { User } from "@prisma/client";
 import "next-auth";
+import { ChangeEvent } from "react";
+
 
 
 export interface IStyleData {
@@ -65,24 +67,14 @@ export interface uploadImage {
 }
 
 export interface IUser {
-  id: string = "",
-  name: string = "",
-  email: string = "",
-  password: string = "random$123%$^&",
-  gender: string = "person",
-  exerciseGoal: string = "Lose Weight",
-  focusArea: string = "Arms",
-  currentHeightInCm: Int = 0,
-  currentWeightInKg: Float = 0.0,
-  birthYear: Int = 0,
-  weeklyGoalInKM: Float = 0.0,//steps
-  weightInKgGoal: Float = 0.0,
-  physicalActivityLevel: string = "Beginner",
-  bmiResult: Double = 0.0,
-  imgUri: string = "",
-  role: string = "user",
-  provider: string = "mobile",
-  img: string = "mobile"
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  imgUri: string;
+  role: string ;
+  provider: string;
+  img: string ;
   // id: string;
   // name: string;
   // email: string;
@@ -91,7 +83,7 @@ export interface IUser {
 }
 
 // interface CategoryOption { id: string; name: string; }
-type StoreCategoryEntry = {
+export type StoreCategoryEntry = {
   id: string;           // parent ProductCategory.id
   name: string;         // parent name
   items: SubObj[];      // zero or more subcategory objects
@@ -102,7 +94,7 @@ type StoreCategoryEntry = {
   visible?: boolean;
 };
 
-type SelectedCategory = {
+export type SelectedCategory = {
   id:    string;
   name:  string;
   icon:string;
@@ -132,12 +124,12 @@ export type ParentCategory = {
   
   sortOrder?: number;
   visible?: boolean;
-  items?: Subcategory[]; // always an array
-  allBrands?: any[] | null;
+  // items?: Subcategory[]; // always an array
+  // allBrands?: any[] | null;
   category?: ProductCategory;
 };
 
-type RawCategory = {
+export type RawCategory = {
   id:         string;
   name:       string;
   icon:string;
@@ -155,14 +147,14 @@ type RawCategory = {
 //Updated type starts here
 
 // --- ENUMS based on Prisma Schema ---
-enum SocialChannel { TWITTER, INSTAGRAM, FACEBOOK, LINKEDIN }
-enum PolicyType { SHIPPING, RETURNS, PRIVACY, TERMS }
-enum SectionType { Hero, FeatureGrid, TestimonialCarousel, BlogPreview, CustomHtml, About, Services, Awards, HealthTips, Features, HowItWorks, Pricing, CTA, Metrics, Stats }
+export enum SocialChannel { TWITTER, INSTAGRAM, FACEBOOK, LINKEDIN }
+export enum PolicyType { SHIPPING, RETURNS, PRIVACY, TERMS }
+export enum SectionType { Hero, FeatureGrid, TestimonialCarousel, BlogPreview, CustomHtml, About, Services, Awards, HealthTips, Features, HowItWorks, Pricing, CTA, Metrics, Stats }
 
 // --- INTERFACES for related models ---
 
-interface GeoLocation { lat: number; lng: number; }
-type OpeningHours = Record<string, { open: string; close: string } | undefined>;
+export interface GeoLocation { lat: number; lng: number; }
+export type OpeningHours = Record<string, { open: string; close: string } | undefined>;
 
 export interface SocialLink {
     id?: string;
@@ -258,22 +250,10 @@ export interface PageSection {
 // NEW: Interface for `AppPromo`
 export interface AppPromo {
     id?: string;
-    headline: string;
+    headline?: string;
     subheading: string;
     buttons: { label: string; href: string; icon: string; }[]; // Structured buttons 
     screenshots: string[]; // Array of image URLs
-}
-
-// NEW: Stronger type for `StoreCategory`
-export interface StoreCategory {
-    id?: string;
-    categoryId: string; // ID of the ProductCategory
-    displayName?: string; // Store-specific override 
-    icon?: string; // Store-specific override 
-    visible: boolean;
-    sortOrder: number;
-    items?: any; // Subcategory JSON 
-    allBrands?:  string[];  
 }
 
 // NEW: Stronger type for `Blog`
@@ -296,7 +276,7 @@ export interface StoreForm {
     name: string; 
     slug: string; 
     tagline: string; 
-    description: string; 
+    description?: string; 
     hasWebsite: boolean;
     domain: string; 
     
@@ -328,6 +308,9 @@ export interface StoreForm {
     // --- NEW: Missing Relational Sections Added ---
     pageSections: PageSection[];
     appPromos: AppPromo[]; 
+    events: any[]; 
+    collections: any[]; 
+    announcements: any[]; 
     // You can add `events`, `announcements`, etc., following the same pattern.
     
     // --- JSON fields ---
@@ -342,6 +325,8 @@ export interface StoreForm {
     analyticsConfig: Record<string, any>;
     paymentSettings: Record<string, any>;
     shippingSettings: Record<string, any>;
+    
+    marketplaceListings: MarketListingForm[];
 }
 
 // interface GeoLocation { lat: number; lng: number; }
@@ -482,7 +467,7 @@ export type ProductCategory = {
 
 
 // Handlers signature
-interface Handlers {
+export interface Handlers {
   handleChange: (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
@@ -513,7 +498,12 @@ interface Handlers {
   ) => void;
   onAddHeroSlide: () => void;
   onRemoveHeroSlide: (index: number) => void;
-  handleSlideImageUpload
+  handleSlideImageUpload: (
+    index: number,
+    file: File,
+    field: keyof HeroSlide
+  ) => void;
+  // handleSlideImageUpload
   // onHeroImageUpload: (index: number, file: File) => void;
 
   onUpdatePromotion: (
@@ -534,13 +524,15 @@ interface Handlers {
 }
 
 // Step configuration
-interface StepConfig {
+export interface StepConfig {
   key: string;
   title: string;
-  render: (form: StoreForm, handlers: Handlers, availableCategories: CategoryOption[]) => React.ReactNode;
+  render: (form: StoreForm, 
+    handlers: Handlers, 
+    availableCategories: CategoryOption[]) => React.ReactNode;
 }
 
-interface BookItem {
+export interface BookItem {
   title: string;
   author: string;
   coverFile: File | null;      // raw File for upload
@@ -549,16 +541,16 @@ interface BookItem {
 
 export interface Promotion {
   title: string;
-  description: string;
-  startsAt?: string;
-  endsAt?: string;
+  description?: string;
+  startsAt?: Date | string;
+  endsAt?: Date | string;
   bannerUrl?: string;
   order?: number;
 }
 
 export interface HeroSlide {
   imageUrl: string;
-  headline: string;
+  headline?: string;
   subline?: string;
   ctaText?: string;
   ctaLink?: string;
@@ -615,7 +607,7 @@ export interface ProductForm {
 
   // basic info
   name: string;
-  description: string;
+  description?: string;
   longDescription: string; // Added from GeneralDetails
 
   tags: string[];
@@ -704,7 +696,7 @@ export interface ProductForm {
   expirationDate: string | null;
 
   // options & amenities
-  option: Json[]; // Generic array for various options
+  option: JSON[]; // Generic array for various options
   amenities: string[]; // Specific for properties/services
 
   // property
@@ -743,7 +735,7 @@ export interface ProductForm {
   status: string;
   collectionId: string;
   
-  applianceDimensions: string?;
+  applianceDimensions?: string;
 
   // Service/Booking related fields (from previous snippet, kept for completeness)
   hourlyRate?: number | null;
@@ -756,7 +748,7 @@ export interface ProductForm {
   providerRating?: number | null;
   
   requiredClientInfo?: string[] | null;
-  bookingSlots?: Json[]; // JSON array
+  bookingSlots?: JSON[]; // JSON array
 
   productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
   productCategoryId?: string;
@@ -859,7 +851,7 @@ export interface MarketListingForm {
   latitude: number | null;
   longitude: number | null;
   
-  option: Json[]; // Generic array for various options
+  option: JSON[]; // Generic array for various options
   amenities: string[]; // Moved here, was under Property-specific
 
   // Vehicle-specific
@@ -902,7 +894,7 @@ export interface MarketListingForm {
   // Home Appliances
   energyRating: string;
   warrantyPeriod: string;
-  applianceDimensions: string?;
+  applianceDimensions?: string;
 
   // Beauty Products
   ingredients: string;
@@ -920,7 +912,7 @@ export interface MarketListingForm {
   availabilityStart: string | null; // Nullable
   availabilityEnd: string | null; // Nullable
 
-  bookingSlots?: Json[]; // JSON array
+  bookingSlots?: JSON[]; // JSON array
   minNoticePeriod?: string | null;
   maxBookingAhead?: string | null;
   requiredClientInfo?: string[] | null;

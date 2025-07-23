@@ -20,7 +20,7 @@ import {
   SelectedCategory,
   Promotion,
   HeroSlide,
-} from "../../../../types/typings";
+} from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -29,6 +29,7 @@ import {
   websiteSteps,
   paymentSteps,
 } from "@/constant/STORE_SITE_STEPS";
+
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 
 const SITE_CATEGORIES_WITH_PRICING = [
@@ -48,7 +49,8 @@ export default function CreateStoreForm({
 }: Props) {
   const { data: session } = useSession();
   const router = useRouter();
-
+  
+  const [stepIndex, setStepIndex] = useState(0);
   
     // UPDATE: The defaultForm object is now initialized with all the fields
     // from the new, expanded StoreForm interface.
@@ -117,54 +119,12 @@ export default function CreateStoreForm({
       analyticsConfig: {},
       paymentSettings: {},
       shippingSettings: {},
+      blogs:[],
   
       // This would be populated in a different form, but needs to be in the type
       marketplaceListings: [], 
     };
 
-
-  // const defaultForm: StoreForm = {
-  //   id: "",
-  //   name: "",
-  //   slug: "",
-  //   domain: "",
-  //   hasWebsite: false,
-  //   tagline: "",
-  //   description: "",
-  //   category: "E-commerce",
-  //   logoUrl: "https://logourl.com",
-  //   bannerUrl: "https://bannerurl.com",
-  //   contactEmail: "",
-  //   contactPhone: "",
-  //   address: "",
-  //   geoLocation: { lat: 0, lng: 0 },
-  //   openingHours: {
-  //     mon: { open: "", close: "" },
-  //     tue: { open: "", close: "" },
-  //     wed: { open: "", close: "" },
-  //     thu: { open: "", close: "" },
-  //     fri: { open: "", close: "" },
-  //     sat: { open: "", close: "" },
-  //     sun: { open: "", close: "" },
-  //   },
-  //   socialLinks: [],
-  //   policies: [],
-  //   faqs: [],
-  //   testimonials: [],
-  //   heroSlides: [],
-  //   promotions: [],
-  //   themeSettings: {},
-  //   seo: {},
-  //   analyticsConfig: {},
-  //   paymentSettings: {},
-  //   shippingSettings: {},
-  //   storeCategories: [],
-  //   awards: [],
-  //   metrics: [],
-  //   stats: [],
-  //   marketplaceListings: [],
-  //   pricingTiers: [{ name: "", price: 0, features: [] }],
-  // };
 
   const [form, setForm] = useState<StoreForm>(
     // `initialData` fields overwrite defaults
@@ -192,7 +152,7 @@ export default function CreateStoreForm({
     // Reset the flag
     setCategoryChanged(false);
 
-  }, [form.category, categoryChanged, initialData]);
+  }, [form.category, categoryChanged, initialData,stepIndex]);
 
   // ─────────────────────────────────────────────────────────────────────
   // 1) File state (logo, banner, hero slides, promotion slides)
@@ -436,7 +396,6 @@ export default function CreateStoreForm({
 
   const totalSteps = allSteps.length + 1;
 
-  const [stepIndex, setStepIndex] = useState(0);
 
   const mappedCategories: ParentCategory[] = availableCategories.map((cat) => ({
     id: cat.id,
@@ -496,11 +455,28 @@ export default function CreateStoreForm({
 
   // Handlers
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, type, checked, value } = e.target;
+  const handleChange = (
+  e: ChangeEvent<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >
+) => {
+  const { name, type, value } = e.target;
 
-    if (name.startsWith("openingHours.")) {
-      const [, dayKey, field] = name.split(".");
+  // when category changes, flag it:
+  if (name === "category") {
+    setCategoryChanged(true);
+  }
+  
+  if (type === "checkbox") {
+    // cast only inside the checkbox branch
+    const checked = (e.target as HTMLInputElement).checked;
+    setForm(f => ({ ...f, [name]: checked }));
+    return;
+  }
+
+  if (name.startsWith("openingHours.")) {
+    // …handle openingHours logic
+     const [, dayKey, field] = name.split(".");
       setForm((f: any) => ({
         ...f,
         openingHours: {
@@ -511,13 +487,34 @@ export default function CreateStoreForm({
           },
         },
       }));
-    } else {
-      setForm((f: any) => ({
-        ...f,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
-  };
+  } else {
+    setForm(f => ({ ...f, [name]: value }));
+  }
+};
+
+
+  // const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  //   const { name, type, checked, value } = e.target;
+
+  //   if (name.startsWith("openingHours.")) {
+  //     const [, dayKey, field] = name.split(".");
+  //     setForm((f: any) => ({
+  //       ...f,
+  //       openingHours: {
+  //         ...f.openingHours,
+  //         [dayKey]: {
+  //           ...f.openingHours[dayKey],
+  //           [field]: value,
+  //         },
+  //       },
+  //     }));
+  //   } else {
+  //     setForm((f: any) => ({
+  //       ...f,
+  //       [name]: type === "checkbox" ? checked : value,
+  //     }));
+  //   }
+  // };
 
   const onUpdateArray = <T,>(
     key: keyof StoreForm,

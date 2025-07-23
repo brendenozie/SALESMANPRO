@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+// next.config.js
+const path = require('path');
+
 module.exports = {
   /* YOU MUST ADD ENV HERE*/
   env: {
@@ -7,6 +10,17 @@ module.exports = {
   reactStrictMode: true,
   env: {
     stripe_public_key: process.env.STRIPE_PUBLIC_KEY,
+  },
+  webpack(config) {
+    // keep your existing '@' = project root
+    config.resolve.alias['@'] = path.resolve(__dirname);
+
+    // add this:
+    config.resolve.alias['@/types'] = path.resolve(__dirname, 'types');
+    
+    config.resolve.alias["@/lib"]     = path.resolve(__dirname, "lib");
+
+    return config;
   },
   images: {
     loader: "custom",

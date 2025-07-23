@@ -26,6 +26,8 @@
     "paths": {
       "@/*": ["./*"],
       "@/components/*": ["components/*"],
+      "@/types/*": ["types/*"],
+      "@/lib/*": ["lib/*"],
       "@/data/*": ["data/*"],
       "@/layouts/*": ["layouts/*"],
       "@/css/*": ["css/*"],
@@ -43,7 +45,8 @@
     "**/*.tsx",
     "middleware.ts",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "types/**/*"
   ],
   "exclude": [
     "node_modules"
