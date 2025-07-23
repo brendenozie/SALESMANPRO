@@ -28,6 +28,7 @@ import ServiceAvailabilityTab from './ServiceAvailabilityTab';
 import ServiceMediaTab from './ServiceMediaTab';
 import ServiceContactLocationTab from './ServiceContactLocationTab';
 import ServiceAdvancedOptionsTab from './ServiceAdvancedOptionsTab';
+import { StoreCategory } from '@/types/typings';
 
 // --- Type Definitions (Centralized) ---
 export type SellerType = "INDIVIDUAL" | "COMPANY";
@@ -51,10 +52,16 @@ export interface FormData {
     id?: string;
     title: string; // Renamed from 'name' for clarity in UI
     description: string;
-    productCategoryId: string;
     sellerId?: string;
     companyId?: string;
     sellerType?: SellerType;
+    
+    productCategoryId: string; // This will hold the ID of the actual ProductCategory
+    category: StoreCategory | null; // This holds the *selected StoreCategory object*
+    subCategory: any; // JSON from StoreCategory.items or ProductCategory.subcategories
+    subCategoryName: string; // If you derive a name from subCategory JSON
+      
+
     sellingPrice: number;
     buyingPrice: number;
     profitMargin?: number;

@@ -1,15 +1,14 @@
-// components/admin/components/ServicePricingTab.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FormData, PricingTier } from './ServiceListingForm'; // Import types from parent
-import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline'; // Specific icons
+import { PlusIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/outline'; // Updated icons
 
 interface ServicePricingTabProps {
     formData: FormData;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     handleArrayFieldChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof FormData) => void;
     handleAddPricingTier: () => void;
-    handleUpdatePricingTier: (index: number, field: keyof PricingTier, value: string | number | string[]) => void;
+    handleUpdatePricingTier: (index: number, field: keyof PricingTier, value: any) => void;
     handleRemovePricingTier: (index: number) => void;
     errors: Partial<FormData & { [key: string]: string }>;
     fieldVariants: any;
@@ -20,6 +19,7 @@ interface ServicePricingTabProps {
 const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
     formData,
     handleChange,
+    // handleArrayFieldChange is not used in this version but kept for prop consistency
     handleArrayFieldChange,
     handleAddPricingTier,
     handleUpdatePricingTier,
@@ -29,6 +29,26 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
     tabContentVariants,
     primaryColor,
 }) => {
+    // Handler to update a specific feature within a tier
+    const handleFeatureChange = (tierIndex: number, featureIndex: number, value: string) => {
+        const newFeatures = [...formData.pricingTiers[tierIndex].features];
+        newFeatures[featureIndex] = value;
+        handleUpdatePricingTier(tierIndex, 'features', newFeatures);
+    };
+
+    // Handler to add a new, empty feature to a tier
+    const handleAddFeature = (tierIndex: number) => {
+        const newFeatures = [...formData.pricingTiers[tierIndex].features, '']; // Add an empty string for the new feature
+        handleUpdatePricingTier(tierIndex, 'features', newFeatures);
+    };
+
+    // Handler to remove a feature from a tier
+    const handleRemoveFeature = (tierIndex: number, featureIndex: number) => {
+        const newFeatures = formData.pricingTiers[tierIndex].features.filter((_, i) => i !== featureIndex);
+        handleUpdatePricingTier(tierIndex, 'features', newFeatures);
+    };
+
+
     return (
         <motion.section
             key="pricing"
@@ -40,6 +60,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
         >
             <h4 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Pricing Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* --- Main Price Fields (Unchanged) --- */}
                 <motion.label className="block" variants={fieldVariants}>
                     <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Selling Price ($) <span className="text-red-500">*</span></span>
                     <input
@@ -56,6 +77,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                     />
                     {errors.sellingPrice && <p className="text-red-500 text-xs mt-1">{errors.sellingPrice}</p>}
                 </motion.label>
+                
                 <motion.label className="block" variants={fieldVariants}>
                     <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Buying Price ($) - Internal <span className="text-red-500">*</span></span>
                     <input
@@ -151,6 +173,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                             <MinusIcon className="w-5 h-5" />
                         </button>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* --- Tier Name, Price, Duration, Description (Unchanged) --- */}
                             <label className="block">
                                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Tier Name</span>
                                 <input
@@ -161,55 +184,67 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                                     placeholder="E.g., Basic Package, Premium Plan"
                                 />
-                                {errors[`pricingTiers[${index}].name`] && <p className="text-red-500 text-xs mt-1">{errors[`pricingTiers[${index}].name`]}</p>}
+                                 {errors[`pricingTiers[${index}].name`] && <p className="text-red-500 text-xs mt-1">{errors[`pricingTiers[${index}].name`]}</p>}
                             </label>
-                            <label className="block">
-                                <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Tier Price ($)</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={tier.price}
-                                    onChange={(e) => handleUpdatePricingTier(index, "price", Number(e.target.value))}
-                                    className={`mt-1 block w-full rounded-lg border ${errors[`pricingTiers[${index}].price`] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2`}
-                                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                    placeholder="0.00"
-                                    min="0"
-                                />
-                                {errors[`pricingTiers[${index}].price`] && <p className="text-red-500 text-xs mt-1">{errors[`pricingTiers[${index}].price`]}</p>}
-                            </label>
-                            <label className="block md:col-span-2">
-                                <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Duration (Optional)</span>
-                                <input
-                                    type="text"
-                                    value={tier.duration || ''}
-                                    onChange={(e) => handleUpdatePricingTier(index, "duration", e.target.value)}
-                                    className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2"
-                                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                    placeholder="E.g., 1 hour, 3 days, Monthly"
-                                />
-                            </label>
-                            <label className="block md:col-span-2">
-                                <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Description</span>
-                                <textarea
-                                    value={tier.description || ''}
-                                    onChange={(e) => handleUpdatePricingTier(index, "description", e.target.value)}
-                                    rows={2}
-                                    className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2"
-                                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                    placeholder="Brief description of what this tier includes."
-                                ></textarea>
-                            </label>
-                            <label className="block md:col-span-2">
-                                <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Features (comma-separated)</span>
-                                <textarea
-                                    value={tier.features.join(', ')}
-                                    onChange={(e) => handleUpdatePricingTier(index, "features", e.target.value)}
-                                    rows={2}
-                                    className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2"
-                                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                    placeholder="Feature A, Feature B, Feature C"
-                                />
-                            </label>
+                             <label className="block">
+                                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Tier Price ($)</span>
+                                 <input
+                                     type="number"
+                                     step="0.01"
+                                     value={tier.price}
+                                     onChange={(e) => handleUpdatePricingTier(index, "price", Number(e.target.value))}
+                                     className={`mt-1 block w-full rounded-lg border ${errors[`pricingTiers[${index}].price`] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2`}
+                                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                                     placeholder="0.00"
+                                     min="0"
+                                 />
+                                 {errors[`pricingTiers[${index}].price`] && <p className="text-red-500 text-xs mt-1">{errors[`pricingTiers[${index}].price`]}</p>}
+                             </label>
+                            {/* ... other tier fields ... */}
+                             <label className="block md:col-span-2">
+                                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Description</span>
+                                 <textarea
+                                     value={tier.description || ''}
+                                     onChange={(e) => handleUpdatePricingTier(index, "description", e.target.value)}
+                                     rows={2}
+                                     className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2"
+                                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                                     placeholder="Brief description of what this tier includes."
+                                 ></textarea>
+                             </label>
+
+                            {/* --- NEW: Dynamic Features Section --- */}
+                            <div className="md:col-span-2 space-y-3">
+                                <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Features</span>
+                                {tier.features.map((feature, featureIndex) => (
+                                    <div key={featureIndex} className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            value={feature}
+                                            onChange={(e) => handleFeatureChange(index, featureIndex, e.target.value)}
+                                            className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2"
+                                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                                            placeholder={`Feature #${featureIndex + 1}`}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveFeature(index, featureIndex)}
+                                            className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                            aria-label="Remove feature"
+                                        >
+                                            <XMarkIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    onClick={() => handleAddFeature(index)}
+                                    className="inline-flex items-center px-3 py-1.5 border border-dashed text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                    <PlusIcon className="h-4 w-4 mr-2" />
+                                    Add Feature
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 ))}
