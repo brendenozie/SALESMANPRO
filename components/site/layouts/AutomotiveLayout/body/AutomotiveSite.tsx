@@ -225,8 +225,6 @@ export default function AutomotiveSite() {
       <HowItWorks />
 
       <BrowseByCategory />
-      
-      {/* <Testimonials /> */}
 
       <FilterBarSection />
 

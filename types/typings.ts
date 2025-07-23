@@ -529,7 +529,7 @@ export interface StepConfig {
   title: string;
   render: (form: StoreForm, 
     handlers: Handlers, 
-    availableCategories: CategoryOption[]) => React.ReactNode;
+    availableCategories: StoreCategory[]) => React.ReactNode;
 }
 
 export interface BookItem {

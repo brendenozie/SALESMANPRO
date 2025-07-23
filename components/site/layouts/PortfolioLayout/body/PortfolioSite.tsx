@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
-import { MarketplaceListingForm } from '../../../../../types/typings';
+// import { MarketplaceListingForm } from '../../../../../types/typings';
 import HeroSection from './components/HeroSection';
 import BusinessSection from './components/BusinessSection';
 import GettingStartedSection from './components/GettingStartedSection';
@@ -19,32 +19,18 @@ import TestimonialsSection from './components/TestimonialsSection';
 import FAQSection from './components/FAQSection';
 import CtaSection from './components/CtaSection';
 import ContactSection from './components/ContactSection';
+import { MarketListingForm } from '@/types/typings';
 
 // Loader for next/image
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function PortfolioSite() {
-  const router = useRouter();
-  const { storeFormData } = useStoreContext();
-  const {
-    name,
-    slug,
-    description,
-    bannerUrl,
-    marketplaceListings, // projects represented as marketplace items
-    testimonials: ctxTestimonials,
-    faqs: ctxFaqs,
-  } = storeFormData;
 
-  const [projects, setProjects] = useState<typeof marketplaceListings>([]);
-  const [testimonials, setTestimonials] = useState<typeof ctxTestimonials>([]);
-  const [faqs, setFaqs] = useState<typeof ctxFaqs>([]);
-
-  useEffect(() => {
-    setProjects(marketplaceListings);
-    setTestimonials(ctxTestimonials);
-    setFaqs(ctxFaqs);
-  }, [marketplaceListings, ctxTestimonials, ctxFaqs]);
+  //   const router = useRouter();
+  // const { storeFormData } = useStoreContext();
+  // const {
+  //   projects
+  // } = storeFormData;
 
   return (
     <div className=" font-sans text-gray-800">
@@ -55,16 +41,17 @@ export default function PortfolioSite() {
 
       <GettingStartedSection />
 
-      {/* <FeaturesSection /> */}
+      <FeaturesSection />
 
       <AboutSection />
 
       <CaseStudiesSection />
 
       <DiscoveryCallSection/>
-
-      {/* Testimonials */}
+      
       <TestimonialsSection/>
+
+      {/* <FeaturedProjects /> */}
 
       <FAQSection/>
 
@@ -77,7 +64,7 @@ export default function PortfolioSite() {
 }
 
 interface FeaturedProjectsProps {
-  projects: Array<MarketplaceListingForm>;
+  projects: Array<MarketListingForm>;
   slug: string;
   loader: (_: any) => string;
 }
@@ -108,8 +95,8 @@ const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ projects, slug, loa
             >
               <div className="overflow-hidden rounded-3xl">
                 <Image
-                  src={proj.images[0]}
-                  alt={proj.title}
+                  src={proj.images?.[0] || "image"}
+                  alt={proj.name}
                   width={400}
                   height={300}
                   className="w-full h-auto transform group-hover:scale-110 transition duration-500 ease-in-out object-cover"
@@ -118,7 +105,7 @@ const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ projects, slug, loa
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl" />
               <div className="absolute bottom-0 p-6 text-white z-10">
-                <h3 className="text-2xl font-semibold drop-shadow-sm">{proj.title}</h3>
+                <h3 className="text-2xl font-semibold drop-shadow-sm">{proj.name}</h3>
                 {proj.description && <p className="mt-1 text-sm text-gray-200">{proj.description}</p>}
               </div>
             </motion.div>
