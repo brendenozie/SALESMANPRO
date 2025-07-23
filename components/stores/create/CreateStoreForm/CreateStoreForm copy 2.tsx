@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+// UPDATE: Ensure your typings file includes all the new interfaces
 import {
   StoreForm,
   Handlers,
@@ -20,6 +21,10 @@ import {
   SelectedCategory,
   Promotion,
   HeroSlide,
+  // Add new types if they are in this file
+  PageSection, 
+  AppPromo,
+  Collection
 } from "../../../../types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
@@ -29,7 +34,6 @@ import {
   websiteSteps,
   paymentSteps,
 } from "@/constant/STORE_SITE_STEPS";
-import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -49,151 +53,84 @@ export default function CreateStoreForm({
   const { data: session } = useSession();
   const router = useRouter();
 
-  
-    // UPDATE: The defaultForm object is now initialized with all the fields
-    // from the new, expanded StoreForm interface.
-    const defaultForm: StoreForm = {
-      id: "",
-      name: "",
-      slug: "",
-      domain: "",
-      hasWebsite: false,
-      tagline: "",
-      description: "",
-      category: "E-commerce",
-      logoUrl: "",
-      bannerUrl: "",
-      contactEmail: session?.user?.email || "",
-      contactPhone: "",
-      address: "",
-      geoLocation: { lat: 0, lng: 0 },
-      openingHours: {
-        mon: { open: "09:00", close: "17:00" },
-        tue: { open: "09:00", close: "17:00" },
-        wed: { open: "09:00", close: "17:00" },
-        thu: { open: "09:00", close: "17:00" },
-        fri: { open: "09:00", close: "17:00" },
-        sat: { open: "", close: "" },
-        sun: { open: "", close: "" },
-      },
-      // --- Core Relational Data ---
-      socialLinks: [],
-      policies: [],
-      faqs: [],
-      testimonials: [],
-      heroSlides: [],
-      promotions: [],
-      storeCategories: [],
-      
-      // --- NEW: Added missing core fields ---
-      currency: 'USD',
-      locale: 'en-US',
-      companyCategoryId: undefined,
-      
-      // --- NEW: Added missing relational arrays ---
-      pageSections: [], // For modular page content
-      appPromos: [],    // For the app promotion section
-      collections: [],  // For product collections
-      events: [],       // For company/school events
-      announcements: [],// For site announcements
-      
-      // --- JSON fields ---
-      awards: [],
-      metrics: [],
-      stats: [],
-      pricingTiers: [
-        { 
-          name: "Basic", 
-          price: 0, 
-          features: [], 
-          description: "A great starting point.", 
-          duration: "monthly" 
-        }
-      ],
-  
-      // --- Settings Objects ---
-      themeSettings: {},
-      seo: {},
-      analyticsConfig: {},
-      paymentSettings: {},
-      shippingSettings: {},
-  
-      // This would be populated in a different form, but needs to be in the type
-      marketplaceListings: [], 
-    };
+  // UPDATE: The defaultForm object is now initialized with all the fields
+  // from the new, expanded StoreForm interface.
+  const defaultForm: StoreForm = {
+    id: "",
+    name: "",
+    slug: "",
+    domain: "",
+    hasWebsite: false,
+    tagline: "",
+    description: "",
+    category: "E-commerce",
+    logoUrl: "",
+    bannerUrl: "",
+    contactEmail: session?.user?.email || "",
+    contactPhone: "",
+    address: "",
+    geoLocation: { lat: 0, lng: 0 },
+    openingHours: {
+      mon: { open: "09:00", close: "17:00" },
+      tue: { open: "09:00", close: "17:00" },
+      wed: { open: "09:00", close: "17:00" },
+      thu: { open: "09:00", close: "17:00" },
+      fri: { open: "09:00", close: "17:00" },
+      sat: { open: "", close: "" },
+      sun: { open: "", close: "" },
+    },
+    // --- Core Relational Data ---
+    socialLinks: [],
+    policies: [],
+    faqs: [],
+    testimonials: [],
+    heroSlides: [],
+    promotions: [],
+    storeCategories: [],
+    
+    // --- NEW: Added missing core fields ---
+    currency: 'USD',
+    locale: 'en-US',
+    companyCategoryId: undefined,
+    
+    // --- NEW: Added missing relational arrays ---
+    pageSections: [], // For modular page content
+    appPromos: [],    // For the app promotion section
+    collections: [],  // For product collections
+    events: [],       // For company/school events
+    announcements: [],// For site announcements
+    
+    // --- JSON fields ---
+    awards: [],
+    metrics: [],
+    stats: [],
+    pricingTiers: [
+      { 
+        name: "Basic", 
+        price: 0, 
+        features: [], 
+        description: "A great starting point.", 
+        duration: "monthly" 
+      }
+    ],
 
+    // --- Settings Objects ---
+    themeSettings: {},
+    seo: {},
+    analyticsConfig: {},
+    paymentSettings: {},
+    shippingSettings: {},
 
-  // const defaultForm: StoreForm = {
-  //   id: "",
-  //   name: "",
-  //   slug: "",
-  //   domain: "",
-  //   hasWebsite: false,
-  //   tagline: "",
-  //   description: "",
-  //   category: "E-commerce",
-  //   logoUrl: "https://logourl.com",
-  //   bannerUrl: "https://bannerurl.com",
-  //   contactEmail: "",
-  //   contactPhone: "",
-  //   address: "",
-  //   geoLocation: { lat: 0, lng: 0 },
-  //   openingHours: {
-  //     mon: { open: "", close: "" },
-  //     tue: { open: "", close: "" },
-  //     wed: { open: "", close: "" },
-  //     thu: { open: "", close: "" },
-  //     fri: { open: "", close: "" },
-  //     sat: { open: "", close: "" },
-  //     sun: { open: "", close: "" },
-  //   },
-  //   socialLinks: [],
-  //   policies: [],
-  //   faqs: [],
-  //   testimonials: [],
-  //   heroSlides: [],
-  //   promotions: [],
-  //   themeSettings: {},
-  //   seo: {},
-  //   analyticsConfig: {},
-  //   paymentSettings: {},
-  //   shippingSettings: {},
-  //   storeCategories: [],
-  //   awards: [],
-  //   metrics: [],
-  //   stats: [],
-  //   marketplaceListings: [],
-  //   pricingTiers: [{ name: "", price: 0, features: [] }],
-  // };
+    // This would be populated in a different form, but needs to be in the type
+    marketplaceListings: [], 
+  };
 
   const [form, setForm] = useState<StoreForm>(
     // `initialData` fields overwrite defaults
     initialData ? { ...defaultForm, ...initialData } : defaultForm
   );
 
-  // ADD THIS useEffect hook to handle category changes
-  const [categoryChanged, setCategoryChanged] = useState(false);
-
-  useEffect(() => {
-    // Don't run on initial load or in edit mode
-    if (!categoryChanged || initialData) return;
-
-    // Get the sample data for the newly selected category
-    const sampleData = getCategoryDefaultData(form.category);
-
-    // Merge the sample data into the form state
-    // This preserves basic info like 'name' and 'slug' while updating
-    // content arrays like 'faqs', 'heroSlides', etc.
-    setForm(prevForm => ({
-      ...prevForm,
-      ...sampleData,
-    }));
-
-    // Reset the flag
-    setCategoryChanged(false);
-
-  }, [form.category, categoryChanged, initialData]);
-
+  // ... (the rest of your component's state and logic remains the same)
   // ─────────────────────────────────────────────────────────────────────
   // 1) File state (logo, banner, hero slides, promotion slides)
   // ─────────────────────────────────────────────────────────────────────
@@ -328,6 +265,7 @@ export default function CreateStoreForm({
           subline: "",
           ctaText: "",
           ctaLink: "",
+          badgeText: ""
         },
       ],
     }));
@@ -392,7 +330,7 @@ export default function CreateStoreForm({
       ...prev,
       promotions: [
         ...prev.promotions,
-        { title: "", description: "", startsAt: "", endsAt: "", bannerUrl: "" },
+        { title: "", description: "", startsAt: "", endsAt: "", bannerUrl: "", ctaLink: "", ctaText: ""},
       ],
     }));
   };
@@ -563,9 +501,9 @@ export default function CreateStoreForm({
 
   // 1) onToggleParent
   const onToggleParent = (parent: ParentCategory) => {
-    setForm((prev:any) => {
+    setForm((prev) => {
       const existingIndex = prev.storeCategories.findIndex(
-        (sc:any) => sc.id === parent.id
+        (sc) => sc.id === parent.id
       );
 
       // A) Parent not currently selected → add ALL children
@@ -605,11 +543,11 @@ export default function CreateStoreForm({
 
         const allBrands = parent.allBrands && parent.allBrands;
 
-        const updatedItems = prev.storeCategories.map((sc:any) =>
+        const updatedItems = prev.storeCategories.map((sc) =>
           sc.id === parent.id ? { ...sc, items: allItems } : sc
         );
 
-        const updatedBrands = prev.storeCategories.map((sc:any) =>
+        const updatedBrands = prev.storeCategories.map((sc) =>
           sc.id === parent.id ? { ...sc, brands: allBrands } : sc
         );
         return {
@@ -623,15 +561,15 @@ export default function CreateStoreForm({
       }
 
       // C) Parent was fully selected → remove it completely
-      const filtered = prev.storeCategories.filter((sc:any) => sc.id !== parent.id);
+      const filtered = prev.storeCategories.filter((sc) => sc.id !== parent.id);
       return { ...prev, storeCategories: filtered };
     });
   };
 
   // 2) onToggleSub
   const onToggleSub = (parentId: string, item: SubObj) => {
-    setForm((prev:any) => {
-      const parentEntry = prev.storeCategories.find((sc:any) => sc.id === parentId);
+    setForm((prev) => {
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
   
       if (!parentEntry) {
         // Parent not in storeCategories → add it with one sub
@@ -653,22 +591,22 @@ export default function CreateStoreForm({
   
       // Parent exists → toggle item
       const alreadyExists = parentEntry.items.some(
-        (existingItem:any) => existingItem.id === item.id
+        (existingItem) => existingItem.id === item.id
       );
   
       const newItems = alreadyExists
-        ? parentEntry.items.filter((existingItem:any) => existingItem.id !== item.id)
+        ? parentEntry.items.filter((existingItem) => existingItem.id !== item.id)
         : [...parentEntry.items, item];
   
       if (newItems.length === 0) {
         // No more items, remove entire parent
         return {
           ...prev,
-          storeCategories: prev.storeCategories.filter((sc:any) => sc.id !== parentId),
+          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
         };
       }
   
-      const updated = prev.storeCategories.map((sc:any) =>
+      const updated = prev.storeCategories.map((sc) =>
         sc.id === parentId ? { ...sc, items: newItems } : sc
       );
   
@@ -679,9 +617,9 @@ export default function CreateStoreForm({
 
   // 2) onToggleBrand
   const onToggleBrand = (parentId: string, brand: string) => {
-    setForm((prev:any) => {
+    setForm((prev) => {
 
-      const parentEntry = prev.storeCategories.find((sc:any) => sc.id === parentId);
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
   
       if (!parentEntry) {
         const parentData = mappedCategories.find((cat) => cat.id === parentId);
@@ -704,10 +642,10 @@ export default function CreateStoreForm({
       const existingBrands = parentEntry.allBrands ?? [];
       const alreadyExists = existingBrands.includes(brand);
       const newBrands = alreadyExists
-        ? existingBrands.filter((b:any) => b !== brand)
+        ? existingBrands.filter((b) => b !== brand)
         : [...existingBrands, brand];
   
-      const updated = prev.storeCategories.map((sc:any) =>
+      const updated = prev.storeCategories.map((sc) =>
         sc.id === parentId ? { ...sc, allBrands: newBrands } : sc
       );
   
@@ -717,7 +655,7 @@ export default function CreateStoreForm({
   
   // 3) onBulkToggle
   const onBulkToggle = (ids: string[]) => {
-    setForm((prev:any) => {
+    setForm((prev) => {
       // If ids is empty → clear everything
       if (ids.length === 0) {
         return { ...prev, storeCategories: [] };
@@ -908,6 +846,7 @@ export default function CreateStoreForm({
             payload.heroSlides.push({
               ...payload.heroSlides[idx],
               imageUrl: "",
+              badgeText: ""
             });
           }
           payload.heroSlides[idx] = {
@@ -946,6 +885,7 @@ export default function CreateStoreForm({
               ...payload.heroSlides[idx],
               imageUrl: "",
               productImageUrl: "",
+              badgeText: ""
             });
           }
           payload.heroSlides[idx] = {
@@ -1052,7 +992,7 @@ export default function CreateStoreForm({
                 <span className="text-xs text-indigo-500">Edit ➔</span>
               </h3>
               <div className="text-gray-700">
-                {renderReviewContent(s.key, form)}
+                {/* {renderReviewContent(s.key, form)} */}
               </div>
             </div>
           ))}
@@ -1143,64 +1083,63 @@ export default function CreateStoreForm({
                 key={i}
                 onClick={() => setStepIndex(i)}
                 className={`w-3 h-3 rounded-full focus:outline-none
-              ${
-                i <= stepIndex
-                  ? "bg-indigo-600"
-                  : "bg-white border border-gray-300"
-              }`}
+                ${
+                  i <= stepIndex
+                    ? "bg-indigo-600"
+                    : "bg-white border border-gray-300"
+                }`}
               />
             ))}
           </div>
         </div>
 
-        {/* Step Info (Desktop only) */}
-        <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
-          <span>
-            Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
-          </span>
-          <span>{currentTitle}</span>
-        </div>
+        {/* Step Info */}
+        <header className="mb-4 text-center">
+          <h1 className="text-2xl font-bold">{currentTitle}</h1>
+        </header>
 
         {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
+        <div className="flex-1 overflow-y-auto bg-white p-6 shadow-md rounded-lg max-w-4xl w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={stepIndex}
-              initial={{ opacity: 0, x: 30 }}
+              initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
+              exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.3 }}
             >
-              {StepContent}
+              <form onSubmit={handleSubmit}>{StepContent}</form>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Navigation Buttons (Sticky on Mobile) */}
-        <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
+        {/* Navigation */}
+        <div className="max-w-4xl w-full mx-auto pt-6 flex justify-between items-center">
           <button
             type="button"
-            disabled={stepIndex === 0}
             onClick={prev}
-            className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
+            disabled={stepIndex === 0}
+            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md disabled:opacity-50"
           >
-            ← Back
+            Back
           </button>
 
-          {stepIndex < allSteps.length ? (
+          {stepIndex === totalSteps - 1 ? (
             <button
-              type="button"
-              onClick={next}
-              className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
+              type="submit"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-green-600 text-white rounded-md disabled:bg-green-300"
             >
-              Continue →
+              {isSubmitting ? "Submitting..." : "Finish & Submit"}
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
-              className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
+              type="button"
+              onClick={next}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-md"
             >
-              {isSubmitting ? "Uploading..." : "Submit Store"}
+              Next
             </button>
           )}
         </div>
@@ -1208,364 +1147,3 @@ export default function CreateStoreForm({
     </div>
   );
 }
-
-// Helper to render review info for each step
-
-const ReviewSection = ({ title, children }: any) => (
-  <div className="bg-white shadow-sm rounded-lg p-4 space-y-2">
-    <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">
-      {title}
-    </h3>
-    <div>{children}</div>
-  </div>
-);
-
-const EmptyState = ({ message }: any) => (
-  <em className="text-gray-400 italic">{message}</em>
-);
-
-const renderList = (items: any, renderItem: any, emptyMessage = "No items") =>
-  items && items.length > 0 ? (
-    <ul className="list-disc list-inside space-y-1">{items.map(renderItem)}</ul>
-  ) : (
-    <EmptyState message={emptyMessage} />
-  );
-
-const renderJSON = (data: any, emptyMessage = "No data") =>
-  data && Object.keys(data).length > 0 ? (
-    <pre className="bg-gray-50 text-xs p-3 rounded overflow-x-auto">
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  ) : (
-    <EmptyState message={emptyMessage} />
-  );
-
-const renderReviewContent = (stepKey: any, form: any) => {
-  switch (stepKey) {
-    case "businesscategory":
-      return (
-        <ReviewSection title="Business Category">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <strong>Name:</strong>{" "}
-              {form.category || <EmptyState message="Not set" />}
-            </div>
-          </div>
-        </ReviewSection>
-      );
-
-    case "basic":
-      return (
-        <ReviewSection title="Basic Info">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <strong>Name:</strong>{" "}
-              {form.name || <EmptyState message="Not set" />}
-            </div>
-            <div>
-              <strong>Slug:</strong>{" "}
-              {form.slug || <EmptyState message="Not set" />}
-            </div>
-            <div>
-              <strong>Domain:</strong>{" "}
-              {form.domain || <EmptyState message="Not set" />}
-            </div>
-            <div>
-              <strong>Tagline:</strong>{" "}
-              {form.tagline || <EmptyState message="Not set" />}
-            </div>
-            <div className="sm:col-span-2">
-              <strong>Description:</strong>{" "}
-              {form.description || <EmptyState message="Not set" />}
-            </div>
-          </div>
-        </ReviewSection>
-      );
-
-    case "categories":
-      return (
-        <ReviewSection title="Categories">
-          {renderList(
-            form.storeCategories,
-            (cat: any) => (
-              <li key={cat.id}>{cat.name}</li>
-            ),
-            "No categories"
-          )}
-        </ReviewSection>
-      );
-
-    case "branding":
-      return (
-        <ReviewSection title="Branding">
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div className="flex-shrink-0">
-              <p className="font-medium mb-1">Logo</p>
-              {form.logoUrl ? (
-                <img
-                  src={form.logoUrl}
-                  alt="Logo"
-                  className="h-16 w-16 object-cover rounded-md shadow"
-                />
-              ) : (
-                <EmptyState message="Not uploaded" />
-              )}
-            </div>
-            <div className="flex-shrink-0">
-              <p className="font-medium mb-1">Banner</p>
-              {form.bannerUrl ? (
-                <img
-                  src={form.bannerUrl}
-                  alt="Banner"
-                  className="h-16 w-32 object-cover rounded-md shadow"
-                />
-              ) : (
-                <EmptyState message="Not uploaded" />
-              )}
-            </div>
-          </div>
-        </ReviewSection>
-      );
-
-    case "touchpoints":
-      return (
-        <ReviewSection title="Contact & Hours">
-          <div className="space-y-2 text-sm">
-            <div>
-              <strong>Email:</strong>{" "}
-              {form.contactEmail || <EmptyState message="Not set" />}
-            </div>
-            <div>
-              <strong>Phone:</strong>{" "}
-              {form.contactPhone || <EmptyState message="Not set" />}
-            </div>
-            <div>
-              <strong>Opening Hours:</strong>
-              {Object.keys(form.openingHours || {}).length > 0 ? (
-                <ul className="list-disc list-inside ml-4 mt-1">
-                  {Object.entries(form.openingHours).map(([day, hrs]) => {
-                    const { open, close } = hrs as {
-                      open: string;
-                      close: string;
-                    };
-                    const display =
-                      open && close ? `${open} – ${close}` : "Closed";
-                    // Capitalize day label (Monday, Tuesday, etc.)
-                    const label = day.charAt(0).toUpperCase() + day.slice(1);
-                    return (
-                      <li key={day}>
-                        <span className="font-medium">{label}:</span> {display}
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <EmptyState message="Not set" />
-              )}
-            </div>
-          </div>
-        </ReviewSection>
-      );
-
-    case "location":
-      return (
-        <ReviewSection title="Location">
-          <div className="space-y-1 text-sm">
-            <div>
-              <strong>Address:</strong>{" "}
-              {form.address || <EmptyState message="Not set" />}
-            </div>
-            {form.geoLocation ? (
-              <div>
-                <strong>Coordinates:</strong> {form.geoLocation.lat},{" "}
-                {form.geoLocation.lng}
-              </div>
-            ) : null}
-          </div>
-        </ReviewSection>
-      );
-
-    case "social":
-      return (
-        <ReviewSection title="Social Links">
-          {renderList(
-            form.socialLinks,
-            (link: any, i: any) => (
-              <li key={i}>
-                <strong>{link.channel}:</strong>{" "}
-                <a
-                  href={link.url}
-                  className="text-blue-600 hover:underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {link.url}
-                </a>
-              </li>
-            ),
-            "No social links"
-          )}
-        </ReviewSection>
-      );
-
-    case "content":
-      return (
-        <ReviewSection title="Policies & Content">
-          {renderList(
-            form.policies,
-            (policy: any, i: any) => (
-              <li key={i}>
-                <strong>{policy.type}:</strong> {policy.content}
-              </li>
-            ),
-            "No policies"
-          )}
-        </ReviewSection>
-      );
-
-    case "awards":
-      return (
-        <ReviewSection title="Awards">
-          {renderList(
-            form.awards,
-            (award: any, i: any) => (
-              <li key={i}>{award.name}</li>
-            ),
-            "No awards"
-          )}
-        </ReviewSection>
-      );
-
-    case "metrics":
-      return (
-        <ReviewSection title="Metrics">
-          {renderList(
-            form.metrics,
-            (m: any, i: any) => (
-              <li key={i}>
-                <strong>{m.label}:</strong> {m.value}
-              </li>
-            ),
-            "No metrics"
-          )}
-        </ReviewSection>
-      );
-
-    case "stats":
-      return (
-        <ReviewSection title="Statistics">
-          {renderList(
-            form.stats,
-            (s: any, i: any) => (
-              <li key={i}>
-                <strong>{s.label}:</strong> {s.value}
-              </li>
-            ),
-            "No statistics"
-          )}
-        </ReviewSection>
-      );
-
-    case "faqs":
-      return (
-        <ReviewSection title="FAQs">
-          {form.faqs && form.faqs.length > 0 ? (
-            form.faqs.map((faq: any, i: any) => (
-              <div key={i} className="space-y-1 text-sm">
-                <p className="font-semibold">Q: {faq.question}</p>
-                <p className="ml-4">A: {faq.answer}</p>
-              </div>
-            ))
-          ) : (
-            <EmptyState message="No FAQs" />
-          )}
-        </ReviewSection>
-      );
-
-    case "testimonials":
-      return (
-        <ReviewSection title="Testimonials">
-          {form.testimonials && form.testimonials.length > 0 ? (
-            form.testimonials.map((t: any, i: any) => (
-              <blockquote
-                key={i}
-                className="border-l-2 pl-4 italic text-gray-600"
-              >
-                “{t.quote}” — {t.author}
-              </blockquote>
-            ))
-          ) : (
-            <EmptyState message="No testimonials" />
-          )}
-        </ReviewSection>
-      );
-
-    case "marketing":
-      return (
-        <ReviewSection title="Hero Slides">
-          {renderList(
-            form.heroSlides,
-            (slide: any, i: any) => (
-              <li key={i}>{slide.headline || "Untitled slide"}</li>
-            ),
-            "No slides"
-          )}
-        </ReviewSection>
-      );
-
-    case "promotions":
-      return (
-        <ReviewSection title="Promotions">
-          {renderList(
-            form.promotions,
-            (promo: any, i: any) => (
-              <li key={i}>{promo.title}</li>
-            ),
-            "No promotions"
-          )}
-        </ReviewSection>
-      );
-
-    case "seo":
-      return (
-        <ReviewSection title="SEO Settings">
-          {renderJSON(form.seo, "No SEO settings")}
-        </ReviewSection>
-      );
-
-    case "theme":
-      return (
-        <ReviewSection title="Theme Settings">
-          {renderJSON(form.themeSettings, "No theme settings")}
-        </ReviewSection>
-      );
-
-    case "analytics":
-      return (
-        <ReviewSection title="Analytics Config">
-          {renderJSON(form.analyticsConfig, "No analytics config")}
-        </ReviewSection>
-      );
-
-    case "payment":
-      return (
-        <ReviewSection title="Payment Settings">
-          {renderJSON(form.paymentSettings, "No payment settings")}
-        </ReviewSection>
-      );
-
-    case "shipping":
-      return (
-        <ReviewSection title="Shipping Settings">
-          {renderJSON(form.shippingSettings, "No shipping settings")}
-        </ReviewSection>
-      );
-
-    default:
-      return (
-        <p className="text-sm text-gray-500">
-          No data available for this section.
-        </p>
-      );
-  }
-};

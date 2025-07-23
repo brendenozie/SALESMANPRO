@@ -29,7 +29,6 @@ import {
   websiteSteps,
   paymentSteps,
 } from "@/constant/STORE_SITE_STEPS";
-import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -49,150 +48,53 @@ export default function CreateStoreForm({
   const { data: session } = useSession();
   const router = useRouter();
 
-  
-    // UPDATE: The defaultForm object is now initialized with all the fields
-    // from the new, expanded StoreForm interface.
-    const defaultForm: StoreForm = {
-      id: "",
-      name: "",
-      slug: "",
-      domain: "",
-      hasWebsite: false,
-      tagline: "",
-      description: "",
-      category: "E-commerce",
-      logoUrl: "",
-      bannerUrl: "",
-      contactEmail: session?.user?.email || "",
-      contactPhone: "",
-      address: "",
-      geoLocation: { lat: 0, lng: 0 },
-      openingHours: {
-        mon: { open: "09:00", close: "17:00" },
-        tue: { open: "09:00", close: "17:00" },
-        wed: { open: "09:00", close: "17:00" },
-        thu: { open: "09:00", close: "17:00" },
-        fri: { open: "09:00", close: "17:00" },
-        sat: { open: "", close: "" },
-        sun: { open: "", close: "" },
-      },
-      // --- Core Relational Data ---
-      socialLinks: [],
-      policies: [],
-      faqs: [],
-      testimonials: [],
-      heroSlides: [],
-      promotions: [],
-      storeCategories: [],
-      
-      // --- NEW: Added missing core fields ---
-      currency: 'USD',
-      locale: 'en-US',
-      companyCategoryId: undefined,
-      
-      // --- NEW: Added missing relational arrays ---
-      pageSections: [], // For modular page content
-      appPromos: [],    // For the app promotion section
-      collections: [],  // For product collections
-      events: [],       // For company/school events
-      announcements: [],// For site announcements
-      
-      // --- JSON fields ---
-      awards: [],
-      metrics: [],
-      stats: [],
-      pricingTiers: [
-        { 
-          name: "Basic", 
-          price: 0, 
-          features: [], 
-          description: "A great starting point.", 
-          duration: "monthly" 
-        }
-      ],
-  
-      // --- Settings Objects ---
-      themeSettings: {},
-      seo: {},
-      analyticsConfig: {},
-      paymentSettings: {},
-      shippingSettings: {},
-  
-      // This would be populated in a different form, but needs to be in the type
-      marketplaceListings: [], 
-    };
-
-
-  // const defaultForm: StoreForm = {
-  //   id: "",
-  //   name: "",
-  //   slug: "",
-  //   domain: "",
-  //   hasWebsite: false,
-  //   tagline: "",
-  //   description: "",
-  //   category: "E-commerce",
-  //   logoUrl: "https://logourl.com",
-  //   bannerUrl: "https://bannerurl.com",
-  //   contactEmail: "",
-  //   contactPhone: "",
-  //   address: "",
-  //   geoLocation: { lat: 0, lng: 0 },
-  //   openingHours: {
-  //     mon: { open: "", close: "" },
-  //     tue: { open: "", close: "" },
-  //     wed: { open: "", close: "" },
-  //     thu: { open: "", close: "" },
-  //     fri: { open: "", close: "" },
-  //     sat: { open: "", close: "" },
-  //     sun: { open: "", close: "" },
-  //   },
-  //   socialLinks: [],
-  //   policies: [],
-  //   faqs: [],
-  //   testimonials: [],
-  //   heroSlides: [],
-  //   promotions: [],
-  //   themeSettings: {},
-  //   seo: {},
-  //   analyticsConfig: {},
-  //   paymentSettings: {},
-  //   shippingSettings: {},
-  //   storeCategories: [],
-  //   awards: [],
-  //   metrics: [],
-  //   stats: [],
-  //   marketplaceListings: [],
-  //   pricingTiers: [{ name: "", price: 0, features: [] }],
-  // };
+  const defaultForm: StoreForm = {
+    id: "",
+    name: "",
+    slug: "",
+    domain: "",
+    hasWebsite: false,
+    tagline: "",
+    description: "",
+    category: "E-commerce",
+    logoUrl: "https://logourl.com",
+    bannerUrl: "https://bannerurl.com",
+    contactEmail: "",
+    contactPhone: "",
+    address: "",
+    geoLocation: { lat: 0, lng: 0 },
+    openingHours: {
+      mon: { open: "", close: "" },
+      tue: { open: "", close: "" },
+      wed: { open: "", close: "" },
+      thu: { open: "", close: "" },
+      fri: { open: "", close: "" },
+      sat: { open: "", close: "" },
+      sun: { open: "", close: "" },
+    },
+    socialLinks: [],
+    policies: [],
+    faqs: [],
+    testimonials: [],
+    heroSlides: [],
+    promotions: [],
+    themeSettings: {},
+    seo: {},
+    analyticsConfig: {},
+    paymentSettings: {},
+    shippingSettings: {},
+    storeCategories: [],
+    awards: [],
+    metrics: [],
+    stats: [],
+    marketplaceListings: [],
+    pricingTiers: [{ name: "", price: 0, features: [] }],
+  };
 
   const [form, setForm] = useState<StoreForm>(
     // `initialData` fields overwrite defaults
     initialData ? { ...defaultForm, ...initialData } : defaultForm
   );
-
-  // ADD THIS useEffect hook to handle category changes
-  const [categoryChanged, setCategoryChanged] = useState(false);
-
-  useEffect(() => {
-    // Don't run on initial load or in edit mode
-    if (!categoryChanged || initialData) return;
-
-    // Get the sample data for the newly selected category
-    const sampleData = getCategoryDefaultData(form.category);
-
-    // Merge the sample data into the form state
-    // This preserves basic info like 'name' and 'slug' while updating
-    // content arrays like 'faqs', 'heroSlides', etc.
-    setForm(prevForm => ({
-      ...prevForm,
-      ...sampleData,
-    }));
-
-    // Reset the flag
-    setCategoryChanged(false);
-
-  }, [form.category, categoryChanged, initialData]);
 
   // ─────────────────────────────────────────────────────────────────────
   // 1) File state (logo, banner, hero slides, promotion slides)
@@ -563,9 +465,9 @@ export default function CreateStoreForm({
 
   // 1) onToggleParent
   const onToggleParent = (parent: ParentCategory) => {
-    setForm((prev:any) => {
+    setForm((prev) => {
       const existingIndex = prev.storeCategories.findIndex(
-        (sc:any) => sc.id === parent.id
+        (sc) => sc.id === parent.id
       );
 
       // A) Parent not currently selected → add ALL children
@@ -605,11 +507,11 @@ export default function CreateStoreForm({
 
         const allBrands = parent.allBrands && parent.allBrands;
 
-        const updatedItems = prev.storeCategories.map((sc:any) =>
+        const updatedItems = prev.storeCategories.map((sc) =>
           sc.id === parent.id ? { ...sc, items: allItems } : sc
         );
 
-        const updatedBrands = prev.storeCategories.map((sc:any) =>
+        const updatedBrands = prev.storeCategories.map((sc) =>
           sc.id === parent.id ? { ...sc, brands: allBrands } : sc
         );
         return {
@@ -623,15 +525,15 @@ export default function CreateStoreForm({
       }
 
       // C) Parent was fully selected → remove it completely
-      const filtered = prev.storeCategories.filter((sc:any) => sc.id !== parent.id);
+      const filtered = prev.storeCategories.filter((sc) => sc.id !== parent.id);
       return { ...prev, storeCategories: filtered };
     });
   };
 
   // 2) onToggleSub
   const onToggleSub = (parentId: string, item: SubObj) => {
-    setForm((prev:any) => {
-      const parentEntry = prev.storeCategories.find((sc:any) => sc.id === parentId);
+    setForm((prev) => {
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
   
       if (!parentEntry) {
         // Parent not in storeCategories → add it with one sub
@@ -653,22 +555,22 @@ export default function CreateStoreForm({
   
       // Parent exists → toggle item
       const alreadyExists = parentEntry.items.some(
-        (existingItem:any) => existingItem.id === item.id
+        (existingItem) => existingItem.id === item.id
       );
   
       const newItems = alreadyExists
-        ? parentEntry.items.filter((existingItem:any) => existingItem.id !== item.id)
+        ? parentEntry.items.filter((existingItem) => existingItem.id !== item.id)
         : [...parentEntry.items, item];
   
       if (newItems.length === 0) {
         // No more items, remove entire parent
         return {
           ...prev,
-          storeCategories: prev.storeCategories.filter((sc:any) => sc.id !== parentId),
+          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
         };
       }
   
-      const updated = prev.storeCategories.map((sc:any) =>
+      const updated = prev.storeCategories.map((sc) =>
         sc.id === parentId ? { ...sc, items: newItems } : sc
       );
   
@@ -679,9 +581,9 @@ export default function CreateStoreForm({
 
   // 2) onToggleBrand
   const onToggleBrand = (parentId: string, brand: string) => {
-    setForm((prev:any) => {
+    setForm((prev) => {
 
-      const parentEntry = prev.storeCategories.find((sc:any) => sc.id === parentId);
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
   
       if (!parentEntry) {
         const parentData = mappedCategories.find((cat) => cat.id === parentId);
@@ -704,10 +606,10 @@ export default function CreateStoreForm({
       const existingBrands = parentEntry.allBrands ?? [];
       const alreadyExists = existingBrands.includes(brand);
       const newBrands = alreadyExists
-        ? existingBrands.filter((b:any) => b !== brand)
+        ? existingBrands.filter((b) => b !== brand)
         : [...existingBrands, brand];
   
-      const updated = prev.storeCategories.map((sc:any) =>
+      const updated = prev.storeCategories.map((sc) =>
         sc.id === parentId ? { ...sc, allBrands: newBrands } : sc
       );
   
@@ -717,7 +619,7 @@ export default function CreateStoreForm({
   
   // 3) onBulkToggle
   const onBulkToggle = (ids: string[]) => {
-    setForm((prev:any) => {
+    setForm((prev) => {
       // If ids is empty → clear everything
       if (ids.length === 0) {
         return { ...prev, storeCategories: [] };

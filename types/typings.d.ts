@@ -124,6 +124,17 @@ export type ParentCategory = {
   icon:string;
   items:      SubObj[];    // full list of sub‐objects under this parent
   allBrands?:  string[];    // full list of sub‐objects under this parent
+  
+  
+  companyId?: string;
+  categoryId?: string;
+  displayName?: string;
+  
+  sortOrder?: number;
+  visible?: boolean;
+  items?: Subcategory[]; // always an array
+  allBrands?: any[] | null;
+  category?: ProductCategory;
 };
 
 type RawCategory = {
@@ -140,97 +151,290 @@ type RawCategory = {
   // …plus whatever other fields your API returns
 };
 
+
+//Updated type starts here
+
+// --- ENUMS based on Prisma Schema ---
+enum SocialChannel { TWITTER, INSTAGRAM, FACEBOOK, LINKEDIN }
+enum PolicyType { SHIPPING, RETURNS, PRIVACY, TERMS }
+enum SectionType { Hero, FeatureGrid, TestimonialCarousel, BlogPreview, CustomHtml, About, Services, Awards, HealthTips, Features, HowItWorks, Pricing, CTA, Metrics, Stats }
+
+// --- INTERFACES for related models ---
+
 interface GeoLocation { lat: number; lng: number; }
+type OpeningHours = Record<string, { open: string; close: string } | undefined>;
 
-type OpeningHours = Record<
-  string,
-  { open: string; close: string } | undefined
->;
-
-type DayHours = { open: string; close: string };
-
-type OpeningHours = { [key: string]: DayHours };
-
-export interface SocialLink { channel: string; url: string; }
-
-export interface Policy { type: string; title?: string; content: string; }
-
-export interface FAQ { question: string; answer: string; order?: number; }
-
-export interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number; order?: number; }
-
-export interface HeroSlide {
-  badgeText: string; productImageUrl?:string; imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; 
+export interface SocialLink {
+    id?: string;
+    channel: SocialChannel; // Use Enum for type safety
+    url: string; 
 }
 
-export interface Promotion { title: string; description: string; startsAt?: string; 
-                              endsAt?: string; bannerUrl?: string; order?: number;  ctaText?: string; ctaLink?: string; }
+export interface Policy {
+    id?: string;
+    type: PolicyType; // Use Enum
+    title?: string;
+    content: string; 
+}
+
+export interface FAQ {
+    id?: string;
+    question: string;
+    answer: string;
+    order?: number; 
+}
+
+export interface Testimonial {
+    id?: string;
+    author: string;
+    quote: string;
+    avatarUrl?: string;
+    rating?: number; // 1-5 stars 
+    order?: number;
+}
+
+// Corresponds to the `Banner` model in Prisma
+export interface HeroSlide {
+    id?: string;
+    imageUrl: string;
+    productImageUrl?: string; 
+    headline?: string;
+    subline?: string; 
+    ctaText?: string; 
+    ctaLink?: string; 
+    badgeText?: string; 
+    price?: string; // Missing from original type 
+    endsAt?: Date | string; // Missing from original type 
+    order?: number; 
+}
+
+export interface Promotion {
+    id?: string;
+    code?: string; // Missing from original type 
+    title: string; 
+    description?: string;
+    startsAt?: Date | string;
+    endsAt?: Date | string; 
+    ctaText?: string;
+    ctaLink?: string;
+    bannerUrl?: string; 
+}
 
 export interface Award {
-  name: string;
-  iconUrl: string;
-  order?: number;
+    name: string;
+    iconUrl: string;
+    order?: number;
 }
 
 export interface Metric {
-  label: string;
-  value: number;
-  iconUrl?: string;
+    label: string;
+    value: number;
+    iconUrl?: string;
 }
 
 export interface Stat {
-  label: string;
-  value: string | number;
-  iconUrl?: string;
+    label: string;
+    value: string | number;
+    iconUrl?: string;
 }
-
-type StoreForm = {
-  id:string;
-  name: string;
-  slug: string;
-  hasWebsite: boolean;
-  domain: string;
-  tagline: string;
-  description: string;
-  category: string;
-  logoUrl: string;
-  bannerUrl: string;
-  contactEmail: string;
-  contactPhone: string;
-  address: string;
-  geoLocation: GeoLocation;
-  openingHours: OpeningHours;
-  socialLinks: SocialLink[];
-  policies: Policy[];
-  faqs: FAQ[];
-  testimonials: Testimonial[];
-  heroSlides: HeroSlide[];
-  promotions: Promotion[];
-  awards: Award[];
-  metrics: Metric[];
-  stats: Stat[];
-  themeSettings: Record<string, any>;
-  seo: Record<string, any>;
-  analyticsConfig: Record<string, any>;
-  paymentSettings: Record<string, any>;
-  shippingSettings: Record<string, any>;
-  marketplaceListings: MarketplaceListingForm[];
-  storeCategories: any[];
-  pricingTiers: PricingTier[];
-  blogs:any[];
-  agents:any[];
-  locations:any[];
-  blogPosts:any[];
-};
 
 export interface PricingTier {
-  name: string;
-  price: number;
-  features: string[];
-  isFeatured?: boolean;
-  duration?: string;
-  description?: string;
+    name: string;
+    description?: string;
+    price: number;
+    duration?: string;
+    features: string[];
 }
+
+// NEW: Interface for `PageSection`
+export interface PageSection {
+    id?: string;
+    type: SectionType; // Use Enum
+    order: number;
+    settings: Record<string, any>; // e.g., { background: "dark" } 
+    content: Record<string, any>; // e.g., { headline: "...", blocks: [] } 
+}
+
+// NEW: Interface for `AppPromo`
+export interface AppPromo {
+    id?: string;
+    headline: string;
+    subheading: string;
+    buttons: { label: string; href: string; icon: string; }[]; // Structured buttons 
+    screenshots: string[]; // Array of image URLs
+}
+
+// NEW: Stronger type for `StoreCategory`
+export interface StoreCategory {
+    id?: string;
+    categoryId: string; // ID of the ProductCategory
+    displayName?: string; // Store-specific override 
+    icon?: string; // Store-specific override 
+    visible: boolean;
+    sortOrder: number;
+    items?: any; // Subcategory JSON 
+    allBrands?:  string[];  
+}
+
+// NEW: Stronger type for `Blog`
+export interface Blog {
+    id?: string;
+    title: string; 
+    slug: string;
+    content: string;
+    coverImage?: string; 
+    categories: string[];
+    tags: string[];
+    author?: { name: string; profileImage: string }; 
+    status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+    publishedAt?: Date | string;
+}
+
+// --- MAIN UPDATED STORE FORM ---
+export interface StoreForm {
+    id: string;
+    name: string; 
+    slug: string; 
+    tagline: string; 
+    description: string; 
+    hasWebsite: boolean;
+    domain: string; 
+    
+    // --- Missing Core Fields Added ---
+    currency: string; // e.g., "KES" 
+    locale: string; // e.g., "en-US" 
+    companyCategoryId?: string; // Link to CompanyCategory model
+
+    // --- Core Content ---
+    category: string;
+    logoUrl: string; 
+    bannerUrl: string; 
+    contactEmail: string; 
+    contactPhone: string; 
+    address: string; 
+    geoLocation: GeoLocation; 
+    openingHours: OpeningHours; 
+    
+    // --- Relational Content (with stronger types) ---
+    socialLinks: SocialLink[]; 
+    policies: Policy[]; 
+    faqs: FAQ[]; 
+    testimonials: Testimonial[]; 
+    heroSlides: HeroSlide[]; // Corresponds to `Banner`
+    promotions: Promotion[]; 
+    blogs: Blog[]; // Using the new strong type 
+    storeCategories: StoreCategory[]; // Using the new strong type 
+
+    // --- NEW: Missing Relational Sections Added ---
+    pageSections: PageSection[];
+    appPromos: AppPromo[]; 
+    // You can add `events`, `announcements`, etc., following the same pattern.
+    
+    // --- JSON fields ---
+    awards: Award[];
+    metrics: Metric[];
+    stats: Stat[];
+    pricingTiers: PricingTier[]; 
+
+    // --- Settings Objects ---
+    themeSettings: Record<string, any>; 
+    seo: Record<string, any>;
+    analyticsConfig: Record<string, any>;
+    paymentSettings: Record<string, any>;
+    shippingSettings: Record<string, any>;
+}
+
+// interface GeoLocation { lat: number; lng: number; }
+
+// type OpeningHours = Record<
+//   string,
+//   { open: string; close: string } | undefined
+// >;
+
+// type DayHours = { open: string; close: string };
+
+// type OpeningHours = { [key: string]: DayHours };
+
+// export interface SocialLink { channel: string; url: string; }
+
+// export interface Policy { type: string; title?: string; content: string; }
+
+// export interface FAQ { question: string; answer: string; order?: number; }
+
+// export interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number; order?: number; }
+
+// export interface HeroSlide {
+//   badgeText: string; productImageUrl?:string; imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; 
+// }
+
+// export interface Promotion { title: string; description: string; startsAt?: string; 
+//                               endsAt?: string; bannerUrl?: string; order?: number;  ctaText?: string; ctaLink?: string; }
+
+// export interface Award {
+//   name: string;
+//   iconUrl: string;
+//   order?: number;
+// }
+
+// export interface Metric {
+//   label: string;
+//   value: number;
+//   iconUrl?: string;
+// }
+
+// export interface Stat {
+//   label: string;
+//   value: string | number;
+//   iconUrl?: string;
+// }
+
+// type StoreForm = {
+//   id:string;
+//   name: string;
+//   slug: string;
+//   hasWebsite: boolean;
+//   domain: string;
+//   tagline: string;
+//   description: string;
+//   category: string;
+//   logoUrl: string;
+//   bannerUrl: string;
+//   contactEmail: string;
+//   contactPhone: string;
+//   address: string;
+//   geoLocation: GeoLocation;
+//   openingHours: OpeningHours;
+//   socialLinks: SocialLink[];
+//   policies: Policy[];
+//   faqs: FAQ[];
+//   testimonials: Testimonial[];
+//   heroSlides: HeroSlide[];
+//   promotions: Promotion[];
+//   awards: Award[];
+//   metrics: Metric[];
+//   stats: Stat[];
+//   themeSettings: Record<string, any>;
+//   seo: Record<string, any>;
+//   analyticsConfig: Record<string, any>;
+//   paymentSettings: Record<string, any>;
+//   shippingSettings: Record<string, any>;
+//   marketplaceListings: MarketplaceListingForm[];
+//   storeCategories: any[];
+//   pricingTiers: PricingTier[];
+//   blogs:any[];
+//   agents:any[];
+//   locations:any[];
+//   blogPosts:any[];
+// };
+
+// export interface PricingTier {
+//   name: string;
+//   price: number;
+//   features: string[];
+//   isFeatured?: boolean;
+//   duration?: string;
+//   description?: string;
+// }
 
 // types/typings.ts
 
