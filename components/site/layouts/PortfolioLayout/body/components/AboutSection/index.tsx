@@ -233,7 +233,8 @@ export default function AboutSection() {
               href={contactHref}
               className="inline-flex items-center justify-center px-8 py-3 rounded-full text-lg font-semibold text-white shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl"
               style={{
-                background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                // background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                background: `${primaryColor}`,
               }}
               variants={itemVariants}
             >

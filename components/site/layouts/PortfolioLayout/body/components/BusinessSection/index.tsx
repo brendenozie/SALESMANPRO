@@ -214,7 +214,7 @@ export default function BusinessSection() {
                   style={{
                     backgroundColor: primaryColor,
                     color: '#fff',
-                    backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor}DD)`, // Added slight transparency to secondary
+                    // backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor}DD)`, // Added slight transparency to secondary
                   }}
                 >
                   {id ? 'View Details' : 'Book Consultation'}
