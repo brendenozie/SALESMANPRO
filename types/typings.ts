@@ -796,7 +796,7 @@ export interface MarketListingForm {
   id: string;
   productId: string;
   sellerType: string;
-  companyId: string;
+  companyId?: string;
   productTypeId?: string; // Added: For propertyType relation
   commissionRateId?: string; // Added for the relation ID
 

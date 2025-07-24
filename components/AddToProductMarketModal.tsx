@@ -52,59 +52,60 @@ async function uploadFiles(
 // 2) product → listing converter
 // -----------------------------------------------------------------------------
 function productToListingForm(
-  p: ProductForm,
-  categories: StoreCategory[]
+  p?: ProductForm | null | undefined,
+  categories?: StoreCategory[],
+  companyId?: string | undefined
 ): MarketListingForm {
-  const cat = categories.find(c => c.categoryId === p?.category?.id) ?? null;
+  const cat = (categories && categories.find(c => c.categoryId === p?.category?.id)) ?? null;
 
   return {
   // identifiers & metadata
   id: '',
-  productId: p?.id,
+  productId: p?.id ?? '',
   sellerType: 'ADMIN',
-  companyId: p?.companyId,
+  companyId: p?.companyId ?? companyId,
   productTypeId: p?.propertyTypeId || '',
   commissionRateId: '',
 
   // titles & descriptions
-  name: p?.name,
+  name: p?.name ?? '',
   description: p?.description || undefined,
   longDescription: p?.longDescription || undefined,
 
   // categorization
   productCategoryId: p?.category?.id || '',
-  category: p?.category,
+  category: p?.category ?? null,
   subCategory: p?.subCategory || cat?.items || {},
-  subCategoryName: p?.subCategoryName,
-  tags: p?.tags,
+  subCategoryName: p?.subCategoryName ?? '',
+  tags: p?.tags ?? [],
 
   // visual media (filled later)
   // images/videos are handled in payload builder
   // pricing & inventory
-  quantity: p?.quantity,
+  quantity: p?.quantity ?? 0,
 
   // buyingPrice: p?.costPrice,
   // sellingPrice: p?.sellingPrice,
 
-  buyingPrice: p?.sellingPrice,
-  sellingPrice: p?.sellingPrice, 
+  buyingPrice: p?.sellingPrice ?? 0,
+  sellingPrice: p?.sellingPrice ?? 0, 
 
-  discount: p?.discount,
-  finalPrice: p?.finalPrice,
-  profitMargin: p?.profitMargin,
-  pricingTiers: p?.pricingTiers,
+  discount: p?.discount ?? 0,
+  finalPrice: p?.finalPrice ?? 0,
+  profitMargin: p?.profitMargin ?? 0,
+  pricingTiers: p?.pricingTiers ?? [],
 
   // deal dates
   startDealDate: p?.startDealDate?.toString() || null,
   endDealDate: p?.endDealDate?.toString() || null,
 
   // availability flags
-  isAvailable: p?.isAvailable,
-  isOnOffer: p?.isOnOffer,
-  isFlashDeal: p?.isFlashDeal,
-  isNewArrival: p?.isNewArrival,
-  isDiscounted: p?.isDiscounted,
-  isFeatured: p?.isFeatured,
+  isAvailable: p?.isAvailable ?? false,
+  isOnOffer: p?.isOnOffer ?? false,
+  isFlashDeal: p?.isFlashDeal ?? false,
+  isNewArrival: p?.isNewArrival ?? false,
+  isDiscounted: p?.isDiscounted ?? false,
+  isFeatured: p?.isFeatured ?? false,
 
   // delivery & payment
   delivery: p?.deliveryMethod === 'DELIVERY',
@@ -112,44 +113,44 @@ function productToListingForm(
   showOnGhuba: true,
 
   // contact & location
-  contactName: p?.contactName,
-  contact: p?.contact,
+  contactName: p?.contactName ?? '',
+  contact: p?.contact ?? '',
   email: p?.email,
-  locationName: p?.locationName,
+  locationName: p?.locationName ?? '',
   location: p?.location,
   locationId: p?.locationId,
-  latitude: p?.latitude,
-  longitude: p?.longitude,
+  latitude: p?.latitude ?? 0.0,
+  longitude: p?.longitude ?? 0.0,
 
   // core product fields
-  model: p?.model,
-  color: p?.color,
-  size: p?.size,
-  weight: p?.weight,
-  condition: p?.condition,
-  dimensions: p?.dimensions,
-  material: p?.material,
+  model: p?.model ?? '',
+  color: p?.color ?? [],
+  size: p?.size  ?? [],
+  weight: p?.weight ?? '',
+  condition: p?.condition ?? '',
+  dimensions: p?.dimensions ?? '',
+  material: p?.material ?? [],
 
   // vehicle-specific
-  make: p?.make,
-  trim: p?.trim,
-  type: p?.type,
-  mileage: p?.mileage,
-  engineType: p?.engineType,
-  engineSize: p?.engineSize,
-  horsepower: p?.horsepower,
-  torque: p?.torque,
-  fuelType: p?.fuelType,
-  fuelEconomy: p?.fuelEconomy,
-  transmission: p?.transmission,
-  drivetrain: p?.drivetrain,
-  vin: p?.vin,
-  logbookStatus: p?.logbookStatus,
-  serviceHistory: p?.serviceHistory,
-  negotiable: p?.negotiable,
-  financingAvailable: p?.financingAvailable,
-  tradeIn: p?.tradeIn,
-  features: p?.features,
+  make: p?.make ?? '',
+  trim: p?.trim ?? '',
+  type: p?.type ?? '',
+  mileage: p?.mileage ?? '',
+  engineType: p?.engineType ?? '',
+  engineSize: p?.engineSize ?? 0,
+  horsepower: p?.horsepower ?? 0,
+  torque: p?.torque ?? 0,
+  fuelType: p?.fuelType  ?? '',
+  fuelEconomy: p?.fuelEconomy ?? '',
+  transmission: p?.transmission ?? '',
+  drivetrain: p?.drivetrain ?? '',
+  vin: p?.vin ?? '',
+  logbookStatus: p?.logbookStatus ?? '',
+  serviceHistory: p?.serviceHistory ?? '',
+  negotiable: p?.negotiable ?? false,
+  financingAvailable: p?.financingAvailable ?? false,
+  tradeIn: p?.tradeIn ?? false,
+  features: p?.features ?? [],
 
   // bookable/service-specific
   hourlyRate: p?.hourlyRate,
@@ -165,25 +166,25 @@ function productToListingForm(
   deliveryMethod: p?.deliveryMethod,
 
   // property-specific
-  bedrooms: p?.bedrooms,
-  studios: p?.studios,
-  bathrooms: p?.bathrooms,
-  area: p?.area,
-  serviceSchedule: p?.serviceSchedule,
+  bedrooms: p?.bedrooms ?? 0,
+  studios: p?.studios ?? 0,
+  bathrooms: p?.bathrooms ?? 0,
+  area: p?.area ?? '',
+  serviceSchedule: p?.serviceSchedule ?? '',
   availabilityStart: p?.availabilityStart?.toString() || null,
   availabilityEnd: p?.availabilityEnd?.toString() || null,
-  amenities: p?.amenities,
+  amenities: p?.amenities ?? [],
 
   // bookable consumables
-  ingredients: p?.ingredients,
-  usageInstructions: p?.usageInstructions,
+  ingredients: p?.ingredients ?? '',
+  usageInstructions: p?.usageInstructions ?? '',
   expirationDate: p?.expirationDate?.toString() || null,
 
   // textiles & appliances
-  fabricComposition: p?.fabricComposition,
-  careInstructions: p?.careInstructions,
-  energyRating: p?.energyRating,
-  warrantyPeriod: p?.warrantyPeriod,
+  fabricComposition: p?.fabricComposition ?? '',
+  careInstructions: p?.careInstructions ?? '',
+  energyRating: p?.energyRating ?? '',
+  warrantyPeriod: p?.warrantyPeriod ?? '',
   applianceDimensions: p?.applianceDimensions,
 
   // commission
@@ -193,9 +194,9 @@ function productToListingForm(
   commissionEndDate: null,
 
   // misc
-  author: p?.author,
-  publisher: p?.publisher,
-  isbn: p?.isbn,
+  author: p?.author ?? '',
+  publisher: p?.publisher ?? '',
+  isbn: p?.isbn ?? '',
   tax: p?.tax,
   shippingCost: p?.shippingCost,
 
@@ -345,20 +346,20 @@ function buildListingPayload(
 // 4) useMarketListingForm hook
 // -----------------------------------------------------------------------------
 function useMarketListingForm(
-  product: ProductForm,
-  marketListItem: MarketListingForm | undefined,
-  companyId: string,
-  categories: StoreCategory[]
+  product?: ProductForm | undefined | null,
+  marketListItem?: MarketListingForm | undefined | null,
+  companyId?: string,
+  categories?: StoreCategory[]
 ) {
   const getInitial = useCallback((): MarketListingForm => {
     const raw: Partial<MarketListingForm> = marketListItem || {};
-    const p: ProductForm = product;
+    const p: ProductForm | null = product ?? null;
 
     let initialCategory: StoreCategory | null = null;
     const initialProductCategoryId = raw.productCategoryId || p?.category?.id || '';
 
     if (initialProductCategoryId) {
-      initialCategory =
+      initialCategory =categories &&
         categories.find(
           (cat) => cat.categoryId === initialProductCategoryId
         ) || null;
@@ -369,9 +370,9 @@ function useMarketListingForm(
       // (repeat every property exactly as in productToListingForm,
       // but first taking raw.* then falling back to p.* then to literal defaults)
       // ...for brevity, assume same structure & order as above converter...
-      ...(marketListItem
-        ? { ...productToListingForm(p, categories), ...marketListItem }
-        : productToListingForm(p, categories)),
+      ...(
+        marketListItem ? { ...productToListingForm(p  ?? undefined, categories), ...marketListItem, companyId : companyId } : productToListingForm(p ?? undefined, categories)
+      ),
     } as MarketListingForm;
   }, [product, marketListItem, companyId, categories]);
 
@@ -522,6 +523,7 @@ export default function AddToProductMarketModal({
       const payload = buildListingPayload(
         {
           ...formData,
+          companyId: companyId,
           startDealDate: formData.startDealDate
             ? new Date(formData.startDealDate).toISOString()
             : null,
@@ -683,8 +685,8 @@ export default function AddToProductMarketModal({
 interface AddToProductMarketModalProps {
   showRequestProductModal: boolean;
   setShowRequestProductModal: (open: boolean) => void;
-  product: ProductForm;
-  marketListItem?: MarketListingForm;
+  product?: ProductForm | undefined | null;
+  marketListItem?: MarketListingForm | undefined | null;
   companyId: string;
-  categories: StoreCategory[];
+  categories: StoreCategory[] ;
 }
