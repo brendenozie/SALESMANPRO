@@ -17,7 +17,7 @@ type Podcast = {
   duration: number; // New field for podcast duration in seconds
   episodeNumber: number; // New field for episode number
   releaseDate: string; // New field for release date
-  categories: string[]; // Array of category IDs
+  categories: string; // Array of category IDs
   tags: string[]; // Array of tag IDs
   coverImageUrl: string; // New field for podcast cover image
   isFeatured: boolean;

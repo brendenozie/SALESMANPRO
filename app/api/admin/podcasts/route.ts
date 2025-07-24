@@ -109,9 +109,14 @@ export async function POST(request: NextRequest) {
           connect: {id : companyId}
         },
         // Connect to existing categories and tags by their IDs
-        productCategory: {
-          connect: categories ? categories.map((categoryId: string) => ({ id:categoryId })) : [],
-        },
+        // productCategory: {
+        //   connect: categories[0] //? categories.map((id: string) => ({ id })) : [],
+        // },
+
+        // productCategory: { connect: { id: categories[0] } },
+        productCategory: categories?.[0] ? {
+            connect: { id: categories[0] }
+          } : undefined,
         tags: {
           connect: tags ? tags.map((id: string) => ({ id })) : [],
         },
