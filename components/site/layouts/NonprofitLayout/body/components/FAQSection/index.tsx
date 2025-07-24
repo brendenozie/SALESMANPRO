@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'; // Icon for expand/collapse
+import { PlusIcon, MinusIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'; // Using Plus/Minus for clarity
 // Assuming useStoreContext is available and provides storeFormData
 // import { useStoreContext } from '@/contexts/StoreContext';
 
@@ -20,51 +20,53 @@ export type ThemeSettings = {
 };
 
 export type StoreForm = {
+  name?: string; // For section title
   faqs?: FAQ[]; // Array of FAQ objects
   themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed
+  // Add other relevant StoreForm fields if needed for this section
 };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
 const useStoreContext = () => ({
   storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      secondaryColor: "#FFC107", // Amber/Yellow for accent
-    },
+    name: 'Children\'s Hope Foundation',
     faqs: [
       {
         id: "faq-1",
-        question: "How do I enroll in a course?",
-        answer: "Enrolling is simple! Browse our courses, select your desired program, and click 'Enroll Now'. You'll be guided through a quick registration and payment process.",
+        question: "What is your organization's main mission?",
+        answer: "Our main mission is to provide support, education, and medical aid to underprivileged children and communities worldwide, fostering self-sufficiency and hope.",
         order: 1,
       },
       {
         id: "faq-2",
-        question: "Are there any prerequisites for courses?",
-        answer: "Most introductory courses have no prerequisites. Advanced courses may require prior knowledge or specific certifications, which will be clearly stated in the course description.",
+        question: "How can I donate?",
+        answer: "You can easily donate through our secure online portal, or by bank transfer. We also accept in-kind donations. Visit our 'Donate' page for more details.",
         order: 2,
       },
       {
         id: "faq-3",
-        question: "What payment methods are accepted?",
-        answer: "We accept major credit cards (Visa, MasterCard, American Express), PayPal, and various local payment options. Check our payment page for a full list.",
+        question: "Are my donations tax-deductible?",
+        answer: "Yes, as a registered non-profit organization, all donations are tax-deductible to the fullest extent of the law. You will receive a receipt for your contribution.",
         order: 3,
       },
       {
         id: "faq-4",
-        question: "Can I get a refund if I'm not satisfied?",
-        answer: "Yes, we offer a 30-day money-back guarantee for most courses. Please review our refund policy for detailed terms and conditions.",
+        question: "How can I volunteer?",
+        answer: "We welcome volunteers! Please visit our 'Volunteer' section to learn about current opportunities and how to apply. Your time and skills can make a significant difference.",
         order: 4,
       },
       {
         id: "faq-5",
-        question: "Do you offer career support or placement?",
-        answer: "While we don't guarantee job placement, many of our courses include career guidance, resume workshops, and networking opportunities to help you succeed.",
+        question: "What types of programs do you run?",
+        answer: "We run various programs including educational support, medical aid, community development, emergency relief, and clean water initiatives. Details are available on our 'Programs' page.",
         order: 5,
       },
     ],
+    themeSettings: {
+      primaryColor: "#FF5722", // Orange for primary actions
+      secondaryColor: "#FFFFFF", // White for secondary actions/text
+    },
   } as StoreForm,
 });
 
@@ -109,32 +111,30 @@ const answerVariants = {
 type FAQItemProps = {
   faq: FAQ;
   primaryColor: string;
-  accentColor: string;
 };
 
-const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => {
+const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <motion.div
-      className="bg-white rounded-xl shadow-md mb-4 overflow-hidden border border-gray-100"
+      className="bg-white p-6 rounded-2xl shadow hover:shadow-lg cursor-pointer transition-shadow duration-300 border border-gray-100"
       variants={faqItemVariants}
-      whileHover={{ scale: 1.01, boxShadow: "0 8px 20px rgba(0,0,0,0.08)" }}
     >
       <button
-        className="flex justify-between items-center w-full p-6 text-left focus:outline-none"
+        className="flex justify-between items-center w-full text-left focus:outline-none"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
       >
-        <h3 className="text-lg font-semibold text-gray-900 flex-grow flex items-center">
-          <QuestionMarkCircleIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} /> {/* Dynamic primary color for icon */}
+        <h3 className="font-semibold text-lg text-gray-900 flex-grow flex items-center">
+          <QuestionMarkCircleIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} />
           {faq.question}
         </h3>
-        <ChevronDownIcon
-          className={`w-6 h-6 text-gray-500 transition-transform duration-300 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-        />
+        {isOpen ? (
+          <MinusIcon className="w-6 h-6 ml-4" style={{ color: primaryColor }} />
+        ) : (
+          <PlusIcon className="w-6 h-6 ml-4" style={{ color: primaryColor }} />
+        )}
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -143,9 +143,9 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => 
             animate="visible"
             exit="exit"
             variants={answerVariants}
-            className="px-6 pb-6 pt-0"
+            className="mt-3 text-gray-700 leading-relaxed border-t border-gray-100 pt-4"
           >
-            <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+            <p>{faq.answer}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -153,37 +153,31 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => 
   );
 };
 
-// Static fallback FAQ data (matches the FAQ type)
+// Static fallback FAQ data
 const fallbackFaqs: FAQ[] = [
   {
     id: "fb-faq-1",
-    question: "What is the admission process?",
-    answer: "Our admission process is straightforward. You can apply online through our portal, submit required documents, and attend an interview if necessary. Our admissions team will guide you through each step.",
+    question: "What is your organization's main mission?",
+    answer: "Our main mission is to provide support, education, and medical aid to underprivileged children and communities worldwide, fostering self-sufficiency and hope.",
     order: 1,
   },
   {
     id: "fb-faq-2",
-    question: "Do you offer online courses?",
-    answer: "Yes, we offer a wide range of online courses designed for flexibility and accessibility. You can learn at your own pace from anywhere in the world.",
+    question: "How can I donate?",
+    answer: "You can easily donate through our secure online portal, or by bank transfer. We also accept in-kind donations. Visit our 'Donate' page for more details.",
     order: 2,
   },
   {
     id: "fb-faq-3",
-    question: "What are the class sizes?",
-    answer: "We maintain small class sizes to ensure personalized attention and foster a collaborative learning environment. This allows for more direct interaction with instructors.",
+    question: "Are my donations tax-deductible?",
+    answer: "Yes, as a registered non-profit organization, all donations are tax-deductible to the fullest extent of the law. You will receive a receipt for your contribution.",
     order: 3,
   },
   {
     id: "fb-faq-4",
-    question: "Are your programs accredited?",
-    answer: "Absolutely. All our academic programs are fully accredited by relevant national and international educational bodies, ensuring the highest standards of quality.",
+    question: "How can I volunteer?",
+    answer: "We welcome volunteers! Please visit our 'Volunteer' section to learn about current opportunities and how to apply. Your time and skills can make a significant difference.",
     order: 4,
-  },
-  {
-    id: "fb-faq-5",
-    question: "How can I contact student support?",
-    answer: "Our dedicated student support team is available via email, phone, and live chat during business hours. Visit our 'Contact Us' page for details.",
-    order: 5,
   },
 ];
 
@@ -191,8 +185,7 @@ export default function FAQSection() {
   const { storeFormData } = useStoreContext();
 
   // Dynamic colors from storeFormData
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
 
   // Determine which FAQs to render: dynamic or fallback
   const faqsToRender = Array.isArray(storeFormData?.faqs) && storeFormData.faqs.length > 0
@@ -236,14 +229,14 @@ export default function FAQSection() {
     >
       <div className="max-w-3xl mx-auto">
         <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-center mb-12 text-gray-900 leading-tight"
+          className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900 leading-tight"
           variants={sectionTitleVariants}
         >
-          Frequently Asked <span style={{ color: primaryColor }}>Questions</span>
+          Frequently Asked Questions
         </motion.h2>
         <motion.div>
           {faqsToRender.map((faq) => (
-            <FAQItem key={faq.id} faq={faq} primaryColor={primaryColor} accentColor={accentColor} />
+            <FAQItem key={faq.id} faq={faq} primaryColor={primaryColor} />
           ))}
         </motion.div>
       </div>

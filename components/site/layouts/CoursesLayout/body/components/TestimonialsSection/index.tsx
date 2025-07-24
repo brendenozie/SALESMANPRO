@@ -3,79 +3,160 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'; // Solid StarIcon for prominence
-import { useStoreContext } from '@/contexts/StoreContext';
+import Image from 'next/image'; // Import Image for optimized avatars
+// Assuming useStoreContext is available and provides storeFormData
+// import { useStoreContext } from '@/contexts/StoreContext';
 
-// Mocking the image loader since Next.js Image is not available
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+// Define types based on your transformCompanyToStoreForm and Prisma schema
+export type Testimonial = {
+  id: string;
+  author: string; // Corresponds to author name
+  quote: string; // Corresponds to the testimonial text
+  rating?: number; // 1-5 stars
+  avatarUrl?: string; // URL for the author's image
+  order: number; // For sorting
+  // The 'role' field (e.g., 'Student, Computer Science', 'Parent') is not
+  // explicitly in your schema's Testimonial model. We will derive it or use a generic fallback.
 };
 
-export default function TestimonialSection() {
-  // IMPORTANT: In your actual application, use:
-  // const { storeFormData } = useStoreContext();
-  // For this specific issue, I'm using a mock to ensure consistent defaults and data structure.
-  const useMockStoreContext = () => ({
-    storeFormData: {
-      themeSettings: {
-        primaryColor: "#fd2121", // Red from your sample
-        secondaryColor: "#ffffff", // White from your sample
-      },
-      testimonials: [
-        {
-          id: 1,
-          name: "Emily R.",
-          role: "Student, Computer Science",
-          quote: "Joining this academy was the best decision for my career. The instructors are incredibly supportive, and the course material is cutting-edge. I've gained practical skills that directly apply to my field.",
-          rating: 5,
-          avatarUrl: "https://placehold.co/100x100/A0A0A0/FFFFFF?text=ER", // Placeholder avatar
-        },
-        {
-          id: 2,
-          name: "John D.",
-          role: "Parent",
-          quote: "My son's grades and confidence have soared since he started here. The personalized attention and engaging lessons truly make a difference. Highly recommend for any student!",
-          rating: 5,
-          avatarUrl: "https://placehold.co/100x100/808080/FFFFFF?text=JD", // Placeholder avatar
-        },
-        {
-          id: 3,
-          name: "Sarah L.",
-          role: "Alumna, Business Management",
-          quote: "The vibrant community and extensive extracurriculars made my university experience unforgettable. Beyond academics, I developed leadership skills and made lifelong connections.",
-          rating: 4,
-          avatarUrl: "https://placehold.co/100x100/606060/FFFFFF?text=SL", // Placeholder avatar
-        },
-        {
-          id: 4,
-          name: "Michael B.",
-          role: "Professional Development",
-          quote: "The flexible online courses allowed me to upskill while working full-time. The content is relevant, and the certifications are recognized in the industry. A truly valuable investment.",
-          rating: 5,
-          avatarUrl: "https://placehold.co/100x100/404040/FFFFFF?text=MB", // Placeholder avatar
-        },
-      ],
-    },
-  });
+export type ThemeSettings = {
+  primaryColor?: string;
+  secondaryColor?: string;
+};
 
-  const { storeFormData } = useMockStoreContext();
+export type StoreForm = {
+  testimonials?: Testimonial[];
+  themeSettings?: ThemeSettings;
+  // Add other relevant StoreForm fields if needed
+};
+
+// Placeholder for useStoreContext to make the component runnable independently
+// In a real application, you would uncomment the actual import.
+const useStoreContext = () => ({
+  storeFormData: {
+    themeSettings: {
+      primaryColor: "#fd2121", // Red from your sample
+      secondaryColor: "#FFC107", // Amber/Yellow for accent
+    },
+    testimonials: [
+      {
+        id: 'test-1',
+        author: "Emily R.",
+        quote: "Joining this academy was the best decision for my career. The instructors are incredibly supportive, and the course material is cutting-edge. I've gained practical skills that directly apply to my field.",
+        rating: 5,
+        avatarUrl: "https://placehold.co/100x100/A0A0A0/FFFFFF?text=ER",
+        order: 1,
+      },
+      {
+        id: 'test-2',
+        author: "John D.",
+        quote: "My son's grades and confidence have soared since he started here. The personalized attention and engaging lessons truly make a difference. Highly recommend for any student!",
+        rating: 5,
+        avatarUrl: "https://placehold.co/100x100/808080/FFFFFF?text=JD",
+        order: 2,
+      },
+      {
+        id: 'test-3',
+        author: "Sarah L.",
+        quote: "The vibrant community and extensive extracurriculars made my university experience unforgettable. Beyond academics, I developed leadership skills and made lifelong connections.",
+        rating: 4,
+        avatarUrl: "https://placehold.co/100x100/606060/FFFFFF?text=SL",
+        order: 3,
+      },
+      {
+        id: 'test-4',
+        author: "Michael B.",
+        quote: "The flexible online courses allowed me to upskill while working full-time. The content is relevant, and the certifications are recognized in the industry. A truly valuable investment.",
+        rating: 5,
+        avatarUrl: "https://placehold.co/100x100/404040/FFFFFF?text=MB",
+        order: 4,
+      },
+    ],
+  } as StoreForm,
+});
+
+// Optimized image loader
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => `${src}?w=${width}&q=${quality || 75}`;
+
+// Interface for the testimonial data after transformation, including a 'role'
+interface RenderableTestimonial {
+  id: string | number; // Allow string or number for ID
+  name: string;
+  role: string;
+  quote: string;
+  rating: number;
+  avatarUrl: string;
+}
+
+// Static fallback data (matches the RenderableTestimonial structure)
+const fallbackTestimonials: RenderableTestimonial[] = [
+  {
+    id: 'fb-test-1',
+    name: "Emily R.",
+    role: "Student, Computer Science",
+    quote: "Joining this academy was the best decision for my career. The instructors are incredibly supportive, and the course material is cutting-edge. I've gained practical skills that directly apply to my field.",
+    rating: 5,
+    avatarUrl: "https://placehold.co/100x100/A0A0A0/FFFFFF?text=ER",
+  },
+  {
+    id: 'fb-test-2',
+    name: "John D.",
+    role: "Parent",
+    quote: "My son's grades and confidence have soared since he started here. The personalized attention and engaging lessons truly make a difference. Highly recommend for any student!",
+    rating: 5,
+    avatarUrl: "https://placehold.co/100x100/808080/FFFFFF?text=JD",
+  },
+  {
+    id: 'fb-test-3',
+    name: "Sarah L.",
+    role: "Alumna, Business Management",
+    quote: "The vibrant community and extensive extracurriculars made my university experience unforgettable. Beyond academics, I developed leadership skills and made lifelong connections.",
+    rating: 4,
+    avatarUrl: "https://placehold.co/100x100/606060/FFFFFF?text=SL",
+  },
+  {
+    id: 'fb-test-4',
+    name: "Michael B.",
+    role: "Professional Development",
+    quote: "The flexible online courses allowed me to upskill while working full-time. The content is relevant, and the certifications are recognized in the industry. A truly valuable investment.",
+    rating: 5,
+    avatarUrl: "https://placehold.co/100x100/404040/FFFFFF?text=MB",
+  },
+];
+
+export default function TestimonialSection() {
+  const { storeFormData } = useStoreContext();
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
   // Dynamic colors from storeFormData
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121'; // Your brand's primary color (red)
-  const accentColor = "#FFC107"; // A vibrant amber/yellow for highlights
+  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; // A vibrant amber/yellow for highlights
 
-  const testimonials = storeFormData?.testimonials || [];
-  const currentTestimonial = testimonials[currentTestimonialIndex];
+  // Determine which testimonials to render: dynamic or fallback
+  const testimonialsToRender: RenderableTestimonial[] = Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
+    ? storeFormData.testimonials
+        .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
+        .map(t => ({
+          id: t.id,
+          name: t.author,
+          role: t.author.includes('Dr.') ? 'Educator' : (t.author.includes('Parent') ? 'Parent' : 'Student/Alumnus'), // Simple role derivation
+          quote: t.quote,
+          rating: t.rating || 5, // Default to 5 if rating is not provided
+          avatarUrl: t.avatarUrl || `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${t.author.split(' ').map(n => n[0]).join('')}`, // Fallback avatar with initials
+        }))
+    : fallbackTestimonials;
+
+  const currentTestimonial = testimonialsToRender[currentTestimonialIndex];
 
   const goToNextTestimonial = () => {
     setCurrentTestimonialIndex((prevIndex) =>
-      prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1
+      prevIndex === testimonialsToRender.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const goToPreviousTestimonial = () => {
     setCurrentTestimonialIndex((prevIndex) =>
-      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
+      prevIndex === 0 ? testimonialsToRender.length - 1 : prevIndex - 1
     );
   };
 
@@ -123,9 +204,22 @@ export default function TestimonialSection() {
     exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
   };
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null;
+    const parentDiv = e.currentTarget.closest('.author-avatar-container'); // Find a parent container to get dynamic color
+    let bgColor = primaryColor;
+    if (parentDiv) {
+      // Attempt to get the background color from a parent if needed, or stick to primaryColor
+      // This is a bit tricky without direct access to the dynamic color from the element itself
+      // For simplicity, we'll just use the primaryColor from context
+    }
+    const initials = e.currentTarget.alt.split(' ').map(n => n[0]).join('');
+    e.currentTarget.src = `https://placehold.co/100x100/${bgColor.replace('#', '')}/FFFFFF?text=${initials}`;
+  };
+
   return (
     <motion.section
-      className="bg-gray-50 py-20 px-4 sm:px-6 lg:px-8 text-center" // Light background
+      className="bg-gray-50 py-20 px-4 sm:px-6 lg:px-8 text-center"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
@@ -149,7 +243,7 @@ export default function TestimonialSection() {
         <AnimatePresence mode="wait">
           {currentTestimonial && (
             <motion.div
-              key={currentTestimonial.id} // Key for AnimatePresence to detect changes
+              key={currentTestimonial.id}
               variants={quoteVariants}
               initial="hidden"
               animate="visible"
@@ -160,7 +254,8 @@ export default function TestimonialSection() {
                 {[...Array(5)].map((_, i) => (
                   <StarIcon
                     key={i}
-                    className={`w-6 h-6 ${i < currentTestimonial.rating ? `text-[${accentColor}]` : 'text-gray-300'}`}
+                    className={`w-6 h-6`}
+                    style={{ color: i < currentTestimonial.rating ? accentColor : '#D1D5DB' }} // Use accentColor for solid stars
                   />
                 ))}
               </div>
@@ -172,15 +267,17 @@ export default function TestimonialSection() {
 
               {/* Author Info */}
               <div className="flex flex-col items-center">
-                <img
-                  src={customLoader({ src: currentTestimonial.avatarUrl, width: 100 })}
-                  alt={currentTestimonial.name}
-                  className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-white shadow-md"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${currentTestimonial.name.split(' ').map(n => n[0]).join('')}`;
-                  }}
-                />
+                <div className="author-avatar-container"> {/* Added container for easier styling/ref for error handling */}
+                  <Image
+                    src={currentTestimonial.avatarUrl}
+                    alt={currentTestimonial.name}
+                    width={100}
+                    height={100}
+                    loader={loader}
+                    className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-white shadow-md"
+                    onError={handleImageError}
+                  />
+                </div>
                 <p className="text-gray-900 font-bold text-lg">{currentTestimonial.name}</p>
                 <p className="text-sm text-gray-600">{currentTestimonial.role}</p>
               </div>
@@ -193,8 +290,13 @@ export default function TestimonialSection() {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className={`p-3 border-2 border-[${accentColor}] rounded-full text-[${accentColor}] bg-white shadow-md
-                        hover:bg-[${accentColor}] hover:text-white transition-all duration-200 ml-4`}
+            className={`p-3 border-2 rounded-full bg-white shadow-md transition-all duration-200 ml-4`}
+            style={{
+              borderColor: accentColor,
+              color: accentColor,
+              '--tw-hover-bg': accentColor,
+              '--tw-hover-text': 'white',
+            } as React.CSSProperties}
             onClick={goToPreviousTestimonial}
             aria-label="Previous testimonial"
           >
@@ -205,8 +307,13 @@ export default function TestimonialSection() {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className={`p-3 border-2 border-[${accentColor}] rounded-full text-[${accentColor}] bg-white shadow-md
-                        hover:bg-[${accentColor}] hover:text-white transition-all duration-200 mr-4`}
+            className={`p-3 border-2 rounded-full bg-white shadow-md transition-all duration-200 mr-4`}
+            style={{
+              borderColor: accentColor,
+              color: accentColor,
+              '--tw-hover-bg': accentColor,
+              '--tw-hover-text': 'white',
+            } as React.CSSProperties}
             onClick={goToNextTestimonial}
             aria-label="Next testimonial"
           >
@@ -217,12 +324,13 @@ export default function TestimonialSection() {
 
       {/* Indicator Dots */}
       <div className="flex justify-center mt-10 space-x-3">
-        {testimonials.map((_, idx) => (
+        {testimonialsToRender.map((_, idx) => (
           <motion.button
             key={idx}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              idx === currentTestimonialIndex ? `bg-[${primaryColor}] scale-125` : 'bg-gray-300'
+              idx === currentTestimonialIndex ? 'scale-125' : 'bg-gray-300'
             }`}
+            style={{ backgroundColor: idx === currentTestimonialIndex ? primaryColor : '#D1D5DB' }} // Dynamic primary color for active dot
             onClick={() => setCurrentTestimonialIndex(idx)}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

@@ -6,9 +6,34 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { EyeIcon } from "@heroicons/react/24/solid"; // For the view icon
 
+// Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from "../../../../../contexts/StoreContext"; // Adjust path as needed
 
-// Image loader (same as elsewhere)
+// Define types for the data expected from StoreContext, aligning with a potential backend schema
+export type GalleryImage = {
+  id: string;
+  imageUrl: string; // Changed from 'src' to 'imageUrl'
+  altText: string; // Changed from 'alt' to 'altText'
+  category: string; // Can be "Dishes", "Ambiance", "Events", "Team" etc.
+  spanClasses?: string; // Tailwind grid span classes like 'col-span-2 row-span-2'
+  order: number; // For sorting
+};
+
+export type ThemeSettings = {
+  primaryColor?: string;
+  secondaryColor?: string;
+};
+
+export type StoreForm = {
+  id?: string;
+  name?: string; // Restaurant name, for section title
+  slug?: string; // For constructing dynamic links
+  galleryImages?: GalleryImage[]; // Array of gallery images
+  themeSettings?: ThemeSettings;
+  // Add other relevant StoreForm fields if needed for this section
+};
+
+// Optimized image loader for Next.js Image component
 const loader = ({
   src,
   width,
@@ -18,27 +43,6 @@ const loader = ({
   width: number;
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Define the GalleryImage type
-type GalleryImage = {
-  id: string;
-  src: string;
-  alt: string;
-  category: "Dishes" | "Ambiance" | "Events" | "Team"; // Categorize images
-  span?: string; // Tailwind grid span classes like 'col-span-2 row-span-2'
-};
-
-// Sample Gallery Images Data (replace with data fetched from your backend)
-const sampleGalleryImages: GalleryImage[] = [
-  { id: "g1", src: "/images/gallery/dish1.jpg", alt: "Gourmet Pasta Dish", category: "Dishes", span: "md:col-span-2 md:row-span-2" },
-  { id: "g2", src: "/images/gallery/ambiance1.jpg", alt: "Cozy Restaurant Interior", category: "Ambiance" },
-  { id: "g3", src: "/images/gallery/dish2.jpg", alt: "Artfully Plated Salad", category: "Dishes" },
-  { id: "g4", src: "/images/gallery/chef1.jpg", alt: "Chef preparing food", category: "Team", span: "md:col-span-2" },
-  { id: "g5", src: "/images/gallery/ambiance2.jpg", alt: "Outdoor Dining Area", category: "Ambiance" },
-  { id: "g6", src: "/images/gallery/dish3.jpg", alt: "Delicious Dessert", category: "Dishes" },
-  { id: "g7", src: "/images/gallery/event1.jpg", alt: "Special Event Setup", category: "Events" },
-  { id: "g8", src: "/images/gallery/bar1.jpg", alt: "Restaurant Bar", category: "Ambiance" },
-];
 
 // Animation variants for staggered appearance
 const containerVariants = {
@@ -64,16 +68,37 @@ const itemVariants = {
   },
 };
 
+// Static fallback gallery images data
+const fallbackGalleryImages: GalleryImage[] = [
+  { id: "fb-g1", imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Restaurant Interior", category: "Ambiance", spanClasses: "md:col-span-2 md:row-span-2", order: 1 },
+  { id: "fb-g2", imageUrl: "https://images.unsplash.com/photo-1504674900247-087700ff9563?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Delicious Pasta", category: "Dishes", order: 2 },
+  { id: "fb-g3", imageUrl: "https://images.unsplash.com/photo-1555939594-58d7ce5614f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Grilled Steak", category: "Dishes", order: 3 },
+  { id: "fb-g4", imageUrl: "https://images.unsplash.com/photo-1551632436-cbf8dd35ba34?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Chef in Action", category: "Team", spanClasses: "md:col-span-2", order: 4 },
+  { id: "fb-g5", imageUrl: "https://images.unsplash.com/photo-1543353071-873f17a7a08d?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Dessert Platter", category: "Dishes", order: 5 },
+  { id: "fb-g6", imageUrl: "https://images.unsplash.com/photo-1563682704-c05296061618?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Cocktail Bar", category: "Ambiance", order: 6 },
+];
+
 export default function RestaurantGallery() {
-  const { storeFormData } = useStoreContext();
-  const { name, slug, themeSettings } = storeFormData;
+  const { storeFormData } = useStoreContext() as { storeFormData : StoreForm };
+  const { name, slug, themeSettings, galleryImages } = storeFormData;
 
   const primaryColor = themeSettings?.primaryColor || "#FF5722"; // Deep Orange
+  const secondaryColor = themeSettings?.secondaryColor || "#3F51B5"; // Indigo
+
+  // Determine which gallery images to render: dynamic or fallback
+  const imagesToRender = Array.isArray(galleryImages) && galleryImages.length > 0
+    ? galleryImages.sort((a, b) => (a.order || 0) - (b.order || 0))
+    : fallbackGalleryImages;
 
   const handleImageClick = (image: GalleryImage) => {
-    alert(`Viewing image: ${image.alt}. In a real app, this would open a lightbox.`);
+    console.log(`Viewing image: ${image.altText}. In a real app, this would open a lightbox.`);
     // You would typically open a lightbox component here
     // e.g., setIsLightboxOpen(true); setSelectedImage(image);
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = "https://placehold.co/400x300/CCCCCC/333333?text=Image+Error";
   };
 
   return (
@@ -87,7 +112,7 @@ export default function RestaurantGallery() {
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <motion.p className="text-sm uppercase tracking-widest font-semibold text-orange-600 dark:text-orange-400 mb-2" variants={itemVariants}>
+          <motion.p className="text-sm uppercase tracking-widest font-semibold" style={{ color: primaryColor }} variants={itemVariants}>
             Our Visual Feast
           </motion.p>
           <motion.h2
@@ -100,7 +125,7 @@ export default function RestaurantGallery() {
             className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
             variants={itemVariants}
           >
-            From exquisite dishes to our inviting ambiance, explore the beauty and passion that define {name || "Unbite"}.
+            From exquisite dishes to our inviting ambiance, explore the beauty and passion that define {name || "our restaurant"}.
           </motion.p>
         </motion.div>
 
@@ -112,21 +137,22 @@ export default function RestaurantGallery() {
           viewport={{ once: true, amount: 0.1 }}
           variants={containerVariants}
         >
-          {sampleGalleryImages.map((image) => (
+          {imagesToRender.map((image) => (
             <motion.div
               key={image.id}
               variants={itemVariants}
               whileHover={{ scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.2)" }}
-              className={`relative rounded-lg overflow-hidden shadow-md cursor-pointer group ${image.span || ''}`} // Apply span classes
+              className={`relative rounded-lg overflow-hidden shadow-md cursor-pointer group ${image.spanClasses || ''}`} // Apply span classes
               onClick={() => handleImageClick(image)}
             >
               <Image
-                src={image.src}
-                alt={image.alt}
+                src={image.imageUrl}
+                alt={image.altText}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                 loader={loader}
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" // Optimize image loading
+                onError={handleImageError}
               />
               {/* Overlay with View Icon */}
               <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -152,8 +178,9 @@ export default function RestaurantGallery() {
             Want to see more of our culinary artistry and beautiful spaces?
           </p>
           <Link
-            href={`/${slug}/gallery`} // Link to a dedicated full gallery page
-            className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-lg shadow-xl hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-0.5"
+            href={`/${slug || 'restaurant'}/gallery`} // Link to a dedicated full gallery page
+            className="px-8 py-4 text-white rounded-full font-bold text-lg shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+            style={{ backgroundColor: primaryColor, '--tw-hover-bg': secondaryColor } as React.CSSProperties}
           >
             View Full Gallery
           </Link>

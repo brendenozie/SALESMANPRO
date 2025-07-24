@@ -4,12 +4,42 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { PlayCircleIcon } from "@heroicons/react/24/solid"; // Using solid icon for better visibility
+// import { useRouter } from "next/navigation"; // Uncomment in a real Next.js app
+import { PlayCircleIcon } from "@heroicons/react/24/solid";
 
-import { useStoreContext } from "../../../../../contexts/StoreContext"; // Adjust path as needed
+// Define types for the data expected from StoreContext
+export type ThemeSettings = {
+  primaryColor?: string;
+  secondaryColor?: string;
+};
 
-// Image loader (same as elsewhere)
+export type StoreForm = {
+  id?: string;
+  name?: string;
+  slug?: string;
+  description?: string; // Can be used for a longer tagline/hero text
+  bannerUrl?: string; // Main hero image URL
+  themeSettings?: ThemeSettings;
+  // Add other relevant StoreForm fields if needed for this section
+};
+
+// Mock useStoreContext for standalone component demonstration
+// In a real application, you would import the actual useStoreContext from your contexts folder.
+const useStoreContext = () => ({
+  storeFormData: {
+    id: 'restaurant-mock-id',
+    name: 'The Gastronomy Hub',
+    slug: 'the-gastronomy-hub',
+    bannerUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // High-quality restaurant interior
+    description: 'Experience culinary excellence with our exquisite dishes, crafted from the freshest local ingredients and served with a passion for perfection.',
+    themeSettings: {
+      primaryColor: "#FF5722", // Deep Orange (a common food color)
+      secondaryColor: "#4CAF50", // Green (for freshness, or a contrasting accent)
+    },
+  } as StoreForm,
+});
+
+// Optimized image loader for Next.js Image component
 const loader = ({
   src,
   width,
@@ -21,20 +51,18 @@ const loader = ({
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function RestaurantHero() {
-  const router = useRouter();
+  // const router = useRouter(); // Uncomment in a real Next.js app
   const { storeFormData } = useStoreContext();
 
-  const {
-    name,
-    slug,
-    bannerUrl, // Assuming this is the main hero image URL
-    description, // Can be used for a longer tagline
-    themeSettings,
-  } = storeFormData;
+  // Dynamic content with fallbacks
+  const restaurantName = storeFormData?.name || "Your Restaurant Name";
+  const restaurantSlug = storeFormData?.slug || "restaurant-slug"; // Default slug for links
+  const heroImageUrl = storeFormData?.bannerUrl || "https://placehold.co/1920x1080/FF7043/FFFFFF?text=Delicious+Food"; // Fallback image
+  const heroDescription = storeFormData?.description || "Fresh ingredients, mouth-watering recipes, and a passion for good food delivered to your door or ready for pick-up.";
 
-  // Use restaurant’s theme settings or fallbacks
-  const primaryColor = themeSettings?.primaryColor || "#FF5722"; // Deep Orange
-  const secondaryColor = themeSettings?.secondaryColor || "#3F51B5"; // Indigo
+  // Dynamic colors from theme settings
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#FF5722"; // Deep Orange
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || "#3F51B5"; // Indigo (or a complementary color)
 
   // Animation variants for staggered appearance
   const containerVariants = {
@@ -61,10 +89,15 @@ export default function RestaurantHero() {
   };
 
   const handleWatchVideo = () => {
-    // In a real application, this would open a video modal
-    alert("Playing a delicious video about our restaurant!");
+    // In a real application, this would open a video modal (e.g., using state)
+    console.log("Playing a delicious video about our restaurant!");
     // Example: You could use a state to open a modal:
     // setIsVideoModalOpen(true);
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = "https://placehold.co/1920x1080/CCCCCC/333333?text=Image+Error";
   };
 
   return (
@@ -72,12 +105,13 @@ export default function RestaurantHero() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src={bannerUrl || "/images/hero-restaurant-bg.jpg"} // Fallback image
-          alt={name ? `${name} restaurant hero background` : "Delicious food background"}
+          src={heroImageUrl}
+          alt={restaurantName ? `${restaurantName} restaurant hero background` : "Delicious food background"}
           fill
           className="object-cover brightness-[0.7] saturate-125" // Dim and slightly saturate for mood
           loader={loader}
           priority // Prioritize loading for LCP
+          onError={handleImageError}
         />
         {/* Subtle gradient overlay for depth and text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
@@ -110,7 +144,7 @@ export default function RestaurantHero() {
           className="max-w-3xl mx-auto text-lg md:text-xl mb-8 font-light text-white/90 drop-shadow-lg"
           variants={itemVariants}
         >
-          {description || "Fresh ingredients, mouth-watering recipes, and a passion for good food delivered to your door or ready for pick-up."}
+          {heroDescription}
         </motion.p>
 
         <motion.div
@@ -118,8 +152,8 @@ export default function RestaurantHero() {
           variants={itemVariants}
         >
           <Link
-            href={`/${slug}/order`}
-            className="px-8 py-4 bg-white text-gray-900 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
+            href={`/${restaurantSlug}/order`}
+            className="px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
             style={{ backgroundColor: primaryColor, color: 'white' }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = secondaryColor)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = primaryColor)}
@@ -127,7 +161,7 @@ export default function RestaurantHero() {
             Order Now
           </Link>
           <Link
-            href={`/${slug}/menu`}
+            href={`/${restaurantSlug}/menu`}
             className="px-8 py-4 border-2 border-white text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)')}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}

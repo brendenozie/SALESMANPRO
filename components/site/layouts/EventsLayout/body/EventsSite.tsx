@@ -1,9 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useStoreContext } from "../../../../../contexts/StoreContext";
 import HeroComponent from "./components/HeroSection";
 import AboutSection from "./components/AboutSection";
 import FeaturesSection from "./components/FeaturesSection";
@@ -31,26 +28,14 @@ const loader = ({
 // EventsSite component, using StoreContext
 //----------------------------------------------
 export default function EventsSite() {
-  const router = useRouter();
-  const { storeFormData } = useStoreContext();
-  const {
-    name,
-    slug,
-    description,
-    bannerUrl,
-    storeCategories: categories,
-    marketplaceListings: upcoming,
-    testimonials,
-    faqs,
-  } = storeFormData;
 
   return (
     <div className="font-sans">
       {/* Hero */}
-      <HeroComponent name={name} bannerUrl={bannerUrl} />
+      <HeroComponent/>
 
       {/* About */}
-      <AboutSection description={description} />
+      <AboutSection />
 
       {/* Features */}
       <FeaturesSection />
@@ -59,18 +44,18 @@ export default function EventsSite() {
       <HowItWorksSection />
 
       {/* Live Events */}
-      <LiveEventsSection upcoming={upcoming} slug={slug} />
+      <LiveEventsSection/>
 
       {/* Testimonials */}
-      <TestimonialsSection testimonials={testimonials} />
+      <TestimonialsSection />
 
       {/* Pricing (for event organizers) */}
       <PricingSection />
 
       {/* FAQ */}
-      <FAQSection faqs={faqs} />
+      <FAQSection />
 
-      <CallToActionSection slug={""} />
+      <CallToActionSection />
 
       
     </div>

@@ -6,15 +6,43 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRightIcon,
-  SparklesIcon,
-  BuildingStorefrontIcon,
-  FaceSmileIcon,
-  FireIcon, // Using FireIcon as a placeholder for Chef Hat
-} from "@heroicons/react/24/solid"; // Using solid icons for features
+  SparklesIcon, // Generic icon for fallback
+  BuildingStorefrontIcon, // Example icon for ambiance
+  FaceSmileIcon, // Example icon for service
+  FireIcon, // Example icon for culinary team
+  LeafIcon, // New icon for fresh ingredients
+} from "@heroicons/react/24/solid";
 
+// Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from "../../../../../contexts/StoreContext"; // Adjust path as needed
 
-// Image loader (same as elsewhere)
+// Define types for the data expected from StoreContext
+export type Feature = {
+  id: string;
+  title: string;
+  description: string;
+  iconUrl?: string; // URL to an SVG or image icon
+  link?: string; // Optional link for the feature card
+  order: number; // For sorting
+};
+
+export type ThemeSettings = {
+  primaryColor?: string;
+  secondaryColor?: string;
+};
+
+export type StoreForm = {
+  id?: string;
+  name?: string; // Restaurant name, for section title and "Our Culinary Journey"
+  slug?: string; // For constructing dynamic links
+  description?: string; // Can be used for "Our Culinary Journey" description
+  aboutImageUrl?: string; // Specific image for the "Our Culinary Journey" section
+  features?: Feature[]; // Array of features for "Why Dine With Us"
+  themeSettings?: ThemeSettings;
+  // Add other relevant StoreForm fields if needed for this section
+};
+
+// Optimized image loader for Next.js Image component
 const loader = ({
   src,
   width,
@@ -25,37 +53,51 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Sample Features Data (replace with dynamic data if available from storeFormData or backend)
-const featuresData = [
+// Static fallback features data
+const fallbackFeatures: Feature[] = [
   {
+    id: "f1",
     title: "Fresh & Local Ingredients",
     description: "We source the finest ingredients from local farms, ensuring peak freshness and supporting our community.",
-    icon: <SparklesIcon className="h-10 w-10 text-orange-500" />,
-    img: "/images/feature-fresh.jpg", // Placeholder image
-    link: "/menu", // Link to relevant page
+    iconUrl: "/icons/leaf.svg", // Example SVG path
+    link: "/menu",
+    order: 1,
   },
   {
+    id: "f2",
     title: "Masterful Culinary Team",
     description: "Our chefs are artists, blending traditional techniques with innovative flavors to create unforgettable dishes.",
-    icon: <FireIcon className="h-10 w-10 text-red-500" />,
-    img: "/images/feature-chef.jpg", // Placeholder image
+    iconUrl: "/icons/chef-hat.svg", // Example SVG path
     link: "/about#team",
+    order: 2,
   },
   {
+    id: "f3",
     title: "Cozy & Inviting Atmosphere",
     description: "Dine in comfort with a warm ambiance, perfect for intimate dinners or lively gatherings.",
-    icon: <BuildingStorefrontIcon className="h-10 w-10 text-green-500" />,
-    img: "/images/feature-ambiance.jpg", // Placeholder image
+    iconUrl: "/icons/restaurant.svg", // Example SVG path
     link: "/gallery",
+    order: 3,
   },
   {
+    id: "f4",
     title: "Exceptional Service",
     description: "Our attentive staff is dedicated to making your dining experience seamless and delightful from start to finish.",
-    icon: <FaceSmileIcon className="h-10 w-10 text-blue-500" />,
-    img: "/images/feature-service.jpg", // Placeholder image
+    iconUrl: "/icons/smile.svg", // Example SVG path
     link: "/contact",
+    order: 4,
   },
 ];
+
+// Map string icon names to Heroicon components (for fallbacks or if icon names are passed)
+const iconMap: { [key: string]: React.ElementType } = {
+  SparklesIcon: SparklesIcon,
+  BuildingStorefrontIcon: BuildingStorefrontIcon,
+  FaceSmileIcon: FaceSmileIcon,
+  FireIcon: FireIcon,
+  LeafIcon: LeafIcon,
+  // Add more mappings as needed
+};
 
 // Animation variants for staggered appearance
 const containerVariants = {
@@ -83,7 +125,43 @@ const itemVariants = {
 
 export default function WhyDineWithUs() {
   const { storeFormData } = useStoreContext();
-  const { name, description } = storeFormData; // Using name from storeFormData
+
+  // Dynamic content with fallbacks
+  const restaurantName = storeFormData?.name || "Unbite";
+  const restaurantSlug = storeFormData?.slug || "unbite";
+  const restaurantDescription = storeFormData?.description || "At Unbite, we blend timeless recipes with modern flair. Each dish reflects our unwavering passion for quality ingredients, authentic flavors, and a commitment to culinary excellence. We believe great food tells a story, and we invite you to be part of ours.";
+  const aboutImage = storeFormData?.aboutImageUrl || "/images/about-chef-story.jpg"; // Specific image for about section
+
+  // Dynamic features from storeFormData or fallback
+  const featuresToRender = Array.isArray(storeFormData?.features) && storeFormData.features.length > 0
+    ? storeFormData.features.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
+    : fallbackFeatures;
+
+  // Dynamic colors from theme settings
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#FF5722"; // Deep Orange
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || "#3F51B5"; // Indigo (used for accent/hover)
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = "https://placehold.co/700x500/CCCCCC/333333?text=Image+Error";
+  };
+
+  const handleIconImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.style.display = 'none'; // Hide broken image
+    const parent = e.currentTarget.closest('.icon-container');
+    if (parent) {
+      const fallbackIcon = document.createElement('div');
+      fallbackIcon.className = 'absolute inset-0 flex items-center justify-center';
+      const sparkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      sparkIcon.setAttribute('class', `h-10 w-10`);
+      sparkIcon.setAttribute('fill', 'currentColor');
+      sparkIcon.setAttribute('viewBox', '0 0 24 24');
+      sparkIcon.innerHTML = `<path fill-rule="evenodd" d="M9.302 3.007a60.124 60.124 0 015.396 0 60.178 60.178 0 00-5.396 0zM12 2.25a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM12 18.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 6.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0V7.5a.75.75 0 01.75-.75zM12 15.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 9.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 12.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 21.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 3.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0V4.5a.75.75 0 01.75-.75zM12 20.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 7.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0V8.5a.75.75 0 01.75-.75zM12 16.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 10.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75zM12 13.75a.75.75 0 01.75.75v.75a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />`;
+      fallbackIcon.style.color = primaryColor; // Apply primary color to fallback icon
+      parent.appendChild(fallbackIcon);
+    }
+  };
 
   return (
     <section className="py-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -96,14 +174,14 @@ export default function WhyDineWithUs() {
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <motion.p className="text-sm uppercase tracking-widest font-semibold text-orange-600 dark:text-orange-400 mb-2" variants={itemVariants}>
+          <motion.p className="text-sm uppercase tracking-widest font-semibold mb-2" style={{ color: primaryColor }} variants={itemVariants}>
             Our Philosophy
           </motion.p>
           <motion.h2
             className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-4 drop-shadow-md"
             variants={itemVariants}
           >
-            Discover the Unbite Difference
+            Discover the {restaurantName} Difference
           </motion.h2>
           <motion.p
             className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
@@ -122,12 +200,13 @@ export default function WhyDineWithUs() {
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <Image
-              src="/images/about-chef-story.jpg" // A more narrative image
+              src={aboutImage}
               alt="Chef preparing food with passion"
               width={700}
               height={500}
               className="rounded-2xl shadow-xl object-cover w-full h-auto"
               loader={loader}
+              onError={handleImageError}
             />
           </motion.div>
           <motion.div
@@ -140,17 +219,15 @@ export default function WhyDineWithUs() {
               Our Culinary Journey
             </h3>
             <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
-              At {name || "Unbite"}, we blend timeless recipes with modern flair. Each
-              dish reflects our unwavering passion for quality ingredients,
-              authentic flavors, and a commitment to culinary excellence.
-              We believe great food tells a story, and we invite you to be part of ours.
+              {restaurantDescription}
             </p>
             <p className="text-md italic text-gray-600 dark:text-gray-400 mb-6">
-              — Chef de Cuisine, {name || "Unbite"}
+              — Chef de Cuisine, {restaurantName}
             </p>
             <Link
-              href={`/${name ? name.toLowerCase() : 'unbite'}/about`} // Dynamic link
-              className="inline-flex items-center px-6 py-3 bg-orange-500 text-white rounded-full font-semibold shadow-md hover:bg-orange-600 transition-all duration-300 transform hover:-translate-y-0.5"
+              href={`/${restaurantSlug}/about`}
+              className="inline-flex items-center px-6 py-3 text-white rounded-full font-semibold shadow-md transition-all duration-300 transform hover:-translate-y-0.5"
+              style={{ backgroundColor: primaryColor, '--tw-hover-bg': secondaryColor } as React.CSSProperties}
             >
               Learn More About Us <ArrowRightIcon className="w-5 h-5 ml-2" />
             </Link>
@@ -186,43 +263,47 @@ export default function WhyDineWithUs() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          {featuresData.map((f, i) => (
+          {featuresToRender.map((f, i) => (
             <motion.div
-              key={f.title}
+              key={f.id} // Use unique ID for key
               variants={itemVariants}
               whileHover={{ y: -8, boxShadow: "0 15px 20px -5px rgba(0, 0, 0, 0.1), 0 6px 10px -3px rgba(0, 0, 0, 0.08)" }}
               className="bg-white dark:bg-gray-800 rounded-xl p-8 flex flex-col items-center text-center shadow-lg transition-all duration-300"
             >
-              <div className="w-24 h-24 relative mb-6 rounded-full overflow-hidden border-4 border-orange-100 dark:border-gray-700 flex items-center justify-center">
-                {/* Feature image, if available, otherwise just use the icon */}
-                {f.img ? (
+              <div className="w-24 h-24 relative mb-6 rounded-full overflow-hidden border-4 border-orange-100 dark:border-gray-700 flex items-center justify-center icon-container">
+                {f.iconUrl ? (
                   <Image
-                    src={f.img}
+                    src={f.iconUrl}
                     alt={f.title}
                     fill
                     className="object-cover"
                     loader={loader}
+                    onError={handleIconImageError} // Specific error handler for icons
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {f.icon}
+                  // Fallback to a generic Heroicon if no iconUrl is provided
+                  <SparklesIcon className="h-10 w-10" style={{ color: primaryColor }} />
+                )}
+                {/* Optional: A subtle overlay for visual consistency if image is used */}
+                {f.iconUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-800/70 rounded-full">
+                    {/* This div acts as a subtle filter over the image, or simply provides a background if no image */}
                   </div>
                 )}
-                {/* Icon overlay, always visible */}
-                <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-800/70 rounded-full">
-                  {f.icon}
-                </div>
               </div>
               <h4 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">{f.title}</h4>
               <p className="text-md text-gray-700 dark:text-gray-300 mb-5 leading-relaxed">
                 {f.description}
               </p>
-              <Link
-                href={f.link}
-                className="inline-flex items-center text-orange-600 dark:text-orange-400 font-semibold hover:underline transition-colors"
-              >
-                Learn More <ArrowRightIcon className="w-4 h-4 ml-2" />
-              </Link>
+              {f.link && ( // Only render link if provided
+                <Link
+                  href={f.link}
+                  className="inline-flex items-center font-semibold hover:underline transition-colors"
+                  style={{ color: primaryColor }}
+                >
+                  Learn More <ArrowRightIcon className="w-4 h-4 ml-2" />
+                </Link>
+              )}
             </motion.div>
           ))}
         </motion.div>
