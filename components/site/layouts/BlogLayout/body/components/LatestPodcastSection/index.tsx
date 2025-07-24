@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { PlayIcon } from "@heroicons/react/24/solid";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Define the structure of a single podcast as it would come from StoreForm
 // This type assumes you will have a 'Podcast' model in your Prisma schema
@@ -31,40 +32,40 @@ export type StoreForm = {
 // In a real application, you would uncomment the actual import and ensure
 // your StoreContext provides data conforming to the StoreForm type,
 // including an array of 'podcasts'.
-const useStoreContext = () => ({
-  storeFormData: {
-    podcasts: [ // Added a mock for dynamic podcasts with more realistic fields
-      { 
-        id: 'podcast1',
-        title: 'Social Media Power: Amplifying Your Blog’s Reach', 
-        description: 'Learn strategies to boost your blog\'s visibility.',
-        audioUrl: '#', // Placeholder for actual audio URL
-        coverImage: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=Social+Media', 
-        slug: 'social-media-power',
-        publishedAt: '2024-07-15T10:00:00Z',
-      },
-      { 
-        id: 'podcast2',
-        title: 'SEO Mastery: How to Rank Higher on Google', 
-        description: 'Dive deep into search engine optimization techniques.',
-        audioUrl: '#',
-        coverImage: 'https://placehold.co/600x400/EF4444/FFFFFF?text=SEO+Mastery', 
-        slug: 'seo-mastery',
-        publishedAt: '2024-07-10T14:30:00Z',
-      },
-      { 
-        id: 'podcast3',
-        title: 'Monetizing Your Blog: Turning Passion into Profit', 
-        description: 'Discover various ways to generate income from your content.',
-        audioUrl: '#',
-        coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Monetizing+Blog', 
-        slug: 'monetizing-blog',
-        publishedAt: '2024-07-05T09:00:00Z',
-      },
-    ],
-    themeSettings: { primaryColor: '#F59E0B' }, // Tailwind 'amber-500'
-  } as StoreForm, // Cast to StoreForm for type safety in mock
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     podcasts: [ // Added a mock for dynamic podcasts with more realistic fields
+//       { 
+//         id: 'podcast1',
+//         title: 'Social Media Power: Amplifying Your Blog’s Reach', 
+//         description: 'Learn strategies to boost your blog\'s visibility.',
+//         audioUrl: '#', // Placeholder for actual audio URL
+//         coverImage: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=Social+Media', 
+//         slug: 'social-media-power',
+//         publishedAt: '2024-07-15T10:00:00Z',
+//       },
+//       { 
+//         id: 'podcast2',
+//         title: 'SEO Mastery: How to Rank Higher on Google', 
+//         description: 'Dive deep into search engine optimization techniques.',
+//         audioUrl: '#',
+//         coverImage: 'https://placehold.co/600x400/EF4444/FFFFFF?text=SEO+Mastery', 
+//         slug: 'seo-mastery',
+//         publishedAt: '2024-07-10T14:30:00Z',
+//       },
+//       { 
+//         id: 'podcast3',
+//         title: 'Monetizing Your Blog: Turning Passion into Profit', 
+//         description: 'Discover various ways to generate income from your content.',
+//         audioUrl: '#',
+//         coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Monetizing+Blog', 
+//         slug: 'monetizing-blog',
+//         publishedAt: '2024-07-05T09:00:00Z',
+//       },
+//     ],
+//     themeSettings: { primaryColor: '#F59E0B' }, // Tailwind 'amber-500'
+//   } as StoreForm, // Cast to StoreForm for type safety in mock
+// });
 
 // Loader for next/image (required for external URLs with next/image)
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;

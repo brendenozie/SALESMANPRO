@@ -107,6 +107,31 @@ export default async function StoreLayout({
           },
         },
       },
+
+      Writer:{
+        include: {
+          user:{
+            select: { id: true, name: true, image: true, },
+          }
+        },
+      },
+      Doctor:{
+        include: {
+          User:{
+            select: { id: true, name: true, image: true, },
+          }
+        },
+      },
+      salesAgents:{
+        include: {
+          user:{
+            select: { id: true, name: true, image: true, },
+          }
+        },
+      },
+      
+      Podcast :true
+
     },
   });
 

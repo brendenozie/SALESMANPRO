@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-// Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define the structure of a single hero slide as it comes from StoreForm
 export type HeroSlide = {
@@ -31,45 +30,46 @@ export type StoreForm = {
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import and ensure
 // your StoreContext provides data conforming to the StoreForm type.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'GLOBAL INSIGHTS',
-    tagline: 'Your Daily Dose of Knowledge and Inspiration',
-    themeSettings: { primaryColor: '#EF4444' }, // Tailwind 'red-500'
-    heroSlides: [
-      {
-        id: 'hero1',
-        imageUrl: 'https://placehold.co/1200x800/22C55E/FFFFFF?text=AI+Future', // Example placeholder
-        headline: 'The Future of AI: Innovations Shaping Our World',
-        subline: 'Explore the cutting-edge advancements in artificial intelligence.',
-        ctaText: 'Read More',
-        ctaLink: '#',
-        order: 1,
-        badgeText: 'TECHNOLOGY', // Example: if you add this to your HeroSlide model
-      },
-      {
-        id: 'hero2',
-        imageUrl: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Mindful+Living', // Example placeholder
-        headline: 'Mindful Living: A Guide to Wellness and Balance',
-        subline: 'Discover practices for a healthier and more balanced life.',
-        ctaText: 'Discover',
-        ctaLink: '#',
-        order: 2,
-        badgeText: 'HEALTH',
-      },
-      {
-        id: 'hero3',
-        imageUrl: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Travel+Adventure', // Example placeholder
-        headline: 'Exploring Hidden Gems: Your Next Adventure Awaits',
-        subline: 'Uncover breathtaking destinations and travel tips.',
-        ctaText: 'Plan Trip',
-        ctaLink: '#',
-        order: 3,
-        badgeText: 'TRAVEL',
-      },
-    ],
-  } as StoreForm, // Cast to StoreForm for type safety in mock
-});
+
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'GLOBAL INSIGHTS',
+//     tagline: 'Your Daily Dose of Knowledge and Inspiration',
+//     themeSettings: { primaryColor: '#EF4444' }, // Tailwind 'red-500'
+//     heroSlides: [
+//       {
+//         id: 'hero1',
+//         imageUrl: 'https://placehold.co/1200x800/22C55E/FFFFFF?text=AI+Future', // Example placeholder
+//         headline: 'The Future of AI: Innovations Shaping Our World',
+//         subline: 'Explore the cutting-edge advancements in artificial intelligence.',
+//         ctaText: 'Read More',
+//         ctaLink: '#',
+//         order: 1,
+//         badgeText: 'TECHNOLOGY', // Example: if you add this to your HeroSlide model
+//       },
+//       {
+//         id: 'hero2',
+//         imageUrl: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Mindful+Living', // Example placeholder
+//         headline: 'Mindful Living: A Guide to Wellness and Balance',
+//         subline: 'Discover practices for a healthier and more balanced life.',
+//         ctaText: 'Discover',
+//         ctaLink: '#',
+//         order: 2,
+//         badgeText: 'HEALTH',
+//       },
+//       {
+//         id: 'hero3',
+//         imageUrl: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Travel+Adventure', // Example placeholder
+//         headline: 'Exploring Hidden Gems: Your Next Adventure Awaits',
+//         subline: 'Uncover breathtaking destinations and travel tips.',
+//         ctaText: 'Plan Trip',
+//         ctaLink: '#',
+//         order: 3,
+//         badgeText: 'TRAVEL',
+//       },
+//     ],
+//   } as StoreForm, // Cast to StoreForm for type safety in mock
+// });
 
 
 // Static fallback data - used if dynamic data from useStoreContext is not available or empty

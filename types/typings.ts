@@ -311,6 +311,11 @@ export interface StoreForm {
     events: any[]; 
     collections: any[]; 
     announcements: any[]; 
+
+    writers:any[];
+    agents:any[];
+    doctors:any[];
+
     // You can add `events`, `announcements`, etc., following the same pattern.
     
     // --- JSON fields ---
@@ -318,6 +323,8 @@ export interface StoreForm {
     metrics: Metric[];
     stats: Stat[];
     pricingTiers: PricingTier[]; 
+
+    podcasts:any[];
 
     // --- Settings Objects ---
     themeSettings: Record<string, any>; 

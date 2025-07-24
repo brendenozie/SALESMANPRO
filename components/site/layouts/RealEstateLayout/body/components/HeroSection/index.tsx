@@ -1,190 +1,185 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   PlayCircleIcon,
-  MapPinIcon,        // Placeholder for MapPinIcon
-  CurrencyDollarIcon, // Placeholder for CurrencyDollarIcon
-  MagnifyingGlassIcon // Placeholder for MagnifyingGlassIcon
-} from '@heroicons/react/24/solid';
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/solid";
+import {
+  MapPinIcon,
+  CurrencyDollarIcon,
+} from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-// Assuming useStoreContext is correctly implemented and provides necessary state/dispatch
+import type { StoreForm } from "@/types/storeForm";
 
-// Mocking the image loader since Next.js Image is not available for direct execution here
-const loader = ({ src, width, quality }:any) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+const loader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
-//──────────────────────────────────────────────────────────────────────────────
-// HeroSection
-//──────────────────────────────────────────────────────────────────────────────
 const variants = {
   fadeInUp: {
     hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
-  },
-  fadeIn: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 1, ease: "easeOut" } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
   },
   scaleUp: {
     hidden: { scale: 0.9, opacity: 0 },
-    visible: { scale: 1, opacity: 1, transition: { duration: 0.7, ease: "easeOut" } }
-  }
+    visible: { scale: 1, opacity: 1, transition: { duration: 0.7, ease: "easeOut" } },
+  },
 };
 
-export default function HeroSection({
-  name,
-  bannerUrl,
-  description,
-  location,
-  minPrice,
-  maxPrice,
-  setLocation,
-  setMinPrice,
-  setMaxPrice,
-  handleSearch,
-}:any) {
+type HeroSectionProps = {
+  store: StoreForm;
+  onSearch: (filters: { location: string; minPrice: string; maxPrice: string }) => void;
+};
+
+export default function HeroSection({ store, onSearch }: HeroSectionProps) {
+  // Dynamic hero data with fallbacks
+  const title =
+    store.themeSettings?.heroHeadline ||
+    `Discover Your Dream Home.`;
+  const subtitle =
+    store.themeSettings?.heroSubheading ||
+    `Seamlessly search for properties by location and price range. Your ideal living space awaits.`;
+  const banner =
+    store.bannerUrl || "/images/realestate-hero.jpg";
+
+  // Default filter values from themeSettings or empty
+  const [location, setLocation] = useState(
+    store.themeSettings?.heroDefaultFilters?.location || ""
+  );
+  const [minPrice, setMinPrice] = useState(
+    store.themeSettings?.heroDefaultFilters?.minPrice || ""
+  );
+  const [maxPrice, setMaxPrice] = useState(
+    store.themeSettings?.heroDefaultFilters?.maxPrice || ""
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch({ location, minPrice, maxPrice });
+  };
+
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-950">
-      {/* Background Image with Enhanced Overlay */}
+      {/* Background */}
       <div className="absolute inset-0">
         <Image
-          src={bannerUrl || "/images/realestate-hero.jpg"}
-          alt="Modern house with a view, representing ideal living spaces"
+          src={banner}
+          alt={store.name || "Real Estate Hero"}
           layout="fill"
           objectFit="cover"
-          priority // Prioritize loading for LCP
+          priority
           className="opacity-70 dark:opacity-40 filter brightness-90 saturate-120"
-          aria-hidden="true"
           loader={loader}
         />
-        {/* Gradients for Depth and Mood */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-emerald-800/80 dark:to-teal-950/80" />
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black/20" /> {/* Subtle top dark fade */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-800/80 dark:to-teal-950/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/20" />
       </div>
 
-      {/* Main Content Area */}
+      {/* Content */}
       <div className="relative z-10 max-w-5xl text-center px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Headline */}
         <motion.h1
           className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-tight text-white drop-shadow-2xl tracking-tight"
           variants={variants.fadeInUp}
           initial="hidden"
           animate="visible"
         >
-          Discover Your <span className="text-amber-300">Dream</span> Home.
+          {title.split("|").map((chunk, i) =>
+            i === 1 ? (
+              <span
+                key={i}
+                className="text-amber-300"
+              >
+                {chunk}
+              </span>
+            ) : (
+              <React.Fragment key={i}>{chunk}</React.Fragment>
+            )
+          )}
         </motion.h1>
 
-        {/* Subtitle/Description */}
         <motion.p
           className="mt-4 text-lg md:text-xl font-light text-gray-200 max-w-3xl mx-auto drop-shadow-md"
           variants={variants.fadeInUp}
           initial="hidden"
           animate="visible"
-          transition={{ delay: 0.2, duration: 0.8 }}
+          transition={{ delay: 0.2 }}
         >
-          Seamlessly search for properties by location and price range. Your ideal living space awaits.
+          {subtitle}
         </motion.p>
 
-        {/* Search Form */}
         <motion.form
-          onSubmit={(e:any) => {
-            e.preventDefault();
-            handleSearch();
-          }}
+          onSubmit={handleSubmit}
           className="mt-10 grid grid-cols-1 md:grid-cols-4 gap-5 p-8 rounded-3xl shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-3xl border border-white/20 dark:border-gray-700/50"
           variants={variants.scaleUp}
           initial="hidden"
           animate="visible"
-          transition={{ delay: 0.4, duration: 0.8 }}
+          transition={{ delay: 0.4 }}
           aria-label="Search properties form"
         >
-          {/* Location Input */}
           <div className="relative col-span-full md:col-span-1">
-            <MapPinIcon
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400"
-              aria-hidden="true"
-            />
+            <MapPinIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             <input
               type="text"
-              placeholder="Location (e.g., New York, London)"
+              placeholder="Location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              aria-label="Location for property search"
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-4 focus:ring-amber-400/50 focus:border-transparent transition duration-300 ease-in-out transform hover:scale-[1.01]"
+              aria-label="Location"
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:ring-4 focus:ring-amber-400/50 transition hover:scale-[1.01]"
             />
           </div>
 
-          {/* Min Price Input */}
           <div className="relative col-span-full md:col-span-1">
-            <CurrencyDollarIcon
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400"
-              aria-hidden="true"
-            />
+            <CurrencyDollarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             <input
               type="number"
-              placeholder="Min Price ($)"
+              placeholder="Min Price"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              aria-label="Minimum price for property search"
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-4 focus:ring-amber-400/50 focus:border-transparent transition duration-300 ease-in-out transform hover:scale-[1.01]"
+              aria-label="Minimum price"
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:ring-4 focus:ring-amber-400/50 transition hover:scale-[1.01]"
             />
           </div>
 
-          {/* Max Price Input */}
           <div className="relative col-span-full md:col-span-1">
-            <CurrencyDollarIcon
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400"
-              aria-hidden="true"
-            />
+            <CurrencyDollarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             <input
               type="number"
-              placeholder="Max Price ($)"
+              placeholder="Max Price"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              aria-label="Maximum price for property search"
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-4 focus:ring-amber-400/50 focus:border-transparent transition duration-300 ease-in-out transform hover:scale-[1.01]"
+              aria-label="Maximum price"
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:ring-4 focus:ring-amber-400/50 transition hover:scale-[1.01]"
             />
           </div>
 
-          {/* Search Button */}
           <motion.button
             type="submit"
-            className="col-span-full md:col-span-1 flex items-center justify-center space-x-3 px-6 py-3 rounded-xl font-semibold text-white
-                       bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700
-                       dark:from-teal-600 dark:to-emerald-700 dark:hover:from-teal-700 dark:hover:to-emerald-800
-                       shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-amber-400/70
-                       transition duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            className="col-span-full md:col-span-1 flex items-center justify-center space-x-3 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl focus:ring-4 focus:ring-amber-400/70 transition hover:scale-[1.02] active:scale-[0.98]"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            aria-label="Search property listings"
+            aria-label="Search listings"
           >
-            <MagnifyingGlassIcon className="w-6 h-6" aria-hidden="true" />
-            <span>Search Now</span>
+            <MagnifyingGlassIcon className="w-6 h-6" />
+            <span>{store.themeSettings?.heroButtonText || "Search Now"}</span>
           </motion.button>
         </motion.form>
 
-        {/* Optional: Explore Video/Guide Button */}
         <motion.div
           className="mt-8"
-          variants={variants.fadeIn}
+          variants={variants.fadeInUp}
           initial="hidden"
           animate="visible"
-          transition={{ delay: 0.6, duration: 0.8 }}
+          transition={{ delay: 0.6 }}
         >
-          <Link href="/how-it-works" passHref>
-            <motion.a
-              className="inline-flex items-center space-x-3 text-lg font-medium text-white hover:text-amber-300 transition duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Watch a video guide on how to use our platform"
-            >
-              <PlayCircleIcon className="w-8 h-8 text-amber-400 hover:text-amber-300" aria-hidden="true" />
-              <span>Watch Video Guide</span>
-            </motion.a>
+          <Link href="/how-it-works">
+            <a className="inline-flex items-center space-x-3 text-lg font-medium text-white hover:text-amber-300 transition">
+              <PlayCircleIcon className="w-8 h-8 text-amber-400" />
+              <span>
+                {store.themeSettings?.heroGuideText || "Watch Video Guide"}
+              </span>
+            </a>
           </Link>
         </motion.div>
       </div>

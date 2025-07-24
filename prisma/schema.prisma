@@ -140,6 +140,7 @@ model ProductCategory {
   StoreCategory       StoreCategory[]
   Company             Company?              @relation(fields: [companyId], references: [id])
   companyId           String?               @db.ObjectId
+  Podcast             Podcast[]
 }
 
 /// Associates a Company with a ProductCategory,
@@ -296,6 +297,7 @@ model Company {
   Prescription                    Prescription[]
   Doctor                          Doctor[]
   Writer                          Writer[]
+  Podcast                         Podcast[]
 }
 
 enum CategoryStatus {
@@ -3219,4 +3221,58 @@ model Writer {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Podcast Model
+// Represents a single podcast episode or a series entry.
+model Podcast {
+  // MongoDB requires a specific ID configuration:
+  // @id: Marks this field as the unique identifier.
+  // @default(auto()): Prisma will automatically generate an ObjectId for new records.
+  // @map("_id"): Maps the 'id' field in Prisma to '_id' in MongoDB.
+  // @db.ObjectId: Specifies that this field is a MongoDB ObjectId.
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // General podcast details
+  creatorId     String // ID of the entity that created/owns this podcast (e.g., company ID, user ID)
+  creatorType   String // Type of the creator (e.g., "admin", "company", "user")
+  podcastId     String @unique // A unique identifier for the podcast itself (e.g., a slug, external ID, or a more human-readable ID)
+  title         String
+  description   String
+  audioUrl      String // URL to the podcast audio file
+  duration      Int // Duration of the podcast in seconds
+  episodeNumber Int    @default(1) // Episode number, default to 1
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Date fields
+  releaseDate DateTime // Date when the podcast was released
+  createdAt   DateTime @default(now()) // Timestamp for when the record was created
+  updatedAt   DateTime @updatedAt // Timestamp for when the record was last updated
+
+  // Media and categorization
+  coverImageUrl String? // Optional URL for the podcast's cover art
+  isFeatured    Boolean @default(false) // Flag to mark if the podcast is featured
+
+  // Relationships to other models (MongoDB specific)
+  // For many-to-many relationships in MongoDB, Prisma typically uses an array of ObjectIds.
+  // The @relation attribute is used to define the relationship.
+  // Product Category relation
+  productCategoryId String?          @db.ObjectId
+  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
+
+  tags Tag[]
+}
+
+// Tag Model
+// Represents a tag that can be associated with podcasts for finer-grained classification.
+model Tag {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique // Tag name (e.g., "AI", "Mindfulness")
+  slug        String  @unique // URL-friendly slug for the tag (e.g., "ai", "mindfulness")
+  description String? // Optional description for the tag
+
+  Podcast   Podcast? @relation(fields: [podcastId], references: [id])
+  podcastId String?  @db.ObjectId
 }

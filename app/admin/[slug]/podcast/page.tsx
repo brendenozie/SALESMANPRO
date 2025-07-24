@@ -1,0 +1,117 @@
+import React from "react";
+import PodcastsClient from "./PodcastsClient"; // Assuming PodcastsClient is in the same directory
+import { StoreCategory } from "@/types/typings";
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// Define the Podcast type
+type Podcast = {
+  _id: string;
+  creatorId: string; // Renamed from sellerId
+  creatorType: string; // Renamed from sellerType
+  podcastId: string; // Renamed from productId
+  title: string;
+  companyId:string;
+  description: string;
+  audioUrl: string; // New field for podcast audio
+  duration: number; // New field for podcast duration in seconds
+  episodeNumber: number; // New field for episode number
+  releaseDate: string; // New field for release date
+  categories: string[]; // Array of category IDs
+  tags: string[]; // Array of tag IDs
+  coverImageUrl: string; // New field for podcast cover image
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // Removed product-specific fields like quantity, salesPrice, discount, buyingPrice, sellingPrice, isOnOffer, isFlashDeal, isNewArrival, isDiscounted
+};
+
+// Define the Tag type for podcasts
+type Tag = {
+  _id: string; // Changed from id to _id
+  name: string;
+  slug: string; // Added a slug for friendly URLs
+  // Removed image and status as they are not typically direct properties of a podcast tag
+};
+
+interface PaginatedPodcasts {
+  meta: {
+    companyId: string;
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    perPage: number;
+  };
+  results: Podcast[];
+}
+
+/**
+ * This is a **Server Component**. It fetches all the data
+ * at request-time (no caching, just like getServerSideProps),
+ * then renders the Client Component below.
+ */
+
+interface PageProps {
+  params: {
+    slug: string; // This is companyId, or perhaps a creatorId/adminId
+  };
+}
+
+/**
+ * Server Component: runs on each request (no-store), fetches podcasts,
+ * then renders the PodcastsClient with those props.
+ */
+export default async function PodcastsAdminPage({ params }: PageProps) {
+  const companyId = params.slug; // Using companyId as the slug for now, adjust as needed
+
+  let podcastsData: Podcast[] = [];
+  let categoriesData: StoreCategory[] = [];
+
+  try {
+    // Fetch podcasts
+    const podcastsRes = await fetch(
+      `${apiUrl}/admin/podcasts?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" }
+    );
+
+    if (podcastsRes.ok) {
+      const data = (await podcastsRes.json()) as PaginatedPodcasts;
+      podcastsData = data.results;
+    } else {
+      console.error(
+        "[PodcastsAdminPage] Failed to fetch podcasts:",
+        podcastsRes.status,
+        podcastsRes.statusText
+      );
+    }
+
+    // Fetch all categories relevant to podcasts (might be different from store categories)
+    // --- Fetch store categories ---
+    const categoriesRes = await fetch(
+      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store" }
+    );
+
+    if (categoriesRes.ok) {
+      const json = await categoriesRes.json();
+      categoriesData = json.results ?? [];
+    } else {
+      console.error(
+        "[ClientInventoryPage] Failed to fetch store categories:",
+        categoriesRes.status,
+        categoriesRes.statusText
+      );
+    }
+
+  } catch (err: any) {
+    console.error("[PodcastsAdminPage] Error fetching data:", err.message);
+  }
+
+  return (
+    <PodcastsClient
+      companyId={companyId}
+      podcastsData={podcastsData}
+      categoriesData={categoriesData}
+    />
+  );
+}

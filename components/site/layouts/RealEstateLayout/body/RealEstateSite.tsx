@@ -119,10 +119,10 @@ export default function RealEstateSite() {
   const { storeFormData } = useStoreContext(); // Assuming this is where dynamic store data might come from
 
   // Prioritize dynamic data from context, fall back to sample data
-  const storeData = sampleStoreData;
-  // const storeData = storeFormData && Object.keys(storeFormData).length > 0
-  //   ? storeFormData
-  //   : sampleStoreData;
+  // const storeData = sampleStoreData;
+  const storeData = storeFormData && Object.keys(storeFormData).length > 0
+    ? storeFormData
+    : sampleStoreData;
 
   // Destructure data using the potentially updated storeData
   const {

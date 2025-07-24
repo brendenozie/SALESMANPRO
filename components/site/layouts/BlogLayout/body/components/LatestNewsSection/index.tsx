@@ -3,9 +3,9 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { CalendarIcon, UserCircleIcon } from "@heroicons/react/24/solid"; // Added UserCircleIcon
-// Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { CalendarIcon, UserCircleIcon } from "@heroicons/react/24/solid"; 
+import { useStoreContext } from "@/contexts/StoreContext";
+
 
 // Define the structure of a single blog post as it comes from StoreForm
 export type Blog = {
@@ -36,85 +36,85 @@ export type StoreForm = {
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import and ensure
 // your StoreContext provides data conforming to the StoreForm type.
-const useStoreContext = () => ({
-  storeFormData: {
-    blogs: [
-      {
-        id: 'blog1',
-        title: 'Global leaders unite to address climate crisis at COP26',
-        publishedAt: '2023-04-21T10:00:00Z',
-        coverImage: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Climate+Crisis',
-        slug: 'climate-crisis-cop26',
-        content: 'Long content for blog 1...',
-        categories: ['Politics', 'Environment'],
-        tags: ['COP26', 'Climate'],
-        author: { name: 'Alice Smith', profileImage: 'https://placehold.co/50x50/FFD700/000000?text=AS' },
-        status: 'Published',
-      },
-      {
-        id: 'blog2',
-        title: 'Cybersecurity experts warn of increased threats in digital age',
-        publishedAt: '2023-04-20T11:30:00Z',
-        coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Cybersecurity+Threats',
-        slug: 'cybersecurity-threats',
-        content: 'Long content for blog 2...',
-        categories: ['Technology', 'Security'],
-        tags: ['Cybersecurity', 'Digital'],
-        author: { name: 'Bob Johnson', profileImage: 'https://placehold.co/50x50/ADD8E6/000000?text=BJ' },
-        status: 'Published',
-      },
-      {
-        id: 'blog3',
-        title: 'Athlete achieves historic win at world championships breaking records',
-        publishedAt: '2023-04-19T09:00:00Z',
-        coverImage: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Historic+Win',
-        slug: 'historic-win-athlete',
-        content: 'Long content for blog 3...',
-        categories: ['Sports'],
-        tags: ['Athletics', 'Championships'],
-        author: { name: 'Charlie Brown', profileImage: 'https://placehold.co/50x50/90EE90/000000?text=CB' },
-        status: 'Published',
-      },
-      {
-        id: 'blog4',
-        title: 'Chemical currents: Breaking news in chemistry and materials science',
-        publishedAt: '2023-04-18T14:00:00Z',
-        coverImage: 'https://placehold.co/600x400/F97316/FFFFFF?text=Chemistry+News',
-        slug: 'chemistry-materials-science',
-        content: 'Long content for blog 4...',
-        categories: ['Science'],
-        tags: ['Chemistry', 'Materials'],
-        author: { name: 'Diana Prince', profileImage: 'https://placehold.co/50x50/FFB6C1/000000?text=DP' },
-        status: 'Published',
-      },
-      {
-        id: 'blog5',
-        title: 'New breakthroughs in space exploration excite scientists',
-        publishedAt: '2023-04-17T16:00:00Z',
-        coverImage: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Space+Exploration',
-        slug: 'space-exploration-breakthroughs',
-        content: 'Long content for blog 5...',
-        categories: ['Science', 'Space'],
-        tags: ['Astronomy', 'Exploration'],
-        author: { name: 'Eve Adams', profileImage: 'https://placehold.co/50x50/DDA0DD/000000?text=EA' },
-        status: 'Published',
-      },
-      {
-        id: 'blog6',
-        title: 'The rise of sustainable fashion: Trends and future outlook',
-        publishedAt: '2023-04-16T10:00:00Z',
-        coverImage: 'https://placehold.co/600x400/10B981/FFFFFF?text=Sustainable+Fashion',
-        slug: 'sustainable-fashion-trends',
-        content: 'Long content for blog 6...',
-        categories: ['Fashion', 'Environment'],
-        tags: ['Sustainability', 'Trends'],
-        author: { name: 'Frank Green', profileImage: 'https://placehold.co/50x50/B0E0E6/000000?text=FG' },
-        status: 'Published',
-      },
-    ],
-    themeSettings: { primaryColor: '#0EA5E9' }, // Tailwind 'sky-500'
-  } as StoreForm, // Cast to StoreForm for type safety in mock
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     blogs: [
+//       {
+//         id: 'blog1',
+//         title: 'Global leaders unite to address climate crisis at COP26',
+//         publishedAt: '2023-04-21T10:00:00Z',
+//         coverImage: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Climate+Crisis',
+//         slug: 'climate-crisis-cop26',
+//         content: 'Long content for blog 1...',
+//         categories: ['Politics', 'Environment'],
+//         tags: ['COP26', 'Climate'],
+//         author: { name: 'Alice Smith', profileImage: 'https://placehold.co/50x50/FFD700/000000?text=AS' },
+//         status: 'Published',
+//       },
+//       {
+//         id: 'blog2',
+//         title: 'Cybersecurity experts warn of increased threats in digital age',
+//         publishedAt: '2023-04-20T11:30:00Z',
+//         coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Cybersecurity+Threats',
+//         slug: 'cybersecurity-threats',
+//         content: 'Long content for blog 2...',
+//         categories: ['Technology', 'Security'],
+//         tags: ['Cybersecurity', 'Digital'],
+//         author: { name: 'Bob Johnson', profileImage: 'https://placehold.co/50x50/ADD8E6/000000?text=BJ' },
+//         status: 'Published',
+//       },
+//       {
+//         id: 'blog3',
+//         title: 'Athlete achieves historic win at world championships breaking records',
+//         publishedAt: '2023-04-19T09:00:00Z',
+//         coverImage: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Historic+Win',
+//         slug: 'historic-win-athlete',
+//         content: 'Long content for blog 3...',
+//         categories: ['Sports'],
+//         tags: ['Athletics', 'Championships'],
+//         author: { name: 'Charlie Brown', profileImage: 'https://placehold.co/50x50/90EE90/000000?text=CB' },
+//         status: 'Published',
+//       },
+//       {
+//         id: 'blog4',
+//         title: 'Chemical currents: Breaking news in chemistry and materials science',
+//         publishedAt: '2023-04-18T14:00:00Z',
+//         coverImage: 'https://placehold.co/600x400/F97316/FFFFFF?text=Chemistry+News',
+//         slug: 'chemistry-materials-science',
+//         content: 'Long content for blog 4...',
+//         categories: ['Science'],
+//         tags: ['Chemistry', 'Materials'],
+//         author: { name: 'Diana Prince', profileImage: 'https://placehold.co/50x50/FFB6C1/000000?text=DP' },
+//         status: 'Published',
+//       },
+//       {
+//         id: 'blog5',
+//         title: 'New breakthroughs in space exploration excite scientists',
+//         publishedAt: '2023-04-17T16:00:00Z',
+//         coverImage: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Space+Exploration',
+//         slug: 'space-exploration-breakthroughs',
+//         content: 'Long content for blog 5...',
+//         categories: ['Science', 'Space'],
+//         tags: ['Astronomy', 'Exploration'],
+//         author: { name: 'Eve Adams', profileImage: 'https://placehold.co/50x50/DDA0DD/000000?text=EA' },
+//         status: 'Published',
+//       },
+//       {
+//         id: 'blog6',
+//         title: 'The rise of sustainable fashion: Trends and future outlook',
+//         publishedAt: '2023-04-16T10:00:00Z',
+//         coverImage: 'https://placehold.co/600x400/10B981/FFFFFF?text=Sustainable+Fashion',
+//         slug: 'sustainable-fashion-trends',
+//         content: 'Long content for blog 6...',
+//         categories: ['Fashion', 'Environment'],
+//         tags: ['Sustainability', 'Trends'],
+//         author: { name: 'Frank Green', profileImage: 'https://placehold.co/50x50/B0E0E6/000000?text=FG' },
+//         status: 'Published',
+//       },
+//     ],
+//     themeSettings: { primaryColor: '#0EA5E9' }, // Tailwind 'sky-500'
+//   } as StoreForm, // Cast to StoreForm for type safety in mock
+// });
 
 
 // Local loader for next/image (required for external URLs with next/image)

@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { CalendarIcon } from "@heroicons/react/24/solid";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Define the structure of a single blog post as it comes from StoreForm
 export type Blog = {
@@ -35,73 +36,73 @@ export type StoreForm = {
 // In a real application, you would uncomment the actual import and ensure
 // your StoreContext provides data conforming to the StoreForm type,
 // including an array of 'blogs' with 'views' property.
-const useStoreContext = () => ({
-  storeFormData: {
-    blogs: [
-      {
-        id: 'blog1',
-        title: 'How to build a scalable design system from scratch',
-        publishedAt: '2023-04-20T10:00:00Z',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-        coverImage: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Design+System',
-        slug: 'design-system-from-scratch',
-        views: 1500,
-        categories: [], tags: [], status: 'Published', // Added missing properties for type completeness
-      },
-      {
-        id: 'blog2',
-        title: 'The art of balancing creativity and user experience in design',
-        publishedAt: '2023-04-19T11:30:00Z',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-        coverImage: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Creativity+UX',
-        slug: 'creativity-user-experience',
-        views: 1200,
-        categories: [], tags: [], status: 'Published',
-      },
-      {
-        id: 'blog3',
-        title: 'The science behind effective call-to-action buttons',
-        publishedAt: '2023-04-18T09:00:00Z',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-        coverImage: 'https://placehold.co/600x400/F97316/FFFFFF?text=CTA+Science',
-        slug: 'effective-cta-buttons',
-        views: 1100,
-        categories: [], tags: [], status: 'Published',
-      },
-      {
-        id: 'blog4',
-        title: '10 must-have features for a modern portfolio website',
-        publishedAt: '2023-04-17T14:00:00Z',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        coverImage: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Portfolio+Features',
-        slug: 'modern-portfolio-website',
-        views: 950,
-        categories: [], tags: [], status: 'Published',
-      },
-      {
-        id: 'blog5',
-        title: 'How to create a seamless user journey on your website',
-        publishedAt: '2023-04-16T16:00:00Z',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
-        coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=User+Journey',
-        slug: 'seamless-user-journey',
-        views: 800,
-        categories: [], tags: [], status: 'Published',
-      },
-      {
-        id: 'blog6',
-        title: 'Why mobile-first design is no longer optional in 2024',
-        publishedAt: '2023-04-15T10:00:00Z',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.',
-        coverImage: 'https://placehold.co/600x400/10B981/FFFFFF?text=Mobile+First',
-        slug: 'mobile-first-design',
-        views: 750,
-        categories: [], tags: [], status: 'Published',
-      },
-    ],
-    themeSettings: { primaryColor: '#F59E0B' }, // Tailwind 'amber-500'
-  } as StoreForm, // Cast to StoreForm for type safety in mock
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     blogs: [
+//       {
+//         id: 'blog1',
+//         title: 'How to build a scalable design system from scratch',
+//         publishedAt: '2023-04-20T10:00:00Z',
+//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+//         coverImage: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Design+System',
+//         slug: 'design-system-from-scratch',
+//         views: 1500,
+//         categories: [], tags: [], status: 'Published', // Added missing properties for type completeness
+//       },
+//       {
+//         id: 'blog2',
+//         title: 'The art of balancing creativity and user experience in design',
+//         publishedAt: '2023-04-19T11:30:00Z',
+//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+//         coverImage: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Creativity+UX',
+//         slug: 'creativity-user-experience',
+//         views: 1200,
+//         categories: [], tags: [], status: 'Published',
+//       },
+//       {
+//         id: 'blog3',
+//         title: 'The science behind effective call-to-action buttons',
+//         publishedAt: '2023-04-18T09:00:00Z',
+//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+//         coverImage: 'https://placehold.co/600x400/F97316/FFFFFF?text=CTA+Science',
+//         slug: 'effective-cta-buttons',
+//         views: 1100,
+//         categories: [], tags: [], status: 'Published',
+//       },
+//       {
+//         id: 'blog4',
+//         title: '10 must-have features for a modern portfolio website',
+//         publishedAt: '2023-04-17T14:00:00Z',
+//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+//         coverImage: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Portfolio+Features',
+//         slug: 'modern-portfolio-website',
+//         views: 950,
+//         categories: [], tags: [], status: 'Published',
+//       },
+//       {
+//         id: 'blog5',
+//         title: 'How to create a seamless user journey on your website',
+//         publishedAt: '2023-04-16T16:00:00Z',
+//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
+//         coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=User+Journey',
+//         slug: 'seamless-user-journey',
+//         views: 800,
+//         categories: [], tags: [], status: 'Published',
+//       },
+//       {
+//         id: 'blog6',
+//         title: 'Why mobile-first design is no longer optional in 2024',
+//         publishedAt: '2023-04-15T10:00:00Z',
+//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.',
+//         coverImage: 'https://placehold.co/600x400/10B981/FFFFFF?text=Mobile+First',
+//         slug: 'mobile-first-design',
+//         views: 750,
+//         categories: [], tags: [], status: 'Published',
+//       },
+//     ],
+//     themeSettings: { primaryColor: '#F59E0B' }, // Tailwind 'amber-500'
+//   } as StoreForm, // Cast to StoreForm for type safety in mock
+// });
 
 // Local loader for next/image (required for external URLs with next/image)
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
@@ -124,7 +125,7 @@ export default function PopularBlogsSection() {
   // Map dynamic blog posts to our blog item shape, sorting by views if available, then slicing to 6
   const blogItems = Array.isArray(dynamicBlogs) && dynamicBlogs.length > 0
     ? dynamicBlogs
-        .sort((a, b) => (b.views || 0) - (a.views || 0)) // Sort by views descending
+        // .sort((a, b) => (b.views || 0) - (a.views || 0)) // Sort by views descending
         .slice(0, 6) // Take top 6
         .map(post => ({
           title: post.title,
