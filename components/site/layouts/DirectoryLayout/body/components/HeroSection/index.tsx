@@ -5,6 +5,26 @@ import Image from 'next/image';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
+// Define the relevant parts of StoreForm that HeroSection uses
+export type StoreForm = {
+  name?: string; // Corresponds to the main title
+  tagline?: string; // Corresponds to the description
+  bannerUrl?: string; // Corresponds to the background image
+  // If you want to use storeCategories for floating icons, add it here too:
+  // storeCategories?: Array<{ id: string; name: string; icon?: string; }>;
+};
+
+// Placeholder for useStoreContext to make the component runnable independently
+// In a real application, you would uncomment the actual import and ensure
+// your StoreContext provides data conforming to the StoreForm type.
+const useStoreContext = () => ({
+  storeFormData: {
+    name: 'My Awesome Directory',
+    tagline: 'Discover local businesses and services near you.',
+    bannerUrl: 'https://placehold.co/1920x1080/4CAF50/FFFFFF?text=Directory+Hero', // Example banner URL
+  } as StoreForm,
+});
+
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -20,29 +40,36 @@ const floatingIcons = [
 ];
 
 interface HeroSectionProps {
-  title: string;
-  description?: string;
-  bannerUrl?: string;
   onSearch: () => void;
   searchTerm: string;
   setSearchTerm: (val: string) => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({
-  title,
-  description,
-  bannerUrl,
   onSearch,
   searchTerm,
   setSearchTerm,
 }) => {
+  // Destructure storeFormData from context, providing a fallback for when context is not available
+  const { storeFormData } = useStoreContext() || {};
+  const {
+    name, // This will be the main title
+    tagline, // This will be the description
+    bannerUrl: dynamicBannerUrl, // Renamed to avoid conflict with old prop name
+  } = storeFormData || {};
+
+  // Use dynamic data with fallbacks
+  const finalTitle = name || 'Find & Explore Local Businesses';
+  const finalDescription = tagline || 'Discover the best services, shops, and experiences right in your neighborhood.';
+  const finalBannerUrl = dynamicBannerUrl || 'https://placehold.co/1920x1080/3498DB/FFFFFF?text=Directory+Hero+Fallback'; // A different placeholder for default
+
   return (
     <section className="relative h-[85vh] sm:h-[90vh] lg:h-screen bg-gradient-to-br from-green-700 to-teal-600 text-white flex items-center justify-center overflow-hidden">
       {/* Background Image with a subtle parallax effect */}
-      {bannerUrl && (
+      {finalBannerUrl && (
         <div className="absolute inset-0 z-0">
           <Image
-            src={bannerUrl}
+            src={finalBannerUrl}
             alt="Directory Banner"
             fill
             className="object-cover object-center opacity-30 md:opacity-40" // Slightly more opaque
@@ -54,7 +81,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="absolute inset-0 bg-black/40" /> {/* Darker overlay for better text contrast */}
         </div>
       )}
-      {!bannerUrl && (
+      {!finalBannerUrl && (
         <div className="absolute inset-0 bg-black/40 z-0" /> // Ensure overlay even without banner
       )}
 
@@ -87,28 +114,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="text-4xl sm:text-6xl md:text-7xl font-extrabold leading-tight tracking-tight drop-shadow-xl" // Larger, tighter tracking, stronger shadow
         >
-          Find & Explore <span className="text-orange-300">Local Businesses</span>
+          {finalTitle} <span className="text-orange-300">Local Businesses</span>
         </motion.h1>
 
-        {description && (
+        {finalDescription && (
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
             className="mt-5 text-lg md:text-xl lg:text-2xl text-white/80 max-w-2xl mx-auto" // Larger, slightly softer text
           >
-            {description}
+            {finalDescription}
           </motion.p>
-        )}
-        {!description && (
-            <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
-                className="mt-5 text-lg md:text-xl lg:text-2xl text-white/80 max-w-2xl mx-auto"
-            >
-                Discover the best services, shops, and experiences right in your neighborhood.
-            </motion.p>
         )}
 
         {/* Search Input - more prominent and user-friendly */}

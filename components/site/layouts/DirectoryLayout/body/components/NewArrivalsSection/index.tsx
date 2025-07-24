@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import Image from 'next/image'; // Import Image from next/image for optimization
+import Image from 'next/image';
 import {
   HeartIcon,
   ShoppingBagIcon,
@@ -12,116 +12,206 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion'; // Import AnimatePresence for exit animations
+import { motion, AnimatePresence } from 'framer-motion';
 
-// --- Dummy Data (Refined to be more realistic for a directory/listing context) ---
-// Note: Changed "products" to "listings" for directory relevance.
-// Added more descriptive image paths for clarity.
-const listings = [
-  {
-    id: 1,
-    businessName: 'Luxe Fashion Boutique',
-    title: 'Elegant Handbag Collection',
-    category: 'Fashion & Apparel',
-    price: '$500',
-    img: '/images/listing-fashion-bag1.webp', // Updated image path
-    rating: 4,
-    description: 'Discover our latest collection of handcrafted leather bags, perfect for any occasion. Elegance meets functionality.',
-  },
-  {
-    id: 2,
-    businessName: 'Green Eats Cafe',
-    title: 'Organic Smoothie Bar',
-    category: 'Food & Drink',
-    price: '$12',
-    img: '/images/listing-cafe-smoothie.webp', // Updated image path
-    tags: ['New', 'Healthy'],
-    rating: 5,
-    description: 'Freshly blended organic smoothies made with local ingredients. A perfect healthy boost for your day!',
-  },
-  {
-    id: 3,
-    businessName: 'Urban Oasis Spa',
-    title: 'Relaxing Massage Therapy',
-    category: 'Health & Wellness',
-    price: '$99',
-    img: '/images/listing-spa-massage.webp', // Updated image path
-    tags: ['Limited Offer'],
-    rating: 3,
-    description: 'Unwind with our signature deep tissue massage. Rejuvenate your mind and body in a serene atmosphere.',
-  },
-  {
-    id: 4,
-    businessName: 'Tech Innovations Store',
-    title: 'Smart Home Devices',
-    category: 'Electronics',
-    price: '$150',
-    img: '/images/listing-tech-gadgets.webp', // Updated image path
-    tags: ['Popular'],
-    rating: 4,
-    description: 'Transform your home into a smart haven with our latest range of intuitive and energy-efficient devices.',
-  },
-  {
-    id: 5,
-    businessName: 'Artistic Hub Studio',
-    title: 'Beginner Art Classes',
-    category: 'Education & Hobbies',
-    price: '$75',
-    img: '/images/listing-art-classes.webp', // Updated image path
-    tags: ['Enroll Now'],
-    rating: 5,
-    description: 'Unleash your creativity! Fun and engaging art classes for all skill levels, taught by professional artists.',
-  },
-  {
-    id: 6,
-    businessName: 'Pet Paradise Grooming',
-    title: 'Professional Pet Grooming',
-    category: 'Pet Services',
-    price: '$60',
-    img: '/images/listing-pet-grooming.webp', // Updated image path
-    tags: ['Local Favorite'],
-    rating: 4,
-    description: 'Pamper your furry friend with our expert grooming services. We ensure a stress-free and sparkling clean experience.',
-  },
-  {
-    id: 7,
-    businessName: 'The Book Nook',
-    title: 'Rare First Edition Books',
-    category: 'Books & Literature',
-    price: '$200',
-    img: '/images/listing-books-rare.webp', // Updated image path
-    tags: ['Collector\'s Item'],
-    rating: 5,
-    description: 'Explore our curated collection of rare and antique books. A treasure trove for every bibliophile.',
-  },
-  // Added more diverse categories to reflect a directory site
-  {
-    id: 8,
-    businessName: 'FitZone Gym',
-    title: 'Personal Training Sessions',
-    category: 'Sports & Fitness',
-    price: '$70/hr',
-    img: '/images/listing-gym-training.webp',
-    rating: 4,
-    description: 'Achieve your fitness goals with our certified personal trainers. Customized plans for all levels.',
-  },
-  {
-    id: 9,
-    businessName: 'Sweet Tooth Bakery',
-    title: 'Artisan Cupcake Dozen',
-    category: 'Food & Drink',
-    price: '$35',
-    img: '/images/listing-bakery-cupcakes.webp',
-    tags: ['Fresh Daily'],
-    rating: 5,
-    description: 'Indulge in our delicious, freshly baked artisan cupcakes. Perfect for celebrations or a sweet treat.',
-  },
-];
+// Define types based on your transformCompanyToStoreForm and Prisma schema
+export type ProductForListing = {
+  id: string;
+  name: string;
+  description?: string;
+  brand?: string;
+  color?: string[];
+  size?: string[];
+};
+
+export type MarketplaceListing = {
+  id: string;
+  title: string; // Used for the listing's main title
+  name: string; // Used for the business name
+  description?: string; // Listing-specific description
+  finalPrice: number; // Numeric price
+  images: string[]; // Array of image URLs
+  isAvailable: boolean;
+  isFeatured: boolean; // Can be used for tags
+  product?: ProductForListing; // Nested product details
+  // Add other fields from your MarketplaceListing model if relevant for display
+};
+
+export type StoreForm = {
+  marketplaceListings?: MarketplaceListing[];
+  // Add other relevant StoreForm fields if needed
+  currency?: string; // From transformCompanyToStoreForm
+};
+
+// Placeholder for useStoreContext to make the component runnable independently
+// In a real application, you would uncomment the actual import.
+const useStoreContext = () => ({
+  storeFormData: {
+    marketplaceListings: [
+      {
+        id: 'listing-1',
+        name: 'Luxe Fashion Boutique', // Business Name
+        title: 'Elegant Handbag Collection', // Listing Title
+        description: 'Discover our latest collection of handcrafted leather bags, perfect for any occasion. Elegance meets functionality.',
+        finalPrice: 500.00,
+        images: ['https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        isAvailable: true,
+        isFeatured: true, // Will be used as a tag
+        product: {
+          id: 'prod-bag-1',
+          name: 'Handbag',
+          description: 'High-quality leather handbag.',
+        },
+      },
+      {
+        id: 'listing-2',
+        name: 'Green Eats Cafe',
+        title: 'Organic Smoothie Bar',
+        description: 'Freshly blended organic smoothies made with local ingredients. A perfect healthy boost for your day!',
+        finalPrice: 12.00,
+        images: ['https://images.unsplash.com/photo-1612443429399-ea16bb1c2c2f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        isAvailable: true,
+        isFeatured: false,
+        product: {
+          id: 'prod-smoothie-1',
+          name: 'Green Smoothie',
+        },
+      },
+      {
+        id: 'listing-3',
+        name: 'Urban Oasis Spa',
+        title: 'Relaxing Massage Therapy',
+        description: 'Unwind with our signature deep tissue massage. Rejuvenate your mind and body in a serene atmosphere.',
+        finalPrice: 99.00,
+        images: ['https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        isAvailable: true,
+        isFeatured: true,
+        product: {
+          id: 'prod-massage-1',
+          name: 'Deep Tissue Massage',
+        },
+      },
+      {
+        id: 'listing-4',
+        name: 'Tech Innovations Store',
+        title: 'Smart Home Devices',
+        description: 'Transform your home into a smart haven with our latest range of intuitive and energy-efficient devices.',
+        finalPrice: 150.00,
+        images: ['https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        isAvailable: true,
+        isFeatured: false,
+        product: {
+          id: 'prod-smarthome-1',
+          name: 'Smart Hub',
+        },
+      },
+      {
+        id: 'listing-5',
+        name: 'Artistic Hub Studio',
+        title: 'Beginner Art Classes',
+        description: 'Unleash your creativity! Fun and engaging art classes for all skill levels, taught by professional artists.',
+        finalPrice: 75.00,
+        images: ['https://images.unsplash.com/photo-1513506003901-ad169460c11f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        isAvailable: true,
+        isFeatured: true,
+        product: {
+          id: 'prod-artclass-1',
+          name: 'Painting Basics',
+        },
+      },
+      {
+        id: 'listing-6',
+        name: 'Pet Paradise Grooming',
+        title: 'Professional Pet Grooming',
+        description: 'Pamper your furry friend with our expert grooming services. We ensure a stress-free and sparkling clean experience.',
+        finalPrice: 60.00,
+        images: ['https://images.unsplash.com/photo-1583511657519-c09e39066601?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        isAvailable: true,
+        isFeatured: false,
+        product: {
+          id: 'prod-petgroom-1',
+          name: 'Full Grooming Package',
+        },
+      },
+    ],
+    currency: 'KES', // Example currency
+  } as StoreForm,
+});
 
 // Optimized image loader for Next.js Image component
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
+
+// Static fallback data (matches the structure we'll use for rendering)
+const fallbackListings = [
+  {
+    id: 'fallback-1',
+    businessName: 'Local Coffee Shop',
+    title: 'Artisan Coffee Beans',
+    category: 'Food & Drink',
+    price: 'KES 2500',
+    img: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=Coffee+Beans',
+    rating: 5,
+    description: 'Premium roasted coffee beans from local farms. Perfect for your morning brew.',
+    tags: ['New Arrival'],
+  },
+  {
+    id: 'fallback-2',
+    businessName: 'Community Bookstore',
+    title: 'Bestselling Novels',
+    category: 'Books & Literature',
+    price: 'KES 1200',
+    img: 'https://placehold.co/600x400/EF4444/FFFFFF?text=Books',
+    rating: 4,
+    description: 'Explore a wide range of bestselling novels and classic literature.',
+    tags: ['Popular'],
+  },
+  {
+    id: 'fallback-3',
+    businessName: 'City Auto Repair',
+    title: 'Full Vehicle Service',
+    category: 'Automotive',
+    price: 'KES 8000',
+    img: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Car+Service',
+    rating: 4,
+    description: 'Comprehensive service for all vehicle types, ensuring safety and performance.',
+    tags: [],
+  },
+  {
+    id: 'fallback-4',
+    businessName: 'Healthy Living Pharmacy',
+    title: 'Vitamins & Supplements',
+    category: 'Health & Wellness',
+    price: 'KES 1500',
+    img: 'https://placehold.co/600x400/10B981/FFFFFF?text=Vitamins',
+    rating: 5,
+    description: 'Boost your well-being with our high-quality vitamins and dietary supplements.',
+    tags: ['New'],
+  },
+  {
+    id: 'fallback-5',
+    businessName: 'Kids Play Zone',
+    title: 'Indoor Playground Access',
+    category: 'Entertainment',
+    price: 'KES 500/hr',
+    img: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Playground',
+    rating: 4,
+    description: 'A fun and safe indoor environment for kids to play and explore.',
+    tags: ['Family Friendly'],
+  },
+  {
+    id: 'fallback-6',
+    businessName: 'Home Decor Studio',
+    title: 'Custom Furniture Design',
+    category: 'Home & Living',
+    price: 'KES 50000',
+    img: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Furniture',
+    rating: 5,
+    description: 'Bespoke furniture designs to perfectly fit your home and style.',
+    tags: ['Premium'],
+  },
+];
 
 // Rating component for cleaner code
 const RatingStars: React.FC<{ count: number }> = ({ count }) => {
@@ -138,10 +228,29 @@ const RatingStars: React.FC<{ count: number }> = ({ count }) => {
   );
 };
 
-export default function FeaturedListingsSection() { // Renamed for better context
+export default function NewArrivalsSection() { // Renamed for better context
   const containerRef = useRef<HTMLDivElement>(null);
   const [showToast, setShowToast] = useState(false);
   const [selectedListing, setSelectedListing] = useState<any>(null); // Changed to selectedListing
+
+  // Destructure storeFormData from context
+  const { storeFormData } = useStoreContext() || {};
+  const { marketplaceListings: dynamicListings, currency = 'KES' } = storeFormData || {};
+
+  // Map dynamic listings to the display format, or use fallback data
+  const listingsToDisplay = Array.isArray(dynamicListings) && dynamicListings.length > 0
+    ? dynamicListings.map(listing => ({
+        id: listing.id,
+        businessName: listing.name, // Use 'name' from MarketplaceListing for business name
+        title: listing.title, // Use 'title' from MarketplaceListing for listing title
+        category: 'General Category', // Placeholder: You might need to add a 'category' field to MarketplaceListing or derive it
+        price: `${currency} ${listing.finalPrice.toLocaleString()}`, // Format price with currency
+        img: listing.images?.[0] || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image', // First image or fallback
+        rating: 4, // Placeholder: You might need to add a 'rating' field to MarketplaceListing
+        description: listing.description || listing.product?.description || 'No description available.',
+        tags: listing.isFeatured ? ['Featured'] : [], // Example: Use isFeatured as a tag
+      }))
+    : fallbackListings; // Use static fallback listings
 
   // State to track scroll position for button visibility/opacity
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -169,7 +278,7 @@ export default function FeaturedListingsSection() { // Renamed for better contex
         containerRef.current.removeEventListener('scroll', checkScroll);
       }
     };
-  }, [listings]); // Depend on listings to re-check if data changes
+  }, [listingsToDisplay]); // Depend on listingsToDisplay to re-check if data changes
 
   const scroll = (direction: 'left' | 'right') => {
     if (!containerRef.current) return;
@@ -183,6 +292,11 @@ export default function FeaturedListingsSection() { // Renamed for better contex
   const handleAddToCart = () => {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2500); // Slightly longer toast display
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
   };
 
   return (
@@ -222,7 +336,7 @@ export default function FeaturedListingsSection() { // Renamed for better contex
           ref={containerRef}
           className="flex space-x-6 pb-6 overflow-x-auto custom-scrollbar scroll-snap-x snap-mandatory" // Custom scrollbar and snap
         >
-          {listings.map((listing) => (
+          {listingsToDisplay.map((listing) => (
             <motion.div
               key={listing.id}
               className="min-w-[280px] sm:min-w-[320px] max-w-[320px] bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 relative group flex-shrink-0 snap-center border border-gray-100 dark:border-gray-700" // Elevated card design
@@ -263,8 +377,9 @@ export default function FeaturedListingsSection() { // Renamed for better contex
                   alt={listing.title}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105" // Zoom on hover
-                  loader={customLoader}
+                  loader={loader}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  onError={handleImageError} // Image error fallback
                 />
               </div>
 
@@ -327,7 +442,7 @@ export default function FeaturedListingsSection() { // Renamed for better contex
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+                onClick={(e:any) => e.stopPropagation()} // Prevent closing modal when clicking inside
                 className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl flex flex-col md:flex-row gap-6"
               >
                 <button
@@ -344,8 +459,9 @@ export default function FeaturedListingsSection() { // Renamed for better contex
                     alt={selectedListing.title}
                     fill
                     className="object-cover"
-                    loader={customLoader}
+                    loader={loader}
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    onError={handleImageError} // Image error fallback
                   />
                 </div>
 

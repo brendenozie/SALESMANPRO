@@ -4,32 +4,90 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-// Loader for next/image - assuming it's globally available or passed
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+// Define the structure of a single AppPromo as it might come from StoreForm
+export type AppPromo = {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  // You might add other fields here if your AppPromo model has them,
+  // e.g., 'imagePosition': 'left' | 'right', 'backgroundColor', etc.
+};
+
+// Define the relevant parts of StoreForm that HeroCtaSection uses
+export type StoreForm = {
+  name?: string; // For fallback title
+  tagline?: string; // For fallback subtitle
+  appPromos?: AppPromo[]; // Array of AppPromo objects
+  themeSettings?: {
+    primaryColor?: string; // For button color or other accents
+    // Add other theme settings if needed
+  };
+};
+
+// Placeholder for useStoreContext to make the component runnable independently
+// In a real application, you would uncomment the actual import.
+const useStoreContext = () => ({
+  storeFormData: {
+    name: 'Ducun Vijed Directory', // Fallback for main title
+    tagline: 'Your ultimate guide to local services and businesses.', // Fallback for subtitle
+    appPromos: [
+      {
+        id: 'promo-1',
+        title: 'Unlock a World of Local Services',
+        description: 'Discover top-rated businesses, book appointments, and connect with professionals in your community—all in one place.',
+        imageUrl: 'https://images.unsplash.com/photo-1556740738-b6154637d57a?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image URL
+        ctaText: 'Explore Services Now',
+        ctaLink: '/explore-services',
+        // imagePosition: 'right', // Example if you add this to your AppPromo model
+      },
+      // You can add more app promos, and choose which one to display
+      // based on some criteria (e.g., 'isActive' flag, 'order' field, etc.)
+    ],
+    themeSettings: {
+      primaryColor: '#2563EB', // Example: Tailwind blue-600
+    },
+  } as StoreForm,
+});
+
+// Loader for next/image
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 interface HeroCtaSectionProps {
-  title?: string;
-  subtitle?: string;
-  buttonLabel?: string;
-  buttonHref?: string;
-  imageUrl?: string;
-  imageAlt?: string;
+  // These props can now be overridden by dynamic data from StoreForm
+  // or used as local defaults if StoreForm data is not available/desired.
   variant?: 'left' | 'right'; // Image position
   bgColor?: string; // Custom background color/gradient for flexibility
   textColor?: string; // Custom text color
 }
 
 export default function HeroCtaSection({
-  title = 'Unlock a World of Local Services',
-  subtitle = 'Discover top-rated businesses, book appointments, and connect with professionals in your community—all in one place.',
-  buttonLabel = 'Explore Services',
-  buttonHref = '/explore',
-  imageUrl = '/images/cta-hero-main.webp', // Updated placeholder image
-  imageAlt = 'Smiling person using a mobile app to find local services',
   variant = 'right', // Default image on the right
   bgColor = 'bg-gradient-to-r from-blue-600 to-purple-700 dark:from-blue-800 dark:to-purple-900', // Vibrant gradient
   textColor = 'text-white',
 }: HeroCtaSectionProps) {
+  // Destructure storeFormData from context
+  const { storeFormData } = useStoreContext() || {};
+  const { appPromos, name: storeName, tagline: storeTagline, themeSettings } = storeFormData || {};
+
+  // Select the first AppPromo if available, or use a default structure
+  const mainAppPromo = (Array.isArray(appPromos) && appPromos.length > 0)
+    ? appPromos[0] // Taking the first promo
+    : null;
+
+  // Use dynamic data with fallbacks
+  const finalTitle = mainAppPromo?.title || storeName || 'Unlock a World of Local Services';
+  const finalSubtitle = mainAppPromo?.description || storeTagline || 'Discover top-rated businesses, book appointments, and connect with professionals in your community—all in one place.';
+  const finalButtonLabel = mainAppPromo?.ctaText || 'Explore Services';
+  const finalButtonHref = mainAppPromo?.ctaLink || '/explore';
+  const finalImageUrl = mainAppPromo?.imageUrl || 'https://placehold.co/1200x800/2563EB/FFFFFF?text=Local+Services+CTA'; // Generic placeholder
+  const finalImageAlt = mainAppPromo?.title || 'Person using a mobile app to find local services';
+
+  // Use primary color from theme settings for the button background if available
+  const buttonBgColor = themeSettings?.primaryColor || '#2563EB'; // Default to blue-600
+
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: {
@@ -54,6 +112,11 @@ export default function HeroCtaSection({
     visible: { opacity: 1, scale: 1, transition: { duration: 1, ease: 'easeOut' } },
   };
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = 'https://placehold.co/1200x800/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
+  };
+
   return (
     <motion.section
       className={`relative ${bgColor} ${textColor} py-16 sm:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden rounded-3xl shadow-xl mx-auto max-w-7xl`}
@@ -70,17 +133,18 @@ export default function HeroCtaSection({
         {/* Content Section */}
         <div className="md:w-1/2 text-center md:text-left z-10">
           <motion.h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4" variants={itemVariants}>
-            {title}
+            {finalTitle}
           </motion.h2>
           <motion.p className="text-lg sm:text-xl opacity-90 mb-8 max-w-prose mx-auto md:mx-0" variants={itemVariants}>
-            {subtitle}
+            {finalSubtitle}
           </motion.p>
           <motion.div variants={itemVariants}>
             <Link
-              href={buttonHref}
-              className="inline-flex items-center px-8 py-4 bg-white text-blue-700 font-bold rounded-full shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+              href={finalButtonHref}
+              className="inline-flex items-center px-8 py-4 text-white font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+              style={{ backgroundColor: buttonBgColor, color: '#FFFFFF' }} // Dynamic background, fixed white text
             >
-              {buttonLabel}
+              {finalButtonLabel}
               <svg
                 className="ml-2 h-5 w-5"
                 xmlns="http://www.w3.org/2000/svg"
@@ -97,13 +161,14 @@ export default function HeroCtaSection({
         {/* Image Section */}
         <motion.div className="md:w-1/2 relative h-64 sm:h-80 md:h-96 w-full max-w-md mx-auto md:mx-0 rounded-3xl overflow-hidden shadow-2xl z-0" variants={imageVariants}>
           <Image
-            src={imageUrl}
-            alt={imageAlt}
+            src={finalImageUrl}
+            alt={finalImageAlt}
             fill
             className="object-cover object-center"
             loader={loader}
             sizes="(max-width: 768px) 100vw, 50vw"
             priority // Prioritize loading for a hero section image
+            onError={handleImageError} // Image error fallback
           />
           {/* Subtle gradient overlay on image for visual depth */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

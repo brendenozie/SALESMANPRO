@@ -7,11 +7,75 @@ import Image from 'next/image'; // Import Image for optimized avatars
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
+// Import slick carousel styles (ensure these are installed or linked in your project)
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+// Define types based on your transformCompanyToStoreForm
+export type Testimonial = {
+  id: string;
+  author: string; // Corresponds to author name
+  quote: string; // Corresponds to the testimonial text
+  rating?: number; // 1-5 stars
+  avatarUrl?: string; // URL for the author's image
+  order: number; // For sorting
+  // The 'title' field (e.g., 'Satisfied Client', 'Registered Therapist')
+  // is not explicitly in your schema's Testimonial model.
+  // We will derive it or use a generic fallback.
+};
+
+export type StoreForm = {
+  testimonials?: Testimonial[];
+  // Add other relevant StoreForm fields if needed
+};
+
+// Placeholder for useStoreContext to make the component runnable independently
+// In a real application, you would uncomment the actual import.
+const useStoreContext = () => ({
+  storeFormData: {
+    testimonials: [
+      {
+        id: 'test-1',
+        author: 'Sarah L.',
+        quote: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
+        rating: 5,
+        avatarUrl: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah', // Example placeholder
+        order: 1,
+      },
+      {
+        id: 'test-2',
+        author: 'Dr. Alex M.',
+        quote: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
+        rating: 5,
+        avatarUrl: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
+        order: 2,
+      },
+      {
+        id: 'test-3',
+        author: 'Jessica P.',
+        quote: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
+        rating: 4,
+        avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
+        order: 3,
+      },
+      {
+        id: 'test-4',
+        author: 'Mark T.',
+        quote: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
+        rating: 5,
+        avatarUrl: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
+        order: 4,
+      },
+    ],
+  } as StoreForm,
+});
+
+// Optimized image loader
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Helper to render stars (reused from previous sections)
-const renderStars = (count: number) => {
+const renderStars = (count: number | undefined) => {
+  if (count === undefined) return null;
   return (
     <div className="flex items-center space-x-0.5">
       {Array.from({ length: 5 }).map((_, i) =>
@@ -25,34 +89,47 @@ const renderStars = (count: number) => {
   );
 };
 
-// Dummy data updated for variety and Next.js Image component
-const testimonials = [
+// Static fallback data (matches the structure we'll use for rendering)
+interface RenderableTestimonial {
+  id: string;
+  name: string;
+  text: string;
+  rating: number;
+  image: string;
+  title: string; // This field is derived or hardcoded for fallback
+}
+
+const fallbackTestimonials: RenderableTestimonial[] = [
   {
+    id: 'fallback-1',
     name: 'Sarah L.',
     text: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
     rating: 5,
-    image: '/images/avatar-sarah.webp', // Updated path and format
+    image: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah',
     title: 'Satisfied Client',
   },
   {
+    id: 'fallback-2',
     name: 'Dr. Alex M.',
     text: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
     rating: 5,
-    image: '/images/avatar-alex.webp', // Updated path and format
+    image: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
     title: 'Registered Therapist',
   },
   {
+    id: 'fallback-3',
     name: 'Jessica P.',
     text: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
     rating: 4,
-    image: '/images/avatar-jessica.webp', // Updated path and format
+    image: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
     title: 'Regular User',
   },
   {
+    id: 'fallback-4',
     name: 'Mark T.',
     text: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
     rating: 5,
-    image: '/images/avatar-mark.webp', // Updated path and format
+    image: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
     title: 'Community Member',
   },
 ];
@@ -93,6 +170,24 @@ const settings = {
 };
 
 const TestimonialsSection = () => {
+  // Destructure storeFormData from context
+  const { storeFormData } = useStoreContext() || {};
+  const { testimonials: dynamicTestimonials } = storeFormData || {};
+
+  // Determine which testimonials to render: dynamic or fallback
+  const testimonialsToRender: RenderableTestimonial[] = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0
+    ? dynamicTestimonials
+        .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
+        .map(t => ({
+          id: t.id,
+          name: t.author,
+          text: t.quote,
+          rating: t.rating || 5, // Default to 5 if rating is not provided
+          image: t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback image
+          title: t.author.includes('Dr.') ? 'Registered Therapist' : 'Satisfied Client', // Derive title based on name or a generic
+        }))
+    : fallbackTestimonials; // Use static fallback testimonials
+
   const sectionVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: {
@@ -101,7 +196,7 @@ const TestimonialsSection = () => {
       transition: {
         duration: 0.8,
         ease: 'easeOut',
-        when: 'beforeChildren',
+        when: "beforeChildren",
         staggerChildren: 0.1,
       },
     },
@@ -110,6 +205,11 @@ const TestimonialsSection = () => {
   const itemVariants = {
     hidden: { y: 30, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = 'https://placehold.co/200x200/CCCCCC/333333?text=User'; // Generic placeholder
   };
 
   return (
@@ -146,10 +246,10 @@ const TestimonialsSection = () => {
         </motion.p>
 
         {/* Testimonials Carousel (Mobile) */}
-        <div className="block lg:hidden"> {/* Changed md to lg for breakpoint consistency */}
+        <div className="block lg:hidden">
           <Slider {...settings}>
-            {testimonials.map((t, index) => (
-              <div key={index} className="px-2"> {/* Added padding for carousel items */}
+            {testimonialsToRender.map((t) => (
+              <div key={t.id} className="px-2"> {/* Added padding for carousel items */}
                 <motion.div
                   className="relative bg-white dark:bg-gray-800 p-8 shadow-xl rounded-3xl border border-gray-100 dark:border-gray-700 mx-auto" // Elevated card styling
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -168,10 +268,11 @@ const TestimonialsSection = () => {
                       height={48}
                       loader={loader}
                       className="rounded-full object-cover ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800" // Ring accent
+                      onError={handleImageError} // Image error fallback
                     />
                     <div className="text-left">
                       <p className="text-md font-semibold text-gray-900 dark:text-white">{t.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p> {/* Added title */}
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p>
                       {renderStars(t.rating)}
                     </div>
                   </div>
@@ -182,16 +283,16 @@ const TestimonialsSection = () => {
         </div>
 
         {/* Testimonials Grid (Desktop) */}
-        <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-12 justify-items-center"> {/* Aligned with previous grid updates, added xl grid-cols-4 */}
-          {testimonials.map((t, index) => (
+        <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-12 justify-items-center">
+          {testimonialsToRender.map((t, index) => (
             <motion.div
-              key={index}
+              key={t.id} // Use unique ID from data
               className="relative bg-white dark:bg-gray-800 p-8 shadow-xl rounded-3xl border border-gray-100 dark:border-gray-700 max-w-sm w-full" // Consistent card styling
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: index * 0.15, duration: 0.6, ease: 'easeOut' }} // Staggered entrance
-              whileHover={{ y: -8, boxShadow: '0 15px 30px rgba(0,0,0,0.1)' }} // Lift and enhanced shadow on hover
+              transition={{ delay: index * 0.15, duration: 0.6, ease: 'easeOut' }}
+              whileHover={{ y: -8, boxShadow: '0 15px 30px rgba(0,0,0,0.1)' }}
             >
               <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed">
                 “{t.text}”
@@ -204,6 +305,7 @@ const TestimonialsSection = () => {
                   height={48}
                   loader={loader}
                   className="rounded-full object-cover ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800"
+                  onError={handleImageError}
                 />
                 <div className="text-left">
                   <p className="text-md font-semibold text-gray-900 dark:text-white">{t.name}</p>

@@ -43,10 +43,6 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
 
   const userRole = session.user?.role?.toUpperCase() || 'ADMIN'; // Default to ADMIN if role is not set
 
-  console.log("3333333333333");
-  console.log(session.user?.id);
-  console.log(params.slug);
-
   // 1. Authentication and Authorization Check
   // Allow 'ADMIN', 'STUDENT', and 'EDUCATOR' roles to access admin dashboards
   if (!session?.user?.id ||
@@ -75,10 +71,6 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     // console.error(`Company with ID ${companyId} not found.`);
     redirect('/dashboard'); // Or show a 404 page
   }
-
-  console.log("company?.category");
-  console.log("1111111111111111");
-  console.log(company?.category);
 
   const categoryKey = normalizeCategory(company?.category || userRole); // Normalize category for consistent handling
 

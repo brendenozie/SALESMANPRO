@@ -3,8 +3,34 @@ import { motion } from 'framer-motion';
 // Assuming useStoreContext is available and provides storeFormData
 // import { useStoreContext } from '@/contexts/StoreContext';
 
+// Define the structure of a single hero slide as it comes from StoreForm
+export type HeroSlide = {
+  id: string;
+  imageUrl: string;
+  headline: string;
+  subline: string;
+  ctaText: string;
+  ctaLink: string;
+  order: number;
+  // If you decide to add a specific 'badgeText' field to your Prisma HeroSlide model,
+  // you would add it here:
+  badgeText?: string; 
+};
+
+// Define the relevant parts of StoreForm that HeroSection uses
+export type StoreForm = {
+  name?: string;
+  tagline?: string;
+  themeSettings?: {
+    primaryColor?: string;
+    // Add other theme settings if needed
+  };
+  heroSlides?: HeroSlide[]; // Array of HeroSlide objects
+};
+
 // Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
+// In a real application, you would uncomment the actual import and ensure
+// your StoreContext provides data conforming to the StoreForm type.
 const useStoreContext = () => ({
   storeFormData: {
     name: 'GLOBAL INSIGHTS',
@@ -12,32 +38,41 @@ const useStoreContext = () => ({
     themeSettings: { primaryColor: '#EF4444' }, // Tailwind 'red-500'
     heroSlides: [
       {
-        badgeText: 'TECHNOLOGY',
-        headline: 'The Future of AI: Innovations Shaping Our World',
+        id: 'hero1',
         imageUrl: 'https://placehold.co/1200x800/22C55E/FFFFFF?text=AI+Future', // Example placeholder
+        headline: 'The Future of AI: Innovations Shaping Our World',
+        subline: 'Explore the cutting-edge advancements in artificial intelligence.',
         ctaText: 'Read More',
         ctaLink: '#',
+        order: 1,
+        badgeText: 'TECHNOLOGY', // Example: if you add this to your HeroSlide model
       },
       {
-        badgeText: 'HEALTH',
-        headline: 'Mindful Living: A Guide to Wellness and Balance',
+        id: 'hero2',
         imageUrl: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Mindful+Living', // Example placeholder
+        headline: 'Mindful Living: A Guide to Wellness and Balance',
+        subline: 'Discover practices for a healthier and more balanced life.',
         ctaText: 'Discover',
         ctaLink: '#',
+        order: 2,
+        badgeText: 'HEALTH',
       },
       {
-        badgeText: 'TRAVEL',
-        headline: 'Exploring Hidden Gems: Your Next Adventure Awaits',
+        id: 'hero3',
         imageUrl: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Travel+Adventure', // Example placeholder
+        headline: 'Exploring Hidden Gems: Your Next Adventure Awaits',
+        subline: 'Uncover breathtaking destinations and travel tips.',
         ctaText: 'Plan Trip',
         ctaLink: '#',
+        order: 3,
+        badgeText: 'TRAVEL',
       },
     ],
-  },
+  } as StoreForm, // Cast to StoreForm for type safety in mock
 });
 
 
-// Static fallback data - used if dynamic data from useStoreContext is not available
+// Static fallback data - used if dynamic data from useStoreContext is not available or empty
 const heroItems = {
   main: {
     label: 'ECONOMY',
@@ -77,18 +112,19 @@ function HeroSection() {
     name = 'NEWS 24', // Default blog name
     tagline = 'Your source for daily news and insights.', // Default tagline
     themeSettings: { primaryColor = '#EF4444' } = {}, // Default primary color (Tailwind red-500)
-    heroSlides, // Dynamic hero slide data
+    heroSlides, // Dynamic hero slide data from transformed data
   } = storeFormData || {};
 
   // Determine whether to use dynamic data or static fallback data
-  const hasDynamic = Array.isArray(heroSlides) && heroSlides.length > 0;
+  // Dynamic data is used if heroSlides is an array and has at least one item.
+  const hasDynamicSlides = Array.isArray(heroSlides) && heroSlides.length > 0;
 
   // Structure the data for rendering, prioritizing dynamic data
-  const dynamicContent = hasDynamic
+  const contentToRender = hasDynamicSlides
     ? {
         // Main hero card data (first slide from dynamic data)
         main: {
-          label: heroSlides[0].badgeText || name,
+          label: heroSlides[0].badgeText || heroSlides[0].headline || name, // Prioritize badgeText, then headline, then blog name
           title: heroSlides[0].headline || tagline,
           img: heroSlides[0].imageUrl,
           cta: {
@@ -98,7 +134,7 @@ function HeroSection() {
         },
         // Side hero cards data (remaining slides from dynamic data)
         side: heroSlides.slice(1).map((slide) => ({
-          label: slide.badgeText || name,
+          label: slide.badgeText || slide.headline || name, // Prioritize badgeText, then headline, then blog name
           title: slide.headline || tagline,
           img: slide.imageUrl,
           cta: {
@@ -110,9 +146,9 @@ function HeroSection() {
     : heroItems; // Fallback to static data if no dynamic slides are provided
 
   // Function to handle image loading errors, replacing with a generic placeholder
-  const handleImageError = (e) => {
-    e.target.onerror = null; // Prevents infinite loop if placeholder also fails
-    e.target.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
   };
 
   return (
@@ -149,8 +185,8 @@ function HeroSection() {
         >
           {/* Image with fallback */}
           <img
-            src={dynamicContent.main.img}
-            alt={dynamicContent.main.title}
+            src={contentToRender.main.img}
+            alt={contentToRender.main.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={handleImageError}
           />
@@ -164,26 +200,26 @@ function HeroSection() {
               className="px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wide"
               style={{ backgroundColor: primaryColor }}
             >
-              {dynamicContent.main.label}
+              {contentToRender.main.label}
             </span>
             {/* Title */}
             <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold leading-tight max-w-xl text-shadow-lg">
-              {dynamicContent.main.title}
+              {contentToRender.main.title}
             </h2>
             {/* Call to Action Button */}
-            {dynamicContent.main.cta?.text && (
+            {contentToRender.main.cta?.text && (
               <a
-                href={dynamicContent.main.cta.link || '#'}
+                href={contentToRender.main.cta.link || '#'}
                 className="inline-block mt-5 px-6 py-3 bg-white text-gray-900 rounded-full font-semibold text-base shadow-md hover:bg-gray-200 transition-all duration-300 transform hover:scale-105"
               >
-                {dynamicContent.main.cta.text}
+                {contentToRender.main.cta.text}
               </a>
             )}
           </div>
         </motion.div>
 
         {/* Side cards */}
-        {(dynamicContent.side || []).map((item, idx) => (
+        {(contentToRender.side || []).map((item, idx) => (
           <motion.div
             key={idx}
             className="relative rounded-2xl overflow-hidden shadow-xl cursor-pointer group"

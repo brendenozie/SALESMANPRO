@@ -3,22 +3,117 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { int } from "aws-sdk/clients/datapipeline";
 // Assuming useStoreContext is available and provides storeFormData
 // import { useStoreContext } from '@/contexts/StoreContext';
 
+// Define the structure of a single writer as it comes from StoreForm
+export type WriterForStaff = {
+  id: string;
+  userId:string;
+  user: {
+    name: string | null;
+    email: string;
+    role?: string; // Assuming role might be passed as string from enum (e.g., 'EDUCATOR')
+  };
+  profilePicture: string | null;
+  bio: string | null; // Can be used for role/description
+  // Include other fields if needed for display
+  companyId: string | null;
+  loginCode: string | null;
+  totalArticles: int | null;
+  articlesThisMonth: int | null;
+  lastArticleDate: string | null;
+  status: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+// Define the relevant parts of StoreForm that StaffWritersSection uses
+export type StoreForm = {
+  writers?: WriterForStaff[]; // Array of Writer objects
+  themeSettings?: {
+    primaryColor?: string;
+  };
+};
+
 // Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
+// In a real application, you would uncomment the actual import and ensure
+// your StoreContext provides data conforming to the StoreForm type,
+// including an array of 'writers' with nested 'user' objects.
 const useStoreContext = () => ({
   storeFormData: {
+    writers: [
+      {
+        id: 'writer1',
+        userId: 'user1',
+        user: { name: 'Kristin Watson', email: 'kristin@example.com', role: 'EDUCATOR' },
+        profilePicture: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Kristin',
+        bio: 'Senior Writer', // Using bio to represent the role
+        companyId: 'comp1',
+        loginCode: '12345',
+        totalArticles: 150,
+        articlesThisMonth: 10,
+        lastArticleDate: '2024-07-20T00:00:00Z',
+        status: 'Active',
+        createdAt: '2023-01-01T00:00:00Z',
+        updatedAt: '2024-07-23T00:00:00Z',
+      },
+      {
+        id: 'writer2',
+        userId: 'user2',
+        user: { name: 'Marvin Roy', email: 'marvin@example.com', role: 'EDUCATOR' },
+        profilePicture: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Marvin',
+        bio: 'Journalist',
+        companyId: 'comp1',
+        loginCode: '67890',
+        totalArticles: 80,
+        articlesThisMonth: 5,
+        lastArticleDate: '2024-07-18T00:00:00Z',
+        status: 'Active',
+        createdAt: '2023-03-15T00:00:00Z',
+        updatedAt: '2024-07-22T00:00:00Z',
+      },
+      {
+        id: 'writer3',
+        userId: 'user3',
+        user: { name: 'Leslie Aria', email: 'leslie@example.com', role: 'EDUCATOR' },
+        profilePicture: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Leslie',
+        bio: 'Publisher',
+        companyId: 'comp1',
+        loginCode: '11223',
+        totalArticles: 200,
+        articlesThisMonth: 12,
+        lastArticleDate: '2024-07-21T00:00:00Z',
+        status: 'Active',
+        createdAt: '2022-11-01T00:00:00Z',
+        updatedAt: '2024-07-23T00:00:00Z',
+      },
+      {
+        id: 'writer4',
+        userId: 'user4',
+        user: { name: 'Hawkins Alex', email: 'hawkins@example.com', role: 'EDUCATOR' },
+        profilePicture: 'https://placehold.co/200x200/10B981/FFFFFF?text=Hawkins',
+        bio: 'Content Writer',
+        companyId: 'comp1',
+        loginCode: '44556',
+        totalArticles: 90,
+        articlesThisMonth: 7,
+        lastArticleDate: '2024-07-19T00:00:00Z',
+        status: 'Active',
+        createdAt: '2023-05-20T00:00:00Z',
+        updatedAt: '2024-07-22T00:00:00Z',
+      },
+    ],
     themeSettings: { primaryColor: '#F59E0B' }, // Tailwind 'amber-500'
-  },
+  } as StoreForm, // Cast to StoreForm for type safety in mock
 });
 
 // Loader for next/image (required for external URLs with next/image)
-const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Static fallback data for staff writers
-const staffWriters = [
+const fallbackStaffWriters = [
   { name: 'Kristin Watson', role: 'Senior Writer', img: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Kristin' },
   { name: 'Marvin Roy', role: 'Journalist', img: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Marvin' },
   { name: 'Leslie Aria', role: 'Publisher', img: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Leslie' },
@@ -28,12 +123,22 @@ const staffWriters = [
 export default function StaffWritersSection() {
   // Destructure storeFormData from context, providing a fallback for when context is not available
   const { storeFormData } = useStoreContext() || {};
-  const { themeSettings: { primaryColor = '#F59E0B' } = {} } = storeFormData || {}; // Default primary color (Tailwind amber-500)
+  const { writers: dynamicWriters, themeSettings: { primaryColor = '#F59E0B' } = {} } = storeFormData || {}; // Default primary color (Tailwind amber-500)
+
+  // Map dynamic writer data to our display shape, or use fallback data
+  const writersToDisplay = Array.isArray(dynamicWriters) && dynamicWriters.length > 0
+    ? dynamicWriters.map(writer => ({
+        name: writer.user.name || 'Unknown Writer',
+        // Use writer.bio for role, or fallback to a default 'Writer'
+        role: writer.bio || 'Writer', 
+        img: writer.profilePicture || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback for missing profile picture
+      }))
+    : fallbackStaffWriters;
 
   // Function to handle image loading errors, replacing with a generic placeholder
-  const handleImageError = (e) => {
-    e.target.onerror = null; // Prevents infinite loop if placeholder also fails
-    e.target.src = 'https://placehold.co/200x200/CCCCCC/333333?text=User'; // Generic placeholder
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = 'https://placehold.co/200x200/CCCCCC/333333?text=User'; // Generic placeholder
   };
 
   return (
@@ -67,7 +172,7 @@ export default function StaffWritersSection() {
 
       {/* Grid of Staff Writers */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
-        {staffWriters.map((writer, idx) => (
+        {writersToDisplay.map((writer, idx) => (
           <motion.div
             key={idx}
             className="bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group flex flex-col items-center"

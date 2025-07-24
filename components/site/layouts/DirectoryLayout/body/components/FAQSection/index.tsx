@@ -2,11 +2,75 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'; // Re-using these icons
+import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
-// --- Dummy FAQ Data (Expanded and Diversified for better demonstration) ---
-// In a real application, this data would likely come from an API or CMS
-const faqsData = [
+// Define the structure of a single FAQ as it comes from StoreForm
+export type FAQ = {
+  id: string;
+  question: string;
+  answer: string;
+  order: number; // For sorting
+};
+
+// Define the relevant parts of StoreForm that FAQSection uses
+export type StoreForm = {
+  faqs?: FAQ[]; // Array of FAQ objects
+  // Add other relevant StoreForm fields if needed
+};
+
+// Placeholder for useStoreContext to make the component runnable independently
+// In a real application, you would uncomment the actual import.
+const useStoreContext = () => ({
+  storeFormData: {
+    faqs: [
+      {
+        id: 'faq1',
+        question: 'How do I create an account on Ducun Vijed?',
+        answer: 'Signing up is easy! Click on the "Sign Up" button at the top right corner. You can register using your email address, Google, or Facebook account. Follow the prompts to complete your profile.',
+        order: 1,
+      },
+      {
+        id: 'faq2',
+        question: 'What types of services can I find on your platform?',
+        answer: 'Ducun Vijed offers a wide range of local services including beauty & wellness (massages, hair, nails), home services (plumbing, electrical, cleaning), professional services (tutoring, legal advice), pet care, and many more. We are constantly expanding our offerings to meet community needs.',
+        order: 2,
+      },
+      {
+        id: 'faq3',
+        question: 'How do I book a service with a provider?',
+        answer: 'Browse categories or use our search bar to find a service. Click on a listing to view details, available schedules, and provider information. Select your preferred date and time, then proceed to secure payment to confirm your booking.',
+        order: 3,
+      },
+      {
+        id: 'faq4',
+        question: 'Are service providers on Ducun Vijed verified?',
+        answer: 'Yes, absolutely. We prioritize your safety and satisfaction. All service providers undergo a thorough verification process, which includes identity checks, credential verification, and often background checks, depending on the service type.',
+        order: 4,
+      },
+      {
+        id: 'faq5',
+        question: 'Can I reschedule or cancel a booking?',
+        answer: 'You can manage your bookings directly from your user dashboard. Rescheduling and cancellation policies vary by provider, so please review the specific terms on the listing page before booking. Any cancellation fees will be clearly communicated.',
+        order: 5,
+      },
+      {
+        id: 'faq6',
+        question: 'What if I need to contact customer support?',
+        answer: 'Our dedicated support team is here to assist you. You can reach us through the "Contact Us" section on our website, or by emailing support@ducunvijed.com. We aim to respond to all inquiries within 24 hours.',
+        order: 6,
+      },
+      {
+        id: 'faq7',
+        question: 'How does payment work on Ducun Vijed?',
+        answer: 'All payments are processed securely through our platform. You can pay using major credit/debit cards or other integrated payment methods. Your payment details are encrypted and never stored on our servers.',
+        order: 7,
+      },
+    ],
+  } as StoreForm,
+});
+
+// Static fallback data (matches the structure we'll use for rendering)
+const fallbackFaqs = [
   {
     question: 'How do I create an account on Ducun Vijed?',
     answer: 'Signing up is easy! Click on the "Sign Up" button at the top right corner. You can register using your email address, Google, or Facebook account. Follow the prompts to complete your profile.',
@@ -38,12 +102,17 @@ const faqsData = [
 ];
 
 // Main FAQ Section Component
-interface FAQSectionProps {
-  faqs?: { question: string; answer: string }[]; // Optional prop to override internal data
-}
-
-export default function FAQSection({ faqs = faqsData }: FAQSectionProps) {
+export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  // Destructure storeFormData from context
+  const { storeFormData } = useStoreContext() || {};
+  const { faqs: dynamicFaqs } = storeFormData || {};
+
+  // Determine which FAQ data to use: dynamic or fallback
+  const faqsToRender = Array.isArray(dynamicFaqs) && dynamicFaqs.length > 0
+    ? dynamicFaqs.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
+    : fallbackFaqs; // Use static fallback FAQs
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -103,13 +172,13 @@ export default function FAQSection({ faqs = faqsData }: FAQSectionProps) {
 
         {/* FAQ Items */}
         <div className="space-y-6 text-left">
-          {faqs.map((q, index) => (
+          {faqsToRender.map((q, index) => (
             <motion.div
-              key={index}
+              key={q.question} // Using question as key, assuming unique questions; ideally use q.id
               variants={itemVariants}
               onClick={() => toggleFAQ(index)}
               className="group bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-700 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
-              whileHover={{ y: -5 }} // Subtle lift on hover
+              whileHover={{ y: -5 }}
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -144,28 +213,3 @@ export default function FAQSection({ faqs = faqsData }: FAQSectionProps) {
     </motion.section>
   );
 }
-
-// --- How to use this component (Example in your parent file) ---
-// Make sure you import the FAQSection component where you want to use it
-/*
-import FAQSection from './components/FAQSection'; // Adjust path as needed
-
-// Inside your page or parent component:
-export default function YourPage() {
-  // If you need to pass specific FAQs from storeFormData, you can:
-  // const { storeFormData } = useStoreContext(); // Assuming you have this context
-  // const customFaqs = storeFormData?.faqs || []; // Use default if no custom FAQs
-
-  return (
-    <div>
-      // ... other sections ...
-
-      <FAQSection /> // This will use the internal faqsData by default
-      // OR
-      //  // Pass custom FAQs if needed
-
-      // ... other sections ...
-    </div>
-  );
-}
-*/

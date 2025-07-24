@@ -45,6 +45,7 @@ enum ROLE {
   SENIOR
   SOPHOMORE
   FRESHMAN
+  WRITER
 }
 
 enum StudentLevelStatus {
@@ -294,6 +295,7 @@ model Company {
   Project                         Project[]
   Prescription                    Prescription[]
   Doctor                          Doctor[]
+  Writer                          Writer[]
 }
 
 enum CategoryStatus {
@@ -1076,6 +1078,7 @@ model User {
   Property          Property[]
   Prescription      Prescription[]
   Doctor            Doctor[]
+  Writer            Writer?
 }
 
 enum Status {
@@ -3194,4 +3197,26 @@ model Doctor {
   Prescription Prescription[]
   User         User?          @relation(fields: [userId], references: [id])
   userId       String?        @db.ObjectId
+}
+
+// schema.prisma
+
+model Writer {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @unique @db.ObjectId // One-to-one relationship with User
+  user              User      @relation(fields: [userId], references: [id])
+  companyId         String    @db.ObjectId
+  company           Company   @relation(fields: [companyId], references: [id])
+  phone             String?
+  bio               String?
+  address           String?
+  profilePicture    String?
+  loginCode         String    @unique // Unique generated number for login
+  totalArticles     Int       @default(0)
+  articlesThisMonth Int       @default(0)
+  lastArticleDate   DateTime?
+  status            String    @default("Active") // e.g., "Active", "Inactive", "On Leave"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,41 +1,94 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import Image from 'next/image'; // Import Next.js Image component for optimization
-import Link from 'next/link'; // Import Link for better navigation and accessibility
 import clsx from 'clsx'; // Utility for conditional class names
 
-// Mocking the image loader for demonstration purposes (keep if used globally)
-const customLoader = ({ src, width, quality }: any) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+// Define the structure of a single promotion as it comes from StoreForm
+export type Promotion = {
+  id: string;
+  code?: string; // Could be used as a label/badge
+  title: string;
+  description?: string;
+  startsAt?: string; // ISO string date
+  endsAt?: string; // ISO string date
+  bannerUrl?: string; // This will be the image source
+  ctaText?: string; // Assuming you might add this to your Promotion model
+  ctaLink?: string; // Assuming you might add this to your Promotion model
 };
 
-// --- Dummy Data for Banners ---
-const banners = [
+// Define the relevant parts of StoreForm that PromotionSection uses
+export type StoreForm = {
+  promotions?: Promotion[]; // Array of Promotion objects
+  // Add other theme settings if needed, e.g., primaryColor, secondaryColor
+};
+
+// Placeholder for useStoreContext to make the component runnable independently
+// In a real application, you would uncomment the actual import and ensure
+// your StoreContext provides data conforming to the StoreForm type,
+// including an array of 'promotions'.
+const useStoreContext = () => ({
+  storeFormData: {
+    promotions: [
+      {
+        id: 'promo-summer-clearance',
+        code: 'SUMMER SAVINGS',
+        title: 'Up to 50% Off Everything!',
+        description: 'Refresh your wardrobe with our hottest deals. Limited stock available.',
+        bannerUrl: 'https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        ctaText: 'Shop Summer Deals',
+        ctaLink: '/shop/summer-clearance',
+        startsAt: '2024-07-01T00:00:00Z',
+        endsAt: '2024-08-31T23:59:59Z',
+      },
+      {
+        id: 'promo-winter-collection',
+        code: 'NEW ARRIVALS',
+        title: 'Cozy Winter Collection',
+        description: 'Embrace the cold in style with our latest collection of warm essentials.',
+        bannerUrl: 'https://images.unsplash.com/photo-1612443429399-ea16bb1c2c2f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        ctaText: 'Explore Winter Styles',
+        ctaLink: '/shop/winter-collection',
+        startsAt: '2024-09-01T00:00:00Z',
+        endsAt: '2024-11-30T23:59:59Z',
+      },
+      // Add more dynamic promotions here if needed
+    ],
+  } as StoreForm, // Cast to StoreForm for type safety in mock
+});
+
+// Optimized image loader
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+// Static fallback data for banners (matches the structure we'll use for rendering)
+const fallbackBanners = [
   {
-    id: 'summer-clearance',
+    id: 'fallback-summer-clearance',
     label: 'SUMMER SAVINGS',
     title: 'Up to 50% Off Everything!',
     description: 'Refresh your wardrobe with our hottest deals. Limited stock available.',
     imgSrc: 'https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    bgClass: 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-900', // Brighter, more appealing gradient
+    bgClass: 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-900',
     imgPosition: 'right',
     ctaText: 'Shop Summer Deals',
     ctaLink: '/shop/summer-clearance',
   },
   {
-    id: 'winter-collection',
+    id: 'fallback-winter-collection',
     label: 'NEW ARRIVALS',
     title: 'Cozy Winter Collection',
     description: 'Embrace the cold in style with our latest collection of warm essentials.',
     imgSrc: 'https://images.unsplash.com/photo-1612443429399-ea16bb1c2c2f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    bgClass: 'bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900', // Different gradient for variety
+    bgClass: 'bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900',
     imgPosition: 'left',
     ctaText: 'Explore Winter Styles',
     ctaLink: '/shop/winter-collection',
   },
 ];
+
 
 // Animation variants for the whole section
 const sectionVariants = {
@@ -68,6 +121,34 @@ const bannerCardVariants = {
 };
 
 export default function PromotionSection() {
+  // Destructure storeFormData from context, providing a fallback for when context is not available
+  const { storeFormData } = useStoreContext() || {};
+  const { promotions: dynamicPromotions } = storeFormData || {};
+
+  // Determine which banners to render: dynamic or fallback
+  const bannersToRender = Array.isArray(dynamicPromotions) && dynamicPromotions.length > 0
+    ? dynamicPromotions.map((promo, idx) => ({
+        id: promo.id,
+        label: promo.code || 'PROMOTION', // Use 'code' as label, fallback to 'PROMOTION'
+        title: promo.title,
+        description: promo.description || '',
+        imgSrc: promo.bannerUrl || 'https://placehold.co/600x400/CCCCCC/333333?text=Promotion+Image', // Fallback image
+        // Assign alternating background classes and image positions
+        bgClass: idx % 2 === 0 
+          ? 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-900' 
+          : 'bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900',
+        imgPosition: idx % 2 === 0 ? 'right' : 'left', // Alternate image position
+        ctaText: promo.ctaText || 'Learn More', // Fallback CTA text
+        ctaLink: promo.ctaLink || '#', // Fallback CTA link
+      }))
+    : fallbackBanners; // Use static fallback banners
+
+  // Function to handle image loading errors, replacing with a generic placeholder
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
+  };
+
   return (
     <motion.section
       initial="hidden"
@@ -95,7 +176,7 @@ export default function PromotionSection() {
 
         {/* Banners Grid */}
         <div className="grid gap-8 lg:grid-cols-2">
-          {banners.map((banner) => (
+          {bannersToRender.map((banner) => (
             <motion.div
               key={banner.id}
               variants={bannerCardVariants}
@@ -135,11 +216,11 @@ export default function PromotionSection() {
                 <Image
                   src={banner.imgSrc}
                   alt={banner.title}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transition-transform duration-500 group-hover:scale-110 object-center"
-                  loader={customLoader}
+                  fill // Use fill instead of layout="fill" for Next.js 13+
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Optimize image loading
+                  className="object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                  loader={loader} // Use the defined loader
+                  onError={handleImageError} // Image error fallback
                 />
                 {/* Subtle overlay for visual depth and dark mode text readability */}
                 <div className="absolute inset-0 bg-black opacity-10 group-hover:opacity-0 transition-opacity duration-300"></div>

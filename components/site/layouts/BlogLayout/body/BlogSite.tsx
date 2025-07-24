@@ -59,17 +59,7 @@ const samplePosts = [
 ];
 
 export default function BlogSite() {
-  const router = useRouter();
-  const { storeFormData } = useStoreContext();
-  const { name, bannerUrl } = storeFormData;
-
-  const [posts, setPosts] = useState(samplePosts);
-
-  // If you fetch real posts, do so here and update `posts`
-  useEffect(() => {
-    setPosts(samplePosts);
-  }, []);
-
+  
   return (
     <main className="container mx-auto flex-1 px-6 py-8 space-y-16">
 

@@ -57,7 +57,7 @@ export default function CtaSection() {
   };
 
   // Function to calculate a lighter shade of the primary color for the gradient
-  const getLighterColor = (hex, percent) => {
+  const getLighterColor = (hex : any, percent : any) => {
     let r = parseInt(hex.slice(1, 3), 16),
         g = parseInt(hex.slice(3, 5), 16),
         b = parseInt(hex.slice(5, 7), 16);

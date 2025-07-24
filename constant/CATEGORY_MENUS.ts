@@ -142,6 +142,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "All Blogs", href: `/admin/${adminSlug}/blogs` },
       ],
     },
+    { label: "Writers", href: `/admin/${adminSlug}/writers`, icon: UsersIcon },
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Comments", href: `/admin/${adminSlug}/comments`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon },

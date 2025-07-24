@@ -4,69 +4,107 @@ import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { CalendarIcon } from "@heroicons/react/24/solid";
-// Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+
+// Define the structure of a single blog post as it comes from StoreForm
+export type Blog = {
+  id: string;
+  title: string;
+  slug: string;
+  content: string; // Full content might not be used here, but part of the type
+  coverImage: string | null;
+  categories: string[]; // Assuming array of strings
+  tags: string[]; // Assuming array of strings
+  author?: { // Author is optional and includes name and profileImage
+    name: string | null;
+    profileImage: string | null;
+  };
+  status: string; // e.g., "Published", "Draft"
+  publishedAt: string | null; // ISO string date
+  views: number; // Added 'views' property as per the mock data and sorting logic
+};
+
+// Define the relevant parts of StoreForm that PopularBlogsSection uses
+export type StoreForm = {
+  blogs?: Blog[]; // Array of Blog objects
+  themeSettings?: {
+    primaryColor?: string;
+  };
+};
 
 // Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
+// In a real application, you would uncomment the actual import and ensure
+// your StoreContext provides data conforming to the StoreForm type,
+// including an array of 'blogs' with 'views' property.
 const useStoreContext = () => ({
   storeFormData: {
     blogs: [
       {
+        id: 'blog1',
         title: 'How to build a scalable design system from scratch',
         publishedAt: '2023-04-20T10:00:00Z',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
         coverImage: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Design+System',
         slug: 'design-system-from-scratch',
         views: 1500,
+        categories: [], tags: [], status: 'Published', // Added missing properties for type completeness
       },
       {
+        id: 'blog2',
         title: 'The art of balancing creativity and user experience in design',
         publishedAt: '2023-04-19T11:30:00Z',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
         coverImage: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Creativity+UX',
         slug: 'creativity-user-experience',
         views: 1200,
+        categories: [], tags: [], status: 'Published',
       },
       {
+        id: 'blog3',
         title: 'The science behind effective call-to-action buttons',
         publishedAt: '2023-04-18T09:00:00Z',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
         coverImage: 'https://placehold.co/600x400/F97316/FFFFFF?text=CTA+Science',
         slug: 'effective-cta-buttons',
         views: 1100,
+        categories: [], tags: [], status: 'Published',
       },
       {
+        id: 'blog4',
         title: '10 must-have features for a modern portfolio website',
         publishedAt: '2023-04-17T14:00:00Z',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
         coverImage: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Portfolio+Features',
         slug: 'modern-portfolio-website',
         views: 950,
+        categories: [], tags: [], status: 'Published',
       },
       {
+        id: 'blog5',
         title: 'How to create a seamless user journey on your website',
         publishedAt: '2023-04-16T16:00:00Z',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
         coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=User+Journey',
         slug: 'seamless-user-journey',
         views: 800,
+        categories: [], tags: [], status: 'Published',
       },
       {
+        id: 'blog6',
         title: 'Why mobile-first design is no longer optional in 2024',
         publishedAt: '2023-04-15T10:00:00Z',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.',
         coverImage: 'https://placehold.co/600x400/10B981/FFFFFF?text=Mobile+First',
         slug: 'mobile-first-design',
         views: 750,
+        categories: [], tags: [], status: 'Published',
       },
     ],
     themeSettings: { primaryColor: '#F59E0B' }, // Tailwind 'amber-500'
-  },
+  } as StoreForm, // Cast to StoreForm for type safety in mock
 });
 
 // Local loader for next/image (required for external URLs with next/image)
-const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Static fallback data, used if dynamic data from useStoreContext is not available
 const fallbackBlogs = [
@@ -93,16 +131,16 @@ export default function PopularBlogsSection() {
           date: post.publishedAt
             ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
             : 'Unknown date',
-          readTime: post.content ? `${Math.ceil(post.content.length / 200)} min read` : 'N/A min read', // Calculate read time based on content length
+          readTime: post.content ? `${Math.ceil(post.content.length / 200)} min read` : 'N/A min read', // Calculate read time based on content length (approx 200 words/min)
           img: post.coverImage || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image', // Fallback for missing coverImage
           link: post.slug ? `/blogs/${post.slug}` : '#', // Fallback for missing slug
         }))
     : fallbackBlogs; // Fallback to static data if no dynamic blogs are provided
 
   // Function to handle image loading errors, replacing with a generic placeholder
-  const handleImageError = (e) => {
-    e.target.onerror = null; // Prevents infinite loop if placeholder also fails
-    e.target.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
+    e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
   };
 
   return (
@@ -128,36 +166,35 @@ export default function PopularBlogsSection() {
             transition={{ duration: 0.5, delay: idx * 0.1 }}
             whileHover={{ scale: 1.01 }} // Subtle scale on hover
           >
-            {/* Blog Image */}
-            <div className="w-full h-48 overflow-hidden">
-              <Image
-                loader={loader}
-                src={blog.img}
-                alt={blog.title}
-                width={600} // Increased width for better quality on larger screens
-                height={320} // Adjusted height for a consistent aspect ratio
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={handleImageError} // Image error fallback
-              />
-            </div>
-            
-            {/* Blog Content */}
-            <div className="p-5 flex flex-col justify-between h-auto">
-              {/* Title */}
-              <h3 className="font-bold text-xl mb-3 text-gray-800 leading-snug">
-                {blog.title}
-              </h3>
-              {/* Date and Read Time */}
-              <div className="flex justify-between items-center text-gray-500 text-sm mb-4">
-                <span className="flex items-center">
-                  <CalendarIcon className="h-4 w-4 mr-2" style={{ color: primaryColor }} /> {blog.date}
-                </span>
-                <span>{blog.readTime}</span>
+            <a href={blog.link} className="block"> {/* Wrap entire card with link */}
+              {/* Blog Image */}
+              <div className="w-full h-48 overflow-hidden">
+                <Image
+                  loader={loader}
+                  src={blog.img}
+                  alt={blog.title}
+                  width={600} // Increased width for better quality on larger screens
+                  height={320} // Adjusted height for a consistent aspect ratio
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={handleImageError} // Image error fallback
+                />
               </div>
-              {/* Read More Link/Button */}
-              {blog.link && (
-                <a
-                  href={blog.link}
+              
+              {/* Blog Content */}
+              <div className="p-5 flex flex-col justify-between h-auto">
+                {/* Title */}
+                <h3 className="font-bold text-xl mb-3 text-gray-800 leading-snug">
+                  {blog.title}
+                </h3>
+                {/* Date and Read Time */}
+                <div className="flex justify-between items-center text-gray-500 text-sm mb-4">
+                  <span className="flex items-center">
+                    <CalendarIcon className="h-4 w-4 mr-2" style={{ color: primaryColor }} /> {blog.date}
+                  </span>
+                  <span>{blog.readTime}</span>
+                </div>
+                {/* Read More Link/Button */}
+                <span // Changed from <a> to <span> as the entire card is now a link
                   className="inline-flex items-center mt-auto px-5 py-2 rounded-full font-semibold text-sm transition-all duration-300
                              bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900" // Default styling
                   style={{
@@ -171,9 +208,9 @@ export default function PopularBlogsSection() {
                   <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                   </svg>
-                </a>
-              )}
-            </div>
+                </span>
+              </div>
+            </a>
           </motion.article>
         ))}
       </div>
