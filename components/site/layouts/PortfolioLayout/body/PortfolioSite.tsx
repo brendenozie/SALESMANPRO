@@ -35,13 +35,13 @@ export default function PortfolioSite() {
   return (
     <div className=" font-sans text-gray-800">
       
-      <HeroSection />
+      <HeroSection /> 
 
       <BusinessSection/>
 
       <GettingStartedSection />
 
-      <FeaturesSection />
+      <FeaturesSection /> 
 
       <AboutSection />
 
@@ -49,7 +49,7 @@ export default function PortfolioSite() {
 
       <DiscoveryCallSection/>
       
-      <TestimonialsSection/>
+      <TestimonialsSection/> 
 
       {/* <FeaturedProjects /> */}
 

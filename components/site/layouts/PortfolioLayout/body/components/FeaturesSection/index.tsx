@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
+import React from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import {
   CheckIcon,
   Cog6ToothIcon,
@@ -10,175 +10,95 @@ import {
   AdjustmentsVerticalIcon,
   ClockIcon,
   UserGroupIcon,
-} from '@heroicons/react/24/solid';
-import { useStoreContext } from '@/contexts/StoreContext';
+} from "@heroicons/react/24/solid";
+import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+const icons = {
   CheckIcon,
   UserGroupIcon,
   LockClosedIcon,
   AdjustmentsVerticalIcon,
   ClockIcon,
   Cog6ToothIcon,
-};
+} as const;
+
+type IconKey = keyof typeof icons;
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function FeaturesClient() {
-  const { storeFormData } = useStoreContext();
-  const { themeSettings = {}, bannerUrl, name, tagline } = storeFormData;
+  const { storeFormData } = useStoreContext() as {storeFormData : StoreForm};
 
-  const dynamicFeatures: {
-    iconKey?: string;
-    iconUrl?: string;
-    title?: string;
-    description?: string;
-  }[] = []; // Placeholder for dynamic logic
-  const primaryColor = themeSettings.primaryColor || '#10b981';
-  const secondaryColor = themeSettings.secondaryColor || '#047857';
-  const accentBg = `${primaryColor}20`;
+  const { themeSettings = {}, bannerUrl, tagline } = storeFormData;
 
-  const staticFeatures = [
-    {
-      iconKey: 'CheckIcon',
-      iconUrl: undefined,
-      title: 'Creative Portfolio',
-      description: 'Showcase of selected works and case studies to highlight my expertise.',
-    },
-    {
-      iconKey: 'UserGroupIcon',
-      iconUrl: undefined,
-      title: 'Client Testimonials',
-      description: 'Real feedback from clients I have collaborated with, demonstrating impact.',
-    },
-    {
-      iconKey: 'AdjustmentsVerticalIcon',
-      iconUrl: undefined,
-      title: 'Personal Branding',
-      description: 'Tailored strategies to build and elevate your personal brand presence.',
-    },
-    {
-      iconKey: 'ClockIcon',
-      iconUrl: undefined,
-      title: 'Consultation',
-      description: 'Schedule a session to discuss projects, career guidance, or collaboration.',
-    },
-    {
-      iconKey: 'LockClosedIcon',
-      iconUrl: undefined,
-      title: 'Secure Collaborations',
-      description: 'Confidential and professional engagement on all projects and contracts.',
-    },
-    {
-      iconKey: 'Cog6ToothIcon',
-      iconUrl: undefined,
-      title: 'Custom Solutions',
-      description: 'Bespoke services aligned to your unique goals and industry requirements.',
-    },
+  const primary = themeSettings.primaryColor || "#06b6d4";
+  const highlight = themeSettings.accentColor || "#f472b6";
+
+  const features: { icon: IconKey; title: string; desc: string }[] = [
+    { icon: "CheckIcon", title: "Creative Portfolio", desc: "Showcase of selected works and case studies to highlight my expertise." },
+    { icon: "UserGroupIcon", title: "Client Testimonials", desc: "Real feedback from clients I have collaborated with, demonstrating impact." },
+    { icon: "AdjustmentsVerticalIcon", title: "Personal Branding", desc: "Tailored strategies to build and elevate your personal brand presence." },
+    { icon: "ClockIcon", title: "Consultation", desc: "Schedule a session to discuss projects, career guidance, or collaboration." },
+    { icon: "LockClosedIcon", title: "Secure Collaborations", desc: "Confidential and professional engagement on all projects and contracts." },
+    { icon: "Cog6ToothIcon", title: "Custom Solutions", desc: "Bespoke services aligned to your unique goals and industry requirements." },
   ];
 
-  const featuresData = Array.isArray(dynamicFeatures) && dynamicFeatures.length > 0
-    ? dynamicFeatures.map((f) => ({
-        iconKey: f.iconKey,
-        iconUrl: f.iconUrl,
-        title: f.title || '',
-        description: f.description || '',
-      }))
-    : staticFeatures;
-
   return (
-    <section className="relative py-28 px-6 sm:px-12 overflow-hidden bg-white dark:bg-gray-900">
-      {/* Decorative blobs */}
-      <div
-        className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-20 blur-3xl"
-        style={{ backgroundColor: primaryColor }}
-      />
-      <div
-        className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full opacity-20 blur-3xl"
-        style={{ backgroundColor: secondaryColor }}
-      />
-
-      {/* Background image overlay if any */}
+    <section className="relative py-20 px-4 sm:px-8 lg:px-16 bg-gray-50 dark:bg-gray-900">
+      {/* Optional Background Image */}
       {bannerUrl && (
         <div className="absolute inset-0 -z-10">
-          <Image
-            src={bannerUrl}
-            alt={`${name || 'Background'} feature background`}
-            fill
-            className="object-cover opacity-10"
-            loader={loader}
-          />
-          <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90" />
+          <Image src={bannerUrl} alt="Background" fill className="object-cover opacity-20" loader={loader} />
+          <div className="absolute inset-0 bg-gradient-to-br from-white to-transparent dark:from-gray-900/80" />
         </div>
       )}
 
-      {/* Header */}
-      <div className="relative max-w-4xl mx-auto text-center mb-16 z-10">
-        <motion.span
-          className="inline-block text-sm font-semibold px-4 py-1 rounded-full shadow-sm"
-          initial={{ opacity: 0, y: -10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          style={{ backgroundColor: accentBg, color: primaryColor }}
-        >
-          What I Offer
-        </motion.span>
+      {/* Heading */}
+      <div className="text-center mb-12">
         <motion.h2
-          className="mt-6 text-4xl sm:text-5xl font-extrabold tracking-tight"
-          initial={{ opacity: 0, y: 10 }}
+          className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100"
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          style={{ color: '#111827' }}
+          transition={{ duration: 0.6 }}
         >
           My Expertise & Services
         </motion.h2>
         {tagline && (
           <motion.p
-            className="mt-4 text-lg max-w-2xl mx-auto"
+            className="mt-4 text-lg text-gray-600 dark:text-gray-300"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            style={{ color: '#4B5563' }}
           >
             {tagline}
           </motion.p>
         )}
       </div>
 
-      {/* Features Grid */}
-      <div className="relative z-10 mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {featuresData.map(({ iconKey, iconUrl, title, description }, i) => {
-          const IconComponent = (iconKey && iconMap[iconKey]) || CheckIcon;
+      {/* Feature Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        {features.map((feat, idx) => {
+          // const Icon = icons[feat.icon];
           return (
             <motion.div
-              key={`${title}-${i}`}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-1 flex flex-col"
+              key={feat.title}
+              className="group bg-white dark:bg-gray-800 border border-transparent hover:border-highlight rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow transition-colors"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.15, duration: 0.5 }}
-              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1, duration: 0.5 }}
             >
-              <div className="flex items-center justify-center w-14 h-14 mb-4 rounded-full"
-                style={{ backgroundColor: accentBg }}
+              <div
+                className="w-12 h-12 mb-4 rounded-full flex items-center justify-center bg-primary text-white group-hover:bg-highlight transition-colors"
+                style={{ backgroundColor: primary }}
               >
-                {iconUrl ? (
-                  <Image
-                    src={iconUrl}
-                    alt={title}
-                    loader={loader}
-                    width={24}
-                    height={24}
-                    className="object-contain"
-                  />
-                ) : (
-                  <IconComponent className="w-6 h-6 text-[color:var(--icon-color)]" />
-                )}
+                {/* <Icon className="w-6 h-6" /> */}
               </div>
-              <h3 className="text-xl font-semibold mb-2" style={{ color: '#111827' }}>
-                {title}
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                {feat.title}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 flex-grow">
-                {description}
+              <p className="text-gray-600 dark:text-gray-300">
+                {feat.desc}
               </p>
             </motion.div>
           );
@@ -186,9 +106,9 @@ export default function FeaturesClient() {
       </div>
 
       <style jsx>{`
-        :root {
-          --icon-color: ${primaryColor};
-        }
+        .border-highlight { border-color: ${highlight}; }
+        .bg-primary { background-color: ${primary}; }
+        .group-hover\\:bg-highlight:hover { background-color: ${highlight}; }
       `}</style>
     </section>
   );
