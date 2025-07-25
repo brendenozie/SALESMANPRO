@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { PlayCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import { AcademicCapIcon, BanknotesIcon, HeartIcon } from '@heroicons/react/24/outline'; // Importing specific icons
+import { useStoreContext } from '@/contexts/StoreContext';
 // Assuming useStoreContext is available and provides storeFormData
 // import { useStoreContext } from '@/contexts/StoreContext';
 
@@ -75,95 +76,95 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    id: '683581bba1bdf6ca3624b530',
-    name: 'Educational & Online Courses',
-    slug: 'educational-online-courses',
-    tagline: 'Unlock Your Potential',
-    description: 'sample description',
-    hasWebsite: true,
-    companyCategoryId: null,
-    category: 'Educational & Online Courses',
-    logoUrl: 'https://ghubabucket.s3.amazonaws.com/images/c370dc36-17c2-4edd-841a-b033337a73b2.png',
-    bannerUrl: 'https://ghubabucket.s3.amazonaws.com/images/015fda07-de70-4629-817b-7c735ad4e844.jpeg',
-    contactEmail: 'brendenodhiambo@gmail.com',
-    contactPhone: '0706448146',
-    site: null,
-    address: 'Redeemed Gospel Church, Mau Mau Road, Mathare 3B, Mlango Kubwa ward, Mathare, Nairobi, Nairobi County, 00611, Kenya',
-    geoLocation: { lat: -1.261568, lng: 36.8574464 },
-    openingHours: {
-      mon: { open: '09:00', close: '17:00' },
-      tue: { open: '09:00', close: '17:00' },
-      wed: { open: '09:00', close: '17:00' },
-      thu: { open: '09:00', close: '17:00' },
-      fri: { open: '09:00', close: '17:00' },
-      sat: '',
-      sun: ''
-    },
-    domain: 'https://www.educational-online-courses.ghuba.shop',
-    currency: 'KES',
-    locale: 'en-US',
-    pricingTiers: [],
-    themeSettings: { primaryColor: '#fd2121', secondaryColor: '#ffffff' },
-    userId: '67c5b0182e2372b5f2366dbe',
-    createdAt: '2025-05-27T09:11:21.971Z',
-    updatedAt: '2025-06-24T15:15:19.118Z',
-    deletedAt: null,
-    sEOId: '683581baa1bdf6ca3624b525',
-    analyticsConfigId: '6847f49ce97163f3ad22af10',
-    paymentSettingsId: '6847f49ce97163f3ad22af11',
-    shippingSettingsId: '6847f49ce97163f3ad22af12',
-    awards: [],
-    metrics: [],
-    stats: [
-      {
-        label: 'Students Enrolled',
-        value: '5000+',
-        iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/student-male.png' // Example icon
-      },
-      {
-        label: 'Courses Offered',
-        value: '150+',
-        iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/book.png' // Example icon
-      },
-      {
-        label: 'Expert Tutors',
-        value: '50+',
-        iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/teacher.png' // Example icon
-      }
-    ],
-    socialLinks: [],
-    blogs: [],
-    policies: [],
-    faqs: [],
-    testimonials: [],
-    heroSlides: [
-      {
-        id: '685ac107c15bfc6a22259017',
-        // companyId: '683581bba1bdf6ca3624b530',
-        imageUrl: 'https://ghubabucket.s3.amazonaws.com/images/55f2153f-da53-4c40-8810-25c6722db88a.jpeg',
-        productImageUrl: 'https://ghubabucket.s3.amazonaws.com/images/e9736357-c689-4a62-92f1-680a7b23009b.jpeg',
-        headline: 'Master New Skills Online',
-        subline: 'Access a vast library of courses taught by industry leaders, designed to accelerate your career.',
-        ctaText: 'Start Learning',
-        ctaLink: 'viewlink.com/start-learning',
-        badgeText: null,
-        price: null,
-        endsAt: null,
-        order: 0,
-        videoLink: 'https://www.youtube.com/watch?v=your-actual-video-id' // Example video link
-      },
-    ],
-    promotions: [],
-    seo: {},
-    analyticsConfig: {},
-    paymentSettings: {},
-    shippingSettings: {},
-    marketplaceListings: [],
-    StoreCategory: [],
-  } as StoreForm, // Cast to StoreForm for type safety in mock
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     id: '683581bba1bdf6ca3624b530',
+//     name: 'Educational & Online Courses',
+//     slug: 'educational-online-courses',
+//     tagline: 'Unlock Your Potential',
+//     description: 'sample description',
+//     hasWebsite: true,
+//     companyCategoryId: null,
+//     category: 'Educational & Online Courses',
+//     logoUrl: 'https://ghubabucket.s3.amazonaws.com/images/c370dc36-17c2-4edd-841a-b033337a73b2.png',
+//     bannerUrl: 'https://ghubabucket.s3.amazonaws.com/images/015fda07-de70-4629-817b-7c735ad4e844.jpeg',
+//     contactEmail: 'brendenodhiambo@gmail.com',
+//     contactPhone: '0706448146',
+//     site: null,
+//     address: 'Redeemed Gospel Church, Mau Mau Road, Mathare 3B, Mlango Kubwa ward, Mathare, Nairobi, Nairobi County, 00611, Kenya',
+//     geoLocation: { lat: -1.261568, lng: 36.8574464 },
+//     openingHours: {
+//       mon: { open: '09:00', close: '17:00' },
+//       tue: { open: '09:00', close: '17:00' },
+//       wed: { open: '09:00', close: '17:00' },
+//       thu: { open: '09:00', close: '17:00' },
+//       fri: { open: '09:00', close: '17:00' },
+//       sat: '',
+//       sun: ''
+//     },
+//     domain: 'https://www.educational-online-courses.ghuba.shop',
+//     currency: 'KES',
+//     locale: 'en-US',
+//     pricingTiers: [],
+//     themeSettings: { primaryColor: '#fd2121', secondaryColor: '#ffffff' },
+//     userId: '67c5b0182e2372b5f2366dbe',
+//     createdAt: '2025-05-27T09:11:21.971Z',
+//     updatedAt: '2025-06-24T15:15:19.118Z',
+//     deletedAt: null,
+//     sEOId: '683581baa1bdf6ca3624b525',
+//     analyticsConfigId: '6847f49ce97163f3ad22af10',
+//     paymentSettingsId: '6847f49ce97163f3ad22af11',
+//     shippingSettingsId: '6847f49ce97163f3ad22af12',
+//     awards: [],
+//     metrics: [],
+//     stats: [
+//       {
+//         label: 'Students Enrolled',
+//         value: '5000+',
+//         iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/student-male.png' // Example icon
+//       },
+//       {
+//         label: 'Courses Offered',
+//         value: '150+',
+//         iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/book.png' // Example icon
+//       },
+//       {
+//         label: 'Expert Tutors',
+//         value: '50+',
+//         iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/teacher.png' // Example icon
+//       }
+//     ],
+//     socialLinks: [],
+//     blogs: [],
+//     policies: [],
+//     faqs: [],
+//     testimonials: [],
+//     heroSlides: [
+//       {
+//         id: '685ac107c15bfc6a22259017',
+//         // companyId: '683581bba1bdf6ca3624b530',
+//         imageUrl: 'https://ghubabucket.s3.amazonaws.com/images/55f2153f-da53-4c40-8810-25c6722db88a.jpeg',
+//         productImageUrl: 'https://ghubabucket.s3.amazonaws.com/images/e9736357-c689-4a62-92f1-680a7b23009b.jpeg',
+//         headline: 'Master New Skills Online',
+//         subline: 'Access a vast library of courses taught by industry leaders, designed to accelerate your career.',
+//         ctaText: 'Start Learning',
+//         ctaLink: 'viewlink.com/start-learning',
+//         badgeText: null,
+//         price: null,
+//         endsAt: null,
+//         order: 0,
+//         videoLink: 'https://www.youtube.com/watch?v=your-actual-video-id' // Example video link
+//       },
+//     ],
+//     promotions: [],
+//     seo: {},
+//     analyticsConfig: {},
+//     paymentSettings: {},
+//     shippingSettings: {},
+//     marketplaceListings: [],
+//     StoreCategory: [],
+//   } as StoreForm, // Cast to StoreForm for type safety in mock
+// });
 
 // Mocking the image loader since Next.js Image is not available in this environment
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {

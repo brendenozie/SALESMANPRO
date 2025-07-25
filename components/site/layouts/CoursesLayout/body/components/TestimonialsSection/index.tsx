@@ -5,16 +5,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'; // Solid StarIcon for prominence
 import Image from 'next/image'; // Import Image for optimized avatars
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type Testimonial = {
-  id: string;
-  author: string; // Corresponds to author name
+  id: string | number | undefined;
+  name?: string;
+  role?: string;
+  author?: string; // Corresponds to author name
   quote: string; // Corresponds to the testimonial text
   rating?: number; // 1-5 stars
   avatarUrl?: string; // URL for the author's image
-  order: number; // For sorting
+  order?: number; // For sorting
   // The 'role' field (e.g., 'Student, Computer Science', 'Parent') is not
   // explicitly in your schema's Testimonial model. We will derive it or use a generic fallback.
 };
@@ -32,64 +34,64 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      secondaryColor: "#FFC107", // Amber/Yellow for accent
-    },
-    testimonials: [
-      {
-        id: 'test-1',
-        author: "Emily R.",
-        quote: "Joining this academy was the best decision for my career. The instructors are incredibly supportive, and the course material is cutting-edge. I've gained practical skills that directly apply to my field.",
-        rating: 5,
-        avatarUrl: "https://placehold.co/100x100/A0A0A0/FFFFFF?text=ER",
-        order: 1,
-      },
-      {
-        id: 'test-2',
-        author: "John D.",
-        quote: "My son's grades and confidence have soared since he started here. The personalized attention and engaging lessons truly make a difference. Highly recommend for any student!",
-        rating: 5,
-        avatarUrl: "https://placehold.co/100x100/808080/FFFFFF?text=JD",
-        order: 2,
-      },
-      {
-        id: 'test-3',
-        author: "Sarah L.",
-        quote: "The vibrant community and extensive extracurriculars made my university experience unforgettable. Beyond academics, I developed leadership skills and made lifelong connections.",
-        rating: 4,
-        avatarUrl: "https://placehold.co/100x100/606060/FFFFFF?text=SL",
-        order: 3,
-      },
-      {
-        id: 'test-4',
-        author: "Michael B.",
-        quote: "The flexible online courses allowed me to upskill while working full-time. The content is relevant, and the certifications are recognized in the industry. A truly valuable investment.",
-        rating: 5,
-        avatarUrl: "https://placehold.co/100x100/404040/FFFFFF?text=MB",
-        order: 4,
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     themeSettings: {
+//       primaryColor: "#fd2121", // Red from your sample
+//       secondaryColor: "#FFC107", // Amber/Yellow for accent
+//     },
+//     testimonials: [
+//       {
+//         id: 'test-1',
+//         author: "Emily R.",
+//         quote: "Joining this academy was the best decision for my career. The instructors are incredibly supportive, and the course material is cutting-edge. I've gained practical skills that directly apply to my field.",
+//         rating: 5,
+//         avatarUrl: "https://placehold.co/100x100/A0A0A0/FFFFFF?text=ER",
+//         order: 1,
+//       },
+//       {
+//         id: 'test-2',
+//         author: "John D.",
+//         quote: "My son's grades and confidence have soared since he started here. The personalized attention and engaging lessons truly make a difference. Highly recommend for any student!",
+//         rating: 5,
+//         avatarUrl: "https://placehold.co/100x100/808080/FFFFFF?text=JD",
+//         order: 2,
+//       },
+//       {
+//         id: 'test-3',
+//         author: "Sarah L.",
+//         quote: "The vibrant community and extensive extracurriculars made my university experience unforgettable. Beyond academics, I developed leadership skills and made lifelong connections.",
+//         rating: 4,
+//         avatarUrl: "https://placehold.co/100x100/606060/FFFFFF?text=SL",
+//         order: 3,
+//       },
+//       {
+//         id: 'test-4',
+//         author: "Michael B.",
+//         quote: "The flexible online courses allowed me to upskill while working full-time. The content is relevant, and the certifications are recognized in the industry. A truly valuable investment.",
+//         rating: 5,
+//         avatarUrl: "https://placehold.co/100x100/404040/FFFFFF?text=MB",
+//         order: 4,
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Interface for the testimonial data after transformation, including a 'role'
-interface RenderableTestimonial {
-  id: string | number; // Allow string or number for ID
-  name: string;
-  role: string;
-  quote: string;
-  rating: number;
-  avatarUrl: string;
-}
+// interface RenderableTestimonial {
+//   id: string; // Allow string or number for ID
+//   name: string;
+//   role: string;
+//   quote: string;
+//   rating: number;
+//   avatarUrl: string;
+// }
 
 // Static fallback data (matches the RenderableTestimonial structure)
-const fallbackTestimonials: RenderableTestimonial[] = [
+const fallbackTestimonials: Testimonial[] = [
   {
     id: 'fb-test-1',
     name: "Emily R.",
@@ -133,13 +135,13 @@ export default function TestimonialSection() {
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; // A vibrant amber/yellow for highlights
 
   // Determine which testimonials to render: dynamic or fallback
-  const testimonialsToRender: RenderableTestimonial[] = Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
+  const testimonialsToRender: Testimonial[] = Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
     ? storeFormData.testimonials
         .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
         .map(t => ({
           id: t.id,
           name: t.author,
-          role: t.author.includes('Dr.') ? 'Educator' : (t.author.includes('Parent') ? 'Parent' : 'Student/Alumnus'), // Simple role derivation
+          author: t.author.includes('Dr.') ? 'Educator' : (t.author.includes('Parent') ? 'Parent' : 'Student/Alumnus'), // Simple role derivation
           quote: t.quote,
           rating: t.rating || 5, // Default to 5 if rating is not provided
           avatarUrl: t.avatarUrl || `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${t.author.split(' ').map(n => n[0]).join('')}`, // Fallback avatar with initials
@@ -255,7 +257,7 @@ export default function TestimonialSection() {
                   <StarIcon
                     key={i}
                     className={`w-6 h-6`}
-                    style={{ color: i < currentTestimonial.rating ? accentColor : '#D1D5DB' }} // Use accentColor for solid stars
+                    style={{ color: accentColor }} //i < currentTestimonial.rating ? accentColor : '#D1D5DB' }} // Use accentColor for solid stars
                   />
                 ))}
               </div>
@@ -269,8 +271,8 @@ export default function TestimonialSection() {
               <div className="flex flex-col items-center">
                 <div className="author-avatar-container"> {/* Added container for easier styling/ref for error handling */}
                   <Image
-                    src={currentTestimonial.avatarUrl}
-                    alt={currentTestimonial.name}
+                    src={currentTestimonial.avatarUrl || ""}
+                    alt={currentTestimonial.name || ""}
                     width={100}
                     height={100}
                     loader={loader}

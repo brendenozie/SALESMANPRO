@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image'; // Import Image for optimized images
 import { CalendarDaysIcon, ClockIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type Event = {
@@ -32,56 +32,56 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      secondaryColor: "#FFC107", // Amber/Yellow for accent
-    },
-    events: [
-      {
-        id: 'event-1',
-        title: "Future of AI in Education Summit",
-        eventDate: "2023-11-15T10:00:00Z", // ISO string for date
-        eventTime: "10:00 AM PST",
-        imageUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // More realistic image
-        link: "#ai-summit",
-        description: "A comprehensive summit exploring the transformative impact of artificial intelligence on modern education.",
-        order: 1,
-      },
-      {
-        id: 'event-2',
-        title: "Global Climate Change Conference",
-        eventDate: "2023-12-01T09:00:00Z",
-        eventTime: "09:00 AM GMT",
-        imageUrl: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        link: "#climate-conf",
-        description: "Bringing together experts and policymakers to discuss urgent climate action and sustainable solutions.",
-        order: 2,
-      },
-      {
-        id: 'event-3',
-        title: "Blockchain for Beginners Workshop",
-        eventDate: "2024-01-10T15:00:00Z",
-        eventTime: "03:00 PM EST",
-        imageUrl: "https://images.unsplash.com/photo-1618044737194-09439600989f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        link: "#blockchain-workshop",
-        description: "An introductory workshop to understand the fundamentals and applications of blockchain technology.",
-        order: 3,
-      },
-      {
-        id: 'event-4',
-        title: "Innovations in Healthcare Tech",
-        eventDate: "2024-01-25T11:00:00Z",
-        eventTime: "11:00 AM PST",
-        imageUrl: "https://images.unsplash.com/photo-1576091160550-fd428758785e?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        link: "#healthtech-innov",
-        description: "Showcasing the latest advancements and disruptive technologies shaping the future of healthcare.",
-        order: 4,
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     themeSettings: {
+//       primaryColor: "#fd2121", // Red from your sample
+//       secondaryColor: "#FFC107", // Amber/Yellow for accent
+//     },
+//     events: [
+//       {
+//         id: 'event-1',
+//         title: "Future of AI in Education Summit",
+//         eventDate: "2023-11-15T10:00:00Z", // ISO string for date
+//         eventTime: "10:00 AM PST",
+//         imageUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // More realistic image
+//         link: "#ai-summit",
+//         description: "A comprehensive summit exploring the transformative impact of artificial intelligence on modern education.",
+//         order: 1,
+//       },
+//       {
+//         id: 'event-2',
+//         title: "Global Climate Change Conference",
+//         eventDate: "2023-12-01T09:00:00Z",
+//         eventTime: "09:00 AM GMT",
+//         imageUrl: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+//         link: "#climate-conf",
+//         description: "Bringing together experts and policymakers to discuss urgent climate action and sustainable solutions.",
+//         order: 2,
+//       },
+//       {
+//         id: 'event-3',
+//         title: "Blockchain for Beginners Workshop",
+//         eventDate: "2024-01-10T15:00:00Z",
+//         eventTime: "03:00 PM EST",
+//         imageUrl: "https://images.unsplash.com/photo-1618044737194-09439600989f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+//         link: "#blockchain-workshop",
+//         description: "An introductory workshop to understand the fundamentals and applications of blockchain technology.",
+//         order: 3,
+//       },
+//       {
+//         id: 'event-4',
+//         title: "Innovations in Healthcare Tech",
+//         eventDate: "2024-01-25T11:00:00Z",
+//         eventTime: "11:00 AM PST",
+//         imageUrl: "https://images.unsplash.com/photo-1576091160550-fd428758785e?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+//         link: "#healthtech-innov",
+//         description: "Showcasing the latest advancements and disruptive technologies shaping the future of healthcare.",
+//         order: 4,
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -286,8 +286,9 @@ export default function LatestEventsSection() {
                                      px-7 py-3 rounded-md text-base font-bold shadow-lg transition-all duration-300
                                      focus:outline-none focus:ring-4 focus:ring-opacity-75`}
                         style={{
-                            background: `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
-                            '--tw-ring-color': `${accentColor} !important` as any
+                            background: `${primaryColor}`
+                            // `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
+                            // '--tw-ring-color': `${accentColor} !important` as any
                         }}
                         onClick={() => window.location.href = mainEvent.link}
                     >

@@ -1,6 +1,7 @@
 import { User } from "@prisma/client";
 import "next-auth";
 import { ChangeEvent } from "react";
+import { string } from "zod";
 
 
 
@@ -191,6 +192,7 @@ export interface HeroSlide {
     id?: string;
     imageUrl: string;
     productImageUrl?: string; 
+    videoLink?: string;
     headline?: string;
     subline?: string; 
     ctaText?: string; 
@@ -271,6 +273,19 @@ export interface Blog {
     publishedAt?: Date | string;
 }
 
+export type Course = {
+  id: string; // Assuming an ID for each course
+  title: string;
+  description: string;
+  imageUrl: string; // Changed from 'image' to 'imageUrl' for clarity and consistency
+  gradeLevel?: string; // Changed from 'grade' to 'gradeLevel'
+  averageRating?: number; // Changed from 'rating' to 'averageRating', now a number
+  enrolledStudents?: number; // Changed from 'students' to 'enrolledStudents', now a number
+  // Add other fields from your Course model if relevant for display
+  ctaText?: string; // e.g., "Enroll Now"
+  ctaLink?: string; // Link to the course details page
+};
+
 // --- MAIN UPDATED STORE FORM ---
 export interface StoreForm {
     id: string;
@@ -306,6 +321,17 @@ export interface StoreForm {
     blogs: Blog[]; // Using the new strong type 
     storeCategories: StoreCategory[]; // Using the new strong type 
 
+    ctaSection?: { // New field for specific CTA section content
+      title?: string;
+      subtitle?: string;
+      buttonLabel?: string;
+      buttonHref?: string;
+      imageUrl?: string;
+      subscribeText?: string; // Text for the subscribe section
+      subscribePlaceholder?: string; // Placeholder for email input
+      subscribeButtonLabel?: string; // Label for subscribe button
+    };
+
     // --- NEW: Missing Relational Sections Added ---
     pageSections: PageSection[];
     appPromos: AppPromo[]; 
@@ -326,6 +352,7 @@ export interface StoreForm {
     pricingTiers: PricingTier[]; 
 
     podcasts:any[];
+    courses:Course[];
 
     // --- Settings Objects ---
     themeSettings: Record<string, any>; 

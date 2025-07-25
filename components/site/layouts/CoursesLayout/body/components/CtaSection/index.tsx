@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { EnvelopeIcon, SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image'; // Import Image for optimized images
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type ThemeSettings = {
@@ -13,51 +13,51 @@ export type ThemeSettings = {
   secondaryColor?: string;
 };
 
-export type StoreForm = {
-  name?: string; // Can be used for CTA title
-  tagline?: string; // Can be used for CTA subtitle
-  description?: string; // Can be used for CTA subtitle
-  bannerUrl?: string; // Can be used for CTA image
-  ctaSection?: { // New field for specific CTA section content
-    title?: string;
-    subtitle?: string;
-    buttonLabel?: string;
-    buttonHref?: string;
-    imageUrl?: string;
-    subscribeText?: string; // Text for the subscribe section
-    subscribePlaceholder?: string; // Placeholder for email input
-    subscribeButtonLabel?: string; // Label for subscribe button
-  };
-  themeSettings?: ThemeSettings;
-  contactEmail?: string; // For subscribe section placeholder
-  // Add other relevant StoreForm fields if needed
-};
+// export type StoreForm = {
+//   name?: string; // Can be used for CTA title
+//   tagline?: string; // Can be used for CTA subtitle
+//   description?: string; // Can be used for CTA subtitle
+//   bannerUrl?: string; // Can be used for CTA image
+//   ctaSection?: { // New field for specific CTA section content
+//     title?: string;
+//     subtitle?: string;
+//     buttonLabel?: string;
+//     buttonHref?: string;
+//     imageUrl?: string;
+//     subscribeText?: string; // Text for the subscribe section
+//     subscribePlaceholder?: string; // Placeholder for email input
+//     subscribeButtonLabel?: string; // Label for subscribe button
+//   };
+//   themeSettings?: ThemeSettings;
+//   contactEmail?: string; // For subscribe section placeholder
+//   // Add other relevant StoreForm fields if needed
+// };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      secondaryColor: "#FFC107", // Amber/Yellow for accent
-    },
-    name: "EduLearn Academy",
-    tagline: "Your Future, Our Expertise",
-    description: "Join our vibrant community and unlock endless possibilities for growth and discovery. Your future starts here with our cutting-edge courses and expert instructors.",
-    bannerUrl: "https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Example image for CTA
-    contactEmail: "info@edulearn.com",
-    ctaSection: {
-      title: "Ignite Your Learning Journey Today",
-      subtitle: "Unlock endless possibilities for growth and discovery. Your future starts here with our cutting-edge courses and expert instructors.",
-      buttonLabel: "Explore All Courses",
-      buttonHref: "/courses",
-      imageUrl: "https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Specific image for CTA section
-      subscribeText: "Stay informed with our newest courses, events, and exclusive offers.",
-      subscribePlaceholder: "your.email@example.com",
-      subscribeButtonLabel: "Subscribe Now",
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     themeSettings: {
+//       primaryColor: "#fd2121", // Red from your sample
+//       secondaryColor: "#FFC107", // Amber/Yellow for accent
+//     },
+//     name: "EduLearn Academy",
+//     tagline: "Your Future, Our Expertise",
+//     description: "Join our vibrant community and unlock endless possibilities for growth and discovery. Your future starts here with our cutting-edge courses and expert instructors.",
+//     bannerUrl: "https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Example image for CTA
+//     contactEmail: "info@edulearn.com",
+//     ctaSection: {
+//       title: "Ignite Your Learning Journey Today",
+//       subtitle: "Unlock endless possibilities for growth and discovery. Your future starts here with our cutting-edge courses and expert instructors.",
+//       buttonLabel: "Explore All Courses",
+//       buttonHref: "/courses",
+//       imageUrl: "https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Specific image for CTA section
+//       subscribeText: "Stay informed with our newest courses, events, and exclusive offers.",
+//       subscribePlaceholder: "your.email@example.com",
+//       subscribeButtonLabel: "Subscribe Now",
+//     },
+//   } as StoreForm,
+// });
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -184,8 +184,9 @@ export default function CtaSection() {
                         px-10 py-4 rounded-md text-lg font-bold shadow-xl transition-all duration-300 mb-10
                         focus:outline-none focus:ring-4 focus:ring-opacity-75 self-center lg:self-start`}
             style={{
-              background: `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
-              '--tw-ring-color': `${accentColor} !important` as any
+              background: `${primaryColor}`
+              // `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
+              // '--tw-ring-color': `${accentColor} !important` as any
             }}
             variants={itemVariants}
             onClick={() => mockNavigation(ctaButtonHref)}

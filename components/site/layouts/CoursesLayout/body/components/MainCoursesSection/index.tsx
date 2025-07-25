@@ -6,7 +6,7 @@ import Image from 'next/image'; // Import Image for optimized images
 import { StarIcon, TvIcon, UsersIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { PlayCircleIcon } from '@heroicons/react/24/solid'; // Solid icon for play button
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type Course = {
@@ -35,79 +35,79 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    themeSettings: { primaryColor: '#fd2121', secondaryColor: '#FFC107' }, // Example colors
-    courses: [
-      {
-        id: 'course-1',
-        title: 'Electrical Engineering Fundamentals',
-        imageUrl: 'https://images.unsplash.com/photo-1581092911880-99757754f40f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // More realistic image
-        description: 'Dive deep into circuits, power systems, and electronics with hands-on projects and expert guidance.',
-        gradeLevel: 'University Level',
-        averageRating: 4.8,
-        enrolledStudents: 120,
-        ctaText: 'View Course',
-        ctaLink: '/courses/electrical-engineering',
-      },
-      {
-        id: 'course-2',
-        title: 'General English Proficiency',
-        imageUrl: 'https://images.unsplash.com/photo-1546410531-bb4486576102?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        description: 'Master grammar, enhance vocabulary, and perfect your communication skills for academic and professional success.',
-        gradeLevel: 'All Levels',
-        averageRating: 4.9,
-        enrolledStudents: 250,
-        ctaText: 'Enroll Now',
-        ctaLink: '/courses/general-english',
-      },
-      {
-        id: 'course-3',
-        title: 'Civil Engineering Design',
-        imageUrl: 'https://images.unsplash.com/photo-1581092911880-99757754f40f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        description: 'Learn to design, construct, and maintain infrastructures that shape our modern world, from bridges to buildings.',
-        gradeLevel: 'Advanced Diploma',
-        averageRating: 4.7,
-        enrolledStudents: 90,
-        ctaText: 'Learn More',
-        ctaLink: '/courses/civil-engineering',
-      },
-      {
-        id: 'course-4',
-        title: 'Textile Engineering Innovations',
-        imageUrl: 'https://images.unsplash.com/photo-1594918231010-0a3b2b5f5f0b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        description: 'Explore the fascinating world of fibers, fabrics, and textile production, blending science with creativity.',
-        gradeLevel: 'Undergraduate',
-        averageRating: 4.5,
-        enrolledStudents: 75,
-        ctaText: 'Discover Course',
-        ctaLink: '/courses/textile-engineering',
-      },
-      {
-        id: 'course-5',
-        title: 'Advanced Mathematics',
-        imageUrl: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        description: 'Build a strong foundation in calculus, algebra, and geometry, essential for problem-solving and critical thinking.',
-        gradeLevel: 'All Grades',
-        averageRating: 4.9,
-        enrolledStudents: 300,
-        ctaText: 'Start Learning',
-        ctaLink: '/courses/advanced-mathematics',
-      },
-      {
-        id: 'course-6',
-        title: 'Information Technology Fundamentals',
-        imageUrl: 'https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        description: 'Stay ahead in the digital age with courses covering programming, cybersecurity, data science, and more.',
-        gradeLevel: 'Diploma',
-        averageRating: 4.9,
-        enrolledStudents: 180,
-        ctaText: 'Explore IT',
-        ctaLink: '/courses/information-technology',
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     themeSettings: { primaryColor: '#fd2121', secondaryColor: '#FFC107' }, // Example colors
+//     courses: [
+//       {
+//         id: 'course-1',
+//         title: 'Electrical Engineering Fundamentals',
+//         imageUrl: 'https://images.unsplash.com/photo-1581092911880-99757754f40f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // More realistic image
+//         description: 'Dive deep into circuits, power systems, and electronics with hands-on projects and expert guidance.',
+//         gradeLevel: 'University Level',
+//         averageRating: 4.8,
+//         enrolledStudents: 120,
+//         ctaText: 'View Course',
+//         ctaLink: '/courses/electrical-engineering',
+//       },
+//       {
+//         id: 'course-2',
+//         title: 'General English Proficiency',
+//         imageUrl: 'https://images.unsplash.com/photo-1546410531-bb4486576102?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         description: 'Master grammar, enhance vocabulary, and perfect your communication skills for academic and professional success.',
+//         gradeLevel: 'All Levels',
+//         averageRating: 4.9,
+//         enrolledStudents: 250,
+//         ctaText: 'Enroll Now',
+//         ctaLink: '/courses/general-english',
+//       },
+//       {
+//         id: 'course-3',
+//         title: 'Civil Engineering Design',
+//         imageUrl: 'https://images.unsplash.com/photo-1581092911880-99757754f40f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         description: 'Learn to design, construct, and maintain infrastructures that shape our modern world, from bridges to buildings.',
+//         gradeLevel: 'Advanced Diploma',
+//         averageRating: 4.7,
+//         enrolledStudents: 90,
+//         ctaText: 'Learn More',
+//         ctaLink: '/courses/civil-engineering',
+//       },
+//       {
+//         id: 'course-4',
+//         title: 'Textile Engineering Innovations',
+//         imageUrl: 'https://images.unsplash.com/photo-1594918231010-0a3b2b5f5f0b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         description: 'Explore the fascinating world of fibers, fabrics, and textile production, blending science with creativity.',
+//         gradeLevel: 'Undergraduate',
+//         averageRating: 4.5,
+//         enrolledStudents: 75,
+//         ctaText: 'Discover Course',
+//         ctaLink: '/courses/textile-engineering',
+//       },
+//       {
+//         id: 'course-5',
+//         title: 'Advanced Mathematics',
+//         imageUrl: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         description: 'Build a strong foundation in calculus, algebra, and geometry, essential for problem-solving and critical thinking.',
+//         gradeLevel: 'All Grades',
+//         averageRating: 4.9,
+//         enrolledStudents: 300,
+//         ctaText: 'Start Learning',
+//         ctaLink: '/courses/advanced-mathematics',
+//       },
+//       {
+//         id: 'course-6',
+//         title: 'Information Technology Fundamentals',
+//         imageUrl: 'https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         description: 'Stay ahead in the digital age with courses covering programming, cybersecurity, data science, and more.',
+//         gradeLevel: 'Diploma',
+//         averageRating: 4.9,
+//         enrolledStudents: 180,
+//         ctaText: 'Explore IT',
+//         ctaLink: '/courses/information-technology',
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -287,8 +287,9 @@ export default function CoursesSection() {
                   className={`w-full text-white py-3 rounded-md text-lg font-bold
                               transition-all duration-300 shadow-md focus:outline-none focus:ring-4 focus:ring-opacity-75`}
                   style={{
-                    background: `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
-                    '--tw-ring-color': `${accentColor} !important` as any
+                    background:`${primaryColor}`
+                    // background: `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
+                    // '--tw-ring-color': `${accentColor} !important` as any
                   }}
                   onClick={() => window.location.href = course.ctaLink || '#'}
                 >

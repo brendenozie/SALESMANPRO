@@ -130,7 +130,9 @@ export default async function StoreLayout({
         },
       },
       
-      Podcast :true
+      Podcast :true,
+
+      courses:true
 
     },
   });

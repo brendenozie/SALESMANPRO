@@ -4,69 +4,70 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'; // Icon for expand/collapse
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { FAQ } from '@/types/typings';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
-export type FAQ = {
-  id: string; // Changed to string as per schema.txt
-  question: string;
-  answer: string;
-  order: number; // For sorting
-};
+// export type FAQ = {
+//   id: string; // Changed to string as per schema.txt
+//   question: string;
+//   answer: string;
+//   order: number; // For sorting
+// };
 
 export type ThemeSettings = {
   primaryColor?: string;
   secondaryColor?: string;
 };
 
-export type StoreForm = {
-  faqs?: FAQ[]; // Array of FAQ objects
-  themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed
-};
+// export type StoreForm = {
+//   faqs?: FAQ[]; // Array of FAQ objects
+//   themeSettings?: ThemeSettings;
+//   // Add other relevant StoreForm fields if needed
+// };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      secondaryColor: "#FFC107", // Amber/Yellow for accent
-    },
-    faqs: [
-      {
-        id: "faq-1",
-        question: "How do I enroll in a course?",
-        answer: "Enrolling is simple! Browse our courses, select your desired program, and click 'Enroll Now'. You'll be guided through a quick registration and payment process.",
-        order: 1,
-      },
-      {
-        id: "faq-2",
-        question: "Are there any prerequisites for courses?",
-        answer: "Most introductory courses have no prerequisites. Advanced courses may require prior knowledge or specific certifications, which will be clearly stated in the course description.",
-        order: 2,
-      },
-      {
-        id: "faq-3",
-        question: "What payment methods are accepted?",
-        answer: "We accept major credit cards (Visa, MasterCard, American Express), PayPal, and various local payment options. Check our payment page for a full list.",
-        order: 3,
-      },
-      {
-        id: "faq-4",
-        question: "Can I get a refund if I'm not satisfied?",
-        answer: "Yes, we offer a 30-day money-back guarantee for most courses. Please review our refund policy for detailed terms and conditions.",
-        order: 4,
-      },
-      {
-        id: "faq-5",
-        question: "Do you offer career support or placement?",
-        answer: "While we don't guarantee job placement, many of our courses include career guidance, resume workshops, and networking opportunities to help you succeed.",
-        order: 5,
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     themeSettings: {
+//       primaryColor: "#fd2121", // Red from your sample
+//       secondaryColor: "#FFC107", // Amber/Yellow for accent
+//     },
+//     faqs: [
+//       {
+//         id: "faq-1",
+//         question: "How do I enroll in a course?",
+//         answer: "Enrolling is simple! Browse our courses, select your desired program, and click 'Enroll Now'. You'll be guided through a quick registration and payment process.",
+//         order: 1,
+//       },
+//       {
+//         id: "faq-2",
+//         question: "Are there any prerequisites for courses?",
+//         answer: "Most introductory courses have no prerequisites. Advanced courses may require prior knowledge or specific certifications, which will be clearly stated in the course description.",
+//         order: 2,
+//       },
+//       {
+//         id: "faq-3",
+//         question: "What payment methods are accepted?",
+//         answer: "We accept major credit cards (Visa, MasterCard, American Express), PayPal, and various local payment options. Check our payment page for a full list.",
+//         order: 3,
+//       },
+//       {
+//         id: "faq-4",
+//         question: "Can I get a refund if I'm not satisfied?",
+//         answer: "Yes, we offer a 30-day money-back guarantee for most courses. Please review our refund policy for detailed terms and conditions.",
+//         order: 4,
+//       },
+//       {
+//         id: "faq-5",
+//         question: "Do you offer career support or placement?",
+//         answer: "While we don't guarantee job placement, many of our courses include career guidance, resume workshops, and networking opportunities to help you succeed.",
+//         order: 5,
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Animation variants for individual FAQ items
 const faqItemVariants = {

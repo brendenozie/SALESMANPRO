@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { PlayCircleIcon } from '@heroicons/react/24/solid'; // Solid PlayCircleIcon for prominence
 import Image from 'next/image'; // Import Image for optimized images
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type HeroSlide = {
@@ -48,35 +48,35 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    id: '683581bba1bdf6ca3624b530',
-    name: 'EduLearn Academy', // Example name for the school
-    slug: 'edulearn-academy',
-    tagline: 'Unlock Your Potential',
-    description: 'Our platform provides a smarter way to learn, offering innovative tools and personalized learning paths. We help you master complex subjects, ace exams, and unlock your full potential with ease and efficiency. Our comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we\'re here to make your educational path smoother and more rewarding.',
-    contactEmail: 'info@edulearn.com',
-    contactPhone: '+1 (800) 555-0123',
-    heroSlides: [
-      {
-        id: 'hero-about-video',
-        imageUrl: 'https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image for About section
-        videoLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Example video link
-        headline: '', subline: '', ctaText: '', ctaLink: '', order: 0,
-      },
-    ],
-    stats: [
-      { label: "Students Enrolled", value: "5000+" },
-      { label: "Courses Offered", value: "150+" }, // Changed from "Student Campuses"
-      { label: "Expert Tutors", value: "50+" }, // Changed from "Certified Teachers"
-      { label: "Countrywide Awards", value: "60+" },
-    ],
-    themeSettings: {
-      primaryColor: "#fd2121", // Red from your sample
-      secondaryColor: "#FFC107", // Amber/Yellow for accent
-    },
-  } as StoreForm, // Cast to StoreForm for type safety in mock
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     id: '683581bba1bdf6ca3624b530',
+//     name: 'EduLearn Academy', // Example name for the school
+//     slug: 'edulearn-academy',
+//     tagline: 'Unlock Your Potential',
+//     description: 'Our platform provides a smarter way to learn, offering innovative tools and personalized learning paths. We help you master complex subjects, ace exams, and unlock your full potential with ease and efficiency. Our comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we\'re here to make your educational path smoother and more rewarding.',
+//     contactEmail: 'info@edulearn.com',
+//     contactPhone: '+1 (800) 555-0123',
+//     heroSlides: [
+//       {
+//         id: 'hero-about-video',
+//         imageUrl: 'https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image for About section
+//         videoLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Example video link
+//         headline: '', subline: '', ctaText: '', ctaLink: '', order: 0,
+//       },
+//     ],
+//     stats: [
+//       { label: "Students Enrolled", value: "5000+" },
+//       { label: "Courses Offered", value: "150+" }, // Changed from "Student Campuses"
+//       { label: "Expert Tutors", value: "50+" }, // Changed from "Certified Teachers"
+//       { label: "Countrywide Awards", value: "60+" },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#fd2121", // Red from your sample
+//       secondaryColor: "#FFC107", // Amber/Yellow for accent
+//     },
+//   } as StoreForm, // Cast to StoreForm for type safety in mock
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
