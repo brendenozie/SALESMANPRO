@@ -4,49 +4,49 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
-export type Stat = {
-  id: string; // Added ID for keying
-  label: string;
-  value: string; // Value can be a number or string like "5000+"
-  order: number; // For sorting
-};
+// export type Stat = {
+//   id: string; // Added ID for keying
+//   label: string;
+//   value: string; // Value can be a number or string like "5000+"
+//   order: number; // For sorting
+// };
 
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
+// export type ThemeSettings = {
+//   primaryColor?: string;
+//   secondaryColor?: string;
+// };
 
-export type StoreForm = {
-  name?: string; // For the organization's name
-  description?: string; // For the main description paragraph
-  aboutImageUrl?: string; // New field for about section specific image
-  stats?: Stat[]; // Array of Stat objects for progress bars
-  themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed for this section
-};
+// export type StoreForm = {
+//   name?: string; // For the organization's name
+//   description?: string; // For the main description paragraph
+//   aboutImageUrl?: string; // New field for about section specific image
+//   stats?: Stat[]; // Array of Stat objects for progress bars
+//   themeSettings?: ThemeSettings;
+//   // Add other relevant StoreForm fields if needed for this section
+// };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    description: 'We’ve been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. Join us in our endeavor to uplift lives and create lasting change.',
-    aboutImageUrl: 'https://images.unsplash.com/photo-1594918231010-0a3b2b5f5f0b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image for about section
-    stats: [
-      { id: 'stat-1', label: "Children Helped", value: "1200", order: 1 },
-      { id: 'stat-2', label: "Schools Built", value: "15", order: 2 },
-      { id: 'stat-3', label: "Wells Dug", value: "30", order: 3 },
-      { id: 'stat-4', label: "Volunteers Engaged", value: "500", order: 4 },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722", // Orange for primary actions
-      secondaryColor: "#FFFFFF", // White for secondary actions/text
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     description: 'We’ve been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. Join us in our endeavor to uplift lives and create lasting change.',
+//     aboutImageUrl: 'https://images.unsplash.com/photo-1594918231010-0a3b2b5f5f0b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image for about section
+//     stats: [
+//       { id: 'stat-1', label: "Children Helped", value: "1200", order: 1 },
+//       { id: 'stat-2', label: "Schools Built", value: "15", order: 2 },
+//       { id: 'stat-3', label: "Wells Dug", value: "30", order: 3 },
+//       { id: 'stat-4', label: "Volunteers Engaged", value: "500", order: 4 },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Orange for primary actions
+//       secondaryColor: "#FFFFFF", // White for secondary actions/text
+//     },
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -69,7 +69,7 @@ export default function AboutUsSpotlight() {
   // Dynamic content with fallbacks
   const sectionTitle = storeFormData?.name ? `A Trusted Non-Profit Charity Organization: ${storeFormData.name}` : "A Trusted Non-Profit Charity Organization";
   const aboutDescription = storeFormData?.description || "We’ve been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. Join us in our endeavor to uplift lives and create lasting change.";
-  const aboutImage = storeFormData?.aboutImageUrl || "/about-child.jpg"; // Use specific about image or fallback
+  const aboutImage = storeFormData?.bannerUrl || "/about-child.jpg"; // Use specific about image or fallback
   const dynamicStats = storeFormData?.stats;
 
   // Static fallback stats if dynamic data is not provided
@@ -138,11 +138,11 @@ export default function AboutUsSpotlight() {
             </button>
           </div>
           <div className="space-y-5">
-            {statsToRender.map((stat) => {
-              const statValueNum = parseFloat(stat.value.replace(/\+/g, '')); // Remove '+' and parse
+            {statsToRender.map((stat, index) => {
+              const statValueNum = parseFloat(stat.value?.replace(/\+/g, '')); // Remove '+' and parse
               const progressPercentage = Math.min(100, (statValueNum / 1500) * 100); // Max 1500 for visual scale
               return (
-                <div key={stat.id} className="flex items-center space-x-4">
+                <div key={index} className="flex items-center space-x-4">
                   <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}

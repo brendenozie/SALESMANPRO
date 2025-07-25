@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type Stat = {
@@ -27,21 +27,21 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    metrics: [
-      { id: 'metric-1', label: "Children Fed", value: "1,200+", order: 1 },
-      { id: 'metric-2', label: "Lives Touched", value: "850+", order: 2 },
-      { id: 'metric-3', label: "Volunteers Engaged", value: "300+", order: 3 },
-      { id: 'metric-4', label: "Funds Raised", value: "$500K+", order: 4 },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722", // Orange for primary actions
-      secondaryColor: "#FFFFFF", // White for secondary actions/text
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     metrics: [
+//       { id: 'metric-1', label: "Children Fed", value: "1,200+", order: 1 },
+//       { id: 'metric-2', label: "Lives Touched", value: "850+", order: 2 },
+//       { id: 'metric-3', label: "Volunteers Engaged", value: "300+", order: 3 },
+//       { id: 'metric-4', label: "Funds Raised", value: "$500K+", order: 4 },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Orange for primary actions
+//       secondaryColor: "#FFFFFF", // White for secondary actions/text
+//     },
+//   } as StoreForm,
+// });
 
 export default function ImpactStatsSection() {
   const { storeFormData } = useStoreContext();
@@ -70,7 +70,7 @@ export default function ImpactStatsSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {metricsToRender.map((stat, i) => (
             <motion.div
-              key={stat.id} // Use unique ID from data
+              key={i} // Use unique ID from data
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}

@@ -30,7 +30,7 @@ export default function NonProfitApp() {
         <ImpactStatsSection />
 
         {/* Impact Stats */}
-        <EventsUpdatesSection />
+        <EventsUpdatesSection />/
 
         {/* Testimonials & News */}
         <TestimonialsNewsSection />

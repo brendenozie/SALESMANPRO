@@ -6,96 +6,97 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon } from '@heroicons/react/24/outline'; // Added for consistency
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { Blog } from '@/types/typings';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
-export type Testimonial = {
-  id: string;
-  author: string; // Corresponds to author name
-  quote: string; // Corresponds to the testimonial text
-  avatarUrl?: string; // URL for the author's image
-  order: number; // For sorting
-};
+// export type Testimonial = {
+//   id: string;
+//   author: string; // Corresponds to author name
+//   quote: string; // Corresponds to the testimonial text
+//   avatarUrl?: string; // URL for the author's image
+//   order: number; // For sorting
+// };
 
-export type Blog = {
-  id: string;
-  title: string;
-  excerpt?: string; // Short summary
-  imageUrl?: string;
-  publishedAt: string; // ISO date string
-  link: string; // Link to the full blog post
-  order: number; // For sorting
-};
+// export type Blog = {
+//   id: string;
+//   title: string;
+//   excerpt?: string; // Short summary
+//   imageUrl?: string;
+//   publishedAt: string; // ISO date string
+//   link: string; // Link to the full blog post
+//   order: number; // For sorting
+// };
 
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
+// export type ThemeSettings = {
+//   primaryColor?: string;
+//   secondaryColor?: string;
+// };
 
-export type StoreForm = {
-  name?: string; // For section title
-  slug?: string; // For constructing dynamic links
-  testimonials?: Testimonial[]; // Array of Testimonial objects
-  blogs?: Blog[]; // Array of Blog objects for news/updates
-  themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed for this section
-};
+// export type StoreForm = {
+//   name?: string; // For section title
+//   slug?: string; // For constructing dynamic links
+//   testimonials?: Testimonial[]; // Array of Testimonial objects
+//   blogs?: Blog[]; // Array of Blog objects for news/updates
+//   themeSettings?: ThemeSettings;
+//   // Add other relevant StoreForm fields if needed for this section
+// };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    slug: 'childrens-hope-foundation',
-    testimonials: [
-      {
-        id: 'test-1',
-        author: 'Alex Johnson',
-        quote: 'This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!',
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a86e927f643?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        order: 1,
-      },
-      {
-        id: 'test-2',
-        author: 'Emily Carter',
-        quote: 'The support provided by this non-profit has been invaluable to countless families in desperate need. Their programs are well-managed and transparent. Highly recommended.',
-        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        order: 2,
-      },
-      {
-        id: 'test-3',
-        author: 'David Lee',
-        quote: 'I\'ve seen firsthand the positive change they bring. Every donation makes a real difference in the lives of children. Proud to be a supporter!',
-        avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        order: 3,
-      },
-    ],
-    blogs: [
-      {
-        id: 'blog-1',
-        title: 'New Education Program Launched in Rural Areas',
-        excerpt: 'Our latest initiative aims to provide quality education to underserved communities, focusing on digital literacy and STEM skills.',
-        imageUrl: 'https://images.unsplash.com/photo-1523050854805-9a84a9235777?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        publishedAt: '2024-07-20T10:00:00Z',
-        link: '#blog-post-1',
-        order: 1,
-      },
-      {
-        id: 'blog-2',
-        title: 'Success Story: How Clean Water Transformed a Village',
-        excerpt: 'Read about the incredible impact of our recent clean water project on the health and livelihood of a remote village.',
-        imageUrl: 'https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        publishedAt: '2024-07-15T14:30:00Z',
-        link: '#blog-post-2',
-        order: 2,
-      },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722", // Orange for primary actions
-      secondaryColor: "#FFFFFF", // White for secondary actions/text
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     slug: 'childrens-hope-foundation',
+//     testimonials: [
+//       {
+//         id: 'test-1',
+//         author: 'Alex Johnson',
+//         quote: 'This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!',
+//         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a86e927f643?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         order: 1,
+//       },
+//       {
+//         id: 'test-2',
+//         author: 'Emily Carter',
+//         quote: 'The support provided by this non-profit has been invaluable to countless families in desperate need. Their programs are well-managed and transparent. Highly recommended.',
+//         avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         order: 2,
+//       },
+//       {
+//         id: 'test-3',
+//         author: 'David Lee',
+//         quote: 'I\'ve seen firsthand the positive change they bring. Every donation makes a real difference in the lives of children. Proud to be a supporter!',
+//         avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         order: 3,
+//       },
+//     ],
+//     blogs: [
+//       {
+//         id: 'blog-1',
+//         title: 'New Education Program Launched in Rural Areas',
+//         excerpt: 'Our latest initiative aims to provide quality education to underserved communities, focusing on digital literacy and STEM skills.',
+//         imageUrl: 'https://images.unsplash.com/photo-1523050854805-9a84a9235777?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         publishedAt: '2024-07-20T10:00:00Z',
+//         link: '#blog-post-1',
+//         order: 1,
+//       },
+//       {
+//         id: 'blog-2',
+//         title: 'Success Story: How Clean Water Transformed a Village',
+//         excerpt: 'Read about the incredible impact of our recent clean water project on the health and livelihood of a remote village.',
+//         imageUrl: 'https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         publishedAt: '2024-07-15T14:30:00Z',
+//         link: '#blog-post-2',
+//         order: 2,
+//       },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Orange for primary actions
+//       secondaryColor: "#FFFFFF", // White for secondary actions/text
+//     },
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -137,8 +138,8 @@ export default function TestimonialsNewsSection() {
   const blogsToRender = Array.isArray(storeFormData?.blogs) && storeFormData.blogs.length > 0
     ? storeFormData.blogs.sort((a, b) => (a.order || 0) - (b.order || 0))
     : [ // Fallback blogs
-        { id: 'fb-blog-1', title: 'Our Latest Community Outreach', excerpt: 'Details about our recent efforts to support local families.', imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Community', publishedAt: '2024-07-22T09:00:00Z', link: '#', order: 1 },
-        { id: 'fb-blog-2', title: 'Volunteer Spotlight: Making a Difference', excerpt: 'Highlighting the incredible work of our dedicated volunteers.', imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Volunteer', publishedAt: '2024-07-18T11:00:00Z', link: '#', order: 2 },
+        { id: 'fb-blog-1', title: 'Our Latest Community Outreach', excerpt: 'Details about our recent efforts to support local families.', coverImage: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Community', publishedAt: '2024-07-22T09:00:00Z', link: '#', order: 1 },
+        { id: 'fb-blog-2', title: 'Volunteer Spotlight: Making a Difference', excerpt: 'Highlighting the incredible work of our dedicated volunteers.', coverImage: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Volunteer', publishedAt: '2024-07-18T11:00:00Z', link: '#', order: 2 },
       ];
 
   const organizationSlug = storeFormData?.slug || 'non-profit';
@@ -197,7 +198,7 @@ export default function TestimonialsNewsSection() {
           Latest News & Updates
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogsToRender.slice(0, 3).map((blog, idx) => ( // Display top 3 blog posts
+          {blogsToRender?.slice(0, 3).map((blog:any, idx:any) => ( // Display top 3 blog posts
             <motion.div
               key={blog.id}
               initial={{ opacity: 0, y: 50 }}
@@ -209,7 +210,7 @@ export default function TestimonialsNewsSection() {
             >
               <div className="relative h-48 overflow-hidden rounded-t-xl">
                 <Image
-                  src={blog.imageUrl || "https://placehold.co/400x250/D1D5DB/4B5563?text=News+Image"}
+                  src={blog.coverImage || "https://placehold.co/400x250/D1D5DB/4B5563?text=News+Image"}
                   alt={blog.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type HeroSlide = {
@@ -36,30 +36,30 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    id: 'nonprofit-org-id',
-    name: 'Children\'s Hope Foundation', // Example organization name
-    tagline: 'Lend Your Heart To Change A Child\'s Story', // Catchy tagline
-    description: 'Join us in providing hope and support to children in need around the world.', // Longer description
-    bannerUrl: 'https://images.unsplash.com/photo-1576765974026-6113b2e7c3e1?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // High-quality image of children
-    heroSlides: [
-      {
-        id: 'hero-slide-1',
-        imageUrl: 'https://images.unsplash.com/photo-1576765974026-6113b2e7c3e1?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        headline: 'Lend Your Heart To Change A Child\'s Story',
-        subline: 'Join us in providing hope and support to children in need around the world.',
-        ctaText: 'Learn About Our Causes',
-        ctaLink: '/causes',
-        order: 1,
-      },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722", // Orange for primary actions
-      secondaryColor: "#FFFFFF", // White for secondary actions/text
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     id: 'nonprofit-org-id',
+//     name: 'Children\'s Hope Foundation', // Example organization name
+//     tagline: 'Lend Your Heart To Change A Child\'s Story', // Catchy tagline
+//     description: 'Join us in providing hope and support to children in need around the world.', // Longer description
+//     bannerUrl: 'https://images.unsplash.com/photo-1576765974026-6113b2e7c3e1?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // High-quality image of children
+//     heroSlides: [
+//       {
+//         id: 'hero-slide-1',
+//         imageUrl: 'https://images.unsplash.com/photo-1576765974026-6113b2e7c3e1?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         headline: 'Lend Your Heart To Change A Child\'s Story',
+//         subline: 'Join us in providing hope and support to children in need around the world.',
+//         ctaText: 'Learn About Our Causes',
+//         ctaLink: '/causes',
+//         order: 1,
+//       },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Orange for primary actions
+//       secondaryColor: "#FFFFFF", // White for secondary actions/text
+//     },
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {

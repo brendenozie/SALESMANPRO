@@ -4,16 +4,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Bar, Pie } from "react-chartjs-2";
 import toast, { Toaster } from "react-hot-toast";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
+// Removed ChartJS imports and register call from here
+// They are now handled in chartConfig.ts
 import {
   BookOpenIcon,
   CreditCardIcon,
@@ -25,29 +17,23 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   MagnifyingGlassIcon,
-  UserGroupIcon, // For total students
-  ClipboardDocumentCheckIcon, // For total fee records
-  CalendarDaysIcon, // For due date
+  UserGroupIcon,
+  ClipboardDocumentCheckIcon,
+  CalendarDaysIcon,
+  SparklesIcon, // New icon for batch apply
 } from "@heroicons/react/24/outline";
-import Modal from "@/components/Modal"; // Assuming you have a generic Modal component
-
-// ✨ Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+import Modal from "@/components/Modal";
 
 // Import types from lib/data.ts
 import {
   Student,
   FeeItem,
   StudentFeeRecord as PrismaStudentFeeRecord,
+  StudentLevelStatus, // Import StudentLevelStatus enum
 } from "@/lib/data";
+
+// ✨ Import the Chart.js configuration file to ensure components are registered
+import "@/lib/chartConfig"; // Adjust path if your chartConfig.ts is elsewhere
 
 // Define the extended StudentFeeRecord type for the frontend, including calculated fields
 export type StudentFeeRecord = Omit<PrismaStudentFeeRecord, 'appliedFeeItems' | 'payments'> & {
@@ -74,8 +60,8 @@ export type StudentFeeRecord = Omit<PrismaStudentFeeRecord, 'appliedFeeItems' | 
 interface FeesClientProps {
   initialFeeRecordsData: StudentFeeRecord[];
   initialStudentsData: Student[];
-  initialFeeItemsData: FeeItem[]; // For reference, though not directly used in this specific UI
-  schoolId: string; // Passed from server component
+  initialFeeItemsData: FeeItem[];
+  schoolId: string;
 }
 
 // -----------------------------------------------------------------------------
@@ -121,7 +107,7 @@ const FeeRecordRow: React.FC<{
   return (
     <tr className="border-b border-gray-700 hover:bg-gray-700 transition-colors duration-200">
       <td className="py-4 px-6 font-medium text-white">{studentName}</td>
-      <td className="py-4 px-6">{record.student?.currentClass || record.academicYear || 'N/A'}</td> {/* record.studentClass Use student.currentClass if available */}
+      <td className="py-4 px-6">{record.student?.currentClass || 'N/A'}</td>
       <td className="py-4 px-6">{record.academicYear}</td>
       <td className="py-4 px-6">{record.term}</td>
       <td className="py-4 px-6">${record.calculatedTotalFeesDue.toFixed(2)}</td>
@@ -136,6 +122,7 @@ const FeeRecordRow: React.FC<{
       <td className="py-4 px-6 text-right">
         <div className="flex space-x-2 justify-end">
           <button
+            type="button"
             onClick={() => onLogPayment(record)}
             className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             title="Log New Payment"
@@ -143,6 +130,7 @@ const FeeRecordRow: React.FC<{
             <CreditCardIcon className="h-5 w-5" />
           </button>
           <button
+            type="button"
             onClick={() => onEditRecord(record)}
             className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
             title="Edit Fee Record Details"
@@ -150,6 +138,7 @@ const FeeRecordRow: React.FC<{
             <PencilSquareIcon className="h-5 w-5" />
           </button>
           <button
+            type="button"
             onClick={() => onDeleteRecord(record.id, studentName)}
             className="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             title="Delete Fee Record"
@@ -165,8 +154,8 @@ const FeeRecordRow: React.FC<{
 const AddEditFeeRecordModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  feeRecord?: StudentFeeRecord | null; // Null for add, object for edit
-  students: Student[]; // List of students to select from for new records
+  feeRecord?: StudentFeeRecord | null;
+  students: Student[];
   onSave: (data: { studentId?: string; academicYear?: string; term?: string; dueDate?: string | null; invoiceNumber?: string | null }) => void;
   isSubmitting: boolean;
 }> = ({ isOpen, onClose, feeRecord, students, onSave, isSubmitting }) => {
@@ -179,14 +168,12 @@ const AddEditFeeRecordModal: React.FC<{
   useEffect(() => {
     if (isOpen) {
       if (feeRecord) {
-        // Editing existing record
         setSelectedStudentId(feeRecord.studentId);
         setAcademicYear(feeRecord.academicYear);
         setTerm(feeRecord.term);
         setDueDate(feeRecord.dueDate || '');
         setInvoiceNumber(feeRecord.invoiceNumber || '');
       } else {
-        // Adding new record - reset form
         setSelectedStudentId('');
         setAcademicYear('');
         setTerm('');
@@ -199,10 +186,8 @@ const AddEditFeeRecordModal: React.FC<{
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (feeRecord) {
-      // Editing existing record: only dueDate and invoiceNumber are editable via this modal
       onSave({ dueDate: dueDate || null, invoiceNumber: invoiceNumber || null });
     } else {
-      // Adding new record: studentId, academicYear, term
       if (!selectedStudentId || !academicYear || !term) {
         toast.error("Please fill all required fields for a new fee record.");
         return;
@@ -255,7 +240,6 @@ const AddEditFeeRecordModal: React.FC<{
             </>
           ) : (
             <>
-              {/* Display read-only info for existing record */}
               <div className="p-3 bg-gray-700 rounded-lg">
                 <p className="text-gray-300"><strong>Student:</strong> {feeRecord.student?.firstName} {feeRecord.student?.lastName}</p>
                 <p className="text-gray-300"><strong>Year/Term:</strong> {feeRecord.academicYear} / {feeRecord.term}</p>
@@ -313,7 +297,7 @@ const LogPaymentModal: React.FC<{
 
   useEffect(() => {
     if (isOpen) {
-      setPaymentAmount(0); // Reset on open
+      setPaymentAmount(0);
       setPaymentDate(new Date().toISOString().split('T')[0]);
       setPaymentMethod('');
       setReceiptNumber('');
@@ -382,6 +366,117 @@ const LogPaymentModal: React.FC<{
 };
 
 
+// NEW: Apply Batch Fee Modal
+const ApplyBatchFeeModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onApply: (params: { academicYear: string; term: string; targetType: "CLASS" | "ACADEMIC_LEVEL" | "ALL"; targetValue?: string }) => void;
+  isSubmitting: boolean;
+  uniqueClasses: string[];
+  uniqueAcademicLevels: string[];
+}> = ({ isOpen, onClose, onApply, isSubmitting, uniqueClasses, uniqueAcademicLevels }) => {
+  const [academicYear, setAcademicYear] = useState<string>('');
+  const [term, setTerm] = useState<string>('');
+  const [targetType, setTargetType] = useState<"CLASS" | "ACADEMIC_LEVEL" | "ALL">('ALL');
+  const [targetValue, setTargetValue] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen) {
+      // Reset form on open
+      setAcademicYear('');
+      setTerm('');
+      setTargetType('ALL');
+      setTargetValue('');
+    }
+  }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!academicYear || !term) {
+      toast.error("Academic Year and Term are required.");
+      return;
+    }
+    if ((targetType === "CLASS" || targetType === "ACADEMIC_LEVEL") && !targetValue) {
+      toast.error("Please select a specific class or academic level.");
+      return;
+    }
+
+    onApply({ academicYear, term, targetType, targetValue: targetType === "ALL" ? undefined : targetValue });
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-md mx-auto">
+        <h2 className="text-3xl font-bold text-indigo-400 mb-6 text-center">
+          Apply Fees in Batch
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <input
+            name="academicYear"
+            value={academicYear}
+            onChange={(e) => setAcademicYear(e.target.value)}
+            placeholder="Academic Year (e.g., 2024/2025)"
+            className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500"
+            required
+          />
+          <input
+            name="term"
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder="Term (e.g., Term 1)"
+            className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500"
+            required
+          />
+
+          <div>
+            <label className="block text-gray-300 text-sm font-semibold mb-2">Apply To</label>
+            <select
+              value={targetType}
+              onChange={(e) => {
+                setTargetType(e.target.value as "CLASS" | "ACADEMIC_LEVEL" | "ALL");
+                setTargetValue(''); // Reset target value when type changes
+              }}
+              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="ALL">All Students</option>
+              <option value="CLASS">Students in a Specific Class</option>
+              <option value="ACADEMIC_LEVEL">Students in a Specific Academic Level</option>
+            </select>
+          </div>
+
+          {(targetType === "CLASS" || targetType === "ACADEMIC_LEVEL") && (
+            <div>
+              <label className="block text-gray-300 text-sm font-semibold mb-2">Select {targetType === "CLASS" ? "Class" : "Academic Level"}</label>
+              <select
+                value={targetValue}
+                onChange={(e) => setTargetValue(e.target.value)}
+                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500"
+                required
+              >
+                <option value="">-- Select --</option>
+                {targetType === "CLASS" && uniqueClasses.map(cls => (
+                  <option key={cls} value={cls}>{cls}</option>
+                ))}
+                {targetType === "ACADEMIC_LEVEL" && uniqueAcademicLevels.map(level => (
+                  <option key={level} value={level}>{level}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-4 mt-6">
+            <button type="button" onClick={onClose} className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition font-semibold" disabled={isSubmitting}>Cancel</button>
+            <button type="submit" className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition font-semibold flex items-center disabled:bg-indigo-400" disabled={isSubmitting}>
+              {isSubmitting ? "Applying..." : <><SparklesIcon className="h-5 w-5 mr-2" /> Apply Fees</>}
+            </button>
+          </div>
+        </form>
+      </div>
+    </Modal>
+  );
+};
+
+
 const DeleteConfirmationModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -396,8 +491,8 @@ const DeleteConfirmationModal: React.FC<{
         Are you sure you want to delete the fee record for <span className="font-bold text-white">"{recordName}"</span>? This action cannot be undone.
       </p>
       <div className="flex justify-center space-x-5">
-        <button onClick={onClose} className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition font-semibold">Cancel</button>
-        <button onClick={onConfirm} className="px-6 py-3 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition font-semibold flex items-center">
+        <button type="button" onClick={onClose} className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition font-semibold">Cancel</button>
+        <button type="button" onClick={onConfirm} className="px-6 py-3 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition font-semibold flex items-center">
           <TrashIcon className="h-5 w-5 mr-2" /> Delete
         </button>
       </div>
@@ -412,7 +507,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
   // ✨ State Management
   const [feeRecords, setFeeRecords] = useState<StudentFeeRecord[]>(initialFeeRecordsData);
   const [students, setStudents] = useState<Student[]>(initialStudentsData);
-  const [feeItems, setFeeItems] = useState<FeeItem[]>(initialFeeItemsData); // Keep for reference, even if not directly displayed
+  const [feeItems, setFeeItems] = useState<FeeItem[]>(initialFeeItemsData);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterClass, setFilterClass] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("");
@@ -427,6 +522,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
   const [loggingPaymentFor, setLoggingPaymentFor] = useState<StudentFeeRecord | null>(null);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [showApplyBatchFeeModal, setShowApplyBatchFeeModal] = useState(false); // New state for batch modal
 
   // Extract unique classes and academic years for filters
   const uniqueClasses = useMemo(() => {
@@ -439,15 +535,23 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     return Array.from(years).sort();
   }, [feeRecords]);
 
+  // Extract unique academic levels for batch apply modal
+  const uniqueAcademicLevels = useMemo(() => {
+    // StudentLevelStatus is an enum, so we get its values
+    const levels = Object.values([]);//StudentLevelStatus
+    return Array.from(levels).sort();
+  }, []); // StudentLevelStatus is an enum, so it's static
+
+
   // ✨ Memoized calculations for performance
   const filteredRecords = useMemo(() => {
     return feeRecords.filter((record) => {
       const studentName = record.student?.firstName && record.student?.lastName
         ? `${record.student.firstName} ${record.student.lastName}`
-        : ''; // Get full name for search
+        : '';
       const matchesSearch = studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             record.studentId.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesClass = filterClass === "" || record.student?.currentClass === filterClass; // Filter by student's currentClass
+      const matchesClass = filterClass === "" || record.student?.currentClass === filterClass;
       const matchesStatus = filterStatus === "" || record.paymentStatus === filterStatus;
       return matchesSearch && matchesClass && matchesStatus;
     });
@@ -538,9 +642,8 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
 
   // ✨ API Operations
   const refreshData = async () => {
-    setIsSubmitting(true); // Set submitting state during refresh
+    setIsSubmitting(true);
     try {
-      // Fetch fee records
       const feesRes = await fetch(`/api/admin/student-fee-records`, { cache: "no-store" });
       if (feesRes.ok) {
         const updatedFees: StudentFeeRecord[] = await feesRes.json();
@@ -549,7 +652,6 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         console.error("[FeesClient] Failed to re-fetch fee records.");
       }
 
-      // Fetch students (in case new students were added elsewhere)
       const studentsRes = await fetch(`/api/admin/students`, { cache: "no-store" });
       if (studentsRes.ok) {
         const updatedStudents: Student[] = await studentsRes.json();
@@ -558,7 +660,6 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         console.error("[FeesClient] Failed to re-fetch students.");
       }
 
-      // Fetch fee items (in case new fee items were added elsewhere)
       const feeItemsRes = await fetch(`/api/admin/fee-items`, { cache: "no-store" });
       if (feeItemsRes.ok) {
         const updatedFeeItems: FeeItem[] = await feeItemsRes.json();
@@ -576,7 +677,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
   };
 
   const handleAddFeeRecord = () => {
-    setEditingFeeRecord(null); // Clear any previous editing context
+    setEditingFeeRecord(null);
     setShowAddEditModal(true);
   };
 
@@ -592,14 +693,12 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     try {
       let response;
       if (editingFeeRecord) {
-        // Editing: Only dueDate and invoiceNumber are updated via this PUT
         response = await fetch(`/api/admin/student-fee-records/${editingFeeRecord.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ dueDate: formData.dueDate, invoiceNumber: formData.invoiceNumber }),
         });
       } else {
-        // Creating new record: studentId, academicYear, term
         response = await fetch(`/api/admin/student-fee-records`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -617,7 +716,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         throw new Error(errorData.error || `Failed to ${editingFeeRecord ? 'update' : 'create'} fee record.`);
       }
 
-      await refreshData(); // Re-fetch to get the latest data including calculated fields
+      await refreshData();
       toast.success(editingFeeRecord ? 'Fee record updated successfully!' : 'Fee record created successfully!', { id: toastId });
       setShowAddEditModal(false);
     } catch (error: any) {
@@ -648,7 +747,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         throw new Error(errorData.error || 'Failed to log payment.');
       }
 
-      await refreshData(); // Re-fetch to update amounts and status
+      await refreshData();
       toast.success('Payment logged successfully!', { id: toastId });
       setShowLogPaymentModal(false);
     } catch (error: any) {
@@ -671,7 +770,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     try {
       const response = await fetch(`/api/admin/student-fee-records/${recordToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete fee record.');
-      await refreshData(); // Re-fetch to ensure data consistency
+      await refreshData();
       toast.success('Fee record deleted successfully!', { id: toastId });
       setShowDeleteConfirmModal(false);
     } catch (error: any) {
@@ -681,6 +780,38 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
       setRecordToDelete(null);
     }
   };
+
+  // NEW: Batch Apply Fee handler
+  const handleApplyBatchFee = async (params: { academicYear: string; term: string; targetType: "CLASS" | "ACADEMIC_LEVEL" | "ALL"; targetValue?: string }) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading('Applying fees in batch...');
+
+    try {
+      const response = await fetch(`/api/admin/fee-actions/apply-batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to apply fees in batch.');
+      }
+
+      const result = await response.json();
+      toast.success(
+        `Batch operation complete! Created: ${result.result.created}, Existing: ${result.result.existing}, Failed: ${result.result.failed}`,
+        { id: toastId, duration: 5000 }
+      );
+      await refreshData(); // Refresh all data after batch operation
+      setShowApplyBatchFeeModal(false);
+    } catch (error: any) {
+      toast.error(error.message, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   return (
     <main className="flex-grow container mx-auto px-6 py-12 bg-gray-900 min-h-screen text-gray-100 font-inter">
@@ -692,9 +823,14 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
           <h1 className="text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-600 mb-6 md:mb-0 drop-shadow-lg text-center md:text-left">
             Student Fee Dashboard
           </h1>
-          <button onClick={handleAddFeeRecord} className="flex items-center px-8 py-4 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold">
-            <PlusCircleIcon className="h-7 w-7 mr-3" /> Create New Fee Record
-          </button>
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <button type="button" onClick={() => setShowApplyBatchFeeModal(true)} className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold">
+              <SparklesIcon className="h-6 w-6 mr-2" /> Apply Fees (Batch)
+            </button>
+            <button type="button" onClick={handleAddFeeRecord} className="flex items-center px-8 py-4 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold">
+              <PlusCircleIcon className="h-7 w-7 mr-3" /> Create New Fee Record
+            </button>
+          </div>
         </div>
 
         {/* Search & Filters */}
@@ -708,7 +844,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
               className="w-full p-4 pl-12 rounded-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-xl transition-all duration-300"
             />
             <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
-            {searchTerm && (<button onClick={() => setSearchTerm("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"><XMarkIcon className="h-6 w-6" /></button>)}
+            {searchTerm && (<button type="button" onClick={() => setSearchTerm("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"><XMarkIcon className="h-6 w-6" /></button>)}
           </div>
 
           <select
@@ -773,7 +909,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
           ) : paginatedRecords.length === 0 ? (
             <div className="bg-gray-800 p-16 rounded-xl shadow-2xl text-center">
               <p className="text-2xl text-gray-400 font-semibold">No fee records found matching your criteria. 😞</p>
-              {(searchTerm || filterClass || filterStatus) && (<button onClick={() => { setSearchTerm(""); setFilterClass(""); setFilterStatus(""); }} className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition">Clear Filters</button>)}
+              {(searchTerm || filterClass || filterStatus) && (<button type="button" onClick={() => { setSearchTerm(""); setFilterClass(""); setFilterStatus(""); }} className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition">Clear Filters</button>)}
             </div>
           ) : (
             <div className="overflow-x-auto bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
@@ -813,9 +949,9 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center space-x-4 mt-12">
-            <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)} className="px-5 py-2 bg-gray-700 rounded-lg text-white font-semibold shadow-md hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+            <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)} className="px-5 py-2 bg-gray-700 rounded-lg text-white font-semibold shadow-md hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
             <span className="px-4 py-2 bg-indigo-600 text-white rounded-md font-bold">{`Page ${currentPage} of ${totalPages}`}</span>
-            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)} className="px-5 py-2 bg-gray-700 rounded-lg text-white font-semibold shadow-md hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+            <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)} className="px-5 py-2 bg-gray-700 rounded-lg text-white font-semibold shadow-md hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
           </div>
         )}
       </div>
@@ -825,7 +961,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         isOpen={showAddEditModal}
         onClose={() => setShowAddEditModal(false)}
         feeRecord={editingFeeRecord}
-        students={students} // Pass the list of students
+        students={students}
         onSave={handleSaveFeeRecord}
         isSubmitting={isSubmitting}
       />
@@ -841,6 +977,14 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         onClose={() => setShowDeleteConfirmModal(false)}
         onConfirm={confirmDeleteFeeRecord}
         recordName={recordToDelete?.name || "this record"}
+      />
+      <ApplyBatchFeeModal
+        isOpen={showApplyBatchFeeModal}
+        onClose={() => setShowApplyBatchFeeModal(false)}
+        onApply={handleApplyBatchFee}
+        isSubmitting={isSubmitting}
+        uniqueClasses={uniqueClasses}
+        uniqueAcademicLevels={uniqueAcademicLevels}
       />
     </main>
   );

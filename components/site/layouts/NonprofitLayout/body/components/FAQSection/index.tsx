@@ -4,71 +4,72 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, MinusIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'; // Using Plus/Minus for clarity
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { FAQ } from '@/types/typings';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
-export type FAQ = {
-  id: string; // Changed to string as per schema.txt
-  question: string;
-  answer: string;
-  order: number; // For sorting
-};
+// export type FAQ = {
+//   id: string; // Changed to string as per schema.txt
+//   question: string;
+//   answer: string;
+//   order: number; // For sorting
+// };
 
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
+// export type ThemeSettings = {
+//   primaryColor?: string;
+//   secondaryColor?: string;
+// };
 
-export type StoreForm = {
-  name?: string; // For section title
-  faqs?: FAQ[]; // Array of FAQ objects
-  themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed for this section
-};
+// export type StoreForm = {
+//   name?: string; // For section title
+//   faqs?: FAQ[]; // Array of FAQ objects
+//   themeSettings?: ThemeSettings;
+//   // Add other relevant StoreForm fields if needed for this section
+// };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    faqs: [
-      {
-        id: "faq-1",
-        question: "What is your organization's main mission?",
-        answer: "Our main mission is to provide support, education, and medical aid to underprivileged children and communities worldwide, fostering self-sufficiency and hope.",
-        order: 1,
-      },
-      {
-        id: "faq-2",
-        question: "How can I donate?",
-        answer: "You can easily donate through our secure online portal, or by bank transfer. We also accept in-kind donations. Visit our 'Donate' page for more details.",
-        order: 2,
-      },
-      {
-        id: "faq-3",
-        question: "Are my donations tax-deductible?",
-        answer: "Yes, as a registered non-profit organization, all donations are tax-deductible to the fullest extent of the law. You will receive a receipt for your contribution.",
-        order: 3,
-      },
-      {
-        id: "faq-4",
-        question: "How can I volunteer?",
-        answer: "We welcome volunteers! Please visit our 'Volunteer' section to learn about current opportunities and how to apply. Your time and skills can make a significant difference.",
-        order: 4,
-      },
-      {
-        id: "faq-5",
-        question: "What types of programs do you run?",
-        answer: "We run various programs including educational support, medical aid, community development, emergency relief, and clean water initiatives. Details are available on our 'Programs' page.",
-        order: 5,
-      },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722", // Orange for primary actions
-      secondaryColor: "#FFFFFF", // White for secondary actions/text
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     faqs: [
+//       {
+//         id: "faq-1",
+//         question: "What is your organization's main mission?",
+//         answer: "Our main mission is to provide support, education, and medical aid to underprivileged children and communities worldwide, fostering self-sufficiency and hope.",
+//         order: 1,
+//       },
+//       {
+//         id: "faq-2",
+//         question: "How can I donate?",
+//         answer: "You can easily donate through our secure online portal, or by bank transfer. We also accept in-kind donations. Visit our 'Donate' page for more details.",
+//         order: 2,
+//       },
+//       {
+//         id: "faq-3",
+//         question: "Are my donations tax-deductible?",
+//         answer: "Yes, as a registered non-profit organization, all donations are tax-deductible to the fullest extent of the law. You will receive a receipt for your contribution.",
+//         order: 3,
+//       },
+//       {
+//         id: "faq-4",
+//         question: "How can I volunteer?",
+//         answer: "We welcome volunteers! Please visit our 'Volunteer' section to learn about current opportunities and how to apply. Your time and skills can make a significant difference.",
+//         order: 4,
+//       },
+//       {
+//         id: "faq-5",
+//         question: "What types of programs do you run?",
+//         answer: "We run various programs including educational support, medical aid, community development, emergency relief, and clean water initiatives. Details are available on our 'Programs' page.",
+//         order: 5,
+//       },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Orange for primary actions
+//       secondaryColor: "#FFFFFF", // White for secondary actions/text
+//     },
+//   } as StoreForm,
+// });
 
 // Animation variants for individual FAQ items
 const faqItemVariants = {

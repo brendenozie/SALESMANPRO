@@ -4,67 +4,53 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-export type Feature = {
-  id: string;
-  title: string; // Corresponds to 'label'
-  description: string;
-  iconUrl?: string; // Corresponds to 'icon'
-  order: number; // For sorting
-};
-
-export type StoreForm = {
-  name?: string; // For section title
-  features?: Feature[]; // Array of Feature objects for highlights
-  // Add other relevant StoreForm fields if needed for this section
-};
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    features: [
-      {
-        id: 'feat-1',
-        title: "Medical Aid",
-        description: "Providing essential healthcare and medical support to vulnerable children.",
-        iconUrl: "/icons/medical.svg", // Example SVG icon path
-        order: 1,
-      },
-      {
-        id: 'feat-2',
-        title: "Education Support",
-        description: "Ensuring access to quality education and learning resources for a brighter future.",
-        iconUrl: "/icons/education.svg",
-        order: 2,
-      },
-      {
-        id: 'feat-3',
-        title: "Community Development",
-        description: "Investing in sustainable community projects that uplift families and children.",
-        iconUrl: "/icons/funds.svg",
-        order: 3,
-      },
-      {
-        id: 'feat-4',
-        title: "Emergency Relief",
-        description: "Delivering urgent aid and support in times of crisis and natural disasters.",
-        iconUrl: "/icons/support.svg",
-        order: 4,
-      },
-      {
-        id: 'feat-5',
-        title: "Clean Water Initiatives",
-        description: "Implementing projects to provide safe and accessible drinking water to communities.",
-        iconUrl: "/icons/water.svg", // New example icon
-        order: 5,
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     features: [
+//       {
+//         id: 'feat-1',
+//         title: "Medical Aid",
+//         description: "Providing essential healthcare and medical support to vulnerable children.",
+//         iconUrl: "/icons/medical.svg", // Example SVG icon path
+//         order: 1,
+//       },
+//       {
+//         id: 'feat-2',
+//         title: "Education Support",
+//         description: "Ensuring access to quality education and learning resources for a brighter future.",
+//         iconUrl: "/icons/education.svg",
+//         order: 2,
+//       },
+//       {
+//         id: 'feat-3',
+//         title: "Community Development",
+//         description: "Investing in sustainable community projects that uplift families and children.",
+//         iconUrl: "/icons/funds.svg",
+//         order: 3,
+//       },
+//       {
+//         id: 'feat-4',
+//         title: "Emergency Relief",
+//         description: "Delivering urgent aid and support in times of crisis and natural disasters.",
+//         iconUrl: "/icons/support.svg",
+//         order: 4,
+//       },
+//       {
+//         id: 'feat-5',
+//         title: "Clean Water Initiatives",
+//         description: "Implementing projects to provide safe and accessible drinking water to communities.",
+//         iconUrl: "/icons/water.svg", // New example icon
+//         order: 5,
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type ThemeSettings = {
@@ -28,22 +28,22 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    slug: 'childrens-hope-foundation',
-    ctaSection: {
-      title: 'Ready to Make a Lasting Impact?',
-      subtitle: 'Your support helps us build a future filled with hope and opportunities for children and communities worldwide.',
-      buttonLabel: 'Join Us Today',
-      buttonHref: '/volunteer', // Example link for joining/volunteering
-    },
-    themeSettings: {
-      primaryColor: "#FF5722", // Orange for primary actions
-      secondaryColor: "#FFFFFF", // White for secondary actions/text
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     slug: 'childrens-hope-foundation',
+//     ctaSection: {
+//       title: 'Ready to Make a Lasting Impact?',
+//       subtitle: 'Your support helps us build a future filled with hope and opportunities for children and communities worldwide.',
+//       buttonLabel: 'Join Us Today',
+//       buttonHref: '/volunteer', // Example link for joining/volunteering
+//     },
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Orange for primary actions
+//       secondaryColor: "#FFFFFF", // White for secondary actions/text
+//     },
+//   } as StoreForm,
+// });
 
 export default function CtaBoldSection() {
   const { storeFormData } = useStoreContext();

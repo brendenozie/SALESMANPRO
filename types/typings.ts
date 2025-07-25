@@ -222,15 +222,19 @@ export interface Award {
 }
 
 export interface Metric {
+    id?: string;
     label: string;
     value: number;
     iconUrl?: string;
+    order?: number; 
 }
 
 export interface Stat {
+    id?: string;
     label: string;
-    value: string | number;
+    value: string;
     iconUrl?: string;
+    order?: number; 
 }
 
 export interface PricingTier {
@@ -263,6 +267,7 @@ export interface AppPromo {
 export interface Blog {
     id?: string;
     title: string; 
+    excerpt?: string;
     slug: string;
     content: string;
     coverImage?: string; 
@@ -270,7 +275,8 @@ export interface Blog {
     tags: string[];
     author?: { name: string; profileImage: string }; 
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-    publishedAt?: Date | string;
+    publishedAt?: Date | string;    
+    order?: number; 
 }
 
 export type Course = {
@@ -286,6 +292,15 @@ export type Course = {
   ctaLink?: string; // Link to the course details page
 };
 
+// Define types based on your transformCompanyToStoreForm and Prisma schema
+export type Feature = {
+  id: string;
+  title: string; // Corresponds to 'label'
+  description: string;
+  iconUrl?: string; // Corresponds to 'icon'
+  order: number; // For sorting
+};
+
 // --- MAIN UPDATED STORE FORM ---
 export interface StoreForm {
     id: string;
@@ -295,6 +310,8 @@ export interface StoreForm {
     description?: string; 
     hasWebsite: boolean;
     domain: string; 
+
+    features?: Feature[]; 
     
     // --- Missing Core Fields Added ---
     currency: string; // e.g., "KES" 

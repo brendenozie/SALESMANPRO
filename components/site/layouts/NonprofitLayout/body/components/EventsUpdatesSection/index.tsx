@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon } from '@heroicons/react/24/outline'; // Added for consistency
 // Assuming useStoreContext is available and provides storeFormData
-// import { useStoreContext } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { Blog } from '@/types/typings';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type Event = {
@@ -20,15 +21,15 @@ export type Event = {
   order: number; // For sorting
 };
 
-export type Blog = {
-  id: string;
-  title: string;
-  excerpt?: string; // Short summary
-  imageUrl?: string;
-  publishedAt: string; // ISO date string
-  link: string; // Link to the full blog post
-  order: number; // For sorting
-};
+// export type Blog = {
+//   id: string;
+//   title: string;
+//   excerpt?: string; // Short summary
+//   imageUrl?: string;
+//   publishedAt: string; // ISO date string
+//   link: string; // Link to the full blog post
+//   order: number; // For sorting
+// };
 
 export type ThemeSettings = {
   primaryColor?: string;
@@ -46,77 +47,77 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    slug: 'childrens-hope-foundation',
-    events: [
-      {
-        id: 'event-1',
-        title: 'Community Clean-Up Day',
-        description: 'Join us for a day of community service, fostering cleanliness and civic responsibility in our neighborhoods.',
-        eventDate: '2025-05-30T09:00:00Z', // ISO string
-        eventTime: '9:00 AM - 1:00 PM',
-        imageUrl: 'https://images.unsplash.com/photo-1532629391091-c247900b1713?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        link: '#event-cleanup',
-        order: 1,
-      },
-      {
-        id: 'event-2',
-        title: 'Hope Gala Fundraiser Event',
-        description: 'An elegant evening dedicated to raising crucial funds for children\'s education and welfare programs.',
-        eventDate: '2025-06-15T18:00:00Z',
-        eventTime: '6:00 PM onwards',
-        imageUrl: 'https://images.unsplash.com/photo-1526367790952-0925e3170e7a?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        link: '#event-gala',
-        order: 2,
-      },
-      {
-        id: 'event-3',
-        title: 'Children\'s Art Workshop',
-        description: 'A creative session designed to encourage self-expression and artistic talent among young children.',
-        eventDate: '2025-07-05T10:00:00Z',
-        eventTime: '10:00 AM - 12:00 PM',
-        imageUrl: 'https://images.unsplash.com/photo-1513360371669-4be6363c10a4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        link: '#event-art-workshop',
-        order: 3,
-      },
-    ],
-    blogs: [
-      {
-        id: 'blog-1',
-        title: 'New Education Program Launched in Rural Areas',
-        excerpt: 'Our latest initiative aims to provide quality education to underserved communities, focusing on digital literacy and STEM skills.',
-        imageUrl: 'https://images.unsplash.com/photo-1523050854805-9a84a9235777?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        publishedAt: '2024-07-20T10:00:00Z',
-        link: '#blog-post-1',
-        order: 1,
-      },
-      {
-        id: 'blog-2',
-        title: 'Success Story: How Clean Water Transformed a Village',
-        excerpt: 'Read about the incredible impact of our recent clean water project on the health and livelihood of a remote village.',
-        imageUrl: 'https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        publishedAt: '2024-07-15T14:30:00Z',
-        link: '#blog-post-2',
-        order: 2,
-      },
-      {
-        id: 'blog-3',
-        title: 'Volunteers Spotlight: Meet Our Heroes',
-        excerpt: 'We shine a light on the incredible individuals dedicating their time and effort to our cause.',
-        imageUrl: 'https://images.unsplash.com/photo-1518621736915-f3b160292723?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        publishedAt: '2024-07-10T11:00:00Z',
-        link: '#blog-post-3',
-        order: 3,
-      },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722", // Orange for primary actions
-      secondaryColor: "#FFFFFF", // White for secondary actions/text
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     slug: 'childrens-hope-foundation',
+//     events: [
+//       {
+//         id: 'event-1',
+//         title: 'Community Clean-Up Day',
+//         description: 'Join us for a day of community service, fostering cleanliness and civic responsibility in our neighborhoods.',
+//         eventDate: '2025-05-30T09:00:00Z', // ISO string
+//         eventTime: '9:00 AM - 1:00 PM',
+//         imageUrl: 'https://images.unsplash.com/photo-1532629391091-c247900b1713?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         link: '#event-cleanup',
+//         order: 1,
+//       },
+//       {
+//         id: 'event-2',
+//         title: 'Hope Gala Fundraiser Event',
+//         description: 'An elegant evening dedicated to raising crucial funds for children\'s education and welfare programs.',
+//         eventDate: '2025-06-15T18:00:00Z',
+//         eventTime: '6:00 PM onwards',
+//         imageUrl: 'https://images.unsplash.com/photo-1526367790952-0925e3170e7a?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         link: '#event-gala',
+//         order: 2,
+//       },
+//       {
+//         id: 'event-3',
+//         title: 'Children\'s Art Workshop',
+//         description: 'A creative session designed to encourage self-expression and artistic talent among young children.',
+//         eventDate: '2025-07-05T10:00:00Z',
+//         eventTime: '10:00 AM - 12:00 PM',
+//         imageUrl: 'https://images.unsplash.com/photo-1513360371669-4be6363c10a4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         link: '#event-art-workshop',
+//         order: 3,
+//       },
+//     ],
+//     blogs: [
+//       {
+//         id: 'blog-1',
+//         title: 'New Education Program Launched in Rural Areas',
+//         excerpt: 'Our latest initiative aims to provide quality education to underserved communities, focusing on digital literacy and STEM skills.',
+//         imageUrl: 'https://images.unsplash.com/photo-1523050854805-9a84a9235777?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         publishedAt: '2024-07-20T10:00:00Z',
+//         link: '#blog-post-1',
+//         order: 1,
+//       },
+//       {
+//         id: 'blog-2',
+//         title: 'Success Story: How Clean Water Transformed a Village',
+//         excerpt: 'Read about the incredible impact of our recent clean water project on the health and livelihood of a remote village.',
+//         imageUrl: 'https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         publishedAt: '2024-07-15T14:30:00Z',
+//         link: '#blog-post-2',
+//         order: 2,
+//       },
+//       {
+//         id: 'blog-3',
+//         title: 'Volunteers Spotlight: Meet Our Heroes',
+//         excerpt: 'We shine a light on the incredible individuals dedicating their time and effort to our cause.',
+//         imageUrl: 'https://images.unsplash.com/photo-1518621736915-f3b160292723?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         publishedAt: '2024-07-10T11:00:00Z',
+//         link: '#blog-post-3',
+//         order: 3,
+//       },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Orange for primary actions
+//       secondaryColor: "#FFFFFF", // White for secondary actions/text
+//     },
+//   } as StoreForm,
+// });
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -164,7 +165,7 @@ const fallbackEvents = [
     eventDate: '2025-08-10T08:00:00Z',
     eventTime: '8:00 AM',
     imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Charity+Run',
-    link: '#',
+    slug: '#',
     order: 1,
   },
   {
@@ -174,7 +175,7 @@ const fallbackEvents = [
     eventDate: '2025-09-01T12:00:00Z',
     eventTime: '12:00 PM',
     imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Volunteer+Picnic',
-    link: '#',
+    slug: '#',
     order: 2,
   },
   {
@@ -183,8 +184,8 @@ const fallbackEvents = [
     description: 'Help us collect warm coats for children in need this winter season.',
     eventDate: '2025-10-20T09:00:00Z',
     eventTime: '9:00 AM - 4:00 PM',
-    imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Coat+Drive',
-    link: '#',
+    coverImage: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Coat+Drive',
+    slug: '#',
     order: 3,
   },
 ];
@@ -194,27 +195,27 @@ const fallbackBlogs = [
     id: 'fb-blog-1',
     title: 'Impact Report 2024: A Year of Change',
     excerpt: 'Discover the significant milestones and lives touched in our latest annual impact report.',
-    imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Impact+Report',
+    coverImage: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Impact+Report',
     publishedAt: '2024-07-25T09:00:00Z',
-    link: '#',
+    slug: '#',
     order: 1,
   },
   {
     id: 'fb-blog-2',
     title: 'Building Brighter Futures: Our School Projects',
     excerpt: 'An in-depth look at how our school construction projects are transforming communities.',
-    imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=School+Projects',
+    coverImage: 'https://placehold.co/400x250/D1D5DB/4B5563?text=School+Projects',
     publishedAt: '2024-07-10T11:00:00Z',
-    link: '#',
+    slug: '#',
     order: 2,
   },
   {
     id: 'fb-blog-3',
     title: 'The Power of a Single Donation',
     excerpt: 'Hear a compelling story about how one donation made a profound difference.',
-    imageUrl: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Donation+Impact',
+    coverImage: 'https://placehold.co/400x250/D1D5DB/4B5563?text=Donation+Impact',
     publishedAt: '2024-07-01T15:00:00Z',
-    link: '#',
+    slug: '#',
     order: 3,
   },
 ];
@@ -277,7 +278,7 @@ export default function EventsUpdatesSection() {
                     {evt.description}
                   </p>
                   <Link
-                    href={evt.link}
+                    href={`#`}//evt.link}
                     className="mt-3 inline-flex items-center font-medium transition-colors"
                     style={{ color: primaryColor, '--tw-hover-text-color': `${primaryColor}D0` } as React.CSSProperties}
                   >
@@ -289,7 +290,7 @@ export default function EventsUpdatesSection() {
           })}
           <div className="text-center mt-8">
             <Link
-              href={`/${organizationSlug}/events`}
+              href={`#`}///${organizationSlug}/events`}
               className="px-8 py-3 rounded-full font-semibold hover:shadow-lg transition duration-300 transform hover:scale-105"
               style={{ backgroundColor: primaryColor, color: '#FFFFFF' }}
             >
@@ -311,17 +312,17 @@ export default function EventsUpdatesSection() {
               viewport={{ once: true, amount: 0.4 }}
               transition={{ delay: idx * 0.15, duration: 0.6 }}
               className="flex items-center mb-6 bg-white rounded-xl shadow-md hover:shadow-lg p-5 transition-shadow duration-300"
-              onClick={() => mockRouterPush(newsItem.link)}
+              onClick={() => mockRouterPush(newsItem.slug)}
             >
               <div className="flex-shrink-0 w-28 h-28 mr-5 rounded-lg overflow-hidden relative">
                 <Image
-                  src={newsItem.imageUrl || "https://placehold.co/112x112/D1D5DB/4B5563?text=News+Image"}
+                  src={newsItem.coverImage || "https://placehold.co/112x112/D1D5DB/4B5563?text=News+Image"}
                   alt={newsItem.title}
                   fill
                   className="object-cover w-full h-full"
                   loader={loader}
                   sizes="112px"
-                  onError={handleImageError}
+                  // onError={handleImageError}
                 />
               </div>
               <div>
@@ -332,7 +333,7 @@ export default function EventsUpdatesSection() {
                   {newsItem.excerpt || 'No excerpt available.'}
                 </p>
                 <Link
-                  href={newsItem.link}
+                  href={`#`}//{newsItem.slug}
                   className="inline-flex items-center font-medium transition-colors"
                   style={{ color: primaryColor, '--tw-hover-text-color': `${primaryColor}D0` } as React.CSSProperties}
                 >
@@ -343,7 +344,7 @@ export default function EventsUpdatesSection() {
           ))}
           <div className="text-center mt-8">
             <Link
-              href={`/${organizationSlug}/blog`}
+              href={`#`}//{`/${organizationSlug}/blog`}
               className="px-8 py-3 rounded-full font-semibold hover:shadow-lg transition duration-300 transform hover:scale-105"
               style={{ backgroundColor: primaryColor, color: '#FFFFFF' }}
             >
