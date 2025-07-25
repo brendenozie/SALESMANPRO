@@ -106,6 +106,9 @@ export async function GET(request: Request) {
         bio: student.bio,
         address: student.address,
         companyId: student.companyId,
+        firstName: student.firstName, 
+        lastName: student.lastName, 
+        admissionNumber:  student.admissionNumber,
         parentId: student.parentId,
         parentName: student.parent?.user.name,
         parentEmail: student.parent?.user.email,
@@ -142,7 +145,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, name, companyId, phone, bio, address, profilePicture, parentId, academicLevelId, levelStatus } = body;
+    const { email, name, companyId, phone,firstName, lastName, admissionNumber, bio, address, profilePicture, parentId, academicLevelId, levelStatus } = body;
 
     if (!email || !name || !companyId) {
       return NextResponse.json({ message: "Email, Name, and Company ID are required to create a student." }, { status: 400 });
@@ -213,6 +216,7 @@ export async function POST(request: Request) {
           loginCode,
           companyId,
           parentId,
+          firstName, lastName, admissionNumber,
           phone,
           bio,
           address,
@@ -348,6 +352,9 @@ export async function POST(request: Request) {
       address: studentResponse.address,
       companyId: studentResponse.companyId,
       parentId: studentResponse.parentId,
+      firstName, 
+      lastName, 
+      admissionNumber,
       parentName: studentResponse.parent?.user.name,
       parentEmail: studentResponse.parent?.user.email,
       parentPhone: studentResponse.parent?.phone,

@@ -158,7 +158,6 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
 
   "Educational & Online Courses": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
     {
       label: "Management",
       icon: ClipboardDocumentListIcon,
@@ -173,7 +172,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Academic Levels", href: `/admin/${adminSlug}/academic-levels` },
         { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
         { label: "Parents", href: `/admin/${adminSlug}/parents` },     
-        { label: "Students", href: `/admin/${adminSlug}/students` },          
+        { label: "Students", href: `/admin/${adminSlug}/students` },           
+        { label: "FEE", href: `/admin/${adminSlug}/fee` },       
       ],
     },
     {

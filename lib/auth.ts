@@ -117,9 +117,10 @@ export const authOptions: NextAuthOptions = {
         // If the user is linked to a Student or Educator, prioritize that role
         const studentCheck = await prisma.student.findUnique({ where: { userId: userFoundInDb.id } });
         const educatorCheck = await prisma.educator.findUnique({ where: { userId: userFoundInDb.id } });
-        const consumerCheck = await prisma.consumer.findUnique({ where: { email: credentials.email } });
-        const salesAgentCheck = await prisma.salesAgent.findUnique({ where: { email: credentials.email } });
-        const clientCheck = await prisma.client.findUnique({ where: { email: credentials.email } });
+        const consumerCheck = await prisma.consumer.findUnique({ where: { userId: userFoundInDb.id } });
+        const salesAgentCheck = await prisma.salesAgent.findUnique({ where: { userId: userFoundInDb.id } });
+        const clientCheck = await prisma.client.findUnique({ where: { userId: userFoundInDb.id } });
+        // const doctorCheck = await prisma.doctor.findUnique({ where: { use: userFoundInDb.id } });
 
         if (studentCheck) {
             determinedRole = 'STUDENT';
