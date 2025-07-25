@@ -4,26 +4,8 @@ import React from 'react';
 import Image from 'next/image';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-// Define the relevant parts of StoreForm that HeroSection uses
-export type StoreForm = {
-  name?: string; // Corresponds to the main title
-  tagline?: string; // Corresponds to the description
-  bannerUrl?: string; // Corresponds to the background image
-  // If you want to use storeCategories for floating icons, add it here too:
-  // storeCategories?: Array<{ id: string; name: string; icon?: string; }>;
-};
-
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import and ensure
-// your StoreContext provides data conforming to the StoreForm type.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'My Awesome Directory',
-    tagline: 'Discover local businesses and services near you.',
-    bannerUrl: 'https://placehold.co/1920x1080/4CAF50/FFFFFF?text=Directory+Hero', // Example banner URL
-  } as StoreForm,
-});
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
