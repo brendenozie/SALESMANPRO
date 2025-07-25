@@ -16,6 +16,8 @@ import {
   HeartIcon,
   QuestionMarkCircleIcon, // Generic fallback icon
 } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { StoreCategory } from '@/types/typings';
 
 // Map string names to Heroicon components
 const heroIconMap: Record<string, React.ElementType> = {
@@ -33,14 +35,14 @@ const heroIconMap: Record<string, React.ElementType> = {
 };
 
 // Define types based on your transformCompanyToStoreForm
-export type StoreCategory = {
-  id: string; // Corresponds to categoryId
-  name: string; // Corresponds to displayName or category.name
-  icon?: string; // Can be an emoji or a Heroicon name string
-  items: any[]; // Array of items, used to derive count
-  sortOrder: number;
-  visible: boolean;
-};
+// export type StoreCategory = {
+//   id: string; // Corresponds to categoryId
+//   name: string; // Corresponds to displayName or category.name
+//   icon?: string; // Can be an emoji or a Heroicon name string
+//   items: any[]; // Array of items, used to derive count
+//   sortOrder: number;
+//   visible: boolean;
+// };
 
 export type StoreForm = {
   storeCategories?: StoreCategory[];
@@ -49,23 +51,23 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    storeCategories: [
-      { id: 'cat1', name: 'Design & Creative', icon: 'PencilIcon', items: Array(1200).fill(null), sortOrder: 1, visible: true },
-      { id: 'cat2', name: 'Analytics & Data', icon: 'ChartBarIcon', items: Array(850).fill(null), sortOrder: 2, visible: true },
-      { id: 'cat3', name: 'Trades & Services', icon: 'BoltIcon', items: Array(1500).fill(null), sortOrder: 3, visible: true },
-      { id: 'cat4', name: 'Finance & Consulting', icon: 'CurrencyDollarIcon', items: Array(980).fill(null), sortOrder: 4, visible: true },
-      { id: 'cat5', name: 'Software & IT', icon: 'CodeBracketIcon', items: Array(2100).fill(null), sortOrder: 5, visible: true },
-      { id: 'cat6', name: 'Engineering & Tech', icon: 'Cog6ToothIcon', items: Array(1300).fill(null), sortOrder: 6, visible: true },
-      { id: 'cat7', name: 'Marketing & Sales', icon: 'MegaphoneIcon', items: Array(1100).fill(null), sortOrder: 7, visible: true },
-      { id: 'cat8', name: 'Education & Training', icon: 'ComputerDesktopIcon', items: Array(750).fill(null), sortOrder: 8, visible: true },
-      { id: 'cat9', name: 'Real Estate', icon: 'BuildingOffice2Icon', items: Array(600).fill(null), sortOrder: 9, visible: true },
-      { id: 'cat10', name: 'Health & Wellness', icon: 'HeartIcon', items: Array(900).fill(null), sortOrder: 10, visible: true },
-      { id: 'cat11', name: 'Food & Beverage', icon: '🍽️', items: Array(1800).fill(null), sortOrder: 11, visible: true }, // Example with emoji icon
-    ] as StoreCategory[],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     storeCategories: [
+//       { id: 'cat1', name: 'Design & Creative', icon: 'PencilIcon', items: Array(1200).fill(null), sortOrder: 1, visible: true },
+//       { id: 'cat2', name: 'Analytics & Data', icon: 'ChartBarIcon', items: Array(850).fill(null), sortOrder: 2, visible: true },
+//       { id: 'cat3', name: 'Trades & Services', icon: 'BoltIcon', items: Array(1500).fill(null), sortOrder: 3, visible: true },
+//       { id: 'cat4', name: 'Finance & Consulting', icon: 'CurrencyDollarIcon', items: Array(980).fill(null), sortOrder: 4, visible: true },
+//       { id: 'cat5', name: 'Software & IT', icon: 'CodeBracketIcon', items: Array(2100).fill(null), sortOrder: 5, visible: true },
+//       { id: 'cat6', name: 'Engineering & Tech', icon: 'Cog6ToothIcon', items: Array(1300).fill(null), sortOrder: 6, visible: true },
+//       { id: 'cat7', name: 'Marketing & Sales', icon: 'MegaphoneIcon', items: Array(1100).fill(null), sortOrder: 7, visible: true },
+//       { id: 'cat8', name: 'Education & Training', icon: 'ComputerDesktopIcon', items: Array(750).fill(null), sortOrder: 8, visible: true },
+//       { id: 'cat9', name: 'Real Estate', icon: 'BuildingOffice2Icon', items: Array(600).fill(null), sortOrder: 9, visible: true },
+//       { id: 'cat10', name: 'Health & Wellness', icon: 'HeartIcon', items: Array(900).fill(null), sortOrder: 10, visible: true },
+//       { id: 'cat11', name: 'Food & Beverage', icon: '🍽️', items: Array(1800).fill(null), sortOrder: 11, visible: true }, // Example with emoji icon
+//     ] as StoreCategory[],
+//   } as StoreForm,
+// });
 
 // Static fallback data for categories (matches the structure we'll use for rendering)
 const fallbackCategories = [
@@ -96,11 +98,11 @@ export default function CategoryGridSection() {
           const isEmoji = cat.icon && !heroIconMap[cat.icon]; // Check if it's an emoji (string but not in map)
 
           return {
-            name: cat.name,
+            name: cat.displayName,
             Icon: IconComponent,
             emoji: isEmoji ? cat.icon : undefined, // Store emoji separately if it's an emoji
             count: `${(cat.items?.length || 0).toLocaleString()}+ listings`, // Use items length for count
-            slug: cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-*|-*$/g, ''), // Generate slug from name
+            slug: cat.displayName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-*|-*$/g, ''), // Generate slug from name
           };
         })
     : fallbackCategories; // Use static fallback categories

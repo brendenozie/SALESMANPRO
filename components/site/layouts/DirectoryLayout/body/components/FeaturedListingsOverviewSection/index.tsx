@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid'; // Solid star for ratings
 import { createPortal } from 'react-dom';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Assuming useStoreContext is available and provides storeFormData
 // import { useStoreContext } from '@/contexts/StoreContext';
@@ -54,117 +55,117 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    slug: 'my-directory-site', // Example slug for the site
-    currency: 'KES', // Example currency
-    marketplaceListings: [
-      {
-        id: 'listing-1',
-        name: 'The Gourmet Plate Bistro', // Business Name
-        title: 'Exquisite Dining Experience', // Listing Title
-        description: 'Discover our latest collection of handcrafted leather bags, perfect for any occasion. Elegance meets functionality.',
-        finalPrice: 500.00,
-        images: ['https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: true,
-        location: 'Westlands, Nairobi', // Example location
-        rating: 5, // Example rating
-        product: {
-          id: 'prod-1',
-          name: 'Handbag',
-          description: 'High-quality leather handbag.',
-          brand: 'Luxe Fashion', // Example brand for subtitle
-        },
-      },
-      {
-        id: 'listing-2',
-        name: 'Serenity Spa & Wellness',
-        title: 'Ultimate Relaxation Package',
-        description: 'Unwind with our signature deep tissue massage. Rejuvenate your mind and body in a serene atmosphere.',
-        finalPrice: 99.00,
-        images: ['https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: false,
-        location: 'Karen, Nairobi',
-        rating: 4,
-        product: {
-          id: 'prod-2',
-          name: 'Massage Therapy',
-          brand: 'Urban Oasis',
-        },
-      },
-      {
-        id: 'listing-3',
-        name: 'Tech Haven Electronics',
-        title: 'Cutting-Edge Smart Devices',
-        description: 'Transform your home into a smart haven with our latest range of intuitive and energy-efficient devices.',
-        finalPrice: 150.00,
-        images: ['https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: true,
-        location: 'Upper Hill, Nairobi',
-        rating: 4,
-        product: {
-          id: 'prod-3',
-          name: 'Smart Home Hub',
-          brand: 'Innovate Tech',
-        },
-      },
-      {
-        id: 'listing-4',
-        name: 'Urban Greens Nursery',
-        title: 'Premium Plant Selection',
-        description: 'Plants, Tools & Landscaping services for your urban garden.',
-        finalPrice: 75.00,
-        images: ['https://images.unsplash.com/photo-1513506003901-ad169460c11f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: false,
-        location: 'Lavington, Nairobi',
-        rating: 3,
-        product: {
-          id: 'prod-4',
-          name: 'Indoor Plants',
-          brand: 'Green Thumb',
-        },
-      },
-      {
-        id: 'listing-5',
-        name: 'Safari Adventures Kenya',
-        title: 'Unforgettable Wildlife Safaris',
-        description: 'Wildlife Tours & Safaris across Kenya\'s best national parks.',
-        finalPrice: 1200.00,
-        images: ['https://images.unsplash.com/photo-1583511657519-c09e39066601?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: true,
-        location: 'Langata, Nairobi',
-        rating: 5,
-        product: {
-          id: 'prod-5',
-          name: 'Safari Package',
-          brand: 'Wild Expeditions',
-        },
-      },
-      {
-        id: 'listing-6',
-        name: 'Crafted Cuppa Coffee Shop',
-        title: 'Artisan Coffee & Pastries',
-        description: 'Enjoy freshly brewed coffee and delicious pastries in a cozy atmosphere.',
-        finalPrice: 15.00,
-        images: ['https://images.unsplash.com/photo-1507146153580-6c02061bc4a6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: false,
-        location: 'Gigiri, Nairobi',
-        rating: 4,
-        product: {
-          id: 'prod-6',
-          name: 'Coffee Blend',
-          brand: 'Cupping Masters',
-        },
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     slug: 'my-directory-site', // Example slug for the site
+//     currency: 'KES', // Example currency
+//     marketplaceListings: [
+//       {
+//         id: 'listing-1',
+//         name: 'The Gourmet Plate Bistro', // Business Name
+//         title: 'Exquisite Dining Experience', // Listing Title
+//         description: 'Discover our latest collection of handcrafted leather bags, perfect for any occasion. Elegance meets functionality.',
+//         finalPrice: 500.00,
+//         images: ['https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: true,
+//         location: 'Westlands, Nairobi', // Example location
+//         rating: 5, // Example rating
+//         product: {
+//           id: 'prod-1',
+//           name: 'Handbag',
+//           description: 'High-quality leather handbag.',
+//           brand: 'Luxe Fashion', // Example brand for subtitle
+//         },
+//       },
+//       {
+//         id: 'listing-2',
+//         name: 'Serenity Spa & Wellness',
+//         title: 'Ultimate Relaxation Package',
+//         description: 'Unwind with our signature deep tissue massage. Rejuvenate your mind and body in a serene atmosphere.',
+//         finalPrice: 99.00,
+//         images: ['https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: false,
+//         location: 'Karen, Nairobi',
+//         rating: 4,
+//         product: {
+//           id: 'prod-2',
+//           name: 'Massage Therapy',
+//           brand: 'Urban Oasis',
+//         },
+//       },
+//       {
+//         id: 'listing-3',
+//         name: 'Tech Haven Electronics',
+//         title: 'Cutting-Edge Smart Devices',
+//         description: 'Transform your home into a smart haven with our latest range of intuitive and energy-efficient devices.',
+//         finalPrice: 150.00,
+//         images: ['https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: true,
+//         location: 'Upper Hill, Nairobi',
+//         rating: 4,
+//         product: {
+//           id: 'prod-3',
+//           name: 'Smart Home Hub',
+//           brand: 'Innovate Tech',
+//         },
+//       },
+//       {
+//         id: 'listing-4',
+//         name: 'Urban Greens Nursery',
+//         title: 'Premium Plant Selection',
+//         description: 'Plants, Tools & Landscaping services for your urban garden.',
+//         finalPrice: 75.00,
+//         images: ['https://images.unsplash.com/photo-1513506003901-ad169460c11f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: false,
+//         location: 'Lavington, Nairobi',
+//         rating: 3,
+//         product: {
+//           id: 'prod-4',
+//           name: 'Indoor Plants',
+//           brand: 'Green Thumb',
+//         },
+//       },
+//       {
+//         id: 'listing-5',
+//         name: 'Safari Adventures Kenya',
+//         title: 'Unforgettable Wildlife Safaris',
+//         description: 'Wildlife Tours & Safaris across Kenya\'s best national parks.',
+//         finalPrice: 1200.00,
+//         images: ['https://images.unsplash.com/photo-1583511657519-c09e39066601?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: true,
+//         location: 'Langata, Nairobi',
+//         rating: 5,
+//         product: {
+//           id: 'prod-5',
+//           name: 'Safari Package',
+//           brand: 'Wild Expeditions',
+//         },
+//       },
+//       {
+//         id: 'listing-6',
+//         name: 'Crafted Cuppa Coffee Shop',
+//         title: 'Artisan Coffee & Pastries',
+//         description: 'Enjoy freshly brewed coffee and delicious pastries in a cozy atmosphere.',
+//         finalPrice: 15.00,
+//         images: ['https://images.unsplash.com/photo-1507146153580-6c02061bc4a6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: false,
+//         location: 'Gigiri, Nairobi',
+//         rating: 4,
+//         product: {
+//           id: 'prod-6',
+//           name: 'Coffee Blend',
+//           brand: 'Cupping Masters',
+//         },
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -546,10 +547,10 @@ export default function FeaturedListingsOverviewSection() {
   const transformedListings = dynamicListings.map(listing => ({
     id: listing.id,
     name: listing.name, // Business name
-    title: listing.title, // Listing title
+    title: listing.name, // Listing title
     subtitle: listing.product?.brand || 'Service/Product', // Using brand as subtitle, or generic
     location: listing.location || 'Nairobi, Kenya', // Placeholder if not in schema
-    rating: listing.rating || Math.floor(Math.random() * 3) + 3, // Random rating 3-5 if not provided
+    rating:  Math.floor(Math.random() * 3) + 3, // listing.rating || Random rating 3-5 if not provided
     imageUrl: listing.images?.[0] || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image', // First image or fallback
     slug: listing.id, // Using ID as slug for simplicity, ideally you'd have a dedicated slug field
     tags: listing.isFeatured ? ['Featured'] : [], // Example tag

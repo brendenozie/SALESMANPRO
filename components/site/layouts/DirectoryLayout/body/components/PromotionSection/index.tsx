@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx'; // Utility for conditional class names
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define the structure of a single promotion as it comes from StoreForm
 export type Promotion = {
@@ -29,35 +30,35 @@ export type StoreForm = {
 // In a real application, you would uncomment the actual import and ensure
 // your StoreContext provides data conforming to the StoreForm type,
 // including an array of 'promotions'.
-const useStoreContext = () => ({
-  storeFormData: {
-    promotions: [
-      {
-        id: 'promo-summer-clearance',
-        code: 'SUMMER SAVINGS',
-        title: 'Up to 50% Off Everything!',
-        description: 'Refresh your wardrobe with our hottest deals. Limited stock available.',
-        bannerUrl: 'https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        ctaText: 'Shop Summer Deals',
-        ctaLink: '/shop/summer-clearance',
-        startsAt: '2024-07-01T00:00:00Z',
-        endsAt: '2024-08-31T23:59:59Z',
-      },
-      {
-        id: 'promo-winter-collection',
-        code: 'NEW ARRIVALS',
-        title: 'Cozy Winter Collection',
-        description: 'Embrace the cold in style with our latest collection of warm essentials.',
-        bannerUrl: 'https://images.unsplash.com/photo-1612443429399-ea16bb1c2c2f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        ctaText: 'Explore Winter Styles',
-        ctaLink: '/shop/winter-collection',
-        startsAt: '2024-09-01T00:00:00Z',
-        endsAt: '2024-11-30T23:59:59Z',
-      },
-      // Add more dynamic promotions here if needed
-    ],
-  } as StoreForm, // Cast to StoreForm for type safety in mock
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     promotions: [
+//       {
+//         id: 'promo-summer-clearance',
+//         code: 'SUMMER SAVINGS',
+//         title: 'Up to 50% Off Everything!',
+//         description: 'Refresh your wardrobe with our hottest deals. Limited stock available.',
+//         bannerUrl: 'https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         ctaText: 'Shop Summer Deals',
+//         ctaLink: '/shop/summer-clearance',
+//         startsAt: '2024-07-01T00:00:00Z',
+//         endsAt: '2024-08-31T23:59:59Z',
+//       },
+//       {
+//         id: 'promo-winter-collection',
+//         code: 'NEW ARRIVALS',
+//         title: 'Cozy Winter Collection',
+//         description: 'Embrace the cold in style with our latest collection of warm essentials.',
+//         bannerUrl: 'https://images.unsplash.com/photo-1612443429399-ea16bb1c2c2f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//         ctaText: 'Explore Winter Styles',
+//         ctaLink: '/shop/winter-collection',
+//         startsAt: '2024-09-01T00:00:00Z',
+//         endsAt: '2024-11-30T23:59:59Z',
+//       },
+//       // Add more dynamic promotions here if needed
+//     ],
+//   } as StoreForm, // Cast to StoreForm for type safety in mock
+// });
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -196,7 +197,7 @@ export default function PromotionSection() {
                 <h3 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">
                   {banner.title}
                 </h3>
-                <p className="mt-3 text-sm md:text-base text-gray-600 dark:text-gray-400">
+                <p className="mt-3 text-sm md:text-base text-gray-600 dark:text-gray-400 max-h-28 overflow-hidden">
                   {banner.description}
                 </p>
                 <Link href={banner.ctaLink} passHref>

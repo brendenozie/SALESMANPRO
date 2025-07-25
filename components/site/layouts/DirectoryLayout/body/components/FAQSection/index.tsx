@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define the structure of a single FAQ as it comes from StoreForm
 export type FAQ = {
@@ -20,54 +21,54 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    faqs: [
-      {
-        id: 'faq1',
-        question: 'How do I create an account on Ducun Vijed?',
-        answer: 'Signing up is easy! Click on the "Sign Up" button at the top right corner. You can register using your email address, Google, or Facebook account. Follow the prompts to complete your profile.',
-        order: 1,
-      },
-      {
-        id: 'faq2',
-        question: 'What types of services can I find on your platform?',
-        answer: 'Ducun Vijed offers a wide range of local services including beauty & wellness (massages, hair, nails), home services (plumbing, electrical, cleaning), professional services (tutoring, legal advice), pet care, and many more. We are constantly expanding our offerings to meet community needs.',
-        order: 2,
-      },
-      {
-        id: 'faq3',
-        question: 'How do I book a service with a provider?',
-        answer: 'Browse categories or use our search bar to find a service. Click on a listing to view details, available schedules, and provider information. Select your preferred date and time, then proceed to secure payment to confirm your booking.',
-        order: 3,
-      },
-      {
-        id: 'faq4',
-        question: 'Are service providers on Ducun Vijed verified?',
-        answer: 'Yes, absolutely. We prioritize your safety and satisfaction. All service providers undergo a thorough verification process, which includes identity checks, credential verification, and often background checks, depending on the service type.',
-        order: 4,
-      },
-      {
-        id: 'faq5',
-        question: 'Can I reschedule or cancel a booking?',
-        answer: 'You can manage your bookings directly from your user dashboard. Rescheduling and cancellation policies vary by provider, so please review the specific terms on the listing page before booking. Any cancellation fees will be clearly communicated.',
-        order: 5,
-      },
-      {
-        id: 'faq6',
-        question: 'What if I need to contact customer support?',
-        answer: 'Our dedicated support team is here to assist you. You can reach us through the "Contact Us" section on our website, or by emailing support@ducunvijed.com. We aim to respond to all inquiries within 24 hours.',
-        order: 6,
-      },
-      {
-        id: 'faq7',
-        question: 'How does payment work on Ducun Vijed?',
-        answer: 'All payments are processed securely through our platform. You can pay using major credit/debit cards or other integrated payment methods. Your payment details are encrypted and never stored on our servers.',
-        order: 7,
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     faqs: [
+//       {
+//         id: 'faq1',
+//         question: 'How do I create an account on Ducun Vijed?',
+//         answer: 'Signing up is easy! Click on the "Sign Up" button at the top right corner. You can register using your email address, Google, or Facebook account. Follow the prompts to complete your profile.',
+//         order: 1,
+//       },
+//       {
+//         id: 'faq2',
+//         question: 'What types of services can I find on your platform?',
+//         answer: 'Ducun Vijed offers a wide range of local services including beauty & wellness (massages, hair, nails), home services (plumbing, electrical, cleaning), professional services (tutoring, legal advice), pet care, and many more. We are constantly expanding our offerings to meet community needs.',
+//         order: 2,
+//       },
+//       {
+//         id: 'faq3',
+//         question: 'How do I book a service with a provider?',
+//         answer: 'Browse categories or use our search bar to find a service. Click on a listing to view details, available schedules, and provider information. Select your preferred date and time, then proceed to secure payment to confirm your booking.',
+//         order: 3,
+//       },
+//       {
+//         id: 'faq4',
+//         question: 'Are service providers on Ducun Vijed verified?',
+//         answer: 'Yes, absolutely. We prioritize your safety and satisfaction. All service providers undergo a thorough verification process, which includes identity checks, credential verification, and often background checks, depending on the service type.',
+//         order: 4,
+//       },
+//       {
+//         id: 'faq5',
+//         question: 'Can I reschedule or cancel a booking?',
+//         answer: 'You can manage your bookings directly from your user dashboard. Rescheduling and cancellation policies vary by provider, so please review the specific terms on the listing page before booking. Any cancellation fees will be clearly communicated.',
+//         order: 5,
+//       },
+//       {
+//         id: 'faq6',
+//         question: 'What if I need to contact customer support?',
+//         answer: 'Our dedicated support team is here to assist you. You can reach us through the "Contact Us" section on our website, or by emailing support@ducunvijed.com. We aim to respond to all inquiries within 24 hours.',
+//         order: 6,
+//       },
+//       {
+//         id: 'faq7',
+//         question: 'How does payment work on Ducun Vijed?',
+//         answer: 'All payments are processed securely through our platform. You can pay using major credit/debit cards or other integrated payment methods. Your payment details are encrypted and never stored on our servers.',
+//         order: 7,
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Static fallback data (matches the structure we'll use for rendering)
 const fallbackFaqs = [

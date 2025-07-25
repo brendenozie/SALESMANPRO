@@ -6,23 +6,25 @@ import { motion } from 'framer-motion';
 import Image from 'next/image'; // Import Image for optimized avatars
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Import slick carousel styles (ensure these are installed or linked in your project)
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Testimonial } from '@/types/typings';
 
 // Define types based on your transformCompanyToStoreForm
-export type Testimonial = {
-  id: string;
-  author: string; // Corresponds to author name
-  quote: string; // Corresponds to the testimonial text
-  rating?: number; // 1-5 stars
-  avatarUrl?: string; // URL for the author's image
-  order: number; // For sorting
-  // The 'title' field (e.g., 'Satisfied Client', 'Registered Therapist')
-  // is not explicitly in your schema's Testimonial model.
-  // We will derive it or use a generic fallback.
-};
+// export type Testimonial = {
+//   id: string;
+//   author: string; // Corresponds to author name
+//   quote: string; // Corresponds to the testimonial text
+//   rating?: number; // 1-5 stars
+//   avatarUrl?: string; // URL for the author's image
+//   order: number; // For sorting
+//   // The 'title' field (e.g., 'Satisfied Client', 'Registered Therapist')
+//   // is not explicitly in your schema's Testimonial model.
+//   // We will derive it or use a generic fallback.
+// };
 
 export type StoreForm = {
   testimonials?: Testimonial[];
@@ -31,44 +33,44 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    testimonials: [
-      {
-        id: 'test-1',
-        author: 'Sarah L.',
-        quote: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
-        rating: 5,
-        avatarUrl: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah', // Example placeholder
-        order: 1,
-      },
-      {
-        id: 'test-2',
-        author: 'Dr. Alex M.',
-        quote: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
-        rating: 5,
-        avatarUrl: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
-        order: 2,
-      },
-      {
-        id: 'test-3',
-        author: 'Jessica P.',
-        quote: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
-        rating: 4,
-        avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
-        order: 3,
-      },
-      {
-        id: 'test-4',
-        author: 'Mark T.',
-        quote: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
-        rating: 5,
-        avatarUrl: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
-        order: 4,
-      },
-    ],
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     testimonials: [
+//       {
+//         id: 'test-1',
+//         author: 'Sarah L.',
+//         quote: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
+//         rating: 5,
+//         avatarUrl: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah', // Example placeholder
+//         order: 1,
+//       },
+//       {
+//         id: 'test-2',
+//         author: 'Dr. Alex M.',
+//         quote: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
+//         rating: 5,
+//         avatarUrl: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
+//         order: 2,
+//       },
+//       {
+//         id: 'test-3',
+//         author: 'Jessica P.',
+//         quote: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
+//         rating: 4,
+//         avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
+//         order: 3,
+//       },
+//       {
+//         id: 'test-4',
+//         author: 'Mark T.',
+//         quote: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
+//         rating: 5,
+//         avatarUrl: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
+//         order: 4,
+//       },
+//     ],
+//   } as StoreForm,
+// });
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
@@ -90,46 +92,46 @@ const renderStars = (count: number | undefined) => {
 };
 
 // Static fallback data (matches the structure we'll use for rendering)
-interface RenderableTestimonial {
-  id: string;
-  name: string;
-  text: string;
-  rating: number;
-  image: string;
-  title: string; // This field is derived or hardcoded for fallback
-}
+// interface RenderableTestimonial {
+//   id: string;
+//   name: string;
+//   text: string;
+//   rating: number;
+//   image: string;
+//   title: string; // This field is derived or hardcoded for fallback
+// }
 
-const fallbackTestimonials: RenderableTestimonial[] = [
+const fallbackTestimonials: Testimonial[] = [
   {
     id: 'fallback-1',
-    name: 'Sarah L.',
-    text: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
+    author: 'Sarah L.',
+    quote: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
     rating: 5,
-    image: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah',
+    avatarUrl: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah',
     title: 'Satisfied Client',
   },
   {
     id: 'fallback-2',
-    name: 'Dr. Alex M.',
-    text: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
+    author: 'Dr. Alex M.',
+    quote: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
     rating: 5,
-    image: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
+    avatarUrl: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
     title: 'Registered Therapist',
   },
   {
     id: 'fallback-3',
-    name: 'Jessica P.',
-    text: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
+    author: 'Jessica P.',
+    quote: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
     rating: 4,
-    image: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
+    avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
     title: 'Regular User',
   },
   {
     id: 'fallback-4',
-    name: 'Mark T.',
-    text: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
+    author: 'Mark T.',
+    quote: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
     rating: 5,
-    image: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
+    avatarUrl: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
     title: 'Community Member',
   },
 ];
@@ -175,15 +177,15 @@ const TestimonialsSection = () => {
   const { testimonials: dynamicTestimonials } = storeFormData || {};
 
   // Determine which testimonials to render: dynamic or fallback
-  const testimonialsToRender: RenderableTestimonial[] = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0
+  const testimonialsToRender: Testimonial[] = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0
     ? dynamicTestimonials
         .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
         .map(t => ({
           id: t.id,
-          name: t.author,
-          text: t.quote,
+          author: t.author,
+          quote: t.quote,
           rating: t.rating || 5, // Default to 5 if rating is not provided
-          image: t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback image
+          avatarUrl: t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback image
           title: t.author.includes('Dr.') ? 'Registered Therapist' : 'Satisfied Client', // Derive title based on name or a generic
         }))
     : fallbackTestimonials; // Use static fallback testimonials
@@ -257,13 +259,13 @@ const TestimonialsSection = () => {
                   viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed">
-                    “{t.text}”
+                  <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed h-7 overflow-hidden">
+                    “{t.quote}”
                   </p>
                   <div className="flex items-center gap-4 mt-6"> {/* Increased gap */}
                     <Image
-                      src={t.image}
-                      alt={t.name}
+                      src={t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User'} // Fallback image
+                      alt={t.author}
                       width={48} // Larger avatar
                       height={48}
                       loader={loader}
@@ -271,7 +273,7 @@ const TestimonialsSection = () => {
                       onError={handleImageError} // Image error fallback
                     />
                     <div className="text-left">
-                      <p className="text-md font-semibold text-gray-900 dark:text-white">{t.name}</p>
+                      <p className="text-md font-semibold text-gray-900 dark:text-white h-7 overflow-hidden">{t.quote}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p>
                       {renderStars(t.rating)}
                     </div>
@@ -294,13 +296,13 @@ const TestimonialsSection = () => {
               transition={{ delay: index * 0.15, duration: 0.6, ease: 'easeOut' }}
               whileHover={{ y: -8, boxShadow: '0 15px 30px rgba(0,0,0,0.1)' }}
             >
-              <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed">
-                “{t.text}”
+              <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed h-7 overflow-hidden">
+                “{t.quote}”
               </p>
               <div className="flex items-center gap-4 mt-6">
                 <Image
-                  src={t.image}
-                  alt={t.name}
+                  src={t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User'}
+                  alt={t.author}
                   width={48}
                   height={48}
                   loader={loader}
@@ -308,7 +310,7 @@ const TestimonialsSection = () => {
                   onError={handleImageError}
                 />
                 <div className="text-left">
-                  <p className="text-md font-semibold text-gray-900 dark:text-white">{t.name}</p>
+                  <p className="text-md font-semibold text-gray-900 dark:text-white  h-7 overflow-hidden">{t.quote}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p>
                   {renderStars(t.rating)}
                 </div>

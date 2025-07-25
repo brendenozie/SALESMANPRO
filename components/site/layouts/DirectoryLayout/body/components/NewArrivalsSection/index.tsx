@@ -13,6 +13,7 @@ import {
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 export type ProductForListing = {
@@ -45,98 +46,98 @@ export type StoreForm = {
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    marketplaceListings: [
-      {
-        id: 'listing-1',
-        name: 'Luxe Fashion Boutique', // Business Name
-        title: 'Elegant Handbag Collection', // Listing Title
-        description: 'Discover our latest collection of handcrafted leather bags, perfect for any occasion. Elegance meets functionality.',
-        finalPrice: 500.00,
-        images: ['https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: true, // Will be used as a tag
-        product: {
-          id: 'prod-bag-1',
-          name: 'Handbag',
-          description: 'High-quality leather handbag.',
-        },
-      },
-      {
-        id: 'listing-2',
-        name: 'Green Eats Cafe',
-        title: 'Organic Smoothie Bar',
-        description: 'Freshly blended organic smoothies made with local ingredients. A perfect healthy boost for your day!',
-        finalPrice: 12.00,
-        images: ['https://images.unsplash.com/photo-1612443429399-ea16bb1c2c2f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: false,
-        product: {
-          id: 'prod-smoothie-1',
-          name: 'Green Smoothie',
-        },
-      },
-      {
-        id: 'listing-3',
-        name: 'Urban Oasis Spa',
-        title: 'Relaxing Massage Therapy',
-        description: 'Unwind with our signature deep tissue massage. Rejuvenate your mind and body in a serene atmosphere.',
-        finalPrice: 99.00,
-        images: ['https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: true,
-        product: {
-          id: 'prod-massage-1',
-          name: 'Deep Tissue Massage',
-        },
-      },
-      {
-        id: 'listing-4',
-        name: 'Tech Innovations Store',
-        title: 'Smart Home Devices',
-        description: 'Transform your home into a smart haven with our latest range of intuitive and energy-efficient devices.',
-        finalPrice: 150.00,
-        images: ['https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: false,
-        product: {
-          id: 'prod-smarthome-1',
-          name: 'Smart Hub',
-        },
-      },
-      {
-        id: 'listing-5',
-        name: 'Artistic Hub Studio',
-        title: 'Beginner Art Classes',
-        description: 'Unleash your creativity! Fun and engaging art classes for all skill levels, taught by professional artists.',
-        finalPrice: 75.00,
-        images: ['https://images.unsplash.com/photo-1513506003901-ad169460c11f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: true,
-        product: {
-          id: 'prod-artclass-1',
-          name: 'Painting Basics',
-        },
-      },
-      {
-        id: 'listing-6',
-        name: 'Pet Paradise Grooming',
-        title: 'Professional Pet Grooming',
-        description: 'Pamper your furry friend with our expert grooming services. We ensure a stress-free and sparkling clean experience.',
-        finalPrice: 60.00,
-        images: ['https://images.unsplash.com/photo-1583511657519-c09e39066601?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-        isAvailable: true,
-        isFeatured: false,
-        product: {
-          id: 'prod-petgroom-1',
-          name: 'Full Grooming Package',
-        },
-      },
-    ],
-    currency: 'KES', // Example currency
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     marketplaceListings: [
+//       {
+//         id: 'listing-1',
+//         name: 'Luxe Fashion Boutique', // Business Name
+//         title: 'Elegant Handbag Collection', // Listing Title
+//         description: 'Discover our latest collection of handcrafted leather bags, perfect for any occasion. Elegance meets functionality.',
+//         finalPrice: 500.00,
+//         images: ['https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: true, // Will be used as a tag
+//         product: {
+//           id: 'prod-bag-1',
+//           name: 'Handbag',
+//           description: 'High-quality leather handbag.',
+//         },
+//       },
+//       {
+//         id: 'listing-2',
+//         name: 'Green Eats Cafe',
+//         title: 'Organic Smoothie Bar',
+//         description: 'Freshly blended organic smoothies made with local ingredients. A perfect healthy boost for your day!',
+//         finalPrice: 12.00,
+//         images: ['https://images.unsplash.com/photo-1612443429399-ea16bb1c2c2f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: false,
+//         product: {
+//           id: 'prod-smoothie-1',
+//           name: 'Green Smoothie',
+//         },
+//       },
+//       {
+//         id: 'listing-3',
+//         name: 'Urban Oasis Spa',
+//         title: 'Relaxing Massage Therapy',
+//         description: 'Unwind with our signature deep tissue massage. Rejuvenate your mind and body in a serene atmosphere.',
+//         finalPrice: 99.00,
+//         images: ['https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: true,
+//         product: {
+//           id: 'prod-massage-1',
+//           name: 'Deep Tissue Massage',
+//         },
+//       },
+//       {
+//         id: 'listing-4',
+//         name: 'Tech Innovations Store',
+//         title: 'Smart Home Devices',
+//         description: 'Transform your home into a smart haven with our latest range of intuitive and energy-efficient devices.',
+//         finalPrice: 150.00,
+//         images: ['https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: false,
+//         product: {
+//           id: 'prod-smarthome-1',
+//           name: 'Smart Hub',
+//         },
+//       },
+//       {
+//         id: 'listing-5',
+//         name: 'Artistic Hub Studio',
+//         title: 'Beginner Art Classes',
+//         description: 'Unleash your creativity! Fun and engaging art classes for all skill levels, taught by professional artists.',
+//         finalPrice: 75.00,
+//         images: ['https://images.unsplash.com/photo-1513506003901-ad169460c11f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: true,
+//         product: {
+//           id: 'prod-artclass-1',
+//           name: 'Painting Basics',
+//         },
+//       },
+//       {
+//         id: 'listing-6',
+//         name: 'Pet Paradise Grooming',
+//         title: 'Professional Pet Grooming',
+//         description: 'Pamper your furry friend with our expert grooming services. We ensure a stress-free and sparkling clean experience.',
+//         finalPrice: 60.00,
+//         images: ['https://images.unsplash.com/photo-1583511657519-c09e39066601?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+//         isAvailable: true,
+//         isFeatured: false,
+//         product: {
+//           id: 'prod-petgroom-1',
+//           name: 'Full Grooming Package',
+//         },
+//       },
+//     ],
+//     currency: 'KES', // Example currency
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
@@ -242,7 +243,7 @@ export default function NewArrivalsSection() { // Renamed for better context
     ? dynamicListings.map(listing => ({
         id: listing.id,
         businessName: listing.name, // Use 'name' from MarketplaceListing for business name
-        title: listing.title, // Use 'title' from MarketplaceListing for listing title
+        title: listing.name, // Use 'title' from MarketplaceListing for listing title
         category: 'General Category', // Placeholder: You might need to add a 'category' field to MarketplaceListing or derive it
         price: `${currency} ${listing.finalPrice.toLocaleString()}`, // Format price with currency
         img: listing.images?.[0] || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image', // First image or fallback

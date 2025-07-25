@@ -179,6 +179,7 @@ export interface FAQ {
 export interface Testimonial {
     id?: string;
     author: string;
+    title?: string;
     quote: string;
     avatarUrl?: string;
     rating?: number; // 1-5 stars 
