@@ -28,7 +28,7 @@ import BookingAppointmentsDashboard from '@/components/admin/BookingAppointments
 import TutorDashboard, { TutorDashboardData } from '@/components/admin/TutorDashboard';
 import StudentDashboard, { StudentDashboardData } from '@/components/admin/StudentDashboard';
 import PrincipalDashboard, { PrincipalDashboardData } from '@/components/admin/PrincipalDashboard';
-import UncategorizedDashboard from '../../../components/admin/AdminDashClient'; // Assuming this is a generic fallback
+import UncategorizedDashboard from '@/components/admin/AdminDashClient'; // Assuming this is a generic fallback
 import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
 
 

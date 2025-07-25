@@ -1,6 +1,6 @@
 // app/admin/donations/page.tsx
 import React from "react";
-import DonationsClient from "./DonationsClient";
+import DonorManagementPage from "./DonorManagementPage";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -124,9 +124,5 @@ export default async function DonationsPage({ params }: PageProps) {
     console.error("[DonationsPage] Error fetching donations →", err.message);
   }
 
-  return <DonationsClient donationsData={donationsData}
-              donorsData={donorsData}
-              projectsData={projectsData}
-              campaignsData={campaignsData}
-   />;
+  return <DonorManagementPage/>;
 }

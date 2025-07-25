@@ -1,67 +1,52 @@
 // pages/api/campaigns/[id].js
-import prisma from '../../../lib/prisma';
+import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb"; 
 
-export default async function handler(req, res) {
-  const { id } = req.query;
 
-  if (req.method === 'GET') {
-    // GET a single campaign by ID
-    try {
-      const campaign = await prisma.campaign.findUnique({
-        where: { id },
-        include: {
-          donations: true,
-        },
-      });
-      if (!campaign) {
-        return res.status(404).json({ message: 'Campaign not found' });
-      }
-      res.status(200).json(campaign);
-    } catch (error) {
-      console.error('Error fetching campaign:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  } else if (req.method === 'PUT') {
-    // PUT (Update) an existing campaign by ID
-    const { name, description, startDate, endDate, goalAmount, currentAmount, status } = req.body;
-    try {
-      const updatedCampaign = await prisma.campaign.update({
-        where: { id },
-        data: {
-          name,
-          description,
-          startDate: startDate ? new Date(startDate) : undefined,
-          endDate: endDate ? new Date(endDate) : undefined,
-          goalAmount,
-          currentAmount,
-          status,
-          updatedAt: new Date(), // Manually update updatedAt
-        },
-      });
-      res.status(200).json(updatedCampaign);
-    } catch (error) {
-      console.error('Error updating campaign:', error);
-      if (error.code === 'P2025') {
-        return res.status(404).json({ message: 'Campaign not found' });
-      }
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  } else if (req.method === 'DELETE') {
-    // DELETE a campaign by ID
-    try {
-      await prisma.campaign.delete({
-        where: { id },
-      });
-      res.status(204).end();
-    } catch (error) {
-      console.error('Error deleting campaign:', error);
-      if (error.code === 'P2025') {
-        return res.status(404).json({ message: 'Campaign not found' });
-      }
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+// You can optionally add other HTTP methods like PUT for updates or DELETE
+// For example, if you had an ID in the path: app/api/campaigns/[id]/route.ts
+
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+  try {
+    const body = await request.json();
+    const { name, description, startDate, endDate, goalAmount, status } = body;
+
+    // Construct update data, handle dates correctly
+    const updateData: any = { name, description, goalAmount, status };
+    if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
+    if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
+    // Note: currentAmount usually updated via donations, not directly via PUT on campaign itself,
+    // unless there's a specific use case for manual adjustment.
+
+    const updatedCampaign = await prisma.campaign.update({
+      where: { id },
+      data: updateData,
+    });
+    return NextResponse.json(updatedCampaign, { status: 200 });
+  } catch (error) {
+    console.error('Error updating campaign:', error);
+    return NextResponse.json(
+      { message: 'Failed to update campaign', error: 'error.message || An unexpected error occurred.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+  try {
+    // Consider adding checks for associated donations before deleting a campaign
+    // Or configure Prisma to cascade deletes if that's your desired behavior
+    await prisma.campaign.delete({
+      where: { id },
+    });
+    return new NextResponse(null, { status: 204 }); // No Content
+  } catch (error) {
+    console.error('Error deleting campaign:', error);
+    return NextResponse.json(
+      { message: 'Failed to delete campaign', error: 'error.message || An unexpected error occurred.' },
+      { status: 500 }
+    );
   }
 }

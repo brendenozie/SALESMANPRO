@@ -203,6 +203,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
     { label: "Donations", href: `/admin/${adminSlug}/donations`, icon: HeartIcon },
     { label: "Campaigns", href: `/admin/${adminSlug}/campaigns`, icon: MegaphoneIcon }, // Added Campaigns link
+    { label: "Donors", href: `/admin/${adminSlug}/donors`, icon: UsersIcon },
     { label: "Members", href: `/admin/${adminSlug}/members`, icon: UsersIcon },
   ],
 

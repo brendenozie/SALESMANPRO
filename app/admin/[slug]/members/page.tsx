@@ -50,7 +50,7 @@ export default async function MembersPage({ params }: PageProps) {
     // Fetch Users (Members)
     // NOTE: You'll need an API endpoint for fetching users, e.g., /api/users
     // For now, this is a placeholder. You might need to adjust your backend to expose users.
-    const usersRes = await fetch(`${apiUrl}/users?companyId=${companyId}`, { cache: "no-store" });
+    const usersRes = await fetch(`${apiUrl}/admin/users?companyId=${companyId}`, { cache: "no-store" });
     if (usersRes.ok) {
       membersData = (await usersRes.json()) as Member[];
     } else {
@@ -58,7 +58,7 @@ export default async function MembersPage({ params }: PageProps) {
     }
 
     // Fetch Projects (for Project Member dropdown)
-    const projectsRes = await fetch(`${apiUrl}/projects?companyId=${companyId}`, { cache: "no-store" });
+    const projectsRes = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store" });
     if (projectsRes.ok) {
       projectsData = (await projectsRes.json()) as ProjectOption[];
     } else {
@@ -66,7 +66,7 @@ export default async function MembersPage({ params }: PageProps) {
     }
 
     // Fetch Project Members
-    const projectMembersRes = await fetch(`${apiUrl}/project-members?companyId=${companyId}`, { cache: "no-store" });
+    const projectMembersRes = await fetch(`${apiUrl}/admin/project-members?companyId=${companyId}`, { cache: "no-store" });
     if (projectMembersRes.ok) {
       projectMembersData = (await projectMembersRes.json()) as ProjectMember[];
     } else {
