@@ -7,7 +7,7 @@ import { StarIcon, ShoppingCartIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
 
 // Assuming useStoreContext is available and provides storeFormData
-import { useStoreContext } from "../../../../../contexts/StoreContext"; // Adjust path as needed
+import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
 
 // Define types for the data expected from StoreContext, aligning with a potential backend schema
 export type ProductCategory = {

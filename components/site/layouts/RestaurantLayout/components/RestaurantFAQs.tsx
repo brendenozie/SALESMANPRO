@@ -6,7 +6,7 @@ import { PlusSmallIcon, MinusSmallIcon, QuestionMarkCircleIcon } from "@heroicon
 import Link from "next/link";
 
 // Assuming useStoreContext is available and provides storeFormData
-import { useStoreContext } from "../../../../../contexts/StoreContext"; // Adjust path as needed
+import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
 
 // Define types for the data expected from StoreContext, aligning with a potential backend schema
 export type FAQ = {

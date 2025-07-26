@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 // import { useRouter } from "next/navigation"; // Uncomment in a real Next.js app
 import { PlayCircleIcon } from "@heroicons/react/24/solid";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Define types for the data expected from StoreContext
 export type ThemeSettings = {
@@ -25,19 +26,19 @@ export type StoreForm = {
 
 // Mock useStoreContext for standalone component demonstration
 // In a real application, you would import the actual useStoreContext from your contexts folder.
-const useStoreContext = () => ({
-  storeFormData: {
-    id: 'restaurant-mock-id',
-    name: 'The Gastronomy Hub',
-    slug: 'the-gastronomy-hub',
-    bannerUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // High-quality restaurant interior
-    description: 'Experience culinary excellence with our exquisite dishes, crafted from the freshest local ingredients and served with a passion for perfection.',
-    themeSettings: {
-      primaryColor: "#FF5722", // Deep Orange (a common food color)
-      secondaryColor: "#4CAF50", // Green (for freshness, or a contrasting accent)
-    },
-  } as StoreForm,
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     id: 'restaurant-mock-id',
+//     name: 'The Gastronomy Hub',
+//     slug: 'the-gastronomy-hub',
+//     bannerUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // High-quality restaurant interior
+//     description: 'Experience culinary excellence with our exquisite dishes, crafted from the freshest local ingredients and served with a passion for perfection.',
+//     themeSettings: {
+//       primaryColor: "#FF5722", // Deep Orange (a common food color)
+//       secondaryColor: "#4CAF50", // Green (for freshness, or a contrasting accent)
+//     },
+//   } as StoreForm,
+// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({

@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 // Assuming useStoreContext is available and provides storeFormData
-import { useStoreContext } from "../../../../../contexts/StoreContext"; // Adjust path as needed
+import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
 
 // Define types for the data expected from StoreContext
 export type Feature = {
