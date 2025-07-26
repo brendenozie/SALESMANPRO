@@ -478,6 +478,7 @@ export interface StoreForm {
 
 // Define StoreCategory and ProductCategory shapes
 export type StoreCategory = {
+  name: string;
   id: string;
   companyId: string;
   categoryId: string;
@@ -488,6 +489,8 @@ export type StoreCategory = {
   items: Subcategory[]; // always an array
   allBrands?: any[] | null;
   category: ProductCategory;
+  
+  fieldTypeGroup?: 'general' | 'vehicle' | 'property' | 'book' | 'clothing' | 'appliance' | 'service' | 'digital' | 'dish';
 };
 
 export type Subcategory = {
@@ -847,8 +850,8 @@ export interface MarketListingForm {
 
   // Title & description
   name: string;
-  description?: string; // Made optional
-  longDescription?: string; // Added: Matches schema
+  description?: string | null | undefined; // Made optional
+  longDescription?: string | null | undefined; // Added: Matches schema
 
   // Category hierarchy & tagging
   productCategoryId: string; // This will hold the ID of the actual ProductCategory
@@ -949,7 +952,7 @@ export interface MarketListingForm {
   applianceDimensions?: string;
 
   // Beauty Products
-  ingredients: string;
+  ingredients: string | null;
   usageInstructions: string;
   expirationDate: string | null;
 
@@ -992,8 +995,8 @@ export interface MarketListingForm {
   commissionStartDate: string | null;
   commissionEndDate: string | null;
 
-  images?: string[];
-  video?: string;
+  images?: string[] | null;
+  video?: string | null;
   
   propertyTypeId?: string; // Relation ID
   

@@ -1,44 +1,45 @@
 // app/admin/[slug]/menu/page.tsx
 import React from "react";
 import MenuClient from "./MenuClient";
+import { MarketListingForm, StoreCategory } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define types based on your Prisma schema
-export type ProductCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image: string | null;
-  sortOrder: number;
-  visible: boolean;
-  companyId: string | null;
-};
+// export type ProductCategory = {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   description: string;
+//   image: string | null;
+//   sortOrder: number;
+//   visible: boolean;
+//   companyId: string | null;
+// };
 
-export type Product = {
-  id: string;
-  name: string;
-  description: string | null;
-  images: { url: string }[]; // Assuming images are stored as JSON array of objects with a 'url' key
-  video: string | null;
-  tags: string[];
-  productCategoryId: string | null;
-  category: { name: string } | null; // Include category name for display
-  costPrice: number;
-  salesPrice: number;
-  finalPrice: number;
-  discount: number | null;
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-  ingredients: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
+// export type Product = {
+//   id: string;
+//   name: string;
+//   description: string | null;
+//   images: { url: string }[]; // Assuming images are stored as JSON array of objects with a 'url' key
+//   video: string | null;
+//   tags: string[];
+//   productCategoryId: string | null;
+//   category: { name: string } | null; // Include category name for display
+//   costPrice: number;
+//   salesPrice: number;
+//   finalPrice: number;
+//   discount: number | null;
+//   isAvailable: boolean;
+//   isOnOffer: boolean;
+//   isFlashDeal: boolean;
+//   isNewArrival: boolean;
+//   isDiscounted: boolean;
+//   isFeatured: boolean;
+//   ingredients: string | null;
+//   createdAt: string;
+//   updatedAt: string;
+// };
 
 interface PageProps {
   params: {
@@ -46,37 +47,63 @@ interface PageProps {
   };
 }
 
+interface PaginatedListings {
+  meta: {
+    companyId:     string;
+    totalItems:    number;
+    totalPages:    number;
+    currentPage:   number;
+    perPage:       number;
+  };
+  results: MarketListingForm[];
+}
+
 /**
  * Server Component: Fetches menu categories and products for a specific restaurant.
  */
 export default async function MenuPage({ params }: PageProps) {
-  const companyId = params.slug;
-  let categoriesData: ProductCategory[] = [];
-  let productsData: Product[] = [];
-
-  try {
-    // Fetch Product Categories for the company
-    // You might need a specific API endpoint like /api/product-categories?companyId=...
-    // For now, assuming /api/product-categories returns all, and we'll filter by companyId if needed in the API.
-    const categoriesRes = await fetch(`${apiUrl}/product-categories?companyId=${companyId}`, { cache: "no-store" });
-    if (categoriesRes.ok) {
-      categoriesData = (await categoriesRes.json()) as ProductCategory[];
-    } else {
-      console.error("[MenuPage] Failed to fetch categories →", categoriesRes.status, categoriesRes.statusText);
+    const companyId = params.slug;
+  
+    let productsData: MarketListingForm[] = [];
+    let categoriesData: StoreCategory[] = [];
+  
+    try {
+      const res = await fetch(
+        `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
+        { cache: "no-store" }
+      );
+  
+      if (res.ok) {
+        
+        const data = (await res.json()) as PaginatedListings;
+        productsData = data.results;    
+        
+      } else {
+        console.error(
+          "[ClientInventoryPage] Failed to fetch marketplace products:",
+          res.status,
+          res.statusText
+        );
+      }
+  
+      
+      // Fetch all categories for this company
+      const categoriesRes = await fetch(
+        `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+          companyId
+        )}`,
+        { cache: "no-store" }
+      );
+      if (categoriesRes.ok) {
+        const categoriesJson = (await categoriesRes.json()) as {
+          results: StoreCategory[];
+        };
+        categoriesData = categoriesJson.results;
+      }
+  
+    } catch (err: any) {
+      console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
     }
-
-    // Fetch Products (dishes) for the company
-    // You might need a specific API endpoint like /api/products?companyId=...
-    const productsRes = await fetch(`${apiUrl}/products?companyId=${companyId}`, { cache: "no-store" });
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
-    } else {
-      console.error("[MenuPage] Failed to fetch products →", productsRes.status, productsRes.statusText);
-    }
-
-  } catch (err: any) {
-    console.error("[MenuPage] Error fetching menu data →", err.message);
-  }
-
+  
   return <MenuClient categoriesData={categoriesData} productsData={productsData} companyId={companyId} />;
 }
