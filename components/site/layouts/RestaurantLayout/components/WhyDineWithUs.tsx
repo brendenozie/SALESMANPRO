@@ -10,11 +10,11 @@ import {
   BuildingStorefrontIcon, // Example icon for ambiance
   FaceSmileIcon, // Example icon for service
   FireIcon, // Example icon for culinary team
-  LeafIcon, // New icon for fresh ingredients
 } from "@heroicons/react/24/solid";
 
 // Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
+import { TagIcon } from "@heroicons/react/20/solid";
 
 // Define types for the data expected from StoreContext
 export type Feature = {
@@ -95,8 +95,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   BuildingStorefrontIcon: BuildingStorefrontIcon,
   FaceSmileIcon: FaceSmileIcon,
   FireIcon: FireIcon,
-  LeafIcon: LeafIcon,
-  // Add more mappings as needed
+  LeafIcon: TagIcon,  
 };
 
 // Animation variants for staggered appearance
@@ -130,7 +129,7 @@ export default function WhyDineWithUs() {
   const restaurantName = storeFormData?.name || "Unbite";
   const restaurantSlug = storeFormData?.slug || "unbite";
   const restaurantDescription = storeFormData?.description || "At Unbite, we blend timeless recipes with modern flair. Each dish reflects our unwavering passion for quality ingredients, authentic flavors, and a commitment to culinary excellence. We believe great food tells a story, and we invite you to be part of ours.";
-  const aboutImage = storeFormData?.aboutImageUrl || "/images/about-chef-story.jpg"; // Specific image for about section
+  const aboutImage = storeFormData?.bannerUrl || "/images/about-chef-story.jpg"; // Specific image for about section
 
   // Dynamic features from storeFormData or fallback
   const featuresToRender = Array.isArray(storeFormData?.features) && storeFormData.features.length > 0
@@ -295,15 +294,15 @@ export default function WhyDineWithUs() {
               <p className="text-md text-gray-700 dark:text-gray-300 mb-5 leading-relaxed">
                 {f.description}
               </p>
-              {f.link && ( // Only render link if provided
+              {/* {f.link && ( // Only render link if provided */}
                 <Link
-                  href={f.link}
+                  href={'#'}//f.link
                   className="inline-flex items-center font-semibold hover:underline transition-colors"
                   style={{ color: primaryColor }}
                 >
                   Learn More <ArrowRightIcon className="w-4 h-4 ml-2" />
                 </Link>
-              )}
+              {/* )} */}
             </motion.div>
           ))}
         </motion.div>
