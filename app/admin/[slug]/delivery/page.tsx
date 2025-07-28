@@ -30,10 +30,15 @@ export type CustomerOrder = {
   delivery: boolean | null;
   trackingNumber: string | null;
   estimatedArrival: string | null;
-  deliveryStatus: string | null; // e.g., "Order Placed", "Processing", "Shipped", etc.
+  deliveryStatus: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED' | 'ATTEMPTED_DELIVERY' | 'RETURNED'; // Added more statuses for delivery
   deliveryPersonName: string | null;
   deliveryPersonContact: string | null;
-  shippingAddress: any | null; // JSON type in Prisma
+  shippingAddress: {
+    street: string;
+    city: string;
+    zip: string;
+    country?: string; // Optional, assuming it might not always be there
+  } | null; // JSON type in Prisma
   shippingMethod: string | null;
   createdAt: string;
   updatedAt: string;
@@ -51,20 +56,20 @@ interface PageProps {
 export default async function DeliveryPage({ params }: PageProps) {
   const companyId = params.slug;
   let deliveryOrdersData: CustomerOrder[] = [];
+  let error: string | null = null;
 
   try {
-    // Fetch Customer Orders that are marked for delivery
-    // Ensure your /api/customer-orders endpoint supports filtering by 'delivery: true'
-    const ordersRes = await fetch(`${apiUrl}/customer-orders?companyId=${companyId}&delivery=true`, { cache: "no-store" });
+    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { cache: "no-store" });
     if (ordersRes.ok) {
       deliveryOrdersData = (await ordersRes.json()) as CustomerOrder[];
     } else {
+      error = `Failed to fetch delivery orders: ${ordersRes.status} ${ordersRes.statusText}`;
       console.error("[DeliveryPage] Failed to fetch delivery orders →", ordersRes.status, ordersRes.statusText);
     }
-
   } catch (err: any) {
+    error = `Error fetching delivery data: ${err.message}`;
     console.error("[DeliveryPage] Error fetching delivery data →", err.message);
   }
 
-  return <DeliveryClient deliveryOrdersData={deliveryOrdersData} companyId={companyId} />;
+  return <DeliveryClient deliveryOrdersData={deliveryOrdersData} companyId={companyId} initialError={error} />;
 }

@@ -28,13 +28,19 @@ export type CustomerOrder = {
   orderSource: 'WEBSITE' | 'IN_PERSON' | 'MOBILE';
   status: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'RECURRING';
   delivery: boolean | null;
-  shippingAddress: any | null; // JSON type in Prisma
+  shippingAddress: {
+    street: string;
+    city: string;
+    zip: string;
+    country: string; // Assuming you might have this field
+  } | null; // JSON type in Prisma
   createdAt: string;
   updatedAt: string;
   // Add delivery-specific fields if needed for comprehensive order view
   deliveryStatus?: string | null;
   estimatedArrival?: string | null;
   deliveryPersonName?: string | null;
+  deliveryPersonContact?: string | null; // Added for completeness
 };
 
 interface PageProps {
@@ -49,20 +55,20 @@ interface PageProps {
 export default async function OrdersPage({ params }: PageProps) {
   const companyId = params.slug;
   let ordersData: CustomerOrder[] = [];
+  let error: string | null = null;
 
   try {
-    // Fetch Customer Orders for the company
-    // Ensure your /api/customer-orders endpoint supports companyId filtering and includes order items.
-    const ordersRes = await fetch(`${apiUrl}/customer-orders?companyId=${companyId}`, { cache: "no-store" });
+    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}`, { cache: "no-store" });
     if (ordersRes.ok) {
       ordersData = (await ordersRes.json()) as CustomerOrder[];
     } else {
+      error = `Failed to fetch orders: ${ordersRes.status} ${ordersRes.statusText}`;
       console.error("[OrdersPage] Failed to fetch orders →", ordersRes.status, ordersRes.statusText);
     }
-
   } catch (err: any) {
+    error = `Error fetching orders data: ${err.message}`;
     console.error("[OrdersPage] Error fetching orders data →", err.message);
   }
 
-  return <OrdersClient ordersData={ordersData} companyId={companyId} />;
+  return <OrdersClient ordersData={ordersData} companyId={companyId} initialError={error} />;
 }
