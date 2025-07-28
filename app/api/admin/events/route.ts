@@ -28,64 +28,68 @@ export async function GET(request: Request) {
     if (!companyId) {
       return NextResponse.json({ message: "Company ID is required to fetch events." }, { status: 400 });
     }
+
     whereClause.companyId = companyId;
 
-    if (eventType) {
-      if (!VALID_EVENT_TYPES.includes(eventType.toUpperCase())) {
-        return NextResponse.json({ message: `Invalid event type: ${eventType}. Must be one of ${VALID_EVENT_TYPES.join(', ')}.` }, { status: 400 });
-      }
-      whereClause.eventType = eventType.toUpperCase();
-    }
-    if (eventStatus) {
-      if (!VALID_EVENT_STATUSES.includes(eventStatus.toUpperCase())) {
-        return NextResponse.json({ message: `Invalid event status: ${eventStatus}. Must be one of ${VALID_EVENT_STATUSES.join(', ')}.` }, { status: 400 });
-      }
-      whereClause.eventStatus = eventStatus.toUpperCase();
-    }
-    if (audience) {
-      if (!VALID_EVENT_AUDIENCES.includes(audience.toUpperCase())) {
-        return NextResponse.json({ message: `Invalid event audience: ${audience}. Must be one of ${VALID_EVENT_AUDIENCES.join(', ')}.` }, { status: 400 });
-      }
-      whereClause.audience = audience.toUpperCase();
-    }
-    if (organizerId) {
-      whereClause.organizerId = organizerId;
-    }
+    // if (eventType) {
+    //   if (!VALID_EVENT_TYPES.includes(eventType.toUpperCase())) {
+    //     return NextResponse.json({ message: `Invalid event type: ${eventType}. Must be one of ${VALID_EVENT_TYPES.join(', ')}.` }, { status: 400 });
+    //   }
+    //   whereClause.eventType = eventType.toUpperCase();
+    // }
 
-    if (startAfter || startBefore) {
-      whereClause.startDateTime = {};
-      if (startAfter) {
-        const date = new Date(startAfter);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid startAfter date format." }, { status: 400 });
-        whereClause.startDateTime.gte = date;
-      }
-      if (startBefore) {
-        const date = new Date(startBefore);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid startBefore date format." }, { status: 400 });
-        whereClause.startDateTime.lte = date;
-      }
-    }
+    // if (eventStatus) {
+    //   if (!VALID_EVENT_STATUSES.includes(eventStatus.toUpperCase())) {
+    //     return NextResponse.json({ message: `Invalid event status: ${eventStatus}. Must be one of ${VALID_EVENT_STATUSES.join(', ')}.` }, { status: 400 });
+    //   }
+    //   whereClause.eventStatus = eventStatus.toUpperCase();
+    // }
+    // if (audience) {
+    //   if (!VALID_EVENT_AUDIENCES.includes(audience.toUpperCase())) {
+    //     return NextResponse.json({ message: `Invalid event audience: ${audience}. Must be one of ${VALID_EVENT_AUDIENCES.join(', ')}.` }, { status: 400 });
+    //   }
+    //   whereClause.audience = audience.toUpperCase();
+    // }
 
-    if (endAfter || endBefore) {
-      whereClause.endDateTime = {};
-      if (endAfter) {
-        const date = new Date(endAfter);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid endAfter date format." }, { status: 400 });
-        whereClause.endDateTime.gte = date;
-      }
-      if (endBefore) {
-        const date = new Date(endBefore);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid endBefore date format." }, { status: 400 });
-        whereClause.endDateTime.lte = date;
-      }
-    }
+    // if (organizerId) {
+    //   whereClause.organizerId = organizerId;
+    // }
 
-    if (isRegistrationRequired !== undefined) {
-      whereClause.isRegistrationRequired = isRegistrationRequired === 'true';
-    }
-    if (isPaid !== undefined) {
-      whereClause.isPaid = isPaid === 'true';
-    }
+    // if (startAfter || startBefore) {
+    //   whereClause.startDateTime = {};
+    //   if (startAfter) {
+    //     const date = new Date(startAfter);
+    //     if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid startAfter date format." }, { status: 400 });
+    //     whereClause.startDateTime.gte = date;
+    //   }
+    //   if (startBefore) {
+    //     const date = new Date(startBefore);
+    //     if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid startBefore date format." }, { status: 400 });
+    //     whereClause.startDateTime.lte = date;
+    //   }
+    // }
+
+    // if (endAfter || endBefore) {
+    //   whereClause.endDateTime = {};
+    //   if (endAfter) {
+    //     const date = new Date(endAfter);
+    //     if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid endAfter date format." }, { status: 400 });
+    //     whereClause.endDateTime.gte = date;
+    //   }
+    //   if (endBefore) {
+    //     const date = new Date(endBefore);
+    //     if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid endBefore date format." }, { status: 400 });
+    //     whereClause.endDateTime.lte = date;
+    //   }
+    // }
+
+    // if (isRegistrationRequired !== undefined) {
+    //   whereClause.isRegistrationRequired = isRegistrationRequired === 'true';
+    // }
+    
+    // if (isPaid !== undefined) {
+    //   whereClause.isPaid = isPaid === 'true';
+    // }
 
     const events = await prisma.event.findMany({
       where: whereClause,
@@ -142,8 +146,8 @@ export async function GET(request: Request) {
       contactPerson: event.contactPerson,
       contactEmail: event.contactEmail,
       contactPhone: event.contactPhone,
-      createdAt: event.createdAt.toISOString(),
-      updatedAt: event.updatedAt.toISOString(),
+      // createdAt: event.createdAt.toISOString(),
+      // updatedAt: event.updatedAt.toISOString(),
     }));
 
     return NextResponse.json(response, { status: 200 });
@@ -205,8 +209,17 @@ export async function POST(request: Request) {
     }
 
     // Validate organizerId exists
-    const existingOrganizer = await prisma.user.findUnique({
+    const existingOrganizer = await prisma.salesAgent.findUnique({
       where: { id: organizerId },
+      include:{
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
     });
     if (!existingOrganizer) {
       return NextResponse.json({ message: "Provided organizerId does not exist." }, { status: 400 });
@@ -262,7 +275,7 @@ export async function POST(request: Request) {
       videoUrl,
       eventType,
       eventStatus,
-      organizerId,
+      organizerId: existingOrganizer.user.id,
       audience,
       targetAcademicLevelIds: Array.isArray(targetAcademicLevelIds) ? targetAcademicLevelIds : [],
       targetCourseIds: Array.isArray(targetCourseIds) ? targetCourseIds : [],
@@ -320,8 +333,8 @@ export async function POST(request: Request) {
       contactPerson: newEvent.contactPerson,
       contactEmail: newEvent.contactEmail,
       contactPhone: newEvent.contactPhone,
-      createdAt: newEvent.createdAt.toISOString(),
-      updatedAt: newEvent.updatedAt.toISOString(),
+      // createdAt: newEvent.createdAt.toISOString(),
+      // updatedAt: newEvent.updatedAt.toISOString(),
     };
 
     return NextResponse.json(responseData, { status: 201 });

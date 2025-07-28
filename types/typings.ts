@@ -1020,3 +1020,45 @@ export interface MarketListingForm {
     // unless there's a specific reason for this nested structure.
   }
 }
+
+
+// types/index.ts
+export interface Event {
+  id: string;
+  title: string;
+  startDateTime: string;
+  endDateTime?: string;
+  location: string;
+  eventStatus: 'SCHEDULED' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'POSTPONED';
+  ticketsSold?: number;
+  description?: string;
+  summary?: string;
+  imageUrl?: string;
+  eventType?: 'GENERAL' | 'ACADEMIC' | 'CULTURAL' | 'SPORTS' | 'BUSINESS';
+  isRegistrationRequired?: boolean;
+  maxCapacity?: number | null;
+  isPaid?: boolean;
+  price?: number | null;
+  contactEmail?: string;
+  contactPerson?: string;
+  contactPhone?: string;
+  audience?: string;
+  
+  companyId: string; // Required for POST
+  
+  onlineMeetingLink?: string;
+  
+  videoUrl?: string;
+  
+  organizerId: string; // Required for POST
+  
+  targetAcademicLevelIds?: string[];
+  targetCourseIds?: string[];
+  targetEducatorIds?: string[];
+  targetStudentIds?: string[];
+  targetDepartmentIds?: string[];
+  targetParentIds?: string[];
+  
+  createdAt?: string; // Not needed for form input
+  updatedAt?: string; // Not needed for form input
+}

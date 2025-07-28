@@ -219,7 +219,15 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
  "Event & Ticketing": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "POS", href: `/admin/${adminSlug}/company-pos`, icon: CreditCardIcon }, // Changed icon for POS for better representation
-    { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },
+    { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },    
+    {
+      label:"Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+      ],
+    },
     { label: "Manage Events", href: `/admin/${adminSlug}/manage-events`, icon: TicketIcon },
     { label: "Tickets", href: `/admin/${adminSlug}/manage-tickets`, icon: TicketIcon }, // Changed icon to TicketIcon for clarity
     { label: "Attendees", href: `/admin/${adminSlug}/manage-attendees`, icon: UsersIcon },

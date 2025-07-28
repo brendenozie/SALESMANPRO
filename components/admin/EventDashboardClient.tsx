@@ -33,7 +33,7 @@ const cardVariants = {
   },
 };
 
-export default function AdminDashboard({ adminSlug = 'your-org-slug' }: { adminSlug?: string }) {
+export default function AdminDashboard({ params }: { params: { adminSlug: string } }) {
   const [dashboardData, setDashboardData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export default function AdminDashboard({ adminSlug = 'your-org-slug' }: { adminS
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/admin/${adminSlug}/dashboard-summary`);
+        const response = await fetch(`/api/admin/${params.adminSlug}/dashboard-summary`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -58,10 +58,10 @@ export default function AdminDashboard({ adminSlug = 'your-org-slug' }: { adminS
       }
     };
 
-    if (adminSlug) {
+    if (`${params.adminSlug}`) {
       fetchDashboardData();
     }
-  }, [adminSlug]);
+  }, [params.adminSlug]);
 
   if (isLoading) {
     return (
@@ -181,7 +181,7 @@ export default function AdminDashboard({ adminSlug = 'your-org-slug' }: { adminS
                     </div>
                     <div className="text-right">
                       <p className="text-white text-lg font-semibold">{event.ticketsSold} <span className="text-sm text-gray-400">sold</span></p>
-                      <a href={`/admin/${adminSlug}/events/${event.id}`} className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center mt-1">
+                      <a href={`/admin/${params.adminSlug}/events/${event.id}`} className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center mt-1">
                         View Event <ArrowRightIcon className="ml-1 w-4 h-4" />
                       </a>
                     </div>

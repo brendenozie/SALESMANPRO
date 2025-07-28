@@ -233,7 +233,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
   try {
     // Fetch events
-    const eventsRes = await fetch(`${apiUrl}/events?companyId=${encodeURIComponent(companyId)}`, {
+    const eventsRes = await fetch(`${apiUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (eventsRes.ok) {
@@ -244,7 +244,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all academic levels
-    const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
+    const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (academicLevelsRes.ok) {
@@ -255,7 +255,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses
-    const coursesRes = await fetch(`${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (coursesRes.ok) {
@@ -266,7 +266,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all educators
-    const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (educatorsRes.ok) {
@@ -278,7 +278,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all students
-    const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`, {
+    const studentsRes = await fetch(`${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (studentsRes.ok) {
@@ -290,7 +290,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all departments (assuming a /api/departments endpoint exists)
-    const departmentsRes = await fetch(`${apiUrl}/departments?companyId=${encodeURIComponent(companyId)}`, {
+    const departmentsRes = await fetch(`${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (departmentsRes.ok) {
@@ -301,7 +301,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all parents (assuming a /api/parents endpoint exists)
-    const parentsRes = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`, {
+    const parentsRes = await fetch(`${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, {
       cache: "no-store",
     });
     if (parentsRes.ok) {
@@ -313,7 +313,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
-    const organizersRes = await fetch(`${apiUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const organizersRes = await fetch(`${apiUrl}/admin/staff?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       cache: "no-store",
     });
     if (organizersRes.ok) {
