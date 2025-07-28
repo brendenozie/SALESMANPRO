@@ -38,9 +38,8 @@ export default async function AdminInventoryPage({ params }: Props) {
 
   let productsData: InventoryItem[] = [];
   let categoriesData: StoreCategory[] = [];
-  let allOrganizers: OrganizerOption[] = [];
   let allEvents: Event[] = [];
-  let agentsData: Agent[] = [];
+  let allOrganizers: Agent[] = [];
 
   try {
     // Fetch all products for this company
@@ -63,12 +62,12 @@ export default async function AdminInventoryPage({ params }: Props) {
     }
 
     // Fetch all agents for this company
-    const agentsRes = await fetch(
+    const allOrganizersRes = await fetch(
       `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
       { cache: "no-store" }
     );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
+    if (allOrganizersRes.ok) {
+      allOrganizers = (await allOrganizersRes.json()) as Agent[];
     }
 
      // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
@@ -95,7 +94,6 @@ export default async function AdminInventoryPage({ params }: Props) {
       throw new Error(errorData.message || `HTTP error! status: ${eventsRes.status}`);
     }
 
-
     // Sanity check: ensure arrays
     if (!Array.isArray(productsData)) {
       throw new Error("Products API response is not an array.");
@@ -103,12 +101,13 @@ export default async function AdminInventoryPage({ params }: Props) {
     if (!Array.isArray(categoriesData)) {
       throw new Error("Categories API response is not an array.");
     }
-    if (!Array.isArray(agentsData)) {
+    if (!Array.isArray(allOrganizers)) {
       throw new Error("Agents API response is not an array.");
     }
     if (!Array.isArray(allEvents)) {
       throw new Error("Events API response is not an array.");
     }
+
   } catch (err: any) {
     console.error("AdminInventoryPage-fetch error:", err.message);
     // We simply proceed with empty arrays if something fails.
@@ -117,7 +116,7 @@ export default async function AdminInventoryPage({ params }: Props) {
   return (
     <AdminEventsClient
       slug={companyId}
-      allOrganizers={agentsData}
+      allOrganizers={allOrganizers}
       allEvents={allEvents}
     />
   );
