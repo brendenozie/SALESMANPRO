@@ -28,8 +28,10 @@ type Agent = {
 };
 
 interface AdminEventsProps {
+
   slug?: string;
   allOrganizers?: Agent[]; 
+  allEvents?: Event[]
   
   // Optional organizers prop
 }
@@ -57,8 +59,10 @@ const modalVariants = {
 };
 
 // --- Main AdminEvents Component ---
-export default function AdminEventsClient({ slug, allOrganizers }: AdminEventsProps) {
-  const [events, setEvents] = useState<Event[]>([]);
+export default function AdminEventsClient({ slug, allOrganizers, allEvents }: AdminEventsProps) {
+
+  // const [events, setEvents] = useState<Event[]>([]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null); // For edit/add
@@ -96,12 +100,18 @@ export default function AdminEventsClient({ slug, allOrganizers }: AdminEventsPr
       }).toString();
 
       const response = await fetch(`/api/admin/events?${query}`);
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
-      setEvents(data.events);
+
+      // console.log(data);
+
+      // setEvents(data.events);
+
     } catch (err: any) {
       setError(err.message || "Failed to fetch events.");
       console.error("Events fetch error:", err);
@@ -302,7 +312,7 @@ export default function AdminEventsClient({ slug, allOrganizers }: AdminEventsPr
                   </tr>
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {!events || events.length === 0 ? (
+                  {!allEvents || allEvents.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-8 whitespace-nowrap text-center text-gray-400 italic">
                         <div className="flex flex-col items-center justify-center">
@@ -312,8 +322,8 @@ export default function AdminEventsClient({ slug, allOrganizers }: AdminEventsPr
                         </div>
                       </td>
                     </tr>
-                  ) : (events &&
-                    events.map((event, index) => (
+                  ) : (allEvents &&
+                    allEvents.map((event, index) => (
                       <motion.tr
                         key={event.id}
                         variants={itemVariants}

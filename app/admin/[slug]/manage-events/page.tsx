@@ -2,7 +2,7 @@
 
 import React from "react";
 import AdminEventsClient from "./AdminEventsClient";
-import { InventoryItem, StoreCategory } from "@/types/typings";
+import { InventoryItem, StoreCategory, Event } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -39,6 +39,7 @@ export default async function AdminInventoryPage({ params }: Props) {
   let productsData: InventoryItem[] = [];
   let categoriesData: StoreCategory[] = [];
   let allOrganizers: OrganizerOption[] = [];
+  let allEvents: Event[] = [];
   let agentsData: Agent[] = [];
 
   try {
@@ -82,8 +83,17 @@ export default async function AdminInventoryPage({ params }: Props) {
       // fetchError = true;
     }
 
-    console.log("Fetched organizers:", allOrganizers);
-    console.log("Fetched agents:", agentsData);
+    const eventsRes = await fetch(`${apiUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+      cache: "no-store",
+    });
+
+    if (eventsRes.ok) {
+      allEvents = (await eventsRes.json()) as Event[];
+    
+    }else {
+      const errorData = await eventsRes.json();
+      throw new Error(errorData.message || `HTTP error! status: ${eventsRes.status}`);
+    }
 
 
     // Sanity check: ensure arrays
@@ -96,6 +106,9 @@ export default async function AdminInventoryPage({ params }: Props) {
     if (!Array.isArray(agentsData)) {
       throw new Error("Agents API response is not an array.");
     }
+    if (!Array.isArray(allEvents)) {
+      throw new Error("Events API response is not an array.");
+    }
   } catch (err: any) {
     console.error("AdminInventoryPage-fetch error:", err.message);
     // We simply proceed with empty arrays if something fails.
@@ -105,6 +118,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     <AdminEventsClient
       slug={companyId}
       allOrganizers={agentsData}
+      allEvents={allEvents}
     />
   );
 }
