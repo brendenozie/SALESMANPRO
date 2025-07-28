@@ -299,6 +299,7 @@ model Company {
   Writer                          Writer[]
   Podcast                         Podcast[]
   Donor                           Donor[]
+  CompanyLocation                 CompanyLocation[]
 }
 
 enum CategoryStatus {
@@ -660,7 +661,7 @@ model Product {
   shippingCost Float? @default(0)
 
   // Relations that might need to be defined elsewhere in schema.prisma
-  myLocation Location? @relation(fields: [locationId], references: [id])
+  myLocation Location? @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   locationId String?   @db.ObjectId
 
   // Indexes for performance
@@ -1117,7 +1118,7 @@ model Return {
   updatedAt DateTime? @updatedAt
 
   orderItemId     String?        @db.ObjectId // Optional: If returning an item from a specific order
-  orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id])
+  orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   inventoryItemId String?        @db.ObjectId // Optional: If returning a general inventory item
   inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
   clientId        String?        @db.ObjectId // Client initiating the return
@@ -1490,7 +1491,7 @@ model marketplaceListings {
   ProductMetrics ProductMetrics[]
   ProductReview  ProductReview[]
 
-  myLocation Location? @relation(fields: [locationId], references: [id])
+  myLocation Location? @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   locationId String?   @db.ObjectId
 
   Collection       Collection?      @relation(fields: [collectionId], references: [id])
@@ -1787,21 +1788,109 @@ model OrderItem {
   @@index([marketplaceListingId])
 }
 
+// Location model with self-relations for hierarchy (parent & child locations)
+// This represents a generic geographical location that can be reused.
 model Location {
-  id             String                @id @default(auto()) @map("_id") @db.ObjectId
-  latitude       Float
-  longitude      Float
-  address        String
-  description    String
-  userId         String?               @unique // Link to the user (optional).ObjectId
-  name           String?
-  displayName    String?
-  country        String?
-  state          String?
-  city           String?
-  products       Product[]
-  marketListings marketplaceListings[]
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  name         String // e.g., "United States", "New York City", "Main Office Building"
+  slug         String  @unique // Unique identifier for URLs/APIs
+  description  String? // Optional description of the location
+  // Core geographical details for the base location
+  addressLine1 String? // e.g., "123 Main St"
+  addressLine2 String? // e.g., "Suite 100"
+  city         String?
+  state        String? // e.g., "NY"
+  postalCode   String? // e.g., "10001"
+  country      String? // e.g., "USA"
+  latitude     Float? // Geographic latitude
+  longitude    Float? // Geographic longitude
+
+  // SEO fields for locations (e.g., if you have location-based landing pages)
+  seoTitle       String?
+  seoDescription String?
+  metaKeywords   String[]
+
+  // Ordering and visibility
+  sortOrder Int     @default(0)
+  visible   Boolean @default(true)
+
+  // Audit fields
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  createdBy String? // ID of the user who created it
+  updatedBy String? // ID of the user who last updated it
+  status    String    @default("active") // e.g., "active", "inactive", "draft"
+
+  // Self-referencing hierarchy: A location can have a parent, forming a tree structure.
+  parentId String?    @db.ObjectId // Points to the ID of the parent Location
+  parent   Location?  @relation("ChildLocations", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children Location[] @relation("ChildLocations") // All locations that have this as their parent
+
+  // Localization for multi-language support (e.g., name in different languages)
+  localization Json?
+
+  // Custom attributes for flexible data storage (e.g., timezone, timezone_offset)
+  attributes Json?
+
+  // Relationship to CompanyLocation (many-to-many through join table)
+  CompanyLocation     CompanyLocation[]
+  Product             Product[]
+  marketplaceListings marketplaceListings[]
 }
+
+/// Associates a Company with a specific Location,
+/// allowing for company-specific overrides and settings for that location.
+model CompanyLocation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Foreign keys to Company and Location
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  location   Location @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  locationId String   @db.ObjectId
+
+  // Company-specific overrides for the inherited location details.
+  // If a field is null here, it means the Company uses the value from the base Location model.
+  displayName          String? // e.g., "Acme Corp Headquarters" (overrides base location name)
+  addressLine1Override String?
+  addressLine2Override String?
+  cityOverride         String?
+  stateOverride        String?
+  postalCodeOverride   String?
+  countryOverride      String?
+  latitudeOverride     Float?
+  longitudeOverride    Float?
+
+  // Company-specific settings for this location association
+  sortOrder Int     @default(0)
+  visible   Boolean @default(true) // Is this location visible for THIS company?
+
+  // Audit fields
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  // Ensures a company can only have one specific entry for a given base location.
+  @@unique([companyId, locationId])
+  // Speeds up queries for a company's locations, ordered.
+  @@index([companyId, sortOrder])
+}
+
+// model Location {
+//   id             String                @id @default(auto()) @map("_id") @db.ObjectId
+//   latitude       Float
+//   longitude      Float
+//   address        String
+//   description    String
+//   userId         String?               @unique // Link to the user (optional).ObjectId
+//   name           String?
+//   displayName    String?
+//   country        String?
+//   state          String?
+//   city           String?
+//   products       Product[]
+//   marketListings marketplaceListings[]
+// }
 
 enum OrderStatus {
   PENDING

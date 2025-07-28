@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-import type { StoreForm } from "@/types/storeForm";
+import { StoreForm } from "@/types/typings";
 
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -29,7 +29,7 @@ const variants = {
 };
 
 type HeroSectionProps = {
-  store: StoreForm;
+  store: StoreForm | null;
   onSearch: (filters: { location: string; minPrice: string; maxPrice: string }) => void;
 };
 
@@ -85,7 +85,7 @@ export default function HeroSection({ store, onSearch }: HeroSectionProps) {
           initial="hidden"
           animate="visible"
         >
-          {title.split("|").map((chunk, i) =>
+          {title.split("|").map((chunk : any , i : any) =>
             i === 1 ? (
               <span
                 key={i}
@@ -173,13 +173,11 @@ export default function HeroSection({ store, onSearch }: HeroSectionProps) {
           animate="visible"
           transition={{ delay: 0.6 }}
         >
-          <Link href="/how-it-works">
-            <a className="inline-flex items-center space-x-3 text-lg font-medium text-white hover:text-amber-300 transition">
+          <Link href="/how-it-works"  className="inline-flex items-center space-x-3 text-lg font-medium text-white hover:text-amber-300 transition">
               <PlayCircleIcon className="w-8 h-8 text-amber-400" />
               <span>
                 {store.themeSettings?.heroGuideText || "Watch Video Guide"}
               </span>
-            </a>
           </Link>
         </motion.div>
       </div>

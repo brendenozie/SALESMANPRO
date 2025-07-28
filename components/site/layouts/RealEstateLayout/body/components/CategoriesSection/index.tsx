@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import type { StoreForm, StoreCategory } from "@/types/storeForm";
+import { StoreCategory, StoreForm } from "@/types/typings";
 
 // Loader for Next.js Image
 const customLoader = ({ src, width, quality }: any) =>
@@ -39,6 +39,26 @@ const fallbackCategories: StoreCategory[] = [
     visible: true,
     items: [],
     allBrands: [],
+    name: "",
+    companyId: "",
+    category: {
+      id: "",
+      name: "",
+      slug: "",
+      description: undefined,
+      longDescription: undefined,
+      seoTitle: undefined,
+      seoDescription: undefined,
+      metaKeywords: undefined,
+      sortOrder: undefined,
+      visible: undefined,
+      isFeatured: undefined,
+      showInHomepage: undefined,
+      attributes: undefined,
+      subcategories: undefined,
+      icon: undefined,
+      image: undefined
+    }
   },
   {
     id: "sample-2",
@@ -49,6 +69,26 @@ const fallbackCategories: StoreCategory[] = [
     visible: true,
     items: [],
     allBrands: [],
+    name: "",
+    companyId: "",
+    category: {
+      id: "",
+      name: "",
+      slug: "",
+      description: undefined,
+      longDescription: undefined,
+      seoTitle: undefined,
+      seoDescription: undefined,
+      metaKeywords: undefined,
+      sortOrder: undefined,
+      visible: undefined,
+      isFeatured: undefined,
+      showInHomepage: undefined,
+      attributes: undefined,
+      subcategories: undefined,
+      icon: undefined,
+      image: undefined
+    }
   },
   {
     id: "sample-3",
@@ -59,6 +99,26 @@ const fallbackCategories: StoreCategory[] = [
     visible: true,
     items: [],
     allBrands: [],
+    name: "",
+    companyId: "",
+    category: {
+      id: "",
+      name: "",
+      slug: "",
+      description: undefined,
+      longDescription: undefined,
+      seoTitle: undefined,
+      seoDescription: undefined,
+      metaKeywords: undefined,
+      sortOrder: undefined,
+      visible: undefined,
+      isFeatured: undefined,
+      showInHomepage: undefined,
+      attributes: undefined,
+      subcategories: undefined,
+      icon: undefined,
+      image: undefined
+    }
   },
   {
     id: "sample-4",
@@ -69,16 +129,36 @@ const fallbackCategories: StoreCategory[] = [
     visible: true,
     items: [],
     allBrands: [],
+    name: "",
+    companyId: "",
+    category: {
+      id: "",
+      name: "",
+      slug: "",
+      description: undefined,
+      longDescription: undefined,
+      seoTitle: undefined,
+      seoDescription: undefined,
+      metaKeywords: undefined,
+      sortOrder: undefined,
+      visible: undefined,
+      isFeatured: undefined,
+      showInHomepage: undefined,
+      attributes: undefined,
+      subcategories: undefined,
+      icon: undefined,
+      image: undefined
+    }
   },
 ];
 
 type CategoriesSectionProps = {
-  store: StoreForm;
+  store: StoreForm | null;
 };
 
 export default function CategoriesSection({ store }: CategoriesSectionProps) {
   // Pull categories from store, sorted
-  const raw = (store.storeCategories ?? []).slice()
+  const raw = ((store && store.storeCategories) ?? []).slice()
     .filter((c) => c.visible ?? true)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
@@ -110,12 +190,12 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
-          {categoriesToShow.map((cat) => {
+          {categoriesToShow && categoriesToShow.map((cat) => {
             // derive slug and imageUrl
             const catSlug = (cat.categoryId || cat.displayName || "").toString().toLowerCase();
             const imageUrl = (cat as any).image || "/images/category-placeholder.jpg";
             return (
-              <Link key={cat.id} href={`/${store.slug}/category/${catSlug}`} passHref>
+              <Link key={cat.id} href={`/${store!.slug}/category/${catSlug}`} passHref>
                 <motion.a
                   className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
                              focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
@@ -141,7 +221,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
                       className="inline-block px-5 py-2 bg-emerald-600/90 dark:bg-emerald-700/90 text-white text-lg font-semibold uppercase tracking-wide rounded-full shadow-lg
                                  group-hover:bg-amber-400 group-hover:text-gray-900 group-hover:scale-105 transition-all duration-300 transform"
                     >
-                      {cat.displayName}
+                      { cat.name || cat.displayName }
                     </span>
                   </div>
                 </motion.a>
@@ -158,7 +238,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ delay: 0.3, duration: 0.7 }}
         >
-          <Link href={`/${store.slug}/categories`} passHref>
+          <Link href={`/${store!.slug}/categories`} passHref>
             <motion.a
               className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-lg
                          text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700

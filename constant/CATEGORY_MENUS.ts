@@ -123,8 +123,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Portfolio & Personal Branding": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },    
     { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
     { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
     { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
@@ -265,15 +264,16 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   ],
 
   "Real Estate": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics
-      { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
-      { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
-      { label: "Clients", href: `/admin/${adminSlug}/properties-clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
-      { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
-      { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
-      { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
-      { label: "Categories", href: `/admin/${adminSlug}/properties-categories`, icon: TagIcon }, // Manage property categories (e.g., Residential, Commercial, Land)
-      { label: "Locations", href: `/admin/${adminSlug}/properties-locations`, icon: MapPinIcon }, // Manage geographic locations for listings
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics    
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    { label: "Locations", href: `/admin/${adminSlug}/properties-locations`, icon: MapPinIcon }, // Manage geographic locations for listings
+    { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
+    { label: "Clients", href: `/admin/${adminSlug}/properties-clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
+    { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
+    { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
+    { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+    // { label: "Categories", href: `/admin/${adminSlug}/properties-categories`, icon: TagIcon }, // Manage property categories (e.g., Residential, Commercial, Land)
   ],
 
   

@@ -301,6 +301,12 @@ export type Feature = {
   order: number; // For sorting
 };
 
+export type Locations = {
+  id:        string;
+  name:      string;
+  companyId: string;
+}
+
 // --- MAIN UPDATED STORE FORM ---
 export interface StoreForm {
     id: string;
@@ -369,6 +375,8 @@ export interface StoreForm {
     pricingTiers: PricingTier[]; 
 
     podcasts:any[];
+    locations:Locations[];
+    
     courses:Course[];
 
     // --- Settings Objects ---
