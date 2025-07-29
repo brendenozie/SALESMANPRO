@@ -34,6 +34,12 @@ export default async function EditStorePage({
       StoreCategory: {
         include: { category: true },
       },
+
+      CompanyLocation:{
+        include:{
+          location: true
+        }
+      }
     },
   });
 
@@ -219,6 +225,21 @@ export default async function EditStorePage({
       : typeof store.pricingTiers === "string"
       ? JSON.parse(store.pricingTiers)
       : [],
+
+    companyLocations: store.CompanyLocation.map((cl) => ({
+      ...cl,
+      displayName: cl.displayName === null ? undefined : cl.displayName,
+      addressLine1Override: cl.addressLine1Override === null ? undefined : cl.addressLine1Override,
+      addressLine2Override: cl.addressLine2Override === null ? undefined : cl.addressLine2Override,
+      cityOverride: cl.cityOverride === null ? undefined : cl.cityOverride,
+      stateOverride: cl.stateOverride === null ? undefined : cl.stateOverride,
+      postalCodeOverride: cl.postalCodeOverride === null ? undefined : cl.postalCodeOverride,
+      countryOverride: cl.countryOverride === null ? undefined : cl.countryOverride,
+      latitudeOverride: cl.latitudeOverride === null ? undefined : cl.latitudeOverride,
+      longitudeOverride: cl.longitudeOverride === null ? undefined : cl.longitudeOverride,
+      createdAt: cl.createdAt === null ? undefined : cl.createdAt,
+      updatedAt: cl.updatedAt === null ? undefined : cl.updatedAt,
+    }))
   };
 
   return (
