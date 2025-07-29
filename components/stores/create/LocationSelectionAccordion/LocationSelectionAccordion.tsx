@@ -29,12 +29,13 @@ interface Location {
 interface SelectedLocation {
     id: string;
     name: string;
-    children: SelectedLocation[];
+    children: SelectedLocation[]; // This is the key difference: children are also SelectedLocation
 }
 
 type Props = {
     availableLocations: Location[];
-    selectedLocations: Location[];
+    // FIX: Change selectedLocations type to SelectedLocation[]
+    selectedLocations: SelectedLocation[];
     onToggleLocation: (location: Location, isSelected: boolean) => void;
     onBulkToggle: (locationIds: string[]) => void;
     onApply?: () => void; // Optional, if you have an "Apply" button outside
@@ -104,7 +105,7 @@ const buildLocationTree = (locations: Location[]): Location[] => {
 
 export default function LocationSelectionAccordion({
     availableLocations,
-    selectedLocations,
+    selectedLocations, // Now correctly typed as SelectedLocation[]
     onToggleLocation,
     onBulkToggle,
     onApply,
@@ -142,8 +143,9 @@ export default function LocationSelectionAccordion({
     // Create a map for quick lookup of selected locations
     const selectedMap = useMemo(() => {
         const map = new Set<string>();
-        const populateMap = (locations: Location[]) => {
-            locations.forEach(loc => {
+        // FIX: Change populateMap parameter type to SelectedLocation[]
+        const populateMap = (locations: SelectedLocation[]) => {
+            locations &&locations.forEach(loc => {
                 map.add(loc.id);
                 if (loc.children) {
                     populateMap(loc.children);
@@ -198,7 +200,7 @@ export default function LocationSelectionAccordion({
                              while(currentParentId) {
                                  newExpanded.add(currentParentId);
                                  const parentNode = availableLocations.find(loc => loc.id === currentParentId);
-                                 currentParentId = parentNode?.parentId ?? '';
+                                 currentParentId = parentNode?.parentId || ""; // Changed to null for safety
                              }
                         }
                     }
@@ -227,6 +229,7 @@ export default function LocationSelectionAccordion({
             return <BuildingLibraryIcon className="w-5 h-5 text-purple-500" />; // Specific building/venue
         };
 
+        // Check if any child is selected (for partial state)
         const hasSelectedChild = hasChildren && node.children?.some(child => selectedMap.has(child.id));
 
         return (
@@ -239,6 +242,7 @@ export default function LocationSelectionAccordion({
                 className="bg-white rounded-lg shadow hover:shadow-md overflow-hidden"
             >
                 <div
+                    // Only allow accordion toggle if there are children
                     onClick={() => hasChildren && toggleExpand(node.id)}
                     className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors
                         ${isOpen ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'hover:bg-gray-50'}`}
@@ -302,6 +306,7 @@ export default function LocationSelectionAccordion({
                         {selectedLocations.length === 0 ? (
                             <p className="text-gray-500 text-sm italic">No locations selected yet.</p>
                         ) : (
+                            // Iterate through selectedLocations which is now SelectedLocation[]
                             selectedLocations.map(parent => (
                                 <div key={parent.id} className="bg-white p-3 rounded-md shadow-sm border border-gray-100">
                                     <div className="flex items-center gap-2 mb-1">
@@ -310,6 +315,7 @@ export default function LocationSelectionAccordion({
                                         </span>
                                         <span className="font-medium text-gray-800">{parent.name}</span>
                                         <button
+                                            // Cast parent to Location for onToggleLocation, as it expects Location type
                                             onClick={() => onToggleLocation(parent as Location, false)}
                                             className="ml-auto p-1 text-gray-500 hover:text-red-500 focus:outline-none rounded-full hover:bg-red-50"
                                             aria-label={`Remove ${parent.name}`}
@@ -326,6 +332,7 @@ export default function LocationSelectionAccordion({
                                                 >
                                                     {child.name}
                                                     <button
+                                                        // Cast child to Location for onToggleLocation
                                                         onClick={() => onToggleLocation(child as Location, false)}
                                                         className="ml-1 focus:outline-none text-indigo-500 hover:text-indigo-700"
                                                     >

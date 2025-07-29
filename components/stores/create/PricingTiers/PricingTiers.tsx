@@ -8,8 +8,8 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
-import { ProductForm } from '@/components/AddProductModal';
-// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the correct type for your main form data
+
+import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the correct type for your main form data
 
 interface PricingTier {
   name: string;
@@ -21,22 +21,22 @@ interface PricingTier {
 }
 
 interface ProductPricingAndTiersProps {
-  formData: ProductForm; // Use the actual type for the entire form data
+  pricingTiers: PricingTier[]; // Use the actual type for the entire form data
   setFormData: (name: string, value: any) => void; // Matches the signature from useProductForm
 }
 
 export default function ProductPricingAndTiers({
-  formData,
+  pricingTiers,
   setFormData, // Renamed from setFormData
 }: ProductPricingAndTiersProps) {
   const [open, setOpen] = useState(true);
 
   // Memoize handler functions using useCallback
   const handleAddPricingTier = useCallback(() => {
-    const currentTiers = formData.pricingTiers || [];
+    const currentTiers = pricingTiers || [];
     const newTier: PricingTier = { name: '', price: 0, features: [], isFeatured: false }; // Ensure default for isFeatured
     setFormData('pricingTiers', [...currentTiers, newTier]);
-  }, [formData.pricingTiers, setFormData]);
+  }, [pricingTiers, setFormData]);
 
   const handleUpdatePricingTier = useCallback(
     (
@@ -44,7 +44,7 @@ export default function ProductPricingAndTiers({
       field: keyof PricingTier,
       value: string | number | boolean | string[]
     ) => {
-      const currentTiers = formData.pricingTiers || [];
+      const currentTiers = pricingTiers || [];
       // Create a shallow copy to ensure immutability
       const updatedTiers = [...currentTiers];
 
@@ -65,22 +65,22 @@ export default function ProductPricingAndTiers({
       }
       setFormData('pricingTiers', updatedTiers); // Update the parent state
     },
-    [formData.pricingTiers, setFormData]
+    [pricingTiers, setFormData]
   );
 
   const handleRemovePricingTier = useCallback((index: number) => {
-    const currentTiers = formData.pricingTiers || [];
+    const currentTiers = pricingTiers || [];
     // Filter out the tier at the given index
     const updatedTiers = currentTiers.filter((_, i) => i !== index);
     setFormData('pricingTiers', updatedTiers);
-  }, [formData.pricingTiers, setFormData]);
+  }, [pricingTiers, setFormData]);
 
   // Effect to add an initial pricing tier if none exist
   useEffect(() => {
-    if (!formData.pricingTiers || formData.pricingTiers.length === 0) {
+    if (!pricingTiers ||pricingTiers.length === 0) {
       handleAddPricingTier();
     }
-  }, [formData.pricingTiers, handleAddPricingTier]); // Dependency on handleAddPricingTier is crucial
+  }, [pricingTiers, handleAddPricingTier]); // Dependency on handleAddPricingTier is crucial
 
   return (
     <section className="max-w-4xl mx-auto overflow-hidden rounded-2xl shadow-xl border border-gray-200"> {/* Added main section styling for consistency */}
@@ -114,12 +114,12 @@ export default function ProductPricingAndTiers({
             </div>
 
             <div className="space-y-6">
-              {(formData.pricingTiers || []).length === 0 && (
+              {(pricingTiers || []).length === 0 && (
                 <p className="text-center text-gray-500 py-4">
                   Click "Add Pricing Tier" to get started with your pricing options.
                 </p>
               )}
-              {(formData.pricingTiers || []).map((tier, index) => (
+              {(pricingTiers || []).map((tier, index) => (
                 <div key={index} className="relative bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm">
                   <h5 className="text-xl font-bold mb-4 text-gray-800">Tier #{index + 1}</h5>
                   {/* Remove button moved to top right corner of each tier */}

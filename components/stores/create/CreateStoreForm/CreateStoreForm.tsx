@@ -22,6 +22,7 @@ import {
   SelectedCategory,
   Promotion,
   HeroSlide,
+  CompanyLocationType,
 } from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
@@ -42,7 +43,7 @@ const SITE_CATEGORIES_WITH_PRICING = [
 ];
 
 const SITE_CATEGORIES_WITH_LOCATIONS = [
-  "real rstate",
+  "real estate",
   "automotive",
   "travel & tourism",
 ];
@@ -60,59 +61,59 @@ type Props = {
 };
 
 
-  // Helper to build a selected tree from flat IDs and available locations
-    const buildSelectedLocationTree = (selectedIds: Set<string>, allLocations: Location[], parentId: string | null = null): SelectedLocation[] => {
-      const children: SelectedLocation[] = [];
-      const directChildren = allLocations.filter(loc => loc.parentId === parentId);
+// Helper to build a selected tree from CompanyLocation[] and all Locations
+const buildSelectedLocationTree = (
+  selectedCompanyLocations: CompanyLocationType[],
+  allLocationsMap: Map<string, Location>,
+  parentId: string | null = null
+): SelectedLocation[] => {
+  const children: SelectedLocation[] = [];
+  const directChildrenLocations = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === parentId);
 
-      for (const loc of directChildren) {
-        const isLocSelected = selectedIds.has(loc.id);
-        const childSelectedNodes = buildSelectedLocationTree(selectedIds, allLocations, loc.id);
+  const selectedLocMap = new Map(selectedCompanyLocations.map(cl => [cl.locationId, cl]));
 
-        // A node is considered "selected" in the display if it's explicitly selected
-        // or if it has any selected children.
-        if (isLocSelected || childSelectedNodes.length > 0) {
-          children.push({
-            id: loc.id,
-            name: loc.name,
-            children: childSelectedNodes,
-          });
-        }
-      }
-      return children;
-    };
+  for (const loc of directChildrenLocations) {
+    const isLocSelected = selectedLocMap.has(loc.id);
+    const childSelectedNodes = buildSelectedLocationTree(selectedCompanyLocations, allLocationsMap, loc.id);
 
-    // Helper to flatten a hierarchical SelectedLocation array into a Set of IDs
-    const flattenSelectedLocationsToIds = (locations: Location[]): Set<string> => {
-        const ids = new Set<string>();
-        const recurse = (locs: Location[]) => {
-            locs.forEach(loc => {
-                ids.add(loc.id);
-                if (loc.children) {
-                    recurse(loc.children);
-                }
-            });
-        };
-        recurse(locations);
-        return ids;
-    };
+    if (isLocSelected || childSelectedNodes.length > 0) {
+      children.push({
+        id: loc.id,
+        name: loc.name,
+        children: childSelectedNodes,
+      });
+    }
+  }
+  return children;
+};
 
-    // Helper to get all descendant IDs of a given location
-    const getAllDescendantIds = (location: Location, allLocationsMap: Map<string, Location>): string[] => {
-        const ids: string[] = [location.id];
-        const queue: string[] = [location.id];
-        let head = 0;
+// Helper to flatten CompanyLocation[] into a Set of location IDs
+const flattenCompanyLocationsToIds = (companyLocations: CompanyLocationType[]): Set<string> => {
+  const ids = new Set<string>();
+  // Add defensive check for companyLocations being undefined/null
+  if (!companyLocations) return ids; 
+  companyLocations.forEach(cl => ids.add(cl.locationId));
+  return ids;
+};
 
-        while (head < queue.length) {
-            const currentId = queue[head++];
-            const children = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === currentId);
-            children.forEach(child => {
-                ids.push(child.id);
-                queue.push(child.id);
-            });
-        }
-        return ids;
-    };
+// Helper to get all descendant IDs of a given location
+const getAllDescendantIds = (location: Location, allLocationsMap: Map<string, Location>): string[] => {
+    const ids: string[] = [location.id];
+    const queue: string[] = [location.id];
+    let head = 0;
+
+    while (head < queue.length) {
+        const currentId = queue[head++];
+        const children = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === currentId);
+        children.forEach(child => {
+            ids.push(child.id);
+            queue.push(child.id);
+        });
+    }
+    return ids;
+};
+
+// --- END MOCK DATA AND HELPER FUNCTIONS ---
 
 
 export default function CreateStoreForm({
@@ -201,23 +202,28 @@ export default function CreateStoreForm({
     agents: [],
     doctors: [],
     podcasts: [],
-    locations: [],
+    companyLocations: [],
     courses: [],
-
-    // storeLocations:[]
 
   };
 
-  const [form, setForm] = useState<StoreForm>(
-    // `initialData` fields overwrite defaults
-    initialData ? { ...defaultForm, ...initialData } : defaultForm
-  );
+  // const [form, setForm] = useState<StoreForm>(
+  //   // `initialData` fields overwrite defaults
+  //   initialData ? { ...defaultForm, ...initialData } : defaultForm
+  // );
+
+  const [form, setForm] = useState<StoreForm>(() => {
+    const initialForm = initialData ? { ...defaultForm, ...initialData } : defaultForm;
+    // FIX: Ensure companyLocations is always an array, even if initialData provides null/undefined
+    initialForm.companyLocations = initialData?.companyLocations || [];
+    return initialForm;
+  });
 
     // NEW: State for all available locations
   // const [allAvailableLocations, setAllAvailableLocations] = useState<Location[]>([]);
   // NEW: State for selected location IDs (flat set for efficient lookup)
   const [currentSelectedLocationIds, setCurrentSelectedLocationIds] = useState<Set<string>>(() =>
-    initialData ? flattenSelectedLocationsToIds(initialData.locations ?? []) : new Set()
+    initialData?.companyLocations ? flattenCompanyLocationsToIds(initialData.companyLocations) : new Set()
   );
 
   // ADD THIS useEffect hook to handle category changes
@@ -253,10 +259,12 @@ export default function CreateStoreForm({
     () => form.heroSlides.map(() => null)
   );
 
-  // Memoize the selected locations in the hierarchical structure for display
+    // Memoize the selected locations in the hierarchical structure for display
   const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
-    return buildSelectedLocationTree(currentSelectedLocationIds, availableLocations);
-  }, [currentSelectedLocationIds, availableLocations]);
+      const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+      return buildSelectedLocationTree(form.companyLocations, allLocationsMap);
+    }, [form.companyLocations, availableLocations]);
+  
 
   // Track one File per hero slide. Initialize from existing heroSlides length
   const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(() =>
@@ -538,23 +546,23 @@ export default function CreateStoreForm({
   // }, [initialData]);
 
   // LocalStorage
-    useEffect(() => {
-      if (initialData) return; // ← skip in edit mode
-      const saved = localStorage.getItem("storeForm");
-      if (saved) {
-        try {
-          const parsedForm = JSON.parse(saved);
-          setForm(parsedForm);
-          // Also restore selected locations if they were saved
-          if (parsedForm.storeLocations) {
-              setCurrentSelectedLocationIds(flattenSelectedLocationsToIds(parsedForm.storeLocations));
-          }
-        } catch (e) {
-          console.error("Failed to parse stored form data:", e);
-          localStorage.removeItem("storeForm"); // Clear corrupted data
+  useEffect(() => {
+    if (initialData) return;
+    const saved = localStorage.getItem("storeForm");
+    if (saved) {
+      try {
+        const parsedForm: StoreForm = JSON.parse(saved);
+        setForm(parsedForm);
+        // Restore selected locations from companyLocations
+        if (parsedForm.companyLocations) {
+            setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.companyLocations));
         }
+      } catch (e) {
+        console.error("Failed to parse stored form data:", e);
+        localStorage.removeItem("storeForm");
       }
-    }, [initialData]);
+    }
+  }, [initialData]);
 
   // useEffect(() => {
   //   if (initialData) return;
@@ -563,13 +571,30 @@ export default function CreateStoreForm({
 
     useEffect(() => {
     if (initialData) return;
-    // Ensure storeLocations is always updated from currentSelectedLocationIds
+    // Ensure companyLocations is always updated from selectedLocationsForDisplay
+    // We need to convert SelectedLocation[] back to CompanyLocationType[] for storage
+    const companyLocationsToSave: CompanyLocationType[] = [];
+    const collectCompanyLocations = (selectedLocs: SelectedLocation[]) => {
+        selectedLocs.forEach(selectedLoc => {
+            companyLocationsToSave.push({
+                companyId: form.id || 'temp-company-id', // Use actual company ID or a temp one
+                locationId: selectedLoc.id,
+                visible: true, // Defaulting to true, adjust if you have UI for this
+                sortOrder: 0, // Defaulting to 0, adjust if you have UI for this
+            });
+            if (selectedLoc.children) {
+                collectCompanyLocations(selectedLoc.children);
+            }
+        });
+    };
+    collectCompanyLocations(selectedLocationsForDisplay);
+
     const formToSave = {
         ...form,
-        storeLocations: selectedLocationsForDisplay,
+        companyLocations: companyLocationsToSave,
     };
     localStorage.setItem("storeForm", JSON.stringify(formToSave));
-  }, [form, initialData, selectedLocationsForDisplay]); // Add selectedLocationsForDisplay as dependency
+  }, [form, initialData, selectedLocationsForDisplay]);// Add selectedLocationsForDisplay as dependency
 
 
   // Navigation guard
@@ -887,31 +912,61 @@ export default function CreateStoreForm({
   };
 
     // NEW: Handlers for LocationSelectionAccordion
-  const onToggleLocation = useCallback((location: Location, isSelected: boolean) => {
-    setCurrentSelectedLocationIds(prev => {
-      const newSet = new Set(prev);
-      const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
-      const idsToToggle = getAllDescendantIds(location, allLocationsMap);
+     const onToggleLocation = useCallback((location: Location, isSelected: boolean) => {
+       setForm(prevForm => {
+         const newCompanyLocations = [...prevForm.companyLocations];
+         const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+         const idsToToggle = getAllDescendantIds(location, allLocationsMap);
+   
+         idsToToggle.forEach(locId => {
+           const existingIndex = newCompanyLocations.findIndex(cl => cl.locationId === locId);
+           if (isSelected) {
+             if (existingIndex === -1) {
+               newCompanyLocations.push({
+                 companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+                 locationId: locId,
+                 visible: true,
+                 sortOrder: 0,
+               });
+             }
+           } else {
+             if (existingIndex !== -1) {
+               newCompanyLocations.splice(existingIndex, 1);
+             }
+           }
+         });
+   
+         return { ...prevForm, companyLocations: newCompanyLocations };
+       });
+     }, [availableLocations, session?.user?.id]);
+   
+     const onBulkToggleLocations = useCallback((locationIds: string[]) => {
+       setForm(prevForm => {
+         const newCompanyLocations: CompanyLocationType[] = [];
+         const existingCompanyLocationMap = new Map(prevForm.companyLocations.map(cl => [cl.locationId, cl]));
+   
+         locationIds.forEach(locId => {
+           if (!existingCompanyLocationMap.has(locId)) {
+             newCompanyLocations.push({
+               companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+               locationId: locId,
+               visible: true,
+               sortOrder: 0,
+             });
+           }
+         });
+   
+         const finalCompanyLocations = locationIds.length === 0
+           ? []
+           : [
+               ...prevForm.companyLocations.filter(cl => locationIds.includes(cl.locationId)),
+               ...newCompanyLocations
+             ];
+   
+         return { ...prevForm, companyLocations: finalCompanyLocations };
+       });
+     }, [session?.user?.id]);
 
-      if (isSelected) {
-        idsToToggle.forEach(id => newSet.add(id));
-      } else {
-        idsToToggle.forEach(id => newSet.delete(id));
-      }
-
-      // Optional: Logic to handle parent/child selection consistency
-      // If a child is selected/deselected, check if its parent should also be selected/deselected.
-      // This can be complex with deep hierarchies and is often handled within the accordion itself
-      // or by re-evaluating the parent's status based on its children.
-      // For now, `buildSelectedLocationTree` will correctly represent the state.
-
-      return newSet;
-    });
-  }, [availableLocations]);
-
-  const onBulkToggleLocations = useCallback((locationIds: string[]) => {
-    setCurrentSelectedLocationIds(new Set(locationIds));
-  }, []);
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm((f) => ({ ...f, address, geoLocation }));
@@ -1169,7 +1224,7 @@ export default function CreateStoreForm({
 
   // Render step or review
   const StepContent =  stepIndex < allSteps.length ? ( 
-        allSteps[stepIndex].render(form, handlers, mappedCategories, availableLocations)
+        allSteps[stepIndex].render(form, handlers, mappedCategories, availableLocations, selectedLocationsForDisplay)
       ) : (
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold">Review Your Store</h2>
@@ -1387,7 +1442,7 @@ const renderReviewContent = (stepKey: any, form: any) => {
       );
 
       
-    case 'storeLocations': return <p>{form.storeLocations.map((l:any) => l.name).join(', ')}</p>; // New review content
+    case 'storeLocations': return <p>{form.companyLocations.map((l:any) => l.name).join(', ')}</p>; // New review content
 
     case "basic":
       return (

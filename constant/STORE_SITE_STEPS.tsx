@@ -90,21 +90,16 @@ export const pricingSteps: StepConfig[] = [
     key: 'pricingtiers',
     title: 'Pricing Tiers',
     render: (formData, handlers) => {
-      // Create a wrapper function that ProductPricingAndTiers expects
-      const setPricingTiersFormData: React.Dispatch<React.SetStateAction<StoreForm>> = (update) => {
-        if (typeof update === 'function') {
-          handlers.onChangeSettings({ pricingTiers: (update as any).pricingTiers });
-        } else {
-          handlers.onChangeSettings({ pricingTiers: (update as any).pricingTiers });
+      // Provide a setFormData function matching (name: string, value: any) => void
+      const setPricingTiersFormData = (name: string, value: any) => {
+        if (name === 'pricingTiers') {
+          handlers.onChangeSettings({ pricingTiers: value });
         }
       };
 
       return (
         <ProductPricingAndTiers
-          formData={{
-            ...formData,
-            pricingTiers: formData.pricingTiers || [],
-          }}
+          pricingTiers={formData.pricingTiers}
           setFormData={setPricingTiersFormData}
         />
       );
@@ -264,20 +259,56 @@ export const websiteSteps: StepConfig[] = [
     ),
   },
 ];
-``
+
 export const locationsSteps: StepConfig[] = [  
   {
     key: 'storeLocations', // NEW KEY
     title: 'Store Locations', // NEW TITLE
-    render: (f, h, cats, allLocs) => ( // NEW: allLocs parameter
+    render: (f, h, cats, allLocs, selectedLocationsForDisplay) => ( // NEW: allLocs parameter
       <LocationSelectionAccordion
         availableLocations={allLocs} // Pass all available locations
-        selectedLocations={f.locations} // Pass currently selected locations
+        selectedLocations={selectedLocationsForDisplay} // Pass currently selected locations
         onToggleLocation={h.onToggleLocation} // New handler
         onBulkToggle={h.onBulkToggleLocations} // New handler
-        onApply={() => console.log(f.locations)} // Example onApply
+        onApply={() => console.log(f.companyLocations)} // Example onApply
       />
     ),
   },
 ];
 
+//   {
+//     key: 'storeLocations',
+//     title: 'Store Locations',
+//     // The render function receives all necessary data from the parent CreateStoreForm
+//     render: (formData, handlers, mappedCategories, availableLocations, selectedLocationsForDisplay) => (
+//       <LocationSelectionAccordion
+//         availableLocations={availableLocations}
+//         // THIS IS THE CRITICAL LINE: Pass the UI-friendly selectedLocationsForDisplay
+//         selectedLocations={selectedLocationsForDisplay}
+//         // selectedLocations={
+//         //   // You need to ensure selectedLocationsForDisplay is accessible here.
+//         //   // The simplest way is to pass it as an argument to the render function
+//         //   // in the StepConfig definition, as I suggested in the previous response.
+//         //   // If you cannot modify StepConfig, you might need a different approach
+//         //   // like passing it via handlers or making it a global context.
+
+//         //   // For the provided code, since `selectedLocationsForDisplay` is a state/memo
+//         //   // in CreateStoreForm, it needs to be passed explicitly to the render prop.
+//         //   // Let's assume you've updated StepConfig as suggested previously:
+//         //   // `render: (formData, handlers, mappedCategories, availableLocations, selectedLocationsForDisplay) => (...)`
+//         //   // If so, it would be:
+//         //   // selectedLocations={selectedLocationsForDisplay}
+
+//         //   // If you CANNOT change the StepConfig.render signature, then you would
+//         //   // need to re-derive it here, which is less efficient but works:
+//         //   buildSelectedLocationTree(
+//         //       formData.companyLocations,
+//         //       new Map(availableLocations.map(loc => [loc.id, loc]))
+//         //   )
+//         // }
+//         onToggleLocation={handlers.onToggleLocation}
+//         onBulkToggle={handlers.onBulkToggleLocations}
+//       />
+//     ),
+//   },
+// ];

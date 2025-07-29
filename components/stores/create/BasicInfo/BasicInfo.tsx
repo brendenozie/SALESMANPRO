@@ -8,7 +8,7 @@ export interface BasicInfoProps {
   slug: string;
   category: string;
   hasWebsite: boolean;
-  description: string;
+  description?: string  | undefined;
   tagline: string;
   domain: string;
   handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;

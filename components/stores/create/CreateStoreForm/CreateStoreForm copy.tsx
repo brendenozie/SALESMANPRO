@@ -6,6 +6,7 @@ import React, {
   ChangeEvent,
   FormEvent,
   useMemo,
+  useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,20 +16,26 @@ import {
   StepConfig,
   GeoLocation,
   RawCategory,
+  Location,
   SubObj,
   ParentCategory,
   SelectedCategory,
   Promotion,
   HeroSlide,
-} from "../../../../types/typings";
+  CompanyLocationType,
+  SelectedLocation,
+} from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   storeSteps,
   pricingSteps,
   websiteSteps,
+  locationsSteps,
   paymentSteps,
 } from "@/constant/STORE_SITE_STEPS";
+
+import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -36,69 +43,181 @@ const SITE_CATEGORIES_WITH_PRICING = [
   "portfolio & personal branding",
 ];
 
+const SITE_CATEGORIES_WITH_LOCATIONS = [
+  "real estate",
+  "automotive",
+  "travel & tourism",
+];
+
+// --- Default Form (moved outside component) ---
+const defaultForm: StoreForm = {
+  id: "",
+  name: "",
+  slug: "",
+  domain: "",
+  hasWebsite: false,
+  tagline: "",
+  description: "",
+  category: "E-commerce",
+  logoUrl: "",
+  bannerUrl: "",
+  contactEmail: "", // Will be set from session later
+  contactPhone: "",
+  address: "",
+  geoLocation: { lat: 0, lng: 0, }, // Ensure address is initialized
+  openingHours: {
+    mon: { open: "09:00", close: "17:00" },
+    tue: { open: "09:00", close: "17:00" },
+    wed: { open: "09:00", close: "17:00" },
+    thu: { open: "09:00", close: "17:00" },
+    fri: { open: "09:00", close: "17:00" },
+    sat: { open: "", close: "" },
+    sun: { open: "", close: "" },
+  },
+  socialLinks: [],
+  policies: [],
+  faqs: [],
+  testimonials: [],
+  heroSlides: [],
+  promotions: [],
+  storeCategories: [],
+  currency: 'USD',
+  locale: 'en-US',
+  companyCategoryId: undefined,
+  pageSections: [],
+  appPromos: [],
+  collections: [],
+  events: [],
+  announcements: [],
+  awards: [],
+  metrics: [],
+  stats: [],
+  pricingTiers: [
+    {
+      name: "Basic",
+      price: 0,
+      features: [],
+      description: "A great starting point.",
+      duration: "monthly"
+    }
+  ],
+  themeSettings: {},
+  seo: {},
+  analyticsConfig: {},
+  paymentSettings: {},
+  shippingSettings: {},
+  blogs: [],
+  marketplaceListings: [],
+  writers: [],
+  agents: [],
+  doctors: [],
+  podcasts: [],
+  companyLocations: [], // Initialize with empty array for CompanyLocationType
+  courses: [],
+};
+
+// Helper to build a selected tree from CompanyLocation[] and all Locations
+const buildSelectedLocationTree = (
+  selectedCompanyLocations: CompanyLocationType[],
+  allLocationsMap: Map<string, Location>,
+  parentId: string | null = null
+): SelectedLocation[] => {
+  const children: SelectedLocation[] = [];
+  const directChildrenLocations = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === parentId);
+
+  const selectedLocMap = new Map(selectedCompanyLocations.map(cl => [cl.locationId, cl]));
+
+  for (const loc of directChildrenLocations) {
+    const isLocSelected = selectedLocMap.has(loc.id);
+    const childSelectedNodes = buildSelectedLocationTree(selectedCompanyLocations, allLocationsMap, loc.id);
+
+    if (isLocSelected || childSelectedNodes.length > 0) {
+      children.push({
+        id: loc.id,
+        name: loc.name,
+        children: childSelectedNodes,
+      });
+    }
+  }
+  return children;
+};
+
+// Helper to flatten CompanyLocation[] into a Set of location IDs
+const flattenCompanyLocationsToIds = (companyLocations: CompanyLocationType[]): Set<string> => {
+  const ids = new Set<string>();
+  // Add defensive check for companyLocations being undefined/null
+  if (!companyLocations) return ids; 
+  companyLocations.forEach(cl => ids.add(cl.locationId));
+  return ids;
+};
+
+// Helper to get all descendant IDs of a given location
+const getAllDescendantIds = (location: Location, allLocationsMap: Map<string, Location>): string[] => {
+    const ids: string[] = [location.id];
+    const queue: string[] = [location.id];
+    let head = 0;
+
+    while (head < queue.length) {
+        const currentId = queue[head++];
+        const children = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === currentId);
+        children.forEach(child => {
+            ids.push(child.id);
+            queue.push(child.id);
+        });
+    }
+    return ids;
+};
+
+
+// --- Main Component ---
 type Props = {
   availableCategories: RawCategory[];
+  availableLocations: Location[];
   initialData?: Partial<StoreForm> & { id: string };
 };
 
 export default function CreateStoreForm({
   availableCategories,
+  availableLocations,
   initialData,
 }: Props) {
   const { data: session } = useSession();
   const router = useRouter();
+  
+  const [stepIndex, setStepIndex] = useState(0);
+  
+  const [form, setForm] = useState<StoreForm>(() => {
+    const initialForm = initialData ? { ...defaultForm, ...initialData } : { ...defaultForm, contactEmail: session?.user?.email || "" };
+    // Ensure companyLocations is always an array, even if initialData provides null/undefined
+    initialForm.companyLocations = initialData?.companyLocations || [];
+    return initialForm;
+  });
 
-  const defaultForm: StoreForm = {
-    id: "",
-    name: "",
-    slug: "",
-    domain: "",
-    hasWebsite: false,
-    tagline: "",
-    description: "",
-    category: "E-commerce",
-    logoUrl: "https://logourl.com",
-    bannerUrl: "https://bannerurl.com",
-    contactEmail: "",
-    contactPhone: "",
-    address: "",
-    geoLocation: { lat: 0, lng: 0 },
-    openingHours: {
-      mon: { open: "", close: "" },
-      tue: { open: "", close: "" },
-      wed: { open: "", close: "" },
-      thu: { open: "", close: "" },
-      fri: { open: "", close: "" },
-      sat: { open: "", close: "" },
-      sun: { open: "", close: "" },
-    },
-    socialLinks: [],
-    policies: [],
-    faqs: [],
-    testimonials: [],
-    heroSlides: [],
-    promotions: [],
-    themeSettings: {},
-    seo: {},
-    analyticsConfig: {},
-    paymentSettings: {},
-    shippingSettings: {},
-    storeCategories: [],
-    awards: [],
-    metrics: [],
-    stats: [],
-    marketplaceListings: [],
-    pricingTiers: [{ name: "", price: 0, features: [] }],
-  };
-
-  const [form, setForm] = useState<StoreForm>(
-    // `initialData` fields overwrite defaults
-    initialData ? { ...defaultForm, ...initialData } : defaultForm
+  const [currentSelectedLocationIds, setCurrentSelectedLocationIds] = useState<Set<string>>(() =>
+    initialData?.companyLocations ? flattenCompanyLocationsToIds(initialData.companyLocations) : new Set()
   );
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 1) File state (logo, banner, hero slides, promotion slides)
-  // ─────────────────────────────────────────────────────────────────────
+  const [categoryChanged, setCategoryChanged] = useState(false);
+
+  useEffect(() => {
+    if (!categoryChanged || initialData) return;
+
+    const sampleData = getCategoryDefaultData(form.category);
+
+    setForm(prevForm => ({
+      ...prevForm,
+      ...sampleData,
+    }));
+
+    setCategoryChanged(false);
+
+  }, [form.category, categoryChanged, initialData, stepIndex]);
+
+  const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
+    const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+    return buildSelectedLocationTree(form.companyLocations, allLocationsMap);
+  }, [form.companyLocations, availableLocations]);
+  
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -106,17 +225,14 @@ export default function CreateStoreForm({
     () => form.heroSlides.map(() => null)
   );
 
-  // Track one File per hero slide. Initialize from existing heroSlides length
   const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(() =>
     form.heroSlides.map(() => null)
   );
 
-  // Track one File per promotion. Initialize from existing promotions length
   const [promotionSlideFiles, setPromotionSlideFiles] = useState<
     (File | null)[]
   >(() => form.promotions.map(() => null));
 
-  // When initialData changes (edit mode), clear out these File states
   useEffect(() => {
     if (!initialData) return;
     setLogoFile(null);
@@ -125,7 +241,6 @@ export default function CreateStoreForm({
     setPromotionSlideFiles(initialData.promotions?.map(() => null) || []);
   }, [initialData]);
 
-  // Whenever form.heroSlides grows/shrinks, sync heroSlideFiles length
   useEffect(() => {
     if (form.heroSlides.length > heroSlideFiles.length) {
       setHeroSlideFiles((prev) => [
@@ -151,26 +266,26 @@ export default function CreateStoreForm({
   }, [form.heroSlides.length]);
 
   const allSteps = useMemo<StepConfig[]>(() => {
-    // 1) always start with your store steps
     const list = [...storeSteps];
 
-    // 2) if they've opted for a website, add payment steps...
     if (form.hasWebsite) {
-      // 3) ...and, for certain categories, add pricing
       const cat = form.category?.toLowerCase().trim() || "";
+
       if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
         list.push(...pricingSteps);
       }
 
       list.push(...websiteSteps);
 
+      if (SITE_CATEGORIES_WITH_LOCATIONS.includes(cat)) {
+        list.push(...locationsSteps);
+      }
+
       list.push(...paymentSteps);
     }
 
     return list;
   }, [form.hasWebsite, form.category]);
-
-  // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
 
   useEffect(() => {
     if (form.promotions.length > promotionSlideFiles.length) {
@@ -184,17 +299,12 @@ export default function CreateStoreForm({
     }
   }, [form.promotions.length]);
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 2) Handlers for “Logo / Banner” Accordion
-  // ─────────────────────────────────────────────────────────────────────
-
   const handleMediaUpload = (field: "logoUrl" | "bannerUrl", file: File) => {
     if (field === "logoUrl") {
       setLogoFile(file);
     } else {
       setBannerFile(file);
     }
-    // Immediately generate a preview URL
     const previewURL = URL.createObjectURL(file);
     setForm((prev) => ({
       ...prev,
@@ -214,10 +324,6 @@ export default function CreateStoreForm({
     }));
   };
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 3) Handlers for “Hero Slides” Accordion
-  // ─────────────────────────────────────────────────────────────────────
-
   const onAddHeroSlide = () => {
     setForm((prev) => ({
       ...prev,
@@ -230,6 +336,11 @@ export default function CreateStoreForm({
           subline: "",
           ctaText: "",
           ctaLink: "",
+          // Add missing fields for HeroSlide to match interface
+          title: "",
+          subtitle: "",
+          link: "",
+          order: prev.heroSlides.length,
         },
       ],
     }));
@@ -259,7 +370,6 @@ export default function CreateStoreForm({
     file: File,
     field: keyof HeroSlide
   ) => {
-    // store the file if needed
     if (field === "imageUrl") {
       setHeroSlideFiles((prev) => {
         const copy = [...prev];
@@ -274,10 +384,8 @@ export default function CreateStoreForm({
       });
     }
 
-    // generate preview URL
     const previewURL = URL.createObjectURL(file);
 
-    // update the form state
     setForm((prev) => {
       const slides = [...prev.heroSlides];
       slides[index] = { ...slides[index], [field]: previewURL };
@@ -285,16 +393,24 @@ export default function CreateStoreForm({
     });
   };
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 4) Handlers for “Promotions” Accordion
-  // ─────────────────────────────────────────────────────────────────────
-
   const onAddPromotion = () => {
     setForm((prev) => ({
       ...prev,
       promotions: [
         ...prev.promotions,
-        { title: "", description: "", startsAt: "", endsAt: "", bannerUrl: "" },
+        {
+          title: "",
+          description: "",
+          startsAt: "",
+          endsAt: "",
+          bannerUrl: "",
+          // Add missing fields for Promotion to match interface
+          id: `promo-${Date.now()}`,
+          name: "",
+          imageUrl: "",
+          startDate: new Date(),
+          endDate: new Date(),
+        },
       ],
     }));
   };
@@ -332,27 +448,22 @@ export default function CreateStoreForm({
     });
   };
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 5) Generic form handlers (arrays, opening hours, etc.)
-  // ─────────────────────────────────────────────────────────────────────
-
   const totalSteps = allSteps.length + 1;
 
-  const [stepIndex, setStepIndex] = useState(0);
+  const mappedCategories: ParentCategory[] = useMemo(() => {
+    return availableCategories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      icon: cat.icon,
+      items: cat.subcategories.map((sub, index) => ({
+        id: sub.id, // Use sub.id directly as it's more stable
+        name: sub.name,
+        slug: sub.slug,
+      })),
+      allBrands: cat.allBrands ? cat.allBrands : [],
+    }));
+  }, [availableCategories]);
 
-  const mappedCategories: ParentCategory[] = availableCategories.map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-    icon: cat.icon,
-    items: cat.subcategories.map((sub, index) => ({
-      id: `${sub.name.slice(0, 2) + index}`,
-      name: sub.name,
-      slug: sub.slug,
-    })),
-    allBrands: cat.allBrands ? cat.allBrands : [],
-  }));
-
-  // Auto-generate slug/domain from name
   useEffect(() => {
     if (initialData) return;
     const slug = form.name
@@ -363,7 +474,6 @@ export default function CreateStoreForm({
     setForm((prev) => ({ ...prev, slug, domain }));
   }, [form.name, initialData]);
 
-  // Slug & domain generator
   useEffect(() => {
     if (initialData) return;
     if (!form.name) return;
@@ -376,15 +486,46 @@ export default function CreateStoreForm({
 
   // LocalStorage
   useEffect(() => {
-    if (initialData) return; // ← skip in edit mode
+    if (initialData) return;
     const saved = localStorage.getItem("storeForm");
-    if (saved) setForm(JSON.parse(saved));
+    if (saved) {
+      try {
+        const parsedForm: StoreForm = JSON.parse(saved);
+        setForm(parsedForm);
+        if (parsedForm.companyLocations) {
+            setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.companyLocations));
+        }
+      } catch (e) {
+        console.error("Failed to parse stored form data from localStorage:", e);
+        localStorage.removeItem("storeForm");
+      }
+    }
   }, [initialData]);
 
   useEffect(() => {
     if (initialData) return;
-    localStorage.setItem("storeForm", JSON.stringify(form));
-  }, [form, initialData]);
+    const companyLocationsToSave: CompanyLocationType[] = [];
+    const collectCompanyLocations = (selectedLocs: SelectedLocation[]) => {
+        selectedLocs.forEach(selectedLoc => {
+            companyLocationsToSave.push({
+                companyId: form.id || session?.user?.id || 'temp-company-id',
+                locationId: selectedLoc.id,
+                visible: true,
+                sortOrder: 0,
+            });
+            if (selectedLoc.children) {
+                collectCompanyLocations(selectedLoc.children);
+            }
+        });
+    };
+    collectCompanyLocations(selectedLocationsForDisplay);
+
+    const formToSave = {
+        ...form,
+        companyLocations: companyLocationsToSave,
+    };
+    localStorage.setItem("storeForm", JSON.stringify(formToSave));
+  }, [form, initialData, selectedLocationsForDisplay, session?.user?.id]);
 
   // Navigation guard
   useEffect(() => {
@@ -396,13 +537,25 @@ export default function CreateStoreForm({
     return () => window.removeEventListener("beforeunload", handler);
   }, []);
 
-  // Handlers
+  const handleChange = (
+  e: ChangeEvent<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >
+) => {
+  const { name, type, value } = e.target;
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, type, checked, value } = e.target;
+  if (name === "category") {
+    setCategoryChanged(true);
+  }
+  
+  if (type === "checkbox") {
+    const checked = (e.target as HTMLInputElement).checked;
+    setForm(f => ({ ...f, [name]: checked }));
+    return;
+  }
 
-    if (name.startsWith("openingHours.")) {
-      const [, dayKey, field] = name.split(".");
+  if (name.startsWith("openingHours.")) {
+     const [, dayKey, field] = name.split(".");
       setForm((f: any) => ({
         ...f,
         openingHours: {
@@ -413,12 +566,9 @@ export default function CreateStoreForm({
           },
         },
       }));
-    } else {
-      setForm((f: any) => ({
-        ...f,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
+  } else {
+    setForm(f => ({ ...f, [name]: value }));
+  }
   };
 
   const onUpdateArray = <T,>(
@@ -463,14 +613,12 @@ export default function CreateStoreForm({
     });
   };
 
-  // 1) onToggleParent
   const onToggleParent = (parent: ParentCategory) => {
-    setForm((prev) => {
+    setForm((prev:any) => {
       const existingIndex = prev.storeCategories.findIndex(
-        (sc) => sc.id === parent.id
+        (sc:any) => sc.id === parent.id
       );
 
-      // A) Parent not currently selected → add ALL children
       if (existingIndex === -1) {
         return {
           ...prev,
@@ -494,49 +642,43 @@ export default function CreateStoreForm({
       const existingEntry = prev.storeCategories[existingIndex];
       const currentlySelectedCount = existingEntry.items.length;
       const totalItemsCount = parent.items.length;
-      const totalBrandsCount = parent.allBrands && parent.allBrands.length;
+      // const totalBrandsCount = parent.allBrands && parent.allBrands.length; // Not used
 
-      // B) Parent is “partial” (some but not all) → select all
       if (currentlySelectedCount < totalItemsCount) {
         const allItems = parent.items.map((child) => ({
           id: child.id,
           name: child.name,
-          // icon: child.icon,
           slug: child.slug,
         }));
 
-        const allBrands = parent.allBrands && parent.allBrands;
-
-        const updatedItems = prev.storeCategories.map((sc) =>
+        const updatedCategories = prev.storeCategories.map((sc:any) =>
           sc.id === parent.id ? { ...sc, items: allItems } : sc
         );
 
-        const updatedBrands = prev.storeCategories.map((sc) =>
-          sc.id === parent.id ? { ...sc, brands: allBrands } : sc
+        // FIX: Ensure brands are also correctly merged if present
+        const updatedBrands = prev.storeCategories.map((sc:any) =>
+          sc.id === parent.id ? { ...sc, allBrands: parent.allBrands } : sc
         );
+
         return {
           ...prev,
-          storeCategories: {
-            ...prev.storeCategories,
-            ...updatedItems,
-            ...updatedBrands,
-          },
+          storeCategories: updatedCategories.map((sc: any, idx: number) => ({
+            ...sc,
+            ...updatedBrands[idx] // Merge brands back
+          })),
         };
       }
 
-      // C) Parent was fully selected → remove it completely
-      const filtered = prev.storeCategories.filter((sc) => sc.id !== parent.id);
+      const filtered = prev.storeCategories.filter((sc:any) => sc.id !== parent.id);
       return { ...prev, storeCategories: filtered };
     });
   };
 
-  // 2) onToggleSub
   const onToggleSub = (parentId: string, item: SubObj) => {
-    setForm((prev) => {
-      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+    setForm((prev:any) => {
+      const parentEntry = prev.storeCategories.find((sc:any) => sc.id === parentId);
   
       if (!parentEntry) {
-        // Parent not in storeCategories → add it with one sub
         const parentData = mappedCategories.find((cat) => cat.id === parentId);
         return {
           ...prev,
@@ -553,24 +695,22 @@ export default function CreateStoreForm({
         };
       }
   
-      // Parent exists → toggle item
       const alreadyExists = parentEntry.items.some(
-        (existingItem) => existingItem.id === item.id
+        (existingItem:any) => existingItem.id === item.id
       );
   
       const newItems = alreadyExists
-        ? parentEntry.items.filter((existingItem) => existingItem.id !== item.id)
+        ? parentEntry.items.filter((existingItem:any) => existingItem.id !== item.id)
         : [...parentEntry.items, item];
   
-      if (newItems.length === 0) {
-        // No more items, remove entire parent
+      if (newItems.length === 0 && (!parentEntry.allBrands || parentEntry.allBrands.length === 0)) {
         return {
           ...prev,
-          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
+          storeCategories: prev.storeCategories.filter((sc:any) => sc.id !== parentId),
         };
       }
   
-      const updated = prev.storeCategories.map((sc) =>
+      const updated = prev.storeCategories.map((sc:any) =>
         sc.id === parentId ? { ...sc, items: newItems } : sc
       );
   
@@ -578,12 +718,10 @@ export default function CreateStoreForm({
     });
   };
   
-
-  // 2) onToggleBrand
   const onToggleBrand = (parentId: string, brand: string) => {
-    setForm((prev) => {
+    setForm((prev:any) => {
 
-      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+      const parentEntry = prev.storeCategories.find((sc:any) => sc.id === parentId);
   
       if (!parentEntry) {
         const parentData = mappedCategories.find((cat) => cat.id === parentId);
@@ -595,9 +733,8 @@ export default function CreateStoreForm({
               id: parentId,
               name: parentData?.name ?? "",
               icon: parentData?.icon ?? "",
-              allBrands: parentData?.allBrands ?? [],
-              items: [],
-              brands: [brand],
+              allBrands: [brand],
+              items: [], // Ensure items array is initialized
             },
           ],
         };
@@ -606,10 +743,17 @@ export default function CreateStoreForm({
       const existingBrands = parentEntry.allBrands ?? [];
       const alreadyExists = existingBrands.includes(brand);
       const newBrands = alreadyExists
-        ? existingBrands.filter((b) => b !== brand)
+        ? existingBrands.filter((b:any) => b !== brand)
         : [...existingBrands, brand];
   
-      const updated = prev.storeCategories.map((sc) =>
+      if (newBrands.length === 0 && (!parentEntry.items || parentEntry.items.length === 0)) {
+        return {
+          ...prev,
+          storeCategories: prev.storeCategories.filter((sc:any) => sc.id !== parentId),
+        };
+      }
+  
+      const updated = prev.storeCategories.map((sc:any) =>
         sc.id === parentId ? { ...sc, allBrands: newBrands } : sc
       );
   
@@ -617,62 +761,35 @@ export default function CreateStoreForm({
     });
   };
   
-  // 3) onBulkToggle
   const onBulkToggle = (ids: string[]) => {
-    setForm((prev) => {
-      // If ids is empty → clear everything
+    setForm((prev:any) => {
       if (ids.length === 0) {
         return { ...prev, storeCategories: [] };
       }
 
-      // Build a set of only “child IDs,” ignoring any parent IDs
       const childIdSet = new Set<string>();
       for (const id of ids) {
-        // Skip if this id matches a parent
         const isParent = mappedCategories.some((p) => p.id === id);
         if (!isParent) {
           childIdSet.add(id);
         }
       }
 
-      // Now group those child IDs by parent
       const nextStoreCategories: SelectedCategory[] = [];
       for (const parent of mappedCategories) {
-        // Which of this parent’s children appear in childIdSet?
         const matchedItemsKids = parent.items.filter((item) =>
           childIdSet.has(item.id)
         );
-        if (matchedItemsKids.length === 0) {
-          // None of this parent’s children selected → skip
-          continue;
-        }
-
-        // If ALL children are selected (matchedKids.length === parent.children.length)
-        // then we consider this a “full” select. Otherwise it’s “partial.”
-        const allKidsSelected = matchedItemsKids.length === parent.items.length;
-
-        const itemsToUse = allKidsSelected
-          ? parent.items.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
-          : matchedItemsKids.map((c) => ({
-              id: c.id,
-              name: c.name,
-              slug: c.slug,
-            }));
-
-        // Which of this parent’s children appear in childIdSet?
-        const matchedBrandsKids = parent.allBrands && parent.allBrands.filter((brand) =>
+        const matchedBrandsKids = parent.allBrands?.filter((brand) =>
           childIdSet.has(brand)
-        );
-        if (matchedBrandsKids?.length === 0) {
-          // None of this parent’s children selected → skip
+        ) || [];
+
+        if (matchedItemsKids.length === 0 && matchedBrandsKids.length === 0) {
           continue;
         }
 
-        // If ALL children are selected (matchedKids.length === parent.children.length)
-        // then we consider this a “full” select. Otherwise it’s “partial.”
-        const allBrandsSelected = matchedBrandsKids?.length === parent.allBrands?.length;
-
-        const brandsToUse = allBrandsSelected ? parent.allBrands : matchedBrandsKids;
+        const itemsToUse = matchedItemsKids.map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
+        const brandsToUse = matchedBrandsKids;
 
         nextStoreCategories.push({
           id: parent.id,
@@ -686,6 +803,62 @@ export default function CreateStoreForm({
       return { ...prev, storeCategories: nextStoreCategories };
     });
   };
+
+  const onToggleLocation = useCallback((location: Location, isSelected: boolean) => {
+    setForm(prevForm => {
+      const newCompanyLocations = [...prevForm.companyLocations];
+      const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+      const idsToToggle = getAllDescendantIds(location, allLocationsMap);
+
+      idsToToggle.forEach(locId => {
+        const existingIndex = newCompanyLocations.findIndex(cl => cl.locationId === locId);
+        if (isSelected) {
+          if (existingIndex === -1) {
+            newCompanyLocations.push({
+              companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+              locationId: locId,
+              visible: true,
+              sortOrder: 0,
+            });
+          }
+        } else {
+          if (existingIndex !== -1) {
+            newCompanyLocations.splice(existingIndex, 1);
+          }
+        }
+      });
+
+      return { ...prevForm, companyLocations: newCompanyLocations };
+    });
+  }, [availableLocations, session?.user?.id]);
+
+  const onBulkToggleLocations = useCallback((locationIds: string[]) => {
+    setForm(prevForm => {
+      const newCompanyLocations: CompanyLocationType[] = [];
+      const existingCompanyLocationMap = new Map(prevForm.companyLocations.map(cl => [cl.locationId, cl]));
+
+      locationIds.forEach(locId => {
+        if (!existingCompanyLocationMap.has(locId)) {
+          newCompanyLocations.push({
+            companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+            locationId: locId,
+            visible: true,
+            sortOrder: 0,
+          });
+        }
+      });
+
+      const finalCompanyLocations = locationIds.length === 0
+        ? []
+        : [
+            ...prevForm.companyLocations.filter(cl => locationIds.includes(cl.locationId)),
+            ...newCompanyLocations
+          ];
+
+      return { ...prevForm, companyLocations: finalCompanyLocations };
+    });
+  }, [session?.user?.id]);
+
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm((f) => ({ ...f, address, geoLocation }));
@@ -722,9 +895,12 @@ export default function CreateStoreForm({
 
     onPromotionImageUpload,
 
-    // Media (logo/banner)
     handleMediaUpload,
     handleMediaRemove,
+
+    onToggleLocation,
+    onBulkToggleLocations
+
   };
 
   const next = () => setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
@@ -735,18 +911,17 @@ export default function CreateStoreForm({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) {
+      alert("User not authenticated. Please log in.");
+      return;
+    }
 
     setIsSubmitting(true);
 
-    // 1) Prepare a local copy of form data (so we can mutate it without
-    //    worrying about React batching or stale closures).
     const payload = { ...form };
 
-    // 2) Build upload promises, but write each returned URL into `payload`
     const uploadPromises: Promise<void>[] = [];
 
-    // 2.a) Logo
     if (logoFile) {
       const p = (async () => {
         const fd = new FormData();
@@ -760,15 +935,12 @@ export default function CreateStoreForm({
           throw new Error("Logo upload failed");
         }
         const { url } = await res.json();
-        // 2.a.i) Write it into our local payload
         payload.logoUrl = url;
-        // 2.a.ii) Also update React state so the UI immediately reflects it
         setForm((prev) => ({ ...prev, logoUrl: url }));
       })();
       uploadPromises.push(p);
     }
 
-    // 2.b) Banner
     if (bannerFile) {
       const p = (async () => {
         const fd = new FormData();
@@ -826,6 +998,7 @@ export default function CreateStoreForm({
         uploadPromises.push(p);
       }
     });
+
 
     // 2.c.ii) Product images for Hero Slides
     productImageFiles.forEach((file, idx) => {
@@ -903,7 +1076,6 @@ export default function CreateStoreForm({
       }
     });
 
-    // 4) Wait for all uploads to finish
     try {
       await Promise.all(uploadPromises);
 
@@ -913,7 +1085,6 @@ export default function CreateStoreForm({
         : `${process.env.NEXT_PUBLIC_API_URL}/stores`;
       const method = isEdit ? "PUT" : "POST";
 
-      // 4) Now payload contains the correct URLs (not the stale form)
       const toSend = {
         ...payload,
         userId: session.user.id,
@@ -929,188 +1100,190 @@ export default function CreateStoreForm({
         router.push("/stores");
       } else {
         console.error("Save failed", await res.text());
-        // show an error toast/message
+        alert("Failed to save store. Please check console for details.");
       }
     } catch (err: any) {
       console.error("Error uploading files or saving store:", err);
       alert(`Error: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Render step or review
-  const StepContent =  stepIndex < allSteps.length ? ( 
-        allSteps[stepIndex].render(form, handlers, mappedCategories)
-      ) : (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold">Review Your Store</h2>
-          {allSteps.map((s: any, i: any) => (
-            <div
-              key={s.key}
-              className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
-              onClick={() => setStepIndex(i)}
-            >
-              <h3 className="font-medium mb-2 flex justify-between items-center">
-                <span>{s.title}</span>
-                <span className="text-xs text-indigo-500">Edit ➔</span>
-              </h3>
-              <div className="text-gray-700">
-                {renderReviewContent(s.key, form)}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-
-  const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
-  const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
-      {/* Mobile Top Bar with Step Info */}
-      <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
-        <span className="font-medium text-sm">
-          Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
-        </span>
-        <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
-      </div>
-
-      {/* Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
-        <h2 className="text-xl font-semibold mb-6 text-indigo-700">
-          Setup Wizard
-        </h2>
-        <nav className="flex flex-col gap-4 overflow-y-auto">
-          {allSteps.map((s, i) => {
-            const completed = i < stepIndex;
-            const active = i === stepIndex;
-            return (
-              <button
+    // Render step or review
+    const StepContent =  stepIndex < allSteps.length ? ( 
+          allSteps[stepIndex].render(form, handlers, mappedCategories, availableLocations, selectedLocationsForDisplay)
+        ) : (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Review Your Store</h2>
+            {allSteps.map((s: any, i: any) => (
+              <div
                 key={s.key}
+                className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
                 onClick={() => setStepIndex(i)}
-                className={`flex items-center gap-3 p-3 rounded-lg transition
-              ${completed ? "bg-green-100 text-green-800" : ""}
-              ${
-                active
-                  ? "bg-indigo-100 text-indigo-800 font-medium shadow-inner"
-                  : "hover:bg-gray-100 text-gray-700"
-              }`}
               >
-                <span
-                  className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
-                ${
-                  completed
-                    ? "bg-green-600 text-white"
-                    : active
-                    ? "bg-indigo-600 text-white"
-                    : "bg-indigo-200 text-indigo-700"
-                }`}
-                >
-                  {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
-                </span>
-                <span className="text-sm">{s.title}</span>
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => setStepIndex(allSteps.length)}
-            className={`flex items-center gap-3 p-3 rounded-lg transition
-          ${
-            stepIndex === allSteps.length
-              ? "bg-green-100 text-green-800"
-              : "hover:bg-gray-100 text-gray-700"
-          }`}
-          >
-            <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
-              ✔
-            </span>
-            <span className="text-sm">Review</span>
-          </button>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
-        {/* Progress Bar */}
-        <div className="relative mb-4">
-          <div className="h-2 bg-gray-200 rounded-full">
-            <div
-              className="h-full bg-indigo-600 rounded-full transition-all duration-300"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-          <div className="absolute inset-0 flex justify-between items-center px-1">
-            {Array.from({ length: totalSteps }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setStepIndex(i)}
-                className={`w-3 h-3 rounded-full focus:outline-none
-              ${
-                i <= stepIndex
-                  ? "bg-indigo-600"
-                  : "bg-white border border-gray-300"
-              }`}
-              />
+                <h3 className="font-medium mb-2 flex justify-between items-center">
+                  <span>{s.title}</span>
+                  <span className="text-xs text-indigo-500">Edit ➔</span>
+                </h3>
+                <div className="text-gray-700">
+                  {renderReviewContent(s.key, form)}
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-
-        {/* Step Info (Desktop only) */}
-        <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
-          <span>
+        );
+  
+    const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
+    const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
+  
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+        {/* Mobile Top Bar with Step Info */}
+        <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+          <span className="font-medium text-sm">
             Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
           </span>
-          <span>{currentTitle}</span>
+          <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
         </div>
-
-        {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={stepIndex}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.3 }}
-            >
-              {StepContent}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Navigation Buttons (Sticky on Mobile) */}
-        <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
-          <button
-            type="button"
-            disabled={stepIndex === 0}
-            onClick={prev}
-            className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
-          >
-            ← Back
-          </button>
-
-          {stepIndex < allSteps.length ? (
+  
+        {/* Sidebar */}
+        <aside className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
+          <h2 className="text-xl font-semibold mb-6 text-indigo-700">
+            Setup Wizard
+          </h2>
+          <nav className="flex flex-col gap-4 overflow-y-auto">
+            {allSteps.map((s, i) => {
+              const completed = i < stepIndex;
+              const active = i === stepIndex;
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setStepIndex(i)}
+                  className={`flex items-center gap-3 p-3 rounded-lg transition
+                ${completed ? "bg-green-100 text-green-800" : ""}
+                ${
+                  active
+                    ? "bg-indigo-100 text-indigo-800 font-medium shadow-inner"
+                    : "hover:bg-gray-100 text-gray-700"
+                }`}
+                >
+                  <span
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
+                  ${
+                    completed
+                      ? "bg-green-600 text-white"
+                      : active
+                      ? "bg-indigo-600 text-white"
+                      : "bg-indigo-200 text-indigo-700"
+                  }`}
+                  >
+                    {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
+                  </span>
+                  <span className="text-sm">{s.title}</span>
+                </button>
+              );
+            })}
             <button
               type="button"
-              onClick={next}
-              className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
+              onClick={() => setStepIndex(allSteps.length)}
+              className={`flex items-center gap-3 p-3 rounded-lg transition
+            ${
+              stepIndex === allSteps.length
+                ? "bg-green-100 text-green-800"
+                : "hover:bg-gray-100 text-gray-700"
+            }`}
             >
-              Continue →
+              <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
+                ✔
+              </span>
+              <span className="text-sm">Review</span>
             </button>
-          ) : (
+          </nav>
+        </aside>
+  
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
+          {/* Progress Bar */}
+          <div className="relative mb-4">
+            <div className="h-2 bg-gray-200 rounded-full">
+              <div
+                className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+            <div className="absolute inset-0 flex justify-between items-center px-1">
+              {Array.from({ length: totalSteps }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setStepIndex(i)}
+                  className={`w-3 h-3 rounded-full focus:outline-none
+                ${
+                  i <= stepIndex
+                    ? "bg-indigo-600"
+                    : "bg-white border border-gray-300"
+                }`}
+                />
+              ))}
+            </div>
+          </div>
+  
+          {/* Step Info (Desktop only) */}
+          <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
+            <span>
+              Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
+            </span>
+            <span>{currentTitle}</span>
+          </div>
+  
+          {/* Step Content */}
+          <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={stepIndex}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.3 }}
+              >
+                {StepContent}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+  
+          {/* Navigation Buttons (Sticky on Mobile) */}
+          <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
             <button
-              onClick={handleSubmit}
-              className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
+              type="button"
+              disabled={stepIndex === 0}
+              onClick={prev}
+              className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
             >
-              {isSubmitting ? "Uploading..." : "Submit Store"}
+              ← Back
             </button>
-          )}
-        </div>
-      </main>
-    </div>
-  );
+  
+            {stepIndex < allSteps.length ? (
+              <button
+                type="button"
+                onClick={next}
+                className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
+              >
+                Continue →
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
+              >
+                {isSubmitting ? "Uploading..." : "Submit Store"}
+              </button>
+            )}
+          </div>
+        </main>
+      </div>
+    );
 }
-
+ 
 // Helper to render review info for each step
 
 const ReviewSection = ({ title, children }: any) => (
@@ -1155,6 +1328,9 @@ const renderReviewContent = (stepKey: any, form: any) => {
           </div>
         </ReviewSection>
       );
+
+      
+    case 'storeLocations': return <p>{form.storeLocations.map((l:any) => l.name).join(', ')}</p>; // New review content
 
     case "basic":
       return (

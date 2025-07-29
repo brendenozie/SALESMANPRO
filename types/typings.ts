@@ -247,6 +247,7 @@ export interface PricingTier {
     price: number;
     duration?: string;
     features: string[];
+    isFeatured?: boolean;
 }
 
 // NEW: Interface for `PageSection`
@@ -379,7 +380,7 @@ export interface StoreForm {
     pricingTiers: PricingTier[]; 
 
     podcasts:any[];
-    locations:Location[];
+    companyLocations: CompanyLocationType[];
     
     courses:Course[];
 
@@ -597,7 +598,9 @@ export interface StepConfig {
   render: (form: StoreForm, 
     handlers: Handlers, 
     availableCategories: StoreCategory[],
-    allLocs: Location[]) => React.ReactNode;
+    allLocs: Location[],  
+    selectedLocationsForDisplay: SelectedLocation[]
+  ) => React.ReactNode;
 }
 
 export interface BookItem {
@@ -803,7 +806,7 @@ export interface ProductForm {
   status: string;
   collectionId: string;
   
-  applianceDimensions?: string;
+  applianceDimensions?: string | null;
 
   // Service/Booking related fields (from previous snippet, kept for completeness)
   hourlyRate?: number | null;
@@ -1076,22 +1079,70 @@ export interface Event {
   updatedAt?: string; // Not needed for form input
 }
 
+// Location model type (from your Prisma schema)
 export interface Location {
   id: string;
   name: string;
   slug: string;
   description?: string;
+  addressLine1?: string;
+  addressLine2?: string;
   city?: string;
+  state?: string;
+  postalCode?: string;
   country?: string;
-  status: 'active' | 'inactive' | 'draft';
+  latitude?: number;
+  longitude?: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  metaKeywords: string[];
+  sortOrder: number;
   visible: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string;
+  updatedBy?: string;
+  status: 'active' | 'inactive' | 'draft';
   parentId: string | null;
-  children?: Location[]; // This will be added when we build the tree
-  [key: string]: any; // For other properties
+  // Note: 'children' and 'parent' are Prisma relations, not direct fields
+  // We'll add 'children' for the UI tree building
+  children?: Location[];
+  localization?: any; // JSON type
+  attributes?: any; // JSON type
+  // Prisma relations are not directly included in this flat type,
+  // but we can add them if needed for client-side logic
+  // CompanyLocation?: CompanyLocationType[];
+  // Product?: any[];
+  // marketplaceListings?: any[];
+  // Property?: any[];
 }
 
+// CompanyLocation model type (from your Prisma schema)
+export interface CompanyLocationType {
+  id?: string; // Optional for new creations
+  companyId: string;
+  locationId: string;
+  displayName?: string;
+  addressLine1Override?: string;
+  addressLine2Override?: string;
+  cityOverride?: string;
+  stateOverride?: string;
+  postalCodeOverride?: string;
+  countryOverride?: string;
+  latitudeOverride?: number;
+  longitudeOverride?: number;
+  sortOrder: number;
+  visible: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Prisma relations are not directly included in this flat type
+  // company?: any;
+  // location?: Location;
+}
+
+// UI-specific type for selected locations (for LocationSelectionAccordion)
 export interface SelectedLocation {
-  id: string;
+  id: string; // This is the locationId
   name: string;
   children: SelectedLocation[];
 }

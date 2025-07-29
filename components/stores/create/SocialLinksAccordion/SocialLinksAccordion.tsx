@@ -1,10 +1,7 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { PlusIcon, TrashIcon, LinkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
-export interface SocialLink {
-  channel: string;
-  url: string;
-}
+import { SocialLink } from '@/types/typings';
 
 export interface SocialLinksAccordionProps {
   socialLinks: SocialLink[];
