@@ -1836,6 +1836,7 @@ model Location {
   CompanyLocation     CompanyLocation[]
   Product             Product[]
   marketplaceListings marketplaceListings[]
+  Property            Property[]
 }
 
 /// Associates a Company with a specific Location,
@@ -1875,22 +1876,6 @@ model CompanyLocation {
   // Speeds up queries for a company's locations, ordered.
   @@index([companyId, sortOrder])
 }
-
-// model Location {
-//   id             String                @id @default(auto()) @map("_id") @db.ObjectId
-//   latitude       Float
-//   longitude      Float
-//   address        String
-//   description    String
-//   userId         String?               @unique // Link to the user (optional).ObjectId
-//   name           String?
-//   displayName    String?
-//   country        String?
-//   state          String?
-//   city           String?
-//   products       Product[]
-//   marketListings marketplaceListings[]
-// }
 
 enum OrderStatus {
   PENDING
@@ -3204,8 +3189,8 @@ model Property {
   categoryId String           @db.ObjectId
   category   PropertyCategory @relation(fields: [categoryId], references: [id])
 
-  locationId String           @db.ObjectId
-  location   PropertyLocation @relation(fields: [locationId], references: [id])
+  locationId String   @db.ObjectId
+  location   Location @relation(fields: [locationId], references: [id])
 
   agentId String? @db.ObjectId // Optional: if properties are linked to specific agents
   agent   User?   @relation(fields: [agentId], references: [id]) // Assuming agent is a User with ROLE.AGENT
@@ -3251,28 +3236,28 @@ model PropertyCategory {
   updatedAt DateTime @updatedAt
 }
 
-model PropertyLocation {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  name        String  @unique // Unique name for the location (e.g., "Kilimani", "Lavington")
-  description String?
-  latitude    Float? // Latitude coordinate for the location
-  longitude   Float? // Longitude coordinate for the location
+// model PropertyLocation {
+//   id          String  @id @default(auto()) @map("_id") @db.ObjectId
+//   name        String  @unique // Unique name for the location (e.g., "Kilimani", "Lavington")
+//   description String?
+//   latitude    Float? // Latitude coordinate for the location
+//   longitude   Float? // Longitude coordinate for the location
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  // Relationship to Properties (if properties directly reference a PropertyLocation model)
-  // Assuming 'Property' model has a field like 'locationId String? @db.ObjectId'
-  // and a relation 'location PropertyLocation? @relation(fields: [locationId], references: [id])'
-  properties Property[] // Changed from 'Property' to 'properties' for plural naming convention
+//   // Relationship to Properties (if properties directly reference a PropertyLocation model)
+//   // Assuming 'Property' model has a field like 'locationId String? @db.ObjectId'
+//   // and a relation 'location PropertyLocation? @relation(fields: [locationId], references: [id])'
+//   properties Property[] // Changed from 'Property' to 'properties' for plural naming convention
 
-  // Hierarchical relationship for parent/child locations (e.g., City -> Neighborhood)
-  // 'parentId' establishes the link to the parent location
-  parentId       String?            @db.ObjectId
-  parentLocation PropertyLocation?  @relation("SubLocations", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  // 'subLocations' is the reverse relation, listing all children of this location
-  subLocations   PropertyLocation[] @relation("SubLocations")
-}
+//   // Hierarchical relationship for parent/child locations (e.g., City -> Neighborhood)
+//   // 'parentId' establishes the link to the parent location
+//   parentId       String?            @db.ObjectId
+//   parentLocation PropertyLocation?  @relation("SubLocations", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+//   // 'subLocations' is the reverse relation, listing all children of this location
+//   subLocations   PropertyLocation[] @relation("SubLocations")
+// }
 
 model Prescription {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
