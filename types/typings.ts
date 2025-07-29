@@ -688,6 +688,10 @@ export interface ProductForm {
   subCategoryName: string;
   brand: string | null;
 
+  // Add other fields as needed, especially for CommissionSection
+
+  travelDetail?: string;
+
   // specs (General Details - physical attributes)
   model: string;
   color: string[];
@@ -1020,7 +1024,10 @@ export interface MarketListingForm {
   createdAt?: string | Date;
   updatedAt?: string | Date;
   
-
+  // Location fields
+  
+  selectedLocationDetails?: Location | null; // Optional: To store the full selected Location object for display/form logic
+  
   // The `product` nested object is likely for displaying details from the base product
   // but if the form itself handles all these fields, it might be redundant or for specific scenarios.
   // I've kept it but note that most fields are now direct properties of MarketplaceListingForm

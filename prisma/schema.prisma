@@ -1453,11 +1453,6 @@ model marketplaceListings {
   email       String?
   contactName String?
 
-  location     Json? // GeoJSON
-  locationName String?
-  latitude     Float?
-  longitude    Float?
-
   amenities String[]
 
   // Marketplace-specific flags/settings
@@ -1476,8 +1471,20 @@ model marketplaceListings {
   ProductMetrics ProductMetrics[]
   ProductReview  ProductReview[]
 
+  // --- IMPORTANT CHANGE HERE ---
+  // The `location` field (GeoJSON) is still useful if you store precise coordinates/shape.
+  // The `locationId` is for the relation to your `Location` model.
+  // You can keep `locationName`, `latitude`, `longitude` as direct fields
+  // if you want to denormalize for quick access/search, or remove them
+  // and always derive from the `Location` relation.
+  location     Json? // Keep for GeoJSON if needed
+  locationName String? // Keep if you want to store the name directly
+  latitude     Float? // Keep if you want to store directly
+  longitude    Float? // Keep if you want to store directly
+
+  // This is the crucial relation to your `Location` model
+  locationId String?   @db.ObjectId // Foreign key to the Location model
   myLocation Location? @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  locationId String?   @db.ObjectId
 
   Collection       Collection?      @relation(fields: [collectionId], references: [id])
   collectionId     String?          @db.ObjectId
@@ -1498,6 +1505,7 @@ model marketplaceListings {
   @@index([companyId])
   @@index([productCategoryId])
   @@index([productId]) // Important for linking to the base product
+  @@index([locationId]) // NEW: Add index for locationId for efficient queries
 }
 
 model ProductReview {

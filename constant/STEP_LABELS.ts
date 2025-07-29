@@ -15,4 +15,5 @@ export const STEP_LABELS: Record<number, string> = {
   15: "Product Pricing And Tiers",
   16: "Service Specifics",
   17: "Booking Slot",
+  18: "Location Picker",
 };

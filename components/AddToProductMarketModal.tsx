@@ -25,6 +25,7 @@ import {
   Location
 } from '@/types/typings';
 import PricingDetails from './PricingDetails';
+import LocationPicker from './LocationPicker';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -448,7 +449,7 @@ export default function AddToProductMarketModal({
     () => FORM_COMPONENTS[currentDynamicStep] || FORM_COMPONENTS[1],
     [currentDynamicStep]
   );
-  
+
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
   const isLastStep = step === lastStepIndex;
@@ -515,6 +516,17 @@ export default function AddToProductMarketModal({
     (b: string) => updateField('brand', b),
     [updateField]
   );
+
+  const handleLocationSelect = useCallback((locationId: string | null, locationDetails?: Location | null) => {
+  updateField('locationId', locationId);
+  updateField('location', locationDetails || null);
+  updateField('locationName', locationDetails?.name || '');
+  updateField('latitude', locationDetails?.latitude ?? null);
+  updateField('longitude', locationDetails?.longitude ?? null);
+  // You might also want to store city, country etc. directly if needed for quick access
+  // updateField('city', locationDetails?.city);
+  // updateField('country', locationDetails?.country);
+}, []);
 
   // final submit
   const handleCreateListing = async () => {
@@ -639,6 +651,16 @@ export default function AddToProductMarketModal({
                       finalField="finalPrice"
                       marginField="profitMargin"
                     />
+                  ) :
+                  currentDynamicStep === 18 ? (
+                    <section className="bg-white p-6 rounded-lg shadow-md">
+                      <h2 className="text-xl font-semibold mb-4">Location Details</h2>
+                      <LocationPicker
+                        selectedLocationId={formData.locationId || null}
+                        availableLocations={locations} // Replace with your actual fetched locations
+                        onLocationSelect={handleLocationSelect}
+                      />
+                    </section>
                   ) :
                   (
                     <FormComponent

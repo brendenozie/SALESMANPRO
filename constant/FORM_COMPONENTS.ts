@@ -14,6 +14,7 @@ import { BookingSlot } from "../components/stores/create/BookingSlot/BookingSlot
 import ProductPricingAndTiers  from "../components/stores/create/PricingTiers/PricingTiers";
 import { ServiceSpecifics } from "../components/stores/create/ServiceSpecifics/ServiceSpecifics";
 import CategoryPicker from "../components/CategoryPicker";
+import LocationPicker from "@/components/LocationPicker";
 
 
 // ..//
@@ -37,7 +38,8 @@ export const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   14: VehicleAmenitiesStep,
   15: ProductPricingAndTiers,
   16: ServiceSpecifics,
-  17: BookingSlot
+  17: BookingSlot,
+  // 18: LocationPicker
 };
 
 

@@ -93,7 +93,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
   const isService = [
     "Cleaning", "Plumbing", "Electrical", "Landscaping", "Catering", "Transportation",
-    "IT Services", "Beauty Services", "Tutoring", "Event Planning", "Landscaping"
+    "IT Services", "Beauty Services", "Tutoring", "Event Planning", "Real Estate"
   ].includes(subCategoryName || subCat.name);
 
   const isDigital = [
@@ -104,7 +104,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
     "Flight Tickets", "Hotel Bookings", "Tour Packages", "Event Tickets", "Travel Insurance"
   ].includes(subCategoryName || subCat.name);
 
-  const isPhysical = !isService && !isDigital && !isTravel;
+  const isPhysical = !isService || !isDigital || !isTravel;
 
   const headerLabel = (() => {
     const cat = formData.category?.name || "";
