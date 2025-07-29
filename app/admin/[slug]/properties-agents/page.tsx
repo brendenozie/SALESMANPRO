@@ -32,6 +32,11 @@ import Link from 'next/link';
 import Image from 'next/image'; // For optimized image handling
 import toast, { Toaster } from 'react-hot-toast'; // For notifications
 
+// Mocking the image loader - Keep if not fully in Next.js Image optimization
+const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
 // --- Basic Modal Component (If you have your own, replace this) ---
 interface ModalProps {
   isOpen: boolean;
@@ -64,23 +69,23 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   );
 };
 
-// --- Type Definitions ---
+// --- Type Definitions (Must match the structure returned by your API) ---
 export type AgentProfile = {
   id: string;
   name: string;
   email: string;
   phone: string;
   bio: string;
-  profileImageUrl?: string;
+  profileImageUrl?: string; // Mapped from profilePicture in User model
   isActive: boolean;
-  specialties: string[]; // e.g., ["Residential", "Commercial", "Land"]
-  regions: string[]; // e.g., ["Karen", "Kilimani", "CBD"]
-  totalListings: number;
-  closedDeals: number;
-  joinedAt: string;
+  specialties: string[];
+  regions: string[];
+  totalListings: number; // These might be 0 or derived if not in SalesAgent model
+  closedDeals: number;   // These might be 0 or derived if not in SalesAgent model
+  joinedAt: string;      // Mapped from createdAt in SalesAgent model
 };
 
-// --- Sample Data Generation (Enhanced) ---
+// --- Sample Data Generation (Enhanced) - Used for initial load if no GET API ---
 const generateSampleAgents = (): AgentProfile[] => [
   {
     id: 'AGT001',
@@ -170,12 +175,6 @@ const generateSampleAgents = (): AgentProfile[] => [
 
 // --- Helper Components (Reusable Modals & Cards) ---
 
-// Mocking the image loader - Keep if not fully in Next.js Image optimization
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -238,6 +237,7 @@ interface AgentProfileCardProps {
 }
 
 const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, onEdit, onDelete }) => {
+
   const joinedDate = useMemo(() => {
     const date = new Date(agent.joinedAt);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -346,9 +346,10 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({ isOpen, onClose, 
         isActive: agent.isActive,
         specialties: agent.specialties,
         regions: agent.regions,
-        totalListings: agent.totalListings, // Pre-fill for editing, though not editable in form
-        closedDeals: agent.closedDeals,     // Pre-fill for editing, though not editable in form
-        joinedAt: agent.joinedAt,           // Pre-fill for editing, though not editable in form
+        // totalListings and closedDeals are not editable via this form
+        totalListings: agent.totalListings,
+        closedDeals: agent.closedDeals,
+        joinedAt: agent.joinedAt,
       });
     } else {
       // Reset for adding new agent
@@ -361,6 +362,7 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({ isOpen, onClose, 
         isActive: true, // Default to active
         specialties: [],
         regions: [],
+        // These will be initialized by the API
         totalListings: 0,
         closedDeals: 0,
         joinedAt: new Date().toISOString(),
@@ -584,12 +586,12 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({ isOpen, onClose, 
 // --- Main AgentsPage Component ---
 interface AgentsPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
 export default function AgentsPage({ params }: AgentsPageProps) {
-  const { adminSlug } = params;
+  const { slug } = params;
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('All'); // 'All', 'true', 'false'
@@ -604,21 +606,34 @@ export default function AgentsPage({ params }: AgentsPageProps) {
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
   // In a real application, apiUrl would be used to fetch and mutate data
-  // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiUrl = '/api/admin/properties-agents'; // Base URL for your API routes
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network latency
-      const data = generateSampleAgents();
-      setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
+      // TODO: Replace this with an actual fetch to your GET /api/admin/agents endpoint
+      // Example:
+      const res = await fetch(`${apiUrl}?companyId=${slug}`);
+      if (!res.ok) {        
+        const data = generateSampleAgents();
+        setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
+      }
+      else{
+        const data: AgentProfile[] = await res.json();
+        setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
+      }
+
+      
       toast.success("Agents loaded successfully!");
     } catch (err: any) {
       console.error("Error fetching agents:", err);
       setError(err.message || "Failed to load agents.");
       toast.error(err.message || "Failed to load agents.");
+      // For now, using sample data as no GET endpoint was provided
+      // await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network latency
+      const data = generateSampleAgents();
+      setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
     } finally {
       setIsLoading(false);
     }
@@ -644,27 +659,54 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     const toastId = toast.loading(editingAgent ? 'Updating agent...' : 'Adding agent...');
 
     try {
-      // Simulate API call for saving/updating
-      await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network latency
-
+      let response;
       if (editingAgent) {
-        // Update existing agent
-        setAgents(prevAgents => prevAgents.map(agent =>
-          agent.id === editingAgent.id ? { ...agent, ...formData } as AgentProfile : agent
-        ));
-        toast.success('Agent updated successfully!', { id: toastId });
+        // Update existing agent (PUT request)
+        response = await fetch(`${apiUrl}/${editingAgent.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            bio: formData.bio,
+            profileImageUrl: formData.profileImageUrl,
+            isActive: formData.isActive,
+            specialties: formData.specialties,
+            regions: formData.regions,
+            // totalListings and closedDeals are not sent here as they are not editable
+          }),
+        });
       } else {
-        // Add new agent
-        const newAgent: AgentProfile = {
-          id: `AGT${Date.now()}`, // Simple unique ID for simulation
-          joinedAt: new Date().toISOString(),
-          totalListings: 0, // New agents start with 0
-          closedDeals: 0,   // New agents start with 0
-          ...formData,
-        } as AgentProfile; // Cast to AgentProfile, assuming all required fields are present
-        setAgents(prevAgents => [newAgent, ...prevAgents]);
-        toast.success('Agent added successfully!', { id: toastId });
+        // Add new agent (POST request)
+        response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: 'default_password', // Provide a default password for new users (or handle separately)
+            phone: formData.phone,
+            bio: formData.bio,
+            profileImageUrl: formData.profileImageUrl,
+            isActive: formData.isActive,
+            specialties: formData.specialties,
+            regions: formData.regions,
+            companyId: slug, // TODO: Replace with actual company ID logic
+          }),
+        });
       }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to ${editingAgent ? 'update' : 'add'} agent.`);
+      }
+
+      // Re-fetch all agents to get the latest data from the database
+      // This ensures consistency and reflects any changes made on the backend
+      await fetchAgents(); // Re-run the initial data fetch logic
+
+      toast.success(editingAgent ? 'Agent updated successfully!' : 'Agent added successfully!', { id: toastId });
       setShowAddEditModal(false); // Close modal on success
     } catch (error: any) {
       console.error("Error saving agent:", error);
@@ -687,8 +729,16 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     const deleteToastId = toast.loading(`Deleting ${agentToDelete.name}...`);
 
     try {
-      // Simulate API call for deletion
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network latency for delete
+      const response = await fetch(`${apiUrl}/${agentToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete agent.');
+      }
+
+      // Update local state by filtering out the deleted agent
       setAgents(prev => prev.filter(a => a.id !== agentToDelete.id));
       toast.success(`${agentToDelete.name} deleted successfully!`, { id: deleteToastId });
       setAgentToDelete(null); // Clear the agent to delete state
@@ -841,7 +891,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
                 <AgentProfileCard
                   key={agent.id}
                   agent={agent}
-                  adminSlug={adminSlug}
+                  adminSlug={slug}
                   onEdit={handleEditAgent} // Pass the handler to open edit modal
                   onDelete={handleDeleteClick}
                 />

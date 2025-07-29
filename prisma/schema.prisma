@@ -842,6 +842,22 @@ model Client {
   AgentInventoryLog AgentInventoryLog[]
   ClientInventory   ClientInventory[]
   Return            Return[]
+
+  // --- NEW FIELDS FOR CLIENT MANAGEMENT ---
+  inquiryCount           Int?      @default(0)
+  dealStatus             String? // Consider making this an Enum: enum DealStatus { LEAD, ACTIVE, CLOSED, ARCHIVED }
+  lastActivity           DateTime?
+  notes                  String?
+  preferredPropertyTypes String[]  @default([]) // Array of strings
+  budgetRange            String? // e.g., "10M-20M KES"
+  // --- END NEW FIELDS ---
+}
+
+enum DealStatus {
+  LEAD
+  ACTIVE
+  CLOSED
+  ARCHIVED
 }
 
 // model Client {
@@ -972,6 +988,9 @@ model SalesAgent {
   phoneNumber String?
   companyId   String?  @db.ObjectId
   company     Company? @relation(fields: [companyId], references: [id])
+  isActive    Boolean  @default(true)
+  specialties String[] @default([])
+  regions     String[] @default([])
 
   userId String @unique @db.ObjectId // Link to User model
   user   User   @relation("SalesAgentProfile", fields: [userId], references: [id])
@@ -1000,19 +1019,18 @@ model Transaction {
 }
 
 model User {
-  id             String              @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String              @unique
-  password       String?
-  role           ROLE?               @default(ADMIN)
-  createdAt      DateTime?           @default(now())
-  updatedAt      DateTime?           @updatedAt
-  accounts       Account[]
-  sessions       Session[]
-  // tasks          Task[]
-  auditLogs      AuditLog[]
-  // requests       Request[]
-  // returns        Return[]
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String?
+  email     String    @unique
+  password  String?
+  role      ROLE?     @default(ADMIN)
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  accounts  Account[]
+  sessions  Session[]
+
+  auditLogs AuditLog[]
+
   Assignment     ProductAssignment[]
   emailVerified  DateTime?
   image          String?
@@ -1037,8 +1055,6 @@ model User {
 
   // If an admin can also post announcements, link directly from User
   announcements Announcement[] @relation("UserAnnouncements")
-  // DiscussionTopic DiscussionTopic[]
-  // DiscussionPost  DiscussionPost[]
 
   discussionPosts    DiscussionPost[]    @relation("CreatedDiscussionPost")
   discussionComments DiscussionComment[] @relation("CreatedDiscussionComment")
