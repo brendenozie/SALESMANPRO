@@ -412,6 +412,7 @@ export default function AddToProductMarketModal({
   marketListItem,
   companyId,
   categories,
+  locations
 }: AddToProductMarketModalProps) {
   const { formData, updateField } = useMarketListingForm(
     product,
@@ -435,15 +436,19 @@ export default function AddToProductMarketModal({
   const [loading, setLoading] = useState(false);
 
   const categoryKey = formData.category?.displayName?.trim() || '';
+
   const stepsForCategory = useMemo(
     () => CATEGORY_STEPS[categoryKey] || [1],
     [categoryKey]
   );
+
   const currentDynamicStep = stepsForCategory[step - 1] || 1;
+
   const FormComponent = useMemo(
     () => FORM_COMPONENTS[currentDynamicStep] || FORM_COMPONENTS[1],
     [currentDynamicStep]
   );
+  
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
   const isLastStep = step === lastStepIndex;

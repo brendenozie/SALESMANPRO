@@ -586,6 +586,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
           categories={categories ?? []}
           product={null}
           companyId={companyId}
+          locations={locations ?? []}
           // Assuming marketListItem is not strictly needed when adding from admin inventory
           // or if it shares structure with ProductForm, you might pass selectedProduct to it.
           // marketListItem={null} 
