@@ -32,6 +32,11 @@ export async function GET(
           category: true,
         },
       },
+      CompanyLocation:{
+        include:{
+          location:true
+        }
+      }
     },
   });
 
@@ -60,6 +65,7 @@ export async function PUT(
   }
 
   const data = await req.json();
+
   const {
     name,
     slug,
@@ -92,7 +98,8 @@ export async function PUT(
     stats,
     currency,
     locale,
-    hasWebsite
+    hasWebsite,
+    companyLocations
   } = data;
 
   const updated = await prisma.company.update({
@@ -259,21 +266,22 @@ export async function PUT(
           },
         }
       : { delete: true },
+
       StoreCategory: {
         // 1) delete any links *not* in our new list
         deleteMany: {
-          categoryId: { notIn: data.storeCategories.map((sc:any) => sc.id) },
+          categoryId: { notIn: data.storeCategories.map((sc:any) => sc.categoryId) },
         },
         // 2) for each incoming item, upsert on the composite unique
-        upsert: data.storeCategories.map((sc:any, idx:any) => ({
+        upsert: storeCategories.map((sc:any, idx:any) => ({
           where: {
             companyId_categoryId: {
               companyId: params.id,
-              categoryId: sc.id,
+              categoryId: sc.categoryId,
             },
           },
           create: {
-            category:    { connect: { id: sc.id } },
+            category:    { connect: { id: sc.categoryId } },
             displayName: sc.displayName ?? sc.name,
             icon:        sc.icon ?? null,
             sortOrder:   sc.sortOrder ?? idx,
@@ -289,6 +297,52 @@ export async function PUT(
           },
         })),
       },
+
+       CompanyLocation: {
+          // 1) Delete any StoreCategory links that are no longer in the incoming list
+          deleteMany: {
+            locationId: { notIn: companyLocations.map((cl: any) => cl.locationId) }, // Use locationId from incoming companyLocations
+            companyId: params.id, // Ensure we only delete for this company
+          },
+          // 2) For each incoming CompanyLocation, upsert the StoreCategory
+          upsert: companyLocations.map((cl: any, idx: number) => ({
+            where: {
+              companyId_locationId: { // Use the unique constraint for CompanyLocation
+                companyId: params.id,
+                locationId: cl.locationId,
+              },
+            },
+            create: {
+              // Connect to the Location model using locationId
+              location: { connect: { id: cl.locationId } },
+              // Add other fields from CompanyLocationType
+              displayName: cl.displayName,
+              addressLine1Override: cl.addressLine1Override,
+              addressLine2Override: cl.addressLine2Override,
+              cityOverride: cl.cityOverride,
+              stateOverride: cl.stateOverride,
+              postalCodeOverride: cl.postalCodeOverride,
+              countryOverride: cl.countryOverride,
+              latitudeOverride: cl.latitudeOverride,
+              longitudeOverride: cl.longitudeOverride,
+              sortOrder: cl.sortOrder ?? idx, // Use incoming sortOrder or default to index
+              visible: cl.visible ?? true, // Use incoming visible or default to true
+            },
+            update: {
+              displayName: cl.displayName,
+              addressLine1Override: cl.addressLine1Override,
+              addressLine2Override: cl.addressLine2Override,
+              cityOverride: cl.cityOverride,
+              stateOverride: cl.stateOverride,
+              postalCodeOverride: cl.postalCodeOverride,
+              countryOverride: cl.countryOverride,
+              latitudeOverride: cl.latitudeOverride,
+              longitudeOverride: cl.longitudeOverride,
+              sortOrder: cl.sortOrder ?? idx,
+              visible: cl.visible ?? true,
+            },
+          })),
+        },
     
         },
     

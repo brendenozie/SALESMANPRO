@@ -90,6 +90,7 @@ const storeSchema = z.object({
   paymentSettings: paymentSchema.optional(),
   shippingSettings: shippingSchema.optional(),
   storeCategories: z.array(storeCategorySchema).optional(),
+  companyLocations: z.array(z.object({})).optional(),
   userId: z.string().min(1),
   currency: z.string().optional(),
   locale: z.string().optional(),
@@ -108,19 +109,6 @@ export async function GET(req: Request) {
   try {
     const stores = await prisma.company.findMany({
       where,
-      // include: {
-      //   // socialLinks: true,
-      //   policies: true,
-      //   faqs: true,
-      //   testimonials: true,
-      //   heroSlides: true,
-      //   promotions: true,
-      //   seo: true,
-      //   AnalyticsConfig: true,
-      //   PaymentSettings: true,
-      //   ShippingSettings: true,
-      //   StoreCategory: true
-      // }
     });
     return NextResponse.json(stores, { status: 200 });
   } catch (error: any) {
@@ -290,6 +278,27 @@ export async function POST(req: Request) {
 
             }
           : undefined,
+
+        // NEW: CompanyLocation relation for creation
+      CompanyLocation: data.companyLocations && data.companyLocations.length > 0
+        ? {
+            create: data.companyLocations.map((cl: any, idx: number) => ({
+              location: { connect: { id: cl.locationId } }, // Connect to the actual Location record
+              displayName: cl.displayName,
+              addressLine1Override: cl.addressLine1Override,
+              addressLine2Override: cl.addressLine2Override,
+              cityOverride: cl.cityOverride,
+              stateOverride: cl.stateOverride,
+              postalCodeOverride: cl.postalCodeOverride,
+              countryOverride: cl.countryOverride,
+              latitudeOverride: cl.latitudeOverride,
+              longitudeOverride: cl.longitudeOverride,
+              sortOrder: cl.sortOrder ?? idx,
+              visible: cl.visible ?? true,
+            })),
+          }
+        : undefined,
+
       },
     });
 
