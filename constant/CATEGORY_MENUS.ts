@@ -266,7 +266,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Real Estate": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics    
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Locations", href: `/admin/${adminSlug}/properties-locations`, icon: MapPinIcon }, // Manage geographic locations for listings
+    { label: "Locations", href: `/admin/${adminSlug}/company-locations`, icon: MapPinIcon }, //  properties-locations Manage geographic locations for listings
     { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
     { label: "Clients", href: `/admin/${adminSlug}/properties-clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
     { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)

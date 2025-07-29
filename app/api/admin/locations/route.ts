@@ -139,20 +139,7 @@ export async function GET(request: Request) {
       },
     }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching locations:', error);
+    // console.error('Error fetching locations:', error);
     return NextResponse.json({ message: 'Failed to fetch locations.', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
-
-// app/api/locations/[id]/route.ts
-// This file will handle:
-// - GET /api/locations/:id (Get single location by ID)
-// - PATCH /api/locations/:id (Update location by ID)
-// - DELETE /api/locations/:id (Delete location by ID)
-
-// Re-use the Prisma Client instance from the other route file or ensure it's initialized here
-// For simplicity, we'll assume it's initialized globally or imported from a central utility.
-// If you put this in a separate file, you'd need the Prisma setup again or import it.
-// For this example, we'll include it for self-containment.
-// (In a real app, you'd have a `lib/prisma.ts` and import `prisma` from there)
-
