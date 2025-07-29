@@ -3,8 +3,8 @@
 import React, { useCallback } from "react";
 import InputField from "./InputField"; // Assuming InputField is a generic component for text/number inputs
 import CommissionSection from "./CommissionSection"; // Assuming CommissionSection is a component for commission settings
-import { ProductForm } from "./AddProductModal";
-// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type for your main form data
+// import { ProductForm } from "./AddProductModal";
+import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type for your main form data
 
 interface GeneralDetailsProps {
   formData: ProductForm; // Use the comprehensive form type for better type safety
@@ -40,7 +40,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, updateField }
       <div className="bg-gray-50 p-6 rounded-lg space-y-5 border border-gray-100">
         <h3 className="text-xl font-semibold text-gray-700">Essential Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
+          {([
             { label: "Make/Manufacturer", name: "make", required: true, placeholder: "e.g., Toyota, Samsung, Nike" },
             { label: "Model Name", name: "model", required: true, placeholder: "e.g., Camry, Galaxy S24, Air Max 90" },
             { label: "Manufacture Year", name: "year", type: "number", required: true, placeholder: "e.g., 2023" },
@@ -49,18 +49,26 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, updateField }
             { label: "Color", name: "color", placeholder: "e.g., Black, Space Gray, Navy Blue" },
             { label: "Mileage (km) (For Vehicles)", name: "mileage", type: "number", placeholder: "e.g., 50000" },
             // Add more fields if needed, e.g., 'SKU', 'UPC'
-          ].map(({ label, name, type = "text", required, placeholder }) => (
+          ] as Array<{
+            label: string;
+            name: string;
+            type?: string;
+            required?: boolean;
+            placeholder?: string;
+          }>).map(({ label, name, type = "text", required, placeholder }) => (
+            
             <InputField
               key={name}
               label={label}
               name={name}
               type={type}
-              value={formData[name] ?? ""} // Use nullish coalescing for cleaner default
+              value={formData[name as keyof ProductForm] ?? ""} // Use type assertion for safe access
               handleInputChange={handleChange} // Pass the internal handleChange to InputField
               required={required}
               placeholder={placeholder}
               className={inputClasses} // Pass the common input styles
             />
+            
           ))}
         </div>
       </div>

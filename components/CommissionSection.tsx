@@ -14,7 +14,7 @@ const CommissionSection: React.FC<CommissionSectionProps> = ({ formData, handleC
 
   return (
     <div className="space-y-4">
-      <div>
+      {/* <div>
         <label htmlFor="price" className="block text-sm font-medium text-gray-700">
           Price (KES)
         </label>
@@ -28,9 +28,9 @@ const CommissionSection: React.FC<CommissionSectionProps> = ({ formData, handleC
           className={inputClasses}
           required
         />
-      </div>
+      </div> */}
 
-      <div>
+      {/* <div>
         <label htmlFor="discount" className="block text-sm font-medium text-gray-700">
           Discount (%)
         </label>
@@ -43,7 +43,7 @@ const CommissionSection: React.FC<CommissionSectionProps> = ({ formData, handleC
           placeholder="e.g. 10"
           className={inputClasses}
         />
-      </div>
+      </div> */}
 
       <div>
         <label htmlFor="commissionRate" className="block text-sm font-medium text-gray-700">
