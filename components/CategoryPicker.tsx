@@ -3,27 +3,6 @@
 import { ProductCategory, StoreCategory } from "@/types/typings";
 import React, { useState, useEffect, useRef } from "react";
 
-// --- Type Definitions ---
-// export interface CategoryItem {
-//   id: string;
-//   name: string;
-//   slug: string;
-// }
-
-// export interface CategoryData {
-//   companyId: string;
-//   categoryId: string;
-//   displayName: string;
-//   icon: string;
-//   sortOrder: number;
-//   visible: boolean;
-//   id: string;
-//   items: CategoryItem[];
-//   category?: {
-//     subcategories?: CategoryItem[];
-//   };
-// }
-
 type Brand = string;
 
 interface Props {

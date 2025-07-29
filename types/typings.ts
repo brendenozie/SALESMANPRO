@@ -965,7 +965,7 @@ export interface MarketListingForm {
   // Home Appliances
   energyRating: string;
   warrantyPeriod: string;
-  applianceDimensions?: string;
+  applianceDimensions?: string | null;
 
   // Beauty Products
   ingredients: string | null;

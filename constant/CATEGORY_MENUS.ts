@@ -266,13 +266,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Real Estate": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics    
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Locations", href: `/admin/${adminSlug}/company-locations`, icon: MapPinIcon }, //  properties-locations Manage geographic locations for listings
+    { label: "Locations", href: `/admin/${adminSlug}/locations`, icon: MapPinIcon }, // company-locations properties-locations Manage geographic locations for listings
     { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
     { label: "Clients", href: `/admin/${adminSlug}/properties-clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
     { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
     { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
     { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
     { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      subItems: [
+        { label: "All Blogs", href: `/admin/${adminSlug}/blogs` },
+      ],
+    },
     // { label: "Categories", href: `/admin/${adminSlug}/properties-categories`, icon: TagIcon }, // Manage property categories (e.g., Residential, Commercial, Land)
   ],
 
@@ -443,7 +450,14 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Experts/Team", href: `/admin/${adminSlug}/finance-team`, icon: ShieldCheckIcon }, // Manage experts/advisors
     { label: "Packages & Pricing", href: `/admin/${adminSlug}/finance-packages`, icon: TagIcon }, // Manage consultation packages
     { label: "Testimonials", href: `/admin/${adminSlug}/finance-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client feedback
-    { label: "FAQs", href: `/admin/${adminSlug}/finance-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions
+    { label: "FAQs", href: `/admin/${adminSlug}/finance-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions 
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      subItems: [
+        { label: "All Blogs", href: `/admin/${adminSlug}/blogs` },
+      ],
+    },
     { label: "Settings", href: `/admin/${adminSlug}/finance-settings`, icon: Cog6ToothIcon }, // General admin settings
   ],
 

@@ -22,6 +22,7 @@ import {
   MarketListingForm,
   ProductForm,
   StoreCategory,
+  Location
 } from '@/types/typings';
 import PricingDetails from './PricingDetails';
 
@@ -689,4 +690,5 @@ interface AddToProductMarketModalProps {
   marketListItem?: MarketListingForm | undefined | null;
   companyId: string;
   categories: StoreCategory[] ;
+  locations: Location[] ;
 }
