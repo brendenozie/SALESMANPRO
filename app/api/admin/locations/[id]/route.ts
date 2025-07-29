@@ -1,7 +1,7 @@
 // app/api/admin/fees/[id]/payments/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; 
-
+import { getAuthSession } from "@/lib/auth";
 
 
 // If you are putting this in a separate file, make sure to initialize prisma as shown above
@@ -105,5 +105,160 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: 'Cannot delete location due to existing relations (e.g., CompanyLocation). Please remove related records first.' }, { status: 409 });
     }
     return NextResponse.json({ message: 'Failed to delete location.', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+  }
+}
+
+// // app/api/admin/locations/[id]/route.ts
+// import { NextRequest, NextResponse } from "next/server";
+// import { getAuthSession } from "@/lib/auth"; // Adjust path as per your project structure
+// import { prisma } from "@/lib/prisma"; // Adjust path as per your project structure
+// import { Prisma } from "@prisma/client"; // Import Prisma for types
+
+// PUT: Update a specific Location record
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getAuthSession();
+
+    // Authenticate and authorize
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    // if (!session.user.isAdmin) { return NextResponse.json({ error: "Forbidden" }, { status: 403 }); }
+
+    const locationId = params.id;
+    const {
+      name,
+      slug,
+      description,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      postalCode,
+      country,
+      latitude,
+      longitude,
+      seoTitle,
+      seoDescription,
+      metaKeywords,
+      sortOrder,
+      visible,
+      parentId,
+      localization,
+      attributes,
+      status,
+    } = await req.json();
+
+    // Verify location exists
+    const existingLocation = await prisma.location.findUnique({
+      where: { id: locationId },
+    });
+
+    if (!existingLocation) {
+      return NextResponse.json({ error: "Location not found" }, { status: 404 });
+    }
+
+    // Ensure slug uniqueness if changing
+    if (slug && slug !== existingLocation.slug) {
+      const slugConflict = await prisma.location.findUnique({
+        where: { slug },
+      });
+      if (slugConflict) {
+        return NextResponse.json({ error: "Location with this slug already exists" }, { status: 409 });
+      }
+    }
+
+    const updatedLocation = await prisma.location.update({
+      where: { id: locationId },
+      data: {
+        name,
+        slug,
+        description,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        postalCode,
+        country,
+        latitude,
+        longitude,
+        seoTitle,
+        seoDescription,
+        metaKeywords: metaKeywords || [],
+        sortOrder,
+        visible,
+        parentId: parentId === '' ? null : parentId, // Handle empty string for parentId as null
+        localization: localization || null,
+        attributes: attributes || null,
+        status,
+        updatedBy: session.user.id, // Record who updated it
+      },
+    });
+
+    return NextResponse.json(updatedLocation);
+
+  } catch (error) {
+    console.error("Error updating location:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+// DELETE: Delete a specific Location record
+export async function DELETEV2(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getAuthSession();
+
+    // Authenticate and authorize
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    // if (!session.user.isAdmin) { return NextResponse.json({ error: "Forbidden" }, { status: 403 }); }
+
+    const locationId = params.id;
+
+    // Verify location exists
+    const existingLocation = await prisma.location.findUnique({
+      where: { id: locationId },
+      include: { children: true } // Include children to check for dependencies
+    });
+
+    if (!existingLocation) {
+      return NextResponse.json({ error: "Location not found" }, { status: 404 });
+    }
+
+    // Prevent deletion if it has children (to maintain data integrity)
+    if (existingLocation.children && existingLocation.children.length > 0) {
+      return NextResponse.json({ error: "Cannot delete location with active child locations. Please reassign or delete children first." }, { status: 400 });
+    }
+
+    // Also check if it's referenced by CompanyLocation or other models
+    // (Product, marketplaceListings, Property as per your schema).
+    // Prisma's `onDelete: NoAction` on CompanyLocation means you MUST handle this manually.
+    const companyLocationRefs = await prisma.companyLocation.count({
+      where: { locationId: locationId }
+    });
+    if (companyLocationRefs > 0) {
+      return NextResponse.json({ error: "Cannot delete location as it is associated with one or more stores. Please remove associations first." }, { status: 400 });
+    }
+
+    // Add similar checks for Product, marketplaceListings, Property if necessary
+    // const productRefs = await prisma.product.count({ where: { locationId: locationId } });
+    // if (productRefs > 0) { /* return error */ }
+
+    await prisma.location.delete({
+      where: { id: locationId },
+    });
+
+    return NextResponse.json({ message: "Location deleted successfully" }, { status: 200 });
+
+  } catch (error) {
+    console.error("Error deleting location:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

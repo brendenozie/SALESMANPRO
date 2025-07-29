@@ -10,27 +10,7 @@ import {
     BuildingLibraryIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from 'framer-motion';
-
-// --- Re-using your Location type definitions ---
-interface Location {
-    id: string;
-    name: string;
-    slug: string;
-    description?: string;
-    city?: string;
-    country?: string;
-    status: 'active' | 'inactive' | 'draft';
-    visible: boolean;
-    parentId: string | null;
-    children?: Location[]; // This will be added when we build the tree
-    [key: string]: any; // For other properties
-}
-
-interface SelectedLocation {
-    id: string;
-    name: string;
-    children: SelectedLocation[]; // This is the key difference: children are also SelectedLocation
-}
+import { SelectedLocation, Location } from "@/types/typings";
 
 type Props = {
     availableLocations: Location[];
