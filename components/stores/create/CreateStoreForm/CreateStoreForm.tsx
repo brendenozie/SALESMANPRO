@@ -6,6 +6,7 @@ import React, {
   ChangeEvent,
   FormEvent,
   useMemo,
+  useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,6 +16,7 @@ import {
   StepConfig,
   GeoLocation,
   RawCategory,
+  Location,
   SubObj,
   ParentCategory,
   SelectedCategory,
@@ -27,6 +29,7 @@ import {
   storeSteps,
   pricingSteps,
   websiteSteps,
+  locationsSteps,
   paymentSteps,
 } from "@/constant/STORE_SITE_STEPS";
 
@@ -38,13 +41,83 @@ const SITE_CATEGORIES_WITH_PRICING = [
   "portfolio & personal branding",
 ];
 
+const SITE_CATEGORIES_WITH_LOCATIONS = [
+  "real rstate",
+  "automotive",
+  "travel & tourism",
+];
+
+export interface SelectedLocation {
+  id: string;
+  name: string;
+  children: SelectedLocation[];
+}
+
 type Props = {
   availableCategories: RawCategory[];
+  availableLocations: Location[];
   initialData?: Partial<StoreForm> & { id: string };
 };
 
+
+  // Helper to build a selected tree from flat IDs and available locations
+    const buildSelectedLocationTree = (selectedIds: Set<string>, allLocations: Location[], parentId: string | null = null): SelectedLocation[] => {
+      const children: SelectedLocation[] = [];
+      const directChildren = allLocations.filter(loc => loc.parentId === parentId);
+
+      for (const loc of directChildren) {
+        const isLocSelected = selectedIds.has(loc.id);
+        const childSelectedNodes = buildSelectedLocationTree(selectedIds, allLocations, loc.id);
+
+        // A node is considered "selected" in the display if it's explicitly selected
+        // or if it has any selected children.
+        if (isLocSelected || childSelectedNodes.length > 0) {
+          children.push({
+            id: loc.id,
+            name: loc.name,
+            children: childSelectedNodes,
+          });
+        }
+      }
+      return children;
+    };
+
+    // Helper to flatten a hierarchical SelectedLocation array into a Set of IDs
+    const flattenSelectedLocationsToIds = (locations: Location[]): Set<string> => {
+        const ids = new Set<string>();
+        const recurse = (locs: Location[]) => {
+            locs.forEach(loc => {
+                ids.add(loc.id);
+                if (loc.children) {
+                    recurse(loc.children);
+                }
+            });
+        };
+        recurse(locations);
+        return ids;
+    };
+
+    // Helper to get all descendant IDs of a given location
+    const getAllDescendantIds = (location: Location, allLocationsMap: Map<string, Location>): string[] => {
+        const ids: string[] = [location.id];
+        const queue: string[] = [location.id];
+        let head = 0;
+
+        while (head < queue.length) {
+            const currentId = queue[head++];
+            const children = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === currentId);
+            children.forEach(child => {
+                ids.push(child.id);
+                queue.push(child.id);
+            });
+        }
+        return ids;
+    };
+
+
 export default function CreateStoreForm({
   availableCategories,
+  availableLocations,
   initialData,
 }: Props) {
   const { data: session } = useSession();
@@ -52,83 +125,99 @@ export default function CreateStoreForm({
   
   const [stepIndex, setStepIndex] = useState(0);
   
-    // UPDATE: The defaultForm object is now initialized with all the fields
-    // from the new, expanded StoreForm interface.
-    const defaultForm: StoreForm = {
-      id: "",
-      name: "",
-      slug: "",
-      domain: "",
-      hasWebsite: false,
-      tagline: "",
-      description: "",
-      category: "E-commerce",
-      logoUrl: "",
-      bannerUrl: "",
-      contactEmail: session?.user?.email || "",
-      contactPhone: "",
-      address: "",
-      geoLocation: { lat: 0, lng: 0 },
-      openingHours: {
-        mon: { open: "09:00", close: "17:00" },
-        tue: { open: "09:00", close: "17:00" },
-        wed: { open: "09:00", close: "17:00" },
-        thu: { open: "09:00", close: "17:00" },
-        fri: { open: "09:00", close: "17:00" },
-        sat: { open: "", close: "" },
-        sun: { open: "", close: "" },
-      },
-      // --- Core Relational Data ---
-      socialLinks: [],
-      policies: [],
-      faqs: [],
-      testimonials: [],
-      heroSlides: [],
-      promotions: [],
-      storeCategories: [],
-      
-      // --- NEW: Added missing core fields ---
-      currency: 'USD',
-      locale: 'en-US',
-      companyCategoryId: undefined,
-      
-      // --- NEW: Added missing relational arrays ---
-      pageSections: [], // For modular page content
-      appPromos: [],    // For the app promotion section
-      collections: [],  // For product collections
-      events: [],       // For company/school events
-      announcements: [],// For site announcements
-      
-      // --- JSON fields ---
-      awards: [],
-      metrics: [],
-      stats: [],
-      pricingTiers: [
-        { 
-          name: "Basic", 
-          price: 0, 
-          features: [], 
-          description: "A great starting point.", 
-          duration: "monthly" 
-        }
-      ],
-  
-      // --- Settings Objects ---
-      themeSettings: {},
-      seo: {},
-      analyticsConfig: {},
-      paymentSettings: {},
-      shippingSettings: {},
-      blogs:[],
-  
-      // This would be populated in a different form, but needs to be in the type
-      marketplaceListings: [], 
-    };
+  // UPDATE: The defaultForm object is now initialized with all the fields
+  // from the new, expanded StoreForm interface.
+  const defaultForm: StoreForm = {
+    id: "",
+    name: "",
+    slug: "",
+    domain: "",
+    hasWebsite: false,
+    tagline: "",
+    description: "",
+    category: "E-commerce",
+    logoUrl: "",
+    bannerUrl: "",
+    contactEmail: session?.user?.email || "",
+    contactPhone: "",
+    address: "",
+    geoLocation: { lat: 0, lng: 0 },
+    openingHours: {
+      mon: { open: "09:00", close: "17:00" },
+      tue: { open: "09:00", close: "17:00" },
+      wed: { open: "09:00", close: "17:00" },
+      thu: { open: "09:00", close: "17:00" },
+      fri: { open: "09:00", close: "17:00" },
+      sat: { open: "", close: "" },
+      sun: { open: "", close: "" },
+    },
+    // --- Core Relational Data ---
+    socialLinks: [],
+    policies: [],
+    faqs: [],
+    testimonials: [],
+    heroSlides: [],
+    promotions: [],
+    storeCategories: [],
 
+    // --- NEW: Added missing core fields ---
+    currency: 'USD',
+    locale: 'en-US',
+    companyCategoryId: undefined,
+
+    // --- NEW: Added missing relational arrays ---
+    pageSections: [], // For modular page content
+    appPromos: [], // For the app promotion section
+    collections: [], // For product collections
+    events: [], // For company/school events
+    announcements: [], // For site announcements
+
+
+    // --- JSON fields ---
+    awards: [],
+    metrics: [],
+    stats: [],
+    pricingTiers: [
+      {
+        name: "Basic",
+        price: 0,
+        features: [],
+        description: "A great starting point.",
+        duration: "monthly"
+      }
+    ],
+
+    // --- Settings Objects ---
+    themeSettings: {},
+    seo: {},
+    analyticsConfig: {},
+    paymentSettings: {},
+    shippingSettings: {},
+    blogs: [],
+
+    // This would be populated in a different form, but needs to be in the type
+    marketplaceListings: [],
+    writers: [],
+    agents: [],
+    doctors: [],
+    podcasts: [],
+    locations: [],
+    courses: [],
+
+    // storeLocations:[]
+
+  };
 
   const [form, setForm] = useState<StoreForm>(
     // `initialData` fields overwrite defaults
     initialData ? { ...defaultForm, ...initialData } : defaultForm
+  );
+
+    // NEW: State for all available locations
+  // const [allAvailableLocations, setAllAvailableLocations] = useState<Location[]>([]);
+  // NEW: State for selected location IDs (flat set for efficient lookup)
+  const [currentSelectedLocationIds, setCurrentSelectedLocationIds] = useState<Set<string>>(() =>
+    initialData ? flattenSelectedLocationsToIds(initialData.locations ?? []) : new Set()
   );
 
   // ADD THIS useEffect hook to handle category changes
@@ -163,6 +252,11 @@ export default function CreateStoreForm({
   const [productImageFiles, setProductImageFiles] = useState<(File | null)[]>(
     () => form.heroSlides.map(() => null)
   );
+
+  // Memoize the selected locations in the hierarchical structure for display
+  const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
+    return buildSelectedLocationTree(currentSelectedLocationIds, availableLocations);
+  }, [currentSelectedLocationIds, availableLocations]);
 
   // Track one File per hero slide. Initialize from existing heroSlides length
   const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(() =>
@@ -216,11 +310,16 @@ export default function CreateStoreForm({
     if (form.hasWebsite) {
       // 3) ...and, for certain categories, add pricing
       const cat = form.category?.toLowerCase().trim() || "";
+
       if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
         list.push(...pricingSteps);
       }
 
       list.push(...websiteSteps);
+
+      if (SITE_CATEGORIES_WITH_LOCATIONS.includes(cat)) {
+        list.push(...locationsSteps);
+      }
 
       list.push(...paymentSteps);
     }
@@ -396,7 +495,6 @@ export default function CreateStoreForm({
 
   const totalSteps = allSteps.length + 1;
 
-
   const mappedCategories: ParentCategory[] = availableCategories.map((cat) => ({
     id: cat.id,
     name: cat.name,
@@ -432,16 +530,47 @@ export default function CreateStoreForm({
   }, [form.name, initialData]);
 
   // LocalStorage
-  useEffect(() => {
-    if (initialData) return; // ← skip in edit mode
-    const saved = localStorage.getItem("storeForm");
-    if (saved) setForm(JSON.parse(saved));
-  }, [initialData]);
+  // useEffect(() => {
+  //   if (initialData) return; // ← skip in edit mode
+  //   const saved = localStorage.getItem("storeForm");
+    
+  //   if (saved) setForm(JSON.parse(saved));
+  // }, [initialData]);
 
-  useEffect(() => {
+  // LocalStorage
+    useEffect(() => {
+      if (initialData) return; // ← skip in edit mode
+      const saved = localStorage.getItem("storeForm");
+      if (saved) {
+        try {
+          const parsedForm = JSON.parse(saved);
+          setForm(parsedForm);
+          // Also restore selected locations if they were saved
+          if (parsedForm.storeLocations) {
+              setCurrentSelectedLocationIds(flattenSelectedLocationsToIds(parsedForm.storeLocations));
+          }
+        } catch (e) {
+          console.error("Failed to parse stored form data:", e);
+          localStorage.removeItem("storeForm"); // Clear corrupted data
+        }
+      }
+    }, [initialData]);
+
+  // useEffect(() => {
+  //   if (initialData) return;
+  //   localStorage.setItem("storeForm", JSON.stringify(form));
+  // }, [form, initialData]);
+
+    useEffect(() => {
     if (initialData) return;
-    localStorage.setItem("storeForm", JSON.stringify(form));
-  }, [form, initialData]);
+    // Ensure storeLocations is always updated from currentSelectedLocationIds
+    const formToSave = {
+        ...form,
+        storeLocations: selectedLocationsForDisplay,
+    };
+    localStorage.setItem("storeForm", JSON.stringify(formToSave));
+  }, [form, initialData, selectedLocationsForDisplay]); // Add selectedLocationsForDisplay as dependency
+
 
   // Navigation guard
   useEffect(() => {
@@ -490,31 +619,7 @@ export default function CreateStoreForm({
   } else {
     setForm(f => ({ ...f, [name]: value }));
   }
-};
-
-
-  // const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-  //   const { name, type, checked, value } = e.target;
-
-  //   if (name.startsWith("openingHours.")) {
-  //     const [, dayKey, field] = name.split(".");
-  //     setForm((f: any) => ({
-  //       ...f,
-  //       openingHours: {
-  //         ...f.openingHours,
-  //         [dayKey]: {
-  //           ...f.openingHours[dayKey],
-  //           [field]: value,
-  //         },
-  //       },
-  //     }));
-  //   } else {
-  //     setForm((f: any) => ({
-  //       ...f,
-  //       [name]: type === "checkbox" ? checked : value,
-  //     }));
-  //   }
-  // };
+  };
 
   const onUpdateArray = <T,>(
     key: keyof StoreForm,
@@ -673,7 +778,6 @@ export default function CreateStoreForm({
     });
   };
   
-
   // 2) onToggleBrand
   const onToggleBrand = (parentId: string, brand: string) => {
     setForm((prev:any) => {
@@ -782,6 +886,33 @@ export default function CreateStoreForm({
     });
   };
 
+    // NEW: Handlers for LocationSelectionAccordion
+  const onToggleLocation = useCallback((location: Location, isSelected: boolean) => {
+    setCurrentSelectedLocationIds(prev => {
+      const newSet = new Set(prev);
+      const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+      const idsToToggle = getAllDescendantIds(location, allLocationsMap);
+
+      if (isSelected) {
+        idsToToggle.forEach(id => newSet.add(id));
+      } else {
+        idsToToggle.forEach(id => newSet.delete(id));
+      }
+
+      // Optional: Logic to handle parent/child selection consistency
+      // If a child is selected/deselected, check if its parent should also be selected/deselected.
+      // This can be complex with deep hierarchies and is often handled within the accordion itself
+      // or by re-evaluating the parent's status based on its children.
+      // For now, `buildSelectedLocationTree` will correctly represent the state.
+
+      return newSet;
+    });
+  }, [availableLocations]);
+
+  const onBulkToggleLocations = useCallback((locationIds: string[]) => {
+    setCurrentSelectedLocationIds(new Set(locationIds));
+  }, []);
+
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm((f) => ({ ...f, address, geoLocation }));
   };
@@ -820,6 +951,10 @@ export default function CreateStoreForm({
     // Media (logo/banner)
     handleMediaUpload,
     handleMediaRemove,
+
+    onToggleLocation,
+    onBulkToggleLocations
+
   };
 
   const next = () => setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
@@ -1034,7 +1169,7 @@ export default function CreateStoreForm({
 
   // Render step or review
   const StepContent =  stepIndex < allSteps.length ? ( 
-        allSteps[stepIndex].render(form, handlers, mappedCategories)
+        allSteps[stepIndex].render(form, handlers, mappedCategories, availableLocations)
       ) : (
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold">Review Your Store</h2>
@@ -1250,6 +1385,9 @@ const renderReviewContent = (stepKey: any, form: any) => {
           </div>
         </ReviewSection>
       );
+
+      
+    case 'storeLocations': return <p>{form.storeLocations.map((l:any) => l.name).join(', ')}</p>; // New review content
 
     case "basic":
       return (

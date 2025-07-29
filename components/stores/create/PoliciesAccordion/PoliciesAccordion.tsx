@@ -6,11 +6,8 @@ import {
   PlusCircleIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
+import { Policy } from '@/types/typings';
 
-export interface Policy {
-  type: string;
-  content: string;
-}
 
 const POLICY = [
   "SHIPPING",
@@ -32,7 +29,7 @@ export default function PoliciesAccordion({
   onRemovePolicy,
 }: PoliciesAccordionProps) {
   const [open, setOpen] = useState(true);
-  const isValid = policies.every(p => p.type.trim() && p.content.trim());
+  const isValid = policies.every(p => p.type && p.type && p.content.trim());
   
     useEffect(() => {
       if (policies.length === 0) onAddPolicy();

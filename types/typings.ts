@@ -93,6 +93,10 @@ export type StoreCategoryEntry = {
   icon: string;        // (optional override)
   sortOrder?: number;
   visible?: boolean;
+
+  companyId?: string;
+  categoryId?: string;
+  
 };
 
 export type SelectedCategory = {
@@ -375,7 +379,7 @@ export interface StoreForm {
     pricingTiers: PricingTier[]; 
 
     podcasts:any[];
-    locations:Locations[];
+    locations:Location[];
     
     courses:Course[];
 
@@ -486,7 +490,7 @@ export interface StoreForm {
 
 // Define StoreCategory and ProductCategory shapes
 export type StoreCategory = {
-  name: string;
+  name?: string;
   id: string;
   companyId: string;
   categoryId: string;
@@ -578,8 +582,8 @@ export interface Handlers {
   onRemovePromotion: (index: number) => void;
   onPromotionImageUpload: (index: number, file: File) => void;
 
-  // onProductImageUpload: (index: number, file: File) => void;
-  
+  onToggleLocation: (location: Location, isSelected: boolean) => void;
+  onBulkToggleLocations: (locationIds: string[]) => void;
 
   // Media (logo/banner)
   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
@@ -592,7 +596,8 @@ export interface StepConfig {
   title: string;
   render: (form: StoreForm, 
     handlers: Handlers, 
-    availableCategories: StoreCategory[]) => React.ReactNode;
+    availableCategories: StoreCategory[],
+    allLocs: Location[]) => React.ReactNode;
 }
 
 export interface BookItem {
@@ -1069,4 +1074,24 @@ export interface Event {
   
   createdAt?: string; // Not needed for form input
   updatedAt?: string; // Not needed for form input
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  city?: string;
+  country?: string;
+  status: 'active' | 'inactive' | 'draft';
+  visible: boolean;
+  parentId: string | null;
+  children?: Location[]; // This will be added when we build the tree
+  [key: string]: any; // For other properties
+}
+
+export interface SelectedLocation {
+  id: string;
+  name: string;
+  children: SelectedLocation[];
 }

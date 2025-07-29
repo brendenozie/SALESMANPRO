@@ -1,9 +1,9 @@
 // app/stores/[id]/edit/page.tsx
 import React from "react";
 import { redirect } from "next/navigation";
-import CreateStoreForm from "../../../../components/stores/create/CreateStoreForm/CreateStoreForm";
+import CreateStoreForm from "@/components/stores/create/CreateStoreForm/CreateStoreForm";
 import prisma from "@/server/db/prismadb";
-import { StoreForm } from "../../../../types/typings";
+import { PolicyType, SocialChannel, StoreForm } from "@/types/typings";
 
 export const dynamic = "force-dynamic";
 
@@ -45,12 +45,17 @@ export default async function EditStorePage({
   // ── Fetch “availableCategories” from your external API ──
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
-    { cache: "no-store" }
+    { cache: 'no-store' }
   );
+  const dataCategories = await res.json();
   
-  const  data  = await res.json();
-  
-  const availableCategories = data.results;
+  const availableCategories = dataCategories.results;
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/locations`);
+
+  const dataLoctions = await response.json();
+      
+  const availableLocations = dataLoctions.data || [];
 
   // ── Map the Prisma object into your StoreForm shape ──
   const storeFormData: StoreForm = {
@@ -78,13 +83,13 @@ export default async function EditStorePage({
 
     socialLinks: store.socialLinks.map((s) => ({
       id: s.id,
-      channel: s.channel,
+      channel: s.channel as unknown as SocialChannel,
       url: s.url,
     })),
 
     policies: store.policies.map((p) => ({
       id: p.id,
-      type: p.type,
+      type: p.type as unknown as unknown as PolicyType,
       title: p.title ?? undefined,
       content: p.content,
     })),
@@ -175,7 +180,11 @@ export default async function EditStorePage({
 
     // ── JUNCTION TABLE: StoreCategory[] ──
     storeCategories: store.StoreCategory.map((sc) => ({
-      id: sc.categoryId,
+      companyId: sc.companyId,
+      categoryId: sc.categoryId,
+      displayName: sc.displayName ?? sc.category.name,
+      category: sc.category,
+      id: sc.id,
       name: sc.displayName ?? sc.category.name,
       icon: sc.icon ?? "",
       items: Array.isArray(sc.items)
@@ -183,10 +192,10 @@ export default async function EditStorePage({
         : typeof sc.items === "string"
         ? JSON.parse(sc.items)
         : [],
-      brands: Array.isArray(sc.brands)
-        ? sc.brands
-        : typeof sc.brands === "string"
-        ? JSON.parse(sc.brands)
+      allBrands: Array.isArray(sc.allBrands)
+        ? sc.allBrands
+        : typeof sc.allBrands === "string"
+        ? JSON.parse(sc.allBrands)
         : [],
       sortOrder: sc.sortOrder,
       visible: sc.visible,
@@ -215,6 +224,7 @@ export default async function EditStorePage({
   return (
     <CreateStoreForm
       availableCategories={availableCategories}
+       availableLocations={availableLocations}
       initialData={storeFormData}
     />
   );

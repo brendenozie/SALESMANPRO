@@ -24,6 +24,7 @@ import { StoreForm, Handlers, StepConfig, GeoLocation,
           RawCategory, SubObj, ParentCategory, 
           SelectedCategory, Promotion, 
           HeroSlide } from '@/types/typings';
+import LocationSelectionAccordion from '@/components/stores/create/LocationSelectionAccordion/LocationSelectionAccordion';
 
 // Interfaces
 export const storeSteps: StepConfig[] = [
@@ -263,3 +264,20 @@ export const websiteSteps: StepConfig[] = [
     ),
   },
 ];
+``
+export const locationsSteps: StepConfig[] = [  
+  {
+    key: 'storeLocations', // NEW KEY
+    title: 'Store Locations', // NEW TITLE
+    render: (f, h, cats, allLocs) => ( // NEW: allLocs parameter
+      <LocationSelectionAccordion
+        availableLocations={allLocs} // Pass all available locations
+        selectedLocations={f.locations} // Pass currently selected locations
+        onToggleLocation={h.onToggleLocation} // New handler
+        onBulkToggle={h.onBulkToggleLocations} // New handler
+        onApply={() => console.log(f.locations)} // Example onApply
+      />
+    ),
+  },
+];
+

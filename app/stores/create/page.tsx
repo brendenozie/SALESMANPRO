@@ -11,15 +11,17 @@ export default async function CreateStorePage() {
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
     { cache: 'no-store' }
   );
-  const data = await res.json();
+  const dataCategories = await res.json();
   
-  const availableCategories = data.results;
+  const availableCategories = dataCategories.results;
 
-  console.log("12345678901234567890");
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/locations`);
   
-  console.log(availableCategories);
+  const dataLoctions = await response.json();
+      
+  const availableLocations = dataLoctions.data || [];
 
-  return <CreateStoreForm availableCategories={availableCategories} />;
+  return <CreateStoreForm availableCategories={availableCategories} availableLocations={availableLocations} />;
 }
 
 // Import client component below

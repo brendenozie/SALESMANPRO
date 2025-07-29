@@ -88,7 +88,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       announcements:[{ message: "Site maintenance Sunday." } as any],
       awards:       [{ name: "Top Shop 2025", iconUrl: "/icons/award.svg" }],
       metrics:      [{ label: "Products", value: 1200 }],
-      stats:        [{ label: "Visits Today", value: 3000 }],
+      stats:        [{ label: "Visits Today", value: "3000" }],
       pricingTiers: [{ name: "Basic", price: 0, duration: "monthly", features: ["Access to shop"] }],
     }),
 
