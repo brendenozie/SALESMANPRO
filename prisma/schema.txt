@@ -300,9 +300,6 @@ model Company {
   Podcast                         Podcast[]
   Donor                           Donor[]
   CompanyLocation                 CompanyLocation[]
-  Inquiry                         Inquiry[]
-  Showing                         Showing[]
-  OfferContract                   OfferContract[]
 }
 
 enum CategoryStatus {
@@ -1073,12 +1070,9 @@ model User {
   Doctor       Doctor[]
   Writer       Writer[]
 
-  donorProfile Donor?          @relation("UserToDonor")
+  donorProfile Donor?     @relation("UserToDonor")
   // Donations made by this user, potentially without a dedicated Donor profile
   Donation     Donation[]
-  Showing      Showing[]       @relation("AgentShowings")
-  clientOffers OfferContract[] @relation("ClientOffers") // User as a client making offers
-  agentOffers  OfferContract[] @relation("AgentOffers") // User as an agent handling offers
 }
 
 enum Status {
@@ -1505,9 +1499,6 @@ model marketplaceListings {
   CommissionRate   CommissionRate?  @relation(fields: [commissionRateId], references: [id])
   commissionRateId String?          @db.ObjectId
 
-  offers        OfferContract[] @relation("PropertyOffers") // Offers made for this listing
-  OfferContract OfferContract[]
-
   // Indexes for performance
   @@index([name])
   @@index([finalPrice])
@@ -1609,8 +1600,6 @@ model ClientInventoryLog {
   createdAt         DateTime?       @default(now())
   Donor             Donor?          @relation(fields: [donorId], references: [id])
   donorId           String?         @db.ObjectId
-  logDate           DateTime
-  item              String
 }
 
 model AgentInventoryLog {
@@ -3519,104 +3508,3 @@ model Donor {
 //   // userId       String?    @db.ObjectId
 //   // user         User?      @relation(fields: [userId], references: [id])
 // }
-
-model Inquiry {
-  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
-  companyId           String        @db.ObjectId // To link inquiries to a specific company
-  clientName          String
-  clientEmail         String
-  clientPhone         String?
-  message             String        @db.String // Use @db.String for potentially long messages
-  propertyId          String?       @db.ObjectId // Optional: Link to a specific property/listing
-  propertyName        String? // Denormalized property name for quick display
-  status              InquiryStatus @default(New)
-  receivedAt          DateTime      @default(now())
-  assignedToAgentId   String?       @db.ObjectId // Optional: Link to a User (Agent)
-  assignedToAgentName String? // Denormalized agent name
-
-  // Optional: Define relations if you have corresponding models
-  company Company? @relation(fields: [companyId], references: [id])
-  // If you have a MarketListing or Product model, you could add:
-  // property            MarketListing? @relation(fields: [propertyId], references: [id])
-  // If your agents are User models and you want a direct relation:
-  // assignedToAgent     User?     @relation("AgentInquiries", fields: [assignedToAgentId], references: [id])
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-}
-
-// --- NEW: Inquiry Status Enum ---
-enum InquiryStatus {
-  New
-  Read
-  Responded
-  Archived
-}
-
-model Showing {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  companyId    String        @db.ObjectId // Link to the company
-  propertyId   String        @db.ObjectId // Foreign key to a Property/Listing model (if you have one)
-  propertyName String // Denormalized property name for quick display
-  clientId     String        @db.ObjectId // Foreign key to a Client or User model (if you have one)
-  clientName   String // Denormalized client name
-  agentId      String        @db.ObjectId // Foreign key to a User (Agent) model
-  agentName    String // Denormalized agent name
-  dateTime     DateTime // The actual scheduled date and time of the showing
-  status       ShowingStatus @default(Scheduled)
-  notes        String?       @db.String // Use @db.String for potentially long notes
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-
-  // Optional relations:
-  company Company? @relation(fields: [companyId], references: [id])
-  // If you have a dedicated 'Property' or 'MarketListing' model:
-  // property      Property?    @relation(fields: [propertyId], references: [id])
-  // If you have a dedicated 'Client' model:
-  // client        Client?      @relation(fields: [clientId], references: [id])
-  agent   User?    @relation("AgentShowings", fields: [agentId], references: [id]) // Relation to User model for agents
-}
-
-// --- NEW: Showing Status Enum ---
-enum ShowingStatus {
-  Scheduled
-  Completed
-  Canceled
-}
-
-// --- NEW: OfferContract Model ---
-model OfferContract {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  companyId    String      @db.ObjectId // Link to the company
-  propertyId   String      @db.ObjectId // Foreign key to MarketListing
-  propertyName String // Denormalized property name
-  clientId     String      @db.ObjectId // Foreign key to User (client)
-  clientName   String // Denormalized client name
-  agentId      String      @db.ObjectId // Foreign key to User (agent)
-  agentName    String // Denormalized agent name
-  offerAmount  Float
-  status       OfferStatus @default(Pending)
-  offerDate    DateTime
-  closureDate  DateTime? // Optional: Date when offer was accepted/closed
-  notes        String?     @db.String
-  contractUrl  String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  company               Company?             @relation(fields: [companyId], references: [id])
-  property              marketplaceListings? @relation("PropertyOffers", fields: [propertyId], references: [id])
-  client                User?                @relation("ClientOffers", fields: [clientId], references: [id])
-  agent                 User?                @relation("AgentOffers", fields: [agentId], references: [id])
-  marketplaceListings   marketplaceListings? @relation(fields: [marketplaceListingsId], references: [id])
-  marketplaceListingsId String?              @db.ObjectId
-}
-
-// --- NEW: Offer Status Enum ---
-enum OfferStatus {
-  Pending
-  Accepted
-  Rejected
-  Closed
-}
