@@ -15,6 +15,7 @@ import ProductPricingAndTiers  from "../components/stores/create/PricingTiers/Pr
 import { ServiceSpecifics } from "../components/stores/create/ServiceSpecifics/ServiceSpecifics";
 import CategoryPicker from "../components/CategoryPicker";
 import LocationPicker from "@/components/LocationPicker";
+import PropertyTypeDetails from "@/components/PropertyTypeDetails";
 
 
 // ..//
@@ -40,6 +41,7 @@ export const FORM_COMPONENTS: Record<number, React.FC<any>> = {
   16: ServiceSpecifics,
   17: BookingSlot,
   // 18: LocationPicker
+  19: PropertyTypeDetails
 };
 
 

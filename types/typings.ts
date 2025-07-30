@@ -775,8 +775,8 @@ export interface ProductForm {
   amenities: string[]; // Specific for properties/services
 
   // property
-  bedrooms: number; // Changed to number
-  studios: number; // Changed to number
+  bedrooms: JSON[]; // Changed to number
+  studios: JSON[]; // Changed to number
   bathrooms: number; // Changed to number
   area: string; // Kept as string for units (e.g., "1500 sqft")
 
@@ -977,8 +977,8 @@ export interface MarketListingForm {
   expirationDate: string | null;
 
   // Property-specific
-  bedrooms: number | null; // Corrected to number | null
-  studios: number | null; // Corrected to number | null
+  bedrooms: JSON[] | null; // Corrected to number | null
+  studios: JSON[] | null; // Corrected to number | null
   bathrooms: number | null; // Corrected to number | null
   area: string;
   serviceSchedule: string;

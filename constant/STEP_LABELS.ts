@@ -9,11 +9,12 @@ export const STEP_LABELS: Record<number, string> = {
   9: "Variants",
   10: "Availability",
   11: "Review",
-  12: "Location / Contact",
+  12: "Contact",
   13: "Property Amenities",
   14: "Vehicle Amenities",
   15: "Product Pricing And Tiers",
   16: "Service Specifics",
   17: "Booking Slot",
   18: "Location Picker",
+  19: "Property Type Details"
 };

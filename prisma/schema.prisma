@@ -1392,13 +1392,18 @@ model marketplaceListings {
   expirationDate    DateTime? // For Beauty Products
 
   // Property-specific (Mirroring Product Model)
-  bathrooms       Int? // Changed to Int
-  area            String?
-  bedrooms        Int? // Changed to Int
-  studios         Int? // Changed to Int
+  // bathrooms       Int? // Changed to Int
+  // area            String?
+  // bedrooms        Int? // Changed to Int
+  // studios         Int? // Changed to Int
+
   propertyTypeId  String?       @db.ObjectId
   propertyType    PropertyType? @relation(fields: [propertyTypeId], references: [id])
   serviceSchedule String?
+
+  bedrooms  Json[] // Updated to support multiple bedroom types
+  studios   Json[] // Updated to support multiple bedroom types
+  bathrooms String?
 
   // Digital-Goods-specific (Mirroring Product Model)
   digitalUrl  String?

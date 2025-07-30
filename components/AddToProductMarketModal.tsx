@@ -168,8 +168,8 @@ function productToListingForm(
   deliveryMethod: p?.deliveryMethod,
 
   // property-specific
-  bedrooms: p?.bedrooms ?? 0,
-  studios: p?.studios ?? 0,
+  bedrooms: p?.bedrooms ?? [],
+  studios: p?.studios ?? [],
   bathrooms: p?.bathrooms ?? 0,
   area: p?.area ?? '',
   serviceSchedule: p?.serviceSchedule ?? '',
