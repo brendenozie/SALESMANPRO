@@ -115,6 +115,7 @@ export default async function StoreLayout({
           }
         },
       },
+
       Doctor:{
         include: {
           User:{
@@ -122,6 +123,7 @@ export default async function StoreLayout({
           }
         },
       },
+
       salesAgents:{
         include: {
           user:{
@@ -132,12 +134,20 @@ export default async function StoreLayout({
       
       Podcast :true,
 
-      courses:true
+      courses:true,
+
+      CompanyLocation:{
+        include:{
+          location:true
+        }
+      }
 
     },
   });
 
   if (!raw) return notFound();
+
+  console.log(raw);
 
   // The transformation function and context provider will now receive the complete data
   const storeFormData = transformCompanyToStoreForm(raw);

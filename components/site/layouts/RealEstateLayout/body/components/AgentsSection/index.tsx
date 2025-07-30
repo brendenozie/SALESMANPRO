@@ -102,7 +102,7 @@ export default function AgentsSection({ agents, slug }: any) {
 
                 {/* Agent Info */}
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-1">
-                  {agent.name}
+                  {agent.user.name}
                 </h3>
                 <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-lg mb-3">
                   {agent.role || "Real Estate Agent"}

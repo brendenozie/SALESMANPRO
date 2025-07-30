@@ -132,7 +132,7 @@ export default function RealEstateSite() {
     awards,
     testimonials,
     faqs,
-    locations,
+    companyLocations,
     blogs,
   } = storeData;
 
@@ -192,7 +192,23 @@ export default function RealEstateSite() {
       <FeaturedListings listings={marketplaceListings} slug={slug} />
 
       {/* Trending Locations Section */}
-      <TrendingLocations locations={locations} slug={slug} />
+      <TrendingLocations
+        locations={
+          companyLocations
+            ? companyLocations.map((loc: any) => ({
+                // Map/transform to Location type as needed
+                name: loc.name,
+                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                metaKeywords: loc.metaKeywords || "",
+                status: loc.status || "active",
+                parentId: loc.parentId || null,
+                // Spread any additional fields if needed
+                ...loc,
+              }))
+            : []
+        }
+        slug={slug}
+      />
 
       {/* All Listings Section (using marketplaceListings as source) */}
       <ListingsSection products={marketplaceListings} slug={slug} />
