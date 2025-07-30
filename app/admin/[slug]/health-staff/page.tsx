@@ -268,7 +268,7 @@ export default function AdminStaffPage({ params }: { params: { adminSlug: string
           variants={fadeIn}
           transition={{ delay: 0.2 }}
         >
-          Manage all non-medical staff within the clinic. (Company ID: {companyId})
+          Manage all non-critical staff within the organisation.
         </motion.p>
 
         <motion.div

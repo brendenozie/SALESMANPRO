@@ -2,180 +2,83 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string; id: string } }
-) {
-  const { adminSlug, id } = params;
+// Helper function to format service data for the frontend
+async function formatServiceData(service: any) {
+  return {
+    id: service.id,
+    name: service.name,
+    description: service.description || 'N/A',
+    price: service.price,
+    duration: service.duration,
+    status: service.status,
+    createdAt: service.createdAt ? new Date(service.createdAt).toLocaleDateString() : 'N/A',
+  };
+}
+
+// app/api/admin/services/[id]/route.ts
+// This file handles GET, PUT, DELETE for a specific service by ID
+
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const service = await prisma.marketplaceListings.findUnique({
-      where: {
-        id: id,
-        companyId: company.id, // Ensure service belongs to this company
-        status: "ACTIVE", // Only active services
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        sellingPrice: true,
-        duration: true,
-        status: true,
-        category: true,
-        images: true,
-        createdAt: true,
-        updatedAt: true,
-        productCategory: { select: { id: true, name: true } },
-      },
+    const service = await prisma.service.findUnique({
+      where: { id },
     });
 
     if (!service) {
-      return NextResponse.json({ message: "Service not found or not associated with this company" }, { status: 404 });
+      return NextResponse.json({ error: "Service not found" }, { status: 404 });
     }
 
-    const formattedService = {
-      ...service,
-      price: service.sellingPrice,
-      categoryId: service.productCategory?.id || null,
-      categoryName: service.productCategory?.name || 'N/A',
-      // Ensure images are in a usable format if stored as JSON
-      images: service.images || [],
-    };
-
-    return NextResponse.json(formattedService, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching service details:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    const formattedService = await formatServiceData(service);
+    return NextResponse.json(formattedService);
+  } catch (err: any) {
+    console.error(`GET /api/admin/services/${id} error:`, err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { adminSlug: string; id: string } }
-) {
-  const { adminSlug, id } = params;
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
   const body = await request.json();
-
-  const { name, description, price, duration, categoryId, status, images } = body;
+  const { name, description, price, duration, status } = body;
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
+    const updatedService = await prisma.service.update({
+      where: { id },
+      data: {
+        name: name,
+        description: description,
+        price: price ? parseFloat(price) : undefined, // Ensure price is a float if provided
+        duration: duration,
+        status: status,
+      },
     });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+    const formattedUpdatedService = await formatServiceData(updatedService);
+
+    return NextResponse.json(formattedUpdatedService);
+  } catch (err: any) {
+    console.error(`PUT /api/admin/services/${id} error:`, err);
+    // Handle unique constraint violation for companyId, name
+    if (err.code === 'P2002' && err.meta?.target?.includes('name')) {
+      return NextResponse.json({ error: "A service with this name already exists for this company." }, { status: 409 });
     }
-
-    const serviceToUpdate = await prisma.marketplaceListings.findUnique({
-        where: {
-            id: id,
-            companyId: company.id,
-        },
-        select: { id: true }
-    });
-
-    if (!serviceToUpdate) {
-        return NextResponse.json({ message: "Service not found or not associated with this company" }, { status: 404 });
-    }
-
-    let updateData: any = { updatedAt: new Date() };
-
-    if (name) updateData.name = name;
-    if (description) updateData.description = description;
-    if (price !== undefined) updateData.sellingPrice = parseFloat(price);
-    if (duration) updateData.duration = duration;
-    if (status) updateData.status = status;
-    if (images) updateData.images = images; // Assuming images are already in correct JSON format
-
-    if (categoryId) {
-        const productCategory = await prisma.productCategory.findUnique({
-            where: { id: categoryId, companyId: company.id },
-            select: { id: true, name: true }
-        });
-        if (!productCategory) {
-            return NextResponse.json({ message: "New category not found or not associated with this company" }, { status: 404 });
-        }
-        updateData.productCategoryId = productCategory.id;
-        updateData.category = productCategory.name;
-    }
-
-    const updatedService = await prisma.marketplaceListings.update({
-      where: { id: id },
-      data: updateData,
-    });
-
-    return NextResponse.json(
-      { message: "Service updated successfully", service: updatedService },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error("Error updating service:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { adminSlug: string; id: string } }
-) {
-  const { adminSlug, id } = params;
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
+    await prisma.service.delete({
+      where: { id },
     });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const serviceToDelete = await prisma.marketplaceListings.findUnique({
-        where: {
-            id: id,
-            companyId: company.id,
-        },
-        select: { id: true }
-    });
-
-    if (!serviceToDelete) {
-        return NextResponse.json({ message: "Service not found or not associated with this company" }, { status: 404 });
-    }
-
-    // Consider soft delete (e.g., changing 'status' to 'ARCHIVED' or 'INACTIVE')
-    // instead of hard delete in a real application, especially if linked to past orders.
-    await prisma.marketplaceListings.update({
-      where: { id: id },
-      data: { status: "ARCHIVED" }, // Example of soft delete
-    });
-
-    return NextResponse.json({ message: "Service archived successfully" }, { status: 204 });
-
-  } catch (error) {
-    console.error("Error deleting service:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Service deleted successfully" }, { status: 200 });
+  } catch (err: any) {
+    console.error(`DELETE /api/admin/services/${id} error:`, err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }

@@ -1,177 +1,110 @@
-// app/api/admin/[adminSlug]/services/route.ts
+// app/api/admin/billing/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb"; // Assuming this path correctly points to your Prisma client initialization
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string } }
-) {
-  const { adminSlug } = params;
+// Helper function to format invoice data for the frontend
+async function formatInvoiceData(invoice: any) {
+  const patientName = invoice.patient?.name || 'N/A';
+  const itemsArray = Array.isArray(invoice.items) ? invoice.items : (typeof invoice.items === 'string' ? JSON.parse(invoice.items) : []);
+
+  return {
+    id: invoice.id,
+    patientId: invoice.patientId,
+    patientName: patientName,
+    amount: invoice.amount,
+    date: invoice.invoiceDate ? new Date(invoice.invoiceDate).toISOString().split('T')[0] : 'N/A',
+    dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : 'N/A',
+    status: invoice.status,
+    items: itemsArray, // Ensure this is an array of strings/objects
+    notes: invoice.notes || 'N/A',
+    createdAt: invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : 'N/A',
+  };
+}
+
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+  const searchTerm = searchParams.get("searchTerm") || "";
+  const filterStatus = searchParams.get("filterStatus"); // 'PAID', 'PENDING', 'OVERDUE', 'CANCELED', 'All'
 
-  const searchKeyword = searchParams.get("search");
-  const categoryFilter = searchParams.get("category");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const sortBy = searchParams.get("sortBy") || "name";
-  const sortOrder = searchParams.get("sortOrder") || "asc";
-
-  const validSortBy = ["name", "sellingPrice", "createdAt"];
-  if (!validSortBy.includes(sortBy)) {
-    return NextResponse.json({ message: "Invalid sortBy parameter" }, { status: 400 });
-  }
-
-  const validSortOrder = ["asc", "desc"];
-  if (!validSortOrder.includes(sortOrder)) {
-    return NextResponse.json({ message: "Invalid sortOrder parameter" }, { status: 400 });
+  if (!companyId) {
+    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
   }
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
     const whereClause: any = {
-      companyId: company.id,
-      // Filter for services (assuming services are marketplaceListings with specific characteristics)
-      // You might have a dedicated 'isService' flag or filter by category like 'Medical Services'
-      // For now, we'll assume all marketplaceListings are potential services if not filtered otherwise.
-      status: "ACTIVE", // Only active services
+      companyId: companyId,
     };
 
-    if (categoryFilter && categoryFilter !== 'All') {
-      whereClause.category = categoryFilter; // Assuming category is directly on marketplaceListings
+    if (filterStatus && filterStatus !== 'All') {
+      whereClause.status = filterStatus;
     }
 
-    if (searchKeyword) {
-      whereClause.OR = [
-        { name: { contains: searchKeyword, mode: 'insensitive' } },
-        { description: { contains: searchKeyword, mode: 'insensitive' } },
-      ];
+    let invoices = await prisma.patientInvoices.findMany({
+      where: whereClause,
+      include: {
+        patient: { select: { name: true } }, // Select patient's name
+      },
+      orderBy: { invoiceDate: 'desc' }, // Order by most recent invoices
+    });
+
+    // Client-side filtering for search term across patient name, invoice ID, and items
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      invoices = invoices.filter(invoice => {
+        const itemsString = Array.isArray(invoice.items) ? JSON.stringify(invoice.items).toLowerCase() : (typeof invoice.items === 'string' ? invoice.items.toLowerCase() : '');
+        return (
+          invoice.patient?.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          invoice.id.toLowerCase().includes(lowerCaseSearchTerm) ||
+          itemsString.includes(lowerCaseSearchTerm)
+        );
+      });
     }
 
-    const [services, totalItems] = await prisma.$transaction([
-      prisma.marketplaceListings.findMany({
-        where: whereClause,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          sellingPrice: true,
-          duration: true, // Assuming 'duration' field exists for services
-          createdAt: true,
-          status: true,
-          category: true,
-        },
-      }),
-      prisma.marketplaceListings.count({ where: whereClause }),
-    ]);
-
-    const formattedServices = services.map(service => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.sellingPrice,
-      duration: service.duration || 'N/A', // Assuming duration is a string field
-      status: service.status,
-      category: service.category || 'Uncategorized',
-    }));
-
-    return NextResponse.json({
-      services: formattedServices,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching services:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+    const enrichedInvoices = await Promise.all(
+      invoices.map(async (invoice) => formatInvoiceData(invoice))
     );
+
+    return NextResponse.json(enrichedInvoices);
+  } catch (err: any) {
+    console.error("GET /api/admin/billing error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { adminSlug: string } }
-) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
   const body = await request.json();
+  const { patientId, amount, invoiceDate, dueDate, items, notes, status, companyId } = body;
 
-  const { name, description, price, duration, categoryId, status = "ACTIVE", images = [] } = body;
-
-  if (!name || !description || price === undefined || !categoryId) {
-    return NextResponse.json({ message: "Missing required fields: name, description, price, categoryId" }, { status: 400 });
+  if (!patientId || !amount || !invoiceDate || !items || !companyId) {
+    return NextResponse.json(
+      { error: "Missing required fields: patientId, amount, invoiceDate, items, companyId" },
+      { status: 400 }
+    );
   }
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    // Verify ProductCategory exists and belongs to the company
-    const productCategory = await prisma.productCategory.findUnique({
-      where: { id: categoryId, companyId: company.id },
-      select: { id: true, name: true }
-    });
-    if (!productCategory) {
-      return NextResponse.json({ message: "Service category not found or not associated with this company" }, { status: 404 });
-    }
-
-    // Create a new marketplaceListing for the service
-    const newService = await prisma.marketplaceListings.create({
+    const newInvoice = await prisma.patientInvoices.create({
       data: {
-        companyId: company.id,
-        name,
-        description,
-        sellingPrice: parseFloat(price),
-        buyingPrice: parseFloat(price), // Assuming buying price is same as selling for simplicity
-        quantity: 1, // Services usually have a quantity of 1 per booking
-        isAvailable: true, // New services are available by default
-        productCategoryId: productCategory.id,
-        category: productCategory.name, // Denormalize category name
-        status,
-        duration, // Assuming 'duration' field exists on marketplaceListings
-        images: images, // Assuming images is an array of JSON objects or strings
-        finalPrice: parseFloat(price),
-        // Default values for other required marketplaceListings fields
-        subCategory: {},
-        tags: [],
-        sellerType: "COMPANY",
+        patientId: patientId,
+        companyId: companyId,
+        amount: parseFloat(amount), // Ensure amount is a float
+        invoiceDate: new Date(invoiceDate),
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        items: JSON.stringify(items), // Store items as a JSON string
+        notes: notes,
+        status: status || 'PENDING', // Default to PENDING if not provided
+      },
+      include: {
+        patient: { select: { name: true } },
       },
     });
 
-    // Update productCount for the category
-    await prisma.productCategory.update({
-      where: { id: productCategory.id },
-      data: { productCount: { increment: 1 } },
-    });
+    const formattedNewInvoice = await formatInvoiceData(newInvoice);
 
-    return NextResponse.json(
-      { message: "Service created successfully", service: newService },
-      { status: 201 }
-    );
-
-  } catch (error) {
-    console.error("Error creating service:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json(formattedNewInvoice, { status: 201 });
+  } catch (err: any) {
+    console.error("POST /api/admin/billing error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }

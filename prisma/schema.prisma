@@ -295,7 +295,6 @@ model Company {
   DiscussionPost                  DiscussionPost[]
   DiscussionComment               DiscussionComment[]
   Project                         Project[]
-  Prescription                    Prescription[]
   Doctor                          Doctor[]
   Writer                          Writer[]
   Podcast                         Podcast[]
@@ -306,6 +305,9 @@ model Company {
   OfferContract                   OfferContract[]
   Appointment                     Appointment[]
   staffMembers                    StaffProfile[]
+  services                        Service[]
+  prescriptions                   Prescription[]
+  PatientInvoices                 PatientInvoices[]
 }
 
 enum CategoryStatus {
@@ -1099,6 +1101,8 @@ model User {
   clientOffers OfferContract[] @relation("ClientOffers") // User as a client making offers
   agentOffers  OfferContract[] @relation("AgentOffers") // User as an agent handling offers
   staffProfile StaffProfile?   @relation("StaffProfile") // One-to-one relation to StaffProfile
+
+  invoices PatientInvoices[] @relation("PatientInvoices")
 }
 
 enum Status {
@@ -3275,25 +3279,6 @@ model PropertyCategory {
 //   subLocations   PropertyLocation[] @relation("SubLocations")
 // }
 
-model Prescription {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  patientId    String    @db.ObjectId
-  patient      User      @relation(fields: [patientId], references: [id])
-  doctorId     String    @db.ObjectId
-  doctor       Doctor    @relation(fields: [doctorId], references: [id]) // Assuming Educator is doctor
-  medication   String
-  dosage       String
-  instructions String?
-  issuedDate   DateTime
-  expiryDate   DateTime?
-  status       String    @default("Pending") // e.g., "Pending", "Dispensed", "Expired"
-  notes        String?
-  companyId    String    @db.ObjectId
-  company      Company   @relation(fields: [companyId], references: [id])
-  createdAt    DateTime? @default(now())
-  updatedAt    DateTime? @updatedAt
-}
-
 // Educator Profile Model (one-to-one with User)
 model Doctor {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -3671,4 +3656,103 @@ model StaffProfile {
   @@index([companyId])
   @@index([jobTitle])
   @@index([department])
+}
+
+// NEW: Service Model
+// Represents a medical service offered by a clinic/company.
+model Service {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String        @db.ObjectId
+  company     Company       @relation(fields: [companyId], references: [id])
+  name        String // e.g., "General Check-up", "Pediatric Vaccination"
+  description String?
+  price       Float
+  duration    String // e.g., "30 min", "1 hour 30 min"
+  status      ServiceStatus @default(ACTIVE) // Enum for service status
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // You might want to link appointments to services if an appointment is for a specific service.
+  // This would require adding a `serviceId` to the `Appointment` model.
+  // For now, we'll keep it simple as the original Appointment model already has a 'service' string.
+
+  @@unique([companyId, name]) // A company cannot have two services with the same name
+  @@index([companyId])
+  @@index([name])
+}
+
+// NEW: ServiceStatus Enum
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+// NEW: PrescriptionStatus Enum
+enum PrescriptionStatus {
+  PENDING
+  DISPENSED
+  EXPIRED
+}
+
+model Prescription {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  doctor    Doctor @relation(fields: [doctorId], references: [id])
+  doctorId  String @db.ObjectId
+  patient   User   @relation(fields: [patientId], references: [id])
+  patientId String @db.ObjectId
+
+  medication String
+  dosage     String
+  issuedDate DateTime           @default(now()) // NEW: Defaults to now, but can be set manually
+  status     PrescriptionStatus @default(PENDING) // NEW
+
+  instructions String?
+
+  expiryDate DateTime?
+
+  notes String?
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([doctorId])
+  @@index([patientId])
+  @@index([companyId]) // NEW
+}
+
+// NEW: InvoiceStatus Enum
+enum InvoiceStatus {
+  PAID
+  PENDING
+  OVERDUE
+  CANCELED
+}
+
+// NEW: Invoice Model
+// Represents a financial invoice for services rendered to a patient.
+model PatientInvoices {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  patientId String @db.ObjectId // Link to the User (patient)
+  patient   User   @relation("PatientInvoices", fields: [patientId], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  amount      Float
+  invoiceDate DateTime      @default(now())
+  dueDate     DateTime? // Optional due date for payment
+  status      InvoiceStatus @default(PENDING)
+  items       Json // Store an array of objects or strings for invoice line items
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([companyId])
 }

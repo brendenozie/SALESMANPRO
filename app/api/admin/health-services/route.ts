@@ -1,177 +1,96 @@
-// app/api/admin/[adminSlug]/services/route.ts
+// app/api/admin/services/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb"; // Assuming this path correctly points to your Prisma client initialization
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string } }
-) {
-  const { adminSlug } = params;
+// Helper function to format service data for the frontend
+async function formatServiceData(service: any) {
+  return {
+    id: service.id,
+    name: service.name,
+    description: service.description || 'N/A',
+    price: service.price,
+    duration: service.duration,
+    status: service.status,
+    createdAt: service.createdAt ? new Date(service.createdAt).toLocaleDateString() : 'N/A',
+  };
+}
+
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+  const searchTerm = searchParams.get("searchTerm") || "";
+  const filterStatus = searchParams.get("filterStatus"); // 'ACTIVE', 'INACTIVE', 'ARCHIVED', 'All'
 
-  const searchKeyword = searchParams.get("search");
-  const categoryFilter = searchParams.get("category");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const sortBy = searchParams.get("sortBy") || "name";
-  const sortOrder = searchParams.get("sortOrder") || "asc";
-
-  const validSortBy = ["name", "sellingPrice", "createdAt"];
-  if (!validSortBy.includes(sortBy)) {
-    return NextResponse.json({ message: "Invalid sortBy parameter" }, { status: 400 });
-  }
-
-  const validSortOrder = ["asc", "desc"];
-  if (!validSortOrder.includes(sortOrder)) {
-    return NextResponse.json({ message: "Invalid sortOrder parameter" }, { status: 400 });
+  if (!companyId) {
+    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
   }
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
     const whereClause: any = {
-      companyId: company.id,
-      // Filter for services (assuming services are marketplaceListings with specific characteristics)
-      // You might have a dedicated 'isService' flag or filter by category like 'Medical Services'
-      // For now, we'll assume all marketplaceListings are potential services if not filtered otherwise.
-      status: "ACTIVE", // Only active services
+      companyId: companyId,
     };
 
-    if (categoryFilter && categoryFilter !== 'All') {
-      whereClause.category = categoryFilter; // Assuming category is directly on marketplaceListings
+    if (filterStatus && filterStatus !== 'All') {
+      whereClause.status = filterStatus;
     }
 
-    if (searchKeyword) {
-      whereClause.OR = [
-        { name: { contains: searchKeyword, mode: 'insensitive' } },
-        { description: { contains: searchKeyword, mode: 'insensitive' } },
-      ];
+    let services = await prisma.service.findMany({
+      where: whereClause,
+      orderBy: { name: 'asc' }, // Order by service name
+    });
+
+    // Client-side filtering for search term across name and description
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      services = services.filter(service =>
+        service.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+        service.description?.toLowerCase().includes(lowerCaseSearchTerm)
+      );
     }
 
-    const [services, totalItems] = await prisma.$transaction([
-      prisma.marketplaceListings.findMany({
-        where: whereClause,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          sellingPrice: true,
-          duration: true, // Assuming 'duration' field exists for services
-          createdAt: true,
-          status: true,
-          category: true,
-        },
-      }),
-      prisma.marketplaceListings.count({ where: whereClause }),
-    ]);
-
-    const formattedServices = services.map(service => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.sellingPrice,
-      duration: service.duration || 'N/A', // Assuming duration is a string field
-      status: service.status,
-      category: service.category || 'Uncategorized',
-    }));
-
-    return NextResponse.json({
-      services: formattedServices,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching services:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+    const formattedServices = await Promise.all(
+      services.map(async (service) => formatServiceData(service))
     );
+
+    return NextResponse.json(formattedServices);
+  } catch (err: any) {
+    console.error("GET /api/admin/services error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { adminSlug: string } }
-) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
   const body = await request.json();
+  const { name, description, price, duration, status, companyId } = body;
 
-  const { name, description, price, duration, categoryId, status = "ACTIVE", images = [] } = body;
-
-  if (!name || !description || price === undefined || !categoryId) {
-    return NextResponse.json({ message: "Missing required fields: name, description, price, categoryId" }, { status: 400 });
+  if (!name || !price || !duration || !companyId) {
+    return NextResponse.json(
+      { error: "Missing required fields: name, price, duration, companyId" },
+      { status: 400 }
+    );
   }
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    // Verify ProductCategory exists and belongs to the company
-    const productCategory = await prisma.productCategory.findUnique({
-      where: { id: categoryId, companyId: company.id },
-      select: { id: true, name: true }
-    });
-    if (!productCategory) {
-      return NextResponse.json({ message: "Service category not found or not associated with this company" }, { status: 404 });
-    }
-
-    // Create a new marketplaceListing for the service
-    const newService = await prisma.marketplaceListings.create({
+    const newService = await prisma.service.create({
       data: {
-        companyId: company.id,
-        name,
-        description,
-        sellingPrice: parseFloat(price),
-        buyingPrice: parseFloat(price), // Assuming buying price is same as selling for simplicity
-        quantity: 1, // Services usually have a quantity of 1 per booking
-        isAvailable: true, // New services are available by default
-        productCategoryId: productCategory.id,
-        category: productCategory.name, // Denormalize category name
-        status,
-        duration, // Assuming 'duration' field exists on marketplaceListings
-        images: images, // Assuming images is an array of JSON objects or strings
-        finalPrice: parseFloat(price),
-        // Default values for other required marketplaceListings fields
-        subCategory: {},
-        tags: [],
-        sellerType: "COMPANY",
+        companyId: companyId,
+        name: name,
+        description: description,
+        price: parseFloat(price), // Ensure price is a float
+        duration: duration,
+        status: status || 'ACTIVE', // Default to ACTIVE if not provided
       },
     });
 
-    // Update productCount for the category
-    await prisma.productCategory.update({
-      where: { id: productCategory.id },
-      data: { productCount: { increment: 1 } },
-    });
+    const formattedNewService = await formatServiceData(newService);
 
-    return NextResponse.json(
-      { message: "Service created successfully", service: newService },
-      { status: 201 }
-    );
-
-  } catch (error) {
-    console.error("Error creating service:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json(formattedNewService, { status: 201 });
+  } catch (err: any) {
+    console.error("POST /api/admin/services error:", err);
+    // Handle unique constraint violation for companyId, name
+    if (err.code === 'P2002' && err.meta?.target?.includes('name')) {
+      return NextResponse.json({ error: "A service with this name already exists for this company." }, { status: 409 });
+    }
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
