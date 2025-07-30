@@ -56,7 +56,7 @@ export async function GET(request: Request) {
             profilePicture: true,
             // Assuming dob and gender are on the User model.
             // If not, you'd need to add them to your schema or handle differently.
-            dob: true,
+            dateOfBirth: true,
             gender: true,
           },
         },
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
         c.user?.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
         c.user?.email?.toLowerCase().includes(lowerCaseSearchTerm) ||
         c.user?.phone?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        c.user?.dob?.toISOString().toLowerCase().includes(lowerCaseSearchTerm) // If dob is Date
+        c.user?.dateOfBirth?.toISOString().toLowerCase().includes(lowerCaseSearchTerm) // If dob is Date
       );
     }
 
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
         profilePicture,
         role: "CONSUMER", // Assign the CONSUMER role as per your schema
         // Assuming dob and gender can be directly set on User
-        dob: dob ? new Date(dob) : null,
+        dateOfBirth: dob ? new Date(dob) : null,
         gender: gender || null,
       },
     });

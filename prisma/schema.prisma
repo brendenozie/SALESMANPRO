@@ -46,6 +46,7 @@ enum ROLE {
   SOPHOMORE
   FRESHMAN
   WRITER
+  STAFF
 }
 
 enum StudentLevelStatus {
@@ -303,6 +304,8 @@ model Company {
   Inquiry                         Inquiry[]
   Showing                         Showing[]
   OfferContract                   OfferContract[]
+  Appointment                     Appointment[]
+  staffMembers                    StaffProfile[]
 }
 
 enum CategoryStatus {
@@ -698,13 +701,25 @@ enum AppointmentStatus {
 }
 
 model Appointment {
-  id        String            @id @default(auto()) @map("_id") @db.ObjectId
-  user      User              @relation(fields: [userId], references: [id])
-  userId    String            @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+
+  doctorId String? @db.ObjectId // Foreign key to Doctor model (or User with Doctor role)
+  doctor   Doctor? @relation(fields: [doctorId], references: [id]) // Relation to Doctor
+  service  String? // Description of the service (e.g., "General Check-up")
+
   date      DateTime
   status    AppointmentStatus
   createdAt DateTime?         @default(now())
   OrderItem OrderItem[]
+
+  // Company relation
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  @@index([userId])
+  @@index([doctorId]) // Add index for efficient lookup by doctor
 }
 
 model PropertyType {
@@ -1083,6 +1098,7 @@ model User {
   Showing      Showing[]       @relation("AgentShowings")
   clientOffers OfferContract[] @relation("ClientOffers") // User as a client making offers
   agentOffers  OfferContract[] @relation("AgentOffers") // User as an agent handling offers
+  staffProfile StaffProfile?   @relation("StaffProfile") // One-to-one relation to StaffProfile
 }
 
 enum Status {
@@ -1682,10 +1698,9 @@ enum RequesterType {
 
 //One on One relationship with user
 model Consumer {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  loginCode String? @unique // Unique generated number for login
 
   userId String @unique @db.ObjectId // Link to User model
   user   User   @relation("ConsumerProfile", fields: [userId], references: [id])
@@ -1693,16 +1708,6 @@ model Consumer {
   companyId String?  @db.ObjectId // Optional: If consumers can be independent or affiliated
   company   Company? @relation(fields: [companyId], references: [id])
 
-  image                String?
-  // accounts             Account[]
-  // sessions             Session[]
-  phone                String?
-  password             String?
-  username             String?
-  bio                  String?
-  address              String?
-  profilePicture       String?
-  role                 ROLE?                  @default(USER)
   createdAt            DateTime?              @default(now())
   updatedAt            DateTime?              @updatedAt
   ConsumerInventory    ConsumerInventory[]
@@ -3300,6 +3305,9 @@ model Doctor {
 
   loginCode String @unique // NEW: Unique generated number for login
 
+  specialty String? // NEW: Added specialty field
+  status    DoctorStatus @default(ACTIVE) // NEW: Added status field with an enum
+
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
 
@@ -3309,6 +3317,15 @@ model Doctor {
   Prescription Prescription[]
   User         User?          @relation(fields: [userId], references: [id])
   userId       String?        @db.ObjectId
+
+  Appointment Appointment[] // Link appointments to doctors
+}
+
+// NEW: DoctorStatus Enum
+enum DoctorStatus {
+  ACTIVE
+  ON_LEAVE
+  INACTIVE
 }
 
 // schema.prisma
@@ -3623,4 +3640,35 @@ enum OfferStatus {
   Accepted
   Rejected
   Closed
+}
+
+// NEW: EmploymentStatus Enum for staff members
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+// NEW: StaffProfile Model
+// Represents a non-medical staff member within a company, linked to a User profile.
+model StaffProfile {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId // One-to-one link to the User model
+  user   User   @relation("StaffProfile", fields: [userId], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  jobTitle         String // e.g., "Receptionist", "Clinic Manager", "HR Specialist"
+  department       String // e.g., "Administration", "Finance", "IT", "Nursing (for Head Nurse)"
+  employmentStatus EmploymentStatus @default(ACTIVE) // Current employment status
+  startDate        DateTime? // Date when employment started
+  loginCode        String?          @unique // Optional: Unique code for staff login, if applicable
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([companyId])
+  @@index([jobTitle])
+  @@index([department])
 }

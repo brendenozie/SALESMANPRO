@@ -54,7 +54,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             email: true,
             phone: true,
             profilePicture: true,
-            dob: true,
+            dateOfBirth: true,
             gender: true,
           },
         },
@@ -97,7 +97,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         email,
         phone,
         profilePicture,
-        dob: dob ? new Date(dob) : null,
+        dateOfBirth: dob ? new Date(dob) : null,
         gender: gender || null,
       },
     });
