@@ -462,10 +462,24 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   ],
 
   "Automotive": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Vehicles", href: `/admin/${adminSlug}/vehicle-manage`, icon: FilmIcon },
-    { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
-    { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },  
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    { label: "Locations", href: `/admin/${adminSlug}/locations`, icon: MapPinIcon }, // company-locations properties-locations Manage geographic locations for listings
+    { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
+    { label: "Clients", href: `/admin/${adminSlug}/properties-clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    { label: "Vehicles", href: `/admin/${adminSlug}/vehicle-manage`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
+    { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
+    { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
+    { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      subItems: [
+        { label: "All Blogs", href: `/admin/${adminSlug}/blogs` },
+      ],
+    },
+    // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
+    // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon }, most of the commented routes actually have they're pages maybe we'll delete those
   ],
 
   "Travel & Tourism": [
