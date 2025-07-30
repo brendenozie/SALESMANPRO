@@ -86,7 +86,7 @@ export default function BlogSection({ posts, slug }: any) {
                 {post.imageUrl && (
                   <div className="relative h-56 w-full overflow-hidden">
                     <Image
-                      src={post.imageUrl}
+                      src={post.imageUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
                       alt={`Cover image for ${post.title}`}
                       layout="fill"
                       objectFit="cover"

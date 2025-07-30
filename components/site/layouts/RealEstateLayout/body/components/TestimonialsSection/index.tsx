@@ -119,7 +119,7 @@ export default function TestimonialsSection({ testimonials }: any) {
                 {t.avatarUrl && (
                   <div className="mx-auto mb-6 w-20 h-20 rounded-full overflow-hidden ring-4 ring-amber-500 dark:ring-amber-400">
                     <Image
-                      src={t.avatarUrl}
+                      src={t.avatarUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
                       alt={`Avatar of ${t.author}`}
                       width={80}
                       height={80}

@@ -258,7 +258,7 @@ export default function WhyChooseUs({ metrics, awards }: any) {
                 >
                   <div className="relative w-20 h-20 filter grayscale hover:grayscale-0 transition-all duration-500 ease-in-out"> {/* Larger icon, smoother transition */}
                     <Image
-                      src={a.iconUrl}
+                      src={a.iconUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
                       alt={`${a.name} award logo`}
                       layout="fill"
                       objectFit="contain"

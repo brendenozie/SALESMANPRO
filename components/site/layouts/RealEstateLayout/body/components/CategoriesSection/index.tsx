@@ -206,7 +206,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
                 >
                   <div className="relative h-48 sm:h-56 w-full">
                     <Image
-                      src={imageUrl}
+                      src={imageUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
                       alt={`Image of a ${cat.displayName} property`}
                       layout="fill"
                       objectFit="cover"

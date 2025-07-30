@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link'; // Import Link for proper navigation
+import { MarketListingForm } from '@/types/typings';
 
 // Mocking the image loader for demonstration purposes
 const customLoader = ({ src, width, quality }:any) => {
@@ -72,7 +73,7 @@ export default function FeaturedListings({ listings, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {listings.map((item:any) => (
+          {listings.map((item:MarketListingForm) => (
             <Link key={item.id} href={`/site/${slug}/property/${item.id}`} passHref>
               <motion.a
                 className="block bg-white dark:bg-gray-850 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
@@ -80,13 +81,13 @@ export default function FeaturedListings({ listings, slug }: any) {
                 variants={itemVariants}
                 whileHover={{ y: -8, scale: 1.02 }} // Lift and slightly scale on hover
                 whileTap={{ scale: 0.98 }} // Satisfying tap effect
-                aria-label={`View details for property at ${item.address}`}
+                aria-label={`View details for property at ${"item.location.name"}`}
               >
                 {/* Image Area */}
                 <div className="relative h-56 w-full overflow-hidden">
                   <Image
-                    src={item.image}
-                    alt={item.address}
+                    src={item.images?.[0] || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
+                    alt={item.name}
                     layout="fill"
                     objectFit="cover"
                     className="transform transition-transform duration-500 group-hover:scale-115 group-hover:brightness-90"
@@ -96,26 +97,26 @@ export default function FeaturedListings({ listings, slug }: any) {
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-                  {item.badge && (
+                  {/* {item.badge && (
                     <span className="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-bold uppercase px-3 py-1 rounded-full shadow-md">
                       {item.badge}
                     </span>
-                  )}
+                  )} */}
                   {/* Price Tag on Image */}
                   <div className="absolute bottom-4 right-4 bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-gray-50 px-4 py-2 rounded-xl backdrop-blur-md shadow-lg font-bold text-lg">
-                    KES {item.price.toLocaleString()}
+                    KES {item.finalPrice.toLocaleString()}
                   </div>
                 </div>
 
                 {/* Content Area */}
                 <div className="p-6 space-y-3">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-50 truncate">
-                    {item.address}
+                    {"item.address"}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center space-x-4">
-                    <span className="flex items-center"><BedIcon className="w-4 h-4 mr-1 text-emerald-500" /> {item.beds} Beds</span>
-                    <span className="flex items-center"><BathIcon className="w-4 h-4 mr-1 text-emerald-500" /> {item.baths} Baths</span>
-                    <span className="flex items-center"><SquareFootIcon className="w-4 h-4 mr-1 text-emerald-500" /> {item.sqft.toLocaleString()} sqft</span>
+                    <span className="flex items-center"><BedIcon className="w-4 h-4 mr-1 text-emerald-500" /> {item.bedrooms?.length} Beds</span>
+                    <span className="flex items-center"><BathIcon className="w-4 h-4 mr-1 text-emerald-500" /> {item.bathrooms} Baths</span>
+                    <span className="flex items-center"><SquareFootIcon className="w-4 h-4 mr-1 text-emerald-500" /> {"item.area.toLocaleString()"} sqft</span>
                   </p>
                   <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">
                     {item.description || "A beautiful property offering comfort and convenience."}
@@ -136,7 +137,7 @@ export default function FeaturedListings({ listings, slug }: any) {
                       e.stopPropagation(); // Stop event propagation to parent link
                       window.location.href = `/site/${slug}/property/${item.id}`;
                     }}
-                    aria-label={`Learn more about ${item.address}`}
+                    aria-label={`Learn more about ${"item.address"}`}
                   >
                     View Details
                     <svg className="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path><path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>

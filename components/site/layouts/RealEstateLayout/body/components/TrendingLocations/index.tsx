@@ -87,7 +87,7 @@ export default function TrendingLocations({ locations, slug }: any) {
                 {/* Image Area */}
                 <div className="relative h-64 sm:h-72 w-full overflow-hidden">
                   <Image
-                    src={loc.image}
+                    src={loc.image || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
                     alt={`Scenic view of ${loc.name}`}
                     layout="fill"
                     objectFit="cover"

@@ -65,7 +65,7 @@ export default function HeroSection({ store, onSearch }: HeroSectionProps) {
       {/* Background */}
       <div className="absolute inset-0">
         <Image
-          src={banner}
+          src={banner || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
           alt={store.name || "Real Estate Hero"}
           layout="fill"
           objectFit="cover"

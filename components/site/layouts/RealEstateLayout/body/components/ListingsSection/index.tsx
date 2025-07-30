@@ -101,7 +101,7 @@ export default function ListingsSection({ products, slug }: any) {
                 {/* Image Area */}
                 <div className="relative h-64 w-full overflow-hidden">
                   <Image
-                    src={prop.imageUrl}
+                    src={prop.imageUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
                     alt={`Image of ${prop.name}`}
                     layout="fill"
                     objectFit="cover"
@@ -114,7 +114,7 @@ export default function ListingsSection({ products, slug }: any) {
 
                   {/* Price Tag on Image */}
                   <div className="absolute bottom-4 right-4 bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-gray-50 px-4 py-2 rounded-xl backdrop-blur-md shadow-lg font-bold text-lg">
-                    KES {prop.price.toLocaleString()}
+                    KES {prop.finalPrice.toLocaleString()}
                   </div>
                 </div>
 
