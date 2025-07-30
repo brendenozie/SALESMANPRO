@@ -604,10 +604,11 @@ model Product {
   // Property Specifics
   propertyType   PropertyType? @relation(fields: [propertyTypeId], references: [id])
   propertyTypeId String?       @db.ObjectId
-  bathrooms      Int? // Changed to Int
-  area           String? // e.g., "1500 sqft"
-  bedrooms       Int? // Changed to Int
-  studios        Int? // Changed to Int
+
+  area      String? // e.g., "1500 sqft"
+  bedrooms  Json[] // Updated to support multiple bedroom types
+  studios   Json[] // Updated to support multiple bedroom types
+  bathrooms String?
 
   // Service & Scheduling Specifics
   serviceSchedule String?
@@ -1392,10 +1393,7 @@ model marketplaceListings {
   expirationDate    DateTime? // For Beauty Products
 
   // Property-specific (Mirroring Product Model)
-  // bathrooms       Int? // Changed to Int
-  // area            String?
-  // bedrooms        Int? // Changed to Int
-  // studios         Int? // Changed to Int
+  area String?
 
   propertyTypeId  String?       @db.ObjectId
   propertyType    PropertyType? @relation(fields: [propertyTypeId], references: [id])

@@ -214,9 +214,9 @@ export async function POST(req: Request) {
                                         ? ((parsedFinalPrice - parsedBuyingPrice) / parsedBuyingPrice) * 100 
                                         : 0
                                     )!;
-    const parsedBathrooms        = parseNumber(bathrooms, null);
-    const parsedBedrooms         = parseNumber(bedrooms,  null);
-    const parsedStudios          = parseNumber(studios,   null);
+    const parsedBathrooms        = bathrooms.toString();
+    const parsedBedrooms         = bedrooms;
+    const parsedStudios          = studios;
     const parsedTotalCapacity    = parseNumber(totalCapacity, 0);
     const parsedCurrentBooked    = parseNumber(currentBookedCount, 0) || 0;
     const parsedProviderRating   = parseNumber(providerRating, null);

@@ -1,16 +1,19 @@
-import { XMarkIcon } from "@heroicons/react/24/outline";
+'use client'; // For Next.js App Router
+
 import React, { useCallback, useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { ProductForm } from "@/types/typings";
 
-
-// -----------------------------------------------------------------------------
-// NEW: TagInput Component
-// -----------------------------------------------------------------------------
+// --- TagInput Component (Improved) ---
 interface TagInputProps {
   label: string;
   placeholder: string;
   tags: string[];
   onTagsChange: (newTags: string[]) => void;
-  inputClasses?: string; // For Tailwind classes to match form styling
+  // Adjusted for consistency with ProductDetails input styling
+  inputClasses?: string;
+  // Added for better visual feedback
+  tagClasses?: string;
 }
 
 const TagInput: React.FC<TagInputProps> = ({
@@ -18,45 +21,50 @@ const TagInput: React.FC<TagInputProps> = ({
   placeholder,
   tags,
   onTagsChange,
-  inputClasses = "w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+  inputClasses = "w-full p-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm",
+  tagClasses = "flex items-center bg-indigo-500 text-white text-sm px-3 py-1 rounded-full shadow-md transition-all duration-200 hover:bg-indigo-600 active:scale-95",
 }) => {
   const [inputValue, setInputValue] = useState('');
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault(); // Prevent form submission or comma from appearing in input
-    const newTag = inputValue.trim();
-    if (newTag && !tags.includes(newTag)) {
-      onTagsChange([...tags, newTag]);
-      setInputValue('');
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const newTag = inputValue.trim();
+      if (newTag && !tags.includes(newTag)) {
+        onTagsChange([...tags, newTag]);
+        setInputValue('');
+      }
     }
-  }
-};
+  };
 
   const handleRemoveTag = (tagToRemove: string) => {
     onTagsChange(tags.filter(tag => tag !== tagToRemove));
   };
 
   return (
-    <section className="space-y-2">
-      <label className="block text-gray-300 font-medium text-sm">{label}</label>
-      <div className="flex flex-wrap gap-2 mb-2">
-        {tags && tags.map((tag, index) => (
-          <span
-            key={index}
-            className="flex items-center bg-indigo-600 text-white text-sm px-3 py-1 rounded-full shadow-md transition-all duration-200 hover:bg-indigo-700"
-          >
-            {tag}
-            <button
-              type="button"
-              onClick={() => handleRemoveTag(tag)}
-              className="ml-2 text-white hover:text-gray-200 focus:outline-none"
-              aria-label={`Remove tag ${tag}`}
+    <section className="space-y-3"> {/* Increased space-y for better visual separation */}
+      <label className="block text-gray-700 font-semibold text-sm">{label}</label> {/* Stronger label */}
+      <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] items-center"> {/* Added min-h and align-items */}
+        {tags && tags.length > 0 ? (
+          tags.map((tag, index) => (
+            <span
+              key={index}
+              className={tagClasses}
             >
-              <XMarkIcon className="h-4 w-4" />
-            </button>
-          </span>
-        ))}
+              {tag}
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag)}
+                className="ml-2 text-white hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded-full p-0.5" // Improved button focus and padding
+                aria-label={`Remove tag ${tag}`}
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </span>
+          ))
+        ) : (
+          <p className="text-gray-500 text-sm italic">No tags added yet. Start typing!</p> // Placeholder when no tags
+        )}
       </div>
       <input
         type="text"
@@ -67,118 +75,175 @@ const TagInput: React.FC<TagInputProps> = ({
         className={inputClasses}
         aria-label={label}
       />
-      <p className="text-xs text-gray-400 mt-1">Type a tag and press Enter or comma to add.</p>
+      <p className="text-xs text-gray-500 mt-1">
+        Type a tag and press <kbd className="px-1 py-0.5 border rounded bg-gray-200 text-gray-700 text-xs">Enter</kbd> or <kbd className="px-1 py-0.5 border rounded bg-gray-200 text-gray-700 text-xs">comma</kbd> to add it.
+      </p>
     </section>
   );
 };
 
+// --- ProductDetails Component (Improved) ---
+// interface ProductForm {
+//   name: string;
+//   description: string;
+//   category: { name: string; displayName: string } | null;
+//   subCategoryName: string;
+//   tags: string[];
+//   author?: string;
+//   publisher?: string;
+//   isbn?: string;
+//   fabricComposition?: string;
+//   careInstructions?: string;
+//   energyRating?: string;
+//   warrantyPeriod?: string;
+//   dimensions?: string;
+//   ingredients?: string;
+//   usageInstructions?: string;
+//   expirationDate?: string;
+//   autoDeliver?: boolean;
+//   travelDetail?: string;
+//   model?: string;
+// }
 
 interface ProductDetailsProps {
-  formData: any;
+  formData: ProductForm;
   setFormData: (name: string, value: any) => void;
-  filteredSubCategories: string[];
-  filteredBrands: string[];
+  // filteredSubCategories: string[]; // Keep if still needed, otherwise remove
+  // filteredBrands: string[]; // Keep if still needed, otherwise remove
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
   formData,
   setFormData,
-  filteredSubCategories,
-  filteredBrands,
   handleInputChange,
 }) => {
-  const subCat: any = formData.subCategory || {};
   const subCategoryName: string = formData.subCategoryName || "";
+  const categoryDisplayName: string = formData.category?.displayName || "";
 
+  console.log(`${subCategoryName} | ${categoryDisplayName} | ${subCategoryName} | `)
+  // Determine product types based on subCategoryName or categoryDisplayName
   const isService = [
     "Cleaning", "Plumbing", "Electrical", "Landscaping", "Catering", "Transportation",
-    "IT Services", "Beauty Services", "Tutoring", "Event Planning", "Real Estate"
-  ].includes(subCategoryName || subCat.name);
+    "IT Services", "Beauty Services", "Tutoring", "Event Planning", "Real Estate", "Property"
+  ].includes(subCategoryName || categoryDisplayName);
 
   const isDigital = [
     "Software Licenses", "E-books", "Online Courses", "Streaming Subscriptions", "Mobile App Credits"
-  ].includes(subCategoryName || subCat.name);
+  ].includes(subCategoryName || categoryDisplayName);
 
   const isTravel = [
     "Flight Tickets", "Hotel Bookings", "Tour Packages", "Event Tickets", "Travel Insurance"
-  ].includes(subCategoryName || subCat.name);
+  ].includes(subCategoryName || categoryDisplayName);
 
-  const isPhysical = !isService || !isDigital || !isTravel;
+  const isPhysical = !isService && !isDigital && !isTravel;
 
+  // Dynamic header label based on main category
   const headerLabel = (() => {
-    const cat = formData.category?.name || "";
-    if (cat === "Books") return "Book Details";
-    if (["Clothing", "Fashion"].includes(cat)) return "Clothing Details";
-    if (cat === "Home Appliances") return "Appliance Details";
-    if (["Beauty Products", "Skincare", "Haircare"].includes(cat)) return "Beauty Product Details";
+    if (categoryDisplayName === "Books") return "Book Details";
+    if (["Clothing", "Fashion"].includes(categoryDisplayName)) return "Clothing Details";
+    if (categoryDisplayName === "Home Appliances") return "Appliance Details";
+    if (["Beauty Products", "Skincare", "Haircare"].includes(categoryDisplayName)) return "Beauty Product Details";
+    if (isService) return "Service Details";
+    if (isDigital) return "Digital Product Details";
+    if (isTravel) return "Travel Experience Details";
     return "Product Details";
   })();
 
-  const primaryLabel = formData.category?.name === "Books" ? "Book Title" : "Product Title";
+  // Dynamic primary input label
+  const primaryLabel = isService
+    ? "Service Title"
+    : isDigital
+    ? "Product Title"
+    : isTravel
+    ? "Experience Title"
+    : categoryDisplayName === "Books"
+    ? "Book Title"
+    : "Product Title";
 
-  const inputClasses = "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500";
-  
-  // NEW: Tag input handler
-    const handleTagsChange = useCallback(
-      (newTags: string[]) => {
-        setFormData('tags', newTags);
-      },
-      [setFormData]
-    );
+  // Unified input styling for consistency and appeal
+  const inputClasses =
+    "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all duration-200 hover:border-blue-400";
+
+  // Memoized callback for tag changes to prevent unnecessary re-renders
+  const handleTagsChange = useCallback(
+    (newTags: string[]) => {
+      setFormData('tags', newTags);
+    },
+    [setFormData]
+  );
 
   return (
-    <div className="mx-auto p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
-      <h2 className="text-2xl font-bold text-gray-800">{headerLabel}</h2>
+    <div className="mx-auto p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8 animate-fade-in"> {/* Added animation and subtle shadow */}
+      <h2 className="text-3xl font-extrabold text-gray-900 text-center leading-tight">
+        {headerLabel}
+      </h2>
+      <p className="text-center text-gray-600 mb-6">
+        Provide accurate and detailed information for your listing.
+      </p>
 
-      <section className="space-y-2">
-        <label className="block text-gray-600 font-medium">
-          {isService ? "Service Title" : isDigital ? "Product Title" : isTravel ? "Experience Title" : primaryLabel}
-        </label>
-        <input
-          type="text"
-          name="name"
-          placeholder={
-            isService
-              ? "e.g. House Cleaning"
-              : isDigital
-              ? "e.g. Photoshop License"
-              : isTravel
-              ? "e.g. Nairobi to Paris Return Ticket"
-              : "e.g. Wireless Headphones"
-          }
-          className={inputClasses}
-          value={formData.name || ""}
-          onChange={handleInputChange}
-        />
+      {/* --- Main Product Information --- */}
+      <section className="space-y-4 bg-gray-50 p-5 rounded-lg border border-gray-100 shadow-sm">
+        <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Basic Information</h3>
+        <div className="space-y-2">
+          <label className="block text-gray-700 font-medium text-sm">
+            {primaryLabel} <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="name"
+            placeholder={
+              isService
+                ? "e.g. Professional House Cleaning Service"
+                : isDigital
+                ? "e.g. Adobe Photoshop CC 2024 License"
+                : isTravel
+                ? "e.g. 7-Day Luxury Safari to Masai Mara"
+                : "e.g. Sony WH-1000XM5 Wireless Noise-Cancelling Headphones"
+            }
+            className={inputClasses}
+            value={formData.name || ""}
+            onChange={handleInputChange}
+            required
+            aria-required="true"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-gray-700 font-medium text-sm">Description <span className="text-red-500">*</span></label>
+          <textarea
+            name="description"
+            placeholder="Enter a comprehensive description (max 500 characters) outlining features, benefits, specifications, and any unique selling points."
+            maxLength={500}
+            className={`${inputClasses} h-32 resize-y`}
+            value={formData.description || ""}
+            onChange={handleInputChange}
+            required
+            aria-required="true"
+          />
+          <p className="text-sm text-gray-500 text-right">
+            {(formData.description || "").length}/500 characters
+          </p>
+        </div>
       </section>
 
-      <section className="space-y-2">
-        <label className="block text-gray-600 font-medium">Description</label>
-        <textarea
-          name="description"
-          placeholder="Enter a brief description (max 500 characters)"
-          maxLength={500}
-          className={`${inputClasses} h-28 resize-none`}
-          value={formData.description || ""}
-          onChange={handleInputChange}
-        />
-        <p className="text-sm text-gray-500">{(formData.description || "").length}/500 characters</p>
-      </section>
+      {/* --- Conditional Sections based on Category --- */}
 
-      {formData.category?.name === "Books" && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Book Metadata</h3>
-          <div className="space-y-3">
+      {categoryDisplayName === "Books" && (
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Book Metadata</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {["author", "publisher", "isbn"].map((field) => (
-              <div className="space-y-1" key={field}>
-                <label className="block text-gray-600 text-sm capitalize">{field}</label>
+              <div className="space-y-2" key={field}>
+                <label className="block text-gray-700 text-sm font-medium capitalize">
+                  {field.replace(/([A-Z])/g, " $1")}
+                </label>
                 <input
                   type="text"
                   name={field}
-                  placeholder={`Enter ${field}`}
+                  placeholder={`Enter book ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`}
                   className={inputClasses}
-                  value={formData[field] || ""}
+                  value={typeof formData[field as keyof ProductForm] === "string" ? formData[field as keyof ProductForm] as string : ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -187,107 +252,124 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         </section>
       )}
 
-      {["Clothing", "Fashion"].includes(formData.category?.name) && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Clothing Details</h3>
+      {["Clothing", "Fashion"].includes(categoryDisplayName) && (
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Clothing Details</h3>
           <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="block text-gray-600 text-sm">Fabric Composition</label>
+            <div className="space-y-2">
+              <label className="block text-gray-700 text-sm font-medium">Fabric Composition</label>
               <input
                 type="text"
                 name="fabricComposition"
                 className={inputClasses}
                 value={formData.fabricComposition || ""}
                 onChange={handleInputChange}
+                placeholder="e.g., 100% Cotton, 60% Polyester 40% Viscose"
               />
             </div>
-            <div className="space-y-1">
-              <label className="block text-gray-600 text-sm">Care Instructions</label>
+            <div className="space-y-2">
+              <label className="block text-gray-700 text-sm font-medium">Care Instructions</label>
               <textarea
                 name="careInstructions"
-                className={`${inputClasses} h-20 resize-none`}
+                className={`${inputClasses} h-24 resize-y`}
                 value={formData.careInstructions || ""}
                 onChange={handleInputChange}
+                placeholder="e.g., Machine wash cold, Tumble dry low, Do not bleach. Refer to garment tag."
               />
             </div>
           </div>
         </section>
       )}
 
-      {formData.category?.name === "Home Appliances" && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Appliance Details</h3>
-          {["energyRating", "warrantyPeriod", "dimensions"].map((field) => (
-            <div className="space-y-1" key={field}>
-              <label className="block text-gray-600 text-sm capitalize">{field.replace(/([A-Z])/g, " $1")}</label>
-              <input
-                type="text"
-                name={field}
-                className={inputClasses}
-                value={formData[field] || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-          ))}
+      {categoryDisplayName === "Home Appliances" && (
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Appliance Specifications</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {["energyRating", "warrantyPeriod", "dimensions"].map((field) => (
+              <div className="space-y-2" key={field}>
+                <label className="block text-gray-700 text-sm font-medium capitalize">
+                  {field.replace(/([A-Z])/g, " $1")}
+                </label>
+                <input
+                  type="text"
+                  name={field}
+                  className={inputClasses}
+                  value={typeof formData[field as keyof ProductForm] === "string" ? formData[field as keyof ProductForm] as string : ""}
+                  // value={formData[field as keyof ProductForm] || ""}
+                  onChange={handleInputChange}
+                  placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`}
+                />
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
-      {["Beauty Products", "Skincare", "Haircare"].includes(formData.category?.name) && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Beauty Product Details</h3>
-          {["ingredients", "usageInstructions"].map((field) => (
-            <div className="space-y-1" key={field}>
-              <label className="block text-gray-600 text-sm capitalize">{field.replace(/([A-Z])/g, " $1")}</label>
-              <textarea
-                name={field}
-                className={`${inputClasses} h-20 resize-none`}
-                value={formData[field] || ""}
+      {["Beauty Products", "Skincare", "Haircare"].includes(categoryDisplayName) && (
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Beauty Product Details</h3>
+          <div className="space-y-3">
+            {["ingredients", "usageInstructions"].map((field) => (
+              <div className="space-y-2" key={field}>
+                <label className="block text-gray-700 text-sm font-medium capitalize">
+                  {field.replace(/([A-Z])/g, " $1")}
+                </label>
+                <textarea
+                  name={field}
+                  className={`${inputClasses} h-24 resize-y`}
+                  value={typeof formData[field as keyof ProductForm] === "string" ? formData[field as keyof ProductForm] as string : ""}
+                  // value={formData[field as keyof ProductForm] || ""}
+                  onChange={handleInputChange}
+                  placeholder={`Enter product ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`}
+                />
+              </div>
+            ))}
+            <div className="space-y-2">
+              <label className="block text-gray-700 text-sm font-medium">Expiration Date</label>
+              <input
+                type="date"
+                name="expirationDate"
+                className={inputClasses}
+                value={formData.expirationDate || ""}
                 onChange={handleInputChange}
               />
             </div>
-          ))}
-          <div className="space-y-1">
-            <label className="block text-gray-600 text-sm">Expiration Date</label>
-            <input
-              type="date"
-              name="expirationDate"
-              className={inputClasses}
-              value={formData.expirationDate || ""}
-              onChange={handleInputChange}
-            />
           </div>
         </section>
       )}
 
       {isDigital && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Digital Product Details</h3>
-          <div className="flex items-center space-x-2">
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Digital Product Options</h3>
+          <div className="flex items-center space-x-3 py-2"> {/* Added vertical padding */}
             <input
               id="autoDeliver"
               name="autoDeliver"
               type="checkbox"
               checked={formData.autoDeliver || false}
               onChange={handleInputChange}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+              className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" // Larger, more prominent checkbox
             />
-            <label htmlFor="autoDeliver" className="text-gray-600 text-sm">
-              Auto‐deliver upon purchase
+            <label htmlFor="autoDeliver" className="text-gray-700 text-base font-medium cursor-pointer">
+              Auto-deliver digital product upon purchase
             </label>
           </div>
+          <p className="text-sm text-gray-500">
+            If checked, the digital product will be automatically delivered to the customer after a successful purchase.
+          </p>
         </section>
       )}
 
       {isTravel && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Travel Details</h3>
-          <div className="space-y-1">
-            <label className="block text-gray-600 text-sm">
-              {subCat === "Flight Tickets"
-                ? "Seat Class"
-                : subCat === "Hotel Bookings"
-                ? "Room Type"
-                : "Package Details"}
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Travel Specifics</h3>
+          <div className="space-y-2">
+            <label className="block text-gray-700 text-sm font-medium">
+              {subCategoryName === "Flight Tickets"
+                ? "Seat Class (e.g., Economy, Business, First)"
+                : subCategoryName === "Hotel Bookings"
+                ? "Room Type (e.g., Standard, Deluxe, Suite)"
+                : "Package Details (e.g., 7-day all-inclusive, Weekend getaway)"}
             </label>
             <input
               type="text"
@@ -295,353 +377,67 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               className={inputClasses}
               value={formData.travelDetail || ""}
               onChange={handleInputChange}
+              placeholder="Enter relevant travel detail for this booking or package"
             />
           </div>
         </section>
       )}
 
       {isPhysical && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Product Specifications</h3>
-          <div className="space-y-1">
-            <label className="block text-gray-600 text-sm">Model / SKU</label>
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Product Specifications</h3>
+          <div className="space-y-2">
+            <label className="block text-gray-700 text-sm font-medium">Model / SKU</label>
             <input
               type="text"
               name="model"
               className={inputClasses}
               value={formData.model || ""}
               onChange={handleInputChange}
+              placeholder="e.g., XYZ-123, Pro-Max 2000, PN: 987654"
             />
+            <p className="text-sm text-gray-500">
+              A unique identifier for your product, helpful for inventory management.
+            </p>
           </div>
         </section>
       )}
 
-      <section className="space-y-2">
+       {isPhysical && (
+        <section className="space-y-4 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4"></h3>
+          <div className="space-y-2">
+            <label className="block text-gray-700 text-sm font-medium">Bathrooms</label>
+            <input
+              type="number"
+              name="bathrooms"
+              className={inputClasses}
+              value={formData.bathrooms || ""}
+              onChange={handleInputChange}
+              placeholder="4"
+            />
+            <p className="text-sm text-gray-500">
+             How Many bathrooms are there?
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* --- Tags Section (Using the improved TagInput component) --- */}
+      <section className="space-y-2 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
         <TagInput
           label="Product Tags"
-          placeholder="e.g. new, sale, popular"
-          tags={formData.tags}
+          placeholder="Add keywords like 'new', 'sale', 'popular', 'electronics', 'outdoor'"
+          tags={formData.tags || []} // Ensure tags is always an array
           onTagsChange={handleTagsChange}
-          inputClasses="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          inputClasses={inputClasses} // Pass the consistent input styling
         />
+        <p className="mt-1 text-sm text-gray-500">
+          Tags help customers find your product through search and improve categorization.
+        </p>
       </section>
     </div>
   );
 };
 
 export default ProductDetails;
-
-
-//Newer piece of code to be reviewed
-// 'use client'; // For Next.js App Router
-
-// import React from "react";
-// import { ProductForm } from "./AddProductModal";
-// // import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type
-
-// interface ProductDetailsProps {
-//   formData: ProductForm; // Use the actual comprehensive form type
-//   setFormData: (name: string, value: any) => void; // Renamed from setFormData to match parent
-//   filteredSubCategories: string[]; // Keep if still needed, otherwise remove
-//   filteredBrands: string[]; // Keep if still needed, otherwise remove
-//   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-// }
-
-// const ProductDetails: React.FC<ProductDetailsProps> = ({
-//   formData,
-//   setFormData, // Renamed from setFormData
-//   // filteredSubCategories, // Removed if not directly used in this component
-//   // filteredBrands,       // Removed if not directly used in this component
-//   handleInputChange,
-// }) => {
-//   // Use subCategoryName directly from formData for consistency
-//   const subCategoryName: string = formData.subCategoryName || "";
-
-//   // Determine product types based on subCategoryName
-//   const isService = [
-//     "Cleaning", "Plumbing", "Electrical", "Landscaping", "Catering", "Transportation",
-//     "IT Services", "Beauty Services", "Tutoring", "Event Planning" // Removed duplicate Landscaping
-//   ].includes(subCategoryName);
-
-//   const isDigital = [
-//     "Software Licenses", "E-books", "Online Courses", "Streaming Subscriptions", "Mobile App Credits"
-//   ].includes(subCategoryName);
-
-//   const isTravel = [
-//     "Flight Tickets", "Hotel Bookings", "Tour Packages", "Event Tickets", "Travel Insurance"
-//   ].includes(subCategoryName);
-
-//   const isPhysical = !isService && !isDigital && !isTravel;
-
-//   // Dynamic header label based on main category
-//   const headerLabel = (() => {
-//     const cat = formData.category?.displayName || ""; // Use displayName for category name
-//     if (cat === "Books") return "Book Details";
-//     if (["Clothing", "Fashion"].includes(cat)) return "Clothing Details";
-//     if (cat === "Home Appliances") return "Appliance Details";
-//     if (["Beauty Products", "Skincare", "Haircare"].includes(cat)) return "Beauty Product Details";
-//     // For services, digital, travel, use a more specific header
-//     if (isService) return "Service Details";
-//     if (isDigital) return "Digital Product Details";
-//     if (isTravel) return "Travel Experience Details";
-//     return "Product Details";
-//   })();
-
-//   // Dynamic primary input label
-//   const primaryLabel = isService
-//     ? "Service Title"
-//     : isDigital
-//     ? "Product Title"
-//     : isTravel
-//     ? "Experience Title"
-//     : formData.category?.displayName === "Books" // Use displayName
-//     ? "Book Title"
-//     : "Product Title";
-
-//   const inputClasses =
-//     "mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"; // Added shadow-sm for consistency
-
-//   return (
-//     <div className="mx-auto p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
-//       <h2 className="text-2xl font-bold text-gray-800">{headerLabel}</h2>
-
-//       <section className="space-y-2">
-//         <label className="block text-gray-700 font-medium text-sm"> {/* Adjusted label styling */}
-//           {primaryLabel}
-//         </label>
-//         <input
-//           type="text"
-//           name="name"
-//           placeholder={
-//             isService
-//               ? "e.g. House Cleaning Service"
-//               : isDigital
-//               ? "e.g. Photoshop License Key"
-//               : isTravel
-//               ? "e.g. Nairobi to Paris Return Ticket"
-//               : "e.g. Wireless Noise-Cancelling Headphones"
-//           }
-//           className={inputClasses}
-//           value={formData.name || ""}
-//           onChange={handleInputChange}
-//         />
-//       </section>
-
-//       <section className="space-y-2">
-//         <label className="block text-gray-700 font-medium text-sm">Description</label>
-//         <textarea
-//           name="description"
-//           placeholder="Enter a brief description (max 500 characters) outlining features, benefits, and key information."
-//           maxLength={500}
-//           className={`${inputClasses} h-28 resize-y`} {/* Changed resize-none to resize-y */}
-//           value={formData.description || ""}
-//           onChange={handleInputChange}
-//         />
-//         <p className="text-sm text-gray-500 text-right">
-//           {(formData.description || "").length}/500 characters
-//         </p>
-//       </section>
-
-//       {/* Conditional Sections based on Category */}
-
-//       {/* Books Details */}
-//       {formData.category?.displayName === "Books" && (
-//         <section className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50"> {/* Added section styling */}
-//           <h3 className="text-lg font-semibold text-gray-700">Book Metadata</h3>
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Grid layout for book fields */}
-//             {["author", "publisher", "isbn"].map((field) => (
-//               <div className="space-y-1" key={field}>
-//                 <label className="block text-gray-700 text-sm font-medium capitalize">
-//                   {field.replace(/([A-Z])/g, " $1")} {/* Capitalize and add space */}
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name={field}
-//                   placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`}
-//                   className={inputClasses}
-//                   value={formData[field] || ""}
-//                   onChange={handleInputChange}
-//                 />
-//               </div>
-//             ))}
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Clothing/Fashion Details */}
-//       {["Clothing", "Fashion"].includes(formData.category?.displayName) && (
-//         <section className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-//           <h3 className="text-lg font-semibold text-gray-700">Clothing Details</h3>
-//           <div className="space-y-3">
-//             <div className="space-y-1">
-//               <label className="block text-gray-700 text-sm font-medium">Fabric Composition</label>
-//               <input
-//                 type="text"
-//                 name="fabricComposition"
-//                 className={inputClasses}
-//                 value={formData.fabricComposition || ""}
-//                 onChange={handleInputChange}
-//                 placeholder="e.g., 100% Cotton, 60% Polyester 40% Viscose"
-//               />
-//             </div>
-//             <div className="space-y-1">
-//               <label className="block text-gray-700 text-sm font-medium">Care Instructions</label>
-//               <textarea
-//                 name="careInstructions"
-//                 className={`${inputClasses} h-20 resize-y`}
-//                 value={formData.careInstructions || ""}
-//                 onChange={handleInputChange}
-//                 placeholder="e.g., Machine wash cold, Tumble dry low, Do not bleach"
-//               />
-//             </div>
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Home Appliances Details */}
-//       {formData.category?.displayName === "Home Appliances" && (
-//         <section className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-//           <h3 className="text-lg font-semibold text-gray-700">Appliance Details</h3>
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//             {["energyRating", "warrantyPeriod", "dimensions"].map((field) => (
-//               <div className="space-y-1" key={field}>
-//                 <label className="block text-gray-700 text-sm font-medium capitalize">
-//                   {field.replace(/([A-Z])/g, " $1")}
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name={field}
-//                   className={inputClasses}
-//                   value={formData[field] || ""}
-//                   onChange={handleInputChange}
-//                   placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`}
-//                 />
-//               </div>
-//             ))}
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Beauty Products Details */}
-//       {["Beauty Products", "Skincare", "Haircare"].includes(formData.category?.displayName) && (
-//         <section className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-//           <h3 className="text-lg font-semibold text-gray-700">Beauty Product Details</h3>
-//           <div className="space-y-3">
-//             {["ingredients", "usageInstructions"].map((field) => (
-//               <div className="space-y-1" key={field}>
-//                 <label className="block text-gray-700 text-sm font-medium capitalize">
-//                   {field.replace(/([A-Z])/g, " $1")}
-//                 </label>
-//                 <textarea
-//                   name={field}
-//                   className={`${inputClasses} h-20 resize-y`}
-//                   value={formData[field] || ""}
-//                   onChange={handleInputChange}
-//                   placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`}
-//                 />
-//               </div>
-//             ))}
-//             <div className="space-y-1">
-//               <label className="block text-gray-700 text-sm font-medium">Expiration Date</label>
-//               <input
-//                 type="date"
-//                 name="expirationDate"
-//                 className={inputClasses}
-//                 value={formData.expirationDate || ""}
-//                 onChange={handleInputChange}
-//               />
-//             </div>
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Digital Product Details */}
-//       {isDigital && (
-//         <section className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-//           <h3 className="text-lg font-semibold text-gray-700">Digital Product Options</h3>
-//           <div className="flex items-center space-x-2">
-//             <input
-//               id="autoDeliver"
-//               name="autoDeliver"
-//               type="checkbox"
-//               checked={formData.autoDeliver || false}
-//               onChange={handleInputChange}
-//               className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-//             />
-//             <label htmlFor="autoDeliver" className="text-gray-700 text-sm font-medium">
-//               Auto-deliver digital product upon purchase
-//             </label>
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Travel Details */}
-//       {isTravel && (
-//         <section className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-//           <h3 className="text-lg font-semibold text-gray-700">Travel Specifics</h3>
-//           <div className="space-y-1">
-//             <label className="block text-gray-700 text-sm font-medium">
-//               {subCategoryName === "Flight Tickets"
-//                 ? "Seat Class (e.g., Economy, Business, First)"
-//                 : subCategoryName === "Hotel Bookings"
-//                 ? "Room Type (e.g., Standard, Deluxe, Suite)"
-//                 : "Package Details (e.g., 7-day all-inclusive, Weekend getaway)"}
-//             </label>
-//             <input
-//               type="text"
-//               name="travelDetail"
-//               className={inputClasses}
-//               value={formData.travelDetail || ""}
-//               onChange={handleInputChange}
-//               placeholder="Enter relevant travel detail"
-//             />
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Physical Product Specifications (if not service, digital, or travel) */}
-//       {isPhysical && (
-//         <section className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-//           <h3 className="text-lg font-semibold text-gray-700">Product Specifications</h3>
-//           <div className="space-y-1">
-//             <label className="block text-gray-700 text-sm font-medium">Model / SKU</label>
-//             <input
-//               type="text"
-//               name="model"
-//               className={inputClasses}
-//               value={formData.model || ""}
-//               onChange={handleInputChange}
-//               placeholder="e.g., XYZ-123, Pro-Max 2000"
-//             />
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Tags Section */}
-//       <section className="space-y-2 p-4 border border-gray-200 rounded-lg bg-gray-50">
-//         <label className="block text-gray-700 font-medium text-sm">
-//           Tags (comma-separated keywords)
-//         </label>
-//         <input
-//           type="text"
-//           name="tags"
-//           placeholder="e.g., new, sale, popular, electronics, outdoor"
-//           className={inputClasses}
-//           value={Array.isArray(formData.tags) ? formData.tags.join(", ") : ""}
-//           onChange={(e) => {
-//             const tags = e.target.value
-//               .split(",")
-//               .map((t) => t.trim())
-//               .filter(Boolean);
-//             setFormData("tags", tags); // Changed to updateField
-//           }}
-//         />
-//         <p className="mt-1 text-xs text-gray-500">
-//           Add keywords that describe your product. These help with search and categorization.
-//         </p>
-//       </section>
-//     </div>
-//   );
-// };
-
-// export default ProductDetails;
