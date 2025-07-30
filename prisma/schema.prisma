@@ -670,8 +670,9 @@ model Product {
   shippingCost Float? @default(0)
 
   // Relations that might need to be defined elsewhere in schema.prisma
-  myLocation Location? @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  locationId String?   @db.ObjectId
+  myLocation Location?   @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  locationId String?     @db.ObjectId
+  OrderItem  OrderItem[]
 
   // Indexes for performance
   @@index([name])
@@ -1785,26 +1786,33 @@ model CustomerOrder {
 }
 
 model OrderItem {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  orderId              String              @db.ObjectId
-  order                CustomerOrder       @relation(fields: [orderId], references: [id])
-  marketplaceListingId String              @db.ObjectId
-  marketplaceListing   marketplaceListings @relation(fields: [marketplaceListingId], references: [id])
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  orderId              String               @db.ObjectId
+  order                CustomerOrder        @relation(fields: [orderId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
+  marketplaceListing   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
   price                Float
-  appointment          Appointment?        @relation(fields: [appointmentId], references: [id])
-  appointmentId        String?             @db.ObjectId
-  riderId              String?
-  status               OrderStatus?        @default(PENDING)
+
+  riderId String?
+  status  OrderStatus? @default(PENDING)
 
   date     String?
   timeSlot String? // e.g. "09:00"
 
+  Return Return[]
+
+  productId String?  @db.ObjectId
+  product   Product? @relation(fields: [productId], references: [id])
+
+  appointmentId String?      @db.ObjectId
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  Return Return[]
-
+  @@index([productId])
+  @@index([appointmentId])
   @@index([marketplaceListingId])
 }
 

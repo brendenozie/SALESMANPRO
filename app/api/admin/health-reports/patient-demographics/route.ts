@@ -47,7 +47,7 @@ export async function GET(
       select: {
         id: true,
         gender: true, // Assuming gender is directly on User or a related profile
-        dob: true, // Assuming dob is directly on User or a related profile
+        dateOfBirth: true, // Assuming dob is directly on User or a related profile
         createdAt: true,
       },
     });
