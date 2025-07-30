@@ -1013,6 +1013,10 @@ model User {
   address        String?
   profilePicture String?
 
+  // Add these fields for patient data
+  dateOfBirth DateTime? // Added for patient's date of birth
+  gender      String? // Added for patient's gender (consider enum for strict values)
+
   ProductReview         ProductReview[]
   ProductReviewLog      ProductReviewLog[]
   ProductReviewResponse ProductReviewResponse[]
