@@ -25,7 +25,7 @@ import {  PropertyListing } from './PropertyFormModal'; // PropertyFormModal Adj
 // import { PropertyDeleteConfirmModal } from './PropertyDeleteConfirmModal'; // Adjust import path
 
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
-import { StoreCategory, Location } from '@/types/typings';
+import { StoreCategory, Location, MarketListingForm } from '@/types/typings';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -125,7 +125,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
 
   const companyId = params.slug;
 
-  const [properties, setProperties] = useState<PropertyListing[]>([]);
+  const [properties, setProperties] = useState<MarketListingForm[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterType, setFilterType] = useState('All');
@@ -138,7 +138,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
   // Modals state
   // const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<PropertyListing | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<MarketListingForm | null>(null);
   
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
 
@@ -237,55 +237,86 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
   }, []);
 
   // --- Data Fetching ---
-    const fetchLocations = useCallback(async () => {
-      // setLoading(true);
-      // setError(null);
-      try {
-        const response = await fetch('/api/admin/locations'); // Correct API endpoint for global locations
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setLocations(data.data || []); // Assuming API returns { data: [...] }
-        
-        console.log('Fetched store categories:', data.data);
-
-      } catch (err: any) {
-        // setError(`Failed to fetch locations: ${err.message}`);
-      } finally {
-        // setLoading(false);
-      }
-    }, []);
-  
-    useEffect(() => {
-      fetchLocations();
-    }, [fetchLocations]);
-  
-  
-  const fetchProperties = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchLocations = useCallback(async () => {
+    // setLoading(true);
+    // setError(null);
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 700));
-      const data = generateSampleProperties();
-      setProperties(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      const response = await fetch('/api/admin/locations'); // Correct API endpoint for global locations
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setLocations(data.data || []); // Assuming API returns { data: [...] }
+      
+      console.log('Fetched store categories:', data.data);
+
     } catch (err: any) {
-      console.error("Error fetching properties:", err);
-      setError(err.message || "Failed to load properties.");
+      // setError(`Failed to fetch locations: ${err.message}`);
     } finally {
-      setIsLoading(false);
+      // setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
+  
+  
+  // --- Data Fetching ---
+  const fetchProperties = useCallback(async () => {
+    // setLoading(true);
+    // setError(null);
+    try {
+      const response = await fetch(`/api/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`); // Correct API endpoint for global locations
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+      }
+
+    
+      if (response.ok) {
+        const json = await response.json();
+        let marketListingForm = json.results as MarketListingForm[];
+        setProperties(marketListingForm);
+      } else {
+        console.error(
+          "[ClientInventoryPage] Failed to fetch marketplace products:",
+          response.status,
+          response.statusText
+        );
+      }
+
+    } catch (err: any) {
+      // setError(`Failed to fetch locations: ${err.message}`);
+    } finally {
+      // setLoading(false);
+    }
+  }, []);
+  
+  // const fetchProperties = useCallback(async () => {
+  //   setIsLoading(true);
+  //   setError(null);
+  //   try {
+  //     // Simulate API call delay
+  //     await new Promise((resolve) => setTimeout(resolve, 700));
+  //     const data = generateSampleProperties();
+  //     setProperties(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+  //   } catch (err: any) {
+  //     console.error("Error fetching properties:", err);
+  //     setError(err.message || "Failed to load properties.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, []);
 
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
 
   // --- CRUD Operations (Simulated) ---
-  const handleSaveProperty = useCallback((propertyToSave: PropertyListing) => {
+  const handleSaveProperty = useCallback((propertyToSave: MarketListingForm) => {
     setProperties(prevProperties => {
       const existingIndex = prevProperties.findIndex(p => p.id === propertyToSave.id);
       if (existingIndex > -1) {
@@ -314,12 +345,12 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
     setShowAddToMarketProductModal(true);
   };
 
-  const handleEditClick = (property: PropertyListing) => {
+  const handleEditClick = (property: MarketListingForm) => {
     setSelectedProperty(property);
     setShowAddToMarketProductModal(true);
   };
 
-  const handleDeleteConfirmClick = (property: PropertyListing) => {
+  const handleDeleteConfirmClick = (property: MarketListingForm) => {
     setSelectedProperty(property);
     setIsDeleteModalOpen(true);
   };
@@ -333,10 +364,11 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
 
   const filteredProperties = useMemo(() => {
     return properties.filter(prop => {
-      const matchesSearch = prop.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            prop.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            prop.agentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            prop.city.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = prop.name.toLowerCase().includes(searchTerm.toLowerCase()); //||
+                            // prop.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            // prop.agentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            // prop.city.toLowerCase().includes(searchTerm.toLowerCase()
+                          // );
       const matchesStatus = filterStatus === 'All' || prop.status === filterStatus;
       const matchesType = filterType === 'All' || prop.type === filterType;
       return matchesSearch && matchesStatus && matchesType;
@@ -355,7 +387,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
     }).format(price);
   };
 
-  const getStatusBadgeClass = (status: PropertyListing['status']) => {
+  const getStatusBadgeClass = (status: MarketListingForm['status']) => {
     switch (status) {
       case 'Available': return 'bg-green-100 text-green-800';
       case 'Under Offer': return 'bg-yellow-100 text-yellow-800';
@@ -494,9 +526,9 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                     <tr key={property.id} className="hover:bg-blue-50 transition-colors duration-150">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <div className="flex items-center">
-                          {property.imageUrl ? (
+                          {property.images ? (
                             <div className="flex-shrink-0 h-12 w-12 mr-4 rounded-md overflow-hidden shadow-sm border border-gray-200">
-                              <img className="h-full w-full object-cover" src={property.imageUrl} alt={property.title} />
+                              <img className="h-full w-full object-cover" src={property.images?.[0]} alt={property.name} />
                             </div>
                           ) : (
                             <div className="flex-shrink-0 h-12 w-12 mr-4 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
@@ -504,9 +536,9 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                             </div>
                           )}
                           <div>
-                            <div className="text-base font-semibold text-gray-800">{property.title}</div>
+                            <div className="text-base font-semibold text-gray-800">{property.name}</div>
                             <div className="text-xs text-gray-500 flex items-center mt-1">
-                              <MapPinIcon className="h-3 w-3 mr-1 text-gray-400" /> {property.address}, {property.city}
+                              <MapPinIcon className="h-3 w-3 mr-1 text-gray-400" /> {"property.location"}, {"property.city"}
                             </div>
                           </div>
                         </div>
@@ -519,7 +551,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                           {(property.type === 'Apartment' || property.type === 'House') && (
                             <>
                               <div className="flex items-center">
-                                <PencilSquareIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.bedrooms ?? 'N/A'} Beds
+                                <PencilSquareIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.bedrooms?.length ?? 'N/A'} Beds
                               </div>
                               {/* BedIcon */}
                               <div className="flex items-center">
@@ -527,14 +559,14 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                               </div>
                               {/* BathtubIcon */}
                               <div className="flex items-center">
-                                <PencilSquareIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.areaSqFt ?? 'N/A'} SqFt
+                                <PencilSquareIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.area ?? 'N/A'} SqFt
                               </div>
                             </>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-teal-700">
-                        {formatPrice(property.price)}
+                        {formatPrice(property.finalPrice)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm ${getStatusBadgeClass(property.status)}`}>
@@ -542,7 +574,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {property.agentName}
+                        {"property.agentName"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-3">
