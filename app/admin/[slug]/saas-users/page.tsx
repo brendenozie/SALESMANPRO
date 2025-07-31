@@ -125,7 +125,7 @@ export default async function UsersPage({ params, searchParams }: PageProps) {
       totalPages={totalPages}
       currentPage={page}
       perPage={limit}
-      refetchUsers={fetchUsers}
+      // refetchUsers={fetchUsers}
     />
   );
 }

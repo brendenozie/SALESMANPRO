@@ -84,7 +84,7 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
                     <motion.button
                       whileHover={{ scale: 1.07 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={(e) => {
+                      onClick={(e:any) => {
                         e.stopPropagation(); // Prevent accidental navigation
                         addToCart(item);
                       }}

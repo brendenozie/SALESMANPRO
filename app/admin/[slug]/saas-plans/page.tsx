@@ -196,7 +196,7 @@ export default async function PlansPage({ params, searchParams }: PageProps) {
       totalSubscriptionPages={totalSubscriptionPages}
       currentSubscriptionPage={page}
       subscriptionsPerPage={limit}
-      refetchSubscriptions={fetchSubscriptions}
+      // refetchSubscriptions={fetchSubscriptions}
     />
   );
 }

@@ -23,6 +23,8 @@ import { UserItem } from "./page"; // Import UserItem type
 // Assuming you have an AddEditUserModal component
 // import AddEditUserModal from "@/components/AddEditUserModal";
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 interface UsersClientProps {
   companyId: string;
   users: UserItem[];
@@ -30,7 +32,7 @@ interface UsersClientProps {
   totalPages: number;
   currentPage: number;
   perPage: number;
-  refetchUsers: (page: number, limit: number, searchTerm?: string, status?: string, plan?: string) => Promise<{ usersData: UserItem[]; totalItems: number; totalPages: number; }>;
+  // refetchUsers: (page: number, limit: number, searchTerm?: string, status?: string, plan?: string) => Promise<{ usersData: UserItem[]; totalItems: number; totalPages: number; }>;
 }
 
 const itemVariants = {
@@ -45,7 +47,7 @@ export default function UsersClient({
   totalPages: initialTotalPages,
   currentPage: initialCurrentPage,
   perPage: initialPerPage,
-  refetchUsers,
+  // refetchUsers,
 }: UsersClientProps) {
   const [users, setUsers] = useState<UserItem[]>(initialUsers);
   const [totalItems, setTotalItems] = useState(initialTotalItems);
@@ -61,25 +63,25 @@ export default function UsersClient({
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPlan, setFilterPlan] = useState("");
 
-  const handleRefetch = useCallback(async (pageToFetch: number = currentPage) => {
-    setLoading(true);
-    try {
-      const { usersData, totalItems: newTotalItems, totalPages: newTotalPages } = await refetchUsers(pageToFetch, perPage, searchTerm, filterStatus, filterPlan);
-      setUsers(usersData);
-      setTotalItems(newTotalItems);
-      setTotalPages(newTotalPages);
-      setCurrentPage(pageToFetch); // Ensure currentPage is updated
-    } catch (error) {
-      console.error("Failed to refetch users:", error);
-      toast.error("Failed to load users.");
-    } finally {
-      setLoading(false);
-    }
-  }, [refetchUsers, perPage, searchTerm, filterStatus, filterPlan, currentPage]);
+  // const handleRefetch = useCallback(async (pageToFetch: number = currentPage) => {
+  //   setLoading(true);
+  //   try {
+  //     const { usersData, totalItems: newTotalItems, totalPages: newTotalPages } = await refetchUsers(pageToFetch, perPage, searchTerm, filterStatus, filterPlan);
+  //     setUsers(usersData);
+  //     setTotalItems(newTotalItems);
+  //     setTotalPages(newTotalPages);
+  //     setCurrentPage(pageToFetch); // Ensure currentPage is updated
+  //   } catch (error) {
+  //     console.error("Failed to refetch users:", error);
+  //     toast.error("Failed to load users.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [refetchUsers, perPage, searchTerm, filterStatus, filterPlan, currentPage]);
 
-  useEffect(() => {
-    handleRefetch(initialCurrentPage); // Refetch based on initial props on mount
-  }, [handleRefetch, initialCurrentPage]);
+  // useEffect(() => {
+  //   handleRefetch(initialCurrentPage); // Refetch based on initial props on mount
+  // }, [handleRefetch, initialCurrentPage]);
 
   // Update local state when server-side props change (e.g., navigation)
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function UsersClient({
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      handleRefetch(newPage);
+      // handleRefetch(newPage);
     }
   };
 
@@ -107,7 +109,7 @@ export default function UsersClient({
       toast.success(`User "${selectedUser.name}" deleted successfully!`);
       setShowDeleteConfirm(false);
       setSelectedUser(null);
-      handleRefetch(currentPage);
+      // handleRefetch(currentPage);
     } catch (error) {
       console.error("Failed to delete user:", error);
       toast.error("Failed to delete user.");
@@ -166,7 +168,7 @@ export default function UsersClient({
             className="flex-grow p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleRefetch(1); }}
+            // onKeyDown={(e) => { if (e.key === 'Enter') handleRefetch(1); }}
           />
           <select
             className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
@@ -190,7 +192,7 @@ export default function UsersClient({
             <option value="Business">Business</option>
           </select>
           <button
-            onClick={() => handleRefetch(1)}
+            // onClick={() => handleRefetch(1)}
             className="ml-2 bg-indigo-500 text-white p-2 rounded-md hover:bg-indigo-600 transition-colors"
           >
             Apply
@@ -290,6 +292,7 @@ export default function UsersClient({
                                 alt={user.name}
                                 width={40}
                                 height={40}
+                                loader={loader}
                               />
                             ) : (
                                <UserCircleIcon className="h-10 w-10 text-gray-400 dark:text-gray-600" />

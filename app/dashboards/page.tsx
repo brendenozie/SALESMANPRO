@@ -7,7 +7,7 @@ import PlayStoreBanner  from "../../components/PlayStoreBanner";
 import OurPrograms from "../../components/ourprograms";
 import Join from "../../components/Join";
 import Reasons from "../../components/Reasons";
-import Plans from "../../components/Plans";
+// import Plans from "../../components/Plans";
 import Testimonials from "../../components/Testimonials";
 // import { ISubscritption } from "../../types/typings";
 // import { GetServerSidePropsContext } from "next";
@@ -42,6 +42,7 @@ const Home = (props:Props) => {
         <PlayStoreBanner />
         <div className="mt-32 lg:mt-40"></div>
         {/* <Plans subscriptions={props.subscriptions}/> */}
+        <PricingTable />
         <div className="mt-32 lg:mt-40"></div>
         <Testimonials />
         <div className="mt-32 lg:mt-40"></div>

@@ -213,14 +213,14 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
       totalTransactionPages={totalTransactionPages}
       currentTransactionPage={page}
       transactionsPerPage={limit}
-      refetchTransactions={fetchTransactions}
+      // refetchTransactions={fetchTransactions}
 
       invoices={invoicesData}
       totalInvoiceItems={totalInvoiceItems}
       totalInvoicePages={totalInvoicePages}
       currentInvoicePage={page}
       invoicesPerPage={limit}
-      refetchInvoices={fetchInvoices}
+      // refetchInvoices={fetchInvoices}
     />
   );
 }

@@ -247,6 +247,7 @@ const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, o
             alt={`${agent.name}'s profile`}
             width={80}
             height={80}
+            loader={loader}
           />
         </div>
         <div className="flex-grow">
@@ -573,6 +574,7 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({ isOpen, onClose, 
   );
 };
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Main AgentsPage Component ---
 interface AgentsPageProps {

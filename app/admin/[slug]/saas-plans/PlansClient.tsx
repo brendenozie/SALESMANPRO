@@ -22,7 +22,8 @@ import { toast } from "react-hot-toast";
 // import AddEditPlanModal from "@/components/AddEditPlanModal"; // Assume this exists
 // import ChangeSubscriptionModal from "@/components/ChangeSubscriptionModal"; // Assume this exists
 import { PlanItem, SubscriptionItem } from "./page"; // Import types
-import TabComponent from "@/components/TabComponent"; // Generic tab component
+// import TabComponent from "@/components/TabComponent"; // Generic tab component
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 interface PlansClientProps {
   companyId: string;
@@ -32,7 +33,7 @@ interface PlansClientProps {
   totalSubscriptionPages: number;
   currentSubscriptionPage: number;
   subscriptionsPerPage: number;
-  refetchSubscriptions: (page: number, limit: number, status?: string, planName?: string) => Promise<{ subscriptionsData: SubscriptionItem[]; totalSubscriptionItems: number; totalSubscriptionPages: number; }>;
+  // refetchSubscriptions: (page: number, limit: number, status?: string, planName?: string) => Promise<{ subscriptionsData: SubscriptionItem[]; totalSubscriptionItems: number; totalSubscriptionPages: number; }>;
 }
 
 const itemVariants = {
@@ -48,7 +49,7 @@ export default function PlansClient({
   totalSubscriptionPages: initialTotalSubscriptionPages,
   currentSubscriptionPage: initialCurrentSubscriptionPage,
   subscriptionsPerPage: initialSubscriptionsPerPage,
-  refetchSubscriptions,
+  // refetchSubscriptions,
 }: PlansClientProps) {
   const [plans, setPlans] = useState<PlanItem[]>(initialPlans);
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(initialSubscriptions);
@@ -71,21 +72,21 @@ export default function PlansClient({
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPlanName, setFilterPlanName] = useState("");
 
-  const handleRefetchSubscriptions = useCallback(async (pageToFetch: number = currentSubscriptionPage) => {
-    setLoading(true);
-    try {
-      const { subscriptionsData, totalSubscriptionItems: newTotalItems, totalSubscriptionPages: newTotalPages } = await refetchSubscriptions(pageToFetch, subscriptionsPerPage, filterStatus, filterPlanName);
-      setSubscriptions(subscriptionsData);
-      setTotalSubscriptionItems(newTotalItems);
-      setTotalSubscriptionPages(newTotalPages);
-      setCurrentSubscriptionPage(pageToFetch);
-    } catch (error) {
-      console.error("Failed to refetch subscriptions:", error);
-      toast.error("Failed to load subscriptions.");
-    } finally {
-      setLoading(false);
-    }
-  }, [refetchSubscriptions, subscriptionsPerPage, filterStatus, filterPlanName, currentSubscriptionPage]);
+  // const handleRefetchSubscriptions = useCallback(async (pageToFetch: number = currentSubscriptionPage) => {
+  //   setLoading(true);
+  //   try {
+  //     const { subscriptionsData, totalSubscriptionItems: newTotalItems, totalSubscriptionPages: newTotalPages } = await refetchSubscriptions(pageToFetch, subscriptionsPerPage, filterStatus, filterPlanName);
+  //     setSubscriptions(subscriptionsData);
+  //     setTotalSubscriptionItems(newTotalItems);
+  //     setTotalSubscriptionPages(newTotalPages);
+  //     setCurrentSubscriptionPage(pageToFetch);
+  //   } catch (error) {
+  //     console.error("Failed to refetch subscriptions:", error);
+  //     toast.error("Failed to load subscriptions.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [refetchSubscriptions, subscriptionsPerPage, filterStatus, filterPlanName, currentSubscriptionPage]);
 
   // Initial fetch/update subscriptions on mount or prop change
   useEffect(() => {
@@ -95,11 +96,11 @@ export default function PlansClient({
     setCurrentSubscriptionPage(initialCurrentSubscriptionPage);
   }, [initialSubscriptions, initialTotalSubscriptionItems, initialTotalSubscriptionPages, initialCurrentSubscriptionPage]);
 
-  useEffect(() => {
-    if (activeTab === 'subscriptions') {
-      handleRefetchSubscriptions(currentSubscriptionPage);
-    }
-  }, [activeTab, currentSubscriptionPage, handleRefetchSubscriptions]);
+  // useEffect(() => {
+  //   if (activeTab === 'subscriptions') {
+  //     handleRefetchSubscriptions(currentSubscriptionPage);
+  //   }
+  // }, [activeTab, currentSubscriptionPage, handleRefetchSubscriptions]);
 
 
   const handleSubscriptionPageChange = (newPage: number) => {
@@ -140,7 +141,7 @@ export default function PlansClient({
     toast.success("Subscription updated successfully!");
     setShowChangeSubscriptionModal(false);
     setSelectedSubscription(null);
-    handleRefetchSubscriptions(currentSubscriptionPage);
+    // handleRefetchSubscriptions(currentSubscriptionPage);
   };
 
   const handleCancelSubscription = async () => {
@@ -152,7 +153,7 @@ export default function PlansClient({
       toast.success(`Subscription for ${selectedSubscription.userName} cancelled!`);
       setShowCancelSubscriptionConfirm(false);
       setSelectedSubscription(null);
-      handleRefetchSubscriptions(currentSubscriptionPage);
+      // handleRefetchSubscriptions(currentSubscriptionPage);
     } catch (error) {
       console.error("Failed to cancel subscription:", error);
       toast.error("Failed to cancel subscription.");
@@ -310,7 +311,7 @@ export default function PlansClient({
                 {plans.map(plan => <option key={plan.id} value={plan.name}>{plan.name}</option>)}
               </select>
               <button
-                onClick={() => handleRefetchSubscriptions(1)}
+                // onClick={() => handleRefetchSubscriptions(1)}
                 className="ml-2 bg-indigo-500 text-white p-2 rounded-md hover:bg-indigo-600 transition-colors"
               >
                 Apply

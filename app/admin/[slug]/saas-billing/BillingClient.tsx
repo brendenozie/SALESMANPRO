@@ -29,20 +29,43 @@ interface BillingClientProps {
   totalTransactionPages: number;
   currentTransactionPage: number;
   transactionsPerPage: number;
-  refetchTransactions: (page: number, limit: number, status?: string, type?: string) => Promise<{ transactionsData: TransactionItem[]; totalTransactionItems: number; totalTransactionPages: number; }>;
+  // refetchTransactions: (page: number, limit: number, status?: string, type?: string) => Promise<{ transactionsData: TransactionItem[]; totalTransactionItems: number; totalTransactionPages: number; }>;
 
   invoices: InvoiceItem[];
   totalInvoiceItems: number;
   totalInvoicePages: number;
   currentInvoicePage: number;
   invoicesPerPage: number;
-  refetchInvoices: (page: number, limit: number, status?: string) => Promise<{ invoicesData: InvoiceItem[]; totalInvoiceItems: number; totalInvoicePages: number; }>;
+  // refetchInvoices: (page: number, limit: number, status?: string) => Promise<{ invoicesData: InvoiceItem[]; totalInvoiceItems: number; totalInvoicePages: number; }>;
 }
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
+
+// Dummy TabComponent (create a real one in components/TabComponent.tsx)
+const TabComponent: React.FC<{
+    tabs: { id: string; label: string }[];
+    activeTab: string;
+    onChange: (tabId: string) => void;
+  }> = ({ tabs, activeTab, onChange }) => (
+    <div className="flex border-b border-gray-200 dark:border-gray-700 mb-8">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => onChange(tab.id)}
+          className={`px-6 py-3 text-lg font-medium transition-colors duration-200
+            ${activeTab === tab.id
+              ? "border-b-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
 
 export default function BillingClient({
   companyId,
@@ -51,13 +74,13 @@ export default function BillingClient({
   totalTransactionPages: initialTotalTransactionPages,
   currentTransactionPage: initialCurrentTransactionPage,
   transactionsPerPage: initialTransactionsPerPage,
-  refetchTransactions,
+  // refetchTransactions,
   invoices: initialInvoices,
   totalInvoiceItems: initialTotalInvoiceItems,
   totalInvoicePages: initialTotalInvoicePages,
   currentInvoicePage: initialCurrentInvoicePage,
   invoicesPerPage: initialInvoicesPerPage,
-  refetchInvoices,
+  // refetchInvoices,
 }: BillingClientProps) {
   const [transactions, setTransactions] = useState<TransactionItem[]>(initialTransactions);
   const [totalTransactionItems, setTotalTransactionItems] = useState(initialTotalTransactionItems);
@@ -85,38 +108,38 @@ export default function BillingClient({
   const [selectedTransactionForRefund, setSelectedTransactionForRefund] = useState<TransactionItem | null>(null);
 
   // --- Transaction Refetch ---
-  const handleRefetchTransactions = useCallback(async (pageToFetch: number = currentTransactionPage) => {
-    setLoadingTransactions(true);
-    try {
-      const { transactionsData, totalTransactionItems: newTotalItems, totalTransactionPages: newTotalPages } = await refetchTransactions(pageToFetch, transactionsPerPage, transactionStatusFilter, transactionTypeFilter);
-      setTransactions(transactionsData);
-      setTotalTransactionItems(newTotalItems);
-      setTotalTransactionPages(newTotalPages);
-      setCurrentTransactionPage(pageToFetch);
-    } catch (error) {
-      console.error("Failed to refetch transactions:", error);
-      toast.error("Failed to load transactions.");
-    } finally {
-      setLoadingTransactions(false);
-    }
-  }, [refetchTransactions, transactionsPerPage, transactionStatusFilter, transactionTypeFilter, currentTransactionPage]);
+  // const handleRefetchTransactions = useCallback(async (pageToFetch: number = currentTransactionPage) => {
+  //   setLoadingTransactions(true);
+  //   try {
+  //     const { transactionsData, totalTransactionItems: newTotalItems, totalTransactionPages: newTotalPages } = await refetchTransactions(pageToFetch, transactionsPerPage, transactionStatusFilter, transactionTypeFilter);
+  //     setTransactions(transactionsData);
+  //     setTotalTransactionItems(newTotalItems);
+  //     setTotalTransactionPages(newTotalPages);
+  //     setCurrentTransactionPage(pageToFetch);
+  //   } catch (error) {
+  //     console.error("Failed to refetch transactions:", error);
+  //     toast.error("Failed to load transactions.");
+  //   } finally {
+  //     setLoadingTransactions(false);
+  //   }
+  // }, [refetchTransactions, transactionsPerPage, transactionStatusFilter, transactionTypeFilter, currentTransactionPage]);
 
   // --- Invoice Refetch ---
-  const handleRefetchInvoices = useCallback(async (pageToFetch: number = currentInvoicePage) => {
-    setLoadingInvoices(true);
-    try {
-      const { invoicesData, totalInvoiceItems: newTotalItems, totalInvoicePages: newTotalPages } = await refetchInvoices(pageToFetch, invoicesPerPage, invoiceStatusFilter);
-      setInvoices(invoicesData);
-      setTotalInvoiceItems(newTotalItems);
-      setTotalInvoicePages(newTotalPages);
-      setCurrentInvoicePage(pageToFetch);
-    } catch (error) {
-      console.error("Failed to refetch invoices:", error);
-      toast.error("Failed to load invoices.");
-    } finally {
-      setLoadingInvoices(false);
-    }
-  }, [refetchInvoices, invoicesPerPage, invoiceStatusFilter, currentInvoicePage]);
+  // const handleRefetchInvoices = useCallback(async (pageToFetch: number = currentInvoicePage) => {
+  //   setLoadingInvoices(true);
+  //   try {
+  //     const { invoicesData, totalInvoiceItems: newTotalItems, totalInvoicePages: newTotalPages } = await refetchInvoices(pageToFetch, invoicesPerPage, invoiceStatusFilter);
+  //     setInvoices(invoicesData);
+  //     setTotalInvoiceItems(newTotalItems);
+  //     setTotalInvoicePages(newTotalPages);
+  //     setCurrentInvoicePage(pageToFetch);
+  //   } catch (error) {
+  //     console.error("Failed to refetch invoices:", error);
+  //     toast.error("Failed to load invoices.");
+  //   } finally {
+  //     setLoadingInvoices(false);
+  //   }
+  // }, [refetchInvoices, invoicesPerPage, invoiceStatusFilter, currentInvoicePage]);
 
   // Effect to update local state if props change (e.g., initial load or navigation)
   useEffect(() => {
@@ -134,13 +157,13 @@ export default function BillingClient({
 
 
   // Refetch data when tabs or filters change
-  useEffect(() => {
-    if (activeTab === 'transactions') {
-      handleRefetchTransactions(currentTransactionPage);
-    } else if (activeTab === 'invoices') {
-      handleRefetchInvoices(currentInvoicePage);
-    }
-  }, [activeTab, currentTransactionPage, currentInvoicePage, handleRefetchTransactions, handleRefetchInvoices]);
+  // useEffect(() => {
+  //   if (activeTab === 'transactions') {
+  //     handleRefetchTransactions(currentTransactionPage);
+  //   } else if (activeTab === 'invoices') {
+  //     handleRefetchInvoices(currentInvoicePage);
+  //   }
+  // }, [activeTab, currentTransactionPage, currentInvoicePage, handleRefetchTransactions, handleRefetchInvoices]);
 
 
   const handleTransactionPageChange = (newPage: number) => {
@@ -159,7 +182,7 @@ export default function BillingClient({
     toast.success("Refund processed successfully!");
     setShowAddRefundModal(false);
     setSelectedTransactionForRefund(null);
-    handleRefetchTransactions(currentTransactionPage); // Refresh transactions after refund
+    // handleRefetchTransactions(currentTransactionPage); // Refresh transactions after refund
   };
 
   const getTransactionStatusClasses = (status: TransactionItem['status']) => {
@@ -244,7 +267,7 @@ export default function BillingClient({
                 <option value="Add-on Purchase">Add-on Purchase</option>
               </select>
               <button
-                onClick={() => handleRefetchTransactions(1)}
+                // onClick={() => handleRefetchTransactions(1)}
                 className="ml-2 bg-indigo-500 text-white p-2 rounded-md hover:bg-indigo-600 transition-colors"
               >
                 Apply
@@ -410,7 +433,7 @@ export default function BillingClient({
                 <option value="Overdue">Overdue</option>
               </select>
               <button
-                onClick={() => handleRefetchInvoices(1)}
+                // onClick={() => handleRefetchInvoices(1)}
                 className="ml-2 bg-indigo-500 text-white p-2 rounded-md hover:bg-indigo-600 transition-colors"
               >
                 Apply

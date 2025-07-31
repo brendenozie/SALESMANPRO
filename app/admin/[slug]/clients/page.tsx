@@ -18,7 +18,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   CalendarDaysIcon,
-  ClipboardDocumentListIcon, // For preferred property types
+  ClipboardDocumentListIcon, // For preferred vehicle types
   WalletIcon, // For budget range
   DocumentTextIcon,
   CurrencyDollarIcon, // For notes
@@ -73,7 +73,7 @@ export type ClientProfile = {
   dealStatus: 'Lead' | 'Active' | 'Closed' | 'Archived'; // Ensure this matches API's string/enum
   lastActivity: string; // ISO string
   notes?: string;
-  preferredPropertyTypes: string[];
+  preferredVehicleTypes: string[];
   budgetRange: string; // e.g., "10M-20M KES"
   // Add salesAgentId if you want to display or edit it here
   salesAgentId?: string | null;
@@ -194,7 +194,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({ client, adminSlug
         </p>
         <p className="flex items-center mb-1">
           <ClipboardDocumentListIcon className="h-4 w-4 mr-2 text-gray-500" />
-          <span className="font-semibold">Pref. Types:</span> {client.preferredPropertyTypes.join(', ') || 'N/A'}
+          <span className="font-semibold">Pref. Types:</span> {client.preferredVehicleTypes.join(', ') || 'N/A'}
         </p>
         <p className="flex items-center">
           <WalletIcon className="h-4 w-4 mr-2 text-gray-500" />
@@ -258,7 +258,7 @@ const AddEditClientModal: React.FC<AddEditClientModalProps> = ({ isOpen, onClose
         dealStatus: client.dealStatus,
         lastActivity: client.lastActivity,
         notes: client.notes || '',
-        preferredPropertyTypes: client.preferredPropertyTypes || [],
+        preferredVehicleTypes: client.preferredVehicleTypes || [],
         budgetRange: client.budgetRange || '',
         salesAgentId: client.salesAgentId || null,
         bio: client.bio || '', // Initialize bio from client if available
@@ -272,7 +272,7 @@ const AddEditClientModal: React.FC<AddEditClientModalProps> = ({ isOpen, onClose
         dealStatus: 'Lead',
         lastActivity: new Date().toISOString(),
         notes: '',
-        preferredPropertyTypes: [],
+        preferredVehicleTypes: [],
         budgetRange: '',
         salesAgentId: null,
         bio: '',
@@ -285,7 +285,7 @@ const AddEditClientModal: React.FC<AddEditClientModalProps> = ({ isOpen, onClose
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleArrayChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'preferredPropertyTypes') => {
+  const handleArrayChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'preferredVehicleTypes') => {
     const value = e.target.value;
     setFormData((prev) => ({
       ...prev,
@@ -360,12 +360,12 @@ const AddEditClientModal: React.FC<AddEditClientModalProps> = ({ isOpen, onClose
             </div>
           </div>
 
-          {/* Preferred Property Types */}
+          {/* Preferred Vehicle Types */}
           <div>
-            <label htmlFor="preferredPropertyTypes" className="block text-sm font-medium text-gray-700 mb-1">Preferred Property Types (comma-separated)</label>
+            <label htmlFor="preferredVehicleTypes" className="block text-sm font-medium text-gray-700 mb-1">Preferred Vehicle Types (comma-separated)</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><ClipboardDocumentListIcon className="h-5 w-5 text-gray-400" /></div>
-              <input type="text" id="preferredPropertyTypes" name="preferredPropertyTypes" value={formData.preferredPropertyTypes?.join(', ') || ""} onChange={(e) => handleArrayChange(e, 'preferredPropertyTypes')} placeholder="e.g., Apartment, Townhouse, Land" className="w-full p-3 pl-10 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500" />
+              <input type="text" id="preferredVehicleTypes" name="preferredVehicleTypes" value={formData.preferredVehicleTypes?.join(', ') || ""} onChange={(e) => handleArrayChange(e, 'preferredVehicleTypes')} placeholder="e.g., Apartment, Townhouse, Land" className="w-full p-3 pl-10 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500" />
             </div>
             <p className="mt-1 text-xs text-gray-500">Separate multiple types with commas.</p>
           </div>
@@ -505,7 +505,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
             dealStatus: formData.dealStatus,
             lastActivity: formData.lastActivity,
             notes: formData.notes,
-            preferredPropertyTypes: formData.preferredPropertyTypes,
+            preferredVehicleTypes: formData.preferredVehicleTypes,
             budgetRange: formData.budgetRange,
           }),
         });
@@ -526,7 +526,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
             dealStatus: formData.dealStatus,
             lastActivity: formData.lastActivity,
             notes: formData.notes,
-            preferredPropertyTypes: formData.preferredPropertyTypes,
+            preferredVehicleTypes: formData.preferredVehicleTypes,
             budgetRange: formData.budgetRange,
           }),
         });
@@ -590,7 +590,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
                             client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             (client.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
                             (client.notes?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-                            client.preferredPropertyTypes.some(type => type.toLowerCase().includes(searchTerm.toLowerCase()));
+                            client.preferredVehicleTypes.some(type => type.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesDealStatus = filterDealStatus === 'All' || client.dealStatus === filterDealStatus;
       return matchesSearch && matchesDealStatus;
@@ -618,7 +618,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Manage Property Clients <span className="ml-2 text-orange-600 text-base sm:text-xl">🤝</span>
+            Manage Vehicle Clients <span className="ml-2 text-orange-600 text-base sm:text-xl">🤝</span>
           </h1>
           <p className="text-md text-gray-600 mt-1">
             Keep track of all your client interactions and deal progress.
@@ -674,7 +674,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
               </div>
               <input
                 type="text"
-                placeholder="Search by name, email, phone, notes, property types..."
+                placeholder="Search by name, email, phone, notes, vehicle types..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500
@@ -704,7 +704,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
                 ))}
               </select>
             </div>
-            {/* Future: Add more sophisticated filters here (e.g., by preferred property type, budget range) */}
+            {/* Future: Add more sophisticated filters here (e.g., by preferred vehicle type, budget range) */}
           </div>
         </div>
       )}

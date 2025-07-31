@@ -66,6 +66,8 @@ export default async function AgentsPage({ params }: PageProps) {
     console.error("[AgentsPage] Error fetching agents →", err.message);
   }
 
-  // ✨ Pass companyId to the client component
-  return <AgentsClient agentsData={agentsData} companyId={companyId} />;
+  // ✨ Pass companyId to the client component agentsData={agentsData} companyId={companyId} adminSlug={companyId}
+  return <AgentsClient params={{
+    adminSlug: companyId
+  }} />;
 }
