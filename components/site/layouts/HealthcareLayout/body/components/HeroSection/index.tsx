@@ -52,7 +52,7 @@ export default function HealthcareHero({ name, slug, description, bannerUrl }: H
       {/* Backdrop Image with Enhanced Overlay */}
       {bannerUrl && (
         <Image
-          src={bannerUrl}
+          src={bannerUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
           alt="Healthcare background"
           fill
           className="object-cover opacity-25 mix-blend-overlay" // Increased opacity, added mix-blend-overlay for richer blend

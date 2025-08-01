@@ -78,7 +78,7 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12"> {/* Increased gap */}
-          {doctors.map((doc, idx) => (
+          {doctors.map((doc:any, idx) => (
             <motion.div
               key={doc.id}
               role="button"
@@ -102,7 +102,7 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
 
               <div className="relative w-36 h-36 mx-auto rounded-full overflow-hidden border-4 border-teal-500 dark:border-teal-400 mb-6 shadow-md transform group-hover:scale-105 transition-transform duration-300"> {/* Larger image, bolder border */}
                 <Image
-                  src={doc.imageUrl}
+                  src={doc.imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                   alt={`Dr. ${doc.name}`}
                   loader={customLoader}
                   fill
@@ -120,7 +120,7 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
               {/* Optional: Display specializations as tags */}
               {doc.specializations && doc.specializations.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs">
-                  {doc.specializations.map((spec, i) => (
+                  {doc.specializations.map((spec:any, i:any) => (
                     <span key={i} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-sm font-medium">
                       {spec}
                     </span>

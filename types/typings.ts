@@ -380,6 +380,7 @@ export interface StoreForm {
     pricingTiers: PricingTier[]; 
 
     podcasts:any[];
+    services:any[];
     companyLocations: CompanyLocationType[];
     
     courses:Course[];

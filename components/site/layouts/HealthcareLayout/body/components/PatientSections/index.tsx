@@ -113,7 +113,7 @@ export default function PatientSection({ name, slug, testimonials }: PatientSect
                 {t.avatarUrl ? (
                   <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-teal-500 dark:border-teal-400 flex-shrink-0">
                     <img
-                      src={t.avatarUrl} // Using img tag for mock loader, replace with Next.js Image for production
+                      src={t.avatarUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"} // Using img tag for mock loader, replace with Next.js Image for production
                       alt={t.author}
                       className="object-cover w-full h-full"
                     />

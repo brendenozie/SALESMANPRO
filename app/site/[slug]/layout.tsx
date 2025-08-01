@@ -120,7 +120,7 @@ export default async function StoreLayout({
         include: {
           User:{
             select: { id: true, name: true, image: true, },
-          }
+          },
         },
       },
 
@@ -135,6 +135,8 @@ export default async function StoreLayout({
       Podcast :true,
 
       courses:true,
+
+      services:true,
 
       CompanyLocation:{
         include:{

@@ -7,11 +7,11 @@ import { useStoreContext } from '../../../../../contexts/StoreContext';
 
 // Import all your stunning components
 import AboutSection from './components/AboutSection';
-import CTASection from './components/CTASection'; // Assuming you have one generic CTA, or specific ones if needed
+import ContactSection from './components/ContactSection'; 
+import CTASection from './components/CTASection'; 
 import DoctorsSection from './components/DoctorsSection';
 import HealthcareHero from './components/HeroSection';
 import MedicalServicesSection from './components/MedicalServicesSection';
-import ContactSection from './components/CTASection';
 import FAQsSection from './components/FAQsSections';
 import HealthTipsSection from './components/HealthTipsSections';
 import PatientSection from './components/PatientSections';
@@ -73,29 +73,46 @@ export default function HealthCareSite() {
   const {
     name = defaultStoreName,
     slug = defaultStoreSlug,
-    description = "Your trusted partner in health and wellness. Providing compassionate and comprehensive care for the whole family.", // Default description
+    // Use tagline if available, otherwise use a default description
+    tagline,
+    description: formDescription,
     bannerUrl = defaultBannerUrl,
-    aboutImageUrl = defaultAboutImageUrl,
-    aboutText = defaultAboutText,
+    aboutImageUrl = defaultAboutImageUrl, // This field is missing from your form data
+    aboutText = defaultAboutText, // This field is missing from your form data
     services: svcFromStore,
     doctors: docFromStore,
     testimonials: tFromStore,
     faqs: faqFromStore,
-    contactInfo: contactInfoFromStore, // Assuming contact info might come from storeFormData
+    contactEmail: contactEmailFromStore,
+    contactPhone: contactPhoneFromStore,
+    address: addressFromStore,
+    openingHours: openingHoursFromStore,
+    geoLocation,
   } = storeFormData as any;
+
+  // Combine tagline and description, prioritizing tagline
+  const description = tagline || formDescription || "Your trusted partner in health and wellness. Providing compassionate and comprehensive care for the whole family.";
 
   // Use state to manage the data passed to components, defaulting to sample data if store data is null/empty
   const servicesData = svcFromStore && svcFromStore.length > 0 ? svcFromStore : sampleServices;
   const doctorsData = docFromStore && docFromStore.length > 0 ? docFromStore : sampleDoctors;
   const testimonialsData = tFromStore && tFromStore.length > 0 ? tFromStore : sampleTestimonials;
   const faqsData = faqFromStore && faqFromStore.length > 0 ? faqFromStore : sampleFaqs;
+
   // Merge default contact info with any provided from storeFormData
-  const contactInfoData = { ...defaultContactInfo, ...(contactInfoFromStore || {}) };
+  const contactInfoData = {
+    ...defaultContactInfo,
+    phoneNumber: contactPhoneFromStore || defaultContactInfo.phoneNumber,
+    email: contactEmailFromStore || defaultContactInfo.email,
+    address: addressFromStore || defaultContactInfo.address,
+    openingHours: openingHoursFromStore || defaultContactInfo.openingHours,
+    // The mapLink is hardcoded to a default value, as your form doesn't provide it directly
+  };
 
 
   return (
     <>
-      {/* Hero Section */}
+    
       <HealthcareHero
         name={name}
         slug={slug}
@@ -111,7 +128,6 @@ export default function HealthCareSite() {
         <MedicalServicesSection services={servicesData} storeSlug={slug} />
 
         {/* Health Tips Section (if you have one, or repurpose 'services' for tips) */}
-        {/* Assuming HealthTipsSection uses the services data for 'tips' content */}
         <HealthTipsSection services={servicesData} storeSlug={slug} />
 
         {/* Doctors Section */}
@@ -134,13 +150,9 @@ export default function HealthCareSite() {
         />
 
         {/* Final Call to Action Section (Generic CTA at the bottom) */}
-        <CTASection storeSlug={slug}
-          phoneNumber={contactInfoData.phoneNumber}
-          email={contactInfoData.email}
-          address={contactInfoData.address}
-          openingHours={contactInfoData.openingHours}
-          mapLink={contactInfoData.mapLink}
-          />
+        <CTASection
+          storeSlug={slug}
+        />
       </div>
     </>
   );
