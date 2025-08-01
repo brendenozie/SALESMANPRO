@@ -26,12 +26,12 @@ const Banner = () => {
   if (status === "loading") return <div className="text-center p-10">Loading...</div>;
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-6 lg:p-16 ">
+    <div className="relative min-h-screen flex items-center justify-center p-6 lg:p-16 pt-20">
       
       {/* Dynamic Background Accents */}
       <div className="absolute inset-0 bg-gray-50 -z-10">
         <div className="absolute w-full h-full bg-radial-gradient-to-t from-gray-100 to-transparent animate-pulse-slow"></div>
-        <div className="absolute w-[600px] h-[600px] bg-gradient-to-br from-purple-400 to-pink-300 rounded-full blur-3xl top-[-200px] left-[-300px] opacity-40 animate-spin-slow"></div>
+        <div className="absolute w-[600px] h-[600px] bg-gradient-to-br from-pink-600 via-red-500 to-yellow-400 rounded-full blur-3xl top-[-200px] left-[-300px] opacity-40 animate-spin-slow"></div>
         <div className="absolute w-[500px] h-[500px] bg-gradient-to-tl from-yellow-300 to-orange-200 rounded-full blur-3xl bottom-[-100px] right-[-200px] opacity-30 animate-spin-slow-reverse"></div>
       </div>
 
@@ -46,14 +46,14 @@ const Banner = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 leading-tight">
-            Revolutionize Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Sales</span>
+            Revolutionize Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">Sales</span>
           </h1>
           <p className="text-lg lg:text-xl text-gray-700 max-w-lg mx-auto lg:mx-0 leading-relaxed">
             Achieve your sales goals effortlessly with cutting-edge tools designed to simplify your workflow and maximize your results.
           </p>
           <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mt-8">
             <Motion.button
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold rounded-full shadow-lg hover:from-purple-700 hover:to-pink-600 transition-transform duration-300 hover:scale-105"
+              className="px-8 py-4 bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 text-white font-bold rounded-full shadow-lg hover:from-purple-700 hover:to-pink-600 transition-transform duration-300 hover:scale-105"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -84,7 +84,7 @@ const Banner = () => {
       </div>
 
       {/* Feature Cards Section (Optional, can be placed below the hero) */}
-      <div className="absolute -bottom-24 w-full flex justify-center z-50 px-6">
+      <div className="absolute -bottom-24 w-full flex justify-center z-20 px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
           {features.map((feature, index) => (
             <Motion.div

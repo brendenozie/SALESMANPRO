@@ -141,7 +141,42 @@ export const gymLocationsData = [
   },
 ];
 
+// src/constant/Data.js
+
 export const picardData = [
+  {
+    id: 1,
+    title: "Intelligent Lead Capture",
+    desc: "Never miss a potential sale. Our system automatically captures, organizes, and scores your leads, so you always know who to prioritize.",
+  },
+  {
+    id: 2,
+    title: "Visual Sales Pipeline",
+    desc: "Get a crystal-clear overview of your deals. Drag and drop leads between stages, identify bottlenecks, and forecast revenue with confidence.",
+  },
+  {
+    id: 3,
+    title: "Smart Outreach Automation",
+    desc: "Save time and never let a lead go cold. Our platform sends personalized follow-up emails and messages for you, keeping every conversation active.",
+  },
+  {
+    id: 4,
+    title: "Real-Time Analytics",
+    desc: "Track your team’s performance with beautiful dashboards and actionable insights. Understand what's working and drive continuous improvement.",
+  },
+  {
+    id: 5,
+    title: "Seamless Integrations",
+    desc: "Connect your favorite apps like Slack, Salesforce, and HubSpot. Our platform works with your existing tools to create a single source of truth.",
+  },
+  {
+    id: 6,
+    title: "Mobile-First Sales",
+    desc: "Manage your deals, update contacts, and log activities from anywhere. Our mobile app keeps your entire team connected and productive on the go.",
+  },
+];
+
+export const picardDataV1 = [
   {
     id: 1,
     src: "/gym1.jpg",

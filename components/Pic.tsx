@@ -53,7 +53,7 @@ const Pic = () => {
         >
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
             Discover Our
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 ">
               Powerful Features
             </span>
           </h2>
@@ -68,7 +68,7 @@ const Pic = () => {
         {/* Left Scroll Button */}
         <button
           aria-label="Scroll left"
-          className="absolute hidden md:block z-20 left-4 lg:left-8 p-3 rounded-full bg-white text-purple-600 shadow-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-110"
+          className="absolute hidden md:block z-20 left-4 lg:left-8 p-3 rounded-full bg-white text-red-600 shadow-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-110"
           onClick={scrollLeft}
         >
           <ChevronLeftIcon className="h-8 w-8" />

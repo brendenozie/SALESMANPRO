@@ -53,8 +53,7 @@ const Header = () => {
             />
             <span
               className={classNames(
-                "hidden lg:block text-2xl font-extrabold tracking-tight transition-colors duration-300",
-                dark ? "text-gray-900" : "text-white"
+                "hidden lg:block text-2xl font-extrabold tracking-tight transition-colors duration-300 text-gray-900" 
               )}
             >
               SalesPro
@@ -87,15 +86,14 @@ const Header = () => {
                 <Link
                   href={item.href}
                   className={classNames(
-                    "relative group transition-all duration-300",
-                    dark ? "text-gray-600 hover:text-purple-600" : "text-gray-200 hover:text-white"
+                    "relative group transition-all duration-300 text-gray-600 hover:text-red-600" 
                   )}
                 >
                   {item.name}
                   <span
                     className={classNames(
                       "absolute bottom-0 left-0 w-0 group-hover:w-full h-[3px] rounded-full transition-all duration-300",
-                      dark ? "bg-purple-600" : "bg-white"
+                      dark ? "bg-red-600" : "bg-white"
                     )}
                   ></span>
                 </Link>
@@ -118,7 +116,7 @@ const Header = () => {
                 </Link>
                 <Link
                   href="/register"
-                  className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg hover:scale-105 transition-all duration-300"
+                  className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   Get Started
                 </Link>
@@ -126,7 +124,7 @@ const Header = () => {
             ) : (
               <Link
                 href="/dashboard"
-                className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg hover:scale-105 transition-all duration-300"
+                className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 shadow-lg hover:scale-105 transition-all duration-300"
               >
                 Dashboard
               </Link>
@@ -138,8 +136,7 @@ const Header = () => {
         <Motion.button
           aria-label="Open menu"
           className={classNames(
-            "lg:hidden p-2 rounded-lg transition-colors duration-300",
-            dark ? "text-gray-900 bg-white/50" : "text-white"
+            "lg:hidden p-2 rounded-lg transition-colors duration-300 text-gray-900 bg-white/50"
           )}
           onClick={toggleMenu}
           initial={{ opacity: 0, scale: 0.8 }}

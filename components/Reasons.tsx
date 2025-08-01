@@ -78,7 +78,7 @@ const Reasons = () => {
             
             {/* Header Section */}
             <Motion.div
-              className="uppercase text-base lg:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 tracking-widest"
+              className="uppercase text-base lg:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 tracking-widest"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -94,7 +94,7 @@ const Reasons = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              Why Choose Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">Platform?</span>
+              Why Choose Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">Platform?</span>
             </Motion.h2>
 
             {/* Reasons List */}

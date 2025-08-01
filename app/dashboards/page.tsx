@@ -16,7 +16,7 @@ const Home = () => {
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-purple-600 to-pink-500">
+      <div className="flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-pink-600 via-red-500 to-yellow-400">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
           <p className="text-white text-xl font-semibold mt-4">Loading...</p>
@@ -33,7 +33,7 @@ const Home = () => {
           stunning and immediately grab the user's attention.
         */}
         <Banner />      
-          
+
         {/*
           Feature Showcase: A series of components highlighting the core benefits
           and features of the product in an engaging carousel format.

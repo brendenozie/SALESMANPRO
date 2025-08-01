@@ -46,7 +46,7 @@ const Testimonials = () => {
     <section className="relative w-full py-24 bg-gray-50 overflow-hidden">
       {/* Background Shapes */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute w-[400px] h-[400px] bg-gradient-to-r from-purple-300 to-pink-200 rounded-full blur-3xl opacity-30 top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute w-[400px] h-[400px] bg-gradient-to-r from-pink-300 via-red-200 to-yellow-400 rounded-full blur-3xl opacity-30 top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute w-[300px] h-[300px] bg-gradient-to-l from-yellow-200 to-orange-100 rounded-full blur-3xl opacity-20 bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2"></div>
       </div>
 
@@ -59,12 +59,12 @@ const Testimonials = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-base font-bold uppercase text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 tracking-widest">
+          <h2 className="text-base font-bold uppercase text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 tracking-widest">
             Testimonials
           </h2>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900">
             Sales That <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">
               Speak Success
             </span>
           </h1>
@@ -114,13 +114,13 @@ const Testimonials = () => {
         >
           {/* Background Gradient & Border Elements */}
           <Motion.div
-            className="absolute w-72 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl border-4 border-purple-600 z-10"
+            className="absolute w-72 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl border-4 border-red-600 z-10"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
           ></Motion.div>
           <Motion.div
-            className="absolute w-72 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 z-0"
+            className="absolute w-72 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 z-0"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.1 }}
@@ -143,14 +143,14 @@ const Testimonials = () => {
             <button
               onClick={handlePrevious}
               aria-label="Previous Testimonial"
-              className="p-2 rounded-full bg-white text-purple-600 shadow-md hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full bg-white text-red-600 shadow-md hover:bg-gray-100 transition-colors"
             >
               {leftArrow}
             </button>
             <button
               onClick={handleNext}
               aria-label="Next Testimonial"
-              className="p-2 rounded-full bg-white text-purple-600 shadow-md hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full bg-white text-red-600 shadow-md hover:bg-gray-100 transition-colors"
             >
               {rightArrow}
             </button>

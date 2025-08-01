@@ -105,7 +105,7 @@ export default function PricingSection() {
         >
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
             Choose a plan that fits your <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">
               business needs
             </span>
           </h2>
@@ -125,7 +125,7 @@ export default function PricingSection() {
             <Motion.div
               key={plan.name}
               className={`relative flex flex-col p-8 rounded-3xl shadow-xl transition-all duration-500
-              ${plan.isPopular ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white transform scale-105 shadow-2xl' : 'bg-white border border-gray-200 text-gray-900 hover:scale-105'}`}
+              ${plan.isPopular ? 'bg-gradient-to-br from-pink-600 via-red-500 to-yellow-400 text-white transform scale-105 shadow-2xl' : 'bg-white border border-gray-200 text-gray-900 hover:scale-105'}`}
               variants={cardVariants}
             >
               {plan.isPopular && (
@@ -170,8 +170,8 @@ export default function PricingSection() {
                 <button
                   className={`w-full py-3 px-6 rounded-full font-bold text-lg shadow-lg transform transition-transform duration-300
                   ${plan.isPopular
-                    ? 'bg-white text-purple-600 hover:scale-105 hover:shadow-xl'
-                    : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:scale-105 hover:shadow-xl'
+                    ? 'bg-white text-red-600 hover:scale-105 hover:shadow-xl'
+                    : 'bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 text-white hover:scale-105 hover:shadow-xl'
                   }`}
                 >
                   Get Started

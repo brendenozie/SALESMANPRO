@@ -29,8 +29,8 @@ const PlayStoreBanner = () => {
   return (
     <div className="relative w-full h-[800px] md:h-[600px] rounded-3xl overflow-hidden flex flex-col md:flex-row items-center justify-between text-gray-900 px-6 md:px-12 lg:px-20 py-24">
       {/* Background with subtle gradient blur */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-50 to-white">
-        <div className="absolute w-[500px] h-[500px] bg-gradient-to-r from-purple-300 to-pink-200 rounded-full blur-3xl opacity-50 -top-20 -left-20 animate-pulse-slow"></div>
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-red-50 to-white">
+        <div className="absolute w-[500px] h-[500px] bg-gradient-to-r from-red-300 to-pink-200 rounded-full blur-3xl opacity-50 -top-20 -left-20 animate-pulse-slow"></div>
         <div className="absolute w-[400px] h-[400px] bg-gradient-to-l from-yellow-200 to-orange-100 rounded-full blur-3xl opacity-40 bottom-10 right-20 animate-pulse-slow delay-500"></div>
       </div>
 
@@ -62,7 +62,7 @@ const PlayStoreBanner = () => {
       >
         {/* Headline */}
         <Motion.h1
-          className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 drop-shadow-lg"
+          className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 drop-shadow-lg"
           variants={itemVariants}
         >
           Supercharge Your <br /> Sales Success
@@ -83,13 +83,13 @@ const PlayStoreBanner = () => {
         >
           <Link
             href="https://play.google.com/store/apps/details?id=co.ke.tulivuapps.salesmanapp"
-            className="inline-block bg-gradient-to-r from-purple-600 to-pink-500 text-white py-4 px-10 rounded-full font-bold text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-transform duration-300"
+            className="inline-block bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 text-white py-4 px-10 rounded-full font-bold text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-transform duration-300"
           >
             Get Started Now
           </Link>
           <Link
             href="/features"
-            className="inline-block bg-transparent border-2 border-purple-600 text-purple-600 py-4 px-10 rounded-full font-bold text-lg hover:bg-purple-600 hover:text-white hover:scale-105 transition-transform duration-300"
+            className="inline-block bg-transparent border-2 border-red-600 text-red-600 py-4 px-10 rounded-full font-bold text-lg hover:bg-red-600 hover:text-white hover:scale-105 transition-transform duration-300"
           >
             Learn More
           </Link>

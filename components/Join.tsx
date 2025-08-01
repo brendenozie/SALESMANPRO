@@ -34,11 +34,11 @@ const Join = () => {
         >
           {/* Headline */}
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold uppercase leading-tight">
-            <span className="block bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
+            <span className="block bg-clip-text text-transparent bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">
               Ready to
             </span>
             <span className="text-gray-900">Take Your Sales</span>
-            <span className="block bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
+            <span className="block bg-clip-text text-transparent bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">
               to the Next Level?
             </span>
           </h2>
@@ -69,7 +69,7 @@ const Join = () => {
             />
             <button
               type="submit"
-              className="w-full py-4 font-bold text-white bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              className="w-full py-4 font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
             >
               Sign Up for Free
             </button>

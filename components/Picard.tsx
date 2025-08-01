@@ -1,29 +1,40 @@
 import React from "react";
+import { motion as Motion } from "framer-motion";
 
 interface CardProps {
   title: string;
   desc: string;
+  icon?: React.ReactNode; // Assuming an icon prop for visual representation
 }
 
-const Picard = ({ title, desc }: CardProps) => {
+const Picard = ({ title, desc, icon }: CardProps) => {
   return (
-    <div className="flex flex-col min-w-[270px] gap-6 px-6 py-8 rounded-lg bg-white shadow-lg text-gray-800 snap-center transition-all transform hover:scale-105 hover:shadow-xl duration-300 h-[350px] mx-auto">
-      {/* Title Section */}
-      <div className="flex flex-col gap-2 text-center sm:text-left">
-        <h3 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
+    <Motion.div
+      className="flex flex-col min-w-[300px] max-w-[300px] h-[350px] p-8 rounded-2xl bg-white shadow-xl snap-center
+        hover:scale-105 hover:shadow-2xl transition-all duration-300 transform-gpu
+        border border-gray-100 cursor-pointer"
+      whileHover={{ y: -10 }}
+    >
+      {/* Icon Section */}
+      <div className="mb-6">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-600 via-red-500 to-yellow-400 flex items-center justify-center text-white text-3xl shadow-lg">
+          {icon ? icon : "🚀"} {/* Default icon if none is provided */}
+        </div>
+      </div>
+
+      {/* Title and Description */}
+      <div className="flex flex-col gap-3">
+        <h3 className="text-xl font-extrabold text-gray-900 leading-tight">
           {title}
         </h3>
-        <p className="text-sm sm:text-base text-gray-600">{desc}</p>
+        <p className="text-sm text-gray-600">
+          {desc}
+        </p>
       </div>
 
       {/* Decorative Line */}
-      <div className="h-1 w-16 mx-auto sm:mx-0 bg-gradient-to-r from-orange-500 to-yellow-400 rounded-full"></div>
-
-      {/* Decorative Badge */}
-      <div className="w-10 h-10 mx-auto sm:mx-0 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full flex items-center justify-center shadow-lg">
-        <span className="text-white font-bold text-lg">★</span>
-      </div>
-    </div>
+      <div className="h-[3px] w-12 bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 rounded-full mt-auto"></div>
+    </Motion.div>
   );
 };
 

@@ -42,7 +42,7 @@ const ProgramCard = ({ heading, details, icon }: { heading: string; details: str
       className="relative flex flex-col p-8 rounded-2xl gap-6 bg-white text-gray-900 shadow-lg border border-gray-200 transition-all duration-300 cursor-pointer overflow-hidden"
     >
       {/* Icon with gradient circle */}
-      <div className="absolute top-6 right-6 text-purple-600 transition-colors duration-300 group-hover:text-white">
+      <div className="absolute top-6 right-6 text-red-600 transition-colors duration-300 group-hover:text-white">
         {icon}
       </div>
 
@@ -53,7 +53,7 @@ const ProgramCard = ({ heading, details, icon }: { heading: string; details: str
       </div>
 
       {/* Learn More Button */}
-      <div className="flex items-center gap-3 mt-auto text-sm font-semibold text-purple-600 group-hover:text-white transition-colors duration-300">
+      <div className="flex items-center gap-3 mt-auto text-sm font-semibold text-red-600 group-hover:text-white transition-colors duration-300">
         <span>Explore Program</span>
         <img
           className="w-4 group-hover:translate-x-1 transition-transform duration-300"
@@ -74,7 +74,7 @@ const OurPrograms = () => {
       aria-labelledby="programs-header"
     >
       {/* Background Shapes */}
-      <div className="absolute w-[400px] h-[400px] bg-gradient-to-r from-purple-300 to-pink-200 rounded-full blur-3xl opacity-30 top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute w-[400px] h-[400px] bg-gradient-to-r from-red-300 to-pink-200 rounded-full blur-3xl opacity-30 top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2"></div>
       <div className="absolute w-[300px] h-[300px] bg-gradient-to-l from-yellow-200 to-orange-100 rounded-full blur-3xl opacity-20 bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2"></div>
 
       {/* Programs Header */}
@@ -83,7 +83,7 @@ const OurPrograms = () => {
         className="text-center max-w-3xl z-10"
       >
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">
             Empower Your Sales Journey
           </span>{" "}
           Today
