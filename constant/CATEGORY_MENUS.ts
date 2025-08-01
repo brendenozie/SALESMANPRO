@@ -326,7 +326,15 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Services", href: `/admin/${adminSlug}/health-services`, icon: HeartIcon }, // Manage medical services offered
     { label: "Prescriptions", href: `/admin/${adminSlug}/health-prescriptions`, icon: DocumentTextIcon }, // Manage patient prescriptions
     { label: "Billing & Invoices", href: `/admin/${adminSlug}/health-billing`, icon: CreditCardIcon }, // Handle financial transactions
-    { label: "Inventory", href: `/admin/${adminSlug}/health-inventory`, icon: CubeTransparentIcon }, // Manage medical supplies and equipment
+    // { label: "Inventory", href: `/admin/${adminSlug}/health-inventory`, icon: CubeTransparentIcon }, // Manage medical supplies and equipment
+    {
+      label: "Inventory",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
+    },
     { label: "Reports", href: `/admin/${adminSlug}/health-reports`, icon: ChartBarIcon }, // Generate various clinic reports
     { label: "Settings", href: `/admin/${adminSlug}/health-settings`, icon: Cog6ToothIcon }, // Clinic-wide settings
   ],
