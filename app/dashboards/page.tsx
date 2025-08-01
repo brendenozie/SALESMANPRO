@@ -1,94 +1,75 @@
 "use client";
 
-import Banner from "../../components/Banner";
 import { useSession } from "next-auth/react";
 import MainLayout from "../../components/MainLayout";
-import PlayStoreBanner  from "../../components/PlayStoreBanner";
-import OurPrograms from "../../components/ourprograms";
-import Join from "../../components/Join";
-import Reasons from "../../components/Reasons";
-import PricingTable from "@/components/PricingTable";
-// import Plans from "../../components/Plans";
+import Banner from "../../components/Banner";
+import OurPrograms from "../../components/ourprograms"; // Assuming this will be updated to a feature section
+import Reasons from "../../components/Reasons"; // Assuming this will be updated to a feature section
+import PlayStoreBanner from "../../components/PlayStoreBanner"; // Assuming this will be updated to a CTA section
+import PricingTable from "@/components/pricingTable";
 import Testimonials from "../../components/Testimonials";
-// import { ISubscritption } from "../../types/typings";
-// import { GetServerSidePropsContext } from "next";
+import Join from "../../components/Join";
+import Pic from "../../components/Pic";
 
-type Props = {
-    // subscriptions:  ISubscritption[] ;
-};
+const Home = () => {
+  const { status } = useSession();
 
-const Home = (props:Props) => {
-  
-  const { data: session, status } = useSession();
-
-  if (status === "loading") return (
-      <div className="flex items-center justify-center h-screen w-screen bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500">
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-purple-600 to-pink-500">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
           <p className="text-white text-xl font-semibold mt-4">Loading...</p>
         </div>
       </div>
-  );
+    );
+  }
 
   return (
     <MainLayout>
-      <main className="max-w-full ">
-        <div className="mt-20 lg:mt-16"></div>
-        <Banner/>
-        <div className="mt-[28rem] lg:mt-40"></div>
+      <div className="flex flex-col gap-32 lg:gap-48 overflow-x-hidden">
+        {/*
+          Hero Section: The main entry point to the site, designed to be visually
+          stunning and immediately grab the user's attention.
+        */}
+        <Banner />      
+          
+        {/*
+          Feature Showcase: A series of components highlighting the core benefits
+          and features of the product in an engaging carousel format.
+        */}
         <OurPrograms />
-        <div className="mt-32 lg:mt-40"></div>
-        <Reasons />        
-        <div className="mt-32 lg:mt-40"></div>
-        <PlayStoreBanner />
-        <div className="mt-32 lg:mt-40"></div>
-        {/* <Plans subscriptions={props.subscriptions}/> */}
-        <PricingTable />
-        <div className="mt-32 lg:mt-40"></div>
+        
+        {/*
+          Feature Showcase: A series of components highlighting the core benefits
+          and features of the product in an engaging carousel format.
+        */}
+        <Pic />
+
+        {/*
+          Social Proof: Testimonials from satisfied customers to build trust and credibility.
+        */}
         <Testimonials />
-        <div className="mt-32 lg:mt-40"></div>
-        <Join />        
-        <div className="mt-32 lg:mt-40"></div>
-      </main>
+
+        {/*
+          Feature List: A more detailed look at the core reasons to choose the product.
+        */}
+        <Reasons />
+        
+        {/*
+          Pricing: A clear and concise pricing table to help users make a decision.
+        */}
+        <PricingTable />
+
+        {/*
+          Final Call-to-Action: A compelling section to drive user sign-ups or downloads.
+          This includes the Join and PlayStoreBanner components.
+        */}
+        <Join />
+        <PlayStoreBanner />
+      </div>
     </MainLayout>
   );
-}
+};
 
 export default Home;
-
-
-// export const getServerSideProps = async (
-//     context: GetServerSidePropsContext
-// ) => {
-    
-//     let url = process.env.NEXT_PUBLIC_API_URL;
-
-//     // Prepare all fetch requests with date range and userId as query parameters
-//     // const fetchPromises = [
-//     //     fetch(`${url}/get-subscriptions`).then((res) => res.json()),
-//     //    ];
-
-
-
-//   try {
-//     // Wait for all fetch requests to complete
-//     // const [
-//     //   subscriptions,
-//     // ] = await Promise.all(fetchPromises);
-
-//     return {
-//       props: {
-//         subscriptions:null,
-//       },
-//     };
-//   } catch (error) {
-//     console.error("Error fetching data:", error);
-
-//     // Handle error appropriately
-//     return {
-//       props: {
-//         subscriptions: null,
-//       },
-//     };
-//   }
-// }

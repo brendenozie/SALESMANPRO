@@ -1,19 +1,15 @@
-import React, { PropsWithChildren, useState } from "react";
+import React, { PropsWithChildren } from "react";
 import Head from "next/head";
-import Drawer from "./Drawer";
-import Footer from "./Footer";
 import Header from "./Header";
-import Link from "next/link";
-import { signOut } from "next-auth/react";
-import Pic from "./Pic";
+import Footer from "./Footer";
+import { Toaster } from "react-hot-toast"; // Assuming you're using react-hot-toast for notifications
 
 const MainLayout = (props: PropsWithChildren) => {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <div className="bg-gradient-to-br from-white via-gray-100 to-gray-200  text-black flex flex-col min-h-screen">
+    <div className="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
       <Head>
-        <title>SalesMan</title>
+        <title>SalesPro - Your Sales Management Solution</title>
+        <meta name="description" content="SalesPro is the ultimate platform for sales professionals to streamline their workflow, boost productivity, and close deals faster." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -21,41 +17,15 @@ const MainLayout = (props: PropsWithChildren) => {
       <Header />
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-6 lg:px-12 py-12">
+      <main className="flex-1">
         {props.children}
       </main>
 
-      {/* Decorative Section */}
-      <section className=" rounded-lg p-8 shadow-lg lg:mx-4">
-        <Pic />
-      </section>
-
       {/* Footer */}
       <Footer />
-
-      {/* Drawer */}
-      <Drawer isOpen={isOpen} setIsOpen={setIsOpen}>
-        <ul className="space-y-4 text-lg">
-          <li>
-            <Link href="/favorites" className="drawer-item hover:text-blue-400 transition-colors">
-                List of Favorites
-            </Link>
-          </li>
-          <li>
-            <Link href="/bookings" className="drawer-item hover:text-blue-400 transition-colors">
-                Your Bookings
-            </Link>
-          </li>
-          <li>
-            <button
-              onClick={() => signOut()}
-              className="drawer-item hover:text-red-500 transition-colors"
-            >
-              Sign out
-            </button>
-          </li>
-        </ul>
-      </Drawer>
+      
+      {/* Toast Notifications */}
+      <Toaster position="bottom-right" />
     </div>
   );
 };

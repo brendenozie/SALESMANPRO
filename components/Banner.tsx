@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion as Motion } from "framer-motion";
 import heroImage from "../assets/hero_image.png";
 
+// Features data is great, no need to change it.
 const features = [
   { title: "Manage Products", description: "Track your inventory and keep everything organized.", icon: "📦" },
   { title: "Client Insights", description: "Understand your clients with powerful analytics.", icon: "👥" },
@@ -22,47 +23,79 @@ const Banner = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  if (status === "loading") return <div>Loading...</div>;
+  if (status === "loading") return <div className="text-center p-10">Loading...</div>;
 
   return (
-    <div className="relative h-screen  ">
-      {/* Background Accents */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute w-[500px] h-[500px] bg-gradient-to-r from-blue-400 to-purple-300 rounded-full blur-3xl top-[-100px] left-[-150px] opacity-30"></div>
-        <div className="absolute w-[400px] h-[400px] bg-gradient-to-br from-yellow-300 to-orange-200 rounded-full blur-3xl bottom-[-100px] right-[-150px] opacity-30"></div>
+    <div className="relative min-h-screen flex items-center justify-center p-6 lg:p-16 ">
+      
+      {/* Dynamic Background Accents */}
+      <div className="absolute inset-0 bg-gray-50 -z-10">
+        <div className="absolute w-full h-full bg-radial-gradient-to-t from-gray-100 to-transparent animate-pulse-slow"></div>
+        <div className="absolute w-[600px] h-[600px] bg-gradient-to-br from-purple-400 to-pink-300 rounded-full blur-3xl top-[-200px] left-[-300px] opacity-40 animate-spin-slow"></div>
+        <div className="absolute w-[500px] h-[500px] bg-gradient-to-tl from-yellow-300 to-orange-200 rounded-full blur-3xl bottom-[-100px] right-[-200px] opacity-30 animate-spin-slow-reverse"></div>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col-reverse lg:flex-row items-center justify-between h-full px-6 lg:px-16">
-        {/* Left Section: Hero Text */}
-        <div className="flex-1 text-center lg:text-left space-y-8">
-          <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 leading-snug">
-            Revolutionize Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500">Sales</span>
+      {/* Main Content Container */}
+      <div className="z-10 w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-24">
+        
+        {/* Left Section: Hero Text and Call-to-Action */}
+        <Motion.div
+          className="text-center lg:text-left space-y-8"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 leading-tight">
+            Revolutionize Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Sales</span>
           </h1>
-          <p className="text-lg lg:text-xl text-gray-600 max-w-md mx-auto lg:mx-0 leading-relaxed">
-            Achieve your sales goals effortlessly with cutting-edge tools designed to simplify your workflow.
+          <p className="text-lg lg:text-xl text-gray-700 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+            Achieve your sales goals effortlessly with cutting-edge tools designed to simplify your workflow and maximize your results.
           </p>
-          <div className="flex justify-center lg:justify-start gap-4 mt-6">
-            <button className="px-6 py-3 bg-gradient-to-r from-orange-400 to-yellow-300 text-white font-bold rounded-full shadow-md hover:from-yellow-400 hover:to-orange-500 transition-transform hover:scale-105">
-              Get Started
-            </button>
-            <button className="px-6 py-3 border-2 border-gray-900 text-gray-900 font-bold rounded-full shadow-md hover:bg-gray-900 hover:text-white transition-transform hover:scale-105">
+          <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mt-8">
+            <Motion.button
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold rounded-full shadow-lg hover:from-purple-700 hover:to-pink-600 transition-transform duration-300 hover:scale-105"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Get Started Now
+            </Motion.button>
+            <Motion.button
+              className="px-8 py-4 border-2 border-gray-300 text-gray-900 font-bold rounded-full shadow-md hover:bg-gray-900 hover:text-white transition-colors duration-300 hover:scale-105"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               Learn More
-            </button>
+            </Motion.button>
           </div>
+        </Motion.div>
+
+        {/* Right Section: Hero Image */}
+        <div className="relative flex justify-center items-center">
+          <Motion.img
+            src={heroImage.src}
+            alt="Hero Illustration"
+            className="w-full h-auto max-w-md lg:max-w-xl drop-shadow-2xl"
+            initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+          />
         </div>
 
-        {/* Right Section: Features */}
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      </div>
+
+      {/* Feature Cards Section (Optional, can be placed below the hero) */}
+      <div className="absolute -bottom-24 w-full flex justify-center z-50 px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
           {features.map((feature, index) => (
             <Motion.div
               key={index}
-              className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.2, duration: 0.8 }}
+              className="p-6 bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: index * 0.1, duration: 0.6 }}
+              viewport={{ once: true }}
             >
-              <div className="text-4xl mb-4">{feature.icon}</div>
+              <div className="text-4xl mb-4 text-purple-600">{feature.icon}</div>
               <h3 className="text-xl font-bold text-gray-900">{feature.title}</h3>
               <p className="text-gray-500 mt-2">{feature.description}</p>
             </Motion.div>
@@ -70,18 +103,7 @@ const Banner = () => {
         </div>
       </div>
 
-      {/* Hero Image */}
-      <div className="absolute bottom-0 right-0 lg:right-16 w-1/2 max-w-lg">
-        <Motion.img
-          src={heroImage.src}
-          alt="Hero Illustration"
-          className="w-full h-auto drop-shadow-xl"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1 }}
-        />
-      </div>
-  </div>    
+    </div>
   );
 };
 

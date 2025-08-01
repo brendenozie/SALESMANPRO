@@ -1,10 +1,12 @@
+"use client";
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Bars4Icon, XMarkIcon } from "@heroicons/react/24/solid";
-import fit1 from "../assets/fit1.png";
+import fit1 from "../assets/fit1.png"; // Assuming this is the logo
 import { useOnClickOutside } from "usehooks-ts";
 import classNames from "classnames";
+import { motion as Motion } from "framer-motion";
 
 const Header = () => {
   const { data: session } = useSession();
@@ -22,39 +24,49 @@ const Header = () => {
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
 
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Features", href: "/features" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "Contact", href: "/contact" },
+  ];
+
   return (
     <header
       className={classNames(
-        "fixed top-0 left-0 w-full z-50 transition-all duration-300","nav-color backdrop-blur"
-        // dark ? "bg-gradient-to-r from-orange-700 via-orange-800 to-gray-900 shadow-lg" : "nav-color backdrop-blur"
+        "fixed top-0 left-0 w-full z-50 transition-all duration-300",
+        dark ? "bg-white/80 shadow-lg backdrop-blur-md" : "bg-transparent"
       )}
     >
-      <div
-        className={
-          "flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 relative min-h-[5rem] md:min-h-[7rem]"
-        }
-      >
+      <div className="flex items-center justify-between max-w-7xl mx-auto px-6 sm:px-8 min-h-[5rem] md:min-h-[6rem]">
         {/* Logo */}
-        <Link href="/" aria-label="Home" className="flex items-center gap-2">
-          <img
-            src={fit1.src}
-            alt="SalesPro Logo"
-            className="w-12 h-12 object-contain cursor-pointer hover:scale-110 transition-transform duration-300"
-          />
-          <span
-            className={
-              "hidden lg:block text-2xl font-extrabold tracking-tigh text-orange-500"
-            }
-          >
-            SalesPro
-          </span>
-        </Link>
+        <Motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link href="/" aria-label="Home" className="flex items-center gap-3">
+            <img
+              src={fit1.src}
+              alt="SalesPro Logo"
+              className="w-10 h-10 md:w-12 md:h-12 object-contain cursor-pointer transition-transform duration-300 hover:scale-110"
+            />
+            <span
+              className={classNames(
+                "hidden lg:block text-2xl font-extrabold tracking-tight transition-colors duration-300",
+                dark ? "text-gray-900" : "text-white"
+              )}
+            >
+              SalesPro
+            </span>
+          </Link>
+        </Motion.div>
 
         {/* Navigation */}
         <nav
           ref={navRef}
           className={classNames(
-            "fixed lg:static top-0 right-0 h-screen lg:h-auto w-60 lg:w-auto bg-gray-900 lg:bg-transparent flex flex-col lg:flex-row items-start lg:items-center gap-4 px-6 lg:px-0 py-6 lg:py-0",
+            "fixed lg:static top-0 right-0 h-screen lg:h-auto w-60 lg:w-auto bg-gray-900 lg:bg-transparent flex flex-col lg:flex-row items-start lg:items-center gap-6 px-6 lg:px-0 py-8 lg:py-0",
             menuOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0",
             "lg:translate-x-0 lg:opacity-100 transition-all duration-500 ease-in-out"
           )}
@@ -63,54 +75,58 @@ const Header = () => {
           <button
             aria-label="Close menu"
             onClick={toggleMenu}
-            className="absolute top-4 right-4 lg:hidden text-white"
+            className="absolute top-4 right-4 lg:hidden text-gray-500 hover:text-white"
           >
-            <XMarkIcon className="h-6 w-6" />
+            <XMarkIcon className="h-7 w-7" />
           </button>
 
           {/* Navigation Links */}
-          <ul className={classNames("flex flex-col lg:flex-row gap-6 font-medium text-lg lg:text-sm  ",
-            dark ? "text-gray-500" : "lg:text-gray-500"
-          )}>
-            {[
-              { name: "Home", href: "/" },
-              { name: "Features", href: "/features" },
-              { name: "About Us", href: "/aboutus" },
-              { name: "Contact", href: "/contact" },
-            ].map((item, index) => (
-              <li key={index}>
+          <ul className="flex flex-col lg:flex-row gap-8 font-medium text-lg lg:text-sm">
+            {navLinks.map((item) => (
+              <li key={item.name} onClick={() => setMenuOpen(false)}>
                 <Link
                   href={item.href}
-                  className="hover:text-yellow-400 relative group transition-all"
+                  className={classNames(
+                    "relative group transition-all duration-300",
+                    dark ? "text-gray-600 hover:text-purple-600" : "text-gray-200 hover:text-white"
+                  )}
                 >
                   {item.name}
-                  <span className="absolute bottom-0 left-0 w-0 group-hover:w-full h-1 bg-yellow-400 transition-all duration-300"></span>
+                  <span
+                    className={classNames(
+                      "absolute bottom-0 left-0 w-0 group-hover:w-full h-[3px] rounded-full transition-all duration-300",
+                      dark ? "bg-purple-600" : "bg-white"
+                    )}
+                  ></span>
                 </Link>
               </li>
             ))}
           </ul>
 
           {/* Call-to-Action Buttons */}
-          <div className="mt-6 lg:mt-0 flex flex-col lg:flex-row gap-3">
+          <div className="mt-8 lg:mt-0 flex flex-col lg:flex-row gap-4 lg:ml-8">
             {!session ? (
               <>
                 <Link
                   href="/signin"
-                  className="text-white uppercase text-sm font-medium hover:underline transition-all"
+                  className={classNames(
+                    "py-2 px-5 rounded-full text-base font-bold transition-all duration-300 border",
+                    dark ? "text-gray-800 border-gray-300 hover:bg-gray-100" : "text-white border-white hover:bg-white hover:text-gray-900"
+                  )}
                 >
                   Log In
                 </Link>
                 <Link
                   href="/register"
-                  className="text-yellow-500 bg-blue-900 py-2 px-4 rounded-lg text-sm font-medium hover:bg-yellow-500 hover:text-blue-900 transition-all"
+                  className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg hover:scale-105 transition-all duration-300"
                 >
-                  Register
+                  Get Started
                 </Link>
               </>
             ) : (
               <Link
-                href="/dashboard2"
-                className="text-white bg-blue-900 py-2 px-4 rounded-lg text-sm font-medium hover:bg-yellow-500 hover:text-blue-900 transition-all"
+                href="/dashboard"
+                className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg hover:scale-105 transition-all duration-300"
               >
                 Dashboard
               </Link>
@@ -119,13 +135,19 @@ const Header = () => {
         </nav>
 
         {/* Mobile Menu Toggle */}
-        <button
+        <Motion.button
           aria-label="Open menu"
-          className="lg:hidden text-white"
+          className={classNames(
+            "lg:hidden p-2 rounded-lg transition-colors duration-300",
+            dark ? "text-gray-900 bg-white/50" : "text-white"
+          )}
           onClick={toggleMenu}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Bars4Icon className="h-6 w-6" />
-        </button>
+          <Bars4Icon className="h-7 w-7" />
+        </Motion.button>
       </div>
     </header>
   );
