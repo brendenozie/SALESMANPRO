@@ -1,10 +1,13 @@
-"use client";
+// File: components/site/layouts/HealthcareLayout/components/DoctorsSection.tsx
+
+'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation'; // Correct import for useRouter in Next.js 13+
-import Image from 'next/image'; // Import Next.js Image component
-import { UserGroupIcon, ArrowRightIcon,} from '@heroicons/react/24/solid'; // Importing relevant solid icons
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { UserGroupIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
+
 
 // Mocking the image loader - Keep if not fully in Next.js Image optimization
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -12,144 +15,149 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 interface DoctorsSectionProps {
-  doctors: Array<{ id: string; name: string; subtitle: string; imageUrl: string; specializations?: string[] }>; // Added optional specializations
+  doctors: Array<{ id: string; name: string; subtitle: string; imageUrl: string; specializations?: string[] }>;
   storeSlug: string;
 }
 
 export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionProps) {
   const router = useRouter();
 
-  // Animation variants
-  const fadeIn = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
+  // Animation variants for a staggered, captivating effect
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1, // Time between each child animation
+      },
+    },
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, scale: 0.9, y: 30 },
+    hidden: { opacity: 0, y: 50, scale: 0.95 },
     visible: {
       opacity: 1,
-      scale: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      }
-    }
+        type: 'spring',
+        stiffness: 100,
+        damping: 10,
+      },
+    },
   };
 
   return (
     <section className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 py-20 lg:py-28 relative overflow-hidden">
-      {/* Background Dots/Pattern for Visual Texture */}
-      <div className="absolute inset-0 z-0 opacity-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20z'/%3E%3C/g%3E%3C/svg%3E")` }}></div>
-
+      {/* Background Shapes for Visual Texture */}
+      <div className="absolute inset-0 z-0 opacity-10">
+        <div className="absolute w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl bottom-1/4 right-1/4 transform translate-x-1/2 translate-y-1/2" />
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
           <motion.span
             className="inline-block bg-purple-500/15 text-purple-700 dark:bg-purple-400/20 dark:text-purple-400 uppercase text-sm tracking-widest rounded-full px-4 py-2 mb-4 font-semibold shadow-sm"
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            variants={fadeIn}
+            transition={{ duration: 0.5 }}
           >
-            Our Dedicated Team
+            Meet Our Experts
           </motion.span>
           <motion.h2
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight drop-shadow-lg"
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            variants={fadeIn}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
           >
-            Meet Our <span className="text-indigo-600 dark:text-indigo-400">Expert Doctors</span>
+            Our <span className="text-indigo-600 dark:text-indigo-400">Compassionate</span> Doctors
           </motion.h2>
           <motion.p
             className="text-xl text-gray-700 dark:text-gray-300 mt-4 max-w-3xl mx-auto leading-relaxed"
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            variants={fadeIn}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
           >
-            Our team of compassionate and highly skilled medical professionals is here to serve you.
+            Discover the dedicated professionals committed to your well-being.
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12"> {/* Increased gap */}
-          {doctors.map((doc:any, idx) => (
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {doctors.map((doc, idx) => (
             <motion.div
               key={doc.id}
               role="button"
               tabIndex={0}
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl p-8 text-center cursor-pointer
-                         transform transition-all duration-300 ease-in-out group hover:-translate-y-2 relative overflow-hidden" // Added overflow-hidden for subtle gradient
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }} // Trigger earlier
+              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 text-center cursor-pointer transform transition-all duration-500 ease-in-out group hover:shadow-2xl hover:scale-105 relative overflow-hidden"
               variants={cardVariants}
-              transition={{ delay: idx * 0.1 }} // Staggered animation
-              whileHover={{ scale: 1.03 }} // Keep a slight scale for consistency with other cards
               onClick={() => router.push(`/${storeSlug}/doctor/${doc.id}`)}
-              onKeyDown={(e:any) => {
+              onKeyDown={(e : any) => {
                 if (e.key === 'Enter' || e.key === ' ') router.push(`/${storeSlug}/doctor/${doc.id}`);
               }}
               aria-label={`View profile of Dr. ${doc.name}, ${doc.subtitle}`}
             >
-              {/* Subtle overlay gradient on hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-3xl"></div>
-
-              <div className="relative w-36 h-36 mx-auto rounded-full overflow-hidden border-4 border-teal-500 dark:border-teal-400 mb-6 shadow-md transform group-hover:scale-105 transition-transform duration-300"> {/* Larger image, bolder border */}
+              {/* Doctor Image with glowing border effect */}
+              <div className="relative w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-indigo-500 dark:border-indigo-400 mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300 transform-gpu">
                 <Image
                   src={doc.imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                   alt={`Dr. ${doc.name}`}
-                  loader={customLoader}
                   fill
                   className="object-cover object-center"
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" // Responsive image sizes
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  loader={customLoader}
                 />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">
+              
+              {/* Text Content */}
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 leading-tight transition-colors duration-300 group-hover:text-teal-600 dark:group-hover:text-teal-400">
                 Dr. {doc.name}
               </h3>
-              <p className="text-base font-medium text-blue-600 dark:text-blue-400 mb-4">
+              <p className="text-base font-medium text-blue-600 dark:text-blue-400">
                 {doc.subtitle}
               </p>
 
-              {/* Optional: Display specializations as tags */}
+              {/* Specialization Tags */}
               {doc.specializations && doc.specializations.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs">
-                  {doc.specializations.map((spec:any, i:any) => (
+                  {doc.specializations.map((spec, i) => (
                     <span key={i} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-sm font-medium">
                       {spec}
                     </span>
                   ))}
                 </div>
               )}
-
-              {/* View Profile Button on card hover (or always visible if preferred) */}
-              <div className="mt-6">
-                <span className="inline-flex items-center text-teal-600 dark:text-teal-400 font-semibold group-hover:underline group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors duration-200">
+              
+              {/* Hover overlay with CTA */}
+              <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/50 dark:bg-black/60 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="inline-flex items-center text-white font-semibold text-lg animate-pulse">
                   View Profile
-                  <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                  <ArrowRightIcon className="w-5 h-5 ml-2" />
                 </span>
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Call to action for all doctors */}
         <div className="text-center mt-20">
           <motion.button
-            className="inline-flex items-center px-10 py-5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xl font-semibold rounded-full shadow-lg transition-all duration-300
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400"
+            className="inline-flex items-center px-10 py-5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xl font-semibold rounded-full shadow-lg transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400"
             whileHover={{ scale: 1.05, boxShadow: "0px 12px 30px rgba(0,0,0,0.25)" }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/${storeSlug}/doctors`)} // Link to your full doctors page
+            onClick={() => router.push(`/${storeSlug}/doctors`)}
             aria-label="View all our expert doctors"
           >
-            View All Doctors
+            Explore All Doctors
             <UserGroupIcon className="w-6 h-6 ml-3" />
           </motion.button>
         </div>
