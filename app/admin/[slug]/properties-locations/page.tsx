@@ -1,4 +1,4 @@
-// src/app/admin/[adminSlug]/properties-locations/page.tsx
+// src/app/admin/[slug]/properties-locations/page.tsx
 'use client';
 
 import { notFound } from 'next/navigation';
@@ -28,12 +28,12 @@ const mockLocations: Location[] = [
 
 interface LocationsPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
 export default function PropertiesLocationsPage({ params }: LocationsPageProps) {
-  const { adminSlug } = params;
+  const { slug } = params;
 
   // In a real app, you'd fetch locations here:
   // const [locations, setLocations] = useState<Location[]>([]);
@@ -44,7 +44,7 @@ export default function PropertiesLocationsPage({ params }: LocationsPageProps) 
   //   const fetchLocations = async () => {
   //     try {
   //       // Replace with your actual API endpoint
-  //       const response = await fetch(`/api/admin/${adminSlug}/locations`);
+  //       const response = await fetch(`/api/admin/${slug}/locations`);
   //       if (!response.ok) {
   //         throw new Error('Failed to fetch locations');
   //       }
@@ -57,7 +57,7 @@ export default function PropertiesLocationsPage({ params }: LocationsPageProps) 
   //     }
   //   };
   //   fetchLocations();
-  // }, [adminSlug]);
+  // }, [slug]);
 
   // For demonstration, we'll use mock data directly
   const locations = mockLocations;
@@ -69,13 +69,13 @@ export default function PropertiesLocationsPage({ params }: LocationsPageProps) 
   const handleAddLocation = () => {
     // Navigate to a new page or open a modal for adding
     console.log('Navigate to add new location form');
-    // Example: router.push(`/admin/${adminSlug}/properties-locations/new`);
+    // Example: router.push(`/admin/${slug}/properties-locations/new`);
   };
 
   const handleEditLocation = (locationId: string) => {
     // Navigate to an edit page or open a modal with location data
     console.log(`Edit location with ID: ${locationId}`);
-    // Example: router.push(`/admin/${adminSlug}/properties-locations/edit/${locationId}`);
+    // Example: router.push(`/admin/${slug}/properties-locations/edit/${locationId}`);
   };
 
   const handleDeleteLocation = (locationId: string) => {
@@ -94,8 +94,8 @@ export default function PropertiesLocationsPage({ params }: LocationsPageProps) 
     return <div className="p-8 text-center text-red-600">Error: {error}</div>;
   }
 
-  // You might want to check if adminSlug is valid here
-  // if (!isValidAdminSlug(adminSlug)) {
+  // You might want to check if slug is valid here
+  // if (!isValidAdminSlug(slug)) {
   //   notFound(); // Next.js built-in for 404
   // }
 

@@ -1,202 +1,162 @@
-// app/admin/[slug]/plans/page.tsx
-import React from "react";
-import PlansClient from "./PlansClient";
+import { PlansClient } from "./PlansClient"; // Adjust this path as necessary
 
-export interface PlanItem {
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// =================================================================================================
+// TYPE DEFINITIONS
+// These types match the data returned by the API routes and are used for type safety.
+// =================================================================================================
+interface PlanItem {
   id: string;
+  companyId: string;
   name: string;
   description: string;
   priceMonthly: number;
   priceAnnually: number;
   features: string[];
   isPopular: boolean;
-  status: "Active" | "Archived";
-  createdAt: string;
-  updatedAt: string;
+  status: "ACTIVE" | "ARCHIVED";
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface SubscriptionItem {
+interface SubscriptionItem {
   id: string;
   userId: string;
-  userName: string;
-  userEmail: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
   planId: string;
-  planName: string;
-  startDate: string;
-  endDate: string | null; // null for lifetime or ongoing
-  status: "Active" | "Cancelled" | "Expired" | "Trialing";
-  billingCycle: "Monthly" | "Annually";
+  plan: {
+    id: string;
+    name: string;
+  };
+  startDate: Date;
+  endDate: Date | null;
+  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIALING";
+  billingCycle: "MONTHLY" | "ANNUALLY";
   amount: number;
-  paymentMethod: string;
-  lastPaymentDate: string;
+  paymentMethod: string | null;
+  lastPaymentDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-interface PageProps {
-  params: { slug: string }; // companyId
-  searchParams: {
-    page?: string;
-    limit?: string;
-    subscriptionStatus?: string;
-    planName?: string;
-  };
+interface PlansClientProps {
+  companyId: string;
+  plans: PlanItem[];
+  initialSubscriptions: SubscriptionItem[];
+  initialTotalSubscriptionItems: number;
+  initialTotalSubscriptionPages: number;
+  initialCurrentSubscriptionPage: number;
+  subscriptionsPerPage: number;
 }
 
-// Dummy data generation
-const generateDummyPlans = (companyId: string): PlanItem[] => [
-  {
-    id: `plan-free-${companyId}`,
-    name: "Free",
-    description: "Basic features for individuals.",
-    priceMonthly: 0,
-    priceAnnually: 0,
-    features: ["5 Projects", "1 GB Storage", "Basic Analytics", "Email Support"],
-    isPopular: false,
-    status: "Active",
-    createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: `plan-starter-${companyId}`,
-    name: "Starter",
-    description: "Ideal for small teams to grow.",
-    priceMonthly: 29,
-    priceAnnually: 299,
-    features: ["25 Projects", "50 GB Storage", "Advanced Analytics", "Chat Support", "Custom Branding"],
-    isPopular: true,
-    status: "Active",
-    createdAt: new Date(Date.now() - 300 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: `plan-pro-${companyId}`,
-    name: "Pro",
-    description: "Power tools for growing businesses.",
-    priceMonthly: 79,
-    priceAnnually: 799,
-    features: ["Unlimited Projects", "200 GB Storage", "Real-time Analytics", "Priority Support", "Team Collaboration"],
-    isPopular: false,
-    status: "Active",
-    createdAt: new Date(Date.now() - 200 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: `plan-business-${companyId}`,
-    name: "Business",
-    description: "Enterprise-grade solutions for large organizations.",
-    priceMonthly: 199,
-    priceAnnually: 1999,
-    features: ["All Pro Features", "Unlimited Storage", "Dedicated Account Manager", "SLA Support", "On-Premise Option"],
-    isPopular: false,
-    status: "Active",
-    createdAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-const generateDummySubscriptions = (companyId: string, count: number, plans: PlanItem[]): SubscriptionItem[] => {
-  const subscriptions: SubscriptionItem[] = [];
-  const statuses = ["Active", "Cancelled", "Expired", "Trialing"];
-  const billingCycles = ["Monthly", "Annually"];
-
-  for (let i = 1; i <= count; i++) {
-    const userNum = Math.floor(Math.random() * 100) + 1; // Corresponds to dummy users
-    const plan = plans[Math.floor(Math.random() * plans.length)];
-    const startDate = new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000).toISOString();
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    let endDate: string | null = null;
-    if (status === "Expired" || status === "Cancelled") {
-      endDate = new Date(new Date(startDate).getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString();
-    } else if (plan.priceMonthly > 0) { // Only active paid plans might have an end date for current cycle
-      endDate = new Date(new Date(startDate).getTime() + (plan.priceMonthly ? 30 : 365) * 24 * 60 * 60 * 1000).toISOString();
-    }
-    const billingCycle = billingCycles[Math.floor(Math.random() * billingCycles.length)];
-    const amount = billingCycle === "Monthly" ? plan.priceMonthly : plan.priceAnnually / 12; // Average monthly for annual
-    const lastPaymentDate = new Date(new Date(startDate).getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString();
 
 
-    subscriptions.push({
-      id: `sub-${i}-${companyId}`,
-      userId: `user-${userNum}-${companyId}`,
-      userName: `User ${userNum} Name`,
-      userEmail: `user${userNum}@example.com`,
-      planId: plan.id,
-      planName: plan.name,
-      startDate,
-      endDate,
-      status: status as "Active" | "Cancelled" | "Expired" | "Trialing",
-      billingCycle: billingCycle as "Monthly" | "Annually",
-      amount: parseFloat(amount.toFixed(2)),
-      paymentMethod: "Credit Card", // Simplified
-      lastPaymentDate,
-    });
-  }
-  return subscriptions;
-};
+// =================================================================================================
+// SERVER-SIDE DATA FETCHING
+// This component fetches all necessary data on the server before rendering the client component.
+// =================================================================================================
+export default async function DashboardPage({ 
+  companyId = "60c84e1b5b4e5d1a2c8a2a01",
+  plans,
+  initialSubscriptions,
+  initialTotalSubscriptionItems,
+  initialTotalSubscriptionPages,
+  initialCurrentSubscriptionPage = 10,
+  subscriptionsPerPage = 1}: PlansClientProps) {
+  // In a real application, you would get this from the user's session or a URL parameter
+  // const companyId = "60c84e1b5b4e5d1a2c8a2a01"; // Hardcoded for demonstration
 
-export default async function PlansPage({ params, searchParams }: PageProps) {
-  const companyId = params.slug;
-  const page = parseInt(searchParams.page || "1");
-  const limit = parseInt(searchParams.limit || "10");
-  const subscriptionStatus = searchParams.subscriptionStatus || "";
-  const planName = searchParams.planName || "";
-
-  const allPlans = generateDummyPlans(companyId);
-
-  const fetchSubscriptions = async (
-    currentPage: number,
-    currentLimit: number,
-    currentStatus: string,
-    currentPlanName: string
-  ) => {
-    // Simulate API call for subscriptions
-    const allDummySubscriptions = generateDummySubscriptions(companyId, 50, allPlans); // 50 dummy subscriptions
-    let filteredSubscriptions = allDummySubscriptions;
-
-    if (currentStatus) {
-      filteredSubscriptions = filteredSubscriptions.filter(sub => sub.status === currentStatus);
-    }
-    if (currentPlanName) {
-      filteredSubscriptions = filteredSubscriptions.filter(sub => sub.planName === currentPlanName);
-    }
-
-    const startIndex = (currentPage - 1) * currentLimit;
-    const endIndex = startIndex + currentLimit;
-    const paginatedSubscriptions = filteredSubscriptions.slice(startIndex, endIndex);
-
-    return {
-      subscriptionsData: paginatedSubscriptions,
-      totalSubscriptionItems: filteredSubscriptions.length,
-      totalSubscriptionPages: Math.ceil(filteredSubscriptions.length / currentLimit),
-    };
-  };
-
-  let plansData: PlanItem[] = [];
-  let subscriptionsData: SubscriptionItem[] = [];
-  let totalSubscriptionItems = 0;
-  let totalSubscriptionPages = 0;
+  // const subscriptionsPerPage = 10;
+  // const initialCurrentSubscriptionPage = 1;
 
   try {
-    plansData = allPlans; // Plans are usually static or managed separately
-    ({ subscriptionsData, totalSubscriptionItems, totalSubscriptionPages } = await fetchSubscriptions(
-      page,
-      limit,
-      subscriptionStatus,
-      planName
-    ));
-  } catch (err: any) {
-    console.error("[PlansPage] Error fetching data:", err.message);
-  }
+    // Fetch Plans from the API
+    const plansRes = await fetch(`${apiUrl}/admin/plan?companyId=${companyId}`, {
+      cache: 'no-store', // Always fetch fresh data
+    });
+    const plansData = await plansRes.json();
+    const plans: PlanItem[] = plansData.plans || [];
 
-  return (
-    <PlansClient
-      companyId={companyId}
-      plans={plansData}
-      subscriptions={subscriptionsData}
-      totalSubscriptionItems={totalSubscriptionItems}
-      totalSubscriptionPages={totalSubscriptionPages}
-      currentSubscriptionPage={page}
-      subscriptionsPerPage={limit}
-      // refetchSubscriptions={fetchSubscriptions}
-    />
-  );
+    // Fetch Subscriptions from the API for the first page
+    const subscriptionsRes = await fetch(
+      `${apiUrl}/admin/subscriptions?companyId=${companyId}&page=${initialCurrentSubscriptionPage}&perPage=${subscriptionsPerPage}`,
+      { cache: 'no-store' }
+    );
+    const subscriptionsData = await subscriptionsRes.json();
+    const initialSubscriptions: SubscriptionItem[] = subscriptionsData.subscriptions || [];
+
+    return (
+      <PlansClient
+        companyId={companyId}
+        plans={plans}
+        initialSubscriptions={initialSubscriptions}
+        initialTotalSubscriptionItems={subscriptionsData.totalItems || 0}
+        initialTotalSubscriptionPages={subscriptionsData.totalPages || 0}
+        initialCurrentSubscriptionPage={initialCurrentSubscriptionPage}
+        subscriptionsPerPage={subscriptionsPerPage}
+      />
+    );
+  } catch (error) {
+    console.error("Failed to fetch initial data:", error);
+    return <div className="text-center p-10 text-red-500">Failed to load dashboard data. Please try again later.</div>;
+  }
 }
+
+
+
+// const generateDummyPlans = (companyId: string): PlanItem[] => [
+//   {
+//     id: `plan-free-${companyId}`,
+//     name: "Free",
+//     description: "Basic features for individuals.",
+//     priceMonthly: 0,
+//     priceAnnually: 0,
+//     features: ["5 Projects", "1 GB Storage", "Basic Analytics", "Email Support"],
+//     isPopular: false,
+//     status: "Active",
+//     createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+//     updatedAt: new Date().toISOString(),
+//   },
+//   {
+//     id: `plan-starter-${companyId}`,
+//     name: "Starter",
+//     description: "Ideal for small teams to grow.",
+//     priceMonthly: 29,
+//     priceAnnually: 299,
+//     features: ["25 Projects", "50 GB Storage", "Advanced Analytics", "Chat Support", "Custom Branding"],
+//     isPopular: true,
+//     status: "Active",
+//     createdAt: new Date(Date.now() - 300 * 24 * 60 * 60 * 1000).toISOString(),
+//     updatedAt: new Date().toISOString(),
+//   },
+//   {
+//     id: `plan-pro-${companyId}`,
+//     name: "Pro",
+//     description: "Power tools for growing businesses.",
+//     priceMonthly: 79,
+//     priceAnnually: 799,
+//     features: ["Unlimited Projects", "200 GB Storage", "Real-time Analytics", "Priority Support", "Team Collaboration"],
+//     isPopular: false,
+//     status: "Active",
+//     createdAt: new Date(Date.now() - 200 * 24 * 60 * 60 * 1000).toISOString(),
+//     updatedAt: new Date().toISOString(),
+//   },
+//   {
+//     id: `plan-business-${companyId}`,
+//     name: "Business",
+//     description: "Enterprise-grade solutions for large organizations.",
+//     priceMonthly: 199,
+//     priceAnnually: 1999,
+//     features: ["All Pro Features", "Unlimited Storage", "Dedicated Account Manager", "SLA Support", "On-Premise Option"],
+//     isPopular: false,
+//     status: "Active",
+//     createdAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString(),
+//     updatedAt: new Date().toISOString(),
+//   },
+// ];

@@ -46,6 +46,7 @@ enum ROLE {
   SOPHOMORE
   FRESHMAN
   WRITER
+  STAFF
 }
 
 enum StudentLevelStatus {
@@ -294,7 +295,6 @@ model Company {
   DiscussionPost                  DiscussionPost[]
   DiscussionComment               DiscussionComment[]
   Project                         Project[]
-  Prescription                    Prescription[]
   Doctor                          Doctor[]
   Writer                          Writer[]
   Podcast                         Podcast[]
@@ -303,6 +303,11 @@ model Company {
   Inquiry                         Inquiry[]
   Showing                         Showing[]
   OfferContract                   OfferContract[]
+  Appointment                     Appointment[]
+  staffMembers                    StaffProfile[]
+  services                        Service[]
+  prescriptions                   Prescription[]
+  PatientInvoices                 PatientInvoices[]
 }
 
 enum CategoryStatus {
@@ -665,8 +670,9 @@ model Product {
   shippingCost Float? @default(0)
 
   // Relations that might need to be defined elsewhere in schema.prisma
-  myLocation Location? @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  locationId String?   @db.ObjectId
+  myLocation Location?   @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  locationId String?     @db.ObjectId
+  OrderItem  OrderItem[]
 
   // Indexes for performance
   @@index([name])
@@ -698,13 +704,25 @@ enum AppointmentStatus {
 }
 
 model Appointment {
-  id        String            @id @default(auto()) @map("_id") @db.ObjectId
-  user      User              @relation(fields: [userId], references: [id])
-  userId    String            @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+
+  doctorId String? @db.ObjectId // Foreign key to Doctor model (or User with Doctor role)
+  doctor   Doctor? @relation(fields: [doctorId], references: [id]) // Relation to Doctor
+  service  String? // Description of the service (e.g., "General Check-up")
+
   date      DateTime
   status    AppointmentStatus
   createdAt DateTime?         @default(now())
   OrderItem OrderItem[]
+
+  // Company relation
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  @@index([userId])
+  @@index([doctorId]) // Add index for efficient lookup by doctor
 }
 
 model PropertyType {
@@ -1013,6 +1031,10 @@ model User {
   address        String?
   profilePicture String?
 
+  // Add these fields for patient data
+  dateOfBirth DateTime? // Added for patient's date of birth
+  gender      String? // Added for patient's gender (consider enum for strict values)
+
   ProductReview         ProductReview[]
   ProductReviewLog      ProductReviewLog[]
   ProductReviewResponse ProductReviewResponse[]
@@ -1079,6 +1101,9 @@ model User {
   Showing      Showing[]       @relation("AgentShowings")
   clientOffers OfferContract[] @relation("ClientOffers") // User as a client making offers
   agentOffers  OfferContract[] @relation("AgentOffers") // User as an agent handling offers
+  staffProfile StaffProfile?   @relation("StaffProfile") // One-to-one relation to StaffProfile
+
+  invoices PatientInvoices[] @relation("PatientInvoices")
 }
 
 enum Status {
@@ -1678,10 +1703,9 @@ enum RequesterType {
 
 //One on One relationship with user
 model Consumer {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  loginCode String? @unique // Unique generated number for login
 
   userId String @unique @db.ObjectId // Link to User model
   user   User   @relation("ConsumerProfile", fields: [userId], references: [id])
@@ -1689,16 +1713,6 @@ model Consumer {
   companyId String?  @db.ObjectId // Optional: If consumers can be independent or affiliated
   company   Company? @relation(fields: [companyId], references: [id])
 
-  image                String?
-  // accounts             Account[]
-  // sessions             Session[]
-  phone                String?
-  password             String?
-  username             String?
-  bio                  String?
-  address              String?
-  profilePicture       String?
-  role                 ROLE?                  @default(USER)
   createdAt            DateTime?              @default(now())
   updatedAt            DateTime?              @updatedAt
   ConsumerInventory    ConsumerInventory[]
@@ -1772,26 +1786,33 @@ model CustomerOrder {
 }
 
 model OrderItem {
-  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  orderId              String              @db.ObjectId
-  order                CustomerOrder       @relation(fields: [orderId], references: [id])
-  marketplaceListingId String              @db.ObjectId
-  marketplaceListing   marketplaceListings @relation(fields: [marketplaceListingId], references: [id])
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  orderId              String               @db.ObjectId
+  order                CustomerOrder        @relation(fields: [orderId], references: [id])
+  marketplaceListingId String?              @db.ObjectId
+  marketplaceListing   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
   price                Float
-  appointment          Appointment?        @relation(fields: [appointmentId], references: [id])
-  appointmentId        String?             @db.ObjectId
-  riderId              String?
-  status               OrderStatus?        @default(PENDING)
+
+  riderId String?
+  status  OrderStatus? @default(PENDING)
 
   date     String?
   timeSlot String? // e.g. "09:00"
 
+  Return Return[]
+
+  productId String?  @db.ObjectId
+  product   Product? @relation(fields: [productId], references: [id])
+
+  appointmentId String?      @db.ObjectId
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  Return Return[]
-
+  @@index([productId])
+  @@index([appointmentId])
   @@index([marketplaceListingId])
 }
 
@@ -3266,25 +3287,6 @@ model PropertyCategory {
 //   subLocations   PropertyLocation[] @relation("SubLocations")
 // }
 
-model Prescription {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  patientId    String    @db.ObjectId
-  patient      User      @relation(fields: [patientId], references: [id])
-  doctorId     String    @db.ObjectId
-  doctor       Doctor    @relation(fields: [doctorId], references: [id]) // Assuming Educator is doctor
-  medication   String
-  dosage       String
-  instructions String?
-  issuedDate   DateTime
-  expiryDate   DateTime?
-  status       String    @default("Pending") // e.g., "Pending", "Dispensed", "Expired"
-  notes        String?
-  companyId    String    @db.ObjectId
-  company      Company   @relation(fields: [companyId], references: [id])
-  createdAt    DateTime? @default(now())
-  updatedAt    DateTime? @updatedAt
-}
-
 // Educator Profile Model (one-to-one with User)
 model Doctor {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -3296,6 +3298,9 @@ model Doctor {
 
   loginCode String @unique // NEW: Unique generated number for login
 
+  specialty String? // NEW: Added specialty field
+  status    DoctorStatus @default(ACTIVE) // NEW: Added status field with an enum
+
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
 
@@ -3305,6 +3310,15 @@ model Doctor {
   Prescription Prescription[]
   User         User?          @relation(fields: [userId], references: [id])
   userId       String?        @db.ObjectId
+
+  Appointment Appointment[] // Link appointments to doctors
+}
+
+// NEW: DoctorStatus Enum
+enum DoctorStatus {
+  ACTIVE
+  ON_LEAVE
+  INACTIVE
 }
 
 // schema.prisma
@@ -3619,4 +3633,134 @@ enum OfferStatus {
   Accepted
   Rejected
   Closed
+}
+
+// NEW: EmploymentStatus Enum for staff members
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+// NEW: StaffProfile Model
+// Represents a non-medical staff member within a company, linked to a User profile.
+model StaffProfile {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId // One-to-one link to the User model
+  user   User   @relation("StaffProfile", fields: [userId], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  jobTitle         String // e.g., "Receptionist", "Clinic Manager", "HR Specialist"
+  department       String // e.g., "Administration", "Finance", "IT", "Nursing (for Head Nurse)"
+  employmentStatus EmploymentStatus @default(ACTIVE) // Current employment status
+  startDate        DateTime? // Date when employment started
+  loginCode        String?          @unique // Optional: Unique code for staff login, if applicable
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([companyId])
+  @@index([jobTitle])
+  @@index([department])
+}
+
+// NEW: Service Model
+// Represents a medical service offered by a clinic/company.
+model Service {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String        @db.ObjectId
+  company     Company       @relation(fields: [companyId], references: [id])
+  name        String // e.g., "General Check-up", "Pediatric Vaccination"
+  description String?
+  price       Float
+  duration    String // e.g., "30 min", "1 hour 30 min"
+  status      ServiceStatus @default(ACTIVE) // Enum for service status
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // You might want to link appointments to services if an appointment is for a specific service.
+  // This would require adding a `serviceId` to the `Appointment` model.
+  // For now, we'll keep it simple as the original Appointment model already has a 'service' string.
+
+  @@unique([companyId, name]) // A company cannot have two services with the same name
+  @@index([companyId])
+  @@index([name])
+}
+
+// NEW: ServiceStatus Enum
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+// NEW: PrescriptionStatus Enum
+enum PrescriptionStatus {
+  PENDING
+  DISPENSED
+  EXPIRED
+}
+
+model Prescription {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  doctor    Doctor @relation(fields: [doctorId], references: [id])
+  doctorId  String @db.ObjectId
+  patient   User   @relation(fields: [patientId], references: [id])
+  patientId String @db.ObjectId
+
+  medication String
+  dosage     String
+  issuedDate DateTime           @default(now()) // NEW: Defaults to now, but can be set manually
+  status     PrescriptionStatus @default(PENDING) // NEW
+
+  instructions String?
+
+  expiryDate DateTime?
+
+  notes String?
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([doctorId])
+  @@index([patientId])
+  @@index([companyId]) // NEW
+}
+
+// NEW: InvoiceStatus Enum
+enum InvoiceStatus {
+  PAID
+  PENDING
+  OVERDUE
+  CANCELED
+}
+
+// NEW: Invoice Model
+// Represents a financial invoice for services rendered to a patient.
+model PatientInvoices {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  patientId String @db.ObjectId // Link to the User (patient)
+  patient   User   @relation("PatientInvoices", fields: [patientId], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  amount      Float
+  invoiceDate DateTime      @default(now())
+  dueDate     DateTime? // Optional due date for payment
+  status      InvoiceStatus @default(PENDING)
+  items       Json // Store an array of objects or strings for invoice line items
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([companyId])
 }

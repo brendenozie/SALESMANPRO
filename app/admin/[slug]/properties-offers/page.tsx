@@ -47,12 +47,12 @@ export type OfferContract = {
 
 interface OffersPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
 export default function OffersPage({ params }: OffersPageProps) {
-  const { adminSlug } = params;
+  const { slug } = params;
   const [offers, setOffers] = useState<OfferContract[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -75,7 +75,7 @@ export default function OffersPage({ params }: OffersPageProps) {
     setError(null);
     try {
       // Replace with your actual API endpoint for fetching offers
-      const res = await fetch(`${apiUrl}/admin/offers?companyId=${encodeURIComponent(adminSlug)}`, { cache: 'no-store' });
+      const res = await fetch(`${apiUrl}/admin/offers?companyId=${encodeURIComponent(slug)}`, { cache: 'no-store' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch offers.');
@@ -88,7 +88,7 @@ export default function OffersPage({ params }: OffersPageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [adminSlug, apiUrl]);
+  }, [slug, apiUrl]);
 
   useEffect(() => {
     fetchOffers();
@@ -161,7 +161,7 @@ export default function OffersPage({ params }: OffersPageProps) {
         res = await fetch(`${apiUrl}/admin/offers`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...formData, companyId: adminSlug }), // Ensure companyId is sent for creation
+          body: JSON.stringify({ ...formData, companyId: slug }), // Ensure companyId is sent for creation
         });
       }
 
@@ -519,7 +519,7 @@ export default function OffersPage({ params }: OffersPageProps) {
         offer={offerToEdit ?? undefined} // Pass the offer for edit mode (undefined if null)
         isLoading={isLoading}
         error={error}
-        adminSlug={adminSlug} // Pass adminSlug (e.g., for companyId in API)
+        adminSlug={slug} // Pass slug (e.g., for companyId in API)
       />
 
       {/* View Offer Details Modal */}

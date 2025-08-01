@@ -1,4 +1,3 @@
-// app/admin/[slug]/plans/PlansClient.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -11,54 +10,254 @@ import {
   ClipboardDocumentListIcon,
   CheckCircleIcon,
   XCircleIcon,
-  TagIcon,
-  CalendarDaysIcon,
-  WalletIcon, // For payment
   ChevronLeftIcon,
   ChevronRightIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
-import { toast } from "react-hot-toast";
-// import ConfirmationModal from "@/components/ConfirmationModal";
-// import AddEditPlanModal from "@/components/AddEditPlanModal"; // Assume this exists
-// import ChangeSubscriptionModal from "@/components/ChangeSubscriptionModal"; // Assume this exists
-import { PlanItem, SubscriptionItem } from "./page"; // Import types
-// import TabComponent from "@/components/TabComponent"; // Generic tab component
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+import { format } from 'date-fns';
+import { toast, Toaster } from "react-hot-toast";
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// =================================================================================================
+// TYPE DEFINITIONS
+// This section defines the data structures used throughout the application.
+// =================================================================================================
+
+interface PlanItem {
+  id: string;
+  companyId: string;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  priceAnnually: number;
+  features: string[];
+  isPopular: boolean;
+  status: "ACTIVE" | "ARCHIVED";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface SubscriptionItem {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  planId: string;
+  plan: {
+    id: string;
+    name: string;
+  };
+  startDate: Date;
+  endDate: Date | null;
+  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIALING";
+  billingCycle: "MONTHLY" | "ANNUALLY";
+  amount: number;
+  paymentMethod: string | null;
+  lastPaymentDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface PlansClientProps {
   companyId: string;
   plans: PlanItem[];
-  subscriptions: SubscriptionItem[];
-  totalSubscriptionItems: number;
-  totalSubscriptionPages: number;
-  currentSubscriptionPage: number;
+  initialSubscriptions: SubscriptionItem[];
+  initialTotalSubscriptionItems: number;
+  initialTotalSubscriptionPages: number;
+  initialCurrentSubscriptionPage: number;
   subscriptionsPerPage: number;
-  // refetchSubscriptions: (page: number, limit: number, status?: string, planName?: string) => Promise<{ subscriptionsData: SubscriptionItem[]; totalSubscriptionItems: number; totalSubscriptionPages: number; }>;
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+// =================================================================================================
+// COMPONENTS (Tabs & Modals)
+// Simple, reusable UI components for the dashboard.
+// =================================================================================================
+
+const TabComponent = ({ tabs, activeTab, onChange }:any) => (
+  <div className="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-8">
+    {tabs.map((tab:any) => (
+      <button
+        key={tab.id}
+        onClick={() => onChange(tab.id)}
+        className={`px-4 py-2 -mb-px font-semibold text-lg transition-colors duration-200 ${
+          activeTab === tab.id
+            ? "border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400"
+            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+        }`}
+      >
+        {tab.label}
+      </button>
+    ))}
+  </div>
+);
+
+const Modal = ({ isOpen, onClose, children }:any) => {
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-75 backdrop-blur-sm">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-lg mx-auto"
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 };
 
-export default function PlansClient({
+const AddEditPlanModal = ({ show, onClose, onSave, plan }:any) => {
+  const [name, setName] = useState(plan?.name || "");
+  const [description, setDescription] = useState(plan?.description || "");
+  const [priceMonthly, setPriceMonthly] = useState(plan?.priceMonthly || 0);
+  const [priceAnnually, setPriceAnnually] = useState(plan?.priceAnnually || 0);
+
+  const handleSubmit = (e:any) => {
+    e.preventDefault();
+    const newPlanData = { name, description, priceMonthly, priceAnnually };
+    onSave(newPlanData);
+  };
+
+  return (
+    <Modal isOpen={show} onClose={onClose}>
+      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        {plan ? "Edit Plan" : "Add New Plan"}
+      </h3>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Monthly Price ($)</label>
+            <input type="number" value={priceMonthly} onChange={(e) => setPriceMonthly(Number(e.target.value))} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Annual Price ($)</label>
+            <input type="number" value={priceAnnually} onChange={(e) => setPriceAnnually(Number(e.target.value))} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+          </div>
+        </div>
+        <div className="flex justify-end space-x-2 mt-6">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+          <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors">Save Plan</button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+const ChangeSubscriptionModal = ({ show, onClose, onSave, subscription, plans }:any) => {
+  const [selectedPlan, setSelectedPlan] = useState(subscription?.planId || "");
+  const [status, setStatus] = useState(subscription?.status || "ACTIVE");
+  const [billingCycle, setBillingCycle] = useState(subscription?.billingCycle || "MONTHLY");
+
+  const handleSubmit = (e:any) => {
+    e.preventDefault();
+    onSave({ planId: selectedPlan, status, billingCycle });
+  };
+
+  return (
+    <Modal isOpen={show} onClose={onClose}>
+      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Change Subscription</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
+          <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">{subscription?.user?.name}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{subscription?.user?.email}</p>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Plan</label>
+          <select value={selectedPlan} onChange={(e) => setSelectedPlan(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+            {plans.map((plan:any) => (
+              <option key={plan.id} value={plan.id}>{plan.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+            <select value={status} onChange={(e) => setStatus(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+              <option value="ACTIVE">Active</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="EXPIRED">Expired</option>
+              <option value="TRIALING">Trialing</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Billing Cycle</label>
+            <select value={billingCycle} onChange={(e) => setBillingCycle(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+              <option value="MONTHLY">Monthly</option>
+              <option value="ANNUALLY">Annually</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-end space-x-2 mt-6">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+          <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors">Update Subscription</button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+const ConfirmationModal = ({ show, onClose, onConfirm, title, message }:any) => (
+  <Modal isOpen={show} onClose={onClose}>
+    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
+    <p className="text-gray-600 dark:text-gray-300">{message}</p>
+    <div className="flex justify-end space-x-2 mt-6">
+      <button onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+      <button onClick={onConfirm} className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors">Confirm</button>
+    </div>
+  </Modal>
+);
+
+// =================================================================================================
+// MAIN CLIENT COMPONENT
+// This is the core of the application, now fully functional with client-side logic.
+// =================================================================================================
+
+export function PlansClient({
   companyId,
-  plans: initialPlans, // Rename to initialPlans
-  subscriptions: initialSubscriptions,
-  totalSubscriptionItems: initialTotalSubscriptionItems,
-  totalSubscriptionPages: initialTotalSubscriptionPages,
-  currentSubscriptionPage: initialCurrentSubscriptionPage,
-  subscriptionsPerPage: initialSubscriptionsPerPage,
-  // refetchSubscriptions,
+  plans: initialPlans,
+  initialSubscriptions,
+  initialTotalSubscriptionItems,
+  initialTotalSubscriptionPages,
+  initialCurrentSubscriptionPage,
+  subscriptionsPerPage,
 }: PlansClientProps) {
+  // Local state for subscriptions and pagination
   const [plans, setPlans] = useState<PlanItem[]>(initialPlans);
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(initialSubscriptions);
   const [totalSubscriptionItems, setTotalSubscriptionItems] = useState(initialTotalSubscriptionItems);
   const [totalSubscriptionPages, setTotalSubscriptionPages] = useState(initialTotalSubscriptionPages);
   const [currentSubscriptionPage, setCurrentSubscriptionPage] = useState(initialCurrentSubscriptionPage);
-  const [subscriptionsPerPage, setSubscriptionsPerPage] = useState(initialSubscriptionsPerPage);
 
-  const [activeTab, setActiveTab] = useState("plans"); // 'plans' or 'subscriptions'
+  const [activeTab, setActiveTab] = useState("plans");
+  const [loading, setLoading] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterPlanId, setFilterPlanId] = useState("");
 
   const [showAddEditPlanModal, setShowAddEditPlanModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanItem | null>(null);
@@ -68,114 +267,168 @@ export default function PlansClient({
   const [showCancelSubscriptionConfirm, setShowCancelSubscriptionConfirm] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<SubscriptionItem | null>(null);
 
-  const [loading, setLoading] = useState(false);
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterPlanName, setFilterPlanName] = useState("");
+  // Function to fetch subscriptions from the API
+  const handleRefetchSubscriptions = useCallback(async (pageToFetch: number = currentSubscriptionPage) => {
+    setLoading(true);
+    try {
+      const url = new URL(`${apiUrl}/admin/subscriptions`);
+      url.searchParams.append('companyId', companyId);
+      url.searchParams.append('page', String(pageToFetch));
+      url.searchParams.append('perPage', String(subscriptionsPerPage));
+      if (filterStatus) url.searchParams.append('status', filterStatus);
+      if (filterPlanId) url.searchParams.append('planId', filterPlanId);
 
-  // const handleRefetchSubscriptions = useCallback(async (pageToFetch: number = currentSubscriptionPage) => {
-  //   setLoading(true);
-  //   try {
-  //     const { subscriptionsData, totalSubscriptionItems: newTotalItems, totalSubscriptionPages: newTotalPages } = await refetchSubscriptions(pageToFetch, subscriptionsPerPage, filterStatus, filterPlanName);
-  //     setSubscriptions(subscriptionsData);
-  //     setTotalSubscriptionItems(newTotalItems);
-  //     setTotalSubscriptionPages(newTotalPages);
-  //     setCurrentSubscriptionPage(pageToFetch);
-  //   } catch (error) {
-  //     console.error("Failed to refetch subscriptions:", error);
-  //     toast.error("Failed to load subscriptions.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [refetchSubscriptions, subscriptionsPerPage, filterStatus, filterPlanName, currentSubscriptionPage]);
+      const res = await fetch(url.toString(), { cache: 'no-store' });
 
-  // Initial fetch/update subscriptions on mount or prop change
+      if (!res.ok) {
+        throw new Error("Failed to fetch subscriptions");
+      }
+
+      const data = await res.json();
+      setSubscriptions(data.subscriptions);
+      setTotalSubscriptionItems(data.totalItems);
+      setTotalSubscriptionPages(data.totalPages);
+      setCurrentSubscriptionPage(pageToFetch);
+    } catch (error) {
+      console.error("Failed to refetch subscriptions:", error);
+      toast.error("Failed to load subscriptions.");
+    } finally {
+      setLoading(false);
+    }
+  }, [companyId, subscriptionsPerPage, filterStatus, filterPlanId, currentSubscriptionPage]);
+
+  // Effect to re-fetch subscriptions when filters or page change
   useEffect(() => {
-    setSubscriptions(initialSubscriptions);
-    setTotalSubscriptionItems(initialTotalSubscriptionItems);
-    setTotalSubscriptionPages(initialTotalSubscriptionPages);
-    setCurrentSubscriptionPage(initialCurrentSubscriptionPage);
-  }, [initialSubscriptions, initialTotalSubscriptionItems, initialTotalSubscriptionPages, initialCurrentSubscriptionPage]);
+    if (activeTab === "subscriptions") {
+      handleRefetchSubscriptions(1); // Reset to page 1 when filters change
+    }
+  }, [activeTab, filterStatus, filterPlanId, handleRefetchSubscriptions]);
 
-  // useEffect(() => {
-  //   if (activeTab === 'subscriptions') {
-  //     handleRefetchSubscriptions(currentSubscriptionPage);
-  //   }
-  // }, [activeTab, currentSubscriptionPage, handleRefetchSubscriptions]);
-
-
-  const handleSubscriptionPageChange = (newPage: number) => {
-    if (newPage > 0 && newPage <= totalSubscriptionPages) {
-      setCurrentSubscriptionPage(newPage);
+  // Handle plan updates
+  const handlePlanSave = async (newPlanData:any) => {
+    setLoading(true);
+    try {
+      if (selectedPlan) {
+        // Update existing plan
+        const res = await fetch(`${apiUrl}/admin/plan/${selectedPlan.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...newPlanData, companyId }),
+        });
+        if (!res.ok) throw new Error("Failed to update plan");
+        toast.success("Plan updated successfully!");
+        setPlans(plans.map(p => p.id === selectedPlan.id ? { ...p, ...newPlanData } : p));
+      } else {
+        // Create new plan
+        const res = await fetch(`${apiUrl}/admin/plan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...newPlanData, companyId, features: ["Feature 1", "Feature 2"], isPopular: false }),
+        });
+        if (!res.ok) throw new Error("Failed to create plan");
+        const createdPlan = await res.json();
+        toast.success("Plan created successfully!");
+        setPlans([...plans, createdPlan]);
+      }
+    } catch (error) {
+      console.error("Failed to save plan:", error);
+      toast.error("Failed to save plan.");
+    } finally {
+      setLoading(false);
+      setShowAddEditPlanModal(false);
+      setSelectedPlan(null);
     }
   };
 
-  // --- Plan Actions ---
-  const handlePlanSaveSuccess = () => {
-    toast.success("Plan saved successfully!");
-    setShowAddEditPlanModal(false);
-    setSelectedPlan(null);
-    // In a real app, you'd refetch plans here
-    // For this dummy, we just close the modal
-  };
-
+  // Handle plan deletion
   const handleDeletePlan = async () => {
     if (!selectedPlan) return;
     setLoading(true);
     try {
-      // Simulate API call: await fetch(`${apiUrl}/admin/plans/${selectedPlan.id}`, { method: 'DELETE' });
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const res = await fetch(`${apiUrl}/admin/plan/${selectedPlan.id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to delete plan");
+      }
       toast.success(`Plan "${selectedPlan.name}" deleted successfully!`);
-      setShowDeletePlanConfirm(false);
-      setSelectedPlan(null);
-      setPlans(plans.filter(p => p.id !== selectedPlan.id)); // Optimistic UI update
-    } catch (error) {
+      setPlans(plans.filter(p => p.id !== selectedPlan.id));
+    } catch (error:any) {
       console.error("Failed to delete plan:", error);
-      toast.error("Failed to delete plan.");
+      toast.error(error.message);
     } finally {
       setLoading(false);
+      setShowDeletePlanConfirm(false);
+      setSelectedPlan(null);
     }
   };
 
-  // --- Subscription Actions ---
-  const handleSubscriptionChangeSuccess = () => {
-    toast.success("Subscription updated successfully!");
-    setShowChangeSubscriptionModal(false);
-    setSelectedSubscription(null);
-    // handleRefetchSubscriptions(currentSubscriptionPage);
+  // Handle subscription update
+  const handleUpdateSubscription = async (updateData: any) => {
+    if (!selectedSubscription) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiUrl}/admin/subscriptions/${selectedSubscription.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      });
+      if (!res.ok) throw new Error("Failed to update subscription");
+
+      toast.success("Subscription updated successfully!");
+      handleRefetchSubscriptions(); // Re-fetch data to show the updated list
+    } catch (error) {
+      console.error("Failed to update subscription:", error);
+      toast.error("Failed to update subscription.");
+    } finally {
+      setLoading(false);
+      setShowChangeSubscriptionModal(false);
+      setSelectedSubscription(null);
+    }
   };
 
+  // Handle subscription cancellation
   const handleCancelSubscription = async () => {
     if (!selectedSubscription) return;
     setLoading(true);
     try {
-      // Simulate API call: await fetch(`${apiUrl}/admin/subscriptions/${selectedSubscription.id}/cancel`, { method: 'POST' });
-      await new Promise(resolve => setTimeout(resolve, 800));
-      toast.success(`Subscription for ${selectedSubscription.userName} cancelled!`);
-      setShowCancelSubscriptionConfirm(false);
-      setSelectedSubscription(null);
-      // handleRefetchSubscriptions(currentSubscriptionPage);
+      const res = await fetch(`${apiUrl}/admin/subscriptions/${selectedSubscription.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: "CANCELLED" }),
+      });
+      if (!res.ok) throw new Error("Failed to cancel subscription");
+
+      toast.success(`Subscription for ${selectedSubscription.user.name} cancelled!`);
+      handleRefetchSubscriptions();
     } catch (error) {
       console.error("Failed to cancel subscription:", error);
       toast.error("Failed to cancel subscription.");
     } finally {
       setLoading(false);
+      setShowCancelSubscriptionConfirm(false);
+      setSelectedSubscription(null);
     }
   };
 
   const getSubscriptionStatusClasses = (status: SubscriptionItem['status']) => {
     switch (status) {
-      case 'Active': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
-      case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'Expired': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-      case 'Trialing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'ACTIVE': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+      case 'CANCELLED': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'EXPIRED': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      case 'TRIALING': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
+  const getBillingCycleLabel = (cycle: "MONTHLY" | "ANNUALLY") => {
+    return cycle === "MONTHLY" ? "Monthly" : "Annually";
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 md:p-10">
-      {/* Page Header */}
+      <Toaster />
       <motion.div
         className="mb-10 text-center"
         initial={{ opacity: 0, y: -20 }}
@@ -190,7 +443,6 @@ export default function PlansClient({
         </p>
       </motion.div>
 
-      {/* Tabs for Plans vs Subscriptions */}
       <TabComponent
         tabs={[
           { id: "plans", label: "Pricing Plans" },
@@ -200,7 +452,6 @@ export default function PlansClient({
         onChange={setActiveTab}
       />
 
-      {/* Plans Management */}
       {activeTab === "plans" && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -222,7 +473,11 @@ export default function PlansClient({
             </motion.button>
           </div>
 
-          {plans.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-10 text-indigo-500 dark:text-indigo-400 flex items-center justify-center gap-2">
+              <ArrowPathIcon className="h-6 w-6 animate-spin" /> Loading plans...
+            </div>
+          ) : plans.length === 0 ? (
             <div className="text-center py-10 text-gray-500 dark:text-gray-400">No pricing plans defined yet.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -231,10 +486,10 @@ export default function PlansClient({
                   <motion.div
                     key={plan.id}
                     className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-md border border-gray-200 dark:border-gray-600 relative group"
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
                   >
                     {plan.isPopular && (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">Popular</span>
@@ -278,7 +533,6 @@ export default function PlansClient({
         </motion.div>
       )}
 
-      {/* Subscriptions Management */}
       {activeTab === "subscriptions" && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -290,39 +544,45 @@ export default function PlansClient({
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
               <UsersIcon className="h-6 w-6 text-indigo-500" /> Customer Subscriptions
             </h2>
-            <div className="flex space-x-2 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full md:w-auto items-center">
               <select
-                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 w-full sm:w-auto"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
                 <option value="">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Cancelled">Cancelled</option>
-                <option value="Expired">Expired</option>
-                <option value="Trialing">Trialing</option>
+                <option value="ACTIVE">Active</option>
+                <option value="CANCELLED">Cancelled</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="TRIALING">Trialing</option>
               </select>
               <select
-                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
-                value={filterPlanName}
-                onChange={(e) => setFilterPlanName(e.target.value)}
+                className="p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100 w-full sm:w-auto"
+                value={filterPlanId}
+                onChange={(e) => setFilterPlanId(e.target.value)}
               >
                 <option value="">All Plans</option>
-                {plans.map(plan => <option key={plan.id} value={plan.name}>{plan.name}</option>)}
+                {plans.map(plan => <option key={plan.id} value={plan.id}>{plan.name}</option>)}
               </select>
-              <button
-                // onClick={() => handleRefetchSubscriptions(1)}
-                className="ml-2 bg-indigo-500 text-white p-2 rounded-md hover:bg-indigo-600 transition-colors"
+              <motion.button
+                onClick={() => handleRefetchSubscriptions(1)}
+                className="bg-indigo-500 text-white p-2 rounded-md hover:bg-indigo-600 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={loading}
               >
-                Apply
-              </button>
+                <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+                Apply Filters
+              </motion.button>
             </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-10 text-indigo-500 dark:text-indigo-400">Loading subscriptions...</div>
+            <div className="text-center py-10 text-indigo-500 dark:text-indigo-400 flex items-center justify-center gap-2">
+              <ArrowPathIcon className="h-6 w-6 animate-spin" /> Loading subscriptions...
+            </div>
           ) : subscriptions.length === 0 ? (
-            <div className="text-center py-10 text-gray-500 dark:text-gray-400">No subscriptions found.</div>
+            <div className="text-center py-10 text-gray-500 dark:text-gray-400">No subscriptions found with the current filters.</div>
           ) : (
             <>
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 text-center">
@@ -373,18 +633,18 @@ export default function PlansClient({
                           transition={{ duration: 0.3 }}
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{sub.userName}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{sub.userEmail}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{sub.user.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{sub.user.email}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 flex items-center gap-1">
-                            <ClipboardDocumentListIcon className="h-4 w-4 text-indigo-500" /> {sub.planName}
+                            <ClipboardDocumentListIcon className="h-4 w-4 text-indigo-500" /> {sub.plan.name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getSubscriptionStatusClasses(sub.status)}`}>
                               {sub.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{sub.billingCycle}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{getBillingCycleLabel(sub.billingCycle)}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">${sub.amount.toFixed(2)}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {format(new Date(sub.startDate), 'MMM dd, yyyy')}
@@ -403,7 +663,7 @@ export default function PlansClient({
                               >
                                 <PencilSquareIcon className="h-5 w-5" />
                               </motion.button>
-                              {sub.status === 'Active' && (
+                              {sub.status === 'ACTIVE' && (
                                 <motion.button
                                   onClick={() => { setSelectedSubscription(sub); setShowCancelSubscriptionConfirm(true); }}
                                   className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -423,11 +683,10 @@ export default function PlansClient({
                 </table>
               </div>
 
-              {/* Pagination */}
               {totalSubscriptionPages > 1 && (
                 <div className="mt-12 flex justify-center items-center space-x-4">
                   <motion.button
-                    onClick={() => handleSubscriptionPageChange(currentSubscriptionPage - 1)}
+                    onClick={() => setCurrentSubscriptionPage(prev => prev - 1)}
                     disabled={currentSubscriptionPage === 1 || loading}
                     className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     whileHover={{ scale: 1.05 }}
@@ -439,7 +698,7 @@ export default function PlansClient({
                     {Array.from({ length: totalSubscriptionPages }).map((_, idx) => (
                       <motion.button
                         key={idx}
-                        onClick={() => handleSubscriptionPageChange(idx + 1)}
+                        onClick={() => setCurrentSubscriptionPage(idx + 1)}
                         disabled={currentSubscriptionPage === idx + 1 || loading}
                         className={`px-4 py-2 rounded-full font-semibold ${
                           currentSubscriptionPage === idx + 1
@@ -454,7 +713,7 @@ export default function PlansClient({
                     ))}
                   </div>
                   <motion.button
-                    onClick={() => handleSubscriptionPageChange(currentSubscriptionPage + 1)}
+                    onClick={() => setCurrentSubscriptionPage(prev => prev + 1)}
                     disabled={currentSubscriptionPage === totalSubscriptionPages || loading}
                     className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     whileHover={{ scale: 1.05 }}
@@ -469,236 +728,36 @@ export default function PlansClient({
         </motion.div>
       )}
 
-      {/* Modals */}
-      {/* <AnimatePresence>
-        {showAddEditPlanModal && (
-          <AddEditPlanModal
-            show={showAddEditPlanModal}
-            onClose={() => {setShowAddEditPlanModal(false); setSelectedPlan(null);}}
-            initialData={selectedPlan}
-            companyId={companyId}
-            onSaveSuccess={handlePlanSaveSuccess}
-          />
-        )}
-      </AnimatePresence> */}
+      <AddEditPlanModal
+        show={showAddEditPlanModal}
+        onClose={() => { setShowAddEditPlanModal(false); setSelectedPlan(null); }}
+        onSave={handlePlanSave}
+        plan={selectedPlan}
+      />
 
-      {/* <AnimatePresence>
-        {showDeletePlanConfirm && selectedPlan && (
-          <ConfirmationModal
-            show={showDeletePlanConfirm}
-            onClose={() => {setShowDeletePlanConfirm(false); setSelectedPlan(null);}}
-            onConfirm={handleDeletePlan}
-            title="Confirm Plan Deletion"
-            message={`Are you sure you want to delete the "${selectedPlan.name}" plan? This will affect existing subscriptions!`}
-            confirmButtonText="Delete Plan"
-            confirmButtonColor="bg-red-600 hover:bg-red-700"
-          />
-        )}
-      </AnimatePresence> */}
+      <ChangeSubscriptionModal
+        show={showChangeSubscriptionModal}
+        onClose={() => { setShowChangeSubscriptionModal(false); setSelectedSubscription(null); }}
+        onSave={handleUpdateSubscription}
+        subscription={selectedSubscription}
+        plans={plans}
+      />
 
-      {/* <AnimatePresence>
-        {showChangeSubscriptionModal && selectedSubscription && (
-          <ChangeSubscriptionModal
-            show={showChangeSubscriptionModal}
-            onClose={() => {setShowChangeSubscriptionModal(false); setSelectedSubscription(null);}}
-            subscription={selectedSubscription}
-            allPlans={plans}
-            onSaveSuccess={handleSubscriptionChangeSuccess}
-          />
-        )}
-      </AnimatePresence> */}
+      <ConfirmationModal
+        show={showDeletePlanConfirm}
+        onClose={() => setShowDeletePlanConfirm(false)}
+        onConfirm={handleDeletePlan}
+        title="Delete Plan"
+        message={`Are you sure you want to delete the plan "${selectedPlan?.name}"? This action cannot be undone.`}
+      />
 
-      {/* <AnimatePresence>
-        {showCancelSubscriptionConfirm && selectedSubscription && (
-          <ConfirmationModal
-            show={showCancelSubscriptionConfirm}
-            onClose={() => {setShowCancelSubscriptionConfirm(false); setSelectedSubscription(null);}}
-            onConfirm={handleCancelSubscription}
-            title="Confirm Subscription Cancellation"
-            message={`Are you sure you want to cancel the subscription for "${selectedSubscription.userName}" (Plan: ${selectedSubscription.planName})?`}
-            confirmButtonText="Cancel Subscription"
-            confirmButtonColor="bg-red-600 hover:bg-red-700"
-          />
-        )}
-      </AnimatePresence> */}
+      <ConfirmationModal
+        show={showCancelSubscriptionConfirm}
+        onClose={() => setShowCancelSubscriptionConfirm(false)}
+        onConfirm={handleCancelSubscription}
+        title="Cancel Subscription"
+        message={`Are you sure you want to cancel the subscription for ${selectedSubscription?.user?.name} (${selectedSubscription?.plan?.name})?`}
+      />
     </div>
   );
 }
-
-// Ensure these icons are imported in this file as well
-import {
-  LifebuoyIcon
-} from "@heroicons/react/24/outline";
-import { format } from "date-fns";
-
-
-// Dummy TabComponent (create a real one in components/TabComponent.tsx)
-const TabComponent: React.FC<{
-    tabs: { id: string; label: string }[];
-    activeTab: string;
-    onChange: (tabId: string) => void;
-  }> = ({ tabs, activeTab, onChange }) => (
-    <div className="flex border-b border-gray-200 dark:border-gray-700 mb-8">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onChange(tab.id)}
-          className={`px-6 py-3 text-lg font-medium transition-colors duration-200
-            ${activeTab === tab.id
-              ? "border-b-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            }`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
-
-// Dummy AddEditPlanModal (create a real one in components/AddEditPlanModal.tsx)
-const AddEditPlanModal: React.FC<{
-  show: boolean;
-  onClose: () => void;
-  initialData: PlanItem | null;
-  companyId: string;
-  onSaveSuccess: () => void;
-}> = ({ show, onClose, initialData, companyId, onSaveSuccess }) => {
-  if (!show) return null;
-  const isEditing = !!initialData;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success(`${isEditing ? 'Updated' : 'Added'} plan!`);
-    onSaveSuccess();
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[200]">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 50 }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-lg m-4"
-      >
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">{isEditing ? 'Edit Plan' : 'Add New Plan'}</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Plan Name</label>
-            <input type="text" id="name" defaultValue={initialData?.name || ''} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100" required />
-          </div>
-          <div>
-            <label htmlFor="priceMonthly" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Price (Monthly)</label>
-            <input type="number" id="priceMonthly" defaultValue={initialData?.priceMonthly || 0} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100" required />
-          </div>
-          <div>
-            <label htmlFor="priceAnnually" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Price (Annually)</label>
-            <input type="number" id="priceAnnually" defaultValue={initialData?.priceAnnually || 0} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
-          </div>
-          <div>
-            <label htmlFor="features" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Features (comma separated)</label>
-            <textarea id="features" defaultValue={initialData?.features.join(', ') || ''} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
-          </div>
-          <div className="flex items-center">
-            <input type="checkbox" id="isPopular" defaultChecked={initialData?.isPopular || false} className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
-            <label htmlFor="isPopular" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">Mark as Popular</label>
-          </div>
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-md bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-            >
-              {isEditing ? 'Save Changes' : 'Add Plan'}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-};
-
-
-// Dummy ChangeSubscriptionModal (create a real one in components/ChangeSubscriptionModal.tsx)
-const ChangeSubscriptionModal: React.FC<{
-  show: boolean;
-  onClose: () => void;
-  subscription: SubscriptionItem;
-  allPlans: PlanItem[];
-  onSaveSuccess: () => void;
-}> = ({ show, onClose, subscription, allPlans, onSaveSuccess }) => {
-  if (!show) return null;
-
-  const [selectedPlanId, setSelectedPlanId] = useState(subscription.planId);
-  const [newEndDate, setNewEndDate] = useState(subscription.endDate ? format(new Date(subscription.endDate), 'yyyy-MM-dd') : '');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success(`Subscription for ${subscription.userName} updated!`);
-    onSaveSuccess();
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[200]">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 50 }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-lg m-4"
-      >
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Change Subscription for {subscription.userName}</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</label>
-            <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">{subscription.planName}</p>
-          </div>
-          <div>
-            <label htmlFor="newPlan" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Select New Plan</label>
-            <select
-              id="newPlan"
-              value={selectedPlanId}
-              onChange={(e) => setSelectedPlanId(e.target.value)}
-              className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
-            >
-              {allPlans.map(plan => (
-                <option key={plan.id} value={plan.id}>
-                  {plan.name} (${plan.priceMonthly}/mo)
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">New End Date (Optional)</label>
-            <input
-              type="date"
-              id="endDate"
-              value={newEndDate}
-              onChange={(e) => setNewEndDate(e.target.value)}
-              className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
-            />
-          </div>
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-md bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-            >
-              Update Subscription
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-};
