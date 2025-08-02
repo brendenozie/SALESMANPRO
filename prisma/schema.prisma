@@ -219,8 +219,8 @@ model Company {
   seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
 
   // existing relations
-  // user   User?   @relation(name: "CompanyUsers", fields: [userId], references: [id])
-  // userId String? @db.ObjectId
+  user   User?   @relation(name: "companyAdmin", fields: [userId], references: [id])
+  userId String? @db.ObjectId
 
   // inventory InventoryItem[]
 
@@ -1068,8 +1068,10 @@ model User {
   ProductReviewDislike  ProductReviewDislike[]
 
   // Relations
-  companyId String   @db.ObjectId
-  company   Company? @relation("CompanyUsers", fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+  company   Company? @relation("CompanyUsers", fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  Company Company[] @relation(name: "companyAdmin")
 
   Review         Review[]
   Question       Question[]
