@@ -1,7 +1,7 @@
 // import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 // app/api/admin/[slug]/billing/transactions/route.ts
-import { PrismaClient, TransactionStatus, TransactionType } from "@prisma/client";
+import { TransactionStatus, TransactionType } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 // Initialize Prisma Client

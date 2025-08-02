@@ -4,11 +4,11 @@ import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; /
 
 
 // app/api/admin/[slug]/billing/invoices/route.ts
-import { PrismaClient, BillingInvoiceStatus } from "@prisma/client";
+import {BillingInvoiceStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 // Initialize Prisma Client
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 // This API route handles fetching paginated and filtered invoices for a company.
 export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {

@@ -1140,6 +1140,7 @@ model User {
   // Patient             Patient?
   BillingTransactions BillingTransaction[]
   PatientInvoices     PatientInvoices[]    @relation("PatientInvoices")
+  // Staff               Staff? relation("staff")
 }
 
 enum Status {
@@ -3349,6 +3350,8 @@ model Doctor {
 
   Appointment Appointment[] // Link appointments to doctors
   Diagnosis   Diagnosis[]
+
+  StaffProfile StaffProfile[]
 }
 
 // NEW: DoctorStatus Enum
@@ -3694,6 +3697,12 @@ model StaffProfile {
   employmentStatus EmploymentStatus @default(ACTIVE) // Current employment status
   startDate        DateTime? // Date when employment started
   loginCode        String?          @unique // Optional: Unique code for staff login, if applicable
+  // Optional fields for Staff
+  position         String?
+  permissions      Json? // Store staff-specific permissions here
+
+  doctor   Doctor? @relation(fields: [doctorId], references: [id])
+  doctorId String? @db.ObjectId
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -3868,21 +3877,22 @@ model Subscription {
 
 // A Staff member is a user assigned to a company, e.g., an employee.
 // model Staff {
-//   id          String @id @default(auto()) @map("_id") @db.ObjectId
-//   userId      String @db.ObjectId @unique
-//   user        User   @relation(fields: [userId], references: [id])
-//   companyId   String @db.ObjectId
-//   company     Company @relation(fields: [companyId], references: [id])
+//   id        String  @id @default(auto()) @map("_id") @db.ObjectId
+//   userId    String  @db.ObjectId
+//   user      User    @relation("staff", fields: [userId], references: [id])
+//   companyId String  @db.ObjectId
+//   company   Company @relation(fields: [companyId], references: [id])
 
 //   // Optional fields for Staff
 //   position    String?
 //   permissions Json? // Store staff-specific permissions here
 
-//   doctor      Doctor?
+//   doctor Doctor? @relation(fields: [doctorId], references: [id])
+
+//   doctorId  String?   @db.ObjectId
 
 //   createdAt DateTime? @default(now())
 //   updatedAt DateTime? @updatedAt
-
 //   @@index([companyId])
 //   @@index([userId])
 // }
@@ -3973,8 +3983,6 @@ enum BillingInvoiceStatus {
 }
 
 // Represents a financial invoice for services rendered to a patient.
-// NEW: Invoice Model
-// Represents a financial invoice for services rendered to a patient.
 model PatientInvoices {
   id        String @id @default(auto()) @map("_id") @db.ObjectId
   patientId String @db.ObjectId // Link to the User (patient)
@@ -3990,11 +3998,9 @@ model PatientInvoices {
   items       Json // Store an array of objects or strings for invoice line items
   notes       String?
 
-  BillingTransaction BillingTransaction 
-  transactionId      String?             @db.ObjectId
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  BillingTransaction BillingTransaction[]
 
   @@index([patientId])
   @@index([companyId])
@@ -4029,6 +4035,9 @@ model BillingTransaction {
   paymentMethod   String
   transactionDate DateTime          @default(now())
   description     String
+
+  invoiceId String?          @db.ObjectId
+  invoice   PatientInvoices? @relation(fields: [invoiceId], references: [id])
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
