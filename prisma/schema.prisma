@@ -328,6 +328,7 @@ model Company {
   Plan                            Plan[]
   Diagnosis                       Diagnosis[]
   BillingTransaction              BillingTransaction[]
+  Video                           Video[]
 }
 
 enum CategoryStatus {
@@ -1143,6 +1144,7 @@ model User {
   BillingTransactions BillingTransaction[]
   PatientInvoices     PatientInvoices[]    @relation("PatientInvoices")
   // Staff               Staff? relation("staff")
+  Video               Video[]
 }
 
 enum Status {
@@ -4047,4 +4049,50 @@ model BillingTransaction {
   @@index([userId])
   @@index([companyId])
   @@index([invoiceId])
+}
+
+// --- New Schema for Video Management ---
+
+// A central model for all video assets.
+// This allows a single video to be referenced by multiple other models
+// (e.g., a Product, a Blog post, an ExamQuestion)
+model Video {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  url          String? // The S3 URL of the video file
+  thumbnailUrl String? // The URL of the video's thumbnail image
+  description  String?
+  duration     String? // Duration of the video in seconds
+  views        Int         @default(0)
+  status       VideoStatus @default(DRAFT)
+  tags         String[] // For filtering and search
+
+  // Date of upload/creation
+  date DateTime
+
+  // URL for the thumbnail image
+  imageUrl String
+
+  // Optional relations for tracking who owns the video
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Add indexes for faster lookups
+  @@index([companyId])
+  @@index([userId])
+}
+
+// Enum for the video's lifecycle status
+enum VideoStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  ARCHIVED
+  REJECTED
 }

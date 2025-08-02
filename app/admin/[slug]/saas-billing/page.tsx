@@ -2,6 +2,8 @@
 import React from "react";
 import BillingClient from "./BillingClient";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 export interface TransactionItem {
   id: string;
   userId: string;
@@ -62,7 +64,7 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
   try {
     // Fetch transactions from the new API route
     const transactionsResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/${companyId}/billing/transactions?page=${page}&limit=${limit}&status=${transactionStatus}&type=${transactionType}`
+      `${apiUrl}/admin/billing/transactions?page=${page}&limit=${limit}&status=${transactionStatus}&type=${transactionType}`
     );
     const transactionsResult = await transactionsResponse.json();
     transactionsData = transactionsResult.transactionsData || [];
@@ -71,7 +73,7 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
     
     // Fetch invoices from the new API route
     const invoicesResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/${companyId}/billing/invoices?page=${page}&limit=${limit}&status=${invoiceStatus}`
+      `${apiUrl}/admin/billing/invoices?page=${page}&limit=${limit}&status=${invoiceStatus}`
     );
     const invoicesResult = await invoicesResponse.json();
     invoicesData = invoicesResult.invoicesData || [];
