@@ -445,6 +445,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Featured & Top Picks", // For managing highlighted content
       href: `/admin/${adminSlug}/media-featured-picks`,
       icon: StarIcon,
+    },{
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      href: `/admin/${adminSlug}/blogs`
     },
   ],
 
@@ -714,7 +718,6 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
-
   "Head Teacher": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
@@ -737,8 +740,6 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
-
-
   "Other": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
