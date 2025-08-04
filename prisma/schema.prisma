@@ -63,6 +63,9 @@ enum ROLE {
   MODERATOR
   PATIENT
   DOCTOR
+  PATRON
+  STAFF_MEMBER
+  SERVICE_PROVIDER
 }
 
 enum StudentLevelStatus {
@@ -333,6 +336,7 @@ model Company {
   PhotoAlbum                      PhotoAlbum[]
   VideoAlbum                      VideoAlbum[]
   Sponsor                         Sponsor[]
+  Document                        Document[]
 }
 
 enum CategoryStatus {
@@ -356,26 +360,6 @@ model Policy {
   type      PolicyType
   title     String?
   content   String
-}
-
-model FAQ {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
-  question  String
-  answer    String
-  order     Int     @default(0)
-}
-
-model Testimonial {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
-  author    String
-  quote     String
-  avatarUrl String?
-  rating    Int? // 1–5 stars
-  order     Int     @default(0)
 }
 
 model Banner {
@@ -722,6 +706,7 @@ model Payment {
 }
 
 enum AppointmentStatus {
+  SCHEDULED
   PENDING
   CONFIRMED
   CANCELED
@@ -893,13 +878,16 @@ model Client {
   Return            Return[]
 
   // --- NEW FIELDS FOR CLIENT MANAGEMENT ---
-  inquiryCount           Int?      @default(0)
+  inquiryCount           Int?                 @default(0)
   dealStatus             String? // Consider making this an Enum: enum DealStatus { LEAD, ACTIVE, CLOSED, ARCHIVED }
   lastActivity           DateTime?
   notes                  String?
-  preferredPropertyTypes String[]  @default([]) // Array of strings
+  preferredPropertyTypes String[]             @default([]) // Array of strings
   budgetRange            String? // e.g., "10M-20M KES"
   // --- END NEW FIELDS ---
+  Case                   Case[]
+  FinanceAppointment     FinanceAppointment[]
+  Invoice                Invoice[]
 }
 
 enum DealStatus {
@@ -1072,11 +1060,17 @@ model User {
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
 
+  cases Case[] @relation("AssignedTo") // A user can be assigned to many cases
+
   // Relations
   companyId String?  @db.ObjectId
   company   Company? @relation("CompanyUsers", fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   Company Company[] @relation(name: "companyAdmin")
+
+  // User-specific settings
+  settingsId String?   @unique @db.ObjectId
+  settings   Settings?
 
   Review         Review[]
   Question       Question[]
@@ -1154,6 +1148,11 @@ model User {
   Photo      Photo[]
   PhotoAlbum PhotoAlbum[]
   VideoAlbum VideoAlbum[]
+  Document   Document[]
+
+  FinanceAppointment FinanceAppointment[] @relation("Expert")
+  Expert             Expert?
+  Testimonial        Testimonial[]
 }
 
 enum Status {
@@ -4256,4 +4255,188 @@ enum SponsorStatus {
   ACTIVE
   INACTIVE
   PENDING
+}
+
+enum ClientDealStatus {
+  LEAD
+  CONTACTED
+  PROSPECT
+  ACTIVE
+  INACTIVE
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum CaseStatus {
+  ACTIVE
+  ON_HOLD
+  CLOSED
+  PENDING
+  REVIEW
+}
+
+enum CaseType {
+  FINANCE
+  LEGAL
+  ADVISORY
+  MERGER_ACQUISITION
+  WEALTH_MANAGEMENT
+  TAX_ADVISORY
+  CORPORATE
+}
+
+// Case model: Represents a specific case for a client
+model Case {
+  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  description      String?
+  clientId         String     @db.ObjectId
+  client           Client     @relation(fields: [clientId], references: [id])
+  assignedToUserId String     @db.ObjectId
+  assignedTo       User       @relation("AssignedTo", fields: [assignedToUserId], references: [id])
+  caseType         CaseType   @default(FINANCE)
+  status           CaseStatus @default(PENDING)
+  notes            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Document {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  fileUrl    String
+  mimeType   String
+  fileSize   Int
+  uploaderId String   @db.ObjectId
+  uploader   User     @relation(fields: [uploaderId], references: [id])
+  companyId  String?  @db.ObjectId
+  company    Company? @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Appointment model: Represents a scheduled meeting between a client and an expert
+model FinanceAppointment {
+  id       String            @id @default(auto()) @map("_id") @db.ObjectId
+  clientId String            @db.ObjectId
+  client   Client            @relation(fields: [clientId], references: [id])
+  expertId String            @db.ObjectId
+  expert   User              @relation("Expert", fields: [expertId], references: [id])
+  date     DateTime
+  notes    String?
+  status   AppointmentStatus @default(SCHEDULED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Invoice model: Represents a financial invoice for a client
+model Invoice {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  clientId      String        @db.ObjectId
+  client        Client        @relation(fields: [clientId], references: [id])
+  invoiceNumber String        @unique
+  amount        Float
+  issueDate     DateTime
+  dueDate       DateTime
+  status        InvoiceStatus @default(PENDING)
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Expertise {
+  FINANCE
+  LEGAL
+  MARKETING
+  TECHNOLOGY
+  CONSULTING
+  ADVISORY
+}
+
+// Expert model: Represents an expert profile linked to a user
+model Expert {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String      @unique @db.ObjectId
+  user      User        @relation(fields: [userId], references: [id])
+  title     String
+  expertise Expertise[] // Array of expertise enums
+  bio       String
+  image     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Package {
+  id         String        @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  price      String
+  frequency  String
+  features   String[]
+  status     PackageStatus @default(ACTIVE)
+  isFeatured Boolean       @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PackageStatus {
+  ACTIVE
+  INACTIVE
+  FEATURED
+}
+
+enum TestimonialStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
+// Testimonial model: Represents a client testimonial
+model Testimonial {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  quote       String
+  authorId    String?           @db.ObjectId
+  author      User?             @relation(fields: [authorId], references: [id])
+  authorName  String?
+  authorTitle String? // e.g., "Founder & CEO"
+  status      TestimonialStatus @default(PENDING)
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  avatarUrl String?
+  rating    Int? // 1–5 stars
+  order     Int     @default(0)
+}
+
+// FAQ model: Represents a Frequently Asked Question
+model FAQ {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
+  question String
+  answer   String
+  order    Int    @default(0)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+// Settings model: For user-specific preferences
+model Settings {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @unique @db.ObjectId
+  user              User    @relation(fields: [userId], references: [id])
+  newClientNotify   Boolean @default(true)
+  invoicePaidNotify Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

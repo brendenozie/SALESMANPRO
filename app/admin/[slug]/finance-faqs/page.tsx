@@ -1,77 +1,267 @@
 // app/admin/[adminSlug]/faqs/page.tsx
 "use client";
 
-import { motion } from 'framer-motion';
-import { QuestionMarkCircleIcon, PlusCircleIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react'; // For accordion functionality
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  QuestionMarkCircleIcon,
+  PlusCircleIcon,
+  PencilIcon,
+  TrashIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ArrowPathIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid';
 
-const faqsData = [
-  { id: 1, question: "What types of legal services do you offer?", answer: "We offer a comprehensive range of legal services including corporate law, intellectual property, real estate, litigation, and dispute resolution. Our experts are equipped to handle complex cases across various sectors." },
-  { id: 2, question: "How do your financial advisory services work?", answer: "Our financial advisory services cover wealth management, investment planning, tax strategy, and estate planning. We work closely with you to understand your financial goals and create tailored strategies for sustainable growth." },
-  { id: 3, question: "What is your typical client engagement process?", answer: "Our process begins with an initial consultation to understand your needs, followed by strategic planning, meticulous execution of the agreed-upon strategy, and continuous support with regular reviews to ensure long-term success." },
-  { id: 4, question: "Are your consultations confidential?", answer: "Absolutely. All consultations and client interactions are treated with the utmost confidentiality and discretion, adhering to the highest standards of professional ethics and legal privacy regulations." },
-];
+const FAQsPage = () => {
+  const [faqs, setFaqs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openFAQId, setOpenFAQId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentFAQ, setCurrentFAQ] = useState(null);
+  const [formState, setFormState] = useState({
+    question: '',
+    answer: '',
+  });
 
-export default function FAQsPage() {
-  const [openFAQId, setOpenFAQId] = useState<number | null>(null);
+  const fetchFaqs = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/faqs');
+      const data = await res.json();
+      setFaqs(data);
+    } catch (error) {
+      console.error('Error fetching FAQs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const toggleFAQ = (id: number) => {
+  useEffect(() => {
+    fetchFaqs();
+  }, []);
+
+  const toggleFAQ = (id) => {
     setOpenFAQId(openFAQId === id ? null : id);
   };
 
-  return (
-    <div>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-blue-400">FAQ List</h3>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center">
-            <PlusCircleIcon className="h-5 w-5 mr-2" /> Add New FAQ
-          </button>
-        </div>
+  const handleOpenModal = (faq = null) => {
+    if (faq) {
+      setIsEditing(true);
+      setCurrentFAQ(faq);
+      setFormState({
+        question: faq.question,
+        answer: faq.answer,
+      });
+    } else {
+      setIsEditing(false);
+      setCurrentFAQ(null);
+      setFormState({
+        question: '',
+        answer: '',
+      });
+    }
+    setShowModal(true);
+  };
 
-        <div className="space-y-4">
-          {faqsData.map((faq, index) => (
-            <motion.div
-              key={faq.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.08 }}
-              className="bg-[#0A192F] rounded-lg shadow-md border border-blue-800"
-            >
-              <div
-                className="flex justify-between items-center p-5 cursor-pointer"
-                onClick={() => toggleFAQ(faq.id)}
-              >
-                <h4 className="text-xl font-semibold text-white flex-1 pr-4">{faq.question}</h4>
-                <div className="flex space-x-3">
-                  <button className="text-blue-400 hover:text-blue-600" title="Edit">
-                    <PencilIcon className="h-6 w-6" />
-                  </button>
-                  <button className="text-red-400 hover:text-red-600" title="Delete">
-                    <TrashIcon className="h-6 w-6" />
-                  </button>
-                  {openFAQId === faq.id ? (
-                    <ChevronUpIcon className="h-6 w-6 text-blue-400" />
-                  ) : (
-                    <ChevronDownIcon className="h-6 w-6 text-blue-400" />
-                  )}
-                </div>
-              </div>
-              {openFAQId === faq.id && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="px-5 pb-5 text-blue-200 border-t border-blue-700/50"
-                >
-                  <p>{faq.answer}</p>
-                </motion.div>
-              )}
-            </motion.div>
-          ))}
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormState(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const url = isEditing ? `/api/faqs/${currentFAQ.id}` : '/api/faqs';
+      const method = isEditing ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formState),
+      });
+
+      if (!res.ok) throw new Error('Failed to save FAQ');
+
+      await fetchFaqs();
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error saving FAQ:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this FAQ?')) {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/faqs/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete FAQ');
+        await fetchFaqs();
+      } catch (error) {
+        console.error('Error deleting FAQ:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  return (
+    <div className="p-6 md:p-10 bg-gray-900 min-h-screen text-gray-100 font-sans">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">Frequently Asked Questions</h1>
+          <p className="text-gray-400">Manage and organize the most common questions from your clients.</p>
         </div>
+        <button
+          onClick={() => handleOpenModal()}
+          className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center shadow-lg"
+        >
+          <PlusCircleIcon className="h-5 w-5 mr-2" /> Add New FAQ
+        </button>
       </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center p-10 text-gray-400">
+          <ArrowPathIcon className="h-8 w-8 animate-spin mr-3" />
+          Loading FAQs...
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <AnimatePresence>
+            {faqs.map((faq, index) => (
+              <motion.div
+                key={faq.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 overflow-hidden"
+              >
+                <div
+                  className="flex justify-between items-center p-6 cursor-pointer"
+                  onClick={() => toggleFAQ(faq.id)}
+                >
+                  <h4 className="text-xl font-semibold text-white flex-1 pr-4">{faq.question}</h4>
+                  <div className="flex items-center space-x-3">
+                    <motion.button
+                      onClick={(e) => { e.stopPropagation(); handleOpenModal(faq); }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      title="Edit"
+                      className="p-2 rounded-full text-blue-400 hover:bg-gray-700 transition-colors"
+                    >
+                      <PencilIcon className="h-5 w-5" />
+                    </motion.button>
+                    <motion.button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(faq.id); }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      title="Delete"
+                      className="p-2 rounded-full text-red-400 hover:bg-gray-700 transition-colors"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </motion.button>
+                    <motion.div
+                      animate={{ rotate: openFAQId === faq.id ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="p-2 rounded-full text-blue-400"
+                    >
+                      <ChevronDownIcon className="h-6 w-6" />
+                    </motion.div>
+                  </div>
+                </div>
+                <AnimatePresence>
+                  {openFAQId === faq.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="px-6 pb-6 text-blue-200 border-t border-gray-700"
+                    >
+                      <p>{faq.answer}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Modal for Creating/Editing an FAQ */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-gray-800 rounded-2xl shadow-xl p-8 max-w-lg w-full text-gray-100 border border-gray-700"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-blue-400">{isEditing ? 'Edit FAQ' : 'Create New FAQ'}</h2>
+                <button onClick={() => setShowModal(false)} className="p-1 rounded-full hover:bg-gray-700">
+                  <XMarkIcon className="h-6 w-6 text-gray-400 hover:text-white" />
+                </button>
+              </div>
+              <form onSubmit={handleFormSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="question" className="block text-sm font-medium text-gray-400">Question</label>
+                  <input
+                    type="text"
+                    id="question"
+                    name="question"
+                    value={formState.question}
+                    onChange={handleFormChange}
+                    required
+                    className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="answer" className="block text-sm font-medium text-gray-400">Answer</label>
+                  <textarea
+                    id="answer"
+                    name="answer"
+                    rows="4"
+                    value={formState.answer}
+                    onChange={handleFormChange}
+                    required
+                    className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  ></textarea>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  >
+                    {isEditing ? 'Save Changes' : 'Create FAQ'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-}
+};
+
+export default FAQsPage;

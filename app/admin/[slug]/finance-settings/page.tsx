@@ -1,91 +1,554 @@
 // app/admin/[adminSlug]/settings/page.tsx
 "use client";
 
-import { motion } from 'framer-motion';
-import { Cog6ToothIcon, UserCircleIcon, BellIcon, PaintBrushIcon } from '@heroicons/react/24/solid';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  CogIcon,
+  UserIcon,
+  BellIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ArrowsUpDownIcon,
+  PhoneIcon,
+  HomeIcon
+} from '@heroicons/react/24/solid';
+import { usePathname } from 'next/navigation';
 
-export default function SettingsPage() {
+const TABS = [
+  { id: 'general', label: 'General', icon: CogIcon },
+  { id: 'users', label: 'User Management', icon: UserIcon },
+  { id: 'notifications', label: 'Notifications', icon: BellIcon },
+];
+
+// Helper to extract adminSlug from URL
+const getAdminSlug = (pathname) => {
+  const parts = pathname.split('/');
+  return parts[2];
+};
+
+const SettingsPage = () => {
+  const pathname = usePathname();
+  const adminSlug = getAdminSlug(pathname);
+
+  // General Settings State
+  const [generalSettings, setGeneralSettings] = useState({ name: '', contactEmail: '', contactPhone: '', address: '' });
+  const [generalLoading, setGeneralLoading] = useState(true);
+
+  // User Management State
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [isEditingUser, setIsEditingUser] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userForm, setUserForm] = useState({ name: '', email: '', role: 'ADMIN' });
+
+  // Notifications State
+  const [notifications, setNotifications] = useState({ newClientNotify: false, invoicePaidNotify: false });
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+
+  const [activeTab, setActiveTab] = useState('general');
+  const [saving, setSaving] = useState(false);
+  
+  // Use a mock userId for now, replace with actual user context
+  const mockUserId = '65d1d6a8b792167d30f40d04'; // A valid ObjectId for testing
+
+  // Fetching Data
+  const fetchGeneralSettings = async () => {
+    setGeneralLoading(true);
+    try {
+      const res = await fetch(`/api/settings/company?companyId=${adminSlug}`);
+      if (res.ok) {
+        const data = await res.json();
+        setGeneralSettings(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch general settings:', error);
+    } finally {
+      setGeneralLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const res = await fetch(`/api/settings/users?companyId=${adminSlug}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    setNotificationsLoading(true);
+    try {
+      const res = await fetch(`/api/settings/notifications/${mockUserId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          setNotifications(data);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (adminSlug) {
+      fetchGeneralSettings();
+      fetchUsers();
+      fetchNotifications();
+    }
+  }, [adminSlug]);
+
+  // General Settings Handlers
+  const handleGeneralChange = (e) => {
+    const { name, value } = e.target;
+    setGeneralSettings(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleGeneralSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await fetch(`/api/settings/company?companyId=${adminSlug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(generalSettings),
+      });
+    } catch (error) {
+      console.error('Failed to save general settings:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // User Management Handlers
+  const handleUserModalOpen = (user = null) => {
+    if (user) {
+      setIsEditingUser(true);
+      setCurrentUser(user);
+      setUserForm({ name: user.name, email: user.email, role: user.role });
+    } else {
+      setIsEditingUser(false);
+      setCurrentUser(null);
+      setUserForm({ name: '', email: '', role: 'ADMIN' });
+    }
+    setUserModalOpen(true);
+  };
+
+  const handleUserFormChange = (e) => {
+    const { name, value } = e.target;
+    setUserForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUserFormSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const url = isEditingUser ? `/api/settings/users/${currentUser.id}` : `/api/settings/users`;
+      const method = isEditingUser ? 'PUT' : 'POST';
+      const body = isEditingUser ? userForm : { ...userForm, companyId: adminSlug };
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        await fetchUsers();
+        setUserModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Failed to save user:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await fetch(`/api/settings/users/${id}`, { method: 'DELETE' });
+        await fetchUsers();
+      } catch (error) {
+        console.error('Failed to delete user:', error);
+      }
+    }
+  };
+
+  // Notifications Handlers
+  const handleNotificationsChange = (e) => {
+    const { name, checked } = e.target;
+    setNotifications(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleNotificationsSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await fetch(`/api/settings/notifications/${mockUserId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notifications),
+      });
+    } catch (error) {
+      console.error('Failed to save notification preferences:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'general':
+        return (
+          <motion.div
+            key="general-content"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {generalLoading ? (
+              <div className="flex justify-center items-center h-48 text-gray-400">
+                <ArrowsUpDownIcon className="w-8 h-8 animate-spin mr-3" /> Loading...
+              </div>
+            ) : (
+              <form onSubmit={handleGeneralSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Firm Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={generalSettings.name}
+                    onChange={handleGeneralChange}
+                    className="w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                    placeholder="e.g., CapitalEdge"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-300 mb-1">Contact Email</label>
+                  <input
+                    type="email"
+                    id="contactEmail"
+                    name="contactEmail"
+                    value={generalSettings.contactEmail}
+                    onChange={handleGeneralChange}
+                    className="w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                    placeholder="e.g., info@firm.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-300 mb-1">Contact Phone</label>
+                  <input
+                    type="tel"
+                    id="contactPhone"
+                    name="contactPhone"
+                    value={generalSettings.contactPhone}
+                    onChange={handleGeneralChange}
+                    className="w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                    placeholder="e.g., +1 (123) 456-7890"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-1">Address</label>
+                  <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    value={generalSettings.address}
+                    onChange={handleGeneralChange}
+                    className="w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                    placeholder="e.g., 123 Main Street, Suite 400"
+                  />
+                </div>
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full md:w-auto mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg transition-colors hover:bg-blue-700 focus:outline-none"
+                  disabled={saving}
+                >
+                  {saving ? <ArrowsUpDownIcon className="w-5 h-5 inline-block mr-2 animate-spin" /> : 'Save Changes'}
+                </motion.button>
+              </form>
+            )}
+          </motion.div>
+        );
+      case 'users':
+        return (
+          <motion.div
+            key="users-content"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <motion.button
+              onClick={() => handleUserModalOpen()}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-lg transition-colors hover:bg-green-700 focus:outline-none flex items-center"
+            >
+              <PlusIcon className="w-5 h-5 mr-2" /> Add New Admin User
+            </motion.button>
+
+            {usersLoading ? (
+              <div className="flex justify-center items-center h-48 text-gray-400">
+                <ArrowsUpDownIcon className="w-8 h-8 animate-spin mr-3" /> Loading users...
+              </div>
+            ) : (
+              <div className="overflow-x-auto bg-gray-800 rounded-xl shadow-xl border border-gray-700">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Email</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Role</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-gray-800 divide-y divide-gray-700">
+                    {users.map((user) => (
+                      <motion.tr
+                        key={user.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{user.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{user.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{user.role}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            user.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {user.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end space-x-2">
+                            <motion.button
+                              onClick={() => handleUserModalOpen(user)}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="text-blue-400 hover:text-blue-500"
+                              title="Edit"
+                            >
+                              <PencilIcon className="w-5 h-5" />
+                            </motion.button>
+                            <motion.button
+                              onClick={() => handleDeleteUser(user.id)}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="text-red-400 hover:text-red-500"
+                              title="Delete"
+                            >
+                              <TrashIcon className="w-5 h-5" />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </motion.div>
+        );
+      case 'notifications':
+        return (
+          <motion.div
+            key="notifications-content"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {notificationsLoading ? (
+              <div className="flex justify-center items-center h-48 text-gray-400">
+                <ArrowsUpDownIcon className="w-8 h-8 animate-spin mr-3" /> Loading...
+              </div>
+            ) : (
+              <form onSubmit={handleNotificationsSubmit} className="space-y-6">
+                <div className="flex items-center p-4 bg-gray-800 rounded-xl border border-gray-700">
+                  <input
+                    id="newClientNotify"
+                    name="newClientNotify"
+                    type="checkbox"
+                    checked={notifications.newClientNotify}
+                    onChange={handleNotificationsChange}
+                    className="h-5 w-5 rounded text-blue-600 bg-gray-700 border-gray-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="newClientNotify" className="ml-3 text-sm text-gray-300">
+                    Email me on new client sign-ups
+                  </label>
+                </div>
+                <div className="flex items-center p-4 bg-gray-800 rounded-xl border border-gray-700">
+                  <input
+                    id="invoicePaidNotify"
+                    name="invoicePaidNotify"
+                    type="checkbox"
+                    checked={notifications.invoicePaidNotify}
+                    onChange={handleNotificationsChange}
+                    className="h-5 w-5 rounded text-blue-600 bg-gray-700 border-gray-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="invoicePaidNotify" className="ml-3 text-sm text-gray-300">
+                    Email me when an invoice is paid
+                  </label>
+                </div>
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full md:w-auto mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg transition-colors hover:bg-blue-700 focus:outline-none"
+                  disabled={saving}
+                >
+                  {saving ? <ArrowsUpDownIcon className="w-5 h-5 inline-block mr-2 animate-spin" /> : 'Save Preferences'}
+                </motion.button>
+              </form>
+            )}
+          </motion.div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div>
-      <div className="space-y-8">
-        {/* General Settings */}
-        <div className="bg-[#0A192F] rounded-lg shadow-md border border-blue-800 p-6">
-          <h3 className="text-2xl font-bold text-blue-400 mb-4 flex items-center">
-            <Cog6ToothIcon className="h-7 w-7 mr-3 text-blue-500" /> General Settings
-          </h3>
-          <form className="space-y-4">
-            <div>
-              <label htmlFor="firmName" className="block text-blue-200 text-sm font-medium mb-1">Firm Name</label>
-              <input
-                type="text"
-                id="firmName"
-                defaultValue="CapitalEdge"
-                className="w-full p-3 rounded-md bg-[#1B2A41] text-white border border-blue-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-              />
-            </div>
-            <div>
-              <label htmlFor="contactEmail" className="block text-blue-200 text-sm font-medium mb-1">Contact Email</label>
-              <input
-                type="email"
-                id="contactEmail"
-                defaultValue="info@capitaledge.com"
-                className="w-full p-3 rounded-md bg-[#1B2A41] text-white border border-blue-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-              />
-            </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-              Save Changes
-            </button>
-          </form>
-        </div>
-
-        {/* User Management (Admin Accounts) */}
-        <div className="bg-[#0A192F] rounded-lg shadow-md border border-blue-800 p-6">
-          <h3 className="text-2xl font-bold text-blue-400 mb-4 flex items-center">
-            <UserCircleIcon className="h-7 w-7 mr-3 text-blue-500" /> User Management
-          </h3>
-          <p className="text-blue-200 mb-4">Manage admin accounts and permissions.</p>
-          {/* Example: A simple list of users */}
-          <ul className="space-y-2">
-            <li className="flex justify-between items-center text-white bg-[#1B2A41] p-3 rounded-md border border-blue-700">
-              <span>Admin User 1 (admin@example.com)</span>
-              <div className="flex space-x-2">
-                <button className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
-                <button className="text-red-400 hover:text-red-600 text-sm">Delete</button>
-              </div>
-            </li>
-            <li className="flex justify-between items-center text-white bg-[#1B2A41] p-3 rounded-md border border-blue-700">
-              <span>Admin User 2 (editor@example.com)</span>
-              <div className="flex space-x-2">
-                <button className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
-                <button className="text-red-400 hover:text-red-600 text-sm">Delete</button>
-              </div>
-            </li>
-          </ul>
-          <button className="mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-            Add New Admin User
-          </button>
-        </div>
-
-        {/* Notifications Settings */}
-        <div className="bg-[#0A192F] rounded-lg shadow-md border border-blue-800 p-6">
-          <h3 className="text-2xl font-bold text-blue-400 mb-4 flex items-center">
-            <BellIcon className="h-7 w-7 mr-3 text-blue-500" /> Notification Preferences
-          </h3>
-          <form className="space-y-4">
-            <div className="flex items-center">
-              <input type="checkbox" id="newClientNotify" className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500 mr-2" defaultChecked />
-              <label htmlFor="newClientNotify" className="text-blue-200">Email me on new client sign-ups</label>
-            </div>
-            <div className="flex items-center">
-              <input type="checkbox" id="invoicePaidNotify" className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500 mr-2" />
-              <label htmlFor="invoicePaidNotify" className="text-blue-200">Email me when an invoice is paid</label>
-            </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-              Save Preferences
-            </button>
-          </form>
+    <div className="p-6 md:p-10 bg-gray-900 min-h-screen text-gray-100 font-sans">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">Admin Settings</h1>
+          <p className="text-gray-400">Manage your firm's core settings, user access, and notification preferences.</p>
         </div>
       </div>
+
+      <div className="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 p-6 md:p-8">
+        <div className="border-b border-gray-700 mb-6">
+          <nav className="-mb-px flex space-x-8">
+            {TABS.map((tab) => (
+              <motion.button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 px-1 inline-flex items-center font-medium text-sm transition-colors
+                  ${activeTab === tab.id
+                    ? 'text-blue-400 border-b-2 border-blue-400'
+                    : 'text-gray-400 hover:text-gray-200 hover:border-gray-500 border-b-2 border-transparent'
+                  }`}
+              >
+                <tab.icon className="w-5 h-5 mr-2" />
+                {tab.label}
+              </motion.button>
+            ))}
+          </nav>
+        </div>
+        <AnimatePresence mode="wait">
+          {renderContent()}
+        </AnimatePresence>
+      </div>
+
+      {/* User Management Modal */}
+      <AnimatePresence>
+        {userModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-gray-800 rounded-2xl shadow-xl p-8 max-w-lg w-full text-gray-100 border border-gray-700"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-blue-400">{isEditingUser ? 'Edit User' : 'Add New User'}</h2>
+                <button onClick={() => setUserModalOpen(false)} className="p-1 rounded-full hover:bg-gray-700">
+                  <XCircleIcon className="h-6 w-6 text-gray-400 hover:text-white" />
+                </button>
+              </div>
+              <form onSubmit={handleUserFormSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-400">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={userForm.name}
+                    onChange={handleUserFormChange}
+                    required
+                    className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-400">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={userForm.email}
+                    onChange={handleUserFormChange}
+                    required
+                    className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="role" className="block text-sm font-medium text-gray-400">Role</label>
+                  <select
+                    id="role"
+                    name="role"
+                    value={userForm.role}
+                    onChange={handleUserFormChange}
+                    className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  >
+                    <option value="ADMIN">Admin</option>
+                    <option value="STAFF">Staff</option>
+                    <option value="MODERATOR">Moderator</option>
+                    <option value="USER">User</option>
+                  </select>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setUserModalOpen(false)}
+                    className="px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  >
+                    {saving ? <ArrowsUpDownIcon className="w-4 h-4 inline-block mr-2 animate-spin" /> : (isEditingUser ? 'Save Changes' : 'Add User')}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-}
+};
+
+export default SettingsPage;

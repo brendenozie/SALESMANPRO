@@ -8,6 +8,10 @@ import {
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
+const customLoader = ({ src, width, quality }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
 // Dummy Data
 const initialExperts = [
   { id: 'EXP001', name: 'Sophia Chen', specialty: 'Adventure Travel', experience: 8, travelsCompleted: 120, photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=2940&auto=format&fit=crop' },
@@ -101,7 +105,7 @@ export default function AdminExperts() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{expert.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                        <Image src={expert.photo} alt={expert.name} layout="fill" objectFit="cover" />
+                        <Image src={expert.photo} alt={expert.name} layout="fill" objectFit="cover" loader={customLoader}/>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expert.name}</td>
@@ -256,7 +260,7 @@ function ExpertModal({ expert, onSave, onClose }) {
             />
             {photo && (
               <div className="mt-2 text-center">
-                <Image src={photo} alt="Preview" width={80} height={80} objectFit="cover" className="rounded-full" />
+                <Image src={photo} alt="Preview" width={80} height={80} objectFit="cover" className="rounded-full" loader={customLoader}/>
               </div>
             )}
           </div>

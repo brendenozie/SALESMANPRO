@@ -8,6 +8,10 @@ import {
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
+const customLoader = ({ src, width, quality }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
 // Dummy Data
 const initialVirtualTours = [
   { id: 'VT001', title: 'Explore Amazon Rainforest', location: 'Amazon, Brazil', duration: '5 min', category: 'Nature', videoUrl: 'https://www.youtube.com/embed/LXb3EKWsInQ', thumbnailUrl: 'https://images.unsplash.com/photo-1546522301-447544d673f4?q=80&w=2940&auto=format&fit=crop' },
@@ -101,7 +105,7 @@ export default function AdminVirtualTours() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{tour.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="relative w-20 h-12 rounded-md overflow-hidden">
-                        <Image src={tour.thumbnailUrl} alt={tour.title} layout="fill" objectFit="cover" />
+                        <Image src={tour.thumbnailUrl} alt={tour.title} layout="fill" objectFit="cover"  loader={customLoader}/>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{tour.title}</td>
@@ -281,7 +285,7 @@ function VirtualTourModal({ tour, onSave, onClose }) {
             />
             {thumbnailUrl && (
               <div className="mt-2 text-center">
-                <Image src={thumbnailUrl} alt="Preview" width={100} height={60} objectFit="contain" className="rounded-md" />
+                <Image src={thumbnailUrl} alt="Preview" width={100} height={60} objectFit="contain" className="rounded-md" loader={customLoader}/>
               </div>
             )}
           </div>

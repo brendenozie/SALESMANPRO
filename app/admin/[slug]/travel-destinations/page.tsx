@@ -6,7 +6,11 @@ import {
   GlobeAltIcon, PlusCircleIcon, PencilIcon, TrashIcon, MapPinIcon, PhotoIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
+const customLoader = ({ src, width, quality }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
 // Dummy Data
 const initialDestinations = [
   { id: 'D001', name: 'Bali, Indonesia', country: 'Indonesia', description: 'Lush landscapes and spiritual retreats.', imageUrl: 'https://images.unsplash.com/photo-1536152470817-f90694154373?q=80&w=2940&auto=format&fit=crop' },
@@ -100,7 +104,7 @@ export default function AdminDestinations() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{destination.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="relative w-16 h-10 rounded-md overflow-hidden">
-                        <Image src={destination.imageUrl} alt={destination.name} layout="fill" objectFit="cover" />
+                        <Image src={destination.imageUrl} alt={destination.name} layout="fill" objectFit="cover" loader={customLoader}/>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{destination.name}</td>
@@ -235,7 +239,7 @@ function DestinationModal({ destination, onSave, onClose }) {
             />
             {imageUrl && (
               <div className="mt-2 text-center">
-                <Image src={imageUrl} alt="Preview" width={100} height={60} objectFit="contain" className="rounded-md" />
+                <Image src={imageUrl} alt="Preview" width={100} height={60} objectFit="contain" className="rounded-md" loader={customLoader}/>
               </div>
             )}
           </div>

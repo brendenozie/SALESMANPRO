@@ -6,6 +6,11 @@ import {
   BriefcaseIcon, PlusCircleIcon, PencilIcon, TrashIcon, ClockIcon, CurrencyDollarIcon, MapPinIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import Image from "next/image";
+
+const customLoader = ({ src, width, quality }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
 
 // Dummy Data
 const initialPackages = [
@@ -111,7 +116,7 @@ export default function AdminPackages() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pkg.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="relative w-16 h-10 rounded-md overflow-hidden">
-                        <Image src={pkg.imageUrl} alt={pkg.name} layout="fill" objectFit="cover" />
+                        <Image src={pkg.imageUrl} alt={pkg.name} layout="fill" objectFit="cover" loader={customLoader}/>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pkg.name}</td>

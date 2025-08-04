@@ -3,7 +3,8 @@
 
 import React, { useState } from 'react';
 import {
-  QuestionMarkCircleIcon, EyeIcon, CheckCircleIcon, TrashIcon, EnvelopeIcon, PhoneIcon
+  QuestionMarkCircleIcon, EyeIcon, CheckCircleIcon, TrashIcon, EnvelopeIcon, PhoneIcon,
+  FunnelIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 

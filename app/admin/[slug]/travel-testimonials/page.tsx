@@ -8,6 +8,10 @@ import {
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
+const customLoader = ({ src, width, quality }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
 // Dummy Data
 const initialTestimonials = [
   { id: 'T001', author: 'Alex Johnson', quote: 'Our trip to Patagonia was flawlessly organized!', rating: 5, status: 'Approved', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=2940&auto=format&fit=crop' },
@@ -142,7 +146,7 @@ export default function AdminTestimonials() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{testimonial.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex items-center">
                       <div className="relative w-8 h-8 rounded-full overflow-hidden mr-2">
-                        <Image src={testimonial.avatar} alt={testimonial.author} layout="fill" objectFit="cover" />
+                        <Image src={testimonial.avatar} alt={testimonial.author} layout="fill" objectFit="cover" loader={customLoader}/>
                       </div>
                       {testimonial.author}
                     </td>
@@ -323,7 +327,7 @@ function TestimonialModal({ testimonial, onSave, onClose }) {
             />
             {avatar && (
               <div className="mt-2 text-center">
-                <Image src={avatar} alt="Preview" width={50} height={50} objectFit="cover" className="rounded-full" />
+                <Image src={avatar} alt="Preview" width={50} height={50} objectFit="cover" className="rounded-full" loader={customLoader}/>
               </div>
             )}
           </div>

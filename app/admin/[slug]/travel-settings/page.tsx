@@ -3,7 +3,8 @@
 
 import React, { useState } from 'react';
 import {
-  Cog6ToothIcon, UserPlusIcon, KeyIcon, GlobeAltIcon, PaintBrushIcon
+  Cog6ToothIcon, UserPlusIcon, KeyIcon, GlobeAltIcon, PaintBrushIcon,
+  TrashIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 
