@@ -1,6 +1,6 @@
 // app/api/properties/route.ts
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // Adjust path if necessary
+import prisma from '@/server/db/prismadb'; // Adjust path if necessary
 
 // GET /api/properties
 // Fetches all properties, with optional filtering

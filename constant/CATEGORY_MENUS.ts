@@ -413,8 +413,13 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
     { 
       label: "Article Management", // Specific for articles
-      href: `/admin/${adminSlug}/media-articles`, 
+      href: `/admin/${adminSlug}/blogs`, //media-articles
       icon: NewspaperIcon,
+    },
+    { 
+      label: "Gallery Management", // Specific for videos
+      href: `/admin/${adminSlug}/media-gallery`, 
+      icon: VideoCameraIcon,
     },
     { 
       label: "Video Management", // Specific for videos
@@ -445,11 +450,12 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Featured & Top Picks", // For managing highlighted content
       href: `/admin/${adminSlug}/media-featured-picks`,
       icon: StarIcon,
-    },{
-      label: "Blogs",
-      icon: DocumentTextIcon,
-      href: `/admin/${adminSlug}/blogs`
     },
+    // {
+    //   label: "Blogs",
+    //   icon: DocumentTextIcon,
+    //   href: `/admin/${adminSlug}/blogs`
+    // },
   ],
 
   "Finance & Legal": [

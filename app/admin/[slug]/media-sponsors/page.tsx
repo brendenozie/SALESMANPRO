@@ -1,126 +1,486 @@
 // app/admin/[adminSlug]/sponsors/page.tsx
 "use client";
 
-import React from 'react';
-import AdminLayout from '../../../../components/AdminLayout'; // Adjust path as needed
-import { motion } from 'framer-motion';
-import { PlusIcon, PencilIcon, TrashIcon, GlobeAltIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  GlobeAltIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  BuildingOffice2Icon,
+  XMarkIcon,
+  UserCircleIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
-const sampleSponsors = [
-  { id: "sp1", name: "Tech Innovations Inc.", contact: "john.doe@techinnov.com", phone: "555-123-4567", website: "https://www.techinnov.com", logoUrl: "/images/logos/techinnov.png", status: "Active" },
-  { id: "sp2", name: "Global Entertainment Co.", contact: "jane.s@globalent.com", phone: "555-987-6543", website: "https://www.globalent.com", logoUrl: "/images/logos/globalent.png", status: "Active" },
-  { id: "sp3", name: "Future Foods Ltd.", contact: "mike.r@futurefoods.com", phone: "555-111-2222", website: "https://www.futurefoods.com", logoUrl: "/images/logos/futurefoods.png", status: "Pending" },
-];
+// Placeholder for your AdminLayout component
+const AdminLayout = ({ children }) => (
+  <div className="min-h-screen bg-gray-950 text-gray-100 p-8 font-['Inter']">
+    <div className="max-w-7xl mx-auto">
+      {children}
+    </div>
+  </div>
+);
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+// Custom loader for Next.js Image component
+const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
+// --- Reusable Modal Component ---
+const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
+  if (!isOpen) return null;
 
-export default function SponsorsPage() {
-  const handleEdit = (id: string) => alert(`Edit sponsor ${id}`);
-  const handleDelete = (id: string) => {
-    if (confirm(`Are you sure you want to delete sponsor ${id}?`)) {
-      alert(`Sponsor ${id} deleted.`);
-    }
+  const sizeClasses = {
+    sm: 'max-w-xl',
+    md: 'max-w-3xl',
+    lg: 'max-w-5xl',
+    xl: 'max-w-7xl'
   };
-  const handleAddSponsor = () => alert("Add new sponsor form will open.");
 
   return (
-    <div>
-      <div className="flex justify-end mb-6">
-        <motion.button
-          onClick={handleAddSponsor}
-          className="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-full shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75 flex items-center justify-center p-4 backdrop-blur-sm">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className={`relative bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl w-full ${sizeClasses[size]} p-8 transform-gpu`}
+      >
+        <div className="flex justify-between items-center pb-4 border-b border-gray-700 mb-6">
+          <h3 className="text-3xl font-extrabold text-white">{title}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800">
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
+        {children}
+      </motion.div>
+    </div>
+  );
+};
+
+// --- Sponsor Form Component for Add/Edit ---
+const SponsorForm = ({ sponsor, onSubmit, onCancel, isSubmitting }) => {
+  const [form, setForm] = useState(sponsor || {
+    companyName: '',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    websiteUrl: '',
+    logoUrl: '',
+    status: 'ACTIVE',
+  });
+  const isEditing = !!sponsor;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(form);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label htmlFor="companyName" className="block text-sm font-medium text-gray-300 mb-1">Company Name</label>
+          <input
+            type="text"
+            id="companyName"
+            name="companyName"
+            value={form.companyName}
+            onChange={handleChange}
+            required
+            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          />
+        </div>
+        <div>
+          <label htmlFor="websiteUrl" className="block text-sm font-medium text-gray-300 mb-1">Website URL</label>
+          <input
+            type="url"
+            id="websiteUrl"
+            name="websiteUrl"
+            value={form.websiteUrl}
+            onChange={handleChange}
+            required
+            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          />
+        </div>
+        <div>
+          <label htmlFor="contactName" className="block text-sm font-medium text-gray-300 mb-1">Contact Person</label>
+          <input
+            type="text"
+            id="contactName"
+            name="contactName"
+            value={form.contactName}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          />
+        </div>
+        <div>
+          <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-300 mb-1">Contact Email</label>
+          <input
+            type="email"
+            id="contactEmail"
+            name="contactEmail"
+            value={form.contactEmail}
+            onChange={handleChange}
+            required
+            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          />
+        </div>
+        <div>
+          <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-300 mb-1">Contact Phone</label>
+          <input
+            type="tel"
+            id="contactPhone"
+            name="contactPhone"
+            value={form.contactPhone}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          />
+        </div>
+        <div>
+          <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-300 mb-1">Logo URL</label>
+          <input
+            type="url"
+            id="logoUrl"
+            name="logoUrl"
+            value={form.logoUrl}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          />
+        </div>
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-300 mb-1">Status</label>
+          <select
+            id="status"
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          >
+            <option value="ACTIVE">Active</option>
+            <option value="PENDING">Pending</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex justify-end space-x-4 mt-8">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-6 py-3 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition-colors font-semibold"
         >
-          <PlusIcon className="h-5 w-5 mr-2" /> Add New Sponsor
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`px-6 py-3 rounded-full font-semibold transition-colors ${
+            isSubmitting ? 'bg-purple-800 text-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white'
+          }`}
+        >
+          {isSubmitting ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// --- Delete Confirmation Modal Component ---
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, item, isSubmitting }) => {
+  if (!isOpen) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Confirm Deletion">
+      <p className="text-gray-300 mb-6 text-lg">
+        Are you sure you want to delete the sponsor <strong className="text-white">"{item?.companyName}"</strong>? This action cannot be undone.
+      </p>
+      <div className="flex justify-end space-x-4">
+        <button
+          onClick={onClose}
+          className="px-6 py-3 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition-colors font-semibold"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={isSubmitting}
+          className={`px-6 py-3 rounded-full font-semibold transition-colors ${
+            isSubmitting ? 'bg-red-800 text-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white'
+          }`}
+        >
+          {isSubmitting ? 'Deleting...' : 'Delete'}
+        </button>
+      </div>
+    </Modal>
+  );
+};
+
+// --- Sponsor Card Component for Grid View ---
+const SponsorCard = ({ sponsor, onEdit, onDelete }) => {
+  const statusColor = sponsor.status === 'ACTIVE'
+    ? 'text-green-400 bg-green-900/50'
+    : sponsor.status === 'PENDING'
+    ? 'text-yellow-400 bg-yellow-900/50'
+    : 'text-red-400 bg-red-900/50';
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3 }}
+      className="bg-gray-900 border border-gray-800 rounded-3xl shadow-xl p-6 relative group transform hover:scale-105 transition-transform duration-300 ease-in-out"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-shrink-0 h-20 w-20 relative rounded-full overflow-hidden bg-gray-800 border border-gray-700 flex items-center justify-center p-2">
+          {sponsor.logoUrl ? (
+            <Image src={sponsor.logoUrl} alt={sponsor.companyName} fill className="object-contain" loader={loader} />
+          ) : (
+            <BuildingOffice2Icon className="h-12 w-12 text-gray-600" />
+          )}
+        </div>
+        <div className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${statusColor}`}>
+          {sponsor.status}
+        </div>
+      </div>
+      <h3 className="text-2xl font-bold text-white mb-2">{sponsor.companyName}</h3>
+      <div className="space-y-2 text-gray-400 text-sm mb-4">
+        <div className="flex items-center">
+          <UserCircleIcon className="h-4 w-4 mr-2 text-purple-400" />
+          <span>{sponsor.contactName || 'N/A'}</span>
+        </div>
+        <a href={`mailto:${sponsor.contactEmail}`} className="flex items-center hover:text-white transition-colors">
+          <EnvelopeIcon className="h-4 w-4 mr-2 text-purple-400" />
+          <span>{sponsor.contactEmail}</span>
+        </a>
+        {sponsor.contactPhone && (
+          <a href={`tel:${sponsor.contactPhone}`} className="flex items-center hover:text-white transition-colors">
+            <PhoneIcon className="h-4 w-4 mr-2 text-purple-400" />
+            <span>{sponsor.contactPhone}</span>
+          </a>
+        )}
+      </div>
+      <a
+        href={sponsor.websiteUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+      >
+        <GlobeAltIcon className="h-4 w-4 mr-1" />
+        Visit Website
+      </a>
+      <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <motion.button
+          onClick={() => onEdit(sponsor)}
+          className="p-2 rounded-full bg-gray-900/70 backdrop-blur-sm text-indigo-400 hover:bg-indigo-900/50 transition-colors"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label={`Edit ${sponsor.companyName}`}
+        >
+          <PencilIcon className="h-5 w-5" />
+        </motion.button>
+        <motion.button
+          onClick={() => onDelete(sponsor)}
+          className="p-2 rounded-full bg-gray-900/70 backdrop-blur-sm text-red-400 hover:bg-red-900/50 transition-colors"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label={`Delete ${sponsor.companyName}`}
+        >
+          <TrashIcon className="h-5 w-5" />
         </motion.button>
       </div>
+    </motion.div>
+  );
+};
 
-      <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-700">
-          <thead className="bg-gray-700">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Logo
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Company Name
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Contact Info
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Website
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {sampleSponsors.map((sponsor, index) => (
-              <motion.tr
-                key={sponsor.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="hover:bg-gray-700 transition-colors duration-150"
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex-shrink-0 h-16 w-16 relative rounded-md overflow-hidden bg-gray-900 flex items-center justify-center p-2">
-                    <Image src={sponsor.logoUrl} alt={sponsor.name} fill className="object-contain" loader={loader}/>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-lg font-medium text-white">{sponsor.name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-gray-400 flex items-center"><EnvelopeIcon className="h-4 w-4 mr-1" /> {sponsor.contact}</div>
-                  <div className="text-gray-400 flex items-center"><PhoneIcon className="h-4 w-4 mr-1" /> {sponsor.phone}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <a href={sponsor.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center">
-                    <GlobeAltIcon className="h-4 w-4 mr-1" /> Visit Site
-                  </a>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    sponsor.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {sponsor.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <motion.button
-                    onClick={() => handleEdit(sponsor.id)}
-                    className="text-indigo-400 hover:text-indigo-300 mr-4"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    aria-label={`Edit ${sponsor.name}`}
-                  >
-                    <PencilIcon className="h-5 w-5 inline" />
-                  </motion.button>
-                  <motion.button
-                    onClick={() => handleDelete(sponsor.id)}
-                    className="text-red-400 hover:text-red-300"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    aria-label={`Delete ${sponsor.name}`}
-                  >
-                    <TrashIcon className="h-5 w-5 inline" />
-                  </motion.button>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
+
+// --- Main Page Component ---
+export default function SponsorsPage() {
+  const [sponsors, setSponsors] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedSponsor, setSelectedSponsor] = useState(null);
+
+  useEffect(() => {
+    fetchSponsors();
+  }, []);
+
+  const fetchSponsors = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/sponsors');
+      if (!response.ok) {
+        throw new Error('Failed to fetch sponsors');
+      }
+      const fetchedSponsors = await response.json();
+      setSponsors(fetchedSponsors);
+    } catch (error) {
+      console.log("Failed to fetch sponsors:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddSponsor = async (sponsorData) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/sponsors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sponsorData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add sponsor');
+      }
+      const newSponsor = await response.json();
+      setSponsors(prev => [...prev, newSponsor]);
+      setIsAddModalOpen(false);
+    } catch (error) {
+      console.log("Failed to add sponsor:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditSponsor = (sponsor) => {
+    setSelectedSponsor(sponsor);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateSponsor = async (updatedSponsorData) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/sponsors/${updatedSponsorData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedSponsorData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update sponsor');
+      }
+      const updatedSponsor = await response.json();
+      setSponsors(prev => prev.map(s => s.id === updatedSponsor.id ? updatedSponsor : s));
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.log("Failed to update sponsor:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteSponsor = (sponsor) => {
+    setSelectedSponsor(sponsor);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDeleteSponsor = async () => {
+    if (!selectedSponsor) return;
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/sponsors/${selectedSponsor.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete sponsor');
+      }
+
+      setSponsors(prev => prev.filter(s => s.id !== selectedSponsor.id));
+      setIsDeleteModalOpen(false);
+      setSelectedSponsor(null);
+    } catch (error) {
+      console.log("Failed to delete sponsor:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <AdminLayout>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4 sm:mb-0">
+          Sponsors & <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Partnerships</span>
+        </h1>
+        <div className="flex space-x-4">
+          <motion.button
+            onClick={fetchSponsors}
+            className="inline-flex items-center px-6 py-3 bg-gray-800 text-gray-300 font-bold rounded-full shadow-lg transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-gray-700/50 hover:bg-gray-700"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ArrowPathIcon className="h-5 w-5 mr-2" /> Refresh
+          </motion.button>
+          <motion.button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full shadow-lg transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/50"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <PlusIcon className="h-5 w-5 mr-2" /> Add New Sponsor
+          </motion.button>
+        </div>
       </div>
-    </div>
+
+      <div className="bg-gray-900 rounded-3xl shadow-2xl p-6">
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="bg-gray-800 rounded-3xl animate-pulse h-64"></div>
+            ))}
+          </div>
+        ) : sponsors.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-center">
+            <BuildingOffice2Icon className="h-24 w-24 text-gray-700 mb-4" />
+            <h2 className="text-2xl text-gray-400 font-semibold mb-2">No sponsors found.</h2>
+            <p className="text-gray-500">Add your first sponsor to get started!</p>
+          </div>
+        ) : (
+          <motion.div
+            layout
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          >
+            <AnimatePresence>
+              {sponsors.map((sponsor) => (
+                <SponsorCard
+                  key={sponsor.id}
+                  sponsor={sponsor}
+                  onEdit={handleEditSponsor}
+                  onDelete={handleDeleteSponsor}
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Sponsor">
+          <SponsorForm onSubmit={handleAddSponsor} onCancel={() => setIsAddModalOpen(false)} isSubmitting={isSubmitting} />
+        </Modal>
+        <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Sponsor Details">
+          <SponsorForm sponsor={selectedSponsor} onSubmit={handleUpdateSponsor} onCancel={() => setIsEditModalOpen(false)} isSubmitting={isSubmitting} />
+        </Modal>
+        <DeleteConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleConfirmDeleteSponsor}
+          item={selectedSponsor}
+          isSubmitting={isSubmitting}
+        />
+      </AnimatePresence>
+    </AdminLayout>
   );
 }

@@ -329,6 +329,10 @@ model Company {
   Diagnosis                       Diagnosis[]
   BillingTransaction              BillingTransaction[]
   Video                           Video[]
+  Photo                           Photo[]
+  PhotoAlbum                      PhotoAlbum[]
+  VideoAlbum                      VideoAlbum[]
+  Sponsor                         Sponsor[]
 }
 
 enum CategoryStatus {
@@ -1145,6 +1149,11 @@ model User {
   PatientInvoices     PatientInvoices[]    @relation("PatientInvoices")
   // Staff               Staff? relation("staff")
   Video               Video[]
+
+  content    Content[]
+  Photo      Photo[]
+  PhotoAlbum PhotoAlbum[]
+  VideoAlbum VideoAlbum[]
 }
 
 enum Status {
@@ -4056,36 +4065,54 @@ model BillingTransaction {
 // A central model for all video assets.
 // This allows a single video to be referenced by multiple other models
 // (e.g., a Product, a Blog post, an ExamQuestion)
-model Video {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  title        String
-  url          String? // The S3 URL of the video file
-  thumbnailUrl String? // The URL of the video's thumbnail image
-  description  String?
-  duration     String? // Duration of the video in seconds
-  views        Int         @default(0)
-  status       VideoStatus @default(DRAFT)
-  tags         String[] // For filtering and search
+// New model to serve as a container for a group of videos
+model VideoAlbum {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  tags        String[]
 
-  // Date of upload/creation
-  date DateTime
+  // A single video album can have multiple videos
+  videos Video[]
 
-  // URL for the thumbnail image
-  imageUrl String
-
-  // Optional relations for tracking who owns the video
+  // Relations for ownership
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
   userId    String?  @db.ObjectId
   user      User?    @relation(fields: [userId], references: [id])
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Content   Content[]
+
+  @@index([companyId])
+  @@index([userId])
+}
+
+// Refactored Video model
+// This model now only stores information specific to an individual video
+model Video {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  url          String? // The S3 URL of the video file
+  thumbnailUrl String? // The URL of the video's thumbnail image
+  duration     String? // Duration of the video in seconds
+  views        Int         @default(0)
+  status       VideoStatus @default(DRAFT)
+
+  // Each video belongs to one VideoAlbum
+  albumId String     @db.ObjectId
+  album   VideoAlbum @relation(fields: [albumId], references: [id])
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
 
-  // Add indexes for faster lookups
-  @@index([companyId])
-  @@index([userId])
+  // Add index for faster lookups
+  @@index([albumId])
 }
 
 // Enum for the video's lifecycle status
@@ -4095,4 +4122,138 @@ enum VideoStatus {
   PUBLISHED
   ARCHIVED
   REJECTED
+}
+
+// model Video {
+//   id           String      @id @default(auto()) @map("_id") @db.ObjectId
+//   title        String
+//   url          String? // The S3 URL of the video file
+//   thumbnailUrl String? // The URL of the video's thumbnail image
+//   description  String?
+//   duration     String? // Duration of the video in seconds
+//   views        Int         @default(0)
+//   status       VideoStatus @default(DRAFT)
+//   tags         String[] // For filtering and search
+
+//   // Date of upload/creation
+//   date DateTime
+
+//   // URL for the thumbnail image
+//   imageUrl String
+
+//   // Optional relations for tracking who owns the video
+//   companyId String?  @db.ObjectId
+//   company   Company? @relation(fields: [companyId], references: [id])
+//   userId    String?  @db.ObjectId
+//   user      User?    @relation(fields: [userId], references: [id])
+
+//   // Timestamps
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   // Add indexes for faster lookups
+//   @@index([companyId])
+//   @@index([userId])
+// }
+
+enum ContentStatus {
+  Draft
+  Scheduled
+  Published
+  Archived
+}
+
+model Content {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  type        String // e.g., "Article", "PhotoAlbum", "VideoAlbum"
+  status      ContentStatus @default(Draft)
+  publishDate DateTime?
+  author      User?         @relation(fields: [authorId], references: [id])
+  authorId    String?       @db.ObjectId
+
+  // New relations for albums
+  photoAlbum   PhotoAlbum? @relation(fields: [photoAlbumId], references: [id])
+  photoAlbumId String?     @db.ObjectId
+
+  videoAlbum   VideoAlbum? @relation(fields: [videoAlbumId], references: [id])
+  videoAlbumId String?     @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([photoAlbumId])
+  @@index([videoAlbumId])
+}
+
+// Updated `schema.prisma` file
+
+// ... (existing models like User, Account, Session, Company, Video, Content) ...
+
+// New model to serve as a container for a group of photos
+model PhotoAlbum {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  tags        String[]
+
+  // A single photo album can have multiple photos
+  photos Photo[]
+
+  // Relations for ownership
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Content   Content[]
+
+  @@index([companyId])
+  @@index([userId])
+}
+
+// Refactored Photo model
+// This model now only stores information specific to an individual image
+model Photo {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  imageUrl String // The S3 or cloud storage URL of the photo file
+  altText  String? // For accessibility and SEO
+
+  // Each photo belongs to one PhotoAlbum
+  albumId String     @db.ObjectId
+  album   PhotoAlbum @relation(fields: [albumId], references: [id])
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
+
+  @@index([albumId])
+}
+
+// Model for managing sponsors and partners
+model Sponsor {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  companyName  String
+  contactName  String
+  contactEmail String
+  contactPhone String?
+  websiteUrl   String
+  logoUrl      String?
+  status       SponsorStatus @default(ACTIVE)
+  Company      Company?      @relation(fields: [companyId], references: [id])
+  companyId    String?       @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Enum for the sponsorship status
+enum SponsorStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
 }
