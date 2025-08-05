@@ -1,160 +1,93 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb";
+// app/api/destinations/route.ts
+
+import { NextResponse, NextRequest } from 'next/server';
+import prisma from "@/server/db/prismadb"; 
+
+// app/api/destinations/route.ts
+
+
+/**
+ * API Route for handling multiple destinations.
+ * Path: /api/destinations
+ */
 
 // =======================================================================
-// GET all products (destinations)
-// Endpoint: /api/products
+// GET: Fetch all destinations with their associated location data
 // =======================================================================
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const products = await prisma.product.findMany({
-      orderBy: {
-        createdAt: 'desc', // Assuming a createdAt field exists
+    // Use Prisma to find all destinations and include the related 'location' model
+    const destinations = await prisma.destination.findMany({
+      include: {
+        location: true, // This will fetch the full Location object for each destination
       },
     });
-    return NextResponse.json(products, { status: 200 });
+
+    // Respond with the list of destinations and a 200 OK status
+    return NextResponse.json(destinations, { status: 200 });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    return NextResponse.json(
-      { message: 'Failed to fetch products', error: (error as Error).message || 'An unexpected error occurred.' },
-      { status: 500 }
-    );
+    console.error('Error fetching destinations:', error);
+    // Respond with a 500 Internal Server Error for any failures
+    return NextResponse.json({ message: 'Failed to fetch destinations' }, { status: 500 });
   }
 }
 
 // =======================================================================
-// POST a new product (destination)
-// Endpoint: /api/products
+// POST: Create a new destination
 // =======================================================================
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    // Parse the JSON body from the request
+    const body = await req.json();
     const {
       name,
+      country,
+      continent,
       description,
       longDescription,
+      bannerImage,
       images,
-      tags,
-      brand,
-      companyId,
-      productCategoryId,
-      model,
-      color,
-      size,
-      weight,
-      condition,
-      dimensions,
-      material,
-      quantity,
-      costPrice,
-      sellingPrice,
-      discount,
-      finalPrice,
-      profitMargin,
-      pricingTiers,
-      isOnOffer,
-      isFlashDeal,
-      isDiscounted,
-      startDealDate,
-      endDealDate,
-      isAvailable,
-      isNewArrival,
-      isFeatured,
-      make,
-      trim,
-      type,
-      mileage,
-      engineType,
-      engineSize,
-      horsepower,
-      torque,
-      fuelType,
-      fuelEconomy,
-      transmission,
-      drivetrain,
-      vin,
-      logbookStatus,
-      serviceHistory,
-      negotiable,
-      financingAvailable,
-      tradeIn,
-      features,
-      previousOwners,
-      tireCondition,
-      accidentalHistory,
+      activities,
+      bestTimeToVisit,
+      averageRating,
+      published,
+      locationId, // Now required due to the new schema relation
     } = body;
 
-    // Basic validation: Ensure required fields are present
-    if (!name) {
-      return NextResponse.json(
-        { message: 'Missing required field: name.' },
-        { status: 400 }
-      );
+    // Basic validation to ensure required fields are present, including the new locationId
+    if (!name || !description || !locationId) {//!country || !continent || 
+      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
+    
+    // Create a URL-friendly slug from the name
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-    const newProduct = await prisma.product.create({
+    // Use Prisma to create the new destination in the database
+    const newDestination = await prisma.destination.create({
       data: {
         name,
+        slug,
+        country,
+        continent,
         description,
         longDescription,
+        bannerImage,
         images,
-        tags,
-        brand,
-        companyId,
-        productCategoryId,
-        model,
-        color,
-        size,
-        weight,
-        condition,
-        dimensions,
-        material,
-        quantity,
-        costPrice,
-        sellingPrice,
-        discount,
-        finalPrice,
-        profitMargin,
-        pricingTiers,
-        isOnOffer,
-        isFlashDeal,
-        isDiscounted,
-        startDealDate: startDealDate ? new Date(startDealDate) : null,
-        endDealDate: endDealDate ? new Date(endDealDate) : null,
-        isAvailable,
-        isNewArrival,
-        isFeatured,
-        make,
-        trim,
-        type,
-        mileage,
-        engineType,
-        engineSize,
-        horsepower,
-        torque,
-        fuelType,
-        fuelEconomy,
-        transmission,
-        drivetrain,
-        vin,
-        logbookStatus,
-        serviceHistory,
-        negotiable,
-        financingAvailable,
-        tradeIn,
-        features,
-        previousOwners,
-        tireCondition,
-        accidentalHistory,
+        activities,
+        bestTimeToVisit,
+        averageRating,
+        published,
+        location: {
+          connect: { id: locationId }, // Connect the destination to an existing location
+        },
       },
     });
 
-    return NextResponse.json(newProduct, { status: 201 });
+    // Respond with the newly created destination and a 201 Created status
+    return NextResponse.json(newDestination, { status: 201 });
   } catch (error) {
-    console.error('Error creating product:', error);
-    return NextResponse.json(
-      { message: 'Failed to create product', error: (error as Error).message || 'An unexpected error occurred.' },
-      { status: 500 }
-    );
+    console.error('Error creating destination:', error);
+    // Respond with a 500 Internal Server Error for any failures
+    return NextResponse.json({ message: 'Failed to create destination' }, { status: 500 });
   }
 }

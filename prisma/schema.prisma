@@ -1914,6 +1914,7 @@ model Location {
   Product             Product[]
   marketplaceListings marketplaceListings[]
   Property            Property[]
+  Destination         Destination[]
 }
 
 /// Associates a Company with a specific Location,
@@ -4437,6 +4438,30 @@ model Settings {
   newClientNotify   Boolean @default(true)
   invoicePaidNotify Boolean @default(false)
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// schema.prisma
+
+model Destination {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  slug            String   @unique // A URL-friendly name for better SEO and unique links
+  country         String
+  continent       String // Categorize destinations by continent
+  description     String
+  longDescription String? // A more detailed description for a dedicated page
+  images          String[] // List of image URLs for a gallery
+  bannerImage     String // A specific, high-quality image for a hero section
+  activities      String[] // List of key activities or attractions (e.g., "Hiking", "Surfing")
+  bestTimeToVisit String? // A string to describe the ideal season
+  averageRating   Float? // User rating (e.g., 4.5)
+
+  locationId String   @db.ObjectId
+  location   Location @relation(fields: [locationId], references: [id])
+
+  published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

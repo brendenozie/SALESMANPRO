@@ -1,88 +1,92 @@
 // pages/api/campaigns/[id].js
-import { NextResponse } from "next/server";
+
+import { NextResponse, NextRequest } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
 
 
-// =======================================================================
-// GET a single product by ID
-// Endpoint: /api/products/[id]
-// =======================================================================
-export async function GET_BY_ID(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const { id } = params;
 
-    const product = await prisma.product.findUnique({
+// app/api/destinations/[id]/route.ts
+
+
+/**
+ * API Route for handling a single destination by ID.
+ * Path: /api/destinations/[id]
+ */
+
+// Define the type for the dynamic segment 'id' from the URL
+interface Params {
+  params: { id: string };
+}
+
+// =======================================================================
+// GET: Fetch a single destination by ID
+// =======================================================================
+export async function GET(req: NextRequest, { params }: Params) {
+  const { id } = params;
+
+  try {
+    // Find the destination by its unique ID
+    const destination = await prisma.destination.findUnique({
       where: { id },
     });
 
-    if (!product) {
-      return NextResponse.json({ message: 'Product not found.' }, { status: 404 });
+    // If destination is not found, return a 404 Not Found error
+    if (!destination) {
+      return NextResponse.json({ message: 'Destination not found' }, { status: 404 });
     }
 
-    return NextResponse.json(product, { status: 200 });
+    // Respond with the found destination and a 200 OK status
+    return NextResponse.json(destination, { status: 200 });
   } catch (error) {
-    console.error('Error fetching product:', error);
-    return NextResponse.json(
-      { message: 'Failed to fetch product', error: (error as Error).message || 'An unexpected error occurred.' },
-      { status: 500 }
-    );
+    console.error(`Error fetching destination with ID ${id}:`, error);
+    // Return a 500 error for any failures
+    return NextResponse.json({ message: 'Failed to fetch destination' }, { status: 500 });
   }
 }
 
 // =======================================================================
-// PUT/PATCH update a product by ID
-// Endpoint: /api/products/[id]
+// PATCH: Update an existing destination by ID
 // =======================================================================
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const { id } = params;
-    const body = await request.json();
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id } = params;
 
-    const updatedProduct = await prisma.product.update({
+  try {
+    // Parse the JSON body from the request
+    const body = await req.json();
+
+    // Use Prisma to update the destination. 'data' will only contain
+    // the fields provided in the request body.
+    const updatedDestination = await prisma.destination.update({
       where: { id },
-      data: {
-        ...body,
-        // Handle dates separately if they exist in the body
-        startDealDate: body.startDealDate ? new Date(body.startDealDate) : undefined,
-        endDealDate: body.endDealDate ? new Date(body.endDealDate) : undefined,
-      },
+      data: body,
     });
 
-    return NextResponse.json(updatedProduct, { status: 200 });
+    // Respond with the updated destination and a 200 OK status
+    return NextResponse.json(updatedDestination, { status: 200 });
   } catch (error) {
-    console.error('Error updating product:', error);
-    if ((error as any).code === 'P2025') {
-      return NextResponse.json({ message: 'Product not found.' }, { status: 404 });
-    }
-    return NextResponse.json(
-      { message: 'Failed to update product', error: (error as Error).message || 'An unexpected error occurred.' },
-      { status: 500 }
-    );
+    console.error(`Error updating destination with ID ${id}:`, error);
+    // Respond with a 500 error if the update fails
+    return NextResponse.json({ message: 'Failed to update destination' }, { status: 500 });
   }
 }
 
 // =======================================================================
-// DELETE a product by ID
-// Endpoint: /api/products/[id]
+// DELETE: Delete a destination by ID
 // =======================================================================
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const { id } = params;
+export async function DELETE(req: NextRequest, { params }: Params) {
+  const { id } = params;
 
-    await prisma.product.delete({
+  try {
+    // Use Prisma to delete the destination by its unique ID
+    await prisma.destination.delete({
       where: { id },
     });
 
-    return NextResponse.json({ message: 'Product deleted successfully.' }, { status: 204 });
+    // Respond with a 204 No Content status on successful deletion
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Error deleting product:', error);
-    if ((error as any).code === 'P2025') {
-      return NextResponse.json({ message: 'Product not found.' }, { status: 404 });
-    }
-    return NextResponse.json(
-      { message: 'Failed to delete product', error: (error as Error).message || 'An unexpected error occurred.' },
-      { status: 500 }
-    );
+    console.error(`Error deleting destination with ID ${id}:`, error);
+    // Respond with a 500 error if the deletion fails
+    return NextResponse.json({ message: 'Failed to delete destination' }, { status: 500 });
   }
 }
-

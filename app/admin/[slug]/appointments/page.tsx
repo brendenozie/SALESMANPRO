@@ -4,34 +4,6 @@ import AdminAppointmentsClient, { AppointmentItem, OrderItem } from "./AdminAppo
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// export interface OrderItem {
-//   id: string;
-//   price: number;
-//   name?: string; // Made optional as it might come from marketplaceListing
-//   email?: string;
-//   phone?: string;
-//   quantity: number;
-//   status?: string;
-//   date?: string;
-//   timeSlot?: string;
-//   marketplaceListing?: {
-//     title?: string;
-//     name?: string;
-//   };
-//   order?: {
-//     status?: string;
-//     rider?: string;
-//     createdAt?: string;
-//     name?: string;
-//     title?: string;
-//     email?: string;
-//     phone?: string;
-//     consumer?: {
-//       name?: string;
-//     };
-//   };
-// }
-
 interface Props {
   params: {
     slug: string; // companyId
