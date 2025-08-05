@@ -505,11 +505,6 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: HomeIcon
     },
     {
-      label: "Bookings",
-      href: `/admin/${adminSlug}/travel-bookings`,
-      icon: CalendarDaysIcon
-    },
-    {
       label: "Destinations",
       href: `/admin/${adminSlug}/travel-destinations`,
       icon: GlobeAltIcon
@@ -528,6 +523,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Travel Experts",
       href: `/admin/${adminSlug}/travel-experts`,
       icon: UserGroupIcon
+    },
+    {
+      label: "Bookings",
+      href: `/admin/${adminSlug}/travel-bookings`,
+      icon: CalendarDaysIcon
     },
     {
       label: "Virtual Tours",
