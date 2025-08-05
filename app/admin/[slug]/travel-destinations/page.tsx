@@ -119,8 +119,8 @@ export default function DestinationManagementPage({ params }: PageProps) {
       const destinationsData = await destinationsResponse.json();
       const locationsData = await locationsResponse.json();
 
-      setDestinations(destinationsData.data || []);
-      setLocations(locationsData.data || []);
+      setDestinations(destinationsData || []);
+      setLocations(locationsData || []);
     } catch (err: any) {
       setError(`Failed to fetch data: ${err.message}`);
     } finally {

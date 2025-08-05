@@ -15,7 +15,7 @@ const mockPrisma = {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 500));
       let data = [
-        { id: 'vid1', title: 'Building a Next.js App', type: 'Video', imageUrl: 'https://placehold.co/400x300/F0F4F8/3B4254?text=NextJS+Tutorial', isFeatured: true, companyId: 'comp1', userId: 'user1' },
+        { id: 'vid1', title: 'Building a Next.js App', type: 'Video', imageUrl: 'https://hold.co/400x300/F0F4F8/3B4254?text=NextJS+Tutorial', isFeatured: true, companyId: 'comp1', userId: 'user1' },
         { id: 'vid2', title: 'The Future of AI in Design', type: 'Article', imageUrl: 'https://placehold.co/400x300/D0D4DB/3B4254?text=AI+Article', isFeatured: true, companyId: 'comp1', userId: 'user1' },
         { id: 'vid3', title: 'Advanced Tailwind CSS Tricks', type: 'Video', imageUrl: 'https://placehold.co/400x300/F0F4F8/3B4254?text=Tailwind+Tips', isFeatured: false, companyId: 'comp1', userId: 'user1' },
         { id: 'vid4', title: 'Data Management with Prisma', type: 'Video', imageUrl: 'https://placehold.co/400x300/D0D4DB/3B4254?text=Prisma+DB', isFeatured: false, companyId: 'comp1', userId: 'user1' },

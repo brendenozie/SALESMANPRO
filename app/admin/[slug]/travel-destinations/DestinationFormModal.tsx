@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { XMarkIcon, MapPinIcon, TrashIcon as TrashIconSolid } from '@heroicons/react/24/solid';
+import {
+  XMarkIcon,
+  MapPinIcon,
+  TrashIcon as TrashIconSolid,
+  GlobeAmericasIcon,
+} from '@heroicons/react/24/solid';
 import {
   ExclamationCircleIcon,
   MapPinIcon as MapPinIconOutline,
@@ -10,14 +15,16 @@ import {
   DocumentTextIcon,
   HashtagIcon,
 } from '@heroicons/react/24/outline';
+import { all } from 'axios';
 
-// --- Types and Interfaces ---
+// --- Types and Interfaces (from user's code) ---
 interface Destination {
   id: string;
   name: string;
   slug: string;
   description?: string;
   country?: string;
+  continent?: string;
   latitude?: number;
   longitude?: number;
   seoTitle?: string;
@@ -29,6 +36,7 @@ interface Destination {
   updatedAt?: Date;
   createdBy?: string;
   updatedBy?: string;
+  bannerImage?: string;
   status: 'active' | 'inactive' | 'draft';
   locationId: string | null;
   localization?: any;
@@ -45,7 +53,48 @@ interface Location {
   children?: Location[];
 }
 
-// --- Helper Function to Build a Flat List of Locations for the Parent Dropdown ---
+// --- Helper Functions for Tree Structure and Dropdown ---
+
+/**
+ * Builds a tree structure from a flat list of locations.
+ * This is necessary for the `flattenLocationsForDropdown` helper to work correctly.
+ * @param locations A flat array of Location objects.
+ * @returns A tree-like array of Location objects.
+ */
+const buildLocationTree = (locations: Location[]): Location[] => {
+  const locationMap: { [key: string]: Location } = {};
+  const tree: Location[] = [];
+  
+  if(locations.length > 0){
+
+    locations.forEach(location => {
+      locationMap[location.id] = { ...location, children: [] };
+    });
+
+    locations.forEach(location => {
+      if (location.parentId && locationMap[location.parentId]) {
+        locationMap[location.parentId].children?.push(locationMap[location.id]);
+      } else {
+        tree.push(locationMap[location.id]);
+      }
+    });
+
+  }
+
+  // Sort top-level nodes and their children for a cleaner UI
+  const sortTree = (nodes: Location[]) => {
+    nodes.sort((a, b) => a.name.localeCompare(b.name));
+    nodes.forEach(node => {
+      if (node.children) {
+        sortTree(node.children);
+      }
+    });
+  };
+  sortTree(tree);
+
+  return tree;
+};
+
 /**
  * Recursively creates a flattened list of locations with indentation for a dropdown.
  * @param locations The array of locations to flatten.
@@ -54,33 +103,55 @@ interface Location {
  * @returns A flattened, indented list of locations.
  */
 const flattenLocationsForDropdown = (locations: Location[], indent = '', list: { id: string; name: string }[] = []) => {
-    locations.forEach(location => {
-        list.push({ id: location.id, name: `${indent}${location.name}` });
-        if (location.children && location.children.length > 0) {
-            flattenLocationsForDropdown(location.children, `${indent}— `, list);
-        }
-    });
-    return list;
+  locations.forEach(location => {
+    list.push({ id: location.id, name: `${indent}${location.name}` });
+    if (location.children && location.children.length > 0) {
+      flattenLocationsForDropdown(location.children, `${indent}— `, list);
+    }
+  });
+  return list;
 };
 
-// --- Helper Function to Build the Tree ---
-const buildLocationTree = (locations: Location[]): Location[] => {
-    const locationMap: { [key: string]: Location } = {};
-    const tree: Location[] = [];
-    locations.forEach(location => {
-        locationMap[location.id] = { ...location, children: [] };
-    });
-    locations.forEach(location => {
-        if (location.parentId && locationMap[location.parentId]) {
-            locationMap[location.parentId].children?.push(locationMap[location.id]);
-            locationMap[location.parentId].children?.sort((a, b) => a.name.localeCompare(b.name));
-        } else {
-            tree.push(locationMap[location.id]);
-        }
-    });
-    tree.sort((a, b) => a.name.localeCompare(b.name));
-    return tree;
+/**
+ * Traverses the location hierarchy to determine the continent and country.
+ * @param locationId The ID of the selected location.
+ * @param allLocations A flat array of all location objects.
+ * @returns An object containing the continent and country names, or nulls if not found.
+ */
+const getContinentAndCountry = (locationId: string | null, allLocations: Location[]): { continent: string | null; country: string | null } => {
+  if (!locationId) {
+    return { continent: null, country: null };
+  }
+
+  const locationMap = new Map<string, Location>();
+  if(allLocations.length > 0){
+
+   allLocations.forEach(loc => locationMap.set(loc.id, loc));
+ 
+  }
+
+  let continent: string | null = null;
+  let country: string | null = null;
+  let currentLocation = locationMap.get(locationId);
+
+  while (currentLocation) {
+    // A location with no parent is a top-level entity, which we assume is a continent.
+    if (!currentLocation.parentId) {
+      continent = currentLocation.name;
+    } else {
+      const parentLocation = locationMap.get(currentLocation.parentId);
+      if (parentLocation && !parentLocation.parentId) {
+        // A location whose parent is a continent is a country.
+        country = currentLocation.name;
+      }
+    }
+    // Move up the hierarchy
+    currentLocation = currentLocation.parentId ? locationMap.get(currentLocation.parentId) : null;
+  }
+
+  return { continent, country };
 };
+
 
 // --- Component: Destination Form Modal (for Create & Edit) ---
 interface DestinationFormModalProps {
@@ -97,6 +168,8 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
     name: destination?.name || '',
     slug: destination?.slug || '',
     description: destination?.description || '',
+    country: destination?.country || '',
+    continent: destination?.continent || '',
     latitude: destination?.latitude || 0,
     longitude: destination?.longitude || 0,
     seoTitle: destination?.seoTitle || '',
@@ -108,8 +181,9 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
     locationId: destination?.locationId || null,
     createdBy: destination?.createdBy || '',
     updatedBy: destination?.updatedBy || '',
+    bannerImage: destination?.bannerImage || 'https://hold.co/400x300/F0F4F8/3B4254?text=desti+nation',
   }));
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,12 +192,24 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
     return flattenLocationsForDropdown(locationTree);
   }, [allLocations]);
 
+  // Effect to handle auto-population of continent and country
+  useEffect(() => {
+    const { continent, country } = getContinentAndCountry(formData.locationId, allLocations);
+    setFormData(prev => ({
+      ...prev,
+      continent: continent || '',
+      country: country || ''
+    }));
+  }, [formData.locationId, allLocations]);
+
   useEffect(() => {
     if (isEditing && destination) {
       setFormData({
         name: destination.name,
         slug: destination.slug,
         description: destination.description || '',
+        country: destination.country || '',
+        continent: destination.continent || '',
         latitude: destination.latitude || 0,
         longitude: destination.longitude || 0,
         seoTitle: destination.seoTitle || '',
@@ -135,6 +221,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
         locationId: destination.locationId || null,
         createdBy: destination.createdBy || '',
         updatedBy: destination.updatedBy || '',
+        bannerImage: destination.bannerImage || 'https://hold.co/400x300/F0F4F8/3B4254?text=desti+nation',
       });
     }
   }, [destination, isEditing]);
@@ -150,7 +237,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
-  
+
   const handleKeywordsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const keywords = e.target.value.split(',').map(kw => kw.trim()).filter(kw => kw.length > 0);
     setFormData(prev => ({ ...prev, metaKeywords: keywords }));
@@ -160,6 +247,13 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Validation check: ensure required fields are not empty
+    if (!formData.name || !formData.description) {
+      setError("Please fill out all required fields: Name, and Description.");
+      setLoading(false);
+      return;
+    }
 
     const apiEndpoint = isEditing ? `/api/admin/destinations/${destination?.id}` : '/api/admin/destinations';
     const method = isEditing ? 'PUT' : 'POST';
@@ -185,7 +279,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-gray-900 bg-opacity-70 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-800 h-[52rem] overflow-y-auto rounded-2xl shadow-2xl p-6 w-full max-w-2xl transform transition-all scale-100 opacity-100 animate-fade-in">
+      <div className="bg-white dark:bg-gray-800 h-[42rem] overflow-y-auto rounded-2xl shadow-2xl p-6 w-full max-w-2xl transform transition-all scale-100 opacity-100 animate-fade-in">
         <div className="flex justify-between items-center pb-4 mb-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300">
@@ -237,7 +331,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
                 </div>
                 <select id="locationId" name="locationId" value={formData.locationId || ''} onChange={handleChange}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none transition-colors">
-                  <option value="">No Parent (Top-Level)</option>
+                  <option value="">No Location</option>
                   {parentOptions.map(opt => (
                     <option key={opt.id} value={opt.id}>{opt.name}</option>
                   ))}
@@ -249,13 +343,36 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative">
+              <label htmlFor="continent" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Continent</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <GlobeAmericasIcon className="w-5 h-5 text-gray-400" />
+                </div>
+                <input type="text" id="continent" name="continent" value={formData.continent} disabled
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-colors" />
+              </div>
+            </div>
+            <div className="relative">
+              <label htmlFor="country" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Country</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPinIconOutline className="w-5 h-5 text-gray-400" />
+                </div>
+                <input type="text" id="country" name="country" value={formData.country} disabled
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-colors" />
+              </div>
+            </div>
+          </div>
+
           <div>
             <label htmlFor="description" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Description</label>
             <div className="relative">
               <div className="absolute top-3 left-3 flex items-center pointer-events-none">
                 <DocumentTextIcon className="w-5 h-5 text-gray-400" />
               </div>
-              <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3}
+              <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3} required
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
             </div>
           </div>

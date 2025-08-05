@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     } = body;
 
     // Basic validation to ensure required fields are present, including the new locationId
-    if (!name || !description || !locationId) {//!country || !continent || 
+    if (!name || !country || !continent || !description || !locationId) {//
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
     
