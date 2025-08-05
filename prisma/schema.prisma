@@ -4389,6 +4389,8 @@ enum PackageStatus {
   ACTIVE
   INACTIVE
   FEATURED
+  DRAFT
+  ARCHIVED
 }
 
 enum TestimonialStatus {
@@ -4462,6 +4464,29 @@ model Destination {
   location   Location @relation(fields: [locationId], references: [id])
 
   published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  TourPackage   TourPackage? @relation(fields: [tourPackageId], references: [id])
+  tourPackageId String?      @db.ObjectId
+}
+
+// Package model: Represents a travel package or tour.
+model TourPackage {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  slug            String        @unique
+  description     String
+  longDescription String?
+  duration        String // e.g., "7 Days, 6 Nights"
+  price           Float
+  status          PackageStatus @default(DRAFT)
+  imageUrl        String
+  images          String[]
+
+  // Many-to-many relationship with Destination
+  destinations Destination[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
