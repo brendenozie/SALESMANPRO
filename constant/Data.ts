@@ -286,7 +286,7 @@ export interface SaleItem {
   customer?: string;
 }
 
-export const getSalesData = (adminSlug: string): SaleItem[] => ([
+export const getSalesData = (slug: string): SaleItem[] => ([
   { id: "sale001", name: "Premium Membership", price: 99.99, quantity: 1, total: 99.99, date: "2025-07-16", customer: "Jane Doe" },
   { id: "sale002", name: "Yoga Mat", price: 29.99, quantity: 1, total: 29.99, date: "2025-07-16", customer: "John Smith" },
   { id: "sale003", name: "HIIT Class Drop-in", price: 25.00, quantity: 2, total: 50.00, date: "2025-07-15", customer: "Emily White" },
