@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { BellAlertIcon, BriefcaseIcon, CheckCircleIcon, ClockIcon, InformationCircleIcon, MapPinIcon, PencilIcon, PlusCircleIcon, StarIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-
-// Custom image loader for Next.js
-const customLoader = ({ src, width, quality }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+import {
+  BellAlertIcon, BriefcaseIcon, CheckCircleIcon, ClockIcon, InformationCircleIcon,
+  MapPinIcon, PencilSquareIcon, PlusCircleIcon, StarIcon, TrashIcon, XMarkIcon
+} from '@heroicons/react/24/solid'; // Using solid icons for better visual weight
+import toast from 'react-hot-toast'; // Replaced custom notification with react-hot-toast
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 // =======================================================================
 // Helper component for each package card
 // =======================================================================
 const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
-  // Function to get a color based on the package status
   const getStatusColor = (status) => {
     switch (status) {
       case 'ACTIVE': return 'bg-green-100 text-green-800';
@@ -38,9 +37,9 @@ const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
         <Image
           src={pkg.imageUrl || 'https://placehold.co/600x400/E5E7EB/A5A9AE?text=No+Image'}
           alt={pkg.name}
-          layout="fill"
-          objectFit="cover"
-          loader={customLoader}
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          style={{ objectFit: 'cover' }}
           className="transition-transform duration-500 group-hover:scale-110"
         />
         {pkg.status === 'FEATURED' && (
@@ -67,10 +66,10 @@ const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
-              <PencilIcon className="w-5 h-5" />
+              <PencilSquareIcon className="w-5 h-5" />
             </motion.button>
             <motion.button
-              onClick={() => onDelete(pkg.id)}
+              onClick={() => onDelete(pkg.id, pkg.name)}
               className="p-2 text-red-600 transition-colors duration-200 bg-red-50 rounded-full hover:bg-red-100"
               title="Delete Package"
               whileHover={{ scale: 1.1 }}
@@ -85,8 +84,7 @@ const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-4 mt-auto text-slate-700 border-t border-slate-100">
           <div className="flex items-center space-x-2">
             <MapPinIcon className="w-4 h-4 text-indigo-500" />
-            {/* The destination names are now an array on the package object */}
-            <span className="text-sm font-medium line-clamp-1">{pkg.destinations.map(d => d.name).join(', ')}</span>
+            <span className="text-sm font-medium line-clamp-1">{pkg.destinations?.map(d => d.name).join(', ') || 'N/A'}</span>
           </div>
           <div className="flex items-center space-x-2">
             <ClockIcon className="w-4 h-4 text-indigo-500" />
@@ -104,7 +102,7 @@ const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
 // =======================================================================
 // Helper component for the Add/Edit modal
 // =======================================================================
-const TourPackageModal = ({ pkg, onSave, onClose, destinations }) => {
+const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => {
   const [formData, setFormData] = useState({
     name: pkg?.name || '',
     slug: pkg?.slug || '',
@@ -117,19 +115,16 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations }) => {
     destinationIds: pkg?.destinations?.map(d => d.id) || [],
   });
 
-  // Handle changes for input fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle changes for the multi-select destination input
   const handleDestinationChange = (e) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
     setFormData(prev => ({ ...prev, destinationIds: selectedOptions }));
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({ ...formData, id: pkg?.id, price: Number(formData.price) });
@@ -148,12 +143,12 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
-        className="relative w-full max-w-lg p-8 bg-white rounded-3xl shadow-2xl"
+        className="relative w-full max-w-lg p-8 bg-white rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute text-slate-400 transition-colors duration-200 top-5 right-5 hover:text-slate-600"
+          className="absolute text-slate-400 transition-colors duration-200 top-5 right-5 hover:text-slate-600 p-1"
         >
           <XMarkIcon className="w-6 h-6" />
         </button>
@@ -161,6 +156,7 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations }) => {
           {pkg ? 'Edit Tour Package' : 'Add New Tour Package'}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* ... form fields with updated styling */}
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1">Package Name</label>
             <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g., Luxury Bali Honeymoon" required className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
@@ -171,11 +167,11 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations }) => {
           </div>
           <div>
             <label htmlFor="description" className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
-            <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows="3" placeholder="A brief, captivating description of the package." required className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
+            <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3} placeholder="A brief, captivating description of the package." required className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
           </div>
           <div>
             <label htmlFor="longDescription" className="block text-sm font-semibold text-slate-700 mb-1">Long Description</label>
-            <textarea id="longDescription" name="longDescription" value={formData.longDescription} onChange={handleChange} rows="5" placeholder="A more detailed description for the package page." className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
+            <textarea id="longDescription" name="longDescription" value={formData.longDescription} onChange={handleChange} rows={5} placeholder="A more detailed description for the package page." className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -219,87 +215,36 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations }) => {
             <input type="url" id="imageUrl" name="imageUrl" value={formData.imageUrl} onChange={handleChange} placeholder="https://images.unsplash.com/..." required className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
             {formData.imageUrl && (
               <div className="flex items-center justify-center w-full h-40 p-2 mt-4 overflow-hidden bg-slate-100 border border-slate-200 rounded-xl">
-                <Image src={formData.imageUrl} alt="Image Preview" width={200} height={120} objectFit="contain" className="rounded-lg" loader={customLoader} unoptimized />
+                <Image src={formData.imageUrl} alt="Image Preview" width={200} height={120} style={{ objectFit: 'contain' }} className="rounded-lg" unoptimized />
               </div>
             )}
           </div>
           <div className="flex justify-end pt-4 space-x-3">
-            <button type="button" onClick={onClose} className="px-6 py-2 text-sm font-semibold text-slate-700 transition-colors bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button type="button" onClick={onClose} className="px-6 py-3 text-sm font-semibold text-slate-700 transition-colors bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               Cancel
             </button>
-            <button type="submit" className="px-6 py-2 text-sm font-semibold text-white transition-colors bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              {pkg ? 'Save Changes' : 'Add Package'}
-            </button>
+            <motion.button
+              type="submit"
+              disabled={isLoading}
+              whileHover={{ scale: isLoading ? 1 : 1.05 }}
+              whileTap={{ scale: isLoading ? 1 : 0.95 }}
+              className="px-6 py-3 text-sm font-semibold text-white transition-colors bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                pkg ? 'Save Changes' : 'Add Package'
+              )}
+            </motion.button>
           </div>
         </form>
       </motion.div>
-    </motion.div>
-  );
-};
-
-// =======================================================================
-// Helper component for confirmation dialog
-// =======================================================================
-const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-  >
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.9, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 200, damping: 25 }}
-      className="w-full max-w-sm p-8 bg-white rounded-2xl shadow-2xl"
-    >
-      <div className="flex items-center justify-center w-14 h-14 mx-auto mb-4 text-red-600 bg-red-100 rounded-full">
-        <BellAlertIcon className="w-8 h-8" />
-      </div>
-      <h3 className="mb-2 text-2xl font-bold text-center text-slate-900">{title}</h3>
-      <p className="text-sm text-center text-slate-500">{message}</p>
-      <div className="flex justify-center mt-6 space-x-4">
-        <button onClick={onCancel} className="px-6 py-3 text-sm font-semibold text-slate-700 transition-colors bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50">
-          Cancel
-        </button>
-        <button onClick={onConfirm} className="px-6 py-3 text-sm font-semibold text-white transition-colors bg-red-600 rounded-xl shadow-sm hover:bg-red-700">
-          Delete
-        </button>
-      </div>
-    </motion.div>
-  </motion.div>
-);
-
-// =======================================================================
-// Helper component for notification toast
-// =======================================================================
-const Notification = ({ message, type }) => {
-  const getNotificationColor = (type) => {
-    switch (type) {
-      case 'success': return 'bg-green-500';
-      case 'error': return 'bg-red-500';
-      default: return 'bg-blue-500';
-    }
-  };
-
-  const getIcon = (type) => {
-    switch (type) {
-      case 'success': return <CheckCircleIcon className="w-5 h-5" />;
-      case 'error': return <InformationCircleIcon className="w-5 h-5" />;
-      default: return <InformationCircleIcon className="w-5 h-5" />;
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ y: 50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 50, opacity: 0 }}
-      className={`fixed bottom-8 left-1/2 -translate-x-1/2 p-4 rounded-xl shadow-xl flex items-center space-x-2 z-[60] text-white ${getNotificationColor(type)}`}
-    >
-      {getIcon(type)}
-      <p className="text-sm font-medium">{message}</p>
     </motion.div>
   );
 };
@@ -313,17 +258,10 @@ export default function AdminPackages() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPackage, setCurrentPackage] = useState(null);
-  const [packageToDelete, setPackageToDelete] = useState(null);
-  const [showNotification, setShowNotification] = useState({ visible: false, message: '', type: '' });
+  const [packageToDeleteId, setPackageToDeleteId] = useState(null);
+  const [packageToDeleteName, setPackageToDeleteName] = useState(null);
 
-  // Function to show a notification toast
-  const showNotificationAlert = (message, type) => {
-    setShowNotification({ visible: true, message, type });
-    setTimeout(() => setShowNotification({ visible: false, message: '', type: '' }), 3000);
-  };
-
-  // API handler to fetch all tour packages and destinations
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [packagesRes, destinationsRes] = await Promise.all([
@@ -333,35 +271,37 @@ export default function AdminPackages() {
 
       const packagesData = await packagesRes.json();
       const destinationsData = await destinationsRes.json();
-      
+
       if (!packagesRes.ok || !destinationsRes.ok) {
         throw new Error(packagesData.message || destinationsData.message || 'Failed to fetch data');
       }
 
       setTourPackages(packagesData);
       setDestinations(destinationsData);
-      
+
     } catch (error) {
       console.error('Error fetching data:', error);
-      showNotificationAlert(`Failed to fetch data: ${error.message}`, 'error');
+      toast.error(`Failed to fetch data: ${error.message}`);
       setTourPackages([]);
       setDestinations([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  // API handler for saving a package (CREATE/UPDATE)
   const handleSavePackage = async (formData) => {
     setIsModalOpen(false);
-    setIsLoading(true);
     const isEditing = !!formData.id;
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing ? `/api/admin/travel-packages/${formData.id}` : '/api/admin/travel-packages';
+    const actionText = isEditing ? 'updating' : 'creating';
+    const successText = isEditing ? 'updated' : 'added';
+
+    const toastId = toast.loading(`Saving package "${formData.name}"...`);
 
     try {
       const response = await fetch(url, {
@@ -370,50 +310,48 @@ export default function AdminPackages() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || `Failed to ${isEditing ? 'update' : 'create'} tour package`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to ${actionText} tour package`);
       }
 
-      showNotificationAlert(`Package "${formData.name}" ${isEditing ? 'updated' : 'added'} successfully!`, 'success');
-
-    } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} package:`, error);
-      showNotificationAlert(error.message, 'error');
-    } finally {
-      // Re-fetch data to reflect changes
       await fetchData();
+      toast.success(`Package "${formData.name}" ${successText} successfully! 🎉`, { id: toastId });
+    } catch (error) {
+      console.error(`Error ${actionText} package:`, error);
+      toast.error(error.message, { id: toastId });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // API handler for deleting a package
   const confirmDelete = async () => {
-    if (!packageToDelete) return;
+    if (!packageToDeleteId) return;
 
-    const id = packageToDelete;
-    setPackageToDelete(null); // Close the confirmation modal
-    setIsLoading(true);
+    const id = packageToDeleteId;
+    const name = packageToDeleteName;
+
+    setPackageToDeleteId(null);
+    setPackageToDeleteName(null);
+
+    const toastId = toast.loading(`Deleting package "${name}"...`);
 
     try {
       const response = await fetch(`/api/admin/travel-packages/${id}`, {
         method: 'DELETE',
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete tour package');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete tour package');
       }
 
-      showNotificationAlert('Package deleted successfully!', 'success');
-      
+      await fetchData();
+      toast.success(`Package "${name}" deleted successfully!`, { id: toastId });
+
     } catch (error) {
       console.error('Error deleting package:', error);
-      showNotificationAlert(error.message, 'error');
-    } finally {
-      // Re-fetch data to reflect changes
-      await fetchData();
+      toast.error(error.message, { id: toastId });
     }
   };
 
@@ -427,8 +365,9 @@ export default function AdminPackages() {
     setIsModalOpen(true);
   };
 
-  const handleDeletePackage = (id) => {
-    setPackageToDelete(id);
+  const handleDeletePackage = (id, name) => {
+    setPackageToDeleteId(id);
+    setPackageToDeleteName(name);
   };
 
   return (
@@ -518,20 +457,15 @@ export default function AdminPackages() {
             onSave={handleSavePackage}
             onClose={() => setIsModalOpen(false)}
             destinations={destinations}
+            isLoading={isLoading}
           />
         )}
-        {packageToDelete && (
+        {packageToDeleteId && (
           <ConfirmationModal
             title="Delete Package"
-            message="Are you sure you want to delete this package? This action cannot be undone."
+            message={`Are you sure you want to delete "${packageToDeleteName}"? This action cannot be undone.`}
             onConfirm={confirmDelete}
-            onCancel={() => setPackageToDelete(null)}
-          />
-        )}
-        {showNotification.visible && (
-          <Notification
-            message={showNotification.message}
-            type={showNotification.type}
+            onCancel={() => setPackageToDeleteId(null)}
           />
         )}
       </AnimatePresence>

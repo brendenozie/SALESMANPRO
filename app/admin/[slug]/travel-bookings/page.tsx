@@ -1,14 +1,27 @@
-// app/[adminSlug]/admin-bookings/page.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  CalendarDaysIcon, EyeIcon, CheckCircleIcon, XCircleIcon, TrashIcon, FunnelIcon, PlusCircleIcon, TagIcon
-} from '@heroicons/react/24/solid'; // Changed PlusIcon to PlusCircleIcon, added TagIcon
-import { motion } from 'framer-motion';
+  CalendarDaysIcon,
+  EyeIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  TrashIcon,
+  FunnelIcon,
+  PlusCircleIcon,
+  TagIcon,
+  ClockIcon, // Added icon
+  UserCircleIcon, // Added icon
+  PencilIcon, // Added icon
+  CurrencyDollarIcon, // Added icon
+  MapIcon, // Added icon
+  CubeTransparentIcon as PackageIcon // Using a different icon as 'PackageIcon' is not standard
+} from '@heroicons/react/24/solid';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
-import ConfirmationModal from '@/components/ConfirmationModal'; // Re-use this
-import TravelBookingModal from './TravelBookingModal'; // New TravelBookingModal component
+import ConfirmationModal from '@/components/ConfirmationModal';
+import TravelBookingModal from './TravelBookingModal';
+import toast from 'react-hot-toast'; // Replaced native alerts with a modern toast library
 
 // Define the TravelBookingData interface to match the API response
 interface TravelBookingData {
@@ -37,7 +50,9 @@ interface AdminBookingsPageProps {
 }
 
 const containerVariants = {
+  hidden: { opacity: 0 },
   visible: {
+    opacity: 1,
     transition: {
       staggerChildren: 0.1,
     },
@@ -45,19 +60,19 @@ const containerVariants = {
 };
 
 const bookingCardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: {
-      duration: 0.5,
-      ease: "easeOut",
+      duration: 0.6,
+      ease: [0.6, 0.01, -0.05, 0.95],
     },
   },
   hover: {
     scale: 1.03,
-    boxShadow: "0 15px 30px rgba(0, 0, 0, 0.3)",
+    boxShadow: "0 15px 30px rgba(0, 0, 0, 0.5)",
     transition: {
       duration: 0.2,
     },
@@ -72,25 +87,25 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
   onUpdateStatus: (id: string, newStatus: TravelBookingData['status']) => void;
 }) => {
   const statusColors = {
-    CONFIRMED: 'bg-green-600 text-white',
+    CONFIRMED: 'bg-green-500 text-white',
     PENDING: 'bg-yellow-400 text-gray-900',
-    CANCELLED: 'bg-red-600 text-white',
-    COMPLETED: 'bg-blue-600 text-white',
+    CANCELLED: 'bg-red-500 text-white',
+    COMPLETED: 'bg-blue-500 text-white',
   };
 
   const getStatusIcon = (status: TravelBookingData['status']) => {
     switch (status) {
       case 'CONFIRMED': return <CheckCircleIcon className='h-5 w-5' />;
-      case 'PENDING': return <ClockIcon className='h-5 w-5 animate-spin' />;
+      case 'PENDING': return <ClockIcon className='h-5 w-5 animate-pulse' />;
       case 'CANCELLED': return <XCircleIcon className='h-5 w-5' />;
-      case 'COMPLETED': return <CheckCircleIcon className='h-5 w-5' />; // Can be a different icon if desired
+      case 'COMPLETED': return <CheckCircleIcon className='h-5 w-5' />;
       default: return null;
     }
   };
 
   return (
     <motion.div
-      className="bg-gray-800 p-6 rounded-2xl shadow-xl flex flex-col relative border border-gray-700"
+      className="bg-gray-900 p-6 rounded-3xl shadow-xl flex flex-col relative border border-gray-700 hover:border-indigo-500 transition-colors duration-200"
       variants={bookingCardVariants}
       whileHover="hover"
       initial="hidden"
@@ -98,57 +113,57 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
     >
       {/* Status Badge */}
       <div
-        className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${statusColors[booking.status]}`}
+        className={`absolute top-6 right-6 px-4 py-1 rounded-full text-xs font-bold flex items-center gap-2 drop-shadow-md ${statusColors[booking.status]}`}
       >
         {getStatusIcon(booking.status)}
         {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
       </div>
 
       <div className="flex flex-col flex-grow">
-        <h3 className="text-xl font-bold text-white mb-2 leading-tight">{booking.title}</h3>
-        <p className="text-sm text-gray-400 mb-4 line-clamp-2">{booking.description || 'No description provided.'}</p>
+        <h3 className="text-2xl font-bold text-white mb-2 leading-tight">{booking.title}</h3>
+        <p className="text-sm text-gray-400 mb-6 line-clamp-3 flex-grow">{booking.description || 'No description provided.'}</p>
 
-        <div className="border-t border-gray-700 pt-4 space-y-3">
-          <div className="flex items-center text-sm text-gray-400">
-            <UserCircleIcon className="mr-2 text-indigo-400 w-5 h-5" />
-            <p><span className="font-semibold text-gray-300">Client:</span> {booking.customerName}</p>
+        <div className="border-t border-gray-800 pt-6 space-y-4">
+          <div className="flex items-center text-sm text-gray-300">
+            <UserCircleIcon className="mr-3 text-teal-400 w-5 h-5" />
+            <p><span className="font-semibold text-white">Client:</span> {booking.customerName}</p>
           </div>
-          <div className="flex items-center text-sm text-gray-400">
-            <TagIcon className="mr-2 text-indigo-400 w-5 h-5" />
-            <p><span className="font-semibold text-gray-300">Type:</span> {booking.bookingType.replace(/_/g, ' ')}</p>
+          <div className="flex items-center text-sm text-gray-300">
+            <TagIcon className="mr-3 text-purple-400 w-5 h-5" />
+            <p><span className="font-semibold text-white">Type:</span> {booking.bookingType.replace(/_/g, ' ')}</p>
           </div>
           {booking.tourPackageName !== 'N/A' && (
-            <div className="flex items-center text-sm text-gray-400">
-              <PackageIcon className="mr-2 text-indigo-400 w-5 h-5" /> {/* Assuming PackageIcon exists or use a generic one */}
-              <p><span className="font-semibold text-gray-300">Package:</span> {booking.tourPackageName}</p>
+            <div className="flex items-center text-sm text-gray-300">
+              <PackageIcon className="mr-3 text-indigo-400 w-5 h-5" />
+              <p><span className="font-semibold text-white">Package:</span> {booking.tourPackageName}</p>
             </div>
           )}
           {booking.destinationName !== 'N/A' && (
-            <div className="flex items-center text-sm text-gray-400">
-              <MapIcon className="mr-2 text-indigo-400 w-5 h-5" />
-              <p><span className="font-semibold text-gray-300">Destination:</span> {booking.destinationName}</p>
+            <div className="flex items-center text-sm text-gray-300">
+              <MapIcon className="mr-3 text-blue-400 w-5 h-5" />
+              <p><span className="font-semibold text-white">Destination:</span> {booking.destinationName}</p>
             </div>
           )}
-          <div className="flex items-center text-sm text-gray-400">
-            <CalendarDaysIcon className="mr-2 text-indigo-400 w-5 h-5" />
-            <p><span className="font-semibold text-gray-300">Dates:</span> {booking.startDate} to {booking.endDate}</p>
+          <div className="flex items-center text-sm text-gray-300">
+            <CalendarDaysIcon className="mr-3 text-yellow-400 w-5 h-5" />
+            <p><span className="font-semibold text-white">Dates:</span> {booking.startDate} to {booking.endDate}</p>
           </div>
-          <div className="flex items-center text-sm text-gray-400">
-            <CurrencyDollarIcon className="mr-2 text-green-400 w-5 h-5" />
-            <p><span className="font-semibold text-gray-300">Total:</span> ${booking.totalPrice.toFixed(2)}</p>
+          <div className="flex items-center text-lg font-bold text-green-400">
+            <CurrencyDollarIcon className="mr-3 w-6 h-6" />
+            <p>Total: ${booking.totalPrice.toFixed(2)}</p>
           </div>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-gray-700">
+      <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-800">
         <motion.button
           onClick={() => onEdit(booking)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex-1 min-w-[48%] py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 min-w-[calc(50%-6px)] py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 text-sm"
         >
-          <PencilIcon className='w-5 h-5' />
+          <PencilIcon className='w-4 h-4' />
           Edit
         </motion.button>
         {booking.status === 'PENDING' && (
@@ -156,9 +171,9 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
             onClick={() => onUpdateStatus(booking.id, 'CONFIRMED')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex-1 min-w-[48%] py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 min-w-[calc(50%-6px)] py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm"
           >
-            <CheckCircleIcon className='w-5 h-5' />
+            <CheckCircleIcon className='w-4 h-4' />
             Confirm
           </motion.button>
         )}
@@ -167,9 +182,9 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
             onClick={() => onUpdateStatus(booking.id, 'CANCELLED')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex-1 min-w-[48%] py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 min-w-[calc(50%-6px)] py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 text-sm"
           >
-            <XCircleIcon className='w-5 h-5' />
+            <XCircleIcon className='w-4 h-4' />
             Cancel
           </motion.button>
         )}
@@ -177,9 +192,9 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
           onClick={() => onDelete(booking)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex-1 min-w-[48%] py-3 bg-gray-700 text-gray-300 rounded-lg font-bold hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 min-w-[calc(50%-6px)] py-3 bg-gray-700 text-gray-300 rounded-xl font-bold hover:bg-gray-600 transition-colors flex items-center justify-center gap-2 text-sm"
         >
-          <TrashIcon className='w-5 h-5' />
+          <TrashIcon className='w-4 h-4' />
           Delete
         </motion.button>
       </div>
@@ -189,18 +204,17 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
 
 
 export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
-  const { adminSlug } = params;
+  const { adminSlug } = useParams();
 
   const [bookings, setBookings] = useState<TravelBookingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<TravelBookingData['status'] | 'All'>('All');
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [currentBooking, setCurrentBooking] = useState<TravelBookingData | null>(null); // For edit mode
+  const [currentBooking, setCurrentBooking] = useState<TravelBookingData | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState<TravelBookingData | null>(null);
 
-  // Function to fetch bookings from the API
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -219,7 +233,6 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     }
   }, [adminSlug]);
 
-  // Fetch bookings on component mount
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
@@ -229,7 +242,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
   );
 
   const openAddModal = () => {
-    setCurrentBooking(null); // Clear current booking for add mode
+    setCurrentBooking(null);
     setIsBookingModalOpen(true);
   };
 
@@ -240,13 +253,11 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
 
   const handleSaveBooking = (savedBooking: TravelBookingData) => {
     if (currentBooking) {
-      // If editing, update the existing booking in the list
       setBookings(prevBookings => prevBookings.map(b => b.id === savedBooking.id ? savedBooking : b));
-      alert(`Booking "${savedBooking.title}" updated successfully.`);
+      toast.success(`Booking "${savedBooking.title}" updated successfully.`);
     } else {
-      // If adding, prepend the new booking to the list
       setBookings(prevBookings => [savedBooking, ...prevBookings]);
-      alert(`Booking "${savedBooking.title}" created successfully.`);
+      toast.success(`Booking "${savedBooking.title}" created successfully! 🎉`);
     }
     setIsBookingModalOpen(false);
   };
@@ -259,9 +270,8 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
   const confirmDeleteBooking = async () => {
     if (!bookingToDelete) return;
 
-    setIsConfirmModalOpen(false); // Close modal immediately
-    setLoading(true); // Show loading state for deletion
-    setError(null);
+    setIsConfirmModalOpen(false);
+    const toastId = toast.loading(`Deleting booking "${bookingToDelete.title}"...`);
 
     try {
       const response = await fetch(`/api/admin/${adminSlug}/travel-bookings/${bookingToDelete.id}`, {
@@ -273,27 +283,24 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
         throw new Error(errorData.message || `Failed to delete booking "${bookingToDelete.title}".`);
       }
 
-      // If deletion is successful, update the local state
       setBookings(prevBookings => prevBookings.filter(b => b.id !== bookingToDelete.id));
-      alert(`Booking "${bookingToDelete.title}" deleted successfully.`);
+      toast.success(`Booking "${bookingToDelete.title}" deleted successfully.`, { id: toastId });
     } catch (err: any) {
-      setError(err.message);
-      alert(`Error deleting booking: ${err.message}`);
+      toast.error(`Error deleting booking: ${err.message}`, { id: toastId });
     } finally {
-      setLoading(false);
-      setBookingToDelete(null); // Clear booking to delete
+      setBookingToDelete(null);
     }
   };
 
   const handleUpdateBookingStatus = async (id: string, newStatus: TravelBookingData['status']) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const bookingToUpdate = bookings.find(b => b.id === id);
-      if (!bookingToUpdate) {
-        throw new Error('Booking not found.');
-      }
+    const bookingToUpdate = bookings.find(b => b.id === id);
+    if (!bookingToUpdate) {
+      toast.error('Booking not found.');
+      return;
+    }
 
+    const toastId = toast.loading(`Updating status for "${bookingToUpdate.title}"...`);
+    try {
       const response = await fetch(`/api/admin/${adminSlug}/travel-bookings/${id}`, {
         method: 'PUT',
         headers: {
@@ -309,101 +316,123 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
 
       const updatedBooking: TravelBookingData = await response.json();
       setBookings(prevBookings => prevBookings.map(b => b.id === updatedBooking.id ? updatedBooking : b));
-      alert(`Booking "${updatedBooking.title}" status updated to ${newStatus}.`);
+      toast.success(`Booking "${updatedBooking.title}" status updated to ${newStatus}.`, { id: toastId });
     } catch (err: any) {
-      setError(err.message);
-      alert(`Error updating status: ${err.message}`);
-    } finally {
-      setLoading(false);
+      toast.error(`Error updating status: ${err.message}`, { id: toastId });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 p-8 text-white font-sans">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-600 mb-12 drop-shadow-lg"
-      >
-        Manage Travel Bookings
-      </motion.h1>
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 to-blue-950 p-8 text-white font-sans">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-gray-800 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-700"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <h2 className="text-3xl font-bold text-white">All Bookings</h2>
-          <div className="flex items-center gap-4">
-            <motion.button
-              onClick={openAddModal}
-              className="flex items-center space-x-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:from-teal-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <PlusCircleIcon className="h-6 w-6" />
-              <span>Create New Booking</span>
-            </motion.button>
-            <div className="flex items-center gap-2">
-              <FunnelIcon className="h-6 w-6 text-gray-400" />
-              <select
-                id="statusFilter"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as TravelBookingData['status'] | 'All')}
-                className="bg-gray-700 border border-gray-600 text-white rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
+        <header className="flex flex-col items-center mb-16">
+          <h1 className="text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-indigo-500 mb-4 drop-shadow-lg leading-tight">
+            Travel Bookings Dashboard
+          </h1>
+          <p className="text-lg text-gray-400 max-w-2xl text-center">
+            Effortlessly manage, track, and update all travel arrangements and bookings for your company.
+          </p>
+        </header>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-gray-900 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-800"
+        >
+          <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <h2 className="text-3xl font-bold text-white">All Bookings</h2>
+            <div className="flex flex-wrap items-center gap-4">
+              <motion.button
+                onClick={openAddModal}
+                className="flex items-center space-x-3 bg-gradient-to-r from-teal-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:from-teal-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <option value="All">All Statuses</option>
-                <option value="CONFIRMED">Confirmed</option>
-                <option value="PENDING">Pending</option>
-                <option value="CANCELLED">Cancelled</option>
-                <option value="COMPLETED">Completed</option>
-              </select>
+                <PlusCircleIcon className="h-6 w-6" />
+                <span>Create New Booking</span>
+              </motion.button>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <FunnelIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <select
+                  id="statusFilter"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as TravelBookingData['status'] | 'All')}
+                  className="bg-gray-800 border border-gray-700 text-white rounded-xl py-3 pl-10 pr-6 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="CANCELLED">Cancelled</option>
+                  <option value="COMPLETED">Completed</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        {loading && (
-          <div className="text-center py-20">
-            <svg className="animate-spin h-10 w-10 text-teal-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="text-xl text-gray-400">Loading bookings...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-900 bg-opacity-50 text-red-200 p-6 rounded-lg text-center mb-8 border border-red-700">
-            <p className="font-bold text-lg">Error loading bookings:</p>
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && filteredBookings.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-xl text-gray-400">No bookings found for the selected filter. Try creating one!</p>
-          </div>
-        ) : (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {filteredBookings.map((booking) => (
-              <BookingCard
-                key={booking.id}
-                booking={booking}
-                onEdit={openEditModal}
-                onDelete={handleDeleteBookingClick}
-                onUpdateStatus={handleUpdateBookingStatus}
-              />
-            ))}
-          </motion.div>
-        )}
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-20"
+              >
+                <svg className="animate-spin h-12 w-12 text-teal-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-xl text-gray-400">Loading bookings...</p>
+              </motion.div>
+            ) : error ? (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-red-900 bg-opacity-30 text-red-200 p-8 rounded-2xl text-center mb-8 border border-red-700"
+              >
+                <p className="font-bold text-xl mb-2">Error loading bookings:</p>
+                <p className="text-sm">{error}</p>
+              </motion.div>
+            ) : filteredBookings.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-20"
+              >
+                <p className="text-xl text-gray-400">No bookings found for this filter. Try creating one! 🚀</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="bookings"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {filteredBookings.map((booking) => (
+                  <BookingCard
+                    key={booking.id}
+                    booking={booking}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteBookingClick}
+                    onUpdateStatus={handleUpdateBookingStatus}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </motion.div>
 
       {/* Add/Edit Booking Modal */}
@@ -412,7 +441,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
         onClose={() => setIsBookingModalOpen(false)}
         onSave={handleSaveBooking}
         booking={currentBooking}
-        adminSlug={adminSlug}
+        adminSlug={adminSlug as string}
       />
 
       {/* Confirmation Modal for Deletion */}

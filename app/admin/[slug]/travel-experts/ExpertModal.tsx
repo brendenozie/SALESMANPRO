@@ -1,15 +1,16 @@
-// components/ExpertModal.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { BriefcaseIcon, GlobeAltIcon, EnvelopeIcon, PhoneIcon, ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
 // Define the ExpertData interface to match the expected API response
 interface ExpertData {
-  id?: string; // Optional for new experts
-  userId?: string; // Optional for new experts
+  id?: string;
+  userId?: string;
   name: string | null;
   email: string;
   phone: string | null;
@@ -21,13 +22,15 @@ interface ExpertData {
   contactEmail: string | null;
   contactPhone: string | null;
   status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+  // Add the new expertise field
+  expertise?: string[];
 }
 
 interface ExpertModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (expert: ExpertData) => void;
-  expert?: ExpertData | null; // Expert data for editing, null for adding
+  expert?: ExpertData | null;
   slug: string;
 }
 
@@ -36,6 +39,16 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 const EXPERT_STATUSES = ['ACTIVE', 'INACTIVE', 'PENDING'];
+// A list of available expertise options for the multi-select dropdown.
+const EXPERTISE_OPTIONS = [
+  'ADVENTURE_TRAVEL',
+  'FAMILY_VACATIONS',
+  'LUXURY_TRAVEL',
+  'ECOTOURISM',
+  'CRUISES',
+  'CULTURAL_TOURS',
+  'HONEYMOONS',
+];
 
 const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expert, slug }) => {
   const [name, setName] = useState(expert?.name || '');
@@ -51,68 +64,72 @@ const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expe
   const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE' | 'PENDING'>(expert?.status || 'ACTIVE');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  // Add state for expertise
+  const [expertise, setExpertise] = useState<string[]>(expert?.expertise || []);
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (expert) {
-      setName(expert.name || '');
-      setEmail(expert.email || '');
-      setPhone(expert.phone || '');
-      setSpecialty(expert.specialty || '');
-      setExperienceYears(expert.experienceYears || 0);
-      setTravelsCompleted(expert.travelsCompleted || 0);
-      setPhotoUrl(expert.photoUrl || '');
-      setBio(expert.bio || '');
-      setContactEmail(expert.contactEmail || '');
-      setContactPhone(expert.contactPhone || '');
-      setStatus(expert.status || 'ACTIVE');
-      setPassword(''); // Clear password field on edit
-      setConfirmPassword('');
-    } else {
-      // Reset form for new expert
-      setName('');
-      setEmail('');
-      setPhone('');
-      setSpecialty('');
-      setExperienceYears(0);
-      setTravelsCompleted(0);
-      setPhotoUrl('');
-      setBio('');
-      setContactEmail('');
-      setContactPhone('');
-      setStatus('ACTIVE');
-      setPassword('');
-      setConfirmPassword('');
+    if (isOpen) {
+      if (expert) {
+        setName(expert.name || '');
+        setEmail(expert.email || '');
+        setPhone(expert.phone || '');
+        setSpecialty(expert.specialty || '');
+        setExperienceYears(expert.experienceYears || 0);
+        setTravelsCompleted(expert.travelsCompleted || 0);
+        setPhotoUrl(expert.photoUrl || '');
+        setBio(expert.bio || '');
+        setContactEmail(expert.contactEmail || '');
+        setContactPhone(expert.contactPhone || '');
+        setStatus(expert.status || 'ACTIVE');
+        setPassword('');
+        setConfirmPassword('');
+        setExpertise(expert.expertise || []);
+      } else {
+        setName('');
+        setEmail('');
+        setPhone('');
+        setSpecialty('');
+        setExperienceYears(0);
+        setTravelsCompleted(0);
+        setPhotoUrl('');
+        setBio('');
+        setContactEmail('');
+        setContactPhone('');
+        setStatus('ACTIVE');
+        setPassword('');
+        setConfirmPassword('');
+        setExpertise([]);
+      }
     }
-  }, [expert]);
+  }, [isOpen, expert]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
-    // Basic client-side validation
-    if (!name || !email || !specialty || experienceYears === undefined || travelsCompleted === undefined) {
-      setError('Please fill in all required fields.');
+    if (!name || !email || !specialty) {
+      toast.error('Name, Email, and Specialty are required fields.');
       setLoading(false);
       return;
     }
-
     if (!expert && (!password || password.length < 8)) {
-      setError('Password is required and must be at least 8 characters for new experts.');
+      toast.error('Password is required and must be at least 8 characters for new experts.');
       setLoading(false);
       return;
     }
     if (!expert && password !== confirmPassword) {
-      setError('Passwords do not match.');
+      toast.error('Passwords do not match.');
       setLoading(false);
       return;
     }
 
     const method = expert ? 'PUT' : 'POST';
+    // Note: The URL for updating an expert would typically be `/api/admin/experts/${expert.id}`,
+    // but based on your POST example, this PUT route needs to be implemented separately.
     const url = expert ? `/api/admin/experts/${expert.id}` : `/api/admin/experts?companyId=${slug}`;
+    const toastId = toast.loading(expert ? 'Updating expert...' : 'Adding new expert...');
 
     try {
       const response = await fetch(url, {
@@ -121,18 +138,13 @@ const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expe
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name,
-          email,
-          phone: phone || null,
-          specialty,
-          experienceYears: Number(experienceYears),
-          travelsCompleted: Number(travelsCompleted),
-          photoUrl: photoUrl || null,
-          bio: bio || null,
-          contactEmail: contactEmail || null,
-          contactPhone: contactPhone || null,
-          status,
-          password: !expert ? password : undefined, // Only send password for new experts
+          name, email, phone: phone || null, specialty,
+          experienceYears: Number(experienceYears), travelsCompleted: Number(travelsCompleted),
+          photoUrl: photoUrl || null, bio: bio || null,
+          contactEmail: contactEmail || null, contactPhone: contactPhone || null, status,
+          password: !expert ? password : undefined,
+          // Add expertise to the body
+          expertise,
         }),
       });
 
@@ -142,10 +154,12 @@ const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expe
       }
 
       const savedExpert: ExpertData = await response.json();
-      onSave(savedExpert); // Pass the saved expert data back to the parent
-      onClose(); // Close the modal
+      toast.success(`Expert ${name} successfully ${expert ? 'updated' : 'added'}! 🎉`, { id: toastId });
+      onSave(savedExpert);
+      onClose();
     } catch (err: any) {
-      setError(err.message);
+      toast.error(`Error: ${err.message}`, { id: toastId });
+      console.error("API Error:", err);
     } finally {
       setLoading(false);
     }
@@ -162,205 +176,205 @@ const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expe
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg relative text-gray-900"
+          className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 w-full max-w-2xl relative text-gray-900 max-h-[90vh] overflow-y-auto"
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
         >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-2"
             aria-label="Close modal"
           >
-            <XMarkIcon className="w-7 h-7" />
+            <XMarkIcon className="w-8 h-8" />
           </button>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-            {expert ? 'Edit Expert' : 'Add New Expert'}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-                disabled={!!expert} // Disable email edit for existing experts (or handle carefully)
-              />
-              {expert && <p className="text-xs text-gray-500 mt-1">Email cannot be changed directly here for existing experts.</p>}
-            </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone (Optional)</label>
-              <input
-                type="text"
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
 
-            {!expert && ( // Password fields only for new experts
-              <>
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                    required={!expert}
-                    minLength={8}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                    required={!expert}
-                    minLength={8}
-                  />
-                </div>
-              </>
-            )}
+          <header className="flex flex-col items-center mb-8">
+            <h2 className="text-3xl font-extrabold text-gray-900 text-center">
+              {expert ? 'Edit Expert Profile' : 'Add a New Expert'}
+            </h2>
+            <p className="text-sm text-gray-500 mt-2 text-center">
+              {expert ? 'Update the details for this travel expert.' : 'Fill in the details to create a new expert profile.'}
+            </p>
+          </header>
 
-            <div>
-              <label htmlFor="specialty" className="block text-sm font-medium text-gray-700 mb-1">Specialty</label>
-              <input
-                type="text"
-                id="specialty"
-                value={specialty}
-                onChange={(e) => setSpecialty(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="experienceYears" className="block text-sm font-medium text-gray-700 mb-1">Experience (Years)</label>
-              <input
-                type="number"
-                id="experienceYears"
-                value={experienceYears}
-                onChange={(e) => setExperienceYears(Number(e.target.value))}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-                min="0"
-              />
-            </div>
-            <div>
-              <label htmlFor="travelsCompleted" className="block text-sm font-medium text-gray-700 mb-1">Travels Completed</label>
-              <input
-                type="number"
-                id="travelsCompleted"
-                value={travelsCompleted}
-                onChange={(e) => setTravelsCompleted(Number(e.target.value))}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-                min="0"
-              />
-            </div>
-            <div>
-              <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 mb-1">Photo URL (Optional)</label>
-              <input
-                type="url"
-                id="photoUrl"
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              {photoUrl && (
-                <div className="mt-2 text-center">
-                  <Image src={photoUrl} alt="Preview" width={80} height={80} objectFit="cover" className="rounded-full" loader={customLoader} />
-                </div>
-              )}
-            </div>
-            <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">Bio (Optional)</label>
-              <textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              ></textarea>
-            </div>
-            <div>
-              <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-1">Contact Email (Optional)</label>
-              <input
-                type="email"
-                id="contactEmail"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">Contact Phone (Optional)</label>
-              <input
-                type="text"
-                id="contactPhone"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select
-                id="status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'INACTIVE' | 'PENDING')}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <motion.div
+                className="col-span-1 md:col-span-2 flex flex-col items-center gap-4 border-b border-gray-200 pb-6 mb-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
               >
-                {EXPERT_STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
+                <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-indigo-200 shadow-lg">
+                  {photoUrl ? (
+                    <Image
+                      src={photoUrl}
+                      alt="Expert Profile"
+                      layout="fill"
+                      objectFit="cover"
+                      loader={customLoader}
+                    />
+                  ) : (
+                    <UserCircleIcon className="w-full h-full text-indigo-400 p-2" />
+                  )}
+                </div>
+                <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700">Profile Photo URL</label>
+                <input
+                  type="url"
+                  id="photoUrl"
+                  value={photoUrl}
+                  onChange={(e) => setPhotoUrl(e.target.value)}
+                  placeholder="Paste image URL here"
+                  className="w-full max-w-sm px-4 py-2 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                />
+              </motion.div>
 
-            {error && (
-              <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg text-sm text-center">
-                {error}
+              <div className="space-y-6">
+                <div className="form-group">
+                  <label htmlFor="name" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                    <UserCircleIcon className="w-5 h-5 mr-2 text-indigo-500" /> Full Name
+                  </label>
+                  <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="email" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                    <EnvelopeIcon className="w-5 h-5 mr-2 text-indigo-500" /> Email
+                  </label>
+                  <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                    required disabled={!!expert} />
+                  {expert && <p className="text-xs text-gray-500 mt-1">Email is not editable for existing experts.</p>}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="phone" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                    <PhoneIcon className="w-5 h-5 mr-2 text-indigo-500" /> Phone (Optional)
+                  </label>
+                  <input type="tel" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+                {!expert && (
+                  <>
+                    <div className="form-group">
+                      <label htmlFor="password" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                        Password
+                      </label>
+                      <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                        required={!expert} minLength={8} />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="confirmPassword" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                        Confirm Password
+                      </label>
+                      <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                        required={!expert} minLength={8} />
+                    </div>
+                  </>
+                )}
               </div>
-            )}
-            <div className="flex justify-end space-x-3 mt-6">
+
+              <div className="space-y-6">
+                <div className="form-group">
+                  <label htmlFor="specialty" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                    <BriefcaseIcon className="w-5 h-5 mr-2 text-indigo-500" /> Specialty
+                  </label>
+                  <input type="text" id="specialty" value={specialty} onChange={(e) => setSpecialty(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="expertise" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                    <GlobeAltIcon className="w-5 h-5 mr-2 text-indigo-500" /> Expertise
+                  </label>
+                  <select
+                    id="expertise"
+                    multiple
+                    value={expertise}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(e.target.selectedOptions, (option) => option.value);
+                      setExpertise(selectedOptions);
+                    }}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 h-32"
+                  >
+                    {EXPERTISE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option.replace(/_/g, ' ')}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Hold down the Ctrl (Windows) or Cmd (Mac) key to select multiple options.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <label htmlFor="experienceYears" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                      Experience (Yrs)
+                    </label>
+                    <input type="number" id="experienceYears" value={experienceYears} onChange={(e) => setExperienceYears(Number(e.target.value))}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" required min="0" />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="travelsCompleted" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                      Trips Completed
+                    </label>
+                    <input type="number" id="travelsCompleted" value={travelsCompleted} onChange={(e) => setTravelsCompleted(Number(e.target.value))}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" required min="0" />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="bio" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                    <ChatBubbleBottomCenterTextIcon className="w-5 h-5 mr-2 text-indigo-500" /> Bio (Optional)
+                  </label>
+                  <textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
+              <div className="form-group">
+                <label htmlFor="status" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                  Status
+                </label>
+                <select id="status" value={status} onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'INACTIVE' | 'PENDING')}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" required>
+                  {EXPERT_STATUSES.map((s) => (
+                    <option key={s} value={s} className="capitalize">{s.toLowerCase()}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="contactEmail" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                  <EnvelopeIcon className="w-5 h-5 mr-2 text-indigo-500" /> Contact Email (Optional)
+                </label>
+                <input type="email" id="contactEmail" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div className="form-group col-span-1 md:col-span-2">
+                <label htmlFor="contactPhone" className="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                  <PhoneIcon className="w-5 h-5 mr-2 text-indigo-500" /> Contact Phone (Optional)
+                </label>
+                <input type="tel" id="contactPhone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+            </section>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
               <motion.button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                type="button" onClick={onClose}
+                className="px-6 py-3 border border-gray-300 rounded-xl shadow-sm text-base font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               >
                 Cancel
               </motion.button>
               <motion.button
-                type="submit"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={loading}
+                type="submit" disabled={loading}
+                className="px-6 py-3 border border-transparent rounded-xl shadow-lg text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                whileHover={{ scale: loading ? 1 : 1.05 }} whileTap={{ scale: loading ? 1 : 0.95 }}
               >
                 {loading ? (
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>

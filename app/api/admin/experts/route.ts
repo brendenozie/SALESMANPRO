@@ -5,12 +5,13 @@ import bcrypt from 'bcryptjs';
 
 // GET /api/admin/[adminSlug]/experts
 // Fetches all experts for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -23,7 +24,7 @@ export async function GET(request, { params }) {
         companyId: company.id,
       },
       include: {
-        user: { // Include the related User model to get name, email, phone
+        user: {
           select: {
             id: true,
             name: true,
@@ -40,7 +41,7 @@ export async function GET(request, { params }) {
     // Map Prisma Expert model to a frontend-friendly interface
     const formattedExperts = experts.map(expert => ({
       id: expert.id,
-      userId: expert.userId, // Keep userId for potential future use (e.g., linking to user profile)
+      userId: expert.userId,
       name: expert.user?.name || 'N/A',
       email: expert.user?.email || 'N/A',
       phone: expert.user?.phone || 'N/A',
@@ -52,19 +53,22 @@ export async function GET(request, { params }) {
       contactEmail: expert.contactEmail || '',
       contactPhone: expert.contactPhone || '',
       status: expert.status,
+      // Include the new expertise field.
+      expertise: expert.expertise || [],
     }));
 
     return NextResponse.json(formattedExperts);
   } catch (error) {
     console.error('Error fetching experts:', error);
-    return NextResponse.json({ message: 'Failed to fetch experts', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch experts', error: "error.message" }, { status: 500 });
   }
 }
 
 // POST /api/admin/[adminSlug]/experts
 // Creates a new expert (including a new user with EXPERT role).
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -81,11 +85,12 @@ export async function POST(request, { params }) {
       contactEmail,
       contactPhone,
       status,
+      // Add the new field from the request body
+      expertise,
     } = body;
 
-    // 1. Find the company ID based on the adminSlug
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -93,9 +98,6 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
-
-    // 2. Basic validation
     if (!name || !email || !password || !specialty || experienceYears === undefined || travelsCompleted === undefined) {
       return NextResponse.json({ message: 'Missing required fields for expert creation.' }, { status: 400 });
     }
@@ -103,7 +105,6 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Password must be at least 8 characters long.' }, { status: 400 });
     }
 
-    // 3. Check if a user with this email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: email },
     });
@@ -111,27 +112,23 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'A user with this email already exists.' }, { status: 409 });
     }
 
-    // 4. Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Use a Prisma transaction to ensure atomicity for creating User and Expert
     const newExpertData = await prisma.$transaction(async (tx) => {
-      // 5. Create the new User with EXPERT role
       const newUser = await tx.user.create({
         data: {
           name: name,
           email: email,
           password: hashedPassword,
           phone: phone || null,
-          role: 'EXPERT', // Assign the EXPERT role
-          status: 'ACTIVE', // Default status for new users
+          role: 'EXPERT',
+          status: 'ACTIVE',
           company: {
             connect: { id: companyId },
           },
         },
       });
 
-      // 6. Create the Expert profile linked to the new User
       const newExpert = await tx.expert.create({
         data: {
           userId: newUser.id,
@@ -143,7 +140,9 @@ export async function POST(request, { params }) {
           bio: bio || null,
           contactEmail: contactEmail || null,
           contactPhone: contactPhone || null,
-          status: status || 'ACTIVE', // Default status for new expert profile
+          status: status || 'ACTIVE',
+          // Pass the new expertise array here
+          expertise: expertise || [],
         },
         include: {
           user: {
@@ -159,7 +158,6 @@ export async function POST(request, { params }) {
       return newExpert;
     });
 
-    // 7. Format the new expert data for frontend display
     const formattedNewExpert = {
       id: newExpertData.id,
       userId: newExpertData.userId,
@@ -174,14 +172,13 @@ export async function POST(request, { params }) {
       contactEmail: newExpertData.contactEmail || '',
       contactPhone: newExpertData.contactPhone || '',
       status: newExpertData.status,
+      // Include the new expertise array
+      expertise: newExpertData.expertise || [],
     };
 
     return NextResponse.json(formattedNewExpert, { status: 201 });
   } catch (error) {
     console.error('Error creating expert:', error);
-    if (error.code === 'P2002') { // Unique constraint violation (e.g., email already exists)
-      return NextResponse.json({ message: 'An expert with this email already exists.', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to create expert', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to create expert', error: "error.message" }, { status: 500 });
   }
 }

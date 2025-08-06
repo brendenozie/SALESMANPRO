@@ -1,15 +1,16 @@
-// app/[slug]/experts/page.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   UserGroupIcon, PlusCircleIcon, PencilIcon, TrashIcon, BriefcaseIcon, GlobeAltIcon, EnvelopeIcon
 } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { useParams } from 'next/navigation'; // For App Router params
-import ConfirmationModal from '@/components/ConfirmationModal'; // Re-use this
-import ExpertModal from './ExpertModal'; // New ExpertModal component
+import { useParams } from 'next/navigation';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import ExpertModal from './ExpertModal';
+// import { toast } from 'react-toastify'; // Use a toast library for better feedback
+// import 'react-toastify/dist/ReactToastify.css'; // Don't forget to import the CSS
 
 // Define the ExpertData interface to match the API response
 interface ExpertData {
@@ -32,6 +33,25 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
+// Define Framer Motion variants for animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+  },
+};
+
 export default function AdminExpertsPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -40,11 +60,10 @@ export default function AdminExpertsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExpertModalOpen, setIsExpertModalOpen] = useState(false);
-  const [currentExpert, setCurrentExpert] = useState<ExpertData | null>(null); // For edit mode
+  const [currentExpert, setCurrentExpert] = useState<ExpertData | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [expertToDelete, setExpertToDelete] = useState<ExpertData | null>(null);
 
-  // Function to fetch experts from the API
   const fetchExperts = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -57,19 +76,19 @@ export default function AdminExpertsPage() {
       setExperts(data);
     } catch (err: any) {
       setError(err.message);
+      // toast.error('Failed to fetch experts. Please try again.');
       console.error("Failed to fetch experts:", err);
     } finally {
       setLoading(false);
     }
   }, [slug]);
 
-  // Fetch experts on component mount
   useEffect(() => {
     fetchExperts();
   }, [fetchExperts]);
 
   const openAddModal = () => {
-    setCurrentExpert(null); // Clear current expert for add mode
+    setCurrentExpert(null);
     setIsExpertModalOpen(true);
   };
 
@@ -80,13 +99,11 @@ export default function AdminExpertsPage() {
 
   const handleSaveExpert = (savedExpert: ExpertData) => {
     if (currentExpert) {
-      // If editing, update the existing expert in the list
       setExperts(experts.map(e => e.id === savedExpert.id ? savedExpert : e));
-      alert(`Expert ${savedExpert.name} updated successfully.`);
+      // toast.success(`Expert ${savedExpert.name} updated successfully! 🎉`);
     } else {
-      // If adding, prepend the new expert to the list
       setExperts([savedExpert, ...experts]);
-      alert(`Expert ${savedExpert.name} added successfully.`);
+      // toast.success(`Expert ${savedExpert.name} added successfully! 🚀`);
     }
     setIsExpertModalOpen(false);
   };
@@ -99,10 +116,9 @@ export default function AdminExpertsPage() {
   const confirmDeleteExpert = async () => {
     if (!expertToDelete) return;
 
-    setIsConfirmModalOpen(false); // Close modal immediately
-    setLoading(true); // Show loading state for deletion
-    setError(null);
-
+    setIsConfirmModalOpen(false);
+    // toast.info('Deleting expert...');
+    
     try {
       const response = await fetch(`/api/admin/experts/${expertToDelete.id}`, {
         method: 'DELETE',
@@ -113,144 +129,205 @@ export default function AdminExpertsPage() {
         throw new Error(errorData.message || `Failed to delete expert ${expertToDelete.name}.`);
       }
 
-      // If deletion is successful, update the local state
       setExperts(prevExperts => prevExperts.filter(e => e.id !== expertToDelete.id));
-      alert(`Expert ${expertToDelete.name} deleted successfully.`);
+      // toast.success(`Expert ${expertToDelete.name} deleted successfully!`);
     } catch (err: any) {
-      setError(err.message);
-      alert(`Error deleting expert: ${err.message}`);
+      // toast.error(`Error deleting expert: ${err.message}`);
+      console.error("Deletion error:", err);
     } finally {
-      setLoading(false);
-      setExpertToDelete(null); // Clear expert to delete
+      setExpertToDelete(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-4xl font-extrabold text-gray-900 mb-8"
-      >
-        Manage Travel Experts
-      </motion.h1>
-
+    <div className="min-h-screen bg-gray-50 p-6 sm:p-8 md:p-12">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white rounded-xl shadow-md p-6 mb-8"
+        transition={{ duration: 0.6 }}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">All Experts</h2>
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 space-y-4 sm:space-y-0">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+            Meet the Experts
+          </h1>
           <motion.button
             onClick={openAddModal}
-            className="flex items-center space-x-2 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
-            whileHover={{ scale: 1.02 }}
+            className="flex items-center space-x-2 bg-indigo-600 text-white font-semibold py-2 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-300 transform hover:scale-105"
+            whileHover={{ scale: 1.05, boxShadow: '0 8px 16px rgba(0,0,0,0.2)' }}
             whileTap={{ scale: 0.98 }}
           >
             <PlusCircleIcon className="h-5 w-5" />
             <span>Add New Expert</span>
           </motion.button>
-        </div>
-
-        {loading && (
-          <div className="text-center py-10">
-            <p className="text-lg text-gray-600">Loading experts...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-100 text-red-800 p-4 rounded-lg text-center mb-4">
-            <p className="font-bold">Error:</p>
-            <p>{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && experts.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-lg text-gray-600">No experts found.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Photo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialty</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trips Completed</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {experts.map((expert) => (
-                  <tr key={expert.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{expert.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                        <Image src={expert.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo'} alt={expert.name || 'Expert'} layout="fill" objectFit="cover" loader={customLoader} />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expert.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
-                      <EnvelopeIcon className="h-4 w-4 mr-1 text-gray-400" />
-                      {expert.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{expert.specialty}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
-                      <BriefcaseIcon className="h-4 w-4 mr-1 text-gray-400" />
-                      {expert.experienceYears} yrs
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
-                      <GlobeAltIcon className="h-4 w-4 mr-1 text-gray-400" />
-                      {expert.travelsCompleted}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        expert.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                        expert.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {expert.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <motion.button
-                          onClick={() => openEditModal(expert)}
-                          className="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition"
-                          title="Edit"
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <PencilIcon className="h-5 w-5" />
-                        </motion.button>
-                        <motion.button
-                          onClick={() => handleDeleteExpertClick(expert)}
-                          className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50 transition"
-                          title="Delete"
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </motion.button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        </header>
       </motion.div>
 
-      {/* Add/Edit Expert Modal */}
+      <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8">
+        <AnimatePresence mode="wait">
+          {loading && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-16"
+            >
+              <p className="text-lg text-gray-500 animate-pulse">
+                Fetching travel experts... 🌍
+              </p>
+            </motion.div>
+          )}
+
+          {error && (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-red-50 border-l-4 border-red-400 text-red-700 p-6 rounded-lg text-center my-8"
+            >
+              <p className="font-bold">Oops! Something went wrong.</p>
+              <p className="mt-2">{error}</p>
+            </motion.div>
+          )}
+
+          {!loading && !error && experts.length === 0 && (
+            <motion.div
+              key="no-experts"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-20"
+            >
+              <div className="flex justify-center mb-4">
+                <UserGroupIcon className="h-20 w-20 text-indigo-200" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-700 mb-2">No Experts Yet</h3>
+              <p className="text-gray-500">
+                It looks like there are no experts to display. Click the button above to add your first expert!
+              </p>
+            </motion.div>
+          )}
+
+          {!loading && !error && experts.length > 0 && (
+            <motion.div
+              key="experts-list"
+              initial="hidden"
+              animate="visible"
+              variants={containerVariants}
+              className="overflow-x-auto"
+            >
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0 z-10">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-tl-xl">Photo</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Specialty</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Stats</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-tr-xl">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <AnimatePresence>
+                    {experts.map((expert) => (
+                      <motion.tr
+                        key={expert.id}
+                        variants={itemVariants}
+                        layout
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="group hover:bg-gray-50 transition-colors duration-150"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-gray-200 group-hover:border-indigo-400 transition-colors duration-200">
+                            <Image
+                              src={expert.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo'}
+                              alt={expert.name || 'Expert'}
+                              layout="fill"
+                              objectFit="cover"
+                              loader={customLoader}
+                              className="group-hover:scale-110 transition-transform duration-300"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-gray-900">{expert.name}</span>
+                            <span className="text-xs text-gray-500">{expert.email}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
+                          <div className="flex flex-col space-y-1">
+                            <span className="flex items-center">
+                              <EnvelopeIcon className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="text-gray-700">{expert.contactEmail || 'N/A'}</span>
+                            </span>
+                            <span className="flex items-center">
+                              <BriefcaseIcon className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="text-gray-700">{expert.contactPhone || 'N/A'}</span>
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 hidden sm:table-cell">
+                          {expert.specialty}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 hidden lg:table-cell">
+                          <div className="flex flex-col space-y-1">
+                            <span className="flex items-center">
+                              <BriefcaseIcon className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="text-gray-700">{expert.experienceYears} years</span>
+                            </span>
+                            <span className="flex items-center">
+                              <GlobeAltIcon className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="text-gray-700">{expert.travelsCompleted} trips</span>
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
+                            expert.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                            expert.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {expert.status.toLowerCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center space-x-2 justify-end">
+                            <motion.button
+                              onClick={() => openEditModal(expert)}
+                              className="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50 transition-colors duration-200"
+                              title="Edit Expert"
+                              whileHover={{ scale: 1.15 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <PencilIcon className="h-5 w-5" />
+                            </motion.button>
+                            <motion.button
+                              onClick={() => handleDeleteExpertClick(expert)}
+                              className="text-gray-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors duration-200"
+                              title="Delete Expert"
+                              whileHover={{ scale: 1.15 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <TrashIcon className="h-5 w-5" />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       <ExpertModal
         isOpen={isExpertModalOpen}
         onClose={() => setIsExpertModalOpen(false)}
@@ -259,7 +336,6 @@ export default function AdminExpertsPage() {
         slug={slug}
       />
 
-      {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}

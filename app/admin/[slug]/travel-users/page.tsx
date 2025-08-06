@@ -1,13 +1,13 @@
-// app/[slug]/users/page.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  UsersIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, TrashIcon, MagnifyingGlassIcon, PlusCircleIcon
+  UsersIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, TrashIcon, MagnifyingGlassIcon, PlusCircleIcon, PencilSquareIcon
 } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
-import ConfirmationModal from '@/components/ConfirmationModal'; // Adjust path as needed
-import CreateUserModal from '@/components/CreateUserModal'; // New import
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import CreateUserModal from '@/components/CreateUserModal';
 import { useParams } from 'next/navigation';
 
 // Define the UserData interface to match the API response
@@ -16,10 +16,25 @@ interface UserData {
   name: string | null;
   email: string;
   phone: string | null;
-  role: string; // Maps to Prisma's ROLE enum (e.g., 'USER', 'ADMIN', 'CLIENT')
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'; // Maps to Prisma's UserStatus enum
-  registered: string; // YYYY-MM-DD format
+  role: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  registered: string;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function AdminUsersPage() {
   const params = useParams();
@@ -28,15 +43,12 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false); // Renamed for clarity
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // New state for create modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
 
-  // Function to fetch users from the API
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const response = await fetch(`/api/admin/travel-users?companyId=${slug}&search=${encodeURIComponent(searchTerm)}`);
       if (!response.ok) {
@@ -45,14 +57,13 @@ export default function AdminUsersPage() {
       const data: UserData[] = await response.json();
       setUsers(data);
     } catch (err: any) {
-      setError(err.message);
+      toast.error(`Failed to fetch users: ${err.message}`);
       console.error("Failed to fetch users:", err);
     } finally {
       setLoading(false);
     }
   }, [slug, searchTerm]);
 
-  // Fetch users on component mount and when search term changes
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
@@ -64,10 +75,9 @@ export default function AdminUsersPage() {
 
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
+    setIsConfirmModalOpen(false);
 
-    setIsConfirmModalOpen(false); // Close modal immediately
-    setLoading(true); // Show loading state for deletion
-    setError(null);
+    const toastId = toast.loading(`Deleting user "${userToDelete.name}"...`);
 
     try {
       const response = await fetch(`/api/admin/travel-users/${userToDelete.id}`, {
@@ -79,23 +89,20 @@ export default function AdminUsersPage() {
         throw new Error(errorData.message || `Failed to delete user ${userToDelete.name}`);
       }
 
-      // If deletion is successful, update the local state
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
-      alert(`User ${userToDelete.name} deleted successfully.`); // Use alert for simple feedback after modal closes
+      toast.success(`User "${userToDelete.name}" deleted successfully!`, { id: toastId });
     } catch (err: any) {
-      setError(err.message);
-      alert(`Error deleting user: ${err.message}`); // Use alert for error feedback
+      toast.error(`Error deleting user: ${err.message}`, { id: toastId });
+      console.error("Deletion error:", err);
     } finally {
-      setLoading(false);
-      setUserToDelete(null); // Clear user to delete
+      setUserToDelete(null);
     }
   };
 
-  // Callback function for when a new user is successfully created
   const handleUserCreated = (newUser: UserData) => {
-    setUsers(prevUsers => [newUser, ...prevUsers]); // Add new user to the top of the list
-    setIsCreateModalOpen(false); // Close the create modal
-    alert(`User "${newUser.name}" created successfully!`); // Provide feedback
+    setUsers(prevUsers => [newUser, ...prevUsers]);
+    setIsCreateModalOpen(false);
+    toast.success(`User "${newUser.name}" created successfully!`);
   };
 
   const getStatusColor = (status: UserData['status']) => {
@@ -111,133 +118,162 @@ export default function AdminUsersPage() {
     }
   };
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      );
+    }
+
+    if (users.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+          <UsersIcon className="h-24 w-24 mb-4" />
+          <p className="text-xl font-semibold">No users found.</p>
+          <p className="text-sm">Start by adding a new user to your company's list.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Registered</th>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <motion.tbody
+            className="bg-white divide-y divide-gray-200"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <AnimatePresence>
+              {users.map((user) => (
+                <motion.tr
+                  key={user.id}
+                  variants={itemVariants}
+                  exit={{ opacity: 0, x: -50, transition: { duration: 0.3 } }}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <div className="flex items-center">
+                      <UserCircleIcon className="h-8 w-8 mr-3 text-indigo-400" />
+                      <div>
+                        <div className="font-semibold text-gray-900">{user.name || 'N/A'}</div>
+                        <div className="text-gray-500 text-xs mt-1">ID: {user.id}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <EnvelopeIcon className="h-4 w-4 text-gray-400" />
+                      <span>{user.email}</span>
+                    </div>
+                    {user.phone && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <PhoneIcon className="h-4 w-4 text-gray-400" />
+                        <span>{user.phone}</span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">{user.role.toLowerCase()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>
+                      {user.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {new Date(user.registered).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <motion.button
+                      onClick={() => handleDeleteUserClick(user)}
+                      className="text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors"
+                      title="Delete User"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </motion.button>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </motion.tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <motion.h1
+    <div className="min-h-screen bg-gray-50 p-6 md:p-10">
+      <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-4xl font-extrabold text-gray-900 mb-8"
+        className="flex items-center justify-between mb-8"
       >
-        Manage Users & Customers
-      </motion.h1>
+        <h1 className="text-4xl font-extrabold text-gray-900 flex items-center gap-4">
+          <UsersIcon className="h-10 w-10 text-indigo-600" />
+          User Management
+        </h1>
+        <motion.button
+          onClick={() => setIsCreateModalOpen(true)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-colors"
+        >
+          <PlusCircleIcon className='w-6 h-6' />
+          Add New User
+        </motion.button>
+      </motion.header>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white rounded-xl shadow-md p-6 mb-8"
+        className="bg-white rounded-2xl shadow-xl p-6 md:p-8"
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">All Users</h2>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-            <motion.button
-              onClick={() => setIsCreateModalOpen(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-indigo-600 text-white shadow-md hover:bg-indigo-700 transition-colors"
-            >
-              <PlusCircleIcon className='w-5 h-5' />
-              Add New User
-            </motion.button>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <h2 className="text-2xl font-bold text-gray-900 flex-grow">All Company Users</h2>
+          <div className="relative w-full md:w-auto">
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+            />
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
           </div>
         </div>
 
-        {loading && (
-          <div className="text-center py-10">
-            <p className="text-lg text-gray-600">Loading users...</p>
-          </div>
-        )}
+        {renderContent()}
 
-        {error && (
-          <div className="bg-red-100 text-red-800 p-4 rounded-lg text-center mb-4">
-            <p className="font-bold">Error:</p>
-            <p>{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && users.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-lg text-gray-600">No users found.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex items-center">
-                      <UserCircleIcon className="h-6 w-6 mr-2 text-gray-400" />
-                      {user.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
-                      <EnvelopeIcon className="h-4 w-4 mr-1 text-gray-400" />
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
-                      <PhoneIcon className="h-4 w-4 mr-1 text-gray-400" />
-                      {user.phone}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.role}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.registered}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <motion.button
-                        onClick={() => handleDeleteUserClick(user)}
-                        className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50 transition"
-                        title="Delete User"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </motion.button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </motion.div>
 
-      {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeleteUser}
         title="Confirm Deletion"
-        message={`Are you sure you want to delete user "${userToDelete?.name || 'N/A'}"? This action cannot be undone.`}
+        message={`Are you sure you want to permanently delete user "${userToDelete?.name || 'N/A'}"? This action cannot be undone.`}
         confirmText="Delete"
+        isDestructive={true}
       />
 
-      {/* Create User Modal */}
       <CreateUserModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

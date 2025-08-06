@@ -64,6 +64,7 @@ enum ROLE {
   PATIENT
   DOCTOR
   PATRON
+  EXPERT
   STAFF_MEMBER
   SERVICE_PROVIDER
 }
@@ -4370,6 +4371,13 @@ enum Expertise {
   TECHNOLOGY
   CONSULTING
   ADVISORY
+  ADVENTURE_TRAVEL
+  FAMILY_VACATIONS
+  LUXURY_TRAVEL
+  ECOTOURISM
+  CRUISES
+  CULTURAL_TOURS
+  HONEYMOONS
 }
 
 // Relevant parts of your schema.prisma
@@ -4395,7 +4403,6 @@ model Expert {
   contactPhone     String?
   status           ExpertStatus @default(ACTIVE)
 
-  title     String
   expertise Expertise[] // Array of expertise enums
 
   image String?
