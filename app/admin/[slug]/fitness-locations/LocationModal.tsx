@@ -1,10 +1,10 @@
-// components/LocationModal.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
 // Define the LocationData interface to match the expected API response
 interface LocationData {
@@ -38,6 +38,15 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 const LOCATION_STATUSES = ['OPEN', 'CLOSED', 'MAINTENANCE'];
+
+const statusBadgeColors = {
+  OPEN: 'bg-green-600 text-white',
+  CLOSED: 'bg-red-600 text-white',
+  MAINTENANCE: 'bg-yellow-400 text-gray-900',
+};
+
+// Reusable animated input field group
+const FieldGroup = motion.div;
 
 const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, location, adminSlug }) => {
   const [name, setName] = useState(location?.name || '');
@@ -94,11 +103,14 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const toastId = toast.loading(location ? 'Saving changes...' : 'Adding new location...');
 
     // Basic client-side validation
     if (!name || !address || !city || !country) {
-      setError('Name, address, city, and country are required.');
+      const errorMessage = 'Name, address, city, and country are required.';
+      setError(errorMessage);
       setLoading(false);
+      toast.error(errorMessage, { id: toastId });
       return;
     }
 
@@ -135,9 +147,11 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
 
       const savedLocation: LocationData = await response.json();
       onSave(savedLocation); // Pass the saved location data back to the parent
+      toast.success(`Location "${savedLocation.name}" has been ${location ? 'updated' : 'added'}.`, { id: toastId });
       onClose(); // Close the modal
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -145,219 +159,274 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
 
   if (!isOpen) return null;
 
+  const modalVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
+  const panelVariants = {
+    hidden: { y: "-100vh", opacity: 0 },
+    visible: {
+      y: "0",
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 150,
+        damping: 20,
+      },
+    },
+    exit: { y: "100vh", opacity: 0 }
+  };
+
   return (
     <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
+      {isOpen && (
         <motion.div
-          className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg relative text-gray-900"
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 50, opacity: 0 }}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto"
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          variants={modalVariants}
         >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close modal"
+          <motion.div
+            className="bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700 p-8 w-full max-w-2xl relative text-white my-8"
+            variants={panelVariants}
           >
-            <XMarkIcon className="w-7 h-7" />
-          </button>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-            {location ? 'Edit Location' : 'Add New Location'}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Location Name</label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-              <input
-                type="text"
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                <input
-                  type="text"
-                  id="city"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
+            <button
+              onClick={onClose}
+              className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
+              aria-label="Close modal"
+            >
+              <XMarkIcon className="w-7 h-7" />
+            </button>
+            <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 mb-2">
+              {location ? 'Edit Location' : 'Add New Location'}
+            </h2>
+            <p className="text-gray-400 mb-8">
+              {location ? 'Update the details for this gym location.' : 'Fill in the details to add a new gym location.'}
+            </p>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300">Location Name *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., Downtown Fitness Center"
+                    required
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-300">Address *</label>
+                  <input
+                    type="text"
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., 123 Main St"
+                    required
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
+                  <label htmlFor="city" className="block text-sm font-medium text-gray-300">City *</label>
+                  <input
+                    type="text"
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., New York"
+                    required
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+                  <label htmlFor="country" className="block text-sm font-medium text-gray-300">Country *</label>
+                  <input
+                    type="text"
+                    id="country"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., USA"
+                    required
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
+                  <label htmlFor="state" className="block text-sm font-medium text-gray-300">State/Province (Optional)</label>
+                  <input
+                    type="text"
+                    id="state"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., CA"
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
+                  <label htmlFor="zipCode" className="block text-sm font-medium text-gray-300">Zip/Postal Code (Optional)</label>
+                  <input
+                    type="text"
+                    id="zipCode"
+                    value={zipCode}
+                    onChange={(e) => setZipCode(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., 90210"
+                  />
+                </FieldGroup>
               </div>
-              <div>
-                <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+
+              <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }}>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description (Optional)</label>
+                <textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                  placeholder="A brief description of the location..."
+                ></textarea>
+              </FieldGroup>
+
+              <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.8 }}>
+                <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-300">Image URL (Optional)</label>
                 <input
-                  type="text"
-                  id="country"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
+                  type="url"
+                  id="imageUrl"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                  placeholder="e.g., https://example.com/location-image.jpg"
                 />
+                {imageUrl && (
+                  <div className="mt-4 flex justify-center">
+                    <div className="relative w-full h-40 max-w-sm rounded-lg overflow-hidden border border-gray-700">
+                      <Image
+                        src={imageUrl}
+                        alt="Location Preview"
+                        layout="fill"
+                        objectFit="cover"
+                        className="transition-transform duration-300 hover:scale-105"
+                        loader={customLoader}
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://placehold.co/600x400/1F2937/9CA3AF?text=Image+Not+Found';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </FieldGroup>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.9 }}>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-300">Phone (Optional)</label>
+                  <input
+                    type="text"
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., +1 (555) 123-4567"
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.0 }}>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email (Optional)</label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., contact@example.com"
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.1 }}>
+                  <label htmlFor="capacity" className="block text-sm font-medium text-gray-300">Capacity (Optional)</label>
+                  <input
+                    type="number"
+                    id="capacity"
+                    value={capacity}
+                    onChange={(e) => setCapacity(Number(e.target.value))}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    min="0"
+                    placeholder="e.g., 200"
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.2 }}>
+                  <label htmlFor="openHours" className="block text-sm font-medium text-gray-300">Open Hours (Optional)</label>
+                  <input
+                    type="text"
+                    id="openHours"
+                    value={openHours}
+                    onChange={(e) => setOpenHours(e.target.value)}
+                    className="w-full px-4 py-3 mt-1 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-500 transition-colors"
+                    placeholder="e.g., Mon-Fri: 9am-9pm"
+                  />
+                </FieldGroup>
+                <FieldGroup initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.3 }}>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-300">Status</label>
+                  <div className="relative mt-1">
+                    <select
+                      id="status"
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value as 'OPEN' | 'CLOSED' | 'MAINTENANCE')}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 focus:ring-indigo-500 focus:border-indigo-500 text-white appearance-none pr-10 transition-colors"
+                      required
+                    >
+                      {LOCATION_STATUSES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    <div className={`absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 rounded-full text-xs font-bold ${statusBadgeColors[status]}`}>
+                      {status}
+                    </div>
+                  </div>
+                </FieldGroup>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">State/Province (Optional)</label>
-                <input
-                  type="text"
-                  id="state"
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">Zip/Postal Code (Optional)</label>
-                <input
-                  type="text"
-                  id="zipCode"
-                  value={zipCode}
-                  onChange={(e) => setZipCode(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              ></textarea>
-            </div>
-            <div>
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-              <input
-                type="url"
-                id="imageUrl"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              {imageUrl && (
-                <div className="mt-2 text-center">
-                  <Image src={imageUrl} alt="Preview" width={150} height={100} objectFit="contain" className="rounded-md" loader={customLoader} />
+
+              {error && (
+                <div className="bg-red-900/50 text-red-300 p-4 rounded-xl text-sm text-center border border-red-700">
+                  <p className="flex items-center justify-center gap-2">
+                    <XMarkIcon className="w-5 h-5" />
+                    <span>{error}</span>
+                  </p>
                 </div>
               )}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone (Optional)</label>
-                <input
-                  type="text"
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="capacity" className="block text-sm font-medium text-gray-700 mb-1">Capacity (Optional)</label>
-                <input
-                  type="number"
-                  id="capacity"
-                  value={capacity}
-                  onChange={(e) => setCapacity(Number(e.target.value))}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                  min="0"
-                />
-              </div>
-              <div>
-                <label htmlFor="openHours" className="block text-sm font-medium text-gray-700 mb-1">Open Hours (e.g., "9 AM - 9 PM")</label>
-                <input
-                  type="text"
-                  id="openHours"
-                  value={openHours}
-                  onChange={(e) => setOpenHours(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select
-                id="status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'OPEN' | 'CLOSED' | 'MAINTENANCE')}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              >
-                {LOCATION_STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
 
-            {error && (
-              <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg text-sm text-center">
-                {error}
+              <div className="flex justify-end gap-4 pt-6 border-t border-gray-700">
+                <motion.button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-3 rounded-xl font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  type="submit"
+                  className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <svg className="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <span>{location ? 'Save Changes' : 'Add Location'}</span>
+                  )}
+                </motion.button>
               </div>
-            )}
-            <div className="flex justify-end space-x-3 mt-6">
-              <motion.button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Cancel
-              </motion.button>
-              <motion.button
-                type="submit"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  location ? 'Save Changes' : 'Add Location'
-                )}
-              </motion.button>
-            </div>
-          </form>
+            </form>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </AnimatePresence>
   );
 };

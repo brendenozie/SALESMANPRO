@@ -1,10 +1,21 @@
-// components/TrainerModal.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  XMarkIcon,
+  UserCircleIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  BriefcaseIcon,
+  ChatBubbleBottomCenterTextIcon,
+  AcademicCapIcon,
+  PhotoIcon,
+  SparklesIcon,
+  LockClosedIcon, // Added for password fields
+} from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import toast from 'react-hot-toast'; // Import react-hot-toast
 
 // Define the TrainerData interface to match the expected API response
 interface TrainerData {
@@ -29,7 +40,7 @@ interface TrainerModalProps {
 }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+  return `${src}?w=${width}&q=75`; // Default quality to 75
 };
 
 const TRAINER_STATUSES = ['ACTIVE', 'ON_LEAVE', 'INACTIVE'];
@@ -47,62 +58,70 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (trainer) {
-      setName(trainer.name || '');
-      setEmail(trainer.email || '');
-      setPhone(trainer.phone || '');
-      setSpecialty(trainer.specialty || '');
-      setBio(trainer.bio || '');
-      setCertificationsInput(trainer.certifications.join(', '));
-      setPhotoUrl(trainer.photoUrl || '');
-      setStatus(trainer.status || 'ACTIVE');
-      setPassword(''); // Clear password field on edit
-      setConfirmPassword('');
-    } else {
-      // Reset form for new trainer
-      setName('');
-      setEmail('');
-      setPhone('');
-      setSpecialty('');
-      setBio('');
-      setCertificationsInput('');
-      setPhotoUrl('');
-      setStatus('ACTIVE');
-      setPassword('');
-      setConfirmPassword('');
+    if (isOpen) { // Only reset when modal opens
+      if (trainer) {
+        setName(trainer.name || '');
+        setEmail(trainer.email || '');
+        setPhone(trainer.phone || '');
+        setSpecialty(trainer.specialty || '');
+        setBio(trainer.bio || '');
+        setCertificationsInput(trainer.certifications.join(', '));
+        setPhotoUrl(trainer.photoUrl || '');
+        setStatus(trainer.status || 'ACTIVE');
+        setPassword(''); // Clear password field on edit
+        setConfirmPassword('');
+      } else {
+        // Reset form for new trainer
+        setName('');
+        setEmail('');
+        setPhone('');
+        setSpecialty('');
+        setBio('');
+        setCertificationsInput('');
+        setPhotoUrl('');
+        setStatus('ACTIVE');
+        setPassword('');
+        setConfirmPassword('');
+      }
+      setFormError(null); // Clear errors on open
     }
-  }, [trainer]);
+  }, [isOpen, trainer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setFormError(null);
 
     const certificationsArray = certificationsInput.split(',').map(c => c.trim()).filter(c => c !== '');
 
     // Basic client-side validation
     if (!name || !email || !specialty) {
-      setError('Name, email, and specialty are required.');
+      setFormError('Name, email, and specialty are required.');
       setLoading(false);
+      toast.error('Please fill in all required fields.');
       return;
     }
 
     if (!trainer && (!password || password.length < 8)) {
-      setError('Password is required and must be at least 8 characters for new trainers.');
+      setFormError('Password is required and must be at least 8 characters for new trainers.');
       setLoading(false);
+      toast.error('Password is required and must be at least 8 characters for new trainers.');
       return;
     }
     if (!trainer && password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setFormError('Passwords do not match.');
       setLoading(false);
+      toast.error('Passwords do not match.');
       return;
     }
 
     const method = trainer ? 'PUT' : 'POST';
     const url = trainer ? `/api/admin/${adminSlug}/trainers/${trainer.id}` : `/api/admin/${adminSlug}/trainers`;
+
+    const toastId = toast.loading(`${trainer ? 'Updating' : 'Adding'} trainer...`);
 
     try {
       const response = await fetch(url, {
@@ -131,8 +150,10 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
       const savedTrainer: TrainerData = await response.json();
       onSave(savedTrainer); // Pass the saved trainer data back to the parent
       onClose(); // Close the modal
+      toast.success(`Trainer "${savedTrainer.name}" saved successfully!`, { id: toastId });
     } catch (err: any) {
-      setError(err.message);
+      setFormError(err.message);
+      toast.error(`Error: ${err.message}`, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -143,164 +164,233 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-70 flex items-center justify-center z-[1000] p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        onClick={onClose} // Close modal when clicking outside
       >
         <motion.div
-          className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg relative text-gray-900"
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 50, opacity: 0 }}
+          className="bg-gray-800 text-gray-200 rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative border border-gray-700 max-h-[90vh] overflow-y-auto"
+          initial={{ scale: 0.9, y: -50 }}
+          animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.9, y: 50 }}
+          transition={{ type: "spring", stiffness: 200, damping: 25 }}
+          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
         >
-          <button
+          <motion.button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             aria-label="Close modal"
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <XMarkIcon className="w-7 h-7" />
-          </button>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-            {trainer ? 'Edit Trainer' : 'Add New Trainer'}
+            <XMarkIcon className="w-8 h-8" />
+          </motion.button>
+
+          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-600 mb-4 text-center drop-shadow-md">
+            {trainer ? 'Edit Trainer Profile' : 'Add New Trainer'}
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
+          <p className="text-center text-gray-400 mb-8">
+            {trainer ? 'Update the details for this fitness professional.' : 'Fill in the details to onboard a new trainer.'}
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="name" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                  <UserCircleIcon className="w-5 h-5 mr-2 text-teal-400" /> Full Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
+                  placeholder="e.g., Jane Doe"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="email" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                  <EnvelopeIcon className="w-5 h-5 mr-2 text-teal-400" /> Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors disabled:bg-gray-600 disabled:text-gray-400"
+                  placeholder="e.g., jane.doe@example.com"
+                  required
+                  disabled={!!trainer} // Disable email edit for existing trainers
+                />
+                {trainer && <p className="text-xs text-gray-500 mt-1">Email cannot be changed for existing trainers.</p>}
+              </div>
             </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-                disabled={!!trainer} // Disable email edit for existing trainers (or handle carefully)
-              />
-              {trainer && <p className="text-xs text-gray-500 mt-1">Email cannot be changed directly here for existing trainers.</p>}
-            </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone (Optional)</label>
-              <input
-                type="text"
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-              />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="phone" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                  <PhoneIcon className="w-5 h-5 mr-2 text-teal-400" /> Phone (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
+                  placeholder="e.g., +1 (555) 123-4567"
+                />
+              </div>
+              <div>
+                <label htmlFor="specialty" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                  <BriefcaseIcon className="w-5 h-5 mr-2 text-teal-400" /> Specialty
+                </label>
+                <input
+                  type="text"
+                  id="specialty"
+                  value={specialty}
+                  onChange={(e) => setSpecialty(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
+                  placeholder="e.g., Strength Training"
+                  required
+                />
+              </div>
             </div>
 
             {!trainer && ( // Password fields only for new trainers
-              <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label htmlFor="password" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                    <LockClosedIcon className="w-5 h-5 mr-2 text-teal-400" /> Password
+                  </label>
                   <input
                     type="password"
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
                     required={!trainer}
                     minLength={8}
+                    placeholder="Minimum 8 characters"
                   />
                 </div>
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <label htmlFor="confirmPassword" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                    <LockClosedIcon className="w-5 h-5 mr-2 text-teal-400" /> Confirm Password
+                  </label>
                   <input
                     type="password"
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
                     required={!trainer}
                     minLength={8}
+                    placeholder="Re-enter password"
                   />
                 </div>
-              </>
+              </div>
             )}
 
             <div>
-              <label htmlFor="specialty" className="block text-sm font-medium text-gray-700 mb-1">Specialty</label>
-              <input
-                type="text"
-                id="specialty"
-                value={specialty}
-                onChange={(e) => setSpecialty(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">Bio (Optional)</label>
+              <label htmlFor="bio" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                <ChatBubbleBottomCenterTextIcon className="w-5 h-5 mr-2 text-teal-400" /> Bio (Optional)
+              </label>
               <textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
+                placeholder="A brief description of the trainer's background and philosophy."
               ></textarea>
             </div>
+
             <div>
-              <label htmlFor="certifications" className="block text-sm font-medium text-gray-700 mb-1">Certifications (Comma-separated)</label>
+              <label htmlFor="certifications" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                <AcademicCapIcon className="w-5 h-5 mr-2 text-teal-400" /> Certifications (Comma-separated)
+              </label>
               <input
                 type="text"
                 id="certifications"
                 value={certificationsInput}
                 onChange={(e) => setCertificationsInput(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
                 placeholder="e.g., NASM, ACE, CrossFit L1"
               />
             </div>
+
             <div>
-              <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700 mb-1">Photo URL (Optional)</label>
+              <label htmlFor="photoUrl" className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                <PhotoIcon className="w-5 h-5 mr-2 text-teal-400" /> Photo URL (Optional)
+              </label>
               <input
                 type="url"
                 id="photoUrl"
                 value={photoUrl}
                 onChange={(e) => setPhotoUrl(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
+                placeholder="https://example.com/trainer_photo.jpg"
               />
               {photoUrl && (
-                <div className="mt-2 text-center">
-                  <Image src={photoUrl} alt="Preview" width={80} height={80} objectFit="cover" className="rounded-full" loader={customLoader} />
+                <div className="mt-4 flex flex-col items-center">
+                  <p className="text-sm text-gray-400 mb-2">Photo Preview:</p>
+                  <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-lg border-4 border-indigo-500">
+                    <Image
+                      src={photoUrl}
+                      alt="Trainer Photo Preview"
+                      layout="fill"
+                      objectFit="cover"
+                      className="transition-transform duration-300 hover:scale-110"
+                      loader={customLoader}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://placehold.co/128x128/E0E7FF/4338CA?text=Photo+Error';
+                      }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
+
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select
-                id="status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE')}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              >
+              <label className="flex items-center text-sm font-medium text-gray-300 mb-2">
+                <SparklesIcon className="w-5 h-5 mr-2 text-teal-400" /> Status
+              </label>
+              <div className="flex bg-gray-700 rounded-xl p-1 border border-gray-600">
                 {TRAINER_STATUSES.map((s) => (
-                  <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                  <motion.button
+                    key={s}
+                    type="button"
+                    onClick={() => setStatus(s as 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE')}
+                    className={`flex-1 text-center py-2 rounded-lg text-sm font-medium transition-colors ${
+                      status === s ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-600'
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {s.replace('_', ' ')}
+                  </motion.button>
                 ))}
-              </select>
+              </div>
             </div>
 
-            {error && (
-              <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg text-sm text-center">
-                {error}
-              </div>
+            {formError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-900/30 text-red-300 px-4 py-3 rounded-xl text-sm text-center border border-red-700"
+              >
+                {formError}
+              </motion.div>
             )}
-            <div className="flex justify-end space-x-3 mt-6">
+
+            <div className="flex flex-col md:flex-row justify-end space-y-3 md:space-y-0 md:space-x-3 mt-6">
               <motion.button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="w-full md:w-auto px-6 py-3 rounded-full text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -308,13 +398,13 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
               </motion.button>
               <motion.button
                 type="submit"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full md:w-auto px-6 py-3 rounded-full text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={loading}
               >
                 {loading ? (
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
