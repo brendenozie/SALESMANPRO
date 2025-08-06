@@ -216,6 +216,8 @@ model Company {
   currency     String  @default("KES")
   locale       String  @default("en-US")
 
+  settings CompanySettings?
+
   pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
 
   themeSettings Json? // colors, fonts, layout toggles
@@ -337,6 +339,12 @@ model Company {
   VideoAlbum                      VideoAlbum[]
   Sponsor                         Sponsor[]
   Document                        Document[]
+  Expert                          Expert[]
+  Content                         Content[]
+  PromotionDiscount               PromotionDiscount[]
+  Location                        Location[]
+  Booking                         Booking[]
+  Communication                   Communication[]
 }
 
 enum CategoryStatus {
@@ -858,6 +866,13 @@ enum TaskPriority {
 }
 
 //One on One relationship with user
+// Add this enum definition to your schema.prisma file if it doesn't exist
+enum ClientStatus {
+  ACTIVE // Corresponds to 'active' in frontend
+  EXPIRED // Corresponds to 'expired'
+  FROZEN // Corresponds to 'frozen'
+  PENDING // Added for new clients awaiting activation
+}
 
 model Client {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -877,6 +892,12 @@ model Client {
   ClientInventory   ClientInventory[]
   Return            Return[]
 
+  membershipType   String? // e.g., "Premium", "Standard", "Trial"
+  membershipStatus ClientStatus @default(PENDING) // New status field
+  joinDate         DateTime     @default(now())
+  lastActive       DateTime     @default(now())
+  photoUrl         String? // URL for client's photo (optional)
+
   // --- NEW FIELDS FOR CLIENT MANAGEMENT ---
   inquiryCount           Int?                 @default(0)
   dealStatus             String? // Consider making this an Enum: enum DealStatus { LEAD, ACTIVE, CLOSED, ARCHIVED }
@@ -888,6 +909,7 @@ model Client {
   Case                   Case[]
   FinanceAppointment     FinanceAppointment[]
   Invoice                Invoice[]
+  Booking                Booking[]
 }
 
 enum DealStatus {
@@ -1865,10 +1887,32 @@ model OrderItem {
   @@index([marketplaceListingId])
 }
 
-// Location model with self-relations for hierarchy (parent & child locations)
-// This represents a generic geographical location that can be reused.
+enum LocationStatus {
+  OPEN
+  CLOSED
+  MAINTENANCE
+  ACTIVE
+}
+
+// Ensure your Location model has these fields and relations
 model Location {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  address String?
+
+  zipCode String?
+
+  imageUrl  String? // For location image
+  phone     String?
+  email     String?
+  capacity  Int? // Max capacity of the location
+  openHours String? // e.g., "9 AM - 9 PM"
+  status    LocationStatus @default(OPEN) // Status of the location (Open, Closed, Maintenance)
+  companyId String?        @db.ObjectId // Link to the Company
+  company   Company?       @relation(fields: [companyId], references: [id])
+
+  TourPackage TourPackage[]
+
   name         String // e.g., "United States", "New York City", "Main Office Building"
   slug         String  @unique // Unique identifier for URLs/APIs
   description  String? // Optional description of the location
@@ -1896,7 +1940,6 @@ model Location {
   updatedAt DateTime? @updatedAt
   createdBy String? // ID of the user who created it
   updatedBy String? // ID of the user who last updated it
-  status    String    @default("active") // e.g., "active", "inactive", "draft"
 
   // Self-referencing hierarchy: A location can have a parent, forming a tree structure.
   parentId String?    @db.ObjectId // Points to the ID of the parent Location
@@ -1915,6 +1958,7 @@ model Location {
   marketplaceListings marketplaceListings[]
   Property            Property[]
   Destination         Destination[]
+  Booking             Booking[]
 }
 
 /// Associates a Company with a specific Location,
@@ -2188,6 +2232,12 @@ model StudentAcademicLevel {
   @@index([academicLevelId])
 }
 
+enum EducatorStatus {
+  ACTIVE
+  ON_LEAVE // Corresponds to 'onleave' in frontend
+  INACTIVE
+}
+
 // Educator Profile Model (one-to-one with User)
 model Educator {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -2199,6 +2249,12 @@ model Educator {
   bio            String?
   address        String?
   profilePicture String?
+
+  specialty String? // e.g., "Fitness", "Yoga", "Nutrition"
+
+  certifications String[] // Array of strings for certifications
+  photoUrl       String? // URL for trainer's photo
+  status         EducatorStatus @default(ACTIVE) // New status field
 
   loginCode String @unique // NEW: Unique generated number for login
 
@@ -2230,6 +2286,7 @@ model Educator {
   Grade                    Grade[]                    @relation("recordedBy")
   CourseEducatorAssignment CourseEducatorAssignment[]
   CourseAssignment         CourseAssignment[]
+  Booking                  Booking[]
 }
 
 // Academic Level Model
@@ -2298,11 +2355,13 @@ model Course {
 
   code String @unique // e.g., "MATH101"
 
-  rating Float? // Can still be stored as an average, or calculated from a separate Rating model
-
+  rating    Float? // Can still be stored as an average, or calculated from a separate Rating model
+  price     Float? // Add this field
+  duration  String? // Add this field
+  status    CourseStatus @default(DRAFT) // Add this enum and field
   // NEW: Company relation for multi-tenancy
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
+  company   Company      @relation(fields: [companyId], references: [id])
+  companyId String       @db.ObjectId
 
   departmentId String?     @db.ObjectId
   department   Department? @relation(fields: [departmentId], references: [id])
@@ -2329,6 +2388,14 @@ model Course {
   CourseEducatorAssignment CourseEducatorAssignment[]
 
   @@index([companyId])
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  INACTIVE
+  ACTIVE
 }
 
 // NEW JUNCTION MODEL: CourseEducatorAssignment
@@ -3874,57 +3941,6 @@ model Subscription {
   @@index([planId])
 }
 
-// model Company {
-//   id                 String    @id @default(auto()) @map("_id") @db.ObjectId
-//   name               String
-//   staff              Staff[]
-//   appointments       Appointment[]
-//   prescriptions      Prescription[]
-//   diagnoses          Diagnosis[]
-//   PatientInvoices    PatientInvoices[]
-//   BillingTransactions BillingTransaction[]
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-// }
-
-// A Staff member is a user assigned to a company, e.g., an employee.
-// model Staff {
-//   id        String  @id @default(auto()) @map("_id") @db.ObjectId
-//   userId    String  @db.ObjectId
-//   user      User    @relation("staff", fields: [userId], references: [id])
-//   companyId String  @db.ObjectId
-//   company   Company @relation(fields: [companyId], references: [id])
-
-//   // Optional fields for Staff
-//   position    String?
-//   permissions Json? // Store staff-specific permissions here
-
-//   doctor Doctor? @relation(fields: [doctorId], references: [id])
-
-//   doctorId  String?   @db.ObjectId
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-//   @@index([companyId])
-//   @@index([userId])
-// }
-
-// A Doctor is a specialized type of Staff
-// model Doctor {
-//   id          String @id @default(auto()) @map("_id") @db.ObjectId
-//   staffId     String @db.ObjectId @unique
-//   staff       Staff  @relation(fields: [staffId], references: [id])
-//   specialty   String? // e.g., "Cardiology", "Pediatrics"
-
-//   appointments Appointment[]
-//   prescriptions Prescription[]
-//   diagnoses     Diagnosis[]
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-// }
-
 // A Patient is a specialized type of User
 model Patient {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -3944,28 +3960,6 @@ model Patient {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 }
-
-// A medical appointment between a doctor and a patient
-// model Appointment {
-//   id        String    @id @default(auto()) @map("_id") @db.ObjectId
-//   doctorId  String    @db.ObjectId
-//   doctor    Doctor    @relation(fields: [doctorId], references: [id])
-//   patientId String    @db.ObjectId
-//   patient   Patient   @relation(fields: [patientId], references: [id])
-//   companyId String    @db.ObjectId
-//   company   Company   @relation(fields: [companyId], references: [id])
-
-//   appointmentDate DateTime
-//   status          String // e.g., "Scheduled", "Completed", "Canceled"
-//   notes           String?
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-
-//   @@index([doctorId])
-//   @@index([patientId])
-//   @@index([companyId])
-// }
 
 // A medical diagnosis for a patient
 model Diagnosis {
@@ -4163,9 +4157,29 @@ enum ContentStatus {
   Archived
 }
 
+// Add this enum if it doesn't exist, or ensure it includes VIDEO
+enum ContentType {
+  VIDEO
+  ARTICLE
+  IMAGE_GALLERY
+  // Add other content types as needed
+}
+
 model Content {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String? // Use this for a longer description if needed
+  contentUrl   String // For video URL (e.g., YouTube embed URL)
+  thumbnailUrl String? // For video thumbnail URL
+  contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
+  category     String? // e.g., "Nature", "History", "Wildlife"
+  duration     String? // e.g., "5 min", "7 min"
+  location     String? // ADD THIS FIELD for location
+  tags         String[] // For additional keywords/tags
+  companyId    String      @db.ObjectId
+  company      Company     @relation(fields: [companyId], references: [id])
+  published    Boolean     @default(false) // Whether the tour is live
+
   type        String // e.g., "Article", "PhotoAlbum", "VideoAlbum"
   status      ContentStatus @default(Draft)
   publishDate DateTime?
@@ -4358,15 +4372,33 @@ enum Expertise {
   ADVISORY
 }
 
-// Expert model: Represents an expert profile linked to a user
+// Relevant parts of your schema.prisma
+// Add this enum if it doesn't exist
+enum ExpertStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
 model Expert {
-  id        String      @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String      @unique @db.ObjectId
-  user      User        @relation(fields: [userId], references: [id])
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String       @unique @db.ObjectId // One-to-one with User
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade for user deletion
+  companyId        String       @db.ObjectId
+  company          Company      @relation(fields: [companyId], references: [id])
+  specialty        String
+  experienceYears  Int?
+  travelsCompleted Int?
+  photoUrl         String? // Use this for photo
+  bio              String?
+  contactEmail     String?
+  contactPhone     String?
+  status           ExpertStatus @default(ACTIVE)
+
   title     String
   expertise Expertise[] // Array of expertise enums
-  bio       String
-  image     String?
+
+  image String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4469,6 +4501,7 @@ model Destination {
 
   TourPackage   TourPackage? @relation(fields: [tourPackageId], references: [id])
   tourPackageId String?      @db.ObjectId
+  Booking       Booking[]
 }
 
 // Package model: Represents a travel package or tour.
@@ -4486,6 +4519,177 @@ model TourPackage {
 
   // Many-to-many relationship with Destination
   destinations Destination[]
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Location   Location? @relation(fields: [locationId], references: [id])
+  locationId String?   @db.ObjectId
+  Booking    Booking[]
+}
+
+// Add this enum definition to your schema.prisma file
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+// Add this enum definition to your schema.prisma file
+enum PromotionDiscountStatus {
+  ACTIVE
+  SCHEDULED
+  EXPIRED
+  DRAFT // Added 'DRAFT' for promotions not yet ready
+}
+
+model PromotionDiscount {
+  id            String                  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  code          String //@unique // Unique promotion code
+  description   String?
+  discountValue Float // e.g., 15 for 15%, 200 for $200
+  discountType  PromotionType
+  startDate     DateTime
+  endDate       DateTime
+  status        PromotionDiscountStatus @default(SCHEDULED)
+  imageUrl      String? // Optional image for the promotion
+  companyId     String                  @db.ObjectId
+  company       Company                 @relation(fields: [companyId], references: [id])
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@index([companyId])
+  @@index([code])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+// Add these enum definitions to your schema.prisma file if they don't exist
+enum BookingStatus {
+  CONFIRMED
+  PENDING
+  CANCELLED
+  COMPLETED
+}
+
+// Updated BookingType for travel context
+enum BookingType {
+  CLASS
+  PERSONAL_TRAINING
+  VIRTUAL_TOUR
+  OTHER
+  TOUR_PACKAGE_BOOKING
+  CUSTOM_TRIP_BOOKING
+  ACCOMMODATION_BOOKING
+  FLIGHT_BOOKING
+  OTHER_TRAVEL_SERVICE
+}
+
+// Add the new Booking model
+model Booking {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  clientId String @db.ObjectId // The client making the booking
+  client   Client @relation(fields: [clientId], references: [id])
+
+  educatorId String?   @db.ObjectId // Optional: The trainer/educator assigned
+  educator   Educator? @relation(fields: [educatorId], references: [id])
+
+  locationId String?   @db.ObjectId // Optional: The location of the booking
+  location   Location? @relation(fields: [locationId], references: [id])
+
+  title       String // e.g., "Personal Training Session", "Yoga Class"
+  description String? // Optional detailed description
+  bookingType BookingType // e.g., CLASS, PERSONAL_TRAINING, VIRTUAL_TOUR
+  startTime   DateTime
+  endTime     DateTime
+  price       Float? // ADD THIS FIELD for revenue calculation (e.g., 50.00)
+  status      BookingStatus @default(PENDING) // Current status of the booking
+  notes       String? // Any internal notes for the booking
+
+  tourPackageId String?      @db.ObjectId // Link to TourPackage for travel bookings
+  tourPackage   TourPackage? @relation(fields: [tourPackageId], references: [id])
+
+  destinationId String?      @db.ObjectId // Optional: If a booking is directly for a destination (e.g., a specific activity)
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+
+  startDate  DateTime // Start date of the trip/service
+  endDate    DateTime // End date of the trip/service
+  totalPrice Float // Total price of the booking
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([tourPackageId])
+  @@index([destinationId])
+  @@index([startDate])
+  @@index([status])
+  @@index([educatorId])
+  @@index([locationId])
+  @@index([startTime])
+}
+
+// Add these enum definitions to your schema.prisma file if they don't exist
+enum CommunicationType {
+  EMAIL
+  SMS
+  NOTIFICATION
+  IN_APP_MESSAGE
+}
+
+enum CommunicationStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  FAILED
+}
+
+model Communication {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String              @db.ObjectId
+  company           Company             @relation(fields: [companyId], references: [id])
+  subject           String
+  content           String              @map("body") @db.String // Renamed to content, mapped to 'body' in DB
+  communicationType CommunicationType // e.g., EMAIL, SMS, NOTIFICATION
+  status            CommunicationStatus @default(DRAFT)
+  recipients        String[] // e.g., ["all_clients", "specific_client_id", "group_id"]
+  sentDate          DateTime? // When it was actually sent
+  scheduledDate     DateTime? // If it's a scheduled message
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@index([scheduledDate])
+}
+
+// Add this model to your schema.prisma file
+model CompanySettings {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @unique @db.ObjectId // One-to-one link to Company
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // General Information
+  companyName  String?
+  contactEmail String?
+  contactPhone String?
+  address      String?
+  city         String?
+  state        String?
+  zipCode      String?
+  country      String?
+  logoUrl      String? // URL for company logo
+
+  // Localization
+  currency String? @default("USD")
+  timezone String? @default("America/New_York")
+
+  // Notification Settings (Example)
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,256 +1,426 @@
-'use client';
+// app/[adminSlug]/settings/page.tsx
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
-  CalendarDaysIcon, // For date
-  UsersIcon, // For students list
-  MagnifyingGlassIcon, // For search
-  EyeIcon, // For view details
-  PaperAirplaneIcon, // For message parent/student
-  AcademicCapIcon, // For student's grade
-} from '@heroicons/react/24/outline';
+  BuildingLibraryIcon, CloudArrowUpIcon, Cog6ToothIcon, GlobeAltIcon, SpeakerWaveIcon, ExclamationCircleIcon, PhotoIcon
+} from '@heroicons/react/24/outline'; // Changed CloudIcon to CloudArrowUpIcon, added ExclamationCircleIcon, PhotoIcon
+import { useParams } from 'next/navigation';
+import Image from 'next/image';
 
-// Types for class roster and student
-type Student = {
+// Define the SettingsData interface to match the API response
+interface SettingsData {
   id: string;
-  name: string;
-  email: string;
-  parentName: string;
-  parentPhone: string;
-  status: string;
-  gradeLevel: string;
+  companyId: string;
+  companyName: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  country: string | null;
+  logoUrl: string | null;
+  currency: string | null;
+  timezone: string | null;
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SettingsPageProps {
+  params: {
+    adminSlug: string;
+  };
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
-type ClassRoster = {
-  name: string;
-  teacher: string;
-  students: Student[];
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-type ClassId = 'CL101' | 'CL102' | 'CL103';
-
-const sampleClassRosters: Record<ClassId, ClassRoster> = {
-  'CL101': {
-    name: 'Grade 7 Mathematics',
-    teacher: 'Mr. John Doe',
-    students: [
-      { id: 'S001', name: 'Alice Smith', email: 'alice.s@school.com', parentName: 'Mr. Alex Smith', parentPhone: '+254711111111', status: 'Active', gradeLevel: '7' },
-      { id: 'S005', name: 'Fatuma Hassan', email: 'fatuma.h@school.com', parentName: 'Ahmed Hassan', parentPhone: '+254722222222', status: 'Active', gradeLevel: '7' },
-      { id: 'S011', name: 'George Kinyanjui', email: 'george.k@school.com', parentName: 'Mary Kinyanjui', parentPhone: '+254733333333', status: 'Active', gradeLevel: '7' },
-      { id: 'S012', name: 'Hannah Wambui', email: 'hannah.w@school.com', parentName: 'Peter Wambui', parentPhone: '+254744444444', status: 'Active', gradeLevel: '7' },
-      { id: 'S013', name: 'Isaac Kipchoge', email: 'isaac.k@school.com', parentName: 'Sarah Kipchoge', parentPhone: '+254755555555', status: 'Inactive', gradeLevel: '7' }, // Example inactive student
-    ],
-  },
-  'CL102': {
-    name: 'Grade 8 English Language',
-    teacher: 'Mrs. Jane Smith',
-    students: [
-      { id: 'S002', name: 'Kevin Otieno', email: 'kevin.o@school.com', parentName: 'David Otieno', parentPhone: '+254766666666', status: 'Active', gradeLevel: '8' },
-      { id: 'S004', name: 'Michael Njoroge', email: 'michael.n@school.com', parentName: 'Ruth Njoroge', parentPhone: '+254777777777', status: 'Active', gradeLevel: '8' },
-      { id: 'S014', name: 'Naomi Chebet', email: 'naomi.c@school.com', parentName: 'Ben Chebet', parentPhone: '+254788888888', status: 'Active', gradeLevel: '8' },
-      { id: 'S015', name: 'Paul Omondi', email: 'paul.o@school.com', parentName: 'Grace Omondi', parentPhone: '+254799999999', status: 'Active', gradeLevel: '8' },
-    ],
-  },
-  'CL103': {
-    name: 'Grade 9 Algebra',
-    teacher: 'Mr. John Doe',
-    students: [
-        { id: 'S003', name: 'Sarah Kimani', email: 'sarah.k@school.com', parentName: 'Elizabeth Kimani', parentPhone: '+254710101010', status: 'Active', gradeLevel: '9' },
-        { id: 'S016', name: 'Quentin Onyango', email: 'quentin.o@school.com', parentName: 'Rose Onyango', parentPhone: '+254711223344', status: 'Active', gradeLevel: '9' },
-    ]
-  }
+const formFieldVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
 };
 
-// For demonstration, let's pick a default class ID
-const defaultClassId = 'CL101'; // This would come from routing in a real app
+const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
 
-export default function TeachersStudentListPage() {
-  
-  const [currentClassId, setCurrentClassId] = useState<ClassId>(defaultClassId);
-  const currentClass = sampleClassRosters[currentClassId];
+export default function SettingsPage({ params }: SettingsPageProps) {
+  const { adminSlug } = params;
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [settings, setSettings] = useState<SettingsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false); // For success message
 
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  // Function to fetch settings from the API
+  const fetchSettings = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/${adminSlug}/settings`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: SettingsData = await response.json();
+      setSettings(data);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Failed to fetch settings:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [adminSlug]);
 
-  if (!currentClass) {
+  // Fetch settings on component mount
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setSettings(prevSettings => {
+      if (!prevSettings) return null;
+      return {
+        ...prevSettings,
+        [name]: type === 'checkbox' ? checked : value,
+      };
+    });
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!settings) return;
+
+    setIsSaving(true);
+    setError(null);
+    setSaveSuccess(false);
+
+    try {
+      const response = await fetch(`/api/admin/${adminSlug}/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save settings.');
+      }
+
+      const updatedSettings: SettingsData = await response.json();
+      setSettings(updatedSettings); // Update state with fresh data from backend
+      setSaveSuccess(true);
+      // Automatically hide success message after a few seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="p-8 text-center bg-gray-100 min-h-screen font-sans">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Class Roster</h1>
-        <p className="text-gray-600">Please select a valid class to view its student list.</p>
-        {/* Simple dropdown to pick a class for demo purposes */}
-        <select
-          value={currentClassId}
-          onChange={(e) => setCurrentClassId(e.target.value as ClassId)}
-          className="mt-6 block mx-auto py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        >
-          <option value="">-- Select a Class --</option>
-          {Object.keys(sampleClassRosters).map(id => (
-            <option key={id} value={id}>{sampleClassRosters[id as ClassId].name}</option>
-          ))}
-        </select>
+      <div className="min-h-screen bg-gray-900 p-8 text-white font-sans flex items-center justify-center">
+        <svg className="animate-spin h-12 w-12 text-indigo-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p className="text-xl text-gray-400 ml-4">Loading settings...</p>
       </div>
     );
   }
 
-  const filteredStudents = currentClass.students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          student.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'All' || student.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  }).sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
+  if (error && !settings) { // Only show full error if initial load failed
+    return (
+      <div className="min-h-screen bg-gray-900 p-8 text-white font-sans flex items-center justify-center">
+        <div className="bg-red-900 bg-opacity-50 text-red-200 p-6 rounded-lg text-center border border-red-700">
+          <p className="font-bold text-lg mb-2">Error loading settings:</p>
+          <p className="text-sm">{error}</p>
+          <button
+            onClick={fetchSettings}
+            className="mt-4 px-4 py-2 bg-red-700 rounded-lg hover:bg-red-800 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Inactive': return 'bg-red-100 text-red-800';
-      case 'Transferred': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-yellow-100 text-yellow-800';
-    }
-  };
-
-  // Placeholder functions for actions
-  const handleViewStudentProfile = (studentId: string) => {
-    console.log(`Viewing profile for student ID: ${studentId}`);
-    alert(`Redirecting to student profile for: ${studentId}`);
-    // In a real app, route to student profile page: Router.push(`/student/${studentId}/profile`);
-  };
-
-  const handleMessageParent = (parentId: string, studentName: string) => {
-    console.log(`Messaging parent of ${studentName} (Parent ID: ${parentId})`);
-    alert(`Opening message composer for parent of ${studentName}`);
-    // In a real app, open a messaging interface
-  };
+  if (!settings) { // Fallback if settings are null after loading
+    return (
+      <div className="min-h-screen bg-gray-900 p-8 text-white font-sans flex items-center justify-center">
+        <p className="text-xl text-gray-400">No settings data available.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Student Roster: {currentClass.name}
-            <span className="ml-2 text-blue-600 text-base sm:text-xl">👥</span>
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">Managed by {currentClass.teacher}. Total Students: {currentClass.students.length}</p>
-        </div>
-        <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
-          <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-          <span>{today}</span>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-8 text-white font-sans">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-600 mb-12 drop-shadow-lg"
+      >
+        Company Settings
+      </motion.h1>
 
-      {/* Student List Section */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <UsersIcon className="h-5 w-5 text-indigo-500" /> Students in Class
-          </h3>
-          {/* For demo: Class selection dropdown for easy switching */}
-          <select
-            value={currentClassId}
-            onChange={(e) => setCurrentClassId(e.target.value as ClassId)}
-            className="block py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      <motion.div
+        className="max-w-4xl mx-auto space-y-10"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <form onSubmit={handleSave} className="space-y-10">
+          {/* Section 1: General Information */}
+          <motion.div
+            className="bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700"
+            variants={sectionVariants}
           >
-            {Object.keys(sampleClassRosters).map(id => (
-              <option key={id} value={id}>{sampleClassRosters[id as ClassId].name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-700">
+              <BuildingLibraryIcon className="text-3xl text-indigo-400 flex-shrink-0" />
+              <h3 className="text-2xl font-bold text-white">General Information</h3>
             </div>
-            <input
-              type="text"
-              placeholder="Search student by name or ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="companyName" className="block text-sm font-medium text-gray-400 mb-1">Company Name</label>
+                <input
+                  type="text"
+                  id="companyName"
+                  name="companyName"
+                  value={settings.companyName || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-400 mb-1">Contact Email</label>
+                <input
+                  type="email"
+                  id="contactEmail"
+                  name="contactEmail"
+                  value={settings.contactEmail || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-400 mb-1">Contact Phone</label>
+                <input
+                  type="tel"
+                  id="contactPhone"
+                  name="contactPhone"
+                  value={settings.contactPhone || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-400 mb-1">Address Line 1</label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={settings.address || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-400 mb-1">City</label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  value={settings.city || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="state" className="block text-sm font-medium text-gray-400 mb-1">State/Province</label>
+                <input
+                  type="text"
+                  id="state"
+                  name="state"
+                  value={settings.state || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-400 mb-1">Zip/Postal Code</label>
+                <input
+                  type="text"
+                  id="zipCode"
+                  name="zipCode"
+                  value={settings.zipCode || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="country" className="block text-sm font-medium text-gray-400 mb-1">Country</label>
+                <input
+                  type="text"
+                  id="country"
+                  name="country"
+                  value={settings.country || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants} className="md:col-span-2">
+                <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-400 mb-1">Company Logo URL (Optional)</label>
+                <input
+                  type="url"
+                  id="logoUrl"
+                  name="logoUrl"
+                  value={settings.logoUrl || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+                {settings.logoUrl && (
+                  <div className="mt-4 text-center">
+                    <Image src={settings.logoUrl} alt="Company Logo Preview" width={150} height={150} objectFit="contain" className="rounded-md mx-auto" loader={customLoader} onError={(e) => { e.currentTarget.src = 'https://placehold.co/150x150/E0E7FF/4338CA?text=Logo+Error'; }} />
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
 
-        {/* Students Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name (ID)</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade Level</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((student) => (
-                  <tr key={student.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {student.name} <span className="text-gray-500 text-xs">({student.id})</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <AcademicCapIcon className="h-4 w-4 inline-block mr-1 text-gray-500" /> {student.gradeLevel}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.parentName} <br /> <span className="text-xs">{student.parentPhone}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(student.status)}`}>
-                        {student.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handleViewStudentProfile(student.id)}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                          title="View Student Profile"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleMessageParent(student.parentPhone, student.name)}
-                          className="text-green-600 hover:text-green-900 flex items-center"
-                          title="Message Parent"
-                        >
-                          <PaperAirplaneIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No students found in this class matching your criteria.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+          {/* Section 2: Localization */}
+          <motion.div
+            className="bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700"
+            variants={sectionVariants}
+          >
+            <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-700">
+              <GlobeAltIcon className="text-3xl text-indigo-400 flex-shrink-0" />
+              <h3 className="text-2xl font-bold text-white">Localization</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="currency" className="block text-sm font-medium text-gray-400 mb-1">Currency</label>
+                <input
+                  type="text"
+                  id="currency"
+                  name="currency"
+                  value={settings.currency || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+              <motion.div variants={formFieldVariants}>
+                <label htmlFor="timezone" className="block text-sm font-medium text-gray-400 mb-1">Timezone</label>
+                <input
+                  type="text"
+                  id="timezone"
+                  name="timezone"
+                  value={settings.timezone || ''}
+                  onChange={handleChange}
+                  className="block w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors"
+                />
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Section 3: Notification Settings (Example) */}
+          <motion.div
+            className="bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700"
+            variants={sectionVariants}
+          >
+            <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-700">
+              <SpeakerWaveIcon className="text-3xl text-indigo-400 flex-shrink-0" />
+              <h3 className="text-2xl font-bold text-white">Notification Preferences</h3>
+            </div>
+            <div className="space-y-4">
+              <motion.div variants={formFieldVariants} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="emailNotifications"
+                  name="emailNotifications"
+                  checked={settings.emailNotifications}
+                  onChange={handleChange}
+                  className="h-5 w-5 text-indigo-600 rounded border-gray-600 focus:ring-indigo-500 bg-gray-700"
+                />
+                <label htmlFor="emailNotifications" className="ml-3 text-sm font-medium text-gray-400">Enable Email Notifications</label>
+              </motion.div>
+              <motion.div variants={formFieldVariants} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="smsNotifications"
+                  name="smsNotifications"
+                  checked={settings.smsNotifications}
+                  onChange={handleChange}
+                  className="h-5 w-5 text-indigo-600 rounded border-gray-600 focus:ring-indigo-500 bg-gray-700"
+                />
+                <label htmlFor="smsNotifications" className="ml-3 text-sm font-medium text-gray-400">Enable SMS Notifications</label>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Combined Save Button */}
+          <motion.button
+            type="submit"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={isSaving}
+            className="w-full inline-flex justify-center py-4 px-4 shadow-sm text-lg font-bold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <CloudArrowUpIcon className='w-6 h-6' />
+                Save Changes
+              </span>
+            )}
+          </motion.button>
+
+          {/* Success/Error Message */}
+          {saveSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-green-700 bg-opacity-50 text-green-200 p-4 rounded-lg text-center mt-4 border border-green-600"
+            >
+              Settings saved successfully!
+            </motion.div>
+          )}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-700 bg-opacity-50 text-red-200 p-4 rounded-lg text-center mt-4 border border-red-600 flex items-center justify-center gap-2"
+            >
+              <ExclamationCircleIcon className="w-5 h-5" />
+              <span>Error: {error}</span>
+            </motion.div>
+          )}
+        </form>
+      </motion.div>
     </div>
   );
 }

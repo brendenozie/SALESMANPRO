@@ -1,16 +1,44 @@
+// app/[adminSlug]/locations/page.tsx
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  MapIcon, PlusCircleIcon, PencilIcon, TrashIcon, PhoneIcon, EnvelopeOpenIcon, UserIcon, CalendarDaysIcon
+} from '@heroicons/react/24/outline'; // Added PlusCircleIcon, TrashIcon
 import { motion } from 'framer-motion';
-import { Location, getLocationsData } from '@/constant/Data';
-import { CalendarDateRangeIcon, EnvelopeOpenIcon, MapIcon, PencilIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
+import ConfirmationModal from '@/components/ConfirmationModal'; // Re-use this
+import LocationModal from './LocationModal'; // New LocationModal component
 
+// Define the LocationData interface to match the API response
+interface LocationData {
+  id: string;
+  name: string;
+  slug: string;
+  address: string;
+  city: string;
+  state: string | null;
+  zipCode: string | null;
+  country: string;
+  description: string | null;
+  imageUrl: string | null;
+  phone: string | null;
+  email: string | null;
+  capacity: number | null;
+  openHours: string | null;
+  status: 'OPEN' | 'CLOSED' | 'MAINTENANCE';
+}
 
-interface LocationsProps {
+interface LocationsPageProps {
   params: {
     adminSlug: string;
   };
 }
+
+const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
 
 const containerVariants = {
   visible: {
@@ -41,73 +69,92 @@ const locationCardVariants = {
 };
 
 // Reusable card component for a cleaner main file
-const LocationCard = ({ location }: { location: Location }) => {
+const LocationCard = ({ location, onEdit, onDelete }: { location: LocationData; onEdit: (location: LocationData) => void; onDelete: (location: LocationData) => void; }) => {
   const statusColors = {
-    open: 'bg-green-600 text-white',
-    closed: 'bg-red-600 text-white',
-    maintenance: 'bg-yellow-400 text-gray-900',
+    OPEN: 'bg-green-600 text-white',
+    CLOSED: 'bg-red-600 text-white',
+    MAINTENANCE: 'bg-yellow-400 text-gray-900',
   };
 
   return (
     <motion.div
-      className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden flex flex-col relative"
+      className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden flex flex-col relative border border-gray-700"
       variants={locationCardVariants}
       whileHover="hover"
+      initial="hidden"
+      animate="visible"
     >
       {/* Location Image (if available) or a vibrant placeholder */}
       <div className="relative h-48 bg-gray-700 flex items-center justify-center text-gray-400 text-4xl">
         {location.imageUrl ? (
-          <img src={location.imageUrl} alt={location.name} className="w-full h-full object-cover" />
+          <Image
+            src={location.imageUrl}
+            alt={location.name}
+            layout="fill"
+            objectFit="cover"
+            loader={customLoader}
+            onError={(e) => {
+              e.currentTarget.src = 'https://placehold.co/600x400/E0E7FF/4338CA?text=Image+Error';
+            }}
+          />
         ) : (
           <div className="p-6 bg-gray-700 w-full h-full flex items-center justify-center">
-            <MapIcon className="text-indigo-400 text-5xl w-6 h-6" />
+            <MapIcon className="text-indigo-400 w-16 h-16" />
           </div>
         )}
         <div
           className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold ${statusColors[location.status]}`}
         >
-          {location.status.charAt(0).toUpperCase() + location.status.slice(1)}
+          {location.status.charAt(0).toUpperCase() + location.status.slice(1).toLowerCase()}
         </div>
       </div>
 
       <div className="p-6 flex flex-col flex-grow">
         <h4 className="text-xl font-extrabold text-white mb-1 leading-tight">{location.name}</h4>
-        <p className="text-sm text-gray-400 mb-4">{location.address}</p>
+        <p className="text-sm text-gray-400 mb-4">{location.address}, {location.city}, {location.country}</p>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 gap-4 text-sm mb-4">
           <div className="flex items-center text-gray-400">
-            <UserIcon className="mr-2 text-indigo-400 w-6 h-6" />
-            <span>Capacity: {location.capacity}</span>
+            <UserIcon className="mr-2 text-indigo-400 w-5 h-5" />
+            <span>Capacity: {location.capacity || 'N/A'}</span>
           </div>
           <div className="flex items-center text-gray-400">
-            <CalendarDateRangeIcon className="mr-2 text-indigo-400 w-6 h-6" />
+            <CalendarDaysIcon className="mr-2 text-indigo-400 w-5 h-5" />
             <span>Open: {location.openHours || 'N/A'}</span>
           </div>
         </div>
 
         <div className="border-t border-gray-700 pt-4 mt-auto">
           <div className="flex items-center text-sm text-gray-400 mb-2">
-            <PhoneIcon className="mr-2 text-indigo-400 w-6 h-6" />
-            <p>{location.phone}</p>
+            <PhoneIcon className="mr-2 text-indigo-400 w-5 h-5" />
+            <p>{location.phone || 'N/A'}</p>
           </div>
           <div className="flex items-center text-sm text-gray-400 mb-4">
-            <EnvelopeOpenIcon className="mr-2 text-indigo-400 w-6 h-6" />
-            <p>{location.email}</p>
+            <EnvelopeOpenIcon className="mr-2 text-indigo-400 w-5 h-5" />
+            <p>{location.email || 'N/A'}</p>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-2 mt-auto">
           <motion.button
+            onClick={() => onEdit(location)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors"
+            className="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
-            <span className="flex items-center justify-center gap-2">
-              <PencilIcon className='w-6 h-6' />
-              Manage
-            </span>
+            <PencilIcon className='w-5 h-5' />
+            Edit
+          </motion.button>
+          <motion.button
+            onClick={() => onDelete(location)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex-1 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <TrashIcon className='w-5 h-5' />
+            Delete
           </motion.button>
         </div>
       </div>
@@ -115,34 +162,186 @@ const LocationCard = ({ location }: { location: Location }) => {
   );
 };
 
-export default function LocationsPage({ params }: LocationsProps) {
+export default function LocationsPage({ params }: LocationsPageProps) {
   const { adminSlug } = params;
-  const locationsData: Location[] = getLocationsData(adminSlug);
+
+  const [locations, setLocations] = useState<LocationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null); // For edit mode
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [locationToDelete, setLocationToDelete] = useState<LocationData | null>(null);
+
+  // Function to fetch locations from the API
+  const fetchLocations = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/${adminSlug}/locations`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: LocationData[] = await response.json();
+      setLocations(data);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Failed to fetch locations:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [adminSlug]);
+
+  // Fetch locations on component mount
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
+
+  const openAddModal = () => {
+    setCurrentLocation(null); // Clear current location for add mode
+    setIsLocationModalOpen(true);
+  };
+
+  const openEditModal = (location: LocationData) => {
+    setCurrentLocation(location);
+    setIsLocationModalOpen(true);
+  };
+
+  const handleSaveLocation = (savedLocation: LocationData) => {
+    if (currentLocation) {
+      // If editing, update the existing location in the list
+      setLocations(prevLocations => prevLocations.map(loc => loc.id === savedLocation.id ? savedLocation : loc));
+      alert(`Location "${savedLocation.name}" updated successfully.`);
+    } else {
+      // If adding, prepend the new location to the list
+      setLocations(prevLocations => [savedLocation, ...prevLocations]);
+      alert(`Location "${savedLocation.name}" added successfully.`);
+    }
+    setIsLocationModalOpen(false);
+  };
+
+  const handleDeleteLocationClick = (location: LocationData) => {
+    setLocationToDelete(location);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDeleteLocation = async () => {
+    if (!locationToDelete) return;
+
+    setIsConfirmModalOpen(false); // Close modal immediately
+    setLoading(true); // Show loading state for deletion
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/admin/${adminSlug}/locations/${locationToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to delete location "${locationToDelete.name}".`);
+      }
+
+      // If deletion is successful, update the local state
+      setLocations(prevLocations => prevLocations.filter(loc => loc.id !== locationToDelete.id));
+      alert(`Location "${locationToDelete.name}" deleted successfully.`);
+    } catch (err: any) {
+      setError(err.message);
+      alert(`Error deleting location: ${err.message}`);
+    } finally {
+      setLoading(false);
+      setLocationToDelete(null); // Clear location to delete
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 p-8 text-gray-100 font-sans">
-      <div className="flex justify-between items-center mb-10">
-        <h1 className="text-4xl font-bold text-white">Locations & Facilities</h1>
-        <motion.button
-          whileHover={{ scale: 1.05, rotate: 2 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-colors"
-        >
-          <PencilIcon className='w-6 h-6' />
-          Add New Location
-        </motion.button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-900 p-8 text-white font-sans">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 mb-12 drop-shadow-lg"
+      >
+        Manage Global Locations & Facilities
+      </motion.h1>
 
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="bg-gray-800 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-700"
       >
-        {locationsData.map((location) => (
-          <LocationCard key={location.id} location={location} />
-        ))}
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-white">All Locations</h2>
+          <motion.button
+            onClick={openAddModal}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <PlusCircleIcon className="h-6 w-6" />
+            <span>Add New Location</span>
+          </motion.button>
+        </div>
+
+        {loading && (
+          <div className="text-center py-20">
+            <svg className="animate-spin h-10 w-10 text-blue-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="text-xl text-gray-400">Loading locations...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-900 bg-opacity-50 text-red-200 p-6 rounded-lg text-center mb-8 border border-red-700">
+            <p className="font-bold text-lg">Error loading locations:</p>
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && locations.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-xl text-gray-400">No locations found. Start by adding one!</p>
+          </div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {locations.map((location) => (
+              <LocationCard
+                key={location.id}
+                location={location}
+                onEdit={openEditModal}
+                onDelete={handleDeleteLocationClick}
+              />
+            ))}
+          </motion.div>
+        )}
       </motion.div>
+
+      {/* Add/Edit Location Modal */}
+      <LocationModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onSave={handleSaveLocation}
+        location={currentLocation}
+        adminSlug={adminSlug}
+      />
+
+      {/* Confirmation Modal for Deletion */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={confirmDeleteLocation}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete location "${locationToDelete?.name || 'N/A'}"? This action cannot be undone.`}
+        confirmText="Delete"
+      />
     </div>
   );
 }

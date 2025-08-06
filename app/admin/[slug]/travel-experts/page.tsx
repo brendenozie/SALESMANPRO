@@ -1,57 +1,127 @@
-// AdminExperts.jsx
+// app/[slug]/experts/page.tsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   UserGroupIcon, PlusCircleIcon, PencilIcon, TrashIcon, BriefcaseIcon, GlobeAltIcon, EnvelopeIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useParams } from 'next/navigation'; // For App Router params
+import ConfirmationModal from '@/components/ConfirmationModal'; // Re-use this
+import ExpertModal from './ExpertModal'; // New ExpertModal component
 
-const customLoader = ({ src, width, quality }) => {
+// Define the ExpertData interface to match the API response
+interface ExpertData {
+  id: string;
+  userId: string;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  specialty: string;
+  experienceYears: number;
+  travelsCompleted: number;
+  photoUrl: string | null;
+  bio: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+}
+
+const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// Dummy Data
-const initialExperts = [
-  { id: 'EXP001', name: 'Sophia Chen', specialty: 'Adventure Travel', experience: 8, travelsCompleted: 120, photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=2940&auto=format&fit=crop' },
-  { id: 'EXP002', name: 'David Miller', specialty: 'Luxury & Relaxation', experience: 12, travelsCompleted: 95, photo: 'https://images.unsplash.com/photo-1507003211169-0a3dd782dab4?q=80&w=2940&auto=format&fit=crop' },
-  { id: 'EXP003', name: 'Maria Rodriguez', specialty: 'Cultural & Historical Tours', experience: 10, travelsCompleted: 150, photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=2940&auto=format&fit=crop' },
-];
+export default function AdminExpertsPage() {
+  const params = useParams();
+  const slug = params.slug as string;
 
-export default function AdminExperts() {
-  const [experts, setExperts] = useState(initialExperts);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentExpert, setCurrentExpert] = useState(null); // For edit mode
+  const [experts, setExperts] = useState<ExpertData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isExpertModalOpen, setIsExpertModalOpen] = useState(false);
+  const [currentExpert, setCurrentExpert] = useState<ExpertData | null>(null); // For edit mode
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [expertToDelete, setExpertToDelete] = useState<ExpertData | null>(null);
+
+  // Function to fetch experts from the API
+  const fetchExperts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/experts?companyId=${slug}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: ExpertData[] = await response.json();
+      setExperts(data);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Failed to fetch experts:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [slug]);
+
+  // Fetch experts on component mount
+  useEffect(() => {
+    fetchExperts();
+  }, [fetchExperts]);
 
   const openAddModal = () => {
-    setCurrentExpert(null);
-    setIsModalOpen(true);
+    setCurrentExpert(null); // Clear current expert for add mode
+    setIsExpertModalOpen(true);
   };
 
-  const openEditModal = (expert) => {
+  const openEditModal = (expert: ExpertData) => {
     setCurrentExpert(expert);
-    setIsModalOpen(true);
+    setIsExpertModalOpen(true);
   };
 
-  const handleSaveExpert = (formData) => {
+  const handleSaveExpert = (savedExpert: ExpertData) => {
     if (currentExpert) {
-      // Edit existing
-      setExperts(experts.map(e => e.id === formData.id ? formData : e));
-      alert(`Expert ${formData.name} updated.`);
+      // If editing, update the existing expert in the list
+      setExperts(experts.map(e => e.id === savedExpert.id ? savedExpert : e));
+      alert(`Expert ${savedExpert.name} updated successfully.`);
     } else {
-      // Add new
-      const newId = `EXP${String(experts.length + 1).padStart(3, '0')}`;
-      setExperts([...experts, { ...formData, id: newId }]);
-      alert(`Expert ${formData.name} added.`);
+      // If adding, prepend the new expert to the list
+      setExperts([savedExpert, ...experts]);
+      alert(`Expert ${savedExpert.name} added successfully.`);
     }
-    setIsModalOpen(false);
+    setIsExpertModalOpen(false);
   };
 
-  const handleDeleteExpert = (id) => {
-    if (confirm(`Are you sure you want to delete expert ${id}?`)) {
-      setExperts(experts.filter(e => e.id !== id));
-      alert(`Expert ${id} deleted.`);
+  const handleDeleteExpertClick = (expert: ExpertData) => {
+    setExpertToDelete(expert);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDeleteExpert = async () => {
+    if (!expertToDelete) return;
+
+    setIsConfirmModalOpen(false); // Close modal immediately
+    setLoading(true); // Show loading state for deletion
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/admin/experts/${expertToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to delete expert ${expertToDelete.name}.`);
+      }
+
+      // If deletion is successful, update the local state
+      setExperts(prevExperts => prevExperts.filter(e => e.id !== expertToDelete.id));
+      alert(`Expert ${expertToDelete.name} deleted successfully.`);
+    } catch (err: any) {
+      setError(err.message);
+      alert(`Error deleting expert: ${err.message}`);
+    } finally {
+      setLoading(false);
+      setExpertToDelete(null); // Clear expert to delete
     }
   };
 
@@ -85,38 +155,70 @@ export default function AdminExperts() {
           </motion.button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Photo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialty</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trips Completed</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {experts.length > 0 ? (
-                experts.map((expert) => (
+        {loading && (
+          <div className="text-center py-10">
+            <p className="text-lg text-gray-600">Loading experts...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-100 text-red-800 p-4 rounded-lg text-center mb-4">
+            <p className="font-bold">Error:</p>
+            <p>{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && experts.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-lg text-gray-600">No experts found.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Photo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialty</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trips Completed</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {experts.map((expert) => (
                   <tr key={expert.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{expert.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                        <Image src={expert.photo} alt={expert.name} layout="fill" objectFit="cover" loader={customLoader}/>
+                        <Image src={expert.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo'} alt={expert.name || 'Expert'} layout="fill" objectFit="cover" loader={customLoader} />
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{expert.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
+                      <EnvelopeIcon className="h-4 w-4 mr-1 text-gray-400" />
+                      {expert.email}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{expert.specialty}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
                       <BriefcaseIcon className="h-4 w-4 mr-1 text-gray-400" />
-                      {expert.experience} yrs
+                      {expert.experienceYears} yrs
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 flex items-center">
                       <GlobeAltIcon className="h-4 w-4 mr-1 text-gray-400" />
                       {expert.travelsCompleted}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        expert.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                        expert.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {expert.status}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center space-x-2">
@@ -130,7 +232,7 @@ export default function AdminExperts() {
                           <PencilIcon className="h-5 w-5" />
                         </motion.button>
                         <motion.button
-                          onClick={() => handleDeleteExpert(expert.id)}
+                          onClick={() => handleDeleteExpertClick(expert)}
                           className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50 transition"
                           title="Delete"
                           whileHover={{ scale: 1.1 }}
@@ -141,146 +243,31 @@ export default function AdminExperts() {
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No experts found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </motion.div>
 
       {/* Add/Edit Expert Modal */}
-      {isModalOpen && (
-        <ExpertModal
-          expert={currentExpert}
-          onSave={handleSaveExpert}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      <ExpertModal
+        isOpen={isExpertModalOpen}
+        onClose={() => setIsExpertModalOpen(false)}
+        onSave={handleSaveExpert}
+        expert={currentExpert}
+        slug={slug}
+      />
+
+      {/* Confirmation Modal for Deletion */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={confirmDeleteExpert}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete expert "${expertToDelete?.name || 'N/A'}"? This action cannot be undone.`}
+        confirmText="Delete"
+      />
     </div>
-  );
-}
-
-// ExpertModal.jsx (Internal Component for Add/Edit)
-function ExpertModal({ expert, onSave, onClose }) {
-  const [name, setName] = useState(expert?.name || '');
-  const [specialty, setSpecialty] = useState(expert?.specialty || '');
-  const [experience, setExperience] = useState(expert?.experience || '');
-  const [travelsCompleted, setTravelsCompleted] = useState(expert?.travelsCompleted || '');
-  const [photo, setPhoto] = useState(expert?.photo || '');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({
-      id: expert?.id,
-      name,
-      specialty,
-      experience: Number(experience),
-      travelsCompleted: Number(travelsCompleted),
-      photo,
-    });
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 50 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 50 }}
-        transition={{ type: "spring", stiffness: 200, damping: 25 }}
-        className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          {expert ? 'Edit Expert' : 'Add New Expert'}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="expertName" className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              id="expertName"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="expertSpecialty" className="block text-sm font-medium text-gray-700">Specialty</label>
-            <input
-              type="text"
-              id="expertSpecialty"
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="expertExperience" className="block text-sm font-medium text-gray-700">Experience (Years)</label>
-            <input
-              type="number"
-              id="expertExperience"
-              value={experience}
-              onChange={(e) => setExperience(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="expertTravelsCompleted" className="block text-sm font-medium text-gray-700">Travels Completed</label>
-            <input
-              type="number"
-              id="expertTravelsCompleted"
-              value={travelsCompleted}
-              onChange={(e) => setTravelsCompleted(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="expertPhoto" className="block text-sm font-medium text-gray-700">Photo URL</label>
-            <input
-              type="url"
-              id="expertPhoto"
-              value={photo}
-              onChange={(e) => setPhoto(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-            {photo && (
-              <div className="mt-2 text-center">
-                <Image src={photo} alt="Preview" width={80} height={80} objectFit="cover" className="rounded-full" loader={customLoader}/>
-              </div>
-            )}
-          </div>
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {expert ? 'Save Changes' : 'Add Expert'}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </motion.div>
   );
 }
