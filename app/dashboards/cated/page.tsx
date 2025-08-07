@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Subcategory {
-  /** If this came from the database, `id` is usually `sc._id.$oid`. If new, it can be `null` or a temp string. */
   id: string | null;
   name: string;
   slug: string;
@@ -26,12 +26,12 @@ interface Category {
   longDescription: string;
   seoTitle: string;
   seoDescription: string;
-  tags: string[]; // e.g. ["arts", "crafts"]
+  tags: string[];
   metaKeywords: string[];
   sortOrder: number;
   visible: boolean;
-  status: string; // "Active" | "Inactive"
-  allBrands: string[]; 
+  status: string;
+  allBrands: string[];
   productCount: number;
   isFeatured: boolean;
   showInHomepage: boolean;
@@ -41,18 +41,24 @@ interface Category {
   updatedBy: string;
   localization: any;
   attributes: any;
-
-  /** We will lift subcategories into the top-level formData. */
   subcategories: Subcategory[];
 }
+
+// Reorder helper for drag-and-drop
+const reorder = (list: any[], startIndex: number, endIndex: number) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
+};
 
 export default function CategoryManager() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [filter, setFilter] = useState("");
   const [selected, setSelected] = useState<Category | null>(null);
   const [isFormOpen, setFormOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
 
-  /** formData holds all fields needed to create/update a Category, including subcategories. */
   const [formData, setFormData] = useState<Partial<Category>>({
     name: "",
     icon: "",
@@ -74,10 +80,6 @@ export default function CategoryManager() {
     productCount: 0,
     isFeatured: false,
     showInHomepage: false,
-    createdAt: "",
-    updatedAt: "",
-    createdBy: "",
-    updatedBy: "",
     localization: {},
     attributes: {},
     subcategories: [],
@@ -87,32 +89,26 @@ export default function CategoryManager() {
     fetch(`${apiUrl}/admin/get-all-categories`)
       .then((res) => res.json())
       .then((data) => {
-        // Assume data.results is an array of Category objects, each with subcategories[]
         setCategories(data.results);
-      });
+      })
+      .catch((err) => console.error("Failed to fetch categories:", err));
   }, []);
 
-  const filtered = categories.filter((c) =>
+  const filteredCategories = categories.filter((c) =>
     c.name.toLowerCase().includes(filter.toLowerCase()) ||
     c.slug.toLowerCase().includes(filter.toLowerCase())
   );
 
-  /** When “+ Add” or “Edit” is clicked, populate formData. */
   const openForm = (cat: Category | null = null) => {
     if (cat) {
       setFormData({
         ...cat,
         tags: cat.tags.slice(),
         metaKeywords: cat.metaKeywords.slice(),
-        subcategories: cat.subcategories.map((sc) => ({
-          id: sc.id || null,
-          name: sc.name,
-          slug: sc.slug,
-          sortOrder: sc.sortOrder,
-          visible: sc.visible,
-        })),
+        subcategories: cat.subcategories.map((sc) => ({ ...sc })),
       });
       setSelected(cat);
+      setActiveTab("general");
     } else {
       setFormData({
         name: "",
@@ -135,20 +131,16 @@ export default function CategoryManager() {
         productCount: 0,
         isFeatured: false,
         showInHomepage: false,
-        createdAt: "",
-        updatedAt: "",
-        createdBy: "",
-        updatedBy: "",
         localization: {},
         attributes: {},
         subcategories: [],
       });
       setSelected(null);
+      setActiveTab("general");
     }
     setFormOpen(true);
   };
 
-  /** Generic change handler for top‐level fields. */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     let val: any = value;
@@ -157,7 +149,6 @@ export default function CategoryManager() {
     }
     if (name === "sortOrder" || name === "productCount") val = Number(val);
     if (name === "tags" || name === "metaKeywords" || name === "allBrands") {
-      // expect a comma‐separated string in the input, store as array
       val = (value as string).split(",").map((s) => s.trim()).filter((s) => s.length);
     }
     setFormData((prev) => ({
@@ -166,7 +157,6 @@ export default function CategoryManager() {
     }));
   };
 
-  /** Add a new blank subcategory row to formData.subcategories */
   const addEmptySub = () => {
     setFormData((prev) => {
       const existing: Subcategory[] = prev.subcategories || [];
@@ -186,7 +176,6 @@ export default function CategoryManager() {
     });
   };
 
-  /** Remove a subcategory at index `idx` */
   const removeSub = (idx: number) => {
     setFormData((prev) => {
       const arr: Subcategory[] = prev.subcategories || [];
@@ -198,7 +187,6 @@ export default function CategoryManager() {
     });
   };
 
-  /** Update a subcategory's field */
   const handleSubChange = (
     idx: number,
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -219,9 +207,21 @@ export default function CategoryManager() {
     });
   };
 
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return;
+
+    setFormData((prev) => {
+      const reorderedSubs = reorder(
+        prev.subcategories || [],
+        result.source.index,
+        result.destination.index
+      ).map((sub, index) => ({ ...sub, sortOrder: index + 1 }));
+      return { ...prev, subcategories: reorderedSubs };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Build payload, converting `[]` fields to arrays, and pass subcategories as‐is
     const payload: any = {
       ...formData,
       tags: formData.tags || [],
@@ -231,8 +231,6 @@ export default function CategoryManager() {
       attributes: formData.attributes,
       subcategories: (formData.subcategories || []).map((sc) => ({
         ...sc,
-        // If sc.id is a Mongo ObjectId object { $oid: ... }, you might need to convert
-        // it to a string before sending. But here we assume it’s already a string or null.
       })),
     };
 
@@ -241,354 +239,273 @@ export default function CategoryManager() {
       ? `${apiUrl}/admin/product-categories/${selected.id}`
       : `${apiUrl}/admin/product-categories`;
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const saved = await res.json();
-    if (selected) {
-      // Replace the updated category in our local list
-      setCategories((cats) =>
-        cats.map((c) => (c.id === saved.id ? saved : c))
-      );
-    } else {
-      setCategories((cats) => [saved, ...cats]);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const saved = await res.json();
+      if (selected) {
+        setCategories((cats) =>
+          cats.map((c) => (c.id === saved.id ? saved : c))
+        );
+      } else {
+        setCategories((cats) => [saved, ...cats]);
+      }
+      setFormOpen(false);
+      setSelected(saved);
+    } catch (error) {
+      console.error("Failed to save category:", error);
     }
-    setFormOpen(false);
-    setSelected(saved);
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-100 font-sans">
       {/* ─── Sidebar (List of categories) ─── */}
-      <div className="w-1/3 border-r p-4 overflow-y-auto">
-        <div className="flex justify-between mb-2">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="border p-2 rounded w-full mr-2"
-          />
+      <div className="w-1/3 border-r border-gray-200 p-6 overflow-y-auto bg-white">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Category Manager</h1>
+          <p className="text-gray-500">Manage and organize your product categories and subcategories.</p>
+        </div>
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative flex-grow mr-4">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+            />
+          </div>
           <button
             onClick={() => openForm(null)}
-            className="bg-blue-500 text-white px-2 py-1 rounded"
+            className="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105"
           >
-            + Add
+            <span className="mr-2">➕</span> Add New
           </button>
         </div>
-        <ul>
-          {filtered.map((cat) => (
-            <li
-              key={cat.id}
-              className={`p-2 rounded cursor-pointer mb-1 ${
-                selected?.id === cat.id
-                  ? "bg-blue-100"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => {
-                openForm(cat);
-              }}
-            >
-              <span className="text-xl mr-2">{cat.icon}</span>
-              {cat.name}
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-3">
+          {filteredCategories.length > 0 ? (
+            filteredCategories.map((cat) => (
+              <div
+                key={cat.id}
+                onClick={() => openForm(cat)}
+                className={`
+                  p-4 rounded-xl shadow-sm cursor-pointer border transition-all duration-200
+                  ${selected?.id === cat.id ? "bg-blue-50 border-blue-400 scale-105" : "bg-gray-50 border-gray-200 hover:shadow-md hover:bg-gray-100"}
+                `}
+              >
+                <div className="flex items-center">
+                  {cat.thumbnail && (
+                    <img src={cat.thumbnail} alt={cat.imageAlt} className="w-12 h-12 object-cover rounded-md mr-4" />
+                  )}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800">{cat.name}</h3>
+                    <p className="text-sm text-gray-500">{cat.slug}</p>
+                  </div>
+                  {cat.isFeatured && (
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium ml-2">Featured</span>
+                  )}
+                  {cat.status === "Inactive" && (
+                    <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium ml-2">Inactive</span>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center mt-8">No categories found. Add a new one to get started!</p>
+          )}
+        </div>
       </div>
 
       {/* ─── Main Panel ─── */}
-      <div className="w-2/3 p-6 overflow-y-auto">
+      <div className="w-2/3 p-10 overflow-y-auto bg-gray-100">
         {isFormOpen ? (
-          // ─── Category Form ───
-          <div>
-            <h2 className="text-xl font-semibold mb-4">
-              {selected ? "Edit" : "New"} Category
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* ── Top‐level fields (name, icon, slug, etc.) ── */}
-              <div className="grid grid-cols-3 gap-4">
-                <input
-                  name="name"
-                  value={formData.name || ""}
-                  onChange={handleChange}
-                  placeholder="Name"
-                  required
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="icon"
-                  value={formData.icon || ""}
-                  onChange={handleChange}
-                  placeholder="Icon"
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="slug"
-                  value={formData.slug || ""}
-                  onChange={handleChange}
-                  placeholder="Slug"
-                  required
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="image"
-                  value={formData.image || ""}
-                  onChange={handleChange}
-                  placeholder="Image URL"
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="imageAlt"
-                  value={formData.imageAlt || ""}
-                  onChange={handleChange}
-                  placeholder="Image Alt"
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="thumbnail"
-                  value={formData.thumbnail || ""}
-                  onChange={handleChange}
-                  placeholder="Thumbnail URL"
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="bannerImage"
-                  value={formData.bannerImage || ""}
-                  onChange={handleChange}
-                  placeholder="Banner Image URL"
-                  className="border p-2 rounded"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <textarea
-                  name="description"
-                  value={formData.description || ""}
-                  onChange={handleChange}
-                  placeholder="Description"
-                  className="border p-2 rounded w-full"
-                />
-                <textarea
-                  name="longDescription"
-                  value={formData.longDescription || ""}
-                  onChange={handleChange}
-                  placeholder="Long Description"
-                  className="border p-2 rounded w-full"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  name="seoTitle"
-                  value={formData.seoTitle || ""}
-                  onChange={handleChange}
-                  placeholder="SEO Title"
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="seoDescription"
-                  value={formData.seoDescription || ""}
-                  onChange={handleChange}
-                  placeholder="SEO Description"
-                  className="border p-2 rounded"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  name="tags"
-                  value={(formData.tags || []).join(",")}
-                  onChange={handleChange}
-                  placeholder="Tags (comma separated)"
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="metaKeywords"
-                  value={(formData.metaKeywords || []).join(",")}
-                  onChange={handleChange}
-                  placeholder="Meta Keywords (comma separated)"
-                  className="border p-2 rounded"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <input
-                  name="sortOrder"
-                  type="number"
-                  value={formData.sortOrder ?? 0}
-                  onChange={handleChange}
-                  placeholder="Sort Order"
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="productCount"
-                  type="number"
-                  value={formData.productCount ?? 0}
-                  onChange={handleChange}
-                  placeholder="Product Count"
-                  className="border p-2 rounded"
-                />
-                <select
-                  name="status"
-                  value={formData.status || "Active"}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
+          // ─── Category Form (Tabbed) ───
+          <div className="bg-white p-8 rounded-2xl shadow-xl">
+            <div className="flex items-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">
+                    {selected ? "Edit Category" : "New Category"}
+                </h2>
+                <span className="text-gray-400 ml-4">
+                    {selected ? selected.name : ""}
+                </span>
+            </div>
+            
+            {/* Tab Navigation */}
+            <div className="border-b border-gray-200 mb-6">
+              <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("general")}
+                  className={`
+                    whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg
+                    ${activeTab === "general" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}
+                  `}
                 >
-                  <option>Active</option>
-                  <option>Inactive</option>
-                </select>
-                <label className="flex items-center">
-                  <input
-                    name="visible"
-                    type="checkbox"
-                    checked={formData.visible ?? false}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  Visible
-                </label>
-                <label className="flex items-center">
-                  <input
-                    name="isFeatured"
-                    type="checkbox"
-                    checked={formData.isFeatured ?? false}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  Featured
-                </label>
-                <label className="flex items-center">
-                  <input
-                    name="showInHomepage"
-                    type="checkbox"
-                    checked={formData.showInHomepage ?? false}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  Show in Home
-                </label>
-              </div>
-              <div>
-                <label className="block mb-1">Brands (comma separated)</label>
-                <input
-                  name="allBrands"
-                  value={(formData.allBrands || []).join(",")}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      allBrands: (e.target.value as string)
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter((s) => s.length),
-                    }))
-                  }
-                  placeholder="e.g. Crayola, Faber-Castell"
-                  className="border p-2 rounded w-full"
-                />
-              </div>
-              <div>
-                <label className="block mb-1">Localization (raw JSON)</label>
-                <textarea
-                  name="localization"
-                  value={JSON.stringify(formData.localization || {}, null, 2)}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      localization: JSON.parse(e.target.value),
-                    }))
-                  }
-                  className="border p-2 rounded w-full"
-                />
-              </div>
-              <div>
-                <label className="block mb-1">Attributes (raw JSON)</label>
-                <textarea
-                  name="attributes"
-                  value={JSON.stringify(formData.attributes || {}, null, 2)}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      attributes: JSON.parse(e.target.value),
-                    }))
-                  }
-                  className="border p-2 rounded w-full"
-                />
-              </div>
+                  General
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("media")}
+                  className={`
+                    whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg
+                    ${activeTab === "media" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}
+                  `}
+                >
+                  Media & SEO
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("subcategories")}
+                  className={`
+                    whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg
+                    ${activeTab === "subcategories" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}
+                  `}
+                >
+                  Subcategories
+                </button>
+              </nav>
+            </div>
 
-              {/* ─── Subcategories Section ─── */}
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold mb-2">Subcategories</h3>
-                {(formData.subcategories || []).map((sub, idx) => (
-                  <div
-                    key={sub.id ?? `new-${idx}`}
-                    className="border rounded p-3 mb-3 bg-gray-50"
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <strong className="text-lg">
-                        {sub.id ? `Edit #${sub.id}` : `New subcategory`}
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={() => removeSub(idx)}
-                        className="text-red-500 hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <input
-                        name="name"
-                        value={sub.name}
-                        onChange={(e) => handleSubChange(idx, e)}
-                        placeholder="Name"
-                        className="border p-2 rounded"
-                      />
-                      <input
-                        name="slug"
-                        value={sub.slug}
-                        onChange={(e) => handleSubChange(idx, e)}
-                        placeholder="Slug"
-                        className="border p-2 rounded"
-                      />
-                      <input
-                        name="sortOrder"
-                        type="number"
-                        value={sub.sortOrder}
-                        onChange={(e) => handleSubChange(idx, e)}
-                        placeholder="Sort Order"
-                        className="border p-2 rounded"
-                      />
-                      <label className="flex items-center col-span-2">
-                        <input
-                          name="visible"
-                          type="checkbox"
-                          checked={sub.visible}
-                          onChange={(e) => handleSubChange(idx, e)}
-                          className="mr-2"
-                        />
-                        Visible
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Tab: General */}
+              {activeTab === "general" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <label className="block">
+                      <span className="text-gray-700 font-medium">Category Name*</span>
+                      <input name="name" value={formData.name || ""} onChange={handleChange} placeholder="e.g., Electronics" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" />
+                    </label>
+                    <label className="block">
+                      <span className="text-gray-700 font-medium">Slug*</span>
+                      <input name="slug" value={formData.slug || ""} onChange={handleChange} placeholder="e.g., electronics" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" />
+                    </label>
+                  </div>
+                  <label className="block">
+                    <span className="text-gray-700 font-medium">Description</span>
+                    <textarea name="description" value={formData.description || ""} onChange={handleChange} placeholder="A short description of the category..." className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" rows={2} />
+                  </label>
+                  <label className="block">
+                    <span className="text-gray-700 font-medium">Long Description</span>
+                    <textarea name="longDescription" value={formData.longDescription || ""} onChange={handleChange} placeholder="A more detailed description..." className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" rows={4} />
+                  </label>
+                  <div className="grid grid-cols-3 gap-4">
+                    <label className="flex items-center space-x-2">
+                        <input name="visible" type="checkbox" checked={formData.visible ?? false} onChange={handleChange} className="rounded text-blue-600 focus:ring-blue-500" />
+                        <span className="text-gray-700">Visible</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                        <input name="isFeatured" type="checkbox" checked={formData.isFeatured ?? false} onChange={handleChange} className="rounded text-blue-600 focus:ring-blue-500" />
+                        <span className="text-gray-700">Featured</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                        <input name="showInHomepage" type="checkbox" checked={formData.showInHomepage ?? false} onChange={handleChange} className="rounded text-blue-600 focus:ring-blue-500" />
+                        <span className="text-gray-700">Show on Homepage</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab: Media & SEO */}
+              {activeTab === "media" && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <label className="block">
+                      <span className="text-gray-700 font-medium">Main Image URL</span>
+                      <input name="image" value={formData.image || ""} onChange={handleChange} placeholder="https://example.com/image.jpg" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" />
+                      {formData.image && <img src={formData.image} alt="Main image preview" className="mt-2 w-full h-40 object-cover rounded-lg shadow-md" />}
+                    </label>
+                    <label className="block">
+                      <span className="text-gray-700 font-medium">Thumbnail Image URL</span>
+                      <input name="thumbnail" value={formData.thumbnail || ""} onChange={handleChange} placeholder="https://example.com/thumbnail.jpg" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" />
+                      {formData.thumbnail && <img src={formData.thumbnail} alt="Thumbnail preview" className="mt-2 w-full h-40 object-cover rounded-lg shadow-md" />}
+                    </label>
+                  </div>
+                  <label className="block">
+                      <span className="text-gray-700 font-medium">Banner Image URL</span>
+                      <input name="bannerImage" value={formData.bannerImage || ""} onChange={handleChange} placeholder="https://example.com/banner.jpg" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" />
+                      {formData.bannerImage && <img src={formData.bannerImage} alt="Banner preview" className="mt-2 w-full h-40 object-cover rounded-lg shadow-md" />}
+                    </label>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2 text-gray-800">SEO Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label className="block">
+                        <span className="text-gray-700 font-medium">SEO Title</span>
+                        <input name="seoTitle" value={formData.seoTitle || ""} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" />
+                      </label>
+                      <label className="block">
+                        <span className="text-gray-700 font-medium">SEO Description</span>
+                        <input name="seoDescription" value={formData.seoDescription || ""} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" />
                       </label>
                     </div>
                   </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addEmptySub}
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
-                >
-                  + Add Subcategory
-                </button>
-              </div>
+                </div>
+              )}
 
-              <div className="mt-6 flex gap-2">
+              {/* Tab: Subcategories */}
+              {activeTab === "subcategories" && (
+                <div className="bg-gray-50 p-6 rounded-lg shadow-inner">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold">Subcategories</h3>
+                    <button type="button" onClick={addEmptySub} className="bg-green-500 text-white px-4 py-2 rounded-full text-sm hover:bg-green-600 transition duration-200">
+                      <span className="mr-2">➕</span> Add Subcategory
+                    </button>
+                  </div>
+                  
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId="subcategories">
+                      {(provided) => (
+                        <div {...provided.droppableProps} ref={provided.innerRef}>
+                          {(formData.subcategories || []).map((sub, idx) => (
+                            <Draggable key={sub.id || `new-${idx}`} draggableId={sub.id || `new-${idx}`} index={idx}>
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className="flex items-center space-x-4 p-3 mb-2 bg-white rounded-lg border border-gray-200 shadow-sm"
+                                >
+                                  <span className="text-gray-400 cursor-grab">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                      <path d="M5 5a1 1 0 011-1h8a1 1 0 011 1v1a1 1 0 01-1 1H6a1 1 0 01-1-1V5zM4 9a1 1 0 011-1h10a1 1 0 011 1v1a1 1 0 01-1 1H5a1 1 0 01-1-1V9zM4 13a1 1 0 011-1h10a1 1 0 011 1v1a1 1 0 01-1 1H5a1 1 0 01-1-1v-1z" />
+                                    </svg>
+                                  </span>
+                                  <input name="name" value={sub.name} onChange={(e) => handleSubChange(idx, e)} placeholder="Name" className="flex-1 rounded-md border-gray-300 p-2" />
+                                  <input name="slug" value={sub.slug} onChange={(e) => handleSubChange(idx, e)} placeholder="Slug" className="flex-1 rounded-md border-gray-300 p-2" />
+                                  <span className="text-gray-500 w-16 text-center">Order {sub.sortOrder}</span>
+                                  <label className="flex items-center space-x-2">
+                                    <input name="visible" type="checkbox" checked={sub.visible} onChange={(e) => handleSubChange(idx, e)} className="rounded text-blue-600 focus:ring-blue-500" />
+                                    <span>Visible</span>
+                                  </label>
+                                  <button type="button" onClick={() => removeSub(idx)} className="text-red-500 hover:text-red-700 transition duration-200">
+                                    🗑️
+                                  </button>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                </div>
+              )}
+            
+              <div className="flex gap-4 mt-8">
                 <button
                   type="submit"
-                  className="bg-green-500 text-white px-4 py-2 rounded"
+                  className="bg-green-600 text-white px-6 py-3 rounded-full shadow-md hover:bg-green-700 transition duration-300 transform hover:scale-105"
                 >
                   Save Category
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormOpen(false)}
-                  className="ml-2 text-gray-600"
+                  className="px-6 py-3 text-gray-600 rounded-full hover:bg-gray-200 transition duration-200"
                 >
                   Cancel
                 </button>
@@ -596,140 +513,101 @@ export default function CategoryManager() {
             </form>
           </div>
         ) : selected ? (
-          // ─── View‐only / Details Mode ───
-          <div>
-            <h2 className="text-2xl font-bold mb-4">{selected.name}</h2>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <img
-                src={selected.image}
-                alt={selected.imageAlt}
-                className="w-full h-32 object-cover rounded"
-              />
-              <img
-                src={selected.thumbnail}
-                alt="Thumbnail"
-                className="w-full h-32 object-cover rounded"
-              />
-              <img
-                src={selected.bannerImage}
-                alt="Banner"
-                className="w-full h-32 object-cover rounded"
-              />
+          // ─── View-only / Details Mode ───
+          <div className="bg-white p-8 rounded-2xl shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-800">{selected.name}</h2>
+              <button
+                onClick={() => openForm(selected)}
+                className="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105"
+              >
+                <span className="mr-2">✏️</span> Edit Category
+              </button>
             </div>
-            <p>
-              <strong>Icon:</strong> {selected.icon}
-            </p>
-            <p>
-              <strong>Slug:</strong> {selected.slug}
-            </p>
-            <p>
-              <strong>Description:</strong>{" "}
-              {selected.description || "-"}
-            </p>
-            <p>
-              <strong>Long Description:</strong>{" "}
-              {selected.longDescription || "-"}
-            </p>
-            <p>
-              <strong>SEO Title:</strong> {selected.seoTitle}
-            </p>
-            <p>
-              <strong>SEO Description:</strong> {selected.seoDescription}
-            </p>
-            <p>
-              <strong>Meta Keywords:</strong>{" "}
-              {selected.metaKeywords.join(", ")}
-            </p>
-            <p>
-              <strong>Sort Order:</strong> {selected.sortOrder}
-            </p>
-            <p>
-              <strong>Product Count:</strong> {selected.productCount}
-            </p>
-            <p>
-              <strong>Visible:</strong>{" "}
-              {selected.visible ? "Yes" : "No"}
-            </p>
-            <p>
-              <strong>Featured:</strong>{" "}
-              {selected.isFeatured ? "Yes" : "No"}
-            </p>
-            <p>
-              <strong>Show in Homepage:</strong>{" "}
-              {selected.showInHomepage ? "Yes" : "No"}
-            </p>
-            <p>
-              <strong>Status:</strong> {selected.status}
-            </p>
-            <p>
-              <strong>Created At:</strong>{" "}
-              {new Date(selected.createdAt).toLocaleString()}
-            </p>
-            <p>
-              <strong>Created By:</strong> {selected.createdBy}
-            </p>
-            <p>
-              <strong>Updated At:</strong>{" "}
-              {new Date(selected.updatedAt).toLocaleString()}
-            </p>
-            <p>
-              <strong>Updated By:</strong> {selected.updatedBy}
-            </p>
-
-            <div className="mt-4">
-              <h3 className="text-xl font-semibold mb-2">Brands & Tags</h3>
-              <p>
-                <strong>All Brands:</strong>{" "}
-                {selected.allBrands.join(", ")}
-              </p>
-              <p>
-                <strong>Tags:</strong> {selected.tags.join(", ")}
-              </p>
+            
+            {/* Image Gallery */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+                {selected.image && <img src={selected.image} alt={selected.imageAlt} className="w-full h-32 object-cover rounded-lg shadow-md" />}
+                {selected.thumbnail && <img src={selected.thumbnail} alt="Thumbnail" className="w-full h-32 object-cover rounded-lg shadow-md" />}
+                {selected.bannerImage && <img src={selected.bannerImage} alt="Banner" className="w-full h-32 object-cover rounded-lg shadow-md" />}
             </div>
 
-            <div className="mt-4">
-              <h3 className="text-xl font-semibold mb-2">
-                Subcategories
-              </h3>
-              <ul className="border rounded divide-y">
-                {selected.subcategories.map((sc) => (
-                  <li
-                    key={sc.id}
-                    className="p-2 flex justify-between items-center"
-                  >
-                    <span>{sc.name}</span>
-                    <span className="text-sm text-gray-500">
-                      Order {sc.sortOrder}
+            <div className="grid grid-cols-2 gap-8 mb-8">
+              <div>
+                <p className="text-gray-500 font-medium">Description</p>
+                <p className="text-gray-700">{selected.description || "-"}</p>
+                <p className="text-gray-500 font-medium mt-4">Long Description</p>
+                <p className="text-gray-700">{selected.longDescription || "-"}</p>
+              </div>
+              <div className="space-y-2">
+                <p><strong>Icon:</strong> {selected.icon || "-"}</p>
+                <p><strong>Slug:</strong> {selected.slug}</p>
+                <p><strong>Status:</strong> <span className={`font-semibold ${selected.status === "Active" ? "text-green-600" : "text-red-600"}`}>{selected.status}</span></p>
+                <p><strong>Visible:</strong> {selected.visible ? "Yes" : "No"}</p>
+                <p><strong>Featured:</strong> {selected.isFeatured ? "Yes" : "No"}</p>
+                <p><strong>Show on Home:</strong> {selected.showInHomepage ? "Yes" : "No"}</p>
+                <p><strong>Sort Order:</strong> {selected.sortOrder}</p>
+                <p><strong>Product Count:</strong> {selected.productCount}</p>
+              </div>
+            </div>
+
+            {/* Brands & Tags */}
+            <div className="mb-8">
+              <h3 className="text-xl font-bold mb-2">Brands & Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {selected.allBrands.map((brand, idx) => (
+                    <span key={idx} className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
+                        {brand}
                     </span>
+                ))}
+                {selected.tags.map((tag, idx) => (
+                    <span key={idx} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                        {tag}
+                    </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Subcategories */}
+            <div className="mb-8">
+              <h3 className="text-xl font-bold mb-2">Subcategories</h3>
+              <ul className="border border-gray-200 rounded-lg divide-y divide-gray-200">
+                {selected.subcategories.map((sc) => (
+                  <li key={sc.id} className="p-3 flex justify-between items-center bg-gray-50">
+                    <span>{sc.name}</span>
+                    <span className="text-sm text-gray-500">Order {sc.sortOrder}</span>
                   </li>
                 ))}
               </ul>
             </div>
-
-            <div className="mt-4">
-              <h3 className="text-xl font-semibold mb-2">
-                Localization & Attributes
-              </h3>
-              <pre className="bg-gray-100 p-2 rounded">
-                <code>{JSON.stringify(selected.localization, null, 2)}</code>
-              </pre>
-              <pre className="bg-gray-100 p-2 rounded mt-2">
-                <code>{JSON.stringify(selected.attributes, null, 2)}</code>
-              </pre>
-            </div>
-
-            <button
-              onClick={() => openForm(selected)}
-              className="mt-6 bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Edit Category
-            </button>
+            
+            {/* Localization & Attributes (Collapsible) */}
+            <details className="group cursor-pointer">
+                <summary className="flex justify-between items-center text-xl font-bold text-gray-800 p-2 bg-gray-100 rounded-lg transition-colors duration-200 hover:bg-gray-200">
+                    <span>Localization & Attributes</span>
+                    <span className="transform transition-transform duration-200 group-open:rotate-90">▶️</span>
+                </summary>
+                <div className="p-4 bg-gray-50 rounded-b-lg space-y-4">
+                    <div>
+                        <p className="font-semibold text-gray-600">Localization</p>
+                        <pre className="bg-gray-200 p-3 rounded-md text-sm mt-1 overflow-x-auto">
+                            <code>{JSON.stringify(selected.localization, null, 2)}</code>
+                        </pre>
+                    </div>
+                    <div>
+                        <p className="font-semibold text-gray-600">Attributes</p>
+                        <pre className="bg-gray-200 p-3 rounded-md text-sm mt-1 overflow-x-auto">
+                            <code>{JSON.stringify(selected.attributes, null, 2)}</code>
+                        </pre>
+                    </div>
+                </div>
+            </details>
           </div>
         ) : (
-          <p>
-            Select a category to view details or click “+ Add” to create a new
-            one.
-          </p>
+          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
+            <p className="text-2xl font-semibold mb-2">Welcome to Category Management</p>
+            <p>Select a category from the left to view its details or click the "Add New" button to create a new one.</p>
+          </div>
         )}
       </div>
     </div>
