@@ -4,12 +4,12 @@
 // pages/api/cases/index.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    try {
+export async function GET(request: Request) {
+  try {
       const cases = await prisma.case.findMany({
         include: {
           client: {
@@ -20,14 +20,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           assignedTo: true, // Include assigned user data
         },
       });
-      res.status(200).json(cases);
+      
+      return NextResponse.json(cases, { status: 200 });
     } catch (error) {
       console.error('Failed to fetch cases:', error);
-      res.status(500).json({ error: 'Failed to fetch cases' });
+      // res.status(500).json({ error: 'Failed to fetch cases' });
+      return NextResponse.json(
+        { message: 'Failed to create campaign', error: 'error.message || An unexpected error occurred.' },
+        { status: 500 }
+      );
     }
-  } else if (req.method === 'POST') {
-    try {
-      const { title, description, clientId, assignedToUserId, caseType, status } = req.body;
+}
+
+// POST a new campaign
+export async function POST(request: Request) {
+  try {
+
+      const body = await request.json();
+      const { title, description, clientId, assignedToUserId, caseType, status,companyId } = body;
+
       const newCase = await prisma.case.create({
         data: {
           title,
@@ -36,6 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           assignedToUserId,
           caseType,
           status,
+          companyId
           // Add other required fields from your Case model here
         },
         include: {
@@ -47,13 +59,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           assignedTo: true,
         },
       });
-      res.status(201).json(newCase);
+      // res.status(201).json(newCase);
+      return NextResponse.json(newCase, { status: 200 });
     } catch (error) {
-      console.error('Failed to create case:', error);
-      res.status(500).json({ error: 'Failed to create case' });
+      // console.error('Failed to create case:', error);
+      // res.status(500).json({ error: 'Failed to create case' });
+      return NextResponse.json(
+        { message: 'Failed to create campaign', error: 'error.message || An unexpected error occurred.' },
+        { status: 500 }
+      );
     }
-  } else {
-    res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
 }
+

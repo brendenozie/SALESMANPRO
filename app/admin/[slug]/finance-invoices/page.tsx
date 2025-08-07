@@ -60,12 +60,23 @@ const InvoiceStatusBadge = ({ status }) => {
   );
 };
 
-export default function InvoicesPage() {
+
+interface PageProps {
+  params: {
+    slug: string; // This will be the companyId
+  };
+}
+
+
+export default function InvoicesPage({ params }: PageProps) {
+  const companyId = params.slug;
+
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentInvoice, setCurrentInvoice] = useState(null);
+  const [currentInvoice, setCurrentInvoice] = useState(null);  
+  const [clients, setClients] = useState([]);
   const [formState, setFormState] = useState({
     clientId: '',
     invoiceNumber: '',
@@ -79,9 +90,9 @@ export default function InvoicesPage() {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/invoices');
+      const res = await fetch(`/api/admin/finance-invoices?companyId=${companyId}`);
       const data = await res.json();
-      setInvoices(data);
+      setInvoices(data.invoices);
     } catch (error) {
       console.error('Error fetching invoices:', error);
     } finally {
@@ -138,10 +149,10 @@ export default function InvoicesPage() {
     };
 
     try {
-      const res = await fetch(isEditing ? `/api/invoices/${currentInvoice.id}` : '/api/invoices', {
+      const res = await fetch(isEditing ? `/api/admin/finance-invoices/${currentInvoice.id}` : '/api/admin/finance-invoices', {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(invoiceData),
+        body: JSON.stringify({...invoiceData,companyId}),
       });
 
       if (!res.ok) throw new Error('Failed to save invoice');
@@ -155,11 +166,29 @@ export default function InvoicesPage() {
     }
   };
 
+     const fetchClients = async () => {
+        try {
+          const clientsRes = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
+          const clientsData = await clientsRes.json();
+          setClients(clientsData.clients);
+    
+        } catch (error) {
+          console.error('Error fetching clients or users:', error);
+        }
+      };
+    
+      useEffect(() => {
+        fetchClients();
+      }, []);
+    
+  
+  
+
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this invoice?')) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/invoices/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/admin/finance-invoices/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete invoice');
         await fetchInvoices();
       } catch (error) {
@@ -174,7 +203,7 @@ export default function InvoicesPage() {
     // In a real app, this would trigger a backend endpoint
     // to generate and download a PDF.
     console.log(`Downloading invoice ${invoiceId}...`);
-    // Example: window.open(`/api/invoices/download/${invoiceId}`, '_blank');
+    // Example: window.open(`/api/admin/finance-invoices/download/${invoiceId}`, '_blank');
   };
 
   return (
@@ -220,7 +249,7 @@ export default function InvoicesPage() {
               </thead>
               <tbody className="divide-y divide-gray-700">
                 <AnimatePresence>
-                  {invoices.map((invoice) => (
+                  {invoices.length >0 && invoices.map((invoice) => (
                     <motion.tr
                       key={invoice.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -275,7 +304,7 @@ export default function InvoicesPage() {
           {/* Card View for mobile screens */}
           <div className="md:hidden p-4 space-y-4">
             <AnimatePresence>
-              {invoices.map((invoice) => (
+              {invoices.length >0 && invoices.map((invoice) => (
                 <motion.div
                   key={invoice.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -370,8 +399,8 @@ export default function InvoicesPage() {
                       className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     >
                       <option value="">Select a client...</option>
-                      {mockClients.map(client => (
-                        <option key={client.id} value={client.id}>{client.name}</option>
+                      {clients.length > 0 && clients.map(client => (
+                        <option key={client.id} value={client.id}>{client.user.name}</option>
                       ))}
                     </select>
                   </div>

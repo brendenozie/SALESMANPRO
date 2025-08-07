@@ -12,7 +12,16 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/solid';
 
-export default function CasesPage() {
+
+interface PageProps {
+  params: {
+    slug: string; // This will be the companyId
+  };
+}
+
+export default function CasesPage({ params }: PageProps) {
+  const companyId = params.slug;
+
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,7 +42,7 @@ export default function CasesPage() {
   const fetchCases = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/cases');
+      const res = await fetch(`/api/admin/cases?companyId=${companyId}`);
       const data = await res.json();
       setCases(data);
     } catch (error) {
@@ -45,11 +54,11 @@ export default function CasesPage() {
 
   const fetchClientsAndUsers = async () => {
     try {
-      const clientsRes = await fetch('/api/clients');
+      const clientsRes = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
       const clientsData = await clientsRes.json();
-      setClients(clientsData);
+      setClients(clientsData.clients);
 
-      const usersRes = await fetch('/api/users'); // Assuming you have a /api/users endpoint
+      const usersRes = await fetch(`/api/admin/experts?companyId=${companyId}`); // Assuming you have a /api/users endpoint
       const usersData = await usersRes.json();
       setUsers(usersData);
     } catch (error) {
@@ -64,7 +73,7 @@ export default function CasesPage() {
 
   const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
-    const url = isEditing ? `/api/cases/${currentCase.id}` : '/api/cases';
+    const url = isEditing ? `/api/admin/cases/${currentCase.id}` : '/api/admin/cases';
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -73,7 +82,7 @@ export default function CasesPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formState),
+        body: JSON.stringify({...formState,companyId}),
       });
 
       if (!res.ok) {
@@ -337,7 +346,7 @@ export default function CasesPage() {
                     required
                   >
                     <option value="">Select a client</option>
-                    {clients.map(client => (
+                    {clients && clients.map(client => (
                       <option key={client.id} value={client.id}>{client.user.name}</option>
                     ))}
                   </select>

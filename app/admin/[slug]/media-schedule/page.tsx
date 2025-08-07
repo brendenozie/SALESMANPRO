@@ -453,13 +453,13 @@ export default function SchedulePage() {
             videoAlbums={videoAlbums}
           />
         </Modal>
-        <DeleteConfirmationModal 
+        {/* <DeleteConfirmationModal 
           isOpen={isDeleteModalOpen} 
           onClose={() => setIsDeleteModalOpen(false)} 
           onConfirm={handleConfirmDeleteContent} 
           item={selectedContent} 
           isSubmitting={isSubmitting}
-        />
+        /> */}
       </AnimatePresence>
     </AdminLayout>
   );

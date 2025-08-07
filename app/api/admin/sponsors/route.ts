@@ -7,9 +7,15 @@ import prisma from '@/server/db/prismadb';
  * @description Fetches all sponsors.
  * @returns {Response} A JSON response containing an array of sponsors.
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+     const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
+
     const sponsors = await prisma.sponsor.findMany({
+      where: {
+        companyId: companyId,
+      },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(sponsors, { status: 200 });
@@ -27,9 +33,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { companyName, contactName, contactEmail, contactPhone, websiteUrl, logoUrl, status } = body;
+    const { companyName, contactName, contactEmail, contactPhone, websiteUrl, logoUrl, status, companyId } = body;
 
-    if (!companyName || !contactEmail || !websiteUrl) {
+    if (!companyName || !contactEmail || !websiteUrl || !companyId ) {
       return NextResponse.json({ error: 'Company Name, Contact Email, and Website URL are required' }, { status: 400 });
     }
 
@@ -42,6 +48,7 @@ export async function POST(request: Request) {
         websiteUrl,
         logoUrl,
         status,
+        companyId
       },
     });
 

@@ -16,6 +16,7 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 
 // Placeholder for your AdminLayout component
 const AdminLayout = ({ children }) => (
@@ -304,6 +305,10 @@ const SponsorCard = ({ sponsor, onEdit, onDelete }) => {
 
 // --- Main Page Component ---
 export default function SponsorsPage() {
+  
+    const params = useParams();
+    const companyId = params.slug as string;
+
   const [sponsors, setSponsors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -319,7 +324,7 @@ export default function SponsorsPage() {
   const fetchSponsors = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/sponsors');
+      const response = await fetch(`/api/admin/sponsors?companyId=${companyId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch sponsors');
       }
@@ -335,10 +340,10 @@ export default function SponsorsPage() {
   const handleAddSponsor = async (sponsorData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/sponsors', {
+      const response = await fetch('/api/admin/sponsors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sponsorData),
+        body: JSON.stringify({...sponsorData, companyId}),
       });
 
       if (!response.ok) {
@@ -362,7 +367,7 @@ export default function SponsorsPage() {
   const handleUpdateSponsor = async (updatedSponsorData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/sponsors/${updatedSponsorData.id}`, {
+      const response = await fetch(`/api/admin/sponsors/${updatedSponsorData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedSponsorData),
@@ -390,7 +395,7 @@ export default function SponsorsPage() {
     if (!selectedSponsor) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/sponsors/${selectedSponsor.id}`, {
+      const response = await fetch(`/api/admin/sponsors/${selectedSponsor.id}`, {
         method: 'DELETE',
       });
 

@@ -16,7 +16,17 @@ import {
 
 const packageStatusOptions = ['ACTIVE', 'INACTIVE', 'FEATURED'];
 
-const PackagesPage = () => {
+
+interface PageProps {
+  params: {
+    slug: string; // This will be the companyId
+  };
+}
+
+
+const PackagesPage = ({ params }: PageProps) => {
+  const companyId = params.slug;
+
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -34,9 +44,9 @@ const PackagesPage = () => {
   const fetchPackages = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/packages');
+      const res = await fetch(`/api/admin/packages?companyId=${companyId}`);
       const data = await res.json();
-      setPackages(data);
+      setPackages(data.packages);
     } catch (error) {
       console.error('Error fetching packages:', error);
     } finally {
@@ -108,10 +118,10 @@ const PackagesPage = () => {
     };
 
     try {
-      const res = await fetch(isEditing ? `/api/packages/${currentPackage.id}` : '/api/packages', {
+      const res = await fetch(isEditing ? `/api/admin/packages/${currentPackage.id}` : `/api/admin/packages`, {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(packageData),
+        body: JSON.stringify({...packageData,companyId}),
       });
 
       if (!res.ok) throw new Error('Failed to save package');
@@ -129,7 +139,7 @@ const PackagesPage = () => {
     if (window.confirm('Are you sure you want to delete this package?')) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/packages/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/admin/packages/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete package');
         await fetchPackages();
       } catch (error) {

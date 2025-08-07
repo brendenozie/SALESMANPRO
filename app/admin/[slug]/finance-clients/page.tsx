@@ -11,7 +11,16 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/solid';
 
-export default function ClientsPage() {
+
+interface PageProps {
+  params: {
+    slug: string; // This will be the companyId
+  };
+}
+
+export default function ClientsPage({ params }: PageProps) {
+  const companyId = params.slug;
+
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,9 +37,9 @@ export default function ClientsPage() {
   const fetchClients = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/finance-clients');
+      const res = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
       const data = await res.json();
-      setClients(data);
+      setClients(data.clients);
     } catch (error) {
       console.error('Error fetching clients:', error);
     } finally {
@@ -44,7 +53,7 @@ export default function ClientsPage() {
 
   const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
-    const url = isEditing ? `/api/admin/finance-clients/${currentClient.id}` : '/api/admin/finance-clients';
+    const url = isEditing ? `/api/admin/finance-clients/${currentClient.id}` : `/api/admin/finance-clients?companyId=${companyId}`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -105,9 +114,8 @@ export default function ClientsPage() {
     setShowModal(true);
   };
 
-  const filteredClients = clients.filter((client) =>
-    client.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredClients = clients.length > 0 && clients.filter((client) =>
+    client.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) || client.user?.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -159,7 +167,7 @@ export default function ClientsPage() {
               </thead>
               <tbody className="divide-y divide-gray-700">
                 <AnimatePresence>
-                  {filteredClients.map((client) => (
+                  {filteredClients.length > 0 && filteredClients.map((client) => (
                     <motion.tr
                       key={client.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -209,7 +217,7 @@ export default function ClientsPage() {
           {/* Card View for mobile screens */}
           <div className="md:hidden p-4 space-y-4">
             <AnimatePresence>
-              {filteredClients.map((client) => (
+              {filteredClients.length > 0 && filteredClients.map((client) => (
                 <motion.div
                   key={client.id}
                   initial={{ opacity: 0, x: -20 }}

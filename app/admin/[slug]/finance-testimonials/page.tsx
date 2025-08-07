@@ -14,8 +14,13 @@ import {
   PencilIcon,
   EyeIcon,
 } from '@heroicons/react/24/solid';
+import { useParams } from 'next/navigation';
 
 const TestimonialsPage = () => {
+  
+  const params = useParams();
+  const companyId = params.slug as string;
+
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -31,9 +36,9 @@ const TestimonialsPage = () => {
   const fetchTestimonials = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/testimonials');
+      const res = await fetch(`/api/admin/testimonials?companyId=${companyId}`);
       const data = await res.json();
-      setTestimonials(data);
+      setTestimonials(data.testimonials);
     } catch (error) {
       console.error('Error fetching testimonials:', error);
     } finally {
@@ -78,12 +83,12 @@ const TestimonialsPage = () => {
     setLoading(true);
 
     try {
-      const url = isEditing ? `/api/testimonials/${currentTestimonial.id}` : '/api/testimonials';
+      const url = isEditing ? `/api/admin/testimonials/${currentTestimonial.id}` : '/api/admin/testimonials';
       const method = isEditing ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formState),
+        body: JSON.stringify({...formState,companyId}),
       });
 
       if (!res.ok) throw new Error('Failed to save testimonial');
@@ -100,7 +105,7 @@ const TestimonialsPage = () => {
   const updateTestimonialStatus = async (id, newStatus) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/testimonials/${id}`, {
+      const res = await fetch(`/api/admin/testimonials/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -120,7 +125,7 @@ const TestimonialsPage = () => {
     if (window.confirm('Are you sure you want to delete this testimonial?')) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/admin/testimonials/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete testimonial');
         await fetchTestimonials();
       } catch (error) {
@@ -167,7 +172,7 @@ const TestimonialsPage = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <AnimatePresence>
-            {testimonials.map((testimonial, index) => (
+            {testimonials.length>0 && testimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.id}
                 initial={{ opacity: 0, y: 20 }}

@@ -13,8 +13,13 @@ import {
   ArrowPathIcon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
+import { useParams } from 'next/navigation';
 
 const FAQsPage = () => {
+
+  const params = useParams();
+  const companyId = params.slug as string;
+
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openFAQId, setOpenFAQId] = useState(null);
@@ -29,9 +34,9 @@ const FAQsPage = () => {
   const fetchFaqs = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/faqs');
+      const res = await fetch(`/api/admin/faqs?companyId=${companyId}`);
       const data = await res.json();
-      setFaqs(data);
+      setFaqs(data.faqs);
     } catch (error) {
       console.error('Error fetching FAQs:', error);
     } finally {
@@ -76,12 +81,12 @@ const FAQsPage = () => {
     setLoading(true);
 
     try {
-      const url = isEditing ? `/api/faqs/${currentFAQ.id}` : '/api/faqs';
+      const url = isEditing ? `/api/admin/faqs/${currentFAQ.id}` : `/api/admin/faqs?companyId=${companyId}`;
       const method = isEditing ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formState),
+        body: JSON.stringify({...formState,companyId}),
       });
 
       if (!res.ok) throw new Error('Failed to save FAQ');
@@ -99,7 +104,7 @@ const FAQsPage = () => {
     if (window.confirm('Are you sure you want to delete this FAQ?')) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/faqs/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/admin/faqs/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete FAQ');
         await fetchFaqs();
       } catch (error) {
@@ -133,7 +138,7 @@ const FAQsPage = () => {
       ) : (
         <div className="space-y-4">
           <AnimatePresence>
-            {faqs.map((faq, index) => (
+            {faqs && faqs.length > 0 && faqs.map((faq, index) => (
               <motion.div
                 key={faq.id}
                 initial={{ opacity: 0, y: 20 }}

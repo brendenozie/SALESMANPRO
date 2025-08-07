@@ -1,27 +1,52 @@
 // pages/api/clients/index.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    try {
-      // Find all clients and include their associated user data
+
+// GET /api/admin/[slug]/experts
+// Fetches all experts for a specific company.
+export async function GET(request: Request, res: NextApiResponse) {
+
+    const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
+
+  try {
+   // Find all clients and include their associated user data
       const clients = await prisma.client.findMany({
+        where: { companyId : companyId },
         include: {
           user: true, // Includes the related User model fields
-          company: true, // Includes the related Company model fields
+          // company: true, // Includes the related Company model fields
         },
       });
-      res.status(200).json(clients);
+
+      console.log(clients);
+      
+      return NextResponse.json({clients},{ status: 200 });
     } catch (error) {
       console.error('Failed to fetch clients:', error);
-      res.status(500).json({ error: 'Failed to fetch clients' });
+      // res.status(500).json({ error: 'Failed to fetch clients' });
+      return NextResponse.json(
+            { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
+            { status: 500 }
+          );
     }
-  } else if (req.method === 'POST') {
-    try {
-      const { name, email, phone, status } = req.body;
+}
+
+// POST /api/admin/[slug]/experts
+// Creates a new expert (including a new user with EXPERT role).
+export async function POST(request: Request, res: NextApiResponse) {
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
+
+
+  try {
+    const body = await request.json();
+    const { name, email, phone, status } = body;
 
       // Create a new User first
       const newUser = await prisma.user.create({
@@ -41,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           userId: newUser.id,
           // Add companyId here if applicable, e.g., from a session
-          companyId: req.body.companyId, // This is a placeholder, you'll need to get the companyId dynamically
+          companyId: companyId, // This is a placeholder, you'll need to get the companyId dynamically
           // Add other specific client fields from the request body if available
           inquiryCount: 0,
           dealStatus: 'LEAD',
@@ -49,13 +74,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      res.status(201).json({ ...newClient, user: newUser });
+      // res.status(201).json({ ...newClient, user: newUser });
+      return NextResponse.json(
+            // { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
+            { ...newClient, user: newUser },
+            { status: 200 }
+          );
+    
     } catch (error) {
       console.error('Failed to create client:', error);
-      res.status(500).json({ error: 'Failed to create client' });
+      // res.status(500).json({ error: 'Failed to create client' });
+      return NextResponse.json(
+            { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
+            { status: 500 }
+          );
     }
-  } else {
-    res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+    }
+
+

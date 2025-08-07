@@ -67,7 +67,16 @@ const AppointmentStatusBadge = ({ status }) => {
   );
 };
 
-export default function AppointmentsPage() {
+interface PageProps {
+  params: {
+    slug: string; // This will be the companyId
+  };
+}
+
+
+export default function AppointmentsPage({ params }: PageProps) {
+  const companyId = params.slug;
+
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -81,13 +90,17 @@ export default function AppointmentsPage() {
     notes: '',
     status: 'SCHEDULED'
   });
+  
+  const [clients, setClients] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/appointments');
+      const res = await fetch(`/api/admin/finance-appointments?companyId=${companyId}`);
       const data = await res.json();
-      setAppointments(data);
+      console.log(data);
+      setAppointments(data.appointments);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     } finally {
@@ -95,9 +108,28 @@ export default function AppointmentsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
+  
+    const fetchClientsAndUsers = async () => {
+      try {
+        const clientsRes = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
+        const clientsData = await clientsRes.json();
+        setClients(clientsData.clients);
+  
+        const usersRes = await fetch(`/api/admin/experts?companyId=${companyId}`); // Assuming you have a /api/users endpoint
+        const usersData = await usersRes.json();
+        setUsers(usersData);
+      } catch (error) {
+        console.error('Error fetching clients or users:', error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchAppointments();
+      fetchClientsAndUsers();
+    }, []);
+  
+
+
 
   const handleOpenModal = (appointment = null) => {
     if (appointment) {
@@ -143,10 +175,10 @@ export default function AppointmentsPage() {
     };
 
     try {
-      const res = await fetch(isEditing ? `/api/appointments/${currentAppointment.id}` : '/api/appointments', {
+      const res = await fetch(isEditing ? `/api/admin/finance-appointments/${currentAppointment.id}` : '/api/admin/finance-appointments', {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appointmentData),
+        body: JSON.stringify({...appointmentData,companyId}),
       });
 
       if (!res.ok) throw new Error('Failed to save appointment');
@@ -164,7 +196,7 @@ export default function AppointmentsPage() {
     if (window.confirm('Are you sure you want to delete this appointment?')) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/admin/finance-appointments/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete appointment');
         await fetchAppointments();
       } catch (error) {
@@ -217,7 +249,7 @@ export default function AppointmentsPage() {
               </thead>
               <tbody className="divide-y divide-gray-700">
                 <AnimatePresence>
-                  {appointments.map((appointment) => (
+                  {appointments.length > 0 && appointments.map((appointment) => (
                     <motion.tr
                       key={appointment.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -263,7 +295,7 @@ export default function AppointmentsPage() {
           {/* Card View for mobile screens */}
           <div className="md:hidden p-4 space-y-4">
             <AnimatePresence>
-              {appointments.map((appointment) => (
+              {appointments.length > 0 && appointments.map((appointment) => (
                 <motion.div
                   key={appointment.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -352,8 +384,8 @@ export default function AppointmentsPage() {
                       className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     >
                       <option value="">Select a client...</option>
-                      {mockClients.map(client => (
-                        <option key={client.id} value={client.id}>{client.name}</option>
+                      {clients.map(client => (
+                        <option key={client.id} value={client.id}>{client.user.name}</option>
                       ))}
                     </select>
                   </div>
@@ -368,7 +400,7 @@ export default function AppointmentsPage() {
                       className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     >
                       <option value="">Select an expert...</option>
-                      {mockExperts.map(expert => (
+                      {users.map(expert => (
                         <option key={expert.id} value={expert.id}>{expert.name}</option>
                       ))}
                     </select>

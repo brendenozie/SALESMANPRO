@@ -346,6 +346,10 @@ model Company {
   Location                        Location[]
   Booking                         Booking[]
   Communication                   Communication[]
+  Case                            Case[]
+  FinanceAppointment              FinanceAppointment[]
+  Invoice                         Invoice[]
+  Package                         Package[]
 }
 
 enum CategoryStatus {
@@ -1086,8 +1090,6 @@ model User {
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
 
-  cases Case[] @relation("AssignedTo") // A user can be assigned to many cases
-
   // Relations
   companyId String?  @db.ObjectId
   company   Company? @relation("CompanyUsers", fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -1176,9 +1178,8 @@ model User {
   VideoAlbum VideoAlbum[]
   Document   Document[]
 
-  FinanceAppointment FinanceAppointment[] @relation("Expert")
-  Expert             Expert?
-  Testimonial        Testimonial[]
+  Expert      Expert?
+  Testimonial Testimonial[]
 }
 
 enum Status {
@@ -4314,10 +4315,12 @@ model Case {
   clientId         String     @db.ObjectId
   client           Client     @relation(fields: [clientId], references: [id])
   assignedToUserId String     @db.ObjectId
-  assignedTo       User       @relation("AssignedTo", fields: [assignedToUserId], references: [id])
+  assignedTo       Expert     @relation("AssignedTo", fields: [assignedToUserId], references: [id])
   caseType         CaseType   @default(FINANCE)
   status           CaseStatus @default(PENDING)
   notes            String?
+  companyId        String     @db.ObjectId
+  company          Company    @relation(fields: [companyId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4344,10 +4347,13 @@ model FinanceAppointment {
   clientId String            @db.ObjectId
   client   Client            @relation(fields: [clientId], references: [id])
   expertId String            @db.ObjectId
-  expert   User              @relation("Expert", fields: [expertId], references: [id])
+  expert   Expert            @relation("Expert", fields: [expertId], references: [id])
   date     DateTime
   notes    String?
   status   AppointmentStatus @default(SCHEDULED)
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4364,6 +4370,9 @@ model Invoice {
   dueDate       DateTime
   status        InvoiceStatus @default(PENDING)
   notes         String?
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4414,6 +4423,9 @@ model Expert {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  FinanceAppointment FinanceAppointment[] @relation("Expert")
+  cases              Case[]               @relation("AssignedTo") // A user can be assigned to many cases
 }
 
 model Package {
@@ -4424,6 +4436,9 @@ model Package {
   features   String[]
   status     PackageStatus @default(ACTIVE)
   isFeatured Boolean       @default(false)
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
