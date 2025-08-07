@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
-import { requireAuth } from "../../../../lib/auth";
-import { rateLimit } from "../../../../lib/rate-limit";
+import { requireAuth } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Optional: Define allowed action types
 const VALID_ACTIONS = ["view", "purchase", "favorite"];

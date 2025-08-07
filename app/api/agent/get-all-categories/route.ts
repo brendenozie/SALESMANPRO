@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { NextApiRequest, NextApiResponse } from "next";
 
 
 export default async function handle(
-  req: NextApiRequest,
+  req: Request,
   res: NextApiResponse
 ) {
   let { page, } = req.query;

@@ -27,8 +27,8 @@ export async function GET(req: Request) {
 
     // Fetch listings and total count
     const [total, listings] = await Promise.all([
-      prisma.marketplaceListing.count({ where: whereFilter }),
-      prisma.marketplaceListing.findMany({
+      prisma.marketplaceListings.count({ where: whereFilter }),
+      prisma.marketplaceListings.findMany({
         where: whereFilter,
         skip,
         take,

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     const tags = recent.flatMap(i => i.product?.tags || []);
 
     // Recommendations
-    const recommendations = await prisma.marketplaceListing.findMany({
+    const recommendations = await prisma.marketplaceListings.findMany({
       where: {
         ...(agentId && { companyId: agentId }),
         OR: [
