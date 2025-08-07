@@ -22,10 +22,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const data = await request.json();
-
+    const { id, ...rest }  = data;
     const category = await prisma.productCategory.update({
       where: { id: params.id },
-      data,
+      data:rest,
     });
 
     return NextResponse.json(category);

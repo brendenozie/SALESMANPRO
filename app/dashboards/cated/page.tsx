@@ -238,8 +238,8 @@ export default function CategoryManager() {
 
     const method = selected ? "PUT" : "POST";
     const url = selected
-      ? `${apiUrl}/product-categories/${selected.id}`
-      : `${apiUrl}/product-categories`;
+      ? `${apiUrl}/admin/product-categories/${selected.id}`
+      : `${apiUrl}/admin/product-categories`;
 
     const res = await fetch(url, {
       method,
