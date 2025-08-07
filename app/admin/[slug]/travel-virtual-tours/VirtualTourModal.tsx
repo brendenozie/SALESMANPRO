@@ -24,14 +24,14 @@ interface VirtualTourModalProps {
   onClose: () => void;
   onSave: (tour: VirtualTourData) => void;
   tour?: VirtualTourData | null;
-  adminSlug: string;
+  slug: string;
 }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, onSave, tour, adminSlug }) => {
+const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, onSave, tour, slug }) => {
   const [title, setTitle] = useState(tour?.title || '');
   const [location, setLocation] = useState(tour?.location || '');
   const [duration, setDuration] = useState(tour?.duration || '');
@@ -81,7 +81,7 @@ const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, on
     }
 
     const method = tour ? 'PUT' : 'POST';
-    const url = tour ? `/api/admin/${adminSlug}/virtual-tours/${tour.id}` : `/api/admin/${adminSlug}/virtual-tours`;
+    const url = tour ? `/api/admin/virtual-tours/${tour.id}` : `/api/admin/virtual-tours?companyId=${slug}`;
 
     const toastId = toast.loading(`${tour ? 'Updating' : 'Adding'} tour...`);
 
@@ -131,7 +131,7 @@ const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, on
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="bg-gray-800 text-white rounded-3xl shadow-2xl p-8 w-full max-w-xl relative border border-gray-700"
+          className="bg-gray-800 text-white rounded-3xl shadow-2xl  max-h-[90vh] overflow-y-auto p-8 w-full max-w-xl relative border border-gray-700"
           initial={{ scale: 0.9, y: -50 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 50 }}

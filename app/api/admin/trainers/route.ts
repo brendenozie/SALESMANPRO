@@ -3,14 +3,40 @@ import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
 import bcrypt from 'bcryptjs';
 
+// Helper function to generate a unique 6-digit login code
+async function generateUniqueLoginCode(): Promise<string> {
+  let code: string = '';
+  let isUnique = false;
+  while (!isUnique) {
+    code = Math.floor(100000 + Math.random() * 900000).toString();
+    code = code.padStart(6, '0'); // Ensure it's 6 digits, e.g., '001234'
+
+    const existingEducator = await prisma.educator.findUnique({
+      where: { loginCode: code },
+    });
+
+    if (!existingEducator) {
+      isUnique = true;
+    }
+  }
+  return code;
+}
+
 // GET /api/admin/[adminSlug]/trainers
 // Fetches all trainers (Educators) for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  // Pagination parameters
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const perPage = parseInt(searchParams.get('perPage') || '10', 10);
+    const skip = (page - 1) * perPage;
+
+    // Filter parameters
+    const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -54,14 +80,21 @@ export async function GET(request, { params }) {
     return NextResponse.json(formattedTrainers);
   } catch (error) {
     console.error('Error fetching trainers:', error);
-    return NextResponse.json({ message: 'Failed to fetch trainers', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch trainers', error: "error.message" }, { status: 500 });
   }
 }
 
 // POST /api/admin/[adminSlug]/trainers
 // Creates a new trainer (including a new user with EDUCATOR role).
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+  const { searchParams } = new URL(request.url);
+  // Pagination parameters
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const perPage = parseInt(searchParams.get('perPage') || '10', 10);
+    const skip = (page - 1) * perPage;
+
+    // Filter parameters
+    const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -78,7 +111,7 @@ export async function POST(request, { params }) {
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -86,7 +119,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!name || !email || !password || !specialty) {
@@ -124,11 +157,14 @@ export async function POST(request, { params }) {
         },
       });
 
+      const loginCode = await generateUniqueLoginCode();
+
       // Create the Educator profile linked to the new User
       const newEducator = await tx.educator.create({
         data: {
           userId: newUser.id,
           companyId: companyId,
+          loginCode: loginCode,
           specialty: specialty,
           bio: bio || null,
           certifications: certifications || [],
@@ -166,9 +202,9 @@ export async function POST(request, { params }) {
     return NextResponse.json(formattedNewTrainer, { status: 201 });
   } catch (error) {
     console.error('Error creating trainer:', error);
-    if (error.code === 'P2002') { // Unique constraint violation (e.g., email already exists)
-      return NextResponse.json({ message: 'A user with this email already exists.', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to create trainer', error: error.message }, { status: 500 });
+    // if (error.code === 'P2002') { // Unique constraint violation (e.g., email already exists)
+    //   return NextResponse.json({ message: 'A user with this email already exists.', error: error.message }, { status: 409 });
+    // }
+    return NextResponse.json({ message: 'Failed to create trainer', error: "error.message" }, { status: 500 });
   }
 }

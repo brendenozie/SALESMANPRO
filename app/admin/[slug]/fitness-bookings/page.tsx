@@ -32,7 +32,7 @@ interface BookingData {
 
 interface BookingsPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
@@ -155,7 +155,7 @@ const BookingCard = ({ booking, onEdit, onDelete }: { booking: BookingData; onEd
 };
 
 export default function BookingsPage({ params }: BookingsPageProps) {
-  const { adminSlug } = params;
+  const { slug } = params;
 
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,7 +169,7 @@ export default function BookingsPage({ params }: BookingsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/bookings`);
+      const response = await fetch(`/api/admin/fitness-bookings?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -183,7 +183,7 @@ export default function BookingsPage({ params }: BookingsPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   useEffect(() => {
     fetchBookings();
@@ -222,7 +222,7 @@ export default function BookingsPage({ params }: BookingsPageProps) {
     const toastId = toast.loading(`Deleting booking "${bookingToDelete.title}"...`);
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/bookings/${bookingToDelete.id}`, {
+      const response = await fetch(`/api/admin/fitness-bookings/${bookingToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -332,7 +332,7 @@ export default function BookingsPage({ params }: BookingsPageProps) {
         onClose={() => setIsBookingModalOpen(false)}
         onSave={handleSaveBooking}
         booking={currentBooking}
-        adminSlug={adminSlug}
+        slug={slug}
       />
 
       <ConfirmationModal

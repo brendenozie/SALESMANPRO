@@ -29,7 +29,7 @@ interface CommunicationModalProps {
   onClose: () => void;
   onSave: (comm: CommunicationData) => void;
   communication?: CommunicationData | null; // Communication data for editing, null for composing new
-  adminSlug: string;
+  slug: string;
 }
 
 const COMMUNICATION_TYPES = [
@@ -45,7 +45,7 @@ const COMMUNICATION_STATUSES = [
   { value: 'SENT', label: 'Sent Now', icon: CheckCircleIcon },
 ];
 
-const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose, onSave, communication, adminSlug }) => {
+const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose, onSave, communication, slug }) => {
   const [subject, setSubject] = useState(communication?.subject || '');
   const [content, setContent] = useState(communication?.content || '');
   const [communicationType, setCommunicationType] = useState<'EMAIL' | 'SMS' | 'NOTIFICATION' | 'IN_APP_MESSAGE'>(communication?.communicationType || 'EMAIL');
@@ -62,7 +62,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
     const fetchClients = async () => {
       setLoadingForm(true);
       try {
-        const response = await fetch(`/api/admin/${adminSlug}/clients`);
+        const response = await fetch(`/api/admin/fitness-clients?companyId=${slug}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to fetch clients.');
         setClients(data.map((c: any) => ({ id: c.id, name: c.name, email: c.email })));
@@ -76,7 +76,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
     if (isOpen) {
       fetchClients();
     }
-  }, [isOpen, adminSlug]);
+  }, [isOpen, slug]);
 
   // Update form fields when communication prop changes (for edit mode)
   useEffect(() => {
@@ -121,7 +121,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
     }
 
     const method = communication ? 'PUT' : 'POST';
-    const url = communication ? `/api/admin/${adminSlug}/communications/${communication.id}` : `/api/admin/${adminSlug}/communications`;
+    const url = communication ? `/api/admin/communications/${communication.id}` : `/api/admin/communications?companyId=${slug}`;
 
     try {
       const response = await fetch(url, {

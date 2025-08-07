@@ -8,12 +8,16 @@ const formatTime = (date) => date ? new Date(date).toLocaleTimeString('en-US', {
 
 // GET /api/admin/[adminSlug]/bookings
 // Fetches all bookings for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+  
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
+
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -23,7 +27,7 @@ export async function GET(request, { params }) {
 
     const bookings = await prisma.booking.findMany({
       where: {
-        companyId: company.id,
+        companyId: companyId,
       },
       include: {
         client: {
@@ -70,8 +74,10 @@ export async function GET(request, { params }) {
 
 // POST /api/admin/[adminSlug]/bookings
 // Creates a new booking.
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -89,7 +95,7 @@ export async function POST(request, { params }) {
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -97,7 +103,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!title || !bookingType || !startTime || !endTime || !clientId) {
@@ -157,6 +163,6 @@ export async function POST(request, { params }) {
     return NextResponse.json(formattedNewBooking, { status: 201 });
   } catch (error) {
     console.error('Error creating booking:', error);
-    return NextResponse.json({ message: 'Failed to create booking', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to create booking', error: "error.message" }, { status: 500 });
   }
 }

@@ -4,12 +4,14 @@ import prisma from '@/server/db/prismadb'; // Adjust this path
 
 // GET /api/admin/[adminSlug]/communications
 // Fetches all communications for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -41,14 +43,16 @@ export async function GET(request, { params }) {
     return NextResponse.json(formattedCommunications);
   } catch (error) {
     console.error('Error fetching communications:', error);
-    return NextResponse.json({ message: 'Failed to fetch communications', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch communications', error: "error.message" }, { status: 500 });
   }
 }
 
 // POST /api/admin/[adminSlug]/communications
 // Creates a new communication.
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+
+  const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -62,7 +66,7 @@ export async function POST(request, { params }) {
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -70,7 +74,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!subject || !content || !communicationType || !status || !recipients || recipients.length === 0) {
@@ -112,6 +116,6 @@ export async function POST(request, { params }) {
     return NextResponse.json(formattedNewCommunication, { status: 201 });
   } catch (error) {
     console.error('Error creating communication:', error);
-    return NextResponse.json({ message: 'Failed to create communication', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to create communication', error: "error.message" }, { status: 500 });
   }
 }

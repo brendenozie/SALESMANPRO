@@ -112,7 +112,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
     }
 
     const method = client ? 'PUT' : 'POST';
-    const url = client ? `/api/admin/fitness-clients/${client.id}` : `/api/admin/fitness-clients?companyId=${slug}`;
+    const url = client ? `/api/admin/travel-users/${client.id}` : `/api/admin/travel-users?companyId=${slug}`;
 
     const toastId = toast.loading(`${client ? 'Updating' : 'Adding'} member...`);
 
@@ -183,7 +183,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
             {client ? 'Edit Member Profile' : 'Add New Member'}
           </h2>
           <p className="text-center text-gray-400 mb-8">
-            {client ? 'Update the details for this valued gym member.' : 'Fill in the details to onboard a new gym member.'}
+            {client ? 'Update the details for this valued member.' : 'Fill in the details to onboard a new member.'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">

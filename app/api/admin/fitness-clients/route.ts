@@ -5,12 +5,14 @@ import bcrypt from 'bcryptjs';
 
 // GET /api/admin/[adminSlug]/clients
 // Fetches all clients for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -60,8 +62,10 @@ export async function GET(request, { params }) {
 
 // POST /api/admin/[adminSlug]/clients
 // Creates a new client (including a new user with CLIENT role).
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -76,7 +80,7 @@ export async function POST(request, { params }) {
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -84,7 +88,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!name || !email || !password || !membershipType || !membershipStatus) {
@@ -164,9 +168,9 @@ export async function POST(request, { params }) {
     return NextResponse.json(formattedNewClient, { status: 201 });
   } catch (error) {
     console.error('Error creating client:', error);
-    if (error.code === 'P2002') { // Unique constraint violation (e.g., email already exists)
-      return NextResponse.json({ message: 'A user with this email already exists.', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to create client', error: error.message }, { status: 500 });
+    // if (error.code === 'P2002') { // Unique constraint violation (e.g., email already exists)
+    //   return NextResponse.json({ message: 'A user with this email already exists.', error: error.message }, { status: 409 });
+    // }
+    return NextResponse.json({ message: 'Failed to create client', error: "error.message" }, { status: 500 });
   }
 }

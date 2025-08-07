@@ -30,7 +30,7 @@ interface LocationModalProps {
   onClose: () => void;
   onSave: (location: LocationData) => void;
   location?: LocationData | null; // Location data for editing, null for adding
-  adminSlug: string;
+  slug: string;
 }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
@@ -48,7 +48,7 @@ const statusBadgeColors = {
 // Reusable animated input field group
 const FieldGroup = motion.div;
 
-const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, location, adminSlug }) => {
+const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, location, slug }) => {
   const [name, setName] = useState(location?.name || '');
   const [address, setAddress] = useState(location?.address || '');
   const [city, setCity] = useState(location?.city || '');
@@ -115,7 +115,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
     }
 
     const method = location ? 'PUT' : 'POST';
-    const url = location ? `/api/admin/${adminSlug}/locations/${location.id}` : `/api/admin/${adminSlug}/locations`;
+    const url = location ? `/api/admin/locationsv2/${location.id}` : `/api/admin/locationsv2?companyId=${slug}`;
 
     try {
       const response = await fetch(url, {
@@ -189,7 +189,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
           variants={modalVariants}
         >
           <motion.div
-            className="bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700 p-8 w-full max-w-2xl relative text-white my-8"
+            className="bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700 p-8 w-full max-w-2xl relative text-white my-8  max-h-[90vh] overflow-y-auto"
             variants={panelVariants}
           >
             <button

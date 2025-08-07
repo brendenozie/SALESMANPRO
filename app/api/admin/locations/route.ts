@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
         sortOrder: sortOrder ?? 0,
         visible: visible ?? true,
         createdBy: session.user.id, // Record who created it
-        status: status ?? 'active', // Default status
+        status: status ?? 'ACTIVE', // Default status
         parentId: parentId || null, // Connect to parent if provided
         localization: localization || null, // Store JSON
         attributes: attributes || null, // Store JSON

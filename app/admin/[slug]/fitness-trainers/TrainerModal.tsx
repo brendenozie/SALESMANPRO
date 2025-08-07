@@ -36,7 +36,7 @@ interface TrainerModalProps {
   onClose: () => void;
   onSave: (trainer: TrainerData) => void;
   trainer?: TrainerData | null; // Trainer data for editing, null for adding
-  adminSlug: string;
+  slug: string;
 }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
@@ -45,7 +45,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 
 const TRAINER_STATUSES = ['ACTIVE', 'ON_LEAVE', 'INACTIVE'];
 
-const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, trainer, adminSlug }) => {
+const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, trainer, slug }) => {
   const [name, setName] = useState(trainer?.name || '');
   const [email, setEmail] = useState(trainer?.email || '');
   const [phone, setPhone] = useState(trainer?.phone || '');
@@ -119,7 +119,7 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
     }
 
     const method = trainer ? 'PUT' : 'POST';
-    const url = trainer ? `/api/admin/${adminSlug}/trainers/${trainer.id}` : `/api/admin/${adminSlug}/trainers`;
+    const url = trainer ? `/api/admin/trainers/${trainer.id}` : `/api/admin/trainers?companyId=${slug}`;
 
     const toastId = toast.loading(`${trainer ? 'Updating' : 'Adding'} trainer...`);
 

@@ -7,12 +7,14 @@ const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] :
 
 // GET /api/admin/[adminSlug]/travel-bookings
 // Fetches all travel bookings for a specific company.
-export async function GET(request: Request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -69,8 +71,10 @@ export async function GET(request: Request, { params }) {
 
 // POST /api/admin/[adminSlug]/travel-bookings
 // Creates a new travel booking.
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -89,7 +93,7 @@ export async function POST(request, { params }) {
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -97,7 +101,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!title || !bookingType || !startDate || !endDate || !totalPrice || !clientId) {
@@ -158,6 +162,6 @@ export async function POST(request, { params }) {
     return NextResponse.json(formattedNewBooking, { status: 201 });
   } catch (error) {
     console.error('Error creating travel booking:', error);
-    return NextResponse.json({ message: 'Failed to create travel booking', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to create travel booking', error: "error.message" }, { status: 500 });
   }
 }

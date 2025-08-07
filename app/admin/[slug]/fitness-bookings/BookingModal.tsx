@@ -56,7 +56,7 @@ interface BookingModalProps {
   onClose: () => void;
   onSave: (booking: BookingData) => void;
   booking?: BookingData | null;
-  adminSlug: string;
+  slug: string;
 }
 
 const BOOKING_TYPES = ['CLASS', 'PERSONAL_TRAINING', 'VIRTUAL_TOUR', 'OTHER'];
@@ -114,7 +114,7 @@ const FormTextarea = ({ label, icon, ...props }: any) => (
   </div>
 );
 
-const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, booking, adminSlug }) => {
+const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, booking, slug }) => {
   const [title, setTitle] = useState(booking?.title || '');
   const [description, setDescription] = useState(booking?.description || '');
   const [bookingType, setBookingType] = useState<'CLASS' | 'PERSONAL_TRAINING' | 'VIRTUAL_TOUR' | 'OTHER'>(booking?.bookingType || 'PERSONAL_TRAINING');
@@ -151,9 +151,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
       setLoadingForm(true);
       try {
         const [clientsRes, educatorsRes, locationsRes] = await Promise.all([
-          fetch(`/api/admin/${adminSlug}/clients`),
-          fetch(`/api/admin/${adminSlug}/trainers`),
-          fetch(`/api/admin/${adminSlug}/locations`),
+          fetch(`/api/admin/fitness-clients?companyId=${slug}`),
+          fetch(`/api/admin/trainers?companyId=${slug}`),
+          fetch(`/api/admin/locationsv2?companyId=${slug}`),
         ]);
 
         const clientsData = await clientsRes.json();
@@ -192,7 +192,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
       }
       fetchDropdownData();
     }
-  }, [isOpen, adminSlug, booking, resetForm]);
+  }, [isOpen, slug, booking, resetForm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,7 +210,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
     }
 
     const method = booking ? 'PUT' : 'POST';
-    const url = booking ? `/api/admin/${adminSlug}/bookings/${booking.id}` : `/api/admin/${adminSlug}/bookings`;
+    const url = booking ? `/api/admin/fitness-bookings/${booking.id}` : `/api/admin/fitness-bookings?companyId=${slug}`;
 
     const toastId = toast.loading(booking ? 'Updating booking...' : 'Creating booking...');
 
@@ -250,7 +250,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative border border-gray-700 text-white"
+            className="bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto border border-gray-700 text-white"
             initial={{ y: -50, opacity: 0, scale: 0.9 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 50, opacity: 0, scale: 0.9 }}

@@ -10,6 +10,11 @@ import {
 import toast from 'react-hot-toast'; // Replaced custom notification with react-hot-toast
 import ConfirmationModal from '@/components/ConfirmationModal';
 
+import { useParams } from 'next/navigation';
+
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
+
 // =======================================================================
 // Helper component for each package card
 // =======================================================================
@@ -41,6 +46,7 @@ const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
           sizes="(max-width: 768px) 100vw, 50vw"
           style={{ objectFit: 'cover' }}
           className="transition-transform duration-500 group-hover:scale-110"
+          loader={loader}
         />
         {pkg.status === 'FEATURED' && (
           <motion.div
@@ -215,7 +221,7 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => 
             <input type="url" id="imageUrl" name="imageUrl" value={formData.imageUrl} onChange={handleChange} placeholder="https://images.unsplash.com/..." required className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
             {formData.imageUrl && (
               <div className="flex items-center justify-center w-full h-40 p-2 mt-4 overflow-hidden bg-slate-100 border border-slate-200 rounded-xl">
-                <Image src={formData.imageUrl} alt="Image Preview" width={200} height={120} style={{ objectFit: 'contain' }} className="rounded-lg" unoptimized />
+                <Image src={formData.imageUrl} alt="Image Preview" width={200} height={120} style={{ objectFit: 'contain' }} className="rounded-lg" unoptimized loader={loader}/>
               </div>
             )}
           </div>
@@ -253,6 +259,10 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => 
 // Main component
 // =======================================================================
 export default function AdminPackages() {
+
+  const params = useParams();
+    const slug = params.slug as string;
+
   const [tourPackages, setTourPackages] = useState([]);
   const [destinations, setDestinations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -265,8 +275,8 @@ export default function AdminPackages() {
     setIsLoading(true);
     try {
       const [packagesRes, destinationsRes] = await Promise.all([
-        fetch('/api/admin/travel-packages'),
-        fetch('/api/admin/destinations')
+        fetch(`/api/admin/travel-packages?companyId=${slug}`),
+        fetch(`/api/admin/destinations?companyId=${slug}`)
       ]);
 
       const packagesData = await packagesRes.json();
@@ -281,7 +291,7 @@ export default function AdminPackages() {
 
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error(`Failed to fetch data: ${error.message}`);
+      toast.error(`Failed to fetch data: error.message `);
       setTourPackages([]);
       setDestinations([]);
     } finally {

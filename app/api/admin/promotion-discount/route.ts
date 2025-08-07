@@ -14,12 +14,14 @@ const formatDiscount = (value, type) => {
 
 // GET /api/admin/[adminSlug]/promotions
 // Fetches all promotions for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+    
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -27,7 +29,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const promotions = await prisma.promotion.findMany({
+    const promotions = await prisma.promotionDiscount.findMany({
       where: {
         companyId: company.id,
       },
@@ -54,14 +56,17 @@ export async function GET(request, { params }) {
     return NextResponse.json(formattedPromotions);
   } catch (error) {
     console.error('Error fetching promotions:', error);
-    return NextResponse.json({ message: 'Failed to fetch promotions', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch promotions', error: "error.message" }, { status: 500 });
   }
 }
 
 // POST /api/admin/[adminSlug]/promotions
 // Creates a new promotion.
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+  
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -78,7 +83,7 @@ export async function POST(request, { params }) {
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -86,7 +91,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!name || !code || discountValue === undefined || !discountType || !startDate || !endDate || !status) {
@@ -94,14 +99,14 @@ export async function POST(request, { params }) {
     }
 
     // Check for unique code
-    const existingPromo = await prisma.promotion.findUnique({
+    const existingPromo = await prisma.promotionDiscount.findUnique({
       where: { code: code },
     });
     if (existingPromo) {
       return NextResponse.json({ message: 'A promotion with this code already exists.' }, { status: 409 });
     }
 
-    const newPromotion = await prisma.promotion.create({
+    const newPromotion = await prisma.promotionDiscount.create({
       data: {
         name: name,
         code: code,
@@ -136,9 +141,9 @@ export async function POST(request, { params }) {
     return NextResponse.json(formattedNewPromotion, { status: 201 });
   } catch (error) {
     console.error('Error creating promotion:', error);
-    if (error.code === 'P2002') { // Unique constraint violation
-      return NextResponse.json({ message: 'A promotion with this code already exists.', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to create promotion', error: error.message }, { status: 500 });
+    // if (error.code === 'P2002') { // Unique constraint violation
+    //   return NextResponse.json({ message: 'A promotion with this code already exists.', error: error.message }, { status: 409 });
+    // }
+    return NextResponse.json({ message: 'Failed to create promotion', error: "error.message" }, { status: 500 });
   }
 }

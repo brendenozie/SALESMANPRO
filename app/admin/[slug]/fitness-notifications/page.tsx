@@ -24,7 +24,7 @@ interface CommunicationData {
 
 interface CommunicationsPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
@@ -130,7 +130,7 @@ const CommunicationCard = ({ comm, onEdit, onDelete }: { comm: CommunicationData
 };
 
 export default function CommunicationsPage({ params }: CommunicationsPageProps) {
-  const { adminSlug } = useParams();
+  const { slug } = useParams();
 
   const [communications, setCommunications] = useState<CommunicationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +142,7 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
   const fetchCommunications = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/communications`);
+      const response = await fetch(`/api/admin/communications?companyId=${slug}`);
       if (!response.ok) {
         throw new Error('Failed to fetch communications.');
       }
@@ -153,7 +153,7 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   useEffect(() => {
     fetchCommunications();
@@ -192,7 +192,7 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
     const toastId = toast.loading('Deleting message...');
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/communications/${communicationToDelete.id}`, {
+      const response = await fetch(`/api/admin/communications/${communicationToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -306,7 +306,7 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
         onClose={() => setIsCommunicationModalOpen(false)}
         onSave={handleSaveCommunication}
         communication={currentCommunication}
-        adminSlug={adminSlug as string}
+        slug={slug as string}
       />
 
       <ConfirmationModal

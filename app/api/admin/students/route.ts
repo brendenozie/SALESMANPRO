@@ -26,6 +26,7 @@ async function generateUniqueLoginCode(): Promise<string> {
 // and linked academic level(s) via the StudentAcademicLevel junction, and their specific StudentLevelStatus.
 export async function GET(request: Request) {
   try {
+    
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 

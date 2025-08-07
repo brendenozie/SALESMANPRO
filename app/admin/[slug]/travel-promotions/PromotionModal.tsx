@@ -6,6 +6,8 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 // Define the PromotionData interface
 interface PromotionData {
   id?: string;
@@ -26,13 +28,13 @@ interface PromotionModalProps {
   onClose: () => void;
   onSave: (promo: PromotionData) => void;
   promotion?: PromotionData | null;
-  adminSlug: string;
+  slug: string;
 }
 
 const DISCOUNT_TYPES = ['PERCENTAGE', 'FIXED_AMOUNT'];
 const PROMOTION_STATUSES = ['ACTIVE', 'SCHEDULED', 'EXPIRED', 'DRAFT'];
 
-const PromotionModal: React.FC<PromotionModalProps> = ({ isOpen, onClose, onSave, promotion, adminSlug }) => {
+const PromotionModal: React.FC<PromotionModalProps> = ({ isOpen, onClose, onSave, promotion, slug }) => {
   const [name, setName] = useState(promotion?.name || '');
   const [code, setCode] = useState(promotion?.code || '');
   const [discountValue, setDiscountValue] = useState(promotion?.discountValue || 0);
@@ -89,7 +91,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({ isOpen, onClose, onSave
     }
 
     const method = promotion ? 'PUT' : 'POST';
-    const url = promotion ? `/api/admin/${adminSlug}/promotions/${promotion.id}` : `/api/admin/${adminSlug}/promotions`;
+    const url = promotion ? `/api/admin/promotion-discount/${promotion.id}` : `/api/admin/promotion-discount?companyId=${slug}`;
     
     const toastId = toast.loading(`${promotion ? 'Updating' : 'Creating'} promotion...`);
 
@@ -140,7 +142,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({ isOpen, onClose, onSave
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="bg-gray-800 text-white rounded-3xl shadow-2xl p-8 w-full max-w-lg relative border border-gray-700"
+          className="bg-gray-800 text-white  max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-8 w-full max-w-lg relative border border-gray-700"
           initial={{ scale: 0.9, y: -50 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 50 }}
@@ -301,6 +303,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({ isOpen, onClose, onSave
                     <Image
                       src={imageUrl}
                       alt="Preview"
+                      loader={loader}
                       layout="fill"
                       objectFit="cover"
                       className="transition-transform duration-300 hover:scale-105"

@@ -401,6 +401,9 @@ model Promotion {
   ctaText     String?
   ctaLink     String?
   bannerUrl   String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model AnalyticsConfig {
@@ -1893,6 +1896,7 @@ enum LocationStatus {
   CLOSED
   MAINTENANCE
   ACTIVE
+  active
 }
 
 // Ensure your Location model has these fields and relations
@@ -4088,6 +4092,7 @@ model VideoAlbum {
 // This model now only stores information specific to an individual video
 model Video {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  title        String?
   url          String? // The S3 URL of the video file
   thumbnailUrl String? // The URL of the video's thumbnail image
   duration     String? // Duration of the video in seconds
@@ -4551,7 +4556,7 @@ enum PromotionDiscountStatus {
 model PromotionDiscount {
   id            String                  @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  code          String //@unique // Unique promotion code
+  code          String                  @unique // Unique promotion code
   description   String?
   discountValue Float // e.g., 15 for 15%, 200 for $200
   discountType  PromotionType
@@ -4565,7 +4570,7 @@ model PromotionDiscount {
   updatedAt     DateTime                @updatedAt
 
   @@index([companyId])
-  @@index([code])
+  // @@index([code])
   @@index([startDate])
   @@index([endDate])
 }
@@ -4606,11 +4611,11 @@ model Booking {
   locationId String?   @db.ObjectId // Optional: The location of the booking
   location   Location? @relation(fields: [locationId], references: [id])
 
-  title       String // e.g., "Personal Training Session", "Yoga Class"
+  title       String? // e.g., "Personal Training Session", "Yoga Class"
   description String? // Optional detailed description
   bookingType BookingType // e.g., CLASS, PERSONAL_TRAINING, VIRTUAL_TOUR
-  startTime   DateTime
-  endTime     DateTime
+  startTime   DateTime?
+  endTime     DateTime?
   price       Float? // ADD THIS FIELD for revenue calculation (e.g., 50.00)
   status      BookingStatus @default(PENDING) // Current status of the booking
   notes       String? // Any internal notes for the booking
@@ -4621,9 +4626,9 @@ model Booking {
   destinationId String?      @db.ObjectId // Optional: If a booking is directly for a destination (e.g., a specific activity)
   destination   Destination? @relation(fields: [destinationId], references: [id])
 
-  startDate  DateTime // Start date of the trip/service
-  endDate    DateTime // End date of the trip/service
-  totalPrice Float // Total price of the booking
+  startDate  DateTime? // Start date of the trip/service
+  endDate    DateTime? // End date of the trip/service
+  totalPrice Float? // Total price of the booking
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

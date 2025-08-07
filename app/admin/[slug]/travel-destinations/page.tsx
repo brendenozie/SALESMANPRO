@@ -5,6 +5,8 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 import { BuildingLibraryIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon, GlobeAltIcon, MapIcon, PencilSquareIcon, SquaresPlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { DestinationFormModal, DeleteConfirmModal } from './DestinationFormModal'; // Assuming modals are now in a single file for cleaner import
 
+import { useParams } from 'next/navigation';
+
 // --- Types and Interfaces ---
 // Ensure this Destination interface matches your Prisma Destination model exactly
 interface Destination {
@@ -83,7 +85,11 @@ const buildDestinationTree = (destinations: Destination[]): Destination[] => {
 
 
 // Main Enhanced Destination Management Component
-export default function DestinationManagementPage({ params }: PageProps) {
+export default function DestinationManagementPage() {
+  
+  const params = useParams();
+  const slug = params.slug as string;
+
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,8 +109,8 @@ export default function DestinationManagementPage({ params }: PageProps) {
     setError(null);
     try {
       const [destinationsResponse, locationsResponse] = await Promise.all([
-        fetch('/api/admin/destinations'),
-        fetch('/api/admin/locations')
+        fetch(`/api/admin/destinations?companyId=${slug}`),
+        fetch(`/api/admin/locations?companyId=${slug}`)
       ]);
 
       if (!destinationsResponse.ok) {

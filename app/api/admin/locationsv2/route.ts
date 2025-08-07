@@ -17,12 +17,13 @@ const slugify = (text) => {
 
 // GET /api/admin/[adminSlug]/locations
 // Fetches all locations for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+     const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -67,8 +68,10 @@ export async function GET(request, { params }) {
 
 // POST /api/admin/[adminSlug]/locations
 // Creates a new location.
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+
+     const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -89,7 +92,7 @@ export async function POST(request, { params }) {
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -97,7 +100,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!name || !address || !city || !country) {
@@ -166,9 +169,9 @@ export async function POST(request, { params }) {
   } catch (error) {
     console.error('Error creating location:', error);
     // Specific error for unique constraint if slugify logic fails or for other unique fields
-    if (error.code === 'P2002') {
-      return NextResponse.json({ message: 'A location with similar details already exists (e.g., slug conflict).', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to create location', error: error.message }, { status: 500 });
+    // if (error.code === 'P2002') {
+    //   return NextResponse.json({ message: 'A location with similar details already exists (e.g., slug conflict).', error: error.message }, { status: 409 });
+    // }
+    return NextResponse.json({ message: 'Failed to create location', error: "error.message" }, { status: 500 });
   }
 }

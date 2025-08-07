@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   TagIcon, PlusCircleIcon, PencilIcon, TrashIcon, CalendarDaysIcon,
-  CurrencyDollarIcon, PercentIcon
+  CurrencyDollarIcon, 
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 import { useParams } from 'next/navigation';
@@ -11,6 +11,9 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import PromotionModal from './PromotionModal';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { PercentBadgeIcon } from '@heroicons/react/24/outline';
+
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Define the PromotionData interface
 interface PromotionData {
@@ -93,7 +96,7 @@ const PromotionCard: React.FC<{ promo: PromotionData, onEdit: (p: PromotionData)
 
         <div className="flex items-center space-x-2">
           {promo.discountType === 'PERCENTAGE' ? (
-            <PercentIcon className="h-5 w-5 text-green-400" />
+            <PercentBadgeIcon className="h-5 w-5 text-green-400" />
           ) : (
             <CurrencyDollarIcon className="h-5 w-5 text-green-400" />
           )}
@@ -113,7 +116,7 @@ const PromotionCard: React.FC<{ promo: PromotionData, onEdit: (p: PromotionData)
 
 export default function AdminPromotionsPage() {
   const params = useParams();
-  const adminSlug = params.adminSlug as string;
+  const slug = params.slug as string;
 
   const [promotions, setPromotions] = useState<PromotionData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,7 +130,7 @@ export default function AdminPromotionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/promotions`);
+      const response = await fetch(`/api/admin/promotion-discount?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -139,7 +142,7 @@ export default function AdminPromotionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   useEffect(() => {
     fetchPromotions();
@@ -178,7 +181,7 @@ export default function AdminPromotionsPage() {
     const toastId = toast.loading(`Deleting promotion "${promotionToDelete.name}"...`);
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/promotions/${promotionToDelete.id}`, {
+      const response = await fetch(`/api/admin/promotion-discount/${promotionToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -271,7 +274,7 @@ export default function AdminPromotionsPage() {
         onClose={() => setIsPromotionModalOpen(false)}
         onSave={handleSavePromotion}
         promotion={currentPromotion}
-        adminSlug={adminSlug}
+        slug={slug}
       />
 
       {/* Confirmation Modal for Deletion */}

@@ -45,7 +45,7 @@ interface TravelBookingData {
 
 interface AdminBookingsPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
@@ -106,10 +106,10 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
   return (
     <motion.div
       className="bg-gray-900 p-6 rounded-3xl shadow-xl flex flex-col relative border border-gray-700 hover:border-indigo-500 transition-colors duration-200"
-      variants={bookingCardVariants}
-      whileHover="hover"
-      initial="hidden"
-      animate="visible"
+      // variants={bookingCardVariants}
+      // whileHover="hover"
+      // initial="hidden"
+      // animate="visible"
     >
       {/* Status Badge */}
       <div
@@ -204,7 +204,7 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
 
 
 export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
-  const { adminSlug } = useParams();
+  const { slug } = useParams();
 
   const [bookings, setBookings] = useState<TravelBookingData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -219,7 +219,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/travel-bookings`);
+      const response = await fetch(`/api/admin/travel-bookings?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -231,7 +231,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   useEffect(() => {
     fetchBookings();
@@ -274,7 +274,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     const toastId = toast.loading(`Deleting booking "${bookingToDelete.title}"...`);
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/travel-bookings/${bookingToDelete.id}`, {
+      const response = await fetch(`/api/admin/travel-bookings/${bookingToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -301,7 +301,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
 
     const toastId = toast.loading(`Updating status for "${bookingToUpdate.title}"...`);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/travel-bookings/${id}`, {
+      const response = await fetch(`/api/admin/travel-bookings/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -441,7 +441,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
         onClose={() => setIsBookingModalOpen(false)}
         onSave={handleSaveBooking}
         booking={currentBooking}
-        adminSlug={adminSlug as string}
+        slug={slug as string}
       />
 
       {/* Confirmation Modal for Deletion */}

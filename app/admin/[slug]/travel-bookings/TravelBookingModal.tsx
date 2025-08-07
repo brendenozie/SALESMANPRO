@@ -57,13 +57,13 @@ interface TravelBookingModalProps {
   onClose: () => void;
   onSave: (booking: TravelBookingData) => void;
   booking?: TravelBookingData | null; // Booking data for editing, null for adding
-  adminSlug: string;
+  slug: string;
 }
 
 const BOOKING_TYPES = ['TOUR_PACKAGE_BOOKING', 'CUSTOM_TRIP_BOOKING', 'ACCOMMODATION_BOOKING', 'FLIGHT_BOOKING', 'OTHER_TRAVEL_SERVICE'];
 const BOOKING_STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
 
-const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose, onSave, booking, adminSlug }) => {
+const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose, onSave, booking, slug }) => {
   const [title, setTitle] = useState(booking?.title || '');
   const [description, setDescription] = useState(booking?.description || '');
   const [bookingType, setBookingType] = useState<TravelBookingData['bookingType']>(booking?.bookingType || 'TOUR_PACKAGE_BOOKING');
@@ -90,9 +90,9 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
       setError(null);
       try {
         const [clientsRes, tourPackagesRes, destinationsRes] = await Promise.all([
-          fetch(`/api/admin/${adminSlug}/clients`),
-          fetch(`/api/admin/${adminSlug}/tour-packages`),
-          fetch(`/api/admin/${adminSlug}/destinations`),
+          fetch(`/api/admin/travel-users?companyId=${slug}`),
+          fetch(`/api/admin/travel-packages?companyId=${slug}`),
+          fetch(`/api/admin/destinations?companyId=${slug}`),
         ]);
 
         const clientsData = await clientsRes.json();
@@ -118,7 +118,7 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
     if (isOpen) {
       fetchDropdownData();
     }
-  }, [isOpen, adminSlug]);
+  }, [isOpen, slug]);
 
   // Update form fields when booking prop changes (for edit mode)
   useEffect(() => {
@@ -169,7 +169,7 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
     }
 
     const method = booking ? 'PUT' : 'POST';
-    const url = booking ? `/api/admin/${adminSlug}/travel-bookings/${booking.id}` : `/api/admin/${adminSlug}/travel-bookings`;
+    const url = booking ? `/api/admin/travel-bookings/${booking.id}` : `/api/admin/travel-bookings?companyId=${slug}`;
 
     try {
       const response = await fetch(url, {
@@ -218,7 +218,7 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="bg-gray-800 rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative text-gray-200 border border-gray-700"
+          className="bg-gray-800 rounded-3xl shadow-2xl p-8 w-full max-w-2xl  max-h-[90vh] overflow-y-auto  relative text-gray-200 border border-gray-700"
           initial={{ y: -50, opacity: 0, scale: 0.95 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 50, opacity: 0, scale: 0.95 }}

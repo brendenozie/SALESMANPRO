@@ -27,7 +27,7 @@ interface ClientData {
 
 interface ClientsPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
@@ -195,7 +195,7 @@ const ClientCardSkeleton = () => (
 
 
 export default function ClientsPage({ params }: ClientsPageProps) {
-  const { adminSlug } = params;
+  const { slug } = params;
 
   const [clients, setClients] = useState<ClientData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,7 +209,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/clients`);
+      const response = await fetch(`/api/admin/fitness-clients?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -221,7 +221,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   useEffect(() => {
     fetchClients();
@@ -260,7 +260,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
     const toastId = toast.loading(`Deleting member "${clientToDelete.name}"...`);
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/clients/${clientToDelete.id}`, {
+      const response = await fetch(`/api/admin/fitness-clients/${clientToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -359,7 +359,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
         onClose={() => setIsClientModalOpen(false)}
         onSave={handleSaveClient}
         client={currentClient}
-        adminSlug={adminSlug}
+        slug={slug}
       />
 
       {/* Confirmation Modal for Deletion */}

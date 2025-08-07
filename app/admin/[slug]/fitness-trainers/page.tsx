@@ -11,6 +11,9 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import TrainerModal from './TrainerModal';
 import toast from 'react-hot-toast';
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
+
 // Define the TrainerData interface
 interface TrainerData {
   id: string;
@@ -27,7 +30,7 @@ interface TrainerData {
 
 interface TrainersPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
@@ -72,6 +75,7 @@ const TrainerCard = ({ trainer, onEdit, onDelete }: { trainer: TrainerData; onEd
             alt={trainer.name || 'Trainer'}
             fill
             style={{ objectFit: 'cover' }}
+            loader={loader}
             priority
             className="transition-transform duration-300 hover:scale-110"
           />
@@ -131,7 +135,7 @@ const TrainerCard = ({ trainer, onEdit, onDelete }: { trainer: TrainerData; onEd
 
 
 export default function TrainersPage({ params }: TrainersPageProps) {
-  const { adminSlug } = params;
+  const { slug } = params;
 
   const [trainers, setTrainers] = useState<TrainerData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,7 +149,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/trainers`);
+      const response = await fetch(`/api/admin/trainers?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -157,7 +161,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   useEffect(() => {
     fetchTrainers();
@@ -196,7 +200,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
     const toastId = toast.loading(`Deleting trainer "${trainerToDelete.name}"...`);
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/trainers/${trainerToDelete.id}`, {
+      const response = await fetch(`/api/admin/trainers/${trainerToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -298,7 +302,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
         onClose={() => setIsTrainerModalOpen(false)}
         onSave={handleSaveTrainer}
         trainer={currentTrainer}
-        adminSlug={adminSlug}
+        slug={slug}
       />
 
       {/* Confirmation Modal for Deletion */}

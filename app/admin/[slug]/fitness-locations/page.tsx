@@ -32,7 +32,7 @@ interface LocationData {
 
 interface LocationsPageProps {
   params: {
-    adminSlug: string;
+    slug: string;
   };
 }
 
@@ -187,7 +187,7 @@ const LocationCardSkeleton = () => (
 );
 
 export default function LocationsPage({ params }: LocationsPageProps) {
-  const { adminSlug } = params;
+  const { slug } = params;
 
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,7 +202,7 @@ export default function LocationsPage({ params }: LocationsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/locations`);
+      const response = await fetch(`/api/admin/locationsv2?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -215,7 +215,7 @@ export default function LocationsPage({ params }: LocationsPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   // Fetch locations on component mount
   useEffect(() => {
@@ -258,7 +258,7 @@ export default function LocationsPage({ params }: LocationsPageProps) {
     setLoading(true); // Show loading state for deletion
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/locations/${locationToDelete.id}`, {
+      const response = await fetch(`/api/admin/locationsv2/${locationToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -358,7 +358,7 @@ export default function LocationsPage({ params }: LocationsPageProps) {
         onClose={() => setIsLocationModalOpen(false)}
         onSave={handleSaveLocation}
         location={currentLocation}
-        adminSlug={adminSlug}
+        slug={slug}
       />
 
       {/* Confirmation Modal for Deletion */}

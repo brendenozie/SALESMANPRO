@@ -4,12 +4,14 @@ import prisma from '@/server/db/prismadb'; // Adjust this path
 
 // GET /api/admin/[adminSlug]/virtual-tours
 // Fetches all virtual tours for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+export async function GET(request: Request) {
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -43,14 +45,16 @@ export async function GET(request, { params }) {
     return NextResponse.json(formattedTours);
   } catch (error) {
     console.error('Error fetching virtual tours:', error);
-    return NextResponse.json({ message: 'Failed to fetch virtual tours', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch virtual tours', error: "error.message" }, { status: 500 });
   }
 }
 
 // POST /api/admin/[adminSlug]/virtual-tours
 // Creates a new virtual tour.
-export async function POST(request, { params }) {
-  const { adminSlug } = params;
+export async function POST(request: Request) {
+  
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
 
   try {
     const body = await request.json();
@@ -60,13 +64,20 @@ export async function POST(request, { params }) {
       duration,
       category,
       videoUrl,
+      contentUrl,
       thumbnailUrl,
       description,
+      contentType,
       published,
+      tags,
+      date,
+      imageUrl,
+      userId,
+      status,
     } = body;
 
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+      where: { id: companyId },
       select: { id: true },
     });
 
@@ -74,7 +85,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
     }
 
-    const companyId = company.id;
+    // const companyId = company.id;
 
     // Basic validation
     if (!title || !location || !duration || !category || !videoUrl || !thumbnailUrl) {
@@ -95,6 +106,7 @@ export async function POST(request, { params }) {
         company: {
           connect: { id: companyId },
         },
+        type:'VIDEO'
       },
     });
 
@@ -114,6 +126,6 @@ export async function POST(request, { params }) {
     return NextResponse.json(formattedNewTour, { status: 201 });
   } catch (error) {
     console.error('Error creating virtual tour:', error);
-    return NextResponse.json({ message: 'Failed to create virtual tour', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to create virtual tour', error: "error.message" }, { status: 500 });
   }
 }

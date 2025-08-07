@@ -47,7 +47,7 @@ const itemVariants = {
 
 export default function AdminVirtualToursPage() {
   const params = useParams();
-  const adminSlug = params.adminSlug as string;
+  const slug = params.slug as string;
 
   const [virtualTours, setVirtualTours] = useState<VirtualTourData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +64,7 @@ export default function AdminVirtualToursPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/virtual-tours`);
+      const response = await fetch(`/api/admin/virtual-tours?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -77,7 +77,7 @@ export default function AdminVirtualToursPage() {
     } finally {
       setLoading(false);
     }
-  }, [adminSlug]);
+  }, [slug]);
 
   useEffect(() => {
     fetchVirtualTours();
@@ -116,7 +116,7 @@ export default function AdminVirtualToursPage() {
     const toastId = toast.loading(`Deleting tour "${tourToDelete.title}"...`);
     
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/virtual-tours/${tourToDelete.id}`, {
+      const response = await fetch(`/api/admin/virtual-tours/${tourToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -284,7 +284,7 @@ export default function AdminVirtualToursPage() {
         onClose={() => setIsTourModalOpen(false)}
         onSave={handleSaveTour}
         tour={currentTour}
-        adminSlug={adminSlug}
+        slug={slug}
       />
 
       {/* Confirmation Modal for Deletion */}
