@@ -109,7 +109,9 @@ export default async function EditStorePage({
 
     testimonials: store.testimonials.map((t) => ({
       id: t.id,
-      author: t.author,
+      authorId: t.authorId,
+      authorName: t.authorName,
+      author: t.authorId,
       quote: t.quote,
       rating: t.rating ?? undefined,
       avatarUrl: t.avatarUrl ?? undefined,

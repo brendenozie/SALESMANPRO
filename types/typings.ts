@@ -500,9 +500,9 @@ export type StoreCategory = {
   icon?: string;
   sortOrder: number;
   visible: boolean;
-  items: Subcategory[]; // always an array
+  subcategories: Subcategory[]; // always an array
   allBrands?: any[] | null;
-  category: ProductCategory;
+  category?: ProductCategory | undefined | null;
   
   fieldTypeGroup?: 'general' | 'vehicle' | 'property' | 'book' | 'clothing' | 'appliance' | 'service' | 'digital' | 'dish';
 };
@@ -511,8 +511,8 @@ export type Subcategory = {
   id: string;
   name: string;
   slug: string;
-  sortOrder: number;
-  visible: boolean;
+  sortOrder?: number | undefined | null;
+  visible?: boolean | undefined | null;
 };
 
 export type ProductCategory = {
@@ -556,8 +556,9 @@ export interface Handlers {
 
   onBulkToggle: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void;
-  onToggleParent: (cat: ParentCategory) => void;
-  onToggleSub: (parentId: string, sub: SubObj) => void;
+
+  onToggleParent: (cat: StoreCategory) => void;
+  onToggleSub: (parentId: string, sub: Subcategory) => void;
   onToggleBrand: (parentId: string, brand: any) => void;
 
   onUpdateHeroSlide: (

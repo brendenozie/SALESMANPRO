@@ -184,8 +184,8 @@ model StoreCategory {
   updatedAt DateTime? @updatedAt
 
   // You still store each category’s children in JSON:
-  items     Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
-  allBrands Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
+  subcategories Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
+  allBrands     Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
 
   // @@id([companyId, categoryId])
   @@unique([companyId, categoryId]) // Use a unique constraint instead
@@ -782,15 +782,43 @@ model Blog {
   coverImage  String? // URL to the blog's cover image
   categories  String[] // Array of category names
   tags        String[] // Array of relevant tags
-  author      Json? // name profileImage
+  authorName  String? // name profileImage
   seo         SeoBlog?
   status      BlogStatus @default(DRAFT)
   publishedAt DateTime?
   views       Int        @default(0)
   likes       Int        @default(0)
   comments    Comment[]
-  createdAt   DateTime?  @default(now())
-  updatedAt   DateTime?  @updatedAt
+
+  description  String? // Use this for a longer description if needed
+  contentUrl   String // For video URL (e.g., YouTube embed URL)
+  thumbnailUrl String? // For video thumbnail URL
+  contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
+  category     String? // e.g., "Nature", "History", "Wildlife"
+  duration     String? // e.g., "5 min", "7 min"
+  location     String? // ADD THIS FIELD for location
+
+  published Boolean @default(false) // Whether the tour is live
+
+  type String // e.g., "Article", "PhotoAlbum", "VideoAlbum"
+
+  publishDate DateTime?
+  author      User?     @relation(fields: [authorId], references: [id])
+  authorId    String?   @db.ObjectId
+
+  // New relations for albums
+  photoAlbum   PhotoAlbum? @relation(fields: [photoAlbumId], references: [id])
+  photoAlbumId String?     @db.ObjectId
+
+  videoAlbum   VideoAlbum? @relation(fields: [videoAlbumId], references: [id])
+  videoAlbumId String?     @db.ObjectId
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([authorId])
+  @@index([photoAlbumId])
+  @@index([videoAlbumId])
 }
 
 model SeoBlog {
@@ -1180,6 +1208,7 @@ model User {
 
   Expert      Expert?
   Testimonial Testimonial[]
+  Blog        Blog[]
 }
 
 enum Status {
@@ -4084,6 +4113,7 @@ model VideoAlbum {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   Content   Content[]
+  Blog      Blog[]
 
   @@index([companyId])
   @@index([userId])
@@ -4175,6 +4205,7 @@ enum ContentType {
 model Content {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   title        String
+  excerpt      String?
   description  String? // Use this for a longer description if needed
   contentUrl   String // For video URL (e.g., YouTube embed URL)
   thumbnailUrl String? // For video thumbnail URL
@@ -4208,10 +4239,6 @@ model Content {
   @@index([videoAlbumId])
 }
 
-// Updated `schema.prisma` file
-
-// ... (existing models like User, Account, Session, Company, Video, Content) ...
-
 // New model to serve as a container for a group of photos
 model PhotoAlbum {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -4231,6 +4258,7 @@ model PhotoAlbum {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   Content   Content[]
+  Blog      Blog[]
 
   @@index([companyId])
   @@index([userId])
