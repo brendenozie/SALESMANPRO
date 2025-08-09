@@ -164,7 +164,7 @@ export default function CategoryTree({
                   <span className="font-medium">{parent.name}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {parent.subcategories.map(item => (
+                  {parent.subcategories && parent.subcategories.map(item => (
                     <div
                       key={item.id}
                       className="flex items-center bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"

@@ -695,275 +695,273 @@ export default function CreateStoreForm({
   };
 
   //............................
-// Assuming 'setForm' is a state setter (e.g., from React's useState)
-// and 'availableCategories' is a global or prop array of all possible categories.
 
-// import { StoreCategory, Subcategory } from "@/types/typings"; // Ensure these types are correctly imported
-
-// Utility function to get a deep clone of a category for immutability
-const cloneCategory = (category: StoreCategory) => ({
-  ...category,
-  subcategories: category.subcategories ? [...category.subcategories] : [],
-  allBrands: category.allBrands ? [...category.allBrands] : [],
-});
-
-// ✅ 1) Toggle parent
-const onToggleParent = (parent: StoreCategory) => {
-  setForm((prev: { storeCategories: StoreCategory[] }) => {
-    const existingParentIndex = prev.storeCategories.findIndex(
-      (sc) => sc.id === parent.id
-    );
-
-    // Get the correct IDs for subcategories from the parent object
-    const totalSubcategories = parent.subcategories.map(child => ({
-      id: child._id?.$oid || child.id,
-      name: child.name,
-      slug: child.slug,
-    }));
-
-    // If the parent is not currently in the selected list (meaning it's not selected at all)
-    if (existingParentIndex === -1) {
-      // Add the parent with all its subcategories and all its brands
-      return {
-        ...prev,
-        storeCategories: [
-          ...prev.storeCategories,
-          {
-            ...cloneCategory(parent),
-            subcategories: totalSubcategories,
-            allBrands: parent.allBrands ? [...parent.allBrands] : [],
-          },
-        ],
-      };
-    }
-
-    // The parent already exists in the selected list.
-    const existingEntry = prev.storeCategories[existingParentIndex];
-    const totalSubcategoryCount = totalSubcategories.length;
-    const selectedSubcategoryCount = existingEntry.subcategories.length;
-
-    const totalBrands = parent.allBrands?.length || 0;
-    const selectedBrandCount = existingEntry.allBrands?.length || 0;
-
-    // A parent is fully selected if all its subcategories AND all its brands are selected.
-    const isFullySelected =
-      selectedSubcategoryCount === totalSubcategoryCount &&
-      selectedBrandCount === totalBrands;
-
-    if (!isFullySelected) {
-      // If it's not fully selected (either partially selected or not selected at all),
-      // select all subcategories and all brands for this parent.
-      const updatedParent = {
-        ...cloneCategory(parent),
-        subcategories: totalSubcategories,
-        allBrands: parent.allBrands ? [...parent.allBrands] : [],
-      };
-
-      const updatedStoreCategories = prev.storeCategories.map((sc) =>
-        sc.id === parent.id ? updatedParent : sc
-      );
-
-      return { ...prev, storeCategories: updatedStoreCategories };
-    } else {
-      // If it's fully selected, remove the entire parent category.
-      const filteredStoreCategories = prev.storeCategories.filter(
-        (sc) => sc.id !== parent.id
-      );
-      return { ...prev, storeCategories: filteredStoreCategories };
-    }
+  // Utility function to get a deep clone of a category for immutability
+  const cloneCategory = (category: StoreCategory) => ({
+    ...category,
+    subcategories: category.subcategories ? [...category.subcategories] : [],
+    allBrands: category.allBrands ? [...category.allBrands] : [],
   });
-};
 
-// ---
+  // ✅ 1) Toggle parent
+  const onToggleParent = (parent: StoreCategory) => {
 
-// ✅ 2) Toggle subcategory
-const onToggleSub = (parentId: string, subcategory: any) => {
-  setForm((prev: { storeCategories: StoreCategory[] }) => {
-    const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
-    const parentData = availableCategories.find((cat) => cat.id === parentId);
-
-    if (!parentData) {
-      return prev;
-    }
-
-    // Get the correct ID from the subcategory object
-    const subId = subcategory._id?.$oid || subcategory.id;
-
-    // Case 1: Parent is not yet in the form state
-    if (!parentEntry) {
-      return {
-        ...prev,
-        storeCategories: [
-          ...prev.storeCategories,
-          {
-            ...cloneCategory(parentData),
-            subcategories: [
-              {
-                id: subId,
-                name: subcategory.name,
-                slug: subcategory.slug,
-              }
-            ],
-            allBrands: [],
-          },
-        ],
-      };
-    }
-
-    // Case 2: Parent is already in the form state
-    const isCurrentlySelected = parentEntry.subcategories.some(
-      (s) => s.id === subId
-    );
-
-    let updatedSubcategories;
-    if (isCurrentlySelected) {
-      updatedSubcategories = parentEntry.subcategories.filter(
-        (s) => s.id !== subId
-      );
-    } else {
-      updatedSubcategories = [
-        ...parentEntry.subcategories,
-        {
-          id: subId,
-          name: subcategory.name,
-          slug: subcategory.slug,
-        },
-      ];
-    }
-
-    if (updatedSubcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
-      return {
-        ...prev,
-        storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
-      };
-    }
-
-    return {
-      ...prev,
-      storeCategories: prev.storeCategories.map((sc) =>
-        sc.id === parentId ? { ...sc, subcategories: updatedSubcategories } : sc
-      ),
-    };
-  });
-};
-
-// ---
-
-// ✅ 3) Toggle brand
-const onToggleBrand = (parentId: string, brand: string) => {
-  setForm((prev: { storeCategories: StoreCategory[] }) => {
-    const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
-    const parentData = availableCategories.find((cat) => cat.id === parentId);
-
-    if (!parentData) {
-      // If parent data (from availableCategories) is not found, cannot proceed.
-      console.warn(`Parent category with ID ${parentId} not found in availableCategories.`);
-      return prev;
-    }
-
-    // Case 1: The parent category is NOT currently in the form state.
-    // This means we're adding the first brand for this parent.
-    if (!parentEntry) {
-      return {
-        ...prev,
-        storeCategories: [
-          ...prev.storeCategories,
-          {
-            id: parentData.id,
-            name: parentData.name ?? "",
-            icon: parentData.icon ?? "",
-            companyId: parentData.companyId,
-            categoryId: parentData.categoryId,
-            displayName: parentData.displayName,
-            sortOrder: parentData.sortOrder,
-            visible: parentData.visible,
-            subcategories: [], // Start with no subcategories selected
-            allBrands: [brand], // Add ONLY the clicked brand
-          },
-        ],
-      };
-    }
-
-    // Case 2: The parent category IS already in the form state.
-    const isCurrentlySelected = parentEntry.allBrands?.includes(brand);
-
-    let updatedBrands: string[];
-    if (isCurrentlySelected) {
-      // If the brand is currently selected, remove it.
-      updatedBrands = (parentEntry.allBrands || []).filter((b: string) => b !== brand);
-    } else {
-      // If the brand is NOT currently selected, add it.
-      updatedBrands = [...(parentEntry.allBrands || []), brand];
-    }
-
-    // Check if the parent category should be removed if it has no selected items or brands.
-    if (updatedBrands.length === 0 && (parentEntry.subcategories?.length || 0) === 0) {
-      return {
-        ...prev,
-        storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
-      };
-    }
-
-    // Update the existing parent entry with the new brands list.
-    return {
-      ...prev,
-      storeCategories: prev.storeCategories.map((sc) =>
-        sc.id === parentId ? { ...sc, allBrands: updatedBrands } : sc
-      ),
-    };
-  });
-};
-
-// ---
-
-// ✅ 4) Bulk toggle
-const onBulkToggle = (ids: string[]) => {
-  setForm((prev: { storeCategories: StoreCategory[] }) => {
-    // If no IDs are provided, clear all selected store categories.
-    if (ids.length === 0) {
-      return { ...prev, storeCategories: [] };
-    }
-
-    const nextStoreCategories: StoreCategory[] = [];
-    const idSet = new Set(ids); // For efficient lookups
-
-    for (const parent of availableCategories) {
-      // Find subcategories of the current parent that are in the 'ids' list
-      const matchedSubcategories = parent.subcategories.filter((item) =>
-        idSet.has(item.id)
+    setForm((prev: StoreForm) => {
+      
+      const existingParentIndex = prev.storeCategories.findIndex(
+        (sc) => sc.id === parent.id
       );
 
-      // Find brands of the current parent that are in the 'ids' list
-      const matchedBrands =
-        parent.allBrands?.filter((brand) => idSet.has(brand)) || [];
+      // Get the correct IDs for subcategories from the parent object
+      const totalSubcategories = parent.subcategories.map((child:any) => ({
+        id: child._id?.$oid || child.id,
+        name: child.name,
+        slug: child.slug,
+      }));
 
-      // If neither subcategories nor brands are matched for this parent, skip it.
-      if (matchedSubcategories.length === 0 && matchedBrands.length === 0) {
-        continue;
+      // If the parent is not currently in the selected list (meaning it's not selected at all)
+      if (existingParentIndex === -1) {
+        // Add the parent with all its subcategories and all its brands
+        return {
+          ...prev,
+          storeCategories: [
+            ...prev.storeCategories,
+            {
+              ...cloneCategory(parent),
+              subcategories: totalSubcategories,
+              allBrands: parent.allBrands ? [...parent.allBrands] : [],
+            },
+          ],
+        };
       }
 
-      // Add the parent to the nextStoreCategories with its matched subcategories and brands
-      nextStoreCategories.push({
-        id: parent.id,
-        name: parent.name,
-        icon: parent.icon,
-        companyId: parent.companyId,
-        categoryId: parent.categoryId,
-        displayName: parent.displayName,
-        sortOrder: parent.sortOrder,
-        visible: parent.visible,
-        subcategories: matchedSubcategories.map((c) => ({
-          id: c.id,
-          name: c.name,
-          slug: c.slug,
-        })), // Ensure correct shape
-        allBrands: matchedBrands,
-      });
-    }
+      // The parent already exists in the selected list.
+      const existingEntry = prev.storeCategories[existingParentIndex];
+      const totalSubcategoryCount = totalSubcategories.length;
+      const selectedSubcategoryCount = existingEntry.subcategories.length;
 
-    return { ...prev, storeCategories: nextStoreCategories };
-  });
-};
+      const totalBrands = parent.allBrands?.length || 0;
+      const selectedBrandCount = existingEntry.allBrands?.length || 0;
+
+      // A parent is fully selected if all its subcategories AND all its brands are selected.
+      const isFullySelected =
+        selectedSubcategoryCount === totalSubcategoryCount &&
+        selectedBrandCount === totalBrands;
+
+      if (!isFullySelected) {
+        // If it's not fully selected (either partially selected or not selected at all),
+        // select all subcategories and all brands for this parent.
+        const updatedParent = {
+          ...cloneCategory(parent),
+          subcategories: totalSubcategories,
+          allBrands: parent.allBrands ? [...parent.allBrands] : [],
+        };
+
+        const updatedStoreCategories = prev.storeCategories.map((sc) =>
+          sc.id === parent.id ? updatedParent : sc
+        );
+
+        return { ...prev, storeCategories: updatedStoreCategories };
+      } else {
+        // If it's fully selected, remove the entire parent category.
+        const filteredStoreCategories = prev.storeCategories.filter(
+          (sc) => sc.id !== parent.id
+        );
+        return { ...prev, storeCategories: filteredStoreCategories };
+      }
+    });
+  };
+
+  // ---
+
+  // ✅ 2) Toggle subcategory
+  const onToggleSub = (parentId: string, subcategory: any) => {
+    setForm((prev: StoreForm) => {
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+      const parentData = availableCategories.find((cat) => cat.id === parentId);
+
+      if (!parentData) {
+        return prev;
+      }
+
+      // Get the correct ID from the subcategory object
+      const subId = subcategory._id?.$oid || subcategory.id;
+
+      // Case 1: Parent is not yet in the form state
+      if (!parentEntry) {
+        return {
+          ...prev,
+          storeCategories: [
+            ...prev.storeCategories,
+            {
+              ...cloneCategory(parentData),
+              subcategories: [
+                {
+                  id: subId,
+                  name: subcategory.name,
+                  slug: subcategory.slug,
+                }
+              ],
+              allBrands: [],
+            },
+          ],
+        };
+      }
+
+      // Case 2: Parent is already in the form state
+      const isCurrentlySelected = parentEntry.subcategories.some(
+        (s) => s.id === subId
+      );
+
+      let updatedSubcategories;
+      if (isCurrentlySelected) {
+        updatedSubcategories = parentEntry.subcategories.filter(
+          (s) => s.id !== subId
+        );
+      } else {
+        updatedSubcategories = [
+          ...parentEntry.subcategories,
+          {
+            id: subId,
+            name: subcategory.name,
+            slug: subcategory.slug,
+          },
+        ];
+      }
+
+      if (updatedSubcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
+        return {
+          ...prev,
+          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
+        };
+      }
+
+      return {
+        ...prev,
+        storeCategories: prev.storeCategories.map((sc) =>
+          sc.id === parentId ? { ...sc, subcategories: updatedSubcategories } : sc
+        ),
+      };
+    });
+  };
+
+  // ---
+
+  // ✅ 3) Toggle brand
+  const onToggleBrand = (parentId: string, brand: string) => {
+    setForm((prev: StoreForm) => {
+      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+      const parentData = availableCategories.find((cat) => cat.id === parentId);
+
+      if (!parentData) {
+        // If parent data (from availableCategories) is not found, cannot proceed.
+        console.warn(`Parent category with ID ${parentId} not found in availableCategories.`);
+        return prev;
+      }
+
+      // Case 1: The parent category is NOT currently in the form state.
+      // This means we're adding the first brand for this parent.
+      if (!parentEntry) {
+        return {
+          ...prev,
+          storeCategories: [
+            ...prev.storeCategories,
+            {
+              id: parentData.id,
+              name: parentData.name ?? "",
+              icon: parentData.icon ?? "",
+              companyId: parentData.companyId,
+              categoryId: parentData.categoryId,
+              displayName: parentData.displayName,
+              sortOrder: parentData.sortOrder,
+              visible: parentData.visible,
+              subcategories: [], // Start with no subcategories selected
+              allBrands: [brand], // Add ONLY the clicked brand
+            },
+          ],
+        };
+      }
+
+      // Case 2: The parent category IS already in the form state.
+      const isCurrentlySelected = parentEntry.allBrands?.includes(brand);
+
+      let updatedBrands: string[];
+      if (isCurrentlySelected) {
+        // If the brand is currently selected, remove it.
+        updatedBrands = (parentEntry.allBrands || []).filter((b: string) => b !== brand);
+      } else {
+        // If the brand is NOT currently selected, add it.
+        updatedBrands = [...(parentEntry.allBrands || []), brand];
+      }
+
+      // Check if the parent category should be removed if it has no selected items or brands.
+      if (updatedBrands.length === 0 && (parentEntry.subcategories?.length || 0) === 0) {
+        return {
+          ...prev,
+          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
+        };
+      }
+
+      // Update the existing parent entry with the new brands list.
+      return {
+        ...prev,
+        storeCategories: prev.storeCategories.map((sc) =>
+          sc.id === parentId ? { ...sc, allBrands: updatedBrands } : sc
+        ),
+      };
+    });
+  };
+
+  // ---
+
+  // ✅ 4) Bulk toggle
+  const onBulkToggle = (ids: string[]) => {
+    setForm((prev: StoreForm) => {
+      // If no IDs are provided, clear all selected store categories.
+      if (ids.length === 0) {
+        return { ...prev, storeCategories: [] };
+      }
+
+      const nextStoreCategories: StoreCategory[] = [];
+      const idSet = new Set(ids); // For efficient lookups
+
+      for (const parent of availableCategories) {
+        // Find subcategories of the current parent that are in the 'ids' list
+        const matchedSubcategories = parent.subcategories.filter((item) =>
+          idSet.has(item.id)
+        );
+
+        // Find brands of the current parent that are in the 'ids' list
+        const matchedBrands =
+          parent.allBrands?.filter((brand) => idSet.has(brand)) || [];
+
+        // If neither subcategories nor brands are matched for this parent, skip it.
+        if (matchedSubcategories.length === 0 && matchedBrands.length === 0) {
+          continue;
+        }
+
+        // Add the parent to the nextStoreCategories with its matched subcategories and brands
+        nextStoreCategories.push({
+          id: parent.id,
+          name: parent.name,
+          icon: parent.icon,
+          companyId: parent.companyId,
+          categoryId: parent.categoryId,
+          displayName: parent.displayName,
+          sortOrder: parent.sortOrder,
+          visible: parent.visible,
+          subcategories: matchedSubcategories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+          })), // Ensure correct shape
+          allBrands: matchedBrands,
+        });
+      }
+
+      return { ...prev, storeCategories: nextStoreCategories };
+    });
+  };
 
 
 
@@ -972,62 +970,61 @@ const onBulkToggle = (ids: string[]) => {
   //............................
  
 
-    // NEW: Handlers for LocationSelectionAccordion
-     const onToggleLocation = useCallback((location: Location, isSelected: boolean) => {
-       setForm(prevForm => {
-         const newCompanyLocations = [...prevForm.companyLocations];
-         const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
-         const idsToToggle = getAllDescendantIds(location, allLocationsMap);
-   
-         idsToToggle.forEach(locId => {
-           const existingIndex = newCompanyLocations.findIndex(cl => cl.locationId === locId);
-           if (isSelected) {
-             if (existingIndex === -1) {
-               newCompanyLocations.push({
-                 companyId: prevForm.id || session?.user?.id || 'temp-company-id',
-                 locationId: locId,
-                 visible: true,
-                 sortOrder: 0,
-               });
-             }
-           } else {
-             if (existingIndex !== -1) {
-               newCompanyLocations.splice(existingIndex, 1);
-             }
-           }
-         });
-   
-         return { ...prevForm, companyLocations: newCompanyLocations };
-       });
-     }, [availableLocations, session?.user?.id]);
-   
-     const onBulkToggleLocations = useCallback((locationIds: string[]) => {
-       setForm(prevForm => {
-         const newCompanyLocations: CompanyLocationType[] = [];
-         const existingCompanyLocationMap = new Map(prevForm.companyLocations.map(cl => [cl.locationId, cl]));
-   
-         locationIds.forEach(locId => {
-           if (!existingCompanyLocationMap.has(locId)) {
-             newCompanyLocations.push({
-               companyId: prevForm.id || session?.user?.id || 'temp-company-id',
-               locationId: locId,
-               visible: true,
-               sortOrder: 0,
-             });
-           }
-         });
-   
-         const finalCompanyLocations = locationIds.length === 0
-           ? []
-           : [
-               ...prevForm.companyLocations.filter(cl => locationIds.includes(cl.locationId)),
-               ...newCompanyLocations
-             ];
-   
-         return { ...prevForm, companyLocations: finalCompanyLocations };
-       });
-     }, [session?.user?.id]);
+  // NEW: Handlers for LocationSelectionAccordion
+  const onToggleLocation = useCallback((location: Location, isSelected: boolean) => {
+    setForm(prevForm => {
+      const newCompanyLocations = [...prevForm.companyLocations];
+      const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+      const idsToToggle = getAllDescendantIds(location, allLocationsMap);
 
+      idsToToggle.forEach(locId => {
+        const existingIndex = newCompanyLocations.findIndex(cl => cl.locationId === locId);
+        if (isSelected) {
+          if (existingIndex === -1) {
+            newCompanyLocations.push({
+              companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+              locationId: locId,
+              visible: true,
+              sortOrder: 0,
+            });
+          }
+        } else {
+          if (existingIndex !== -1) {
+            newCompanyLocations.splice(existingIndex, 1);
+          }
+        }
+      });
+
+      return { ...prevForm, companyLocations: newCompanyLocations };
+    });
+  }, [availableLocations, session?.user?.id]);
+
+  const onBulkToggleLocations = useCallback((locationIds: string[]) => {
+    setForm(prevForm => {
+      const newCompanyLocations: CompanyLocationType[] = [];
+      const existingCompanyLocationMap = new Map(prevForm.companyLocations.map(cl => [cl.locationId, cl]));
+
+      locationIds.forEach(locId => {
+        if (!existingCompanyLocationMap.has(locId)) {
+          newCompanyLocations.push({
+            companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+            locationId: locId,
+            visible: true,
+            sortOrder: 0,
+          });
+        }
+      });
+
+      const finalCompanyLocations = locationIds.length === 0
+        ? []
+        : [
+            ...prevForm.companyLocations.filter(cl => locationIds.includes(cl.locationId)),
+            ...newCompanyLocations
+          ];
+
+      return { ...prevForm, companyLocations: finalCompanyLocations };
+    });
+  }, [session?.user?.id]);
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm((f) => ({ ...f, address, geoLocation }));
@@ -1275,10 +1272,12 @@ const onBulkToggle = (ids: string[]) => {
         router.push("/stores");
       } else {
         console.error("Save failed", await res.text());
+        setIsSubmitting(false);
         // show an error toast/message
       }
     } catch (err: any) {
       console.error("Error uploading files or saving store:", err);
+      setIsSubmitting(false);
       alert(`Error: ${err.message}`);
     }
   };

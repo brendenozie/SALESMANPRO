@@ -167,29 +167,30 @@ model ProductCategory {
 /// Associates a Company with a ProductCategory,
 /// plus any store-specific settings.
 model StoreCategory {
-  company    Company         @relation(fields: [companyId], references: [id])
-  companyId  String          @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
   category   ProductCategory @relation(fields: [categoryId], references: [id])
   categoryId String          @db.ObjectId
 
-  // Store-specific overrides:
-  displayName String? // e.g. “Gadgets” instead of “Tech Gadgets”
-  icon        String? // override the global icon
+  displayName String?
+  icon        String?
   sortOrder   Int     @default(0)
   visible     Boolean @default(true)
 
-  id String @id @default(auto()) @map("_id") @db.ObjectId // Add a single primary key
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  // You still store each category’s children in JSON:
-  subcategories Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
-  allBrands     Json? // e.g. [ { id: "...", name: "...", slug: "...", … }, … ]
+  // Store the selected subcategory objects directly as JSON
+  subcategories Json? // e.g., [{ "id": "...", "name": "..." }, ...]
 
-  // @@id([companyId, categoryId])
-  @@unique([companyId, categoryId]) // Use a unique constraint instead
-  @@index([companyId, sortOrder]) // speed up ordering queries
+  // Store the selected brand names as a JSON array
+  allBrands Json? // e.g., ["Nike", "Adidas"]
+
+  @@unique([companyId, categoryId])
+  @@index([companyId, sortOrder])
 }
 
 model Company {
@@ -222,7 +223,6 @@ model Company {
   pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
 
   themeSettings Json? // colors, fonts, layout toggles
-  seo           SEO?  @relation(fields: [sEOId], references: [id]) // SEO settings
 
   // existing relations
   user   User?   @relation(name: "companyAdmin", fields: [userId], references: [id])
@@ -243,15 +243,6 @@ model Company {
 
   deletedAt DateTime?
   sEOId     String?   @db.ObjectId
-
-  analyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id])
-  analyticsConfigId String?          @db.ObjectId
-
-  paymentSettings   PaymentSettings? @relation(fields: [paymentSettingsId], references: [id])
-  paymentSettingsId String?          @db.ObjectId
-
-  shippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id])
-  shippingSettingsId String?           @db.ObjectId
 
   awards  Json?
   metrics Json?
@@ -350,6 +341,10 @@ model Company {
   FinanceAppointment              FinanceAppointment[]
   Invoice                         Invoice[]
   Package                         Package[]
+  SEO                             SEO[]
+  AnalyticsConfig                 AnalyticsConfig[]
+  PaymentSettings                 PaymentSettings[]
+  ShippingSettings                ShippingSettings[]
 }
 
 enum CategoryStatus {
@@ -420,28 +415,31 @@ model AnalyticsConfig {
 
   isActive Boolean @default(false)
 
-  Company Company[]
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
 }
 
 model PaymentSettings {
-  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
   stripeKey           String?
   paypalKey           String?
   mpesaShortcode      String?
   mpesaConsumerKey    String?
   mpesaConsumerSecret String?
   mpesaCallbackUrl    String?
-  Company             Company[]
+  company             Company @relation(fields: [companyId], references: [id])
+  companyId           String  @db.ObjectId
 }
 
 model ShippingSettings {
-  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   carrierName        String?
   trackingUrl        String?
   regions            Json?
   enablePickup       Boolean?
   pickupInstructions String?
-  Company            Company[]
+  company            Company  @relation(fields: [companyId], references: [id])
+  companyId          String   @db.ObjectId
 }
 
 model PageSection {
@@ -833,11 +831,12 @@ model SeoBlog {
 }
 
 model SEO {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String?
   description String?
   keywords    String[]
-  Company     Company[]
+  Company     Company? @relation(fields: [companyId], references: [id])
+  companyId   String?  @db.ObjectId
 }
 
 model Comment {
