@@ -6,6 +6,7 @@ import CreateStoreForm from "@/components/stores/create/CreateStoreForm/CreateSt
 import prisma from "@/server/db/prismadb";
 import {
   ILocation,
+  IProductCategory,
   IStoreCategory,
   ISubcategory,
   PolicyType,
@@ -103,7 +104,7 @@ export default async function EditStorePage({
     { cache: "no-store" }
   );
   const categoryData = await categoryRes.json();
-  const availableCategories: IStoreCategory[] = categoryData.results || [];
+  const availableCategories: IProductCategory[] = categoryData.results || [];
 
   const locationRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/locations`

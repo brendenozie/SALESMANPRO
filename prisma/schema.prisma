@@ -184,7 +184,7 @@ model StoreCategory {
   updatedAt DateTime? @updatedAt
 
   // Store the selected subcategory objects directly as JSON
-  subcategories Json? // e.g., [{ "id": "...", "name": "..." }, ...]
+  subcategories Json?
 
   // Store the selected brand names as a JSON array
   allBrands Json? // e.g., ["Nike", "Adidas"]
@@ -388,6 +388,7 @@ model Banner {
   order           Int       @default(0)
 }
 
+//this promotion on the other hand is a promotion table that highlights the promotions or offers a company offers something lika a banner
 model Promotion {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   company     Company   @relation(fields: [companyId], references: [id])
@@ -4572,6 +4573,7 @@ enum PromotionDiscountStatus {
   DRAFT // Added 'DRAFT' for promotions not yet ready
 }
 
+//this is a promotion discount page that details the discounts given per promotion
 model PromotionDiscount {
   id            String                  @id @default(auto()) @map("_id") @db.ObjectId
   name          String

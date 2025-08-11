@@ -8,15 +8,15 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from 'framer-motion';
 import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
-import { StoreCategory, Subcategory } from "@/types/typings";
+import { IProductCategory, IStoreCategory, ISubcategory } from "@/types/typings";
 
 
 type Props = {
   category: string;
-  availableCategories: StoreCategory[];
-  selectedCategories: StoreCategory[];
-  onToggleParent: (cat: StoreCategory) => void;
-  onToggleSub: (parentId: string, sub: Subcategory) => void;
+  availableCategories: IProductCategory[];
+  selectedCategories: IStoreCategory[];
+  onToggleParent: (cat: IProductCategory) => void;
+  onToggleSub: (parentId: string, sub: ISubcategory) => void;
   onToggleBrand: (parentId: string, brand: string) => void;
   onBulkToggle: (ids: string[]) => void;
   onApply: () => void;
@@ -93,14 +93,14 @@ export default function CategoryTree({
   }, [search, filteredBySite]);
 
   const selectedParentMap = useMemo(() => {
-    const map = new Map<string, StoreCategory>();
+    const map = new Map<string, IStoreCategory>();
     selectedCategories.forEach(p => map.set(p.id, p));
     return map;
   }, [selectedCategories]);
 
   const allFilteredIds = useMemo(() => {
     return filtered.flatMap(cat => [
-      ...cat.subcategories.map(c => c._id?.$oid || c.id), // Use correct ID here
+      ...cat.subcategories.map((c:any) => c._id?.$oid || c.id), // Use correct ID here
       ...(cat.allBrands || [])
     ]);
   }, [filtered]);
@@ -117,23 +117,23 @@ export default function CategoryTree({
     });
   };
 
-  const isParentFullySelected = (cat: StoreCategory) => {
+  const isParentFullySelected = (cat: IProductCategory) => {
     const selected = selectedParentMap.get(cat.id);
     if (!selected) return false;
 
-    const allSubcategoryIds = new Set(cat.subcategories.map(s => s._id?.$oid || s.id)); // Use correct ID
+    const allSubcategoryIds = new Set(cat.subcategories.map((s:any) => s._id?.$oid || s.id)); // Use correct ID
     const selectedSubIds = new Set(selected.subcategories.map(s => s.id));
 
     const totalBrandIds = new Set(cat.allBrands || []);
     const selectedBrandIds = new Set(selected.allBrands || []);
 
-    const allSubcategoriesSelected = cat.subcategories.every(sub => selectedSubIds.has(sub._id?.$oid || sub.id)); // Use correct ID
+    const allSubcategoriesSelected = cat.subcategories.every((sub:any) => selectedSubIds.has(sub._id?.$oid || sub.id)); // Use correct ID
     const allBrandsSelected = (cat.allBrands || []).every(brand => selectedBrandIds.has(brand));
 
     return allSubcategoriesSelected && allBrandsSelected;
   };
 
-  const isParentPartiallySelected = (cat: StoreCategory) => {
+  const isParentPartiallySelected = (cat: IProductCategory) => {
     const selected = selectedParentMap.get(cat.id);
     if (!selected) return false;
     
@@ -161,7 +161,7 @@ export default function CategoryTree({
                   <span className="h-8 w-8 bg-indigo-100 text-indigo-600 flex items-center justify-center rounded-full text-sm font-medium">
                     {parent.icon}
                   </span>
-                  <span className="font-medium">{parent.name}</span>
+                  <span className="font-medium">{parent.displayName}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {parent.subcategories && parent.subcategories.map(item => (
@@ -296,7 +296,7 @@ export default function CategoryTree({
                       >
                         {cat.subcategories.length > 0 && (
                           <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {cat.subcategories.map(item => {
+                            {cat.subcategories.map((item:any) => {
                               const subId = item._id?.$oid || item.id; // Correctly get the ID
                               const isSel = selSubIds.includes(subId);
                               return (

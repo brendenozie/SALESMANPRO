@@ -1,9 +1,5 @@
 import {
   User,
-  Company,
-  Product,
-  ProductCategory,
-  StoreCategory,
   Location,
   CompanyLocation,
   Banner,
@@ -12,10 +8,7 @@ import {
   PageSection,
   Event,
   Course,
-  Educator,
-  AcademicLevel,
   ClassSchedule,
-  marketplaceListings as MarketplaceListingsPrisma,
   SEO,
   AnalyticsConfig,
   PaymentSettings,
@@ -276,7 +269,7 @@ export interface IProductCategory {
 export interface IStoreCategory {
   id: string;
   companyId: string;
-  categoryId: string;
+  categoryId: string | null;
   displayName?: string | null;
   icon?: string | null;
   sortOrder: number;
@@ -578,7 +571,7 @@ export interface StoreForm {
   slug: string;
   tagline: string | null;
   description: string | null;
-  hasWebsite: boolean | null;
+  hasWebsite: boolean | null | undefined;
   companyCategoryId: string | null;
   category: string;
   logoUrl: string | null;
@@ -672,9 +665,34 @@ export interface Handlers {
   onChangeSettings: (updated: Partial<StoreForm>) => void;
   onBulkToggle: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void;
-  onToggleParent: (cat: IStoreCategory) => void;
+  onToggleParent: (cat: IProductCategory) => void;
   onToggleSub: (parentId: string, sub: ISubcategory) => void;
   onToggleBrand: (parentId: string, brand: any) => void;
+
+  onUpdateHeroSlide: (
+      index: number,
+      field: keyof HeroSlide,
+      value: string
+    ) => void;
+  onAddHeroSlide: () => void;
+  onRemoveHeroSlide: (index: number) => void;
+  handleSlideImageUpload: (
+      index: number,
+      file: File,
+      field: keyof HeroSlide
+    ) => void;
+  onUpdatePromotion: (
+      index: number,
+      field: keyof Promotion,
+      value: string
+    ) => void;
+  onAddPromotion: () => void;
+  onRemovePromotion: (index: number) => void;
+  onPromotionImageUpload: (index: number, file: File) => void;
+
+  onToggleLocation: (location: Location, isSelected: boolean) => void;
+  onBulkToggleLocations: (locationIds: string[]) => void;
+
   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
   handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
 }
@@ -685,7 +703,8 @@ export interface StepConfig {
   render: (
     form: StoreForm,
     handlers: Handlers,
-    availableCategories: IStoreCategory[],
-    allLocs: ILocation[],
+    availableCategories: IProductCategory[],
+    allLocs: ILocation[], 
+    selectedLocationsForDisplay: SelectedLocation[]
   ) => React.ReactNode;
 }

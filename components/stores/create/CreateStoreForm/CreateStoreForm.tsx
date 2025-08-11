@@ -15,16 +15,10 @@ import {
   Handlers,
   StepConfig,
   GeoLocation,
-  RawCategory,
-  Location,
-  SubObj,
-  ParentCategory,
-  SelectedCategory,
-  Promotion,
   HeroSlide,
-  CompanyLocationType,
-  StoreCategory,
-  Subcategory,
+  IStoreCategory,
+  ILocation,
+  IProductCategory,
 } from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
@@ -37,6 +31,7 @@ import {
 } from "@/constant/STORE_SITE_STEPS";
 
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
+import { CompanyLocation, Promotion } from "@prisma/client";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -57,26 +52,34 @@ export interface SelectedLocation {
 }
 
 type Props = {
-  availableCategories: StoreCategory[];
-  availableLocations: Location[];
+  availableCategories: IProductCategory[];
+  availableLocations: ILocation[];
   initialData?: Partial<StoreForm> & { id: string };
 };
 
 
 // Helper to build a selected tree from CompanyLocation[] and all Locations
 const buildSelectedLocationTree = (
-  selectedCompanyLocations: CompanyLocationType[],
-  allLocationsMap: Map<string, Location>,
+  selectedCompanyLocations: CompanyLocation[], // Use CompanyLocation type
+  allLocationsMap: Map<string, ILocation>,
   parentId: string | null = null
 ): SelectedLocation[] => {
   const children: SelectedLocation[] = [];
-  const directChildrenLocations = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === parentId);
+  const directChildrenLocations = Array.from(allLocationsMap.values()).filter(
+    (loc) => loc.parentId === parentId
+  );
 
-  const selectedLocMap = new Map(selectedCompanyLocations.map(cl => [cl.locationId, cl]));
+  const selectedLocMap = new Map(
+    selectedCompanyLocations.map((cl) => [cl.locationId, cl]) // Use locationId
+  );
 
   for (const loc of directChildrenLocations) {
     const isLocSelected = selectedLocMap.has(loc.id);
-    const childSelectedNodes = buildSelectedLocationTree(selectedCompanyLocations, allLocationsMap, loc.id);
+    const childSelectedNodes = buildSelectedLocationTree(
+      selectedCompanyLocations,
+      allLocationsMap,
+      loc.id
+    );
 
     if (isLocSelected || childSelectedNodes.length > 0) {
       children.push({
@@ -90,30 +93,37 @@ const buildSelectedLocationTree = (
 };
 
 // Helper to flatten CompanyLocation[] into a Set of location IDs
-const flattenCompanyLocationsToIds = (companyLocations: CompanyLocationType[]): Set<string> => {
+const flattenCompanyLocationsToIds = (
+  companyLocations: CompanyLocation[]
+): Set<string> => {
   const ids = new Set<string>();
-  // Add defensive check for companyLocations being undefined/null
-  if (!companyLocations) return ids; 
-  companyLocations.forEach(cl => ids.add(cl.locationId));
+  if (!companyLocations) return ids;
+  companyLocations.forEach((cl) => ids.add(cl.locationId)); // Use locationId
   return ids;
 };
 
 // Helper to get all descendant IDs of a given location
-const getAllDescendantIds = (location: Location, allLocationsMap: Map<string, Location>): string[] => {
-    const ids: string[] = [location.id];
-    const queue: string[] = [location.id];
-    let head = 0;
+const getAllDescendantIds = (
+  location: ILocation,
+  allLocationsMap: Map<string, ILocation>
+): string[] => {
+  const ids: string[] = [location.id];
+  const queue: string[] = [location.id];
+  let head = 0;
 
-    while (head < queue.length) {
-        const currentId = queue[head++];
-        const children = Array.from(allLocationsMap.values()).filter(loc => loc.parentId === currentId);
-        children.forEach(child => {
-            ids.push(child.id);
-            queue.push(child.id);
-        });
-    }
-    return ids;
+  while (head < queue.length) {
+    const currentId = queue[head++];
+    const children = Array.from(allLocationsMap.values()).filter(
+      (loc) => loc.parentId === currentId
+    );
+    children.forEach((child) => {
+      ids.push(child.id);
+      queue.push(child.id);
+    });
+  }
+  return ids;
 };
+
 
 // --- END MOCK DATA AND HELPER FUNCTIONS ---
 
@@ -163,19 +173,18 @@ export default function CreateStoreForm({
     testimonials: [],
     heroSlides: [],
     promotions: [],
-    storeCategories: [],
+    StoreCategory: [],
 
     // --- NEW: Added missing core fields ---
     currency: 'USD',
     locale: 'en-US',
-    companyCategoryId: undefined,
 
     // --- NEW: Added missing relational arrays ---
     pageSections: [], // For modular page content
     appPromos: [], // For the app promotion section
-    collections: [], // For product collections
+
     events: [], // For company/school events
-    announcements: [], // For site announcements
+    Announcement: [], // For site announcements
 
 
     // --- JSON fields ---
@@ -194,34 +203,66 @@ export default function CreateStoreForm({
 
     // --- Settings Objects ---
     themeSettings: {},
-    seo: {},
-    analyticsConfig: {},
-    paymentSettings: {},
-    shippingSettings: {},
+    seo: {
+      id: "",
+      description: null,
+      title: null,
+      keywords: [],
+      companyId: null
+    },
+    analyticsConfig: {
+      id: "",
+      companyId: "",
+      googleTag: null,
+      facebookTag: null,
+      hotjarSiteId: null,
+      isActive: false
+    },
+    paymentSettings: {
+      id: "",
+      companyId: "",
+      stripeKey: null,
+      paypalKey: null,
+      mpesaShortcode: null,
+      mpesaConsumerKey: null,
+      mpesaConsumerSecret: null,
+      mpesaCallbackUrl: null
+    },
+    shippingSettings: {
+      id: "",
+      companyId: "",
+      carrierName: null,
+      trackingUrl: null,
+      regions: null,
+      enablePickup: null,
+      pickupInstructions: null
+    },
     blogs: [],
+    companyCategoryId: "",
 
     // This would be populated in a different form, but needs to be in the type
     marketplaceListings: [],
-    writers: [],
-    agents: [],
-    doctors: [],
-    podcasts: [],
-    companyLocations: [],
+    Writer: [],
+    salesAgents: [],
+    Doctor: [],
+    Podcast: [],
+    CompanyLocation: [],
     courses: [],
 
-    services:[]
-
+    services: [],
+    site: null,
+    userId: null,
+    createdAt: null,
+    updatedAt: null,
+    deletedAt: null,
+    sEOId: null,
+    settings: null
   };
-
-  // const [form, setForm] = useState<StoreForm>(
-  //   // `initialData` fields overwrite defaults
-  //   initialData ? { ...defaultForm, ...initialData } : defaultForm
-  // );
 
   const [form, setForm] = useState<StoreForm>(() => {
     const initialForm = initialData ? { ...defaultForm, ...initialData } : defaultForm;
     // FIX: Ensure companyLocations is always an array, even if initialData provides null/undefined
-    initialForm.companyLocations = initialData?.companyLocations || [];
+    initialForm.CompanyLocation = initialData?.CompanyLocation || [];
     return initialForm;
   });
 
@@ -229,7 +270,7 @@ export default function CreateStoreForm({
   // const [allAvailableLocations, setAllAvailableLocations] = useState<Location[]>([]);
   // NEW: State for selected location IDs (flat set for efficient lookup)
   const [currentSelectedLocationIds, setCurrentSelectedLocationIds] = useState<Set<string>>(() =>
-    initialData?.companyLocations ? flattenCompanyLocationsToIds(initialData.companyLocations) : new Set()
+    initialData?.CompanyLocation ? flattenCompanyLocationsToIds(initialData.CompanyLocation) : new Set()
   );
 
   // ADD THIS useEffect hook to handle category changes
@@ -268,8 +309,8 @@ export default function CreateStoreForm({
     // Memoize the selected locations in the hierarchical structure for display
   const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
       const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
-      return buildSelectedLocationTree(form.companyLocations, allLocationsMap);
-    }, [form.companyLocations, availableLocations]);
+      return buildSelectedLocationTree(form.CompanyLocation, allLocationsMap);
+    }, [form.CompanyLocation, availableLocations]);
   
 
   // Track one File per hero slide. Initialize from existing heroSlides length
@@ -389,18 +430,26 @@ export default function CreateStoreForm({
   // 3) Handlers for “Hero Slides” Accordion
   // ─────────────────────────────────────────────────────────────────────
 
+  
   const onAddHeroSlide = () => {
     setForm((prev) => ({
       ...prev,
       heroSlides: [
         ...prev.heroSlides,
+        // Correctly structured Banner object
         {
+          id: "", // Will be generated by DB
+          companyId: prev.id,
           imageUrl: "",
-          productImageUrl: "",
-          headline: "",
-          subline: "",
-          ctaText: "",
-          ctaLink: "",
+          productImageUrl: null,
+          headline: null,
+          subline: null,
+          ctaText: null,
+          ctaLink: null,
+          badgeText: null,
+          price: null,
+          endsAt: null,
+          order: 0,
         },
       ],
     }));
@@ -465,7 +514,21 @@ export default function CreateStoreForm({
       ...prev,
       promotions: [
         ...prev.promotions,
-        { title: "", description: "", startsAt: "", endsAt: "", bannerUrl: "" },
+        // Correctly structured Promotion object
+        {
+          id: "", // Will be generated by DB
+          companyId: prev.id,
+          code: null,
+          title: "",
+          description: null,
+          startsAt: null,
+          endsAt: null,
+          ctaText: null,
+          ctaLink: null,
+          bannerUrl: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ],
     }));
   };
@@ -544,14 +607,6 @@ export default function CreateStoreForm({
   }, [form.name, initialData]);
 
   // LocalStorage
-  // useEffect(() => {
-  //   if (initialData) return; // ← skip in edit mode
-  //   const saved = localStorage.getItem("storeForm");
-    
-  //   if (saved) setForm(JSON.parse(saved));
-  // }, [initialData]);
-
-  // LocalStorage
   useEffect(() => {
     if (initialData) return;
     const saved = localStorage.getItem("storeForm");
@@ -560,8 +615,8 @@ export default function CreateStoreForm({
         const parsedForm: StoreForm = JSON.parse(saved);
         setForm(parsedForm);
         // Restore selected locations from companyLocations
-        if (parsedForm.companyLocations) {
-            setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.companyLocations));
+        if (parsedForm.CompanyLocation) {
+            setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.CompanyLocation));
         }
       } catch (e) {
         console.error("Failed to parse stored form data:", e);
@@ -570,23 +625,30 @@ export default function CreateStoreForm({
     }
   }, [initialData]);
 
-  // useEffect(() => {
-  //   if (initialData) return;
-  //   localStorage.setItem("storeForm", JSON.stringify(form));
-  // }, [form, initialData]);
-
     useEffect(() => {
     if (initialData) return;
     // Ensure companyLocations is always updated from selectedLocationsForDisplay
     // We need to convert SelectedLocation[] back to CompanyLocationType[] for storage
-    const companyLocationsToSave: CompanyLocationType[] = [];
+    const companyLocationsToSave: CompanyLocation[] = [];
     const collectCompanyLocations = (selectedLocs: SelectedLocation[]) => {
         selectedLocs.forEach(selectedLoc => {
             companyLocationsToSave.push({
-                companyId: form.id || 'temp-company-id', // Use actual company ID or a temp one
-                locationId: selectedLoc.id,
-                visible: true, // Defaulting to true, adjust if you have UI for this
-                sortOrder: 0, // Defaulting to 0, adjust if you have UI for this
+              companyId: form.id || 'temp-company-id', // Use actual company ID or a temp one
+              locationId: selectedLoc.id,
+              visible: true, // Defaulting to true, adjust if you have UI for this
+              sortOrder: 0,
+              id: "",
+              createdAt: null,
+              updatedAt: null,
+              displayName: null,
+              addressLine1Override: null,
+              addressLine2Override: null,
+              cityOverride: null,
+              stateOverride: null,
+              postalCodeOverride: null,
+              countryOverride: null,
+              latitudeOverride: null,
+              longitudeOverride: null
             });
             if (selectedLoc.children) {
                 collectCompanyLocations(selectedLoc.children);
@@ -678,16 +740,15 @@ export default function CreateStoreForm({
 
   const onToggleDay = (key: string) => {
     setForm((f) => {
-      const day = f.openingHours[key] || { open: "", close: "" };
+      const day = (f.openingHours as any)?.[key] || { open: "", close: "" };
       const isClosed = !day.open && !day.close;
       const updated = isClosed
         ? { open: "09:00", close: "17:00" }
         : { open: "", close: "" };
-
       return {
         ...f,
         openingHours: {
-          ...f.openingHours,
+          ...(f.openingHours as any),
           [key]: updated,
         },
       };
@@ -697,18 +758,20 @@ export default function CreateStoreForm({
   //............................
 
   // Utility function to get a deep clone of a category for immutability
-  const cloneCategory = (category: StoreCategory) => ({
-    ...category,
+  const cloneCategory = (category: IProductCategory) => ({
+    ...category,    
+    displayName: category.name,
+    categoryId: category.id,
     subcategories: category.subcategories ? [...category.subcategories] : [],
     allBrands: category.allBrands ? [...category.allBrands] : [],
   });
 
   // ✅ 1) Toggle parent
-  const onToggleParent = (parent: StoreCategory) => {
+  const onToggleParent = (parent: IProductCategory) => {
 
     setForm((prev: StoreForm) => {
       
-      const existingParentIndex = prev.storeCategories.findIndex(
+      const existingParentIndex = prev.StoreCategory.findIndex(
         (sc) => sc.id === parent.id
       );
 
@@ -724,8 +787,8 @@ export default function CreateStoreForm({
         // Add the parent with all its subcategories and all its brands
         return {
           ...prev,
-          storeCategories: [
-            ...prev.storeCategories,
+          StoreCategory: [
+            ...prev.StoreCategory,
             {
               ...cloneCategory(parent),
               subcategories: totalSubcategories,
@@ -736,7 +799,7 @@ export default function CreateStoreForm({
       }
 
       // The parent already exists in the selected list.
-      const existingEntry = prev.storeCategories[existingParentIndex];
+      const existingEntry = prev.StoreCategory[existingParentIndex];
       const totalSubcategoryCount = totalSubcategories.length;
       const selectedSubcategoryCount = existingEntry.subcategories.length;
 
@@ -757,17 +820,19 @@ export default function CreateStoreForm({
           allBrands: parent.allBrands ? [...parent.allBrands] : [],
         };
 
-        const updatedStoreCategories = prev.storeCategories.map((sc) =>
+        const updatedStoreCategories = prev.StoreCategory.map((sc) =>
           sc.id === parent.id ? updatedParent : sc
         );
 
         return { ...prev, storeCategories: updatedStoreCategories };
       } else {
         // If it's fully selected, remove the entire parent category.
-        const filteredStoreCategories = prev.storeCategories.filter(
+        const filteredStoreCategories = prev.StoreCategory.filter(
           (sc) => sc.id !== parent.id
         );
-        return { ...prev, storeCategories: filteredStoreCategories };
+        return { ...prev, 
+          categoryId: "",
+          storeCategories: filteredStoreCategories };
       }
     });
   };
@@ -777,7 +842,7 @@ export default function CreateStoreForm({
   // ✅ 2) Toggle subcategory
   const onToggleSub = (parentId: string, subcategory: any) => {
     setForm((prev: StoreForm) => {
-      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
+      const parentEntry = prev.StoreCategory.find((sc) => sc.id === parentId || sc.categoryId == parentId);
       const parentData = availableCategories.find((cat) => cat.id === parentId);
 
       if (!parentData) {
@@ -791,8 +856,8 @@ export default function CreateStoreForm({
       if (!parentEntry) {
         return {
           ...prev,
-          storeCategories: [
-            ...prev.storeCategories,
+          StoreCategory: [
+            ...prev.StoreCategory,
             {
               ...cloneCategory(parentData),
               subcategories: [
@@ -832,13 +897,13 @@ export default function CreateStoreForm({
       if (updatedSubcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
         return {
           ...prev,
-          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
+          StoreCategory: prev.StoreCategory.filter((sc) => sc.id !== parentId),
         };
       }
 
       return {
         ...prev,
-        storeCategories: prev.storeCategories.map((sc) =>
+        StoreCategory: prev.StoreCategory.map((sc) =>
           sc.id === parentId ? { ...sc, subcategories: updatedSubcategories } : sc
         ),
       };
@@ -850,62 +915,68 @@ export default function CreateStoreForm({
   // ✅ 3) Toggle brand
   const onToggleBrand = (parentId: string, brand: string) => {
     setForm((prev: StoreForm) => {
-      const parentEntry = prev.storeCategories.find((sc) => sc.id === parentId);
-      const parentData = availableCategories.find((cat) => cat.id === parentId);
+      const parentEntry = prev.StoreCategory.find(
+        (sc) => sc.id === parentId
+      );
+      const parentData = availableCategories.find(
+        (cat) => cat.id === parentId
+      );
 
       if (!parentData) {
-        // If parent data (from availableCategories) is not found, cannot proceed.
-        console.warn(`Parent category with ID ${parentId} not found in availableCategories.`);
+        console.warn(
+          `Parent category with ID ${parentId} not found in availableCategories.`
+        );
         return prev;
       }
 
-      // Case 1: The parent category is NOT currently in the form state.
-      // This means we're adding the first brand for this parent.
       if (!parentEntry) {
         return {
           ...prev,
-          storeCategories: [
-            ...prev.storeCategories,
+          StoreCategory: [
+            ...prev.StoreCategory,
             {
               id: parentData.id,
-              name: parentData.name ?? "",
-              icon: parentData.icon ?? "",
-              companyId: parentData.companyId,
-              categoryId: parentData.categoryId,
-              displayName: parentData.displayName,
+              companyId: form.id,
+              categoryId: parentData.id,
+              displayName: parentData.name ?? null,
+              icon: parentData.icon ?? null,
               sortOrder: parentData.sortOrder,
               visible: parentData.visible,
-              subcategories: [], // Start with no subcategories selected
-              allBrands: [brand], // Add ONLY the clicked brand
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              subcategories: [],
+              allBrands: [brand],
             },
           ],
         };
       }
 
-      // Case 2: The parent category IS already in the form state.
       const isCurrentlySelected = parentEntry.allBrands?.includes(brand);
 
       let updatedBrands: string[];
       if (isCurrentlySelected) {
-        // If the brand is currently selected, remove it.
-        updatedBrands = (parentEntry.allBrands || []).filter((b: string) => b !== brand);
+        updatedBrands = (parentEntry.allBrands || []).filter(
+          (b: string) => b !== brand
+        );
       } else {
-        // If the brand is NOT currently selected, add it.
         updatedBrands = [...(parentEntry.allBrands || []), brand];
       }
 
-      // Check if the parent category should be removed if it has no selected items or brands.
-      if (updatedBrands.length === 0 && (parentEntry.subcategories?.length || 0) === 0) {
+      if (
+        updatedBrands.length === 0 &&
+        (parentEntry.subcategories?.length || 0) === 0
+      ) {
         return {
           ...prev,
-          storeCategories: prev.storeCategories.filter((sc) => sc.id !== parentId),
+          StoreCategory: prev.StoreCategory.filter(
+            (sc) => sc.id !== parentId
+          ),
         };
       }
 
-      // Update the existing parent entry with the new brands list.
       return {
         ...prev,
-        storeCategories: prev.storeCategories.map((sc) =>
+        StoreCategory: prev.StoreCategory.map((sc) =>
           sc.id === parentId ? { ...sc, allBrands: updatedBrands } : sc
         ),
       };
@@ -915,65 +986,56 @@ export default function CreateStoreForm({
   // ---
 
   // ✅ 4) Bulk toggle
-  const onBulkToggle = (ids: string[]) => {
+    const onBulkToggle = (ids: string[]) => {
     setForm((prev: StoreForm) => {
-      // If no IDs are provided, clear all selected store categories.
       if (ids.length === 0) {
-        return { ...prev, storeCategories: [] };
+        return { ...prev, StoreCategory: [] };
       }
 
-      const nextStoreCategories: StoreCategory[] = [];
-      const idSet = new Set(ids); // For efficient lookups
+      const nextStoreCategories: IStoreCategory[] = [];
+      const idSet = new Set(ids);
 
       for (const parent of availableCategories) {
-        // Find subcategories of the current parent that are in the 'ids' list
-        const matchedSubcategories = parent.subcategories.filter((item) =>
+        const matchedSubcategories = parent.subcategories.filter((item: any) =>
           idSet.has(item.id)
         );
-
-        // Find brands of the current parent that are in the 'ids' list
         const matchedBrands =
-          parent.allBrands?.filter((brand) => idSet.has(brand)) || [];
+          parent.allBrands?.filter((brand: any) => idSet.has(brand)) || [];
 
-        // If neither subcategories nor brands are matched for this parent, skip it.
         if (matchedSubcategories.length === 0 && matchedBrands.length === 0) {
           continue;
         }
 
-        // Add the parent to the nextStoreCategories with its matched subcategories and brands
         nextStoreCategories.push({
           id: parent.id,
-          name: parent.name,
-          icon: parent.icon,
-          companyId: parent.companyId,
-          categoryId: parent.categoryId,
-          displayName: parent.displayName,
+          companyId: form.id,
+          categoryId: parent.id,
+          displayName: parent.name ?? null,
+          icon: parent.icon ?? null,
           sortOrder: parent.sortOrder,
           visible: parent.visible,
+          createdAt: new Date(),
+          updatedAt: new Date(),
           subcategories: matchedSubcategories.map((c) => ({
             id: c.id,
             name: c.name,
             slug: c.slug,
-          })), // Ensure correct shape
+          })),
           allBrands: matchedBrands,
         });
       }
 
-      return { ...prev, storeCategories: nextStoreCategories };
+      return { ...prev, StoreCategory: nextStoreCategories };
     });
   };
-
-
-
-
 
   //............................
  
 
   // NEW: Handlers for LocationSelectionAccordion
-  const onToggleLocation = useCallback((location: Location, isSelected: boolean) => {
+  const onToggleLocation = useCallback((location: ILocation, isSelected: boolean) => {
     setForm(prevForm => {
-      const newCompanyLocations = [...prevForm.companyLocations];
+      const newCompanyLocations = [...prevForm.CompanyLocation];
       const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
       const idsToToggle = getAllDescendantIds(location, allLocationsMap);
 
@@ -986,6 +1048,18 @@ export default function CreateStoreForm({
               locationId: locId,
               visible: true,
               sortOrder: 0,
+              id: "",
+              createdAt: null,
+              updatedAt: null,
+              displayName: null,
+              addressLine1Override: null,
+              addressLine2Override: null,
+              cityOverride: null,
+              stateOverride: null,
+              postalCodeOverride: null,
+              countryOverride: null,
+              latitudeOverride: null,
+              longitudeOverride: null
             });
           }
         } else {
@@ -999,32 +1073,49 @@ export default function CreateStoreForm({
     });
   }, [availableLocations, session?.user?.id]);
 
-  const onBulkToggleLocations = useCallback((locationIds: string[]) => {
-    setForm(prevForm => {
-      const newCompanyLocations: CompanyLocationType[] = [];
-      const existingCompanyLocationMap = new Map(prevForm.companyLocations.map(cl => [cl.locationId, cl]));
+    const onBulkToggleLocations = useCallback((locationIds: string[]) => {
+    setForm((prevForm) => {
+      const newCompanyLocations: CompanyLocation[] = [];
+      const existingCompanyLocationMap = new Map(
+        (prevForm.CompanyLocation || []).map((cl) => [cl.locationId, cl])
+      );
 
-      locationIds.forEach(locId => {
+      locationIds.forEach((locId) => {
         if (!existingCompanyLocationMap.has(locId)) {
           newCompanyLocations.push({
-            companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+            id: "", // Will be generated by DB
+            companyId: prevForm.id,
             locationId: locId,
-            visible: true,
+            displayName: null,
+            addressLine1Override: null,
+            addressLine2Override: null,
+            cityOverride: null,
+            stateOverride: null,
+            postalCodeOverride: null,
+            countryOverride: null,
+            latitudeOverride: null,
+            longitudeOverride: null,
             sortOrder: 0,
+            visible: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
           });
         }
       });
 
-      const finalCompanyLocations = locationIds.length === 0
-        ? []
-        : [
-            ...prevForm.companyLocations.filter(cl => locationIds.includes(cl.locationId)),
-            ...newCompanyLocations
-          ];
+      const finalCompanyLocations =
+        locationIds.length === 0
+          ? []
+          : [
+              ...(prevForm.CompanyLocation || []).filter((cl) =>
+                locationIds.includes(cl.locationId)
+              ),
+              ...newCompanyLocations,
+            ];
 
-      return { ...prevForm, companyLocations: finalCompanyLocations };
+      return { ...prevForm, CompanyLocation: finalCompanyLocations };
     });
-  }, [session?.user?.id]);
+  }, []);
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm((f) => ({ ...f, address, geoLocation }));

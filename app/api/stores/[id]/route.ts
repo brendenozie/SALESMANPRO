@@ -39,6 +39,7 @@ export async function POST(req: Request) {
   
   // Validate the request body with Zod
   const parseResult = companySchema.safeParse(body);
+  
   if (!parseResult.success) {
     return NextResponse.json({ errors: parseResult.error.errors }, { status: 400 });
   }
