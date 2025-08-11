@@ -1,1157 +1,673 @@
-import { User } from "@prisma/client";
+import {
+  User,
+  Company,
+  Product,
+  ProductCategory,
+  StoreCategory,
+  Location,
+  CompanyLocation,
+  Banner,
+  Promotion,
+  Blog,
+  PageSection,
+  Event,
+  Course,
+  Educator,
+  AcademicLevel,
+  ClassSchedule,
+  marketplaceListings as MarketplaceListingsPrisma,
+  SEO,
+  AnalyticsConfig,
+  PaymentSettings,
+  ShippingSettings,
+  CompanySettings,
+} from "@prisma/client";
 import "next-auth";
 import { ChangeEvent } from "react";
-import { string } from "zod";
 
+//################################################################################
+//## ENUMS FROM PRISMA SCHEMA
+//################################################################################
 
-
-export interface IStyleData {
-  img: string;
-  title: string;
+export enum ROLE {
+  USER,
+  CONSUMER,
+  AGENT,
+  CLIENT,
+  ADMIN,
+  STUDENT,
+  EDUCATOR,
+  HEADTEACHER,
+  PARENT,
+  JUNIOR,
+  SENIOR,
+  SOPHOMORE,
+  FRESHMAN,
+  WRITER,
+  STAFF,
+  MODERATOR,
+  PATIENT,
+  DOCTOR,
+  PATRON,
+  EXPERT,
+  STAFF_MEMBER,
+  SERVICE_PROVIDER,
 }
 
-export interface IOptions {
-  method: string;
-  headers: {
-    "X-RapidAPI-Key": string;
-    "X-RapidAPI-Host": string;
-    "content-type"?: string;
-  };
-  body?: string;
+export enum UserStatus {
+  ACTIVE,
+  INACTIVE,
+  SUSPENDED,
 }
 
-export interface ISuggestion {
-  regionNames: {
-    shortName: string;
-    displayName: string;
-  };
-  gaiaId: number;
-  type: string;
+export enum ListingStatus {
+  ACTIVE,
+  PENDING,
+  SOLD,
+  INACTIVE,
+  DRAFT,
+  REJECTED,
+  BUY,
+  RENT,
+  RENTED,
 }
 
-export interface ISuggestionFormatted {
-  shortName: string;
-  displayName: string;
-  id: number;
-  type: string;
-  img?: string;
-  location?: string;
-  province?: string;
+export enum SocialChannel {
+  TWITTER,
+  INSTAGRAM,
+  FACEBOOK,
+  LINKEDIN,
 }
 
-export interface provider {
-  name: string;
-  id: string;
+export enum PolicyType {
+  SHIPPING,
+  RETURNS,
+  PRIVACY,
+  TERMS,
 }
 
-export interface IReservation {
-  price_data: {
-    currency: string;
-    unit_amount: number;
-    product_data: {
-      name: string;
-      description: string;
-      images: string[];
-    };
-  };
-  quantity: number;
+export enum SectionType {
+  Hero,
+  FeatureGrid,
+  TestimonialCarousel,
+  BlogPreview,
+  CustomHtml,
+  About,
+  Services,
+  Awards,
+  HealthTips,
+  Features,
+  HowItWorks,
+  Pricing,
+  CTA,
+  Metrics,
+  Stats,
 }
 
-export interface ILocation {
-  lat: any;
-  lng: any;
-}
-export interface uploadImage {
-  publicId: string;
-  url: string;
-  status: string;
+export enum EventStatus {
+  SCHEDULED,
+  POSTPONED,
+  CANCELLED,
+  COMPLETED,
 }
 
-export interface IUser {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  imgUri: string;
-  role: string ;
-  provider: string;
-  img: string ;
-  // id: string;
-  // name: string;
-  // email: string;
-  // image: string;
-  // role: string;
+export enum EventType {
+  GENERAL,
+  ACADEMIC,
+  SPORTS,
+  CULTURAL,
+  MEETING,
+  WORKSHOP,
+  ORIENTATION,
+  FUNDRAISER,
+  OTHER,
 }
 
-// interface CategoryOption { id: string; name: string; }
-export type StoreCategoryEntry = {
-  id: string;           // parent ProductCategory.id
-  name: string;         // parent name
-  items: SubObj[];      // zero or more subcategory objects
-  allBrands?:  string[];      // zero or more subcategory objects
-  displayName?: string; // (optional override)
-  icon: string;        // (optional override)
-  sortOrder?: number;
-  visible?: boolean;
+export enum CourseStatus {
+  DRAFT,
+  PUBLISHED,
+  ARCHIVED,
+  INACTIVE,
+  ACTIVE,
+}
 
-  companyId?: string;
-  categoryId?: string;
-  
-};
+//################################################################################
+//## CORE & COMPANY-RELATED INTERFACES
+//################################################################################
 
-export type SelectedCategory = {
-  id:    string;
-  name:  string;
-  icon:string;
-  items: SubObj[];
-  allBrands?: string[];
-};
+export interface GeoLocation {
+  lat: number;
+  lng: number;
+}
 
-export type SubObj = {
-  id:        string;
-  name:      string;
-  slug:      string;
-  sortOrder?: number;
-  visible?:   boolean;
-};
+export type OpeningHours = Record<
+  string,
+  { open: string; close: string } | undefined
+>;
 
-export type ParentCategory = {
-  id:            string;
-  name:          string;
-  icon:string;
-  items:      SubObj[];    // full list of sub‐objects under this parent
-  allBrands?:  string[];    // full list of sub‐objects under this parent
-  
-  
-  companyId?: string;
-  categoryId?: string;
-  displayName?: string;
-  
-  sortOrder?: number;
-  visible?: boolean;
-  // items?: Subcategory[]; // always an array
-  // allBrands?: any[] | null;
-  category?: ProductCategory;
-};
-
-export type RawCategory = {
-  id:         string;
-  name:       string;
-  icon:string;
-  allBrands?:  string[];
-  subcategories: Array<{
-    id:   string;
-    name: string;
-    slug: string;
-    // …other fields like icon, image, etc., but NOT needed by the tree
-  }>;
-  // …plus whatever other fields your API returns
-};
-
-
-//Updated type starts here
-
-// --- ENUMS based on Prisma Schema ---
-export enum SocialChannel { TWITTER, INSTAGRAM, FACEBOOK, LINKEDIN }
-export enum PolicyType { SHIPPING, RETURNS, PRIVACY, TERMS }
-export enum SectionType { Hero, FeatureGrid, TestimonialCarousel, BlogPreview, CustomHtml, About, Services, Awards, HealthTips, Features, HowItWorks, Pricing, CTA, Metrics, Stats }
-
-// --- INTERFACES for related models ---
-
-export interface GeoLocation { lat: number; lng: number; }
-export type OpeningHours = Record<string, { open: string; close: string } | undefined>;
+export interface IUser extends User {}
 
 export interface SocialLink {
-    id?: string;
-    channel: SocialChannel; // Use Enum for type safety
-    url: string; 
+  id?: string;
+  channel: SocialChannel;
+  url: string;
 }
 
 export interface Policy {
-    id?: string;
-    type: PolicyType; // Use Enum
-    title?: string;
-    content: string; 
+  id?: string;
+  type: PolicyType;
+  title?: string;
+  content: string;
 }
 
 export interface FAQ {
-    id?: string;
-    question: string;
-    answer: string;
-    order?: number; 
+  id?: string;
+  question: string;
+  answer: string;
+  order?: number;
 }
 
 export interface Testimonial {
-    id?: string;
-    author: string;
-    title?: string;
-    quote: string;
-    avatarUrl?: string;
-    rating?: number; // 1-5 stars 
-    order?: number;
+  id?: string;
+  quote: string;
+  authorId?: string | null;
+  author?: IUser;
+  authorName?: string | null;
+  authorTitle?: string | null;
+  avatarUrl?: string | null;
+  rating?: number | null;
+  order?: number;
 }
 
-// Corresponds to the `Banner` model in Prisma
-export interface HeroSlide {
-    id?: string;
-    imageUrl: string;
-    productImageUrl?: string; 
-    videoLink?: string;
-    headline?: string;
-    subline?: string; 
-    ctaText?: string; 
-    ctaLink?: string; 
-    badgeText?: string; 
-    price?: string; // Missing from original type 
-    endsAt?: Date | string; // Missing from original type 
-    order?: number; 
-}
-
-export interface Promotion {
-    id?: string;
-    code?: string; // Missing from original type 
-    title: string; 
-    description?: string;
-    startsAt?: Date | string;
-    endsAt?: Date | string; 
-    ctaText?: string;
-    ctaLink?: string;
-    bannerUrl?: string; 
-}
+export interface HeroSlide extends Banner {}
+export interface IPromotion extends Promotion {}
 
 export interface Award {
-    name: string;
-    iconUrl: string;
-    order?: number;
+  name: string;
+  iconUrl: string;
+  order?: number;
 }
 
 export interface Metric {
-    id?: string;
-    label: string;
-    value: number;
-    iconUrl?: string;
-    order?: number; 
+  label: string;
+  value: number;
+  iconUrl?: string;
+  order?: number;
 }
 
 export interface Stat {
-    id?: string;
-    label: string;
-    value: string;
-    iconUrl?: string;
-    order?: number; 
+  label: string;
+  value: string;
+  iconUrl?: string;
+  order?: number;
 }
 
 export interface PricingTier {
-    name: string;
-    description?: string;
-    price: number;
-    duration?: string;
-    features: string[];
-    isFeatured?: boolean;
+  name: string;
+  description?: string;
+  price: number;
+  duration?: string;
+  features: string[];
+  isFeatured?: boolean;
 }
 
-// NEW: Interface for `PageSection`
-export interface PageSection {
-    id?: string;
-    type: SectionType; // Use Enum
-    order: number;
-    settings: Record<string, any>; // e.g., { background: "dark" } 
-    content: Record<string, any>; // e.g., { headline: "...", blocks: [] } 
-}
+export interface IPageSection extends PageSection {}
 
-// NEW: Interface for `AppPromo`
 export interface AppPromo {
-    id?: string;
-    headline?: string;
-    subheading: string;
-    buttons: { label: string; href: string; icon: string; }[]; // Structured buttons 
-    screenshots: string[]; // Array of image URLs
+  id?: string;
+  headline: string;
+  subheading: string;
+  buttons: { label: string; href: string; icon: string }[];
+  screenshots: string[];
 }
 
-// NEW: Stronger type for `Blog`
-export interface Blog {
-    id?: string;
-    title: string; 
-    excerpt?: string;
-    slug: string;
-    content: string;
-    coverImage?: string; 
-    categories: string[];
-    tags: string[];
-    author?: { name: string; profileImage: string }; 
-    status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-    publishedAt?: Date | string;    
-    order?: number; 
-}
+export interface IBlog extends Blog {}
 
-export type Course = {
-  id: string; // Assuming an ID for each course
-  title: string;
-  description: string;
-  imageUrl: string; // Changed from 'image' to 'imageUrl' for clarity and consistency
-  gradeLevel?: string; // Changed from 'grade' to 'gradeLevel'
-  averageRating?: number; // Changed from 'rating' to 'averageRating', now a number
-  enrolledStudents?: number; // Changed from 'students' to 'enrolledStudents', now a number
-  // Add other fields from your Course model if relevant for display
-  ctaText?: string; // e.g., "Enroll Now"
-  ctaLink?: string; // Link to the course details page
-};
+//################################################################################
+//## E-COMMERCE & PRODUCT INTERFACES
+//################################################################################
 
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-export type Feature = {
+export interface ISubcategory {
   id: string;
-  title: string; // Corresponds to 'label'
+  name: string;
+  slug: string;
+  sortOrder?: number | null;
+  visible?: boolean;
+}
+
+export interface IProductCategory {
+  id: string;
+  name: string;
+  icon?: string | null;
+  image?: string | null;
+  slug: string;
   description: string;
-  iconUrl?: string; // Corresponds to 'icon'
-  order: number; // For sorting
-};
-
-export type Locations = {
-  id:        string;
-  name:      string;
-  companyId: string;
+  longDescription: string;
+  seoTitle: string;
+  seoDescription: string;
+  metaKeywords: string[];
+  sortOrder: number;
+  visible: boolean;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+  createdBy: string;
+  updatedBy: string;
+  status: string;
+  allBrands: string[];
+  tags: string[];
+  subcategories: ISubcategory[];
+  imageAlt: string;
+  thumbnail?: string | null;
+  bannerImage?: string | null;
+  localization: any;
+  productCount: number;
+  isFeatured: boolean;
+  showInHomepage: boolean;
+  attributes: any;
+  companyId?: string | null;
 }
 
-// --- MAIN UPDATED STORE FORM ---
-export interface StoreForm {
-    id: string;
-    name: string; 
-    slug: string; 
-    tagline: string; 
-    description?: string; 
-    hasWebsite: boolean;
-    domain: string; 
-
-    features?: Feature[]; 
-    
-    // --- Missing Core Fields Added ---
-    currency: string; // e.g., "KES" 
-    locale: string; // e.g., "en-US" 
-    companyCategoryId?: string; // Link to CompanyCategory model
-
-    // --- Core Content ---
-    category: string;
-    logoUrl: string; 
-    bannerUrl: string; 
-    contactEmail: string; 
-    contactPhone: string; 
-    address: string; 
-    geoLocation: GeoLocation; 
-    openingHours: OpeningHours; 
-    
-    // --- Relational Content (with stronger types) ---
-    socialLinks: SocialLink[]; 
-    policies: Policy[]; 
-    faqs: FAQ[]; 
-    testimonials: Testimonial[]; 
-    heroSlides: HeroSlide[]; // Corresponds to `Banner`
-    promotions: Promotion[]; 
-    blogs: Blog[]; // Using the new strong type 
-    storeCategories: StoreCategory[]; // Using the new strong type 
-
-    ctaSection?: { // New field for specific CTA section content
-      title?: string;
-      subtitle?: string;
-      buttonLabel?: string;
-      buttonHref?: string;
-      imageUrl?: string;
-      subscribeText?: string; // Text for the subscribe section
-      subscribePlaceholder?: string; // Placeholder for email input
-      subscribeButtonLabel?: string; // Label for subscribe button
-    };
-
-    // --- NEW: Missing Relational Sections Added ---
-    pageSections: PageSection[];
-    appPromos: AppPromo[]; 
-    events: any[]; 
-    collections: any[]; 
-    announcements: any[]; 
-
-    writers:any[];
-    agents:any[];
-    doctors:any[];
-
-    // You can add `events`, `announcements`, etc., following the same pattern.
-    
-    // --- JSON fields ---
-    awards: Award[];
-    metrics: Metric[];
-    stats: Stat[];
-    pricingTiers: PricingTier[]; 
-
-    podcasts:any[];
-    services:any[];
-    companyLocations: CompanyLocationType[];
-    
-    courses:Course[];
-
-    // --- Settings Objects ---
-    themeSettings: Record<string, any>; 
-    seo: Record<string, any>;
-    analyticsConfig: Record<string, any>;
-    paymentSettings: Record<string, any>;
-    shippingSettings: Record<string, any>;
-    
-    marketplaceListings: MarketListingForm[];
-}
-
-// interface GeoLocation { lat: number; lng: number; }
-
-// type OpeningHours = Record<
-//   string,
-//   { open: string; close: string } | undefined
-// >;
-
-// type DayHours = { open: string; close: string };
-
-// type OpeningHours = { [key: string]: DayHours };
-
-// export interface SocialLink { channel: string; url: string; }
-
-// export interface Policy { type: string; title?: string; content: string; }
-
-// export interface FAQ { question: string; answer: string; order?: number; }
-
-// export interface Testimonial { author: string; quote: string; avatarUrl?: string; rating?: number; order?: number; }
-
-// export interface HeroSlide {
-//   badgeText: string; productImageUrl?:string; imageUrl: string; headline: string; subline?: string; ctaText?: string; ctaLink?: string; order?: number; 
-// }
-
-// export interface Promotion { title: string; description: string; startsAt?: string; 
-//                               endsAt?: string; bannerUrl?: string; order?: number;  ctaText?: string; ctaLink?: string; }
-
-// export interface Award {
-//   name: string;
-//   iconUrl: string;
-//   order?: number;
-// }
-
-// export interface Metric {
-//   label: string;
-//   value: number;
-//   iconUrl?: string;
-// }
-
-// export interface Stat {
-//   label: string;
-//   value: string | number;
-//   iconUrl?: string;
-// }
-
-// type StoreForm = {
-//   id:string;
-//   name: string;
-//   slug: string;
-//   hasWebsite: boolean;
-//   domain: string;
-//   tagline: string;
-//   description: string;
-//   category: string;
-//   logoUrl: string;
-//   bannerUrl: string;
-//   contactEmail: string;
-//   contactPhone: string;
-//   address: string;
-//   geoLocation: GeoLocation;
-//   openingHours: OpeningHours;
-//   socialLinks: SocialLink[];
-//   policies: Policy[];
-//   faqs: FAQ[];
-//   testimonials: Testimonial[];
-//   heroSlides: HeroSlide[];
-//   promotions: Promotion[];
-//   awards: Award[];
-//   metrics: Metric[];
-//   stats: Stat[];
-//   themeSettings: Record<string, any>;
-//   seo: Record<string, any>;
-//   analyticsConfig: Record<string, any>;
-//   paymentSettings: Record<string, any>;
-//   shippingSettings: Record<string, any>;
-//   marketplaceListings: MarketplaceListingForm[];
-//   storeCategories: any[];
-//   pricingTiers: PricingTier[];
-//   blogs:any[];
-//   agents:any[];
-//   locations:any[];
-//   blogPosts:any[];
-// };
-
-// export interface PricingTier {
-//   name: string;
-//   price: number;
-//   features: string[];
-//   isFeatured?: boolean;
-//   duration?: string;
-//   description?: string;
-// }
-
-// types/typings.ts
-
-
-// Define StoreCategory and ProductCategory shapes
-export type StoreCategory = {
-  name?: string;
+export interface IStoreCategory {
   id: string;
   companyId: string;
   categoryId: string;
-  displayName: string;
-  icon?: string;
+  displayName?: string | null;
+  icon?: string | null;
   sortOrder: number;
   visible: boolean;
-  subcategories: Subcategory[]; // always an array
-  allBrands?: any[] | null;
-  category?: ProductCategory | undefined | null;
-  
-  fieldTypeGroup?: 'general' | 'vehicle' | 'property' | 'book' | 'clothing' | 'appliance' | 'service' | 'digital' | 'dish';
-};
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+  subcategories: ISubcategory[];
+  allBrands: string[];
+  category?: IProductCategory;
+}
 
-export type Subcategory = {
+export interface ProductForm {
+  // Manual definition matching Prisma's Product model
   id: string;
   name: string;
-  slug: string;
-  sortOrder?: number | undefined | null;
-  visible?: boolean | undefined | null;
-};
+  description?: string | null;
+  longDescription?: string | null;
+  category?: string | null;
+  subCategory?: any;
+  subCategoryName?: string | null;
+  images: any[];
+  video?: string | null;
+  tags: string[];
+  brand?: string | null;
+  companyId?: string | null;
+  productCategoryId?: string | null;
+  model?: string | null;
+  color: string[];
+  size: string[];
+  weight: string[];
+  condition?: string | null;
+  dimensions?: string | null;
+  material: string[];
+  quantity: number;
+  costPrice: number;
+  sellingPrice: number;
+  discount: number;
+  finalPrice: number;
+  profitMargin: number;
+  pricingTiers: any[];
+  isOnOffer: boolean;
+  isFlashDeal: boolean;
+  isDiscounted: boolean;
+  startDealDate?: Date | null;
+  endDealDate?: Date | null;
+  isAvailable: boolean;
+  isNewArrival: boolean;
+  isFeatured: boolean;
+  make?: string | null;
+  trim?: string | null;
+  type?: string | null;
+  mileage?: string | null;
+  engineType?: string | null;
+  engineSize?: number | null;
+  horsepower?: number | null;
+  torque?: number | null;
+  fuelType?: string | null;
+  fuelEconomy?: string | null;
+  transmission?: string | null;
+  drivetrain?: string | null;
+  vin?: string | null;
+  logbookStatus?: string | null;
+  serviceHistory?: string | null;
+  negotiable: boolean;
+  financingAvailable: boolean;
+  tradeIn: boolean;
+  features: any[];
+  previousOwners?: number | null;
+  tireCondition?: string | null;
+  accidentalHistory?: boolean | null;
+  author?: string | null;
+  publisher?: string | null;
+  isbn?: string | null;
+  fabricComposition?: string | null;
+  careInstructions?: string | null;
+  energyRating?: string | null;
+  warrantyPeriod?: string | null;
+  applianceDimensions?: string | null;
+  ingredients?: string | null;
+  usageInstructions?: string | null;
+  expirationDate?: Date | null;
+  option: any[];
+  amenities: string[];
+  propertyTypeId?: string | null;
+  area?: string | null;
+  bedrooms: any[];
+  studios: any[];
+  bathrooms?: string | null;
+  serviceSchedule?: string | null;
+  year?: number | null;
+  availabilityStart?: Date | null;
+  availabilityEnd?: Date | null;
+  location?: GeoLocation | null; // Correct client-side type
+  locationName?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  contact?: string | null;
+  contactName?: string | null;
+  email?: string | null;
+  delivery: boolean;
+  paymentOption: string;
+  showOnGhuba?: boolean | null;
+  digitalUrl?: string | null;
+  autoDeliver?: boolean | null;
+  hourlyRate?: number | null;
+  minimumHours?: number | null;
+  minNoticePeriod?: string | null;
+  maxBookingAhead?: string | null;
+  totalCapacity?: number | null;
+  deliveryMethod?: string | null;
+  fulfillmentStatus?: string | null;
+  providerRating?: number | null;
+  bookingSlots: any[];
+  status: ListingStatus;
+  collectionId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  tax?: number | null;
+  shippingCost?: number | null;
+  locationId?: string | null;
+}
 
-export type ProductCategory = {
+export interface MarketListingForm {
+  // Manual definition matching Prisma's marketplaceListings model
+  id: string;
+  companyId?: string | null;
+  sellerId?: string | null;
+  sellerType?: "CLIENT" | "CONSUMER" | "ADMIN" | "COMPANY" | "INDIVIDUAL" | null;
+  productId?: string | null;
+  productCategoryId: string;
+  category?: string | null;
+  subCategory: any;
+  subCategoryName?: string | null;
+  tags: string[];
+  brand?: string | null;
+  option: any[];
+  name: string;
+  description?: string | null;
+  longDescription?: string | null;
+  model?: string | null;
+  color: string[];
+  size: string[];
+  weight: string[];
+  condition?: string | null;
+  dimensions?: string | null;
+  material: string[];
+  quantity: number;
+  images: any[];
+  video?: string | null;
+  profitMargin?: number | null;
+  buyingPrice: number;
+  sellingPrice: number;
+  finalPrice?: number | null;
+  discount?: number | null;
+  tax?: number | null;
+  shippingCost?: number | null;
+  pricingTiers: any[];
+  isAvailable: boolean;
+  isOnOffer: boolean;
+  isFlashDeal: boolean;
+  isNewArrival: boolean;
+  isDiscounted: boolean;
+  isFeatured: boolean;
+  startDealDate?: Date | null;
+  endDealDate?: Date | null;
+  author?: string | null;
+  publisher?: string | null;
+  isbn?: string | null;
+  fabricComposition?: string | null;
+  careInstructions?: string | null;
+  energyRating?: string | null;
+  warrantyPeriod?: string | null;
+  applianceDimensions?: string | null;
+  ingredients?: string | null;
+  usageInstructions?: string | null;
+  expirationDate?: Date | null;
+  area?: string | null;
+  propertyTypeId?: string | null;
+  serviceSchedule?: string | null;
+  bedrooms: any[];
+  studios: any[];
+  bathrooms?: string | null;
+  digitalUrl?: string | null;
+  autoDeliver?: boolean | null;
+  make?: string | null;
+  trim?: string | null;
+  type?: string | null;
+  mileage?: string | null;
+  engineType?: string | null;
+  engineSize?: number | null;
+  horsepower?: number | null;
+  torque?: number | null;
+  fuelType?: string | null;
+  fuelEconomy?: string | null;
+  transmission?: string | null;
+  drivetrain?: string | null;
+  vin?: string | null;
+  logbookStatus?: string | null;
+  serviceHistory?: string | null;
+  negotiable?: boolean | null;
+  financingAvailable?: boolean | null;
+  tradeIn?: boolean | null;
+  features: any[];
+  previousOwners?: number | null;
+  tireCondition?: string | null;
+  accidentalHistory?: boolean | null;
+  year?: number | null;
+  availabilityStart?: Date | null;
+  availabilityEnd?: Date | null;
+  bookingSlots: any[];
+  minNoticePeriod?: string | null;
+  maxBookingAhead?: string | null;
+  requiredClientInfo: string[];
+  fulfillmentStatus?: string | null;
+  totalCapacity?: number | null;
+  currentBookedCount?: number | null;
+  providerRating?: number | null;
+  hourlyRate?: number | null;
+  minimumHours?: number | null;
+  deliveryMethod?: string | null;
+  contact?: string | null;
+  email?: string | null;
+  contactName?: string | null;
+  amenities: string[];
+  delivery: boolean;
+  paymentOption: string;
+  showOnGhuba?: boolean | null;
+  status: ListingStatus;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+  location?: GeoLocation | null; // Correct client-side type
+  locationName?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationId?: string | null;
+  collectionId?: string | null;
+  commissionRateId?: string | null;
+}
+
+//################################################################################
+//## EDUCATION (LMS) INTERFACES
+//################################################################################
+
+export interface ICourse extends Course {}
+
+export interface TimetableEntry extends ClassSchedule {
+  courseTitle: string;
+  courseAcademicLevels: { id: string; name: string }[];
+  educatorName: string;
+  educatorEmail: string;
+}
+
+export interface CourseOption {
+  id: string;
+  title: string;
+  academicLevels: { id: string; name: string }[];
+  instructorName?: string;
+}
+
+export interface EducatorOption {
+  id: string;
+  name: string | null;
+  email: string;
+}
+
+export interface AcademicLevelOption {
   id: string;
   name: string;
-  slug: string;
-  description?: string;
-  longDescription?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-  metaKeywords?: string[];
   sortOrder?: number;
-  visible?: boolean;
-  isFeatured?: boolean;
-  showInHomepage?: boolean;
-  attributes?: Record<string, any>;
-  subcategories?: Subcategory[] | null;
-  icon?: string;
-  image?: string;
-};
+}
 
+//################################################################################
+//## LOCATION INTERFACES
+//################################################################################
 
-// Handlers signature
+export interface ILocation extends Location {
+  children?: ILocation[];
+}
+
+export interface ICompanyLocation extends CompanyLocation {}
+
+export interface SelectedLocation {
+  id: string;
+  name: string;
+  children: SelectedLocation[];
+}
+
+//################################################################################
+//## MAIN STORE FORM INTERFACE (Represents the Company model for forms)
+//################################################################################
+
+// FIXED: This interface no longer extends `Company` to avoid type conflicts.
+// It manually defines the shape of the data for your store form.
+export interface StoreForm {
+  // All fields from Prisma's Company model
+  id: string;
+  name: string;
+  slug: string;
+  tagline: string | null;
+  description: string | null;
+  hasWebsite: boolean | null;
+  companyCategoryId: string | null;
+  category: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  contactEmail: string;
+  contactPhone: string | null;
+  site: string | null;
+  address: string | null;
+  domain: string | null;
+  currency: string;
+  locale: string;
+  userId: string | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  deletedAt: Date | null;
+  sEOId: string | null;
+
+  // Manually typed JSON and relational fields for client-side use
+  geoLocation: GeoLocation | null;
+  openingHours: OpeningHours | null;
+  pricingTiers: PricingTier[];
+  themeSettings: Record<string, any> | null;
+  awards: Award[] | null;
+  metrics: Metric[] | null;
+  stats: Stat[] | null;
+
+  // Relational arrays
+  settings: CompanySettings | null;
+  socialLinks: SocialLink[];
+  policies: Policy[];
+  faqs: FAQ[];
+  testimonials: Testimonial[];
+  promotions: IPromotion[];
+  announcements: any[]; // Define IAnnouncement if needed
+  pageSections: IPageSection[];
+  heroSlides: HeroSlide[];
+  appPromos: AppPromo[];
+  events: Event[];
+  courses: ICourse[];
+  blogs: IBlog[];
+  seo: SEO | null;
+  analyticsConfig: AnalyticsConfig | null;
+  paymentSettings: PaymentSettings | null;
+  shippingSettings: ShippingSettings | null;
+  storeCategories: IStoreCategory[];
+  companyLocations: ICompanyLocation[];
+  marketplaceListings: MarketListingForm[];
+  writers: User[];
+  salesAgents: User[];
+  doctors: User[];
+  podcasts: any[];
+  services: any[];
+}
+
+//################################################################################
+//## EVENT INTERFACE
+//################################################################################
+
+export interface IEvent extends Event {
+  ticketsSold?: number;
+}
+
+//################################################################################
+//## HANDLERS & MISC
+//################################################################################
+
 export interface Handlers {
   handleChange: (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
-
   onUpdateArray: <T>(
     key: keyof StoreForm,
     idx: number,
     field: keyof T,
     value: any
   ) => void;
-
   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
-
   setAddress: (address: string, geo: GeoLocation) => void;
-  onChangeSettings: (updated: any) => void;//Partial<StoreForm>
-
+  onChangeSettings: (updated: Partial<StoreForm>) => void;
   onBulkToggle: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void;
-
-  onToggleParent: (cat: StoreCategory) => void;
-  onToggleSub: (parentId: string, sub: Subcategory) => void;
+  onToggleParent: (cat: IStoreCategory) => void;
+  onToggleSub: (parentId: string, sub: ISubcategory) => void;
   onToggleBrand: (parentId: string, brand: any) => void;
-
-  onUpdateHeroSlide: (
-    index: number,
-    field: keyof HeroSlide,
-    value: string
-  ) => void;
-  onAddHeroSlide: () => void;
-  onRemoveHeroSlide: (index: number) => void;
-  handleSlideImageUpload: (
-    index: number,
-    file: File,
-    field: keyof HeroSlide
-  ) => void;
-  // handleSlideImageUpload
-  // onHeroImageUpload: (index: number, file: File) => void;
-
-  onUpdatePromotion: (
-    index: number,
-    field: keyof Promotion,
-    value: string
-  ) => void;
-  onAddPromotion: () => void;
-  onRemovePromotion: (index: number) => void;
-  onPromotionImageUpload: (index: number, file: File) => void;
-
-  onToggleLocation: (location: Location, isSelected: boolean) => void;
-  onBulkToggleLocations: (locationIds: string[]) => void;
-
-  // Media (logo/banner)
   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
   handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
 }
 
-// Step configuration
 export interface StepConfig {
   key: string;
   title: string;
-  render: (form: StoreForm, 
-    handlers: Handlers, 
-    availableCategories: StoreCategory[],
-    allLocs: Location[],  
-    selectedLocationsForDisplay: SelectedLocation[]
+  render: (
+    form: StoreForm,
+    handlers: Handlers,
+    availableCategories: IStoreCategory[],
+    allLocs: ILocation[],
   ) => React.ReactNode;
-}
-
-export interface BookItem {
-  title: string;
-  author: string;
-  coverFile: File | null;      // raw File for upload
-  coverPreview: string | null; // objectURL for preview
-}
-
-export interface Promotion {
-  title: string;
-  description?: string;
-  startsAt?: Date | string;
-  endsAt?: Date | string;
-  bannerUrl?: string;
-  order?: number;
-}
-
-export interface HeroSlide {
-  imageUrl: string;
-  headline?: string;
-  subline?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  order?: number;
-}
-
-export type TimetableEntry = {
-  id: string;
-  courseId: string;
-  courseTitle: string;
-  courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
-  educatorId: string;
-  educatorName: string;
-  educatorEmail: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  topic?: string | null;
-  meetingLink?: string | null;
-  companyId: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type CourseOption = {
-  id: string;
-  title: string;
-  academicLevels: { id: string; name: string; sortOrder?: number }[];
-  instructorName?: string;
-};
-
-export type EducatorOption = {
-  id: string;
-  name: string;
-  email: string;
-};
-
-export type AcademicLevelOption = {
-  id: string;
-  name: string;
-  sortOrder?: number;
-};
-
-
-// Assuming these types are defined elsewhere, e.g., in '@/types/typings'
-// type StoreCategory = string; // Placeholder, replace with your actual type
-// type ProductCategory = string; // Placeholder, replace with your actual type
-// type BookingSlotType = any; // Placeholder, replace with your actual type
-
-export interface ProductForm {
-  // identifiers
-  id: string;
-  companyId: string;
-
-  // basic info
-  name: string;
-  description?: string;
-  longDescription: string; // Added from GeneralDetails
-
-  tags: string[];
-
-  category: StoreCategory | null;
-  subCategory: ProductCategory | null;
-  subCategoryName: string;
-  brand: string | null;
-
-  // Add other fields as needed, especially for CommissionSection
-
-  travelDetail?: string;
-
-  // specs (General Details - physical attributes)
-  model: string;
-  color: string[];
-  size: string[]; // Assuming size can be multiple strings (e.g., ["S", "M", "L"])
-  weight: string; // Kept as string as it might include units (e.g., "5 kg")
-  condition: string;
-  dimensions: string; // Corrected to `dimensions` from `dimension` for consistency
-  material: string[]; // Can be a single string or an array of materials
-
-  // media
-  images: string[];
-  video: string | null;
-  digitalUrl: string;
-  autoDeliver: boolean;
-
-  // flags
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-
-  // pricing
-  quantity: number;
-  costPrice: number;
-  sellingPrice: number;
-  discount: number;
-  finalPrice: number;
-  profitMargin: number;
-  pricingTiers: PricingTier[]; // New: Added for more complex pricing structures
-
-  // vehicle (Engine & Performance, Ownership & Pricing sections)
-  make: string;
-  trim: string;
-  type: string;
-  mileage: string; // Kept as string as it might include units (e.g., "50000 km")
-  engineType: string;
-  engineSize: number; // Changed to number for calculations
-  transmission: string;
-  drivetrain: string;
-  vin: string;
-  logbookStatus: string;
-  serviceHistory: string;
-  negotiable: boolean;
-  financingAvailable: boolean;
-  tradeIn: boolean;
-  features: any[]; // Generic array for miscellaneous features
-
-  // New vehicle-related fields
-  horsepower: number; // Changed to number
-  torque: number; // Changed to number
-  fuelType: string;
-  fuelEconomy: string; // Kept as string as it includes units (e.g., "7.5 L/100km")
-
-  // New ownership-related fields
-  previousOwners: number; // Changed to number
-  tireCondition: string;
-  accidentalHistory: boolean;
-
-  // books
-  author: string;
-  publisher: string;
-  isbn: string;
-
-  // fashion
-  fabricComposition: string;
-  careInstructions: string;
-
-  // appliances
-  energyRating: string;
-  warrantyPeriod: string;
-
-  // beauty
-  ingredients: string;
-  usageInstructions: string;
-  expirationDate: string | null;
-
-  // options & amenities
-  option: JSON[]; // Generic array for various options
-  amenities: string[]; // Specific for properties/services
-
-  // property
-  bedrooms: JSON[]; // Changed to number
-  studios: JSON[]; // Changed to number
-  bathrooms: number; // Changed to number
-  area: string; // Kept as string for units (e.g., "1500 sqft")
-
-  propertyTypeId: string;
-  serviceSchedule: string;
-
-  // year & scheduling
-  year: number; // Changed to number
-
-  
-  // deals
-  startDealDate: string | null;
-  endDealDate: string | null;
-
-  availabilityStart: string;
-  availabilityEnd: string;
-  
-  tax?: number | null;
-  shippingCost?: number | null; 
-
-  // location & contact
-  location: any; // Consider a more specific type if possible (e.g., { lat: number, lng: number })
-  locationName: string;
-  latitude: number | null;
-  longitude: number | null;
-  contact: string;
-  contactName: string;
-  email: string;
-
-  // admin
-  status: string;
-  collectionId: string;
-  
-  applianceDimensions?: string | null;
-
-  // Service/Booking related fields (from previous snippet, kept for completeness)
-  hourlyRate?: number | null;
-  minimumHours?: number | null;
-  minNoticePeriod?: string | null;
-  maxBookingAhead?: string | null;
-  totalCapacity?: number | null;
-  deliveryMethod?: string  | null;
-  fulfillmentStatus?: string | null;
-  providerRating?: number | null;
-  
-  requiredClientInfo?: string[] | null;
-  bookingSlots?: JSON[]; // JSON array
-
-  productCategory?: { id: string; name: string }; // Changed displayName to name for ProductCategory
-  productCategoryId?: string;
-  
-  delivery?: boolean;
-  paymentOption?: string;
-  showOnGhuba?: boolean;
-  
-  locationId?: string | null;
-  propertyType?: { id: string }; // Assuming PropertyType relation on Product
-  
-  currentBookedCount?: number | null;
-  
-  commissionStartDate?: string | Date; // Added
-  commissionEndDate?: string | Date; // Added
-  commissionType?: string; // Added
-  commissionRate?: number; // Added
-}
-
-export interface InventoryItem {
-  id: string;
-  name: string;
-  companyId: string;
-  productItem: ProductForm;
-  inventoryId: string;
-  category: StoreCategory;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-}
-
-export interface MarketListingForm {
-  // Identifiers & relations
-  id: string;
-  productId: string;
-  sellerType: string;
-  companyId?: string;
-  productTypeId?: string; // Added: For propertyType relation
-  commissionRateId?: string; // Added for the relation ID
-
-  // Title & description
-  name: string;
-  description?: string | null | undefined; // Made optional
-  longDescription?: string | null | undefined; // Added: Matches schema
-
-  // Category hierarchy & tagging
-  productCategoryId: string; // This will hold the ID of the actual ProductCategory
-  category: StoreCategory | null; // This holds the *selected StoreCategory object*
-  subCategory: any; // JSON from StoreCategory.items or ProductCategory.subcategories
-  subCategoryName: string; // If you derive a name from subCategory JSON
-  tags: string[];
-
-  // Branding & specs
-  brand: string | null;
-  model: string;
-  color: string[];
-  size: string[];
-  weight: string;
-  condition: string;
-  dimensions: string; // Corrected: From dimension to dimensions
-  material: string[];
-
-  // Profit & pricing
-  quantity: number;
-  buyingPrice: number;
-  sellingPrice: number;
-  discount: number;
-  finalPrice: number;
-  profitMargin: number;
-  pricingTiers: any[]; // Added: For JSON array of pricing tiers
-
-  // Deal scheduling
-  startDealDate: string | null;
-  endDealDate: string | null;
-
-  // Feature flags
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-
-  // Marketplace-specific
-  delivery: boolean;
-  paymentOption: string;
-  showOnGhuba: boolean;
-
-  // Contact & location
-  contactName: string;
-  contact: string;
-  email?: string; // Added: As per schema
-  locationName: string;
-  location: any; // JSON for GeoJSON or similar
-  locationId?: string | null; // ID for PropertyLocation relation
-  latitude: number | null;
-  longitude: number | null;
-  
-  option: JSON[]; // Generic array for various options
-  amenities: string[]; // Moved here, was under Property-specific
-
-  // Vehicle-specific
-  make: string;
-  trim: string;
-  type: string;
-  mileage: string;
-  engineType: string;
-  engineSize: number | null; // Corrected to number | null
-  horsepower: number | null; // Added: Matches schema
-  torque: number | null; // Added: Matches schema
-  fuelType: string; // Added: Matches schema
-  fuelEconomy: string; // Added: Matches schema
-  transmission: string;
-  drivetrain: string;
-  vin: string;
-  logbookStatus: string;
-  serviceHistory: string;
-  negotiable: boolean;
-  financingAvailable: boolean;
-  tradeIn: boolean;
-  features: any[]; // Added: For JSON array of features
-
-  // Ownership & Pricing (New fields for Vehicle/General)
-  previousOwners: number | null; // Added: Matches schema
-  tireCondition: string; // Added: Matches schema
-  accidentalHistory: boolean; // Added: Matches schema
-  tax?: number | null; // Added
-  shippingCost?: number | null; // Added
-
-  // Books
-  author: string;
-  publisher: string;
-  isbn: string;
-
-  // Clothing/Fashion
-  fabricComposition: string;
-  careInstructions: string;
-
-  // Home Appliances
-  energyRating: string;
-  warrantyPeriod: string;
-  applianceDimensions?: string | null;
-
-  // Beauty Products
-  ingredients: string | null;
-  usageInstructions: string;
-  expirationDate: string | null;
-
-  // Property-specific
-  bedrooms: JSON[] | null; // Corrected to number | null
-  studios: JSON[] | null; // Corrected to number | null
-  bathrooms: number | null; // Corrected to number | null
-  area: string;
-  serviceSchedule: string;
-
-  // Service/Booking related fields
-  availabilityStart: string | null; // Nullable
-  availabilityEnd: string | null; // Nullable
-
-  bookingSlots?: JSON[]; // JSON array
-  minNoticePeriod?: string | null;
-  maxBookingAhead?: string | null;
-  requiredClientInfo?: string[] | null;
-  fulfillmentStatus?: string | null;
-  totalCapacity?: number | null; // Corrected to number | null
-
-  currentBookedCount?: number | null; // Corrected to number | null
-  providerRating?: number | null; // Corrected to number | null
-  hourlyRate?: number | null; // Corrected to number | null
-  minimumHours?: number | null; // Corrected to number | null
-  deliveryMethod?: string | null;
-
-  // Digital goods
-  digitalUrl: string;
-  autoDeliver: boolean;
-
-  // Admin-only
-  status: string;
-  collectionId?: string; // Added: Matches schema
-  year?: number | null; // Added: As per schema (vehicle/service year)
-
-  // Commission fields
-  commissionType: string;
-  commissionRate: number;
-  commissionStartDate: string | null;
-  commissionEndDate: string | null;
-
-  images?: string[] | null;
-  video?: string | null;
-  
-  propertyTypeId?: string; // Relation ID
-  
-  // Timestamps
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  
-  // Location fields
-  
-  selectedLocationDetails?: Location | null; // Optional: To store the full selected Location object for display/form logic
-  
-  // The `product` nested object is likely for displaying details from the base product
-  // but if the form itself handles all these fields, it might be redundant or for specific scenarios.
-  // I've kept it but note that most fields are now direct properties of MarketplaceListingForm
-  product?: {
-    id: string;
-    name: string;
-    description?: string;
-    brand?: string;
-    color?: string[];
-    size?: string[];
-    // ... all other relevant product fields if you intend to display/edit them through this nested object
-    // It's generally better for the form to directly map to the listing's properties
-    // unless there's a specific reason for this nested structure.
-  }
-}
-
-
-// types/index.ts
-export interface Event {
-  id: string;
-  title: string;
-  startDateTime: string;
-  endDateTime?: string;
-  location: string;
-  eventStatus: 'SCHEDULED' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'POSTPONED';
-  ticketsSold?: number;
-  description?: string;
-  summary?: string;
-  imageUrl?: string;
-  eventType?: 'GENERAL' | 'ACADEMIC' | 'CULTURAL' | 'SPORTS' | 'BUSINESS';
-  isRegistrationRequired?: boolean;
-  maxCapacity?: number | null;
-  isPaid?: boolean;
-  price?: number | null;
-  contactEmail?: string;
-  contactPerson?: string;
-  contactPhone?: string;
-  audience?: string;
-  
-  companyId: string; // Required for POST
-  
-  onlineMeetingLink?: string;
-  
-  videoUrl?: string;
-  
-  organizerId: string; // Required for POST
-  
-  targetAcademicLevelIds?: string[];
-  targetCourseIds?: string[];
-  targetEducatorIds?: string[];
-  targetStudentIds?: string[];
-  targetDepartmentIds?: string[];
-  targetParentIds?: string[];
-  
-  createdAt?: string; // Not needed for form input
-  updatedAt?: string; // Not needed for form input
-}
-
-// Location model type (from your Prisma schema)
-export interface Location {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-  seoTitle?: string;
-  seoDescription?: string;
-  metaKeywords: string[];
-  sortOrder: number;
-  visible: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-  createdBy?: string;
-  updatedBy?: string;
-  status: 'active' | 'inactive' | 'draft';
-  parentId: string | null;
-  // Note: 'children' and 'parent' are Prisma relations, not direct fields
-  // We'll add 'children' for the UI tree building
-  children?: Location[];
-  localization?: any; // JSON type
-  attributes?: any; // JSON type
-  // Prisma relations are not directly included in this flat type,
-  // but we can add them if needed for client-side logic
-  // CompanyLocation?: CompanyLocationType[];
-  // Product?: any[];
-  // marketplaceListings?: any[];
-  // Property?: any[];
-}
-
-// CompanyLocation model type (from your Prisma schema)
-export interface CompanyLocationType {
-  id?: string; // Optional for new creations
-  companyId: string;
-  locationId: string;
-  displayName?: string;
-  addressLine1Override?: string;
-  addressLine2Override?: string;
-  cityOverride?: string;
-  stateOverride?: string;
-  postalCodeOverride?: string;
-  countryOverride?: string;
-  latitudeOverride?: number;
-  longitudeOverride?: number;
-  sortOrder: number;
-  visible: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-  // Prisma relations are not directly included in this flat type
-  // company?: any;
-  // location?: Location;
-}
-
-// UI-specific type for selected locations (for LocationSelectionAccordion)
-export interface SelectedLocation {
-  id: string; // This is the locationId
-  name: string;
-  children: SelectedLocation[];
 }

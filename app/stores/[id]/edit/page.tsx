@@ -1,11 +1,34 @@
 // app/stores/[id]/edit/page.tsx
+
 import React from "react";
 import { redirect } from "next/navigation";
 import CreateStoreForm from "@/components/stores/create/CreateStoreForm/CreateStoreForm";
 import prisma from "@/server/db/prismadb";
-import { PolicyType, SocialChannel, StoreForm } from "@/types/typings";
+import {
+  ILocation,
+  IStoreCategory,
+  PolicyType,
+  SocialChannel,
+  StoreForm,
+} from "@/types/typings";
 
 export const dynamic = "force-dynamic";
+
+// Helper function to safely parse JSON fields from the database
+const safeJsonParse = (jsonField: any, fallback: any = null) => {
+  if (typeof jsonField === "object" && jsonField !== null) {
+    return jsonField; // It's already a parsed object
+  }
+  if (typeof jsonField === "string") {
+    try {
+      return JSON.parse(jsonField);
+    } catch (e) {
+      console.error("Failed to parse JSON field:", e);
+      return fallback;
+    }
+  }
+  return fallback; // Return fallback for other types or null/undefined
+};
 
 export default async function EditStorePage({
   params,
@@ -14,240 +37,173 @@ export default async function EditStorePage({
 }) {
   const id = params.id;
 
-  // ── Fetch the company WITH its one‐to‐one relations ──
+  // --- Fetch the company with ALL its one-to-many and one-to-one relations ---
   const store = await prisma.company.findUnique({
     where: { id },
     include: {
+      // One-to-many relations
       socialLinks: true,
       policies: true,
       faqs: true,
-      testimonials: true,
-      heroSlides: true,
+      testimonials: { include: { author: true } }, // Nested include for author details
+      heroSlides: true, // Banners
       promotions: true,
-      seo: true,
+      blogs: true,
+      PageSection: true,
+      appPromos: true,
+      events: true,
+      courses: true,
+      Writer: true,
+      salesAgents: true,
+      Doctor: true,
+      Podcast: true,
+      services: true,
+      marketplaceListings: true,
+      Announcement: true,
 
-      // Now singular, not array:
-      analyticsConfig: true,
-      paymentSettings: true,
-      shippingSettings: true,
+      // One-to-one relations (which are technically one-to-many in the schema)
+      settings: true,
+      SEO: true,
+      AnalyticsConfig: true,
+      PaymentSettings: true,
+      ShippingSettings: true,
 
+      // Junction/Join Tables
       StoreCategory: {
-        include: { category: true },
+        include: {
+          category: true, // Include the related ProductCategory
+        },
       },
-
-      CompanyLocation:{
-        include:{
-          location: true
-        }
-      }
+      CompanyLocation: {
+        include: {
+          location: true, // Include the related base Location
+        },
+      },
     },
   });
 
   if (!store) {
-    // If not found, redirect out
     redirect("/stores");
   }
 
-  // ── Fetch “availableCategories” from your external API ──
-  const res = await fetch(
+  // --- Fetch available categories and locations for the form selectors ---
+  const categoryRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
-    { cache: 'no-store' }
+    { cache: "no-store" }
   );
-  const dataCategories = await res.json();
-  
-  const availableCategories = dataCategories.results;
+  const categoryData = await categoryRes.json();
+  const availableCategories: IStoreCategory[] = categoryData.results || [];
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/locations`);
+  const locationRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/locations`
+  );
+  const locationData = await locationRes.json();
+  const availableLocations: ILocation[] = locationData.data || [];
 
-  const dataLoctions = await response.json();
-      
-  const availableLocations = dataLoctions.data || [];
+  // Safely get the first item from relations defined as arrays but used as one-to-one
+  const seoData = store.SEO && store.SEO.length > 0 ? store.SEO[0] : null;
+  const analyticsConfigData =
+    store.AnalyticsConfig && store.AnalyticsConfig.length > 0
+      ? store.AnalyticsConfig[0]
+      : null;
+  const paymentSettingsData =
+    store.PaymentSettings && store.PaymentSettings.length > 0
+      ? store.PaymentSettings[0]
+      : null;
+  const shippingSettingsData =
+    store.ShippingSettings && store.ShippingSettings.length > 0
+      ? store.ShippingSettings[0]
+      : null;
 
-  // ── Map the Prisma object into your StoreForm shape ──
+  // --- Map the comprehensive Prisma object to the StoreForm shape ---
   const storeFormData: StoreForm = {
+    // Spread direct fields from the store object
     id: store.id,
     name: store.name,
     slug: store.slug,
-    domain: store.domain ?? "",
+    userId: store.userId,
+    companyCategoryId: store.companyCategoryId,
+    createdAt: store.createdAt,
+    updatedAt: store.updatedAt,
+    deletedAt: store.deletedAt,
+    sEOId: store.sEOId,
+    site: store.site,
+    category: store.category,
+
+    // Safely handle nullable and JSON fields
     tagline: store.tagline ?? "",
     description: store.description ?? "",
-    category: store.category,
+    hasWebsite: store.hasWebsite ?? false,
+    domain: store.domain ?? "",
     logoUrl: store.logoUrl ?? "",
     bannerUrl: store.bannerUrl ?? "",
-    contactEmail: store.contactEmail ?? "",
+    contactEmail: store.contactEmail,
     contactPhone: store.contactPhone ?? "",
     address: store.address ?? "",
-    geoLocation:
-      typeof store.geoLocation === "string"
-        ? JSON.parse(store.geoLocation)
-        : store.geoLocation,
+    currency: store.currency ?? "KES",
+    locale: store.locale ?? "en-US",
 
-    openingHours:
-      typeof store.openingHours === "string"
-        ? JSON.parse(store.openingHours)
-        : store.openingHours,
+    // Safely parse JSON fields using the helper
+    geoLocation: safeJsonParse(store.geoLocation, { lat: 0, lng: 0 }),
+    openingHours: safeJsonParse(store.openingHours, {}),
+    themeSettings: safeJsonParse(store.themeSettings, {}),
+    awards: safeJsonParse(store.awards, []),
+    metrics: safeJsonParse(store.metrics, []),
+    stats: safeJsonParse(store.stats, []),
+    pricingTiers: safeJsonParse(store.pricingTiers, []),
 
+    // Map one-to-many relations
     socialLinks: store.socialLinks.map((s) => ({
-      id: s.id,
+      ...s,
       channel: s.channel as unknown as SocialChannel,
-      url: s.url,
     })),
-
     policies: store.policies.map((p) => ({
-      id: p.id,
-      type: p.type as unknown as unknown as PolicyType,
+      ...p,
+      type: p.type as unknown as PolicyType,
       title: p.title ?? undefined,
-      content: p.content,
     })),
+    faqs: store.faqs,
+    testimonials: store.testimonials,
+    heroSlides: store.heroSlides,
+    promotions: store.promotions,
+    blogs: store.blogs,
+    pageSections: store.PageSection,
+    appPromos: store.appPromos,
+    events: store.events,
+    courses: store.courses,
+    writers: store.writers,
+    salesAgents: store.salesAgents,
+    doctors: store.doctors,
+  	podcasts: store.podcasts,
+    services: store.services,
+    marketplaceListings: store.marketplaceListings,
+    announcements: store.announcements,
 
-    faqs: store.faqs.map((f) => ({
-      id: f.id,
-      question: f.question,
-      answer: f.answer,
-      order: f.order,
-    })),
+    // Handle one-to-one relations
+    settings: store.settings ?? null,
+    seo: seoData,
+    analyticsConfig: analyticsConfigData,
+    paymentSettings: paymentSettingsData,
+    shippingSettings: shippingSettingsData,
 
-    testimonials: store.testimonials.map((t) => ({
-      id: t.id,
-      authorId: t.authorId,
-      authorName: t.authorName,
-      author: t.authorId,
-      quote: t.quote,
-      rating: t.rating ?? undefined,
-      avatarUrl: t.avatarUrl ?? undefined,
-      order: t.order,
-    })),
-
-    heroSlides: store.heroSlides.map((h) => ({
-      id: h.id,
-      imageUrl: h.imageUrl,
-      productImageUrl: h.productImageUrl ?? "",
-      headline: h.headline ?? "",
-      subline: h.subline ?? "",
-      ctaText: h.ctaText ?? "",
-      ctaLink: h.ctaLink ?? "",
-      order: h.order,
-    })),
-
-    promotions: store.promotions.map((p) => ({
-      id: p.id,
-      code: p.code ?? undefined,
-      title: p.title,
-      description: p.description ?? "",
-      startsAt: p.startsAt?.toISOString() ?? undefined,
-      endsAt: p.endsAt?.toISOString() ?? undefined,
-      bannerUrl: p.bannerUrl ?? "",
-    })),
-
-    // ── ONE‐TO‐ONE: seo (always object for Record<string, any>) ──
-    seo: store.seo
-      ? {
-          id: store.seo.id,
-          title: store.seo.title,
-          description: store.seo.description,
-          keywords: store.seo.keywords,
-        }
-      : {},
-
-    // ── ONE‐TO‐ONE: analyticsConfig (or undefined) ──
-    analyticsConfig: store.analyticsConfig
-      ? {
-          id: store.analyticsConfig.id,
-          googleTag: store.analyticsConfig.googleTag ?? "",
-          facebookTag: store.analyticsConfig.facebookTag ?? "",
-          // companyId: store.analyticsConfig.companyId,
-        }
-      : {},
-
-    // ── ONE‐TO‐ONE: paymentSettings (or undefined) ──
-    paymentSettings: store.paymentSettings
-      ? {
-          id: store.paymentSettings.id,
-          stripeKey: store.paymentSettings.stripeKey ?? "",
-          paypalKey: store.paymentSettings.paypalKey ?? "",
-          mpesaShortcode: store.paymentSettings.mpesaShortcode ?? "",
-          mpesaConsumerKey: store.paymentSettings.mpesaConsumerKey ?? "",
-          mpesaConsumerSecret: store.paymentSettings.mpesaConsumerSecret ?? "",
-          mpesaCallbackUrl: store.paymentSettings.mpesaCallbackUrl ?? "",
-          // companyId: store.paymentSettings.companyId,
-        }
-      : {},
-
-    // ── ONE‐TO‐ONE: shippingSettings (or undefined) ──
-    shippingSettings: store.shippingSettings
-      ? {
-          id: store.shippingSettings.id,
-          carrierName: store.shippingSettings.carrierName ?? "",
-          trackingUrl: store.shippingSettings.trackingUrl ?? "",
-          regions: store.shippingSettings.regions ?? [],
-          enablePickup: store.shippingSettings.enablePickup ?? false,
-          pickupInstructions: store.shippingSettings.pickupInstructions ?? "",
-          // companyId: store.shippingSettings.companyId,
-        }
-      : {},
-
-    // ── JUNCTION TABLE: StoreCategory[] ──
+    // Map junction tables
     storeCategories: store.StoreCategory.map((sc) => ({
-      companyId: sc.companyId,
-      categoryId: sc.categoryId,
+      ...sc,
       displayName: sc.displayName ?? sc.category.name,
-      category: sc.category,
-      id: sc.id,
-      name: sc.displayName ?? sc.category.name,
       icon: sc.icon ?? "",
-      items: Array.isArray(sc.items)
-        ? sc.items
-        : typeof sc.items === "string"
-        ? JSON.parse(sc.items)
-        : [],
-      allBrands: Array.isArray(sc.allBrands)
-        ? sc.allBrands
-        : typeof sc.allBrands === "string"
-        ? JSON.parse(sc.allBrands)
-        : [],
-      sortOrder: sc.sortOrder,
-      visible: sc.visible,
+      subcategories: safeJsonParse(sc.subcategories, []),
+      allBrands: safeJsonParse(sc.allBrands, []),
     })),
-
-    awards: Array.isArray(store.awards) ? store.awards : typeof store.awards === "string" ? JSON.parse(store.awards) : undefined,
-    metrics: Array.isArray(store.metrics) ? store.metrics : typeof store.metrics === "string" ? JSON.parse(store.metrics) : undefined,
-    stats: Array.isArray(store.stats) ? store.stats : typeof store.stats === "string" ? JSON.parse(store.stats) : undefined,
-    
-    themeSettings:
-      typeof store.themeSettings === "string"
-        ? JSON.parse(store.themeSettings)
-        : store.themeSettings ?? undefined,
-
-    marketplaceListings:[],
-
-    // Add missing properties for StoreForm
-    hasWebsite: typeof store.hasWebsite === "boolean" ? store.hasWebsite : false,
-    pricingTiers: Array.isArray(store.pricingTiers)
-      ? store.pricingTiers
-      : typeof store.pricingTiers === "string"
-      ? JSON.parse(store.pricingTiers)
-      : [],
-
     companyLocations: store.CompanyLocation.map((cl) => ({
       ...cl,
-      displayName: cl.displayName === null ? undefined : cl.displayName,
-      addressLine1Override: cl.addressLine1Override === null ? undefined : cl.addressLine1Override,
-      addressLine2Override: cl.addressLine2Override === null ? undefined : cl.addressLine2Override,
-      cityOverride: cl.cityOverride === null ? undefined : cl.cityOverride,
-      stateOverride: cl.stateOverride === null ? undefined : cl.stateOverride,
-      postalCodeOverride: cl.postalCodeOverride === null ? undefined : cl.postalCodeOverride,
-      countryOverride: cl.countryOverride === null ? undefined : cl.countryOverride,
-      latitudeOverride: cl.latitudeOverride === null ? undefined : cl.latitudeOverride,
-      longitudeOverride: cl.longitudeOverride === null ? undefined : cl.longitudeOverride,
-      createdAt: cl.createdAt === null ? undefined : cl.createdAt,
-      updatedAt: cl.updatedAt === null ? undefined : cl.updatedAt,
-    }))
+      displayName: cl.displayName ?? undefined,
+    })),
   };
 
   return (
     <CreateStoreForm
       availableCategories={availableCategories}
-       availableLocations={availableLocations}
+      availableLocations={availableLocations}
       initialData={storeFormData}
     />
   );

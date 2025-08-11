@@ -3415,29 +3415,6 @@ model PropertyCategory {
   updatedAt DateTime @updatedAt
 }
 
-// model PropertyLocation {
-//   id          String  @id @default(auto()) @map("_id") @db.ObjectId
-//   name        String  @unique // Unique name for the location (e.g., "Kilimani", "Lavington")
-//   description String?
-//   latitude    Float? // Latitude coordinate for the location
-//   longitude   Float? // Longitude coordinate for the location
-
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   // Relationship to Properties (if properties directly reference a PropertyLocation model)
-//   // Assuming 'Property' model has a field like 'locationId String? @db.ObjectId'
-//   // and a relation 'location PropertyLocation? @relation(fields: [locationId], references: [id])'
-//   properties Property[] // Changed from 'Property' to 'properties' for plural naming convention
-
-//   // Hierarchical relationship for parent/child locations (e.g., City -> Neighborhood)
-//   // 'parentId' establishes the link to the parent location
-//   parentId       String?            @db.ObjectId
-//   parentLocation PropertyLocation?  @relation("SubLocations", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-//   // 'subLocations' is the reverse relation, listing all children of this location
-//   subLocations   PropertyLocation[] @relation("SubLocations")
-// }
-
 // Educator Profile Model (one-to-one with User)
 model Doctor {
   id String @id @default(auto()) @map("_id") @db.ObjectId
