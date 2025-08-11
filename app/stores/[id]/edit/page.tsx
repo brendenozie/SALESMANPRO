@@ -7,6 +7,7 @@ import prisma from "@/server/db/prismadb";
 import {
   ILocation,
   IStoreCategory,
+  ISubcategory,
   PolicyType,
   SocialChannel,
   StoreForm,
@@ -45,7 +46,7 @@ export default async function EditStorePage({
       socialLinks: true,
       policies: true,
       faqs: true,
-      testimonials: { include: { author: true } }, // Nested include for author details
+      testimonials: { include: { author: true } },
       heroSlides: true, // Banners
       promotions: true,
       blogs: true,
@@ -53,9 +54,19 @@ export default async function EditStorePage({
       appPromos: true,
       events: true,
       courses: true,
-      Writer: true,
+      Writer: {
+        include: {
+          user: true, // or whatever relation gives the full user object
+        },
+      },
+      
       salesAgents: true,
-      Doctor: true,
+      Doctor: {
+        include: {
+          User: true, // fetch the full user record
+        },
+      },
+
       Podcast: true,
       services: true,
       marketplaceListings: true,
@@ -71,12 +82,12 @@ export default async function EditStorePage({
       // Junction/Join Tables
       StoreCategory: {
         include: {
-          category: true, // Include the related ProductCategory
+          category: true,
         },
       },
       CompanyLocation: {
         include: {
-          location: true, // Include the related base Location
+          location: true,
         },
       },
     },
@@ -168,16 +179,55 @@ export default async function EditStorePage({
     promotions: store.promotions,
     blogs: store.blogs,
     pageSections: store.PageSection,
-    appPromos: store.appPromos,
+
+    // FIXED: Explicitly map `appPromos` and parse the `buttons` JSON field.
+    appPromos: store.appPromos.map((p) => ({
+      ...p,
+      buttons: safeJsonParse(p.buttons, []), // Parse the JSON buttons field
+    })),
+
     events: store.events,
     courses: store.courses,
-    writers: store.writers,
+    
+    Writer: store.Writer.map((w) => ({
+      ...w.user, // spread the full user fields
+      // and add writer-specific fields if any
+    })),
     salesAgents: store.salesAgents,
-    doctors: store.doctors,
-  	podcasts: store.podcasts,
+    
+    Doctor: store.Doctor.map(d => ({
+      id: d.id,
+      name: null,
+      address: d.address ?? null,
+      createdAt: d.createdAt ?? null,
+      updatedAt: d.updatedAt ?? null,
+      companyId: d.companyId ?? null,
+      status: null, // or cast if you can map DoctorStatus → UserStatus
+      phone: d.phone ?? null,
+      bio: null,
+      profilePicture: null,
+      email: "",
+      password: null,
+      role: null,
+      emailVerified: null,
+      image: null,
+      username: null,
+      dateOfBirth: null,
+      gender: null,
+      settingsId: null,
+      studentId: null,
+      educatorId: null,
+      parentId: null,
+      headTeacherId: null,
+      lastLogin: null,
+    })),
+
+
+    Podcast: store.Podcast,
     services: store.services,
     marketplaceListings: store.marketplaceListings,
-    announcements: store.announcements,
+    
+    Announcement: store.Announcement,
 
     // Handle one-to-one relations
     settings: store.settings ?? null,
@@ -187,17 +237,24 @@ export default async function EditStorePage({
     shippingSettings: shippingSettingsData,
 
     // Map junction tables
-    storeCategories: store.StoreCategory.map((sc) => ({
+    StoreCategory: store.StoreCategory.map((sc) => ({
       ...sc,
       displayName: sc.displayName ?? sc.category.name,
       icon: sc.icon ?? "",
-      subcategories: safeJsonParse(sc.subcategories, []),
-      allBrands: safeJsonParse(sc.allBrands, []),
+      subcategories: safeJsonParse(sc.subcategories, []) as ISubcategory[],
+      allBrands: safeJsonParse(sc.allBrands, []) as string[],
+      category: {
+        ...sc.category,
+        subcategories: (sc.category.subcategories ?? []) as unknown as ISubcategory[],
+      },
     })),
-    companyLocations: store.CompanyLocation.map((cl) => ({
+
+
+    CompanyLocation: store.CompanyLocation.map((cl) => ({
       ...cl,
-      displayName: cl.displayName ?? undefined,
+      displayName: cl.displayName ?? null, // ✅ now matches string | null
     })),
+    
   };
 
   return (

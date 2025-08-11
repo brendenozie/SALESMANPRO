@@ -21,6 +21,8 @@ import {
   PaymentSettings,
   ShippingSettings,
   CompanySettings,
+  ListingStatus,
+  Prisma
 } from "@prisma/client";
 import "next-auth";
 import { ChangeEvent } from "react";
@@ -60,17 +62,17 @@ export enum UserStatus {
   SUSPENDED,
 }
 
-export enum ListingStatus {
-  ACTIVE,
-  PENDING,
-  SOLD,
-  INACTIVE,
-  DRAFT,
-  REJECTED,
-  BUY,
-  RENT,
-  RENTED,
-}
+// export enum ListingStatus {
+//   ACTIVE,
+//   PENDING,
+//   SOLD,
+//   INACTIVE,
+//   DRAFT,
+//   REJECTED,
+//   BUY,
+//   RENT,
+//   RENTED,
+// }
 
 export enum SocialChannel {
   TWITTER,
@@ -170,8 +172,8 @@ export interface FAQ {
 export interface Testimonial {
   id?: string;
   quote: string;
-  authorId?: string | null;
-  author?: IUser;
+  authorId?: string | null | undefined;
+  author?: IUser |  null | undefined;
   authorName?: string | null;
   authorTitle?: string | null;
   avatarUrl?: string | null;
@@ -217,7 +219,11 @@ export interface AppPromo {
   id?: string;
   headline: string;
   subheading: string;
-  buttons: { label: string; href: string; icon: string }[];
+  buttons: { 
+    label: string; 
+    href: string; 
+    icon: string 
+  }[];
   screenshots: string[];
 }
 
@@ -501,7 +507,8 @@ export interface MarketListingForm {
   status: ListingStatus;
   createdAt?: Date | null;
   updatedAt?: Date | null;
-  location?: GeoLocation | null; // Correct client-side type
+  // location?: GeoLocation | null; // Correct client-side type
+  location: Prisma.JsonValue; 
   locationName?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -605,7 +612,7 @@ export interface StoreForm {
   faqs: FAQ[];
   testimonials: Testimonial[];
   promotions: IPromotion[];
-  announcements: any[]; // Define IAnnouncement if needed
+  Announcement: any[]; // Define IAnnouncement if needed
   pageSections: IPageSection[];
   heroSlides: HeroSlide[];
   appPromos: AppPromo[];
@@ -616,13 +623,24 @@ export interface StoreForm {
   analyticsConfig: AnalyticsConfig | null;
   paymentSettings: PaymentSettings | null;
   shippingSettings: ShippingSettings | null;
-  storeCategories: IStoreCategory[];
-  companyLocations: ICompanyLocation[];
+  StoreCategory: IStoreCategory[];
+  CompanyLocation: ICompanyLocation[];
   marketplaceListings: MarketListingForm[];
-  writers: User[];
-  salesAgents: User[];
-  doctors: User[];
-  podcasts: any[];
+  Writer: User[];
+  salesAgents: {
+    id: string;
+    userId: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    companyId: string | null;
+    loginCode: string | null;
+    phoneNumber: string | null;
+    isActive: boolean;
+    specialties: string[];
+    regions: string[];
+  }[];
+  Doctor: User[];
+  Podcast: any[];
   services: any[];
 }
 
