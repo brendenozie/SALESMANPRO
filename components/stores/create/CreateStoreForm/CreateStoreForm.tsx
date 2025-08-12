@@ -138,8 +138,6 @@ export default function CreateStoreForm({
   const router = useRouter();
   
   const [stepIndex, setStepIndex] = useState(0);
-
-  console.log(availableCategories);
   
   // UPDATE: The defaultForm object is now initialized with all the fields
   // from the new, expanded StoreForm interface.
@@ -186,7 +184,6 @@ export default function CreateStoreForm({
 
     events: [], // For company/school events
     Announcement: [], // For site announcements
-
 
     // --- JSON fields ---
     awards: [],
@@ -818,161 +815,88 @@ export default function CreateStoreForm({
    }
   });
  };
-  // const onToggleParent = (parent: IProductCategory) => {
-
-  //   setForm((prev: StoreForm) => {
-      
-  //     const existingParentIndex = prev.StoreCategory.findIndex(
-  //       (sc) => sc.id === parent.id
-  //     );
-
-  //     // Get the correct IDs for subcategories from the parent object
-  //     const totalSubcategories = parent.subcategories.map((child:any) => ({
-  //       id: child._id?.$oid || child.id,
-  //       name: child.name,
-  //       slug: child.slug,
-  //     }));
-
-  //     // If the parent is not currently in the selected list (meaning it's not selected at all)
-  //     if (existingParentIndex === -1) {
-  //       // Add the parent with all its subcategories and all its brands
-  //       return {
-  //         ...prev,
-  //         StoreCategory: [
-  //           ...prev.StoreCategory,
-  //           {
-  //             ...cloneCategory(parent),
-  //             subcategories: totalSubcategories,
-  //             allBrands: parent.allBrands ? [...parent.allBrands] : [],
-  //           },
-  //         ],
-  //       };
-  //     }
-
-  //     // The parent already exists in the selected list.
-  //     const existingEntry = prev.StoreCategory[existingParentIndex];
-  //     const totalSubcategoryCount = totalSubcategories.length;
-  //     const selectedSubcategoryCount = existingEntry.subcategories.length;
-
-  //     const totalBrands = parent.allBrands?.length || 0;
-  //     const selectedBrandCount = existingEntry.allBrands?.length || 0;
-
-  //     // A parent is fully selected if all its subcategories AND all its brands are selected.
-  //     const isFullySelected =
-  //       selectedSubcategoryCount === totalSubcategoryCount &&
-  //       selectedBrandCount === totalBrands;
-
-  //     if (!isFullySelected) {
-  //       // If it's not fully selected (either partially selected or not selected at all),
-  //       // select all subcategories and all brands for this parent.
-  //       const updatedParent = {
-  //         ...cloneCategory(parent),
-  //         subcategories: totalSubcategories,
-  //         allBrands: parent.allBrands ? [...parent.allBrands] : [],
-  //       };
-
-  //       const updatedStoreCategories = prev.StoreCategory.map((sc) =>
-  //         sc.id === parent.id ? updatedParent : sc
-  //       );
-
-  //       return { ...prev, storeCategories: updatedStoreCategories };
-  //     } else {
-  //       // If it's fully selected, remove the entire parent category.
-  //       const filteredStoreCategories = prev.StoreCategory.filter(
-  //         (sc) => sc.id !== parent.id
-  //       );
-  //       return { 
-  //         ...prev, 
-  //         storeCategories: filteredStoreCategories };
-  //     }
-  //   });
-  // };
-
-  // ---
-
+  
   // ✅ 2) Toggle subcategory
-const onToggleSub = (parentId: string, subcategory: ISubcategory) => {
-  setForm((prev: StoreForm) => {
-    const parentEntry = prev.StoreCategory.find((sc) => sc.id === parentId);
-    const parentData = availableCategories.find((cat) => cat.id === parentId);
+  const onToggleSub = (parentId: string, subcategory: ISubcategory) => {
+    setForm((prev: StoreForm) => {
+      const parentEntry = prev.StoreCategory.find((sc) => sc.id === parentId);
+      const parentData = availableCategories.find((cat) => cat.id === parentId);
 
-    if (!parentData) {
-      return prev;
-    }
+      if (!parentData) {
+        return prev;
+      }
 
-    // Modified: Get the correct ID from the subcategory object, prioritizing tempId if no other ID exists
-    const subId = subcategory._id?.$oid || subcategory.id || subcategory.tempId;
+      // Modified: Get the correct ID from the subcategory object, prioritizing tempId if no other ID exists
+      const subId = subcategory._id?.$oid || subcategory.id || subcategory.tempId;
 
-    if (!subId) {
-      // This should ideally not happen if you're generating tempIds,
-      // but good for a safeguard or logging
-      console.warn("Subcategory has no unique ID (id, _id.$oid, or tempId)", subcategory);
-      return prev;
-    }
+      if (!subId) {
+        // This should ideally not happen if you're generating tempIds,
+        // but good for a safeguard or logging
+        console.warn("Subcategory has no unique ID (id, _id.$oid, or tempId)", subcategory);
+        return prev;
+      }
 
-    // Case 1: Parent is not yet in the form state
-    if (!parentEntry) {
-      return {
-        ...prev,
-        StoreCategory: [
-          ...prev.StoreCategory,
-          {
-            ...cloneCategory(parentData),
-            subcategories: [
-              {
-                id: subId, // Store the resolved ID
-                name: subcategory.name,
-                slug: subcategory.slug,
-                tempId: subcategory.tempId // Also store tempId if it was used for identification
-              }
-            ],
-            allBrands: [],
-          },
-        ],
-      };
-    }
+      // Case 1: Parent is not yet in the form state
+      if (!parentEntry) {
+        return {
+          ...prev,
+          StoreCategory: [
+            ...prev.StoreCategory,
+            {
+              ...cloneCategory(parentData),
+              subcategories: [
+                {
+                  id: subId, // Store the resolved ID
+                  name: subcategory.name,
+                  slug: subcategory.slug,
+                  tempId: subcategory.tempId // Also store tempId if it was used for identification
+                }
+              ],
+              allBrands: [],
+            },
+          ],
+        };
+      }
 
-    // Case 2: Parent is already in the form state
-    const isCurrentlySelected = parentEntry.subcategories.some(
-      // Compare using the resolved subId
-      (s) => s.id === subId
-    );
-
-    let updatedSubcategories;
-    if (isCurrentlySelected) {
-      updatedSubcategories = parentEntry.subcategories.filter(
-        // Filter using the resolved subId
-        (s) => s.id !== subId
+      // Case 2: Parent is already in the form state
+      const isCurrentlySelected = parentEntry.subcategories.some(
+        // Compare using the resolved subId
+        (s) => s.id === subId
       );
-    } else {
-      updatedSubcategories = [
-        ...parentEntry.subcategories,
-        {
-          id: subId, // Store the resolved ID
-          name: subcategory.name,
-          slug: subcategory.slug,
-          tempId: subcategory.tempId // Also store tempId if it was used for identification
-        },
-      ];
-    }
 
-    if (updatedSubcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
+      let updatedSubcategories;
+      if (isCurrentlySelected) {
+        updatedSubcategories = parentEntry.subcategories.filter(
+          // Filter using the resolved subId
+          (s) => s.id !== subId
+        );
+      } else {
+        updatedSubcategories = [
+          ...parentEntry.subcategories,
+          {
+            id: subId, // Store the resolved ID
+            name: subcategory.name,
+            slug: subcategory.slug,
+            tempId: subcategory.tempId // Also store tempId if it was used for identification
+          },
+        ];
+      }
+
+      if (updatedSubcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
+        return {
+          ...prev,
+          StoreCategory: prev.StoreCategory.filter((sc) => sc.id !== parentId),
+        };
+      }
+
       return {
         ...prev,
-        StoreCategory: prev.StoreCategory.filter((sc) => sc.id !== parentId),
+        StoreCategory: prev.StoreCategory.map((sc) =>
+          sc.id === parentId ? { ...sc, subcategories: updatedSubcategories } : sc
+        ),
       };
-    }
-
-    return {
-      ...prev,
-      StoreCategory: prev.StoreCategory.map((sc) =>
-        sc.id === parentId ? { ...sc, subcategories: updatedSubcategories } : sc
-      ),
-    };
-  });
-};
-
-  // ---
+    });
+  };
 
   // ✅ 3) Toggle brand
   const onToggleBrand = (parentId: string, brand: string) => {
@@ -1044,8 +968,6 @@ const onToggleSub = (parentId: string, subcategory: ISubcategory) => {
       };
     });
   };
-
-  // ---
 
 
 const onBulkToggle = (ids: string[]) => {

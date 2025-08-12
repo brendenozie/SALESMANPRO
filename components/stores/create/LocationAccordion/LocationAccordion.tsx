@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPinIcon } from '@heroicons/react/24/outline';
-import ShippingAddress from '../../../shippingAddress';
+import ShippingAddress from '@/components/shippingAddress';
 
 export interface LocationAccordionProps {
   address?: string;
@@ -18,12 +18,6 @@ export default function LocationAccordion({
   useEffect(() => {
     setSelectedAddress(address || '');
   }, [address]);
-
-  const handleSelectV1 = (display_name: string, lat: number, lng: number ) => {
-    setSelectedAddress(display_name);
-    const location = { lat, lng };
-    onAddressSelect(display_name, location);
-  };
 
   const handleSelect = (
       display_name: string,
