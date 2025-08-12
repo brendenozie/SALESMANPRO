@@ -18,9 +18,9 @@ export async function GET(req: NextRequest) {
 
     // Authenticate the user (assuming only admins can manage global locations)
     // You might want to add a role check here: if (!session?.user?.isAdmin) { ... }
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // if (!session?.user?.id) {
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // }
 
     const locations = await prisma.location.findMany({
       orderBy: {

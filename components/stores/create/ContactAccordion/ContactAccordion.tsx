@@ -14,9 +14,9 @@ const weekdays = [
 
 
 interface ContactAccordionProps {
-  openingHours: OpeningHours;
+  openingHours: OpeningHours | null;
   contactEmail: string;
-  contactPhone: string;
+  contactPhone: string | null;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onToggleDay: (dayKey: string) => void; 
 }
@@ -73,7 +73,7 @@ export default function ContactAccordion({
               <input
                 type="tel"
                 name="contactPhone"
-                value={contactPhone}
+                value={contactPhone || ''}
                 onChange={onChange}
                 placeholder="123-456-7890"
                 className="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
@@ -89,7 +89,7 @@ export default function ContactAccordion({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {weekdays.map(({ key, label }) => {
-                const day = openingHours[key] || { open: '', close: '' };
+                const day = openingHours && openingHours[key] || { open: '', close: '' };
                 const isClosed = !day.open && !day.close;
                 return (
                   <div

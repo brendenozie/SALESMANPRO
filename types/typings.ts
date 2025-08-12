@@ -232,6 +232,8 @@ export interface ISubcategory {
   slug: string;
   sortOrder?: number | null;
   visible?: boolean;
+  tempId?: string;
+  _id?: any;
 }
 
 export interface IProductCategory {
@@ -268,7 +270,7 @@ export interface IProductCategory {
 
 export interface IStoreCategory {
   id: string;
-  companyId: string;
+  companyId?: string| null | undefined;
   categoryId: string | null;
   displayName?: string | null;
   icon?: string | null;
@@ -625,7 +627,7 @@ export interface StoreForm {
     userId: string;
     createdAt: Date | null;
     updatedAt: Date | null;
-    companyId: string | null;
+    companyId: string | null | undefined;
     loginCode: string | null;
     phoneNumber: string | null;
     isActive: boolean;
