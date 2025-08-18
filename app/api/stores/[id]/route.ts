@@ -3,7 +3,6 @@ import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "../../../../lib/auth";
 import { companySchema } from "@/lib/validations/company";
 import { Prisma } from "@prisma/client";
-import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
