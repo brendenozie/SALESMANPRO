@@ -1,10 +1,13 @@
 import React, { ChangeEvent } from 'react';
 
 export interface SEOSettings {
-  title?: string;
-  description?: string;
-  keywords?: string[];
+  id: string;
+  description?: string | null;
+  title?: string | null;
+  keywords: string[];
+  companyId?: string | null;
 }
+
 
 export interface SeoSettingsAccordionProps {
   seo: SEOSettings;
@@ -15,8 +18,19 @@ export default function SeoSettingsAccordion({
   seo,
   onChange,
 }: SeoSettingsAccordionProps) {
+
   const updateField = (key: keyof SEOSettings, value: string | string[]) => {
     onChange({ ...seo, [key]: value });
+  };
+
+  const handleSeoChange = (key: keyof SEOSettings, value: any) => {
+    onChange({ ...seo, [key]: value });
+    // onChange({
+    //   seo: {
+    //     ...seo,
+    //     [key]: value,
+    //   },
+    // });
   };
 
   return (
@@ -27,61 +41,64 @@ export default function SeoSettingsAccordion({
       </div>
 
       {/* SEO Settings Section */}
-      <section>
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">SEO Settings</h3>
-        <div className="space-y-5">
-
-          {/* Page Title */}
+      
+      {/* SEO Settings Section */}
+      <section className="mb-8 p-6 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-xl font-bold text-gray-800 mb-4">
+          SEO Configuration
+        </h3>
+        <p className="text-sm text-gray-600 mb-6">
+          Optimize your site for search engines.
+        </p>
+        <div className="space-y-6">
           <div>
-            <label htmlFor="seoTitle" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="seoTitle" className="block text-sm font-semibold text-gray-700">
               Page Title
             </label>
             <input
               id="seoTitle"
               type="text"
-              value={seo.title || ''}
+              value={''}//settings.seo?.title || 
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField('title', e.target.value)
+                handleSeoChange('title', e.target.value)
               }
               placeholder="e.g., My Awesome Store"
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
             />
             <p className="mt-1 text-xs text-gray-500">
               Displayed in the browser tab and search engine results.
             </p>
           </div>
 
-          {/* Meta Description */}
           <div>
-            <label htmlFor="metaDescription" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="metaDescription" className="block text-sm font-semibold text-gray-700">
               Meta Description
             </label>
             <textarea
               id="metaDescription"
               rows={3}
-              value={seo.description || ''}
+              value={''}//settings.seo.description || 
               onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                updateField('description', e.target.value)
+                handleSeoChange('description', e.target.value)
               }
               placeholder="e.g., Best deals on fashion, electronics, and more."
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
+              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none transition duration-150 ease-in-out"
             />
             <p className="mt-1 text-xs text-gray-500">
               Appears in search engine snippets. Keep it concise and relevant.
             </p>
           </div>
 
-          {/* Keywords */}
           <div>
-            <label htmlFor="keywords" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="keywords" className="block text-sm font-semibold text-gray-700">
               Keywords (comma-separated)
             </label>
             <input
               id="keywords"
               type="text"
-              value={seo.keywords?.join(', ') || ''}
+              value={''}//settings.seo.keywords?.join(', ') || 
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField(
+                handleSeoChange(
                   'keywords',
                   e.target.value
                     .split(',')
@@ -90,7 +107,7 @@ export default function SeoSettingsAccordion({
                 )
               }
               placeholder="e.g., ecommerce, fashion, electronics"
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
             />
             <p className="mt-1 text-xs text-gray-500">
               Helps search engines understand the content of your page.

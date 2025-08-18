@@ -1,11 +1,14 @@
 import React, { ChangeEvent } from 'react';
 
+
 export interface ShippingSettings {
-  carrierName?: string;
-  trackingUrl?: string;
-  regions?: string[];
-  enablePickup?: boolean;
-  pickupInstructions?: string;
+  id?: string;
+  companyId?: string;
+  carrierName?: string | null;
+  trackingUrl?: string | null;
+  regions?: string[] | null;
+  enablePickup?: boolean | null;
+  pickupInstructions?: string | null;
 }
 
 export interface ShippingAccordionProps {
@@ -17,13 +20,13 @@ export default function ShippingAccordion({
   shippingSettings,
   onChange,
 }: ShippingAccordionProps) {
-  const {
-    carrierName = '',
-    trackingUrl = '',
-    regions = [],
-    enablePickup = false,
-    pickupInstructions = '',
-  } = shippingSettings;
+  // const {
+  //   carrierName,
+  //   trackingUrl,
+  //   regions,
+  //   enablePickup,
+  //   pickupInstructions,
+  // } = shippingSettings;
 
   const updateField = <K extends keyof ShippingSettings>(
     key: K,
@@ -32,12 +35,113 @@ export default function ShippingAccordion({
     onChange({ ...shippingSettings, [key]: value });
   };
 
+  const handleShippingChange = (key: keyof ShippingSettings, value: any) => {
+    // onChange({
+    //   shippingSettings: {
+    //     ...settings.shippingSettings,
+    //     [key]: value,
+    //   },
+    // });
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-6">
       <h2 className="flex justify-between items-center text-2xl font-bold text-gray-800 mb-4">
         <span>Shipping Settings</span>
         <span className="text-xl">🚚</span>
       </h2>
+
+       {/* Shipping Settings Section */}
+      <section className="p-6 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-xl font-bold text-gray-800 mb-4">
+          Shipping Configuration
+        </h3>
+        <p className="text-sm text-gray-600 mb-6">
+          Define your shipping carriers and rules.
+        </p>
+        <div className="space-y-6">
+          <div>
+            <label htmlFor="carrierName" className="block text-sm font-semibold text-gray-700">
+              Carrier Name
+            </label>
+            <input
+              id="carrierName"
+              type="text"
+              // value={settings.shippingSettings.carrierName || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleShippingChange('carrierName', e.target.value)
+              }
+              placeholder="e.g., FedEx"
+              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+            />
+          </div>
+          <div>
+            <label htmlFor="trackingUrl" className="block text-sm font-semibold text-gray-700">
+              Tracking URL
+            </label>
+            <input
+              id="trackingUrl"
+              type="text"
+              // value={settings.shippingSettings.trackingUrl || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleShippingChange('trackingUrl', e.target.value)
+              }
+              placeholder="e.g., https://www.fedex.com/track?tracknum="
+              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+            />
+          </div>
+          <div>
+            <label htmlFor="regions" className="block text-sm font-semibold text-gray-700">
+              Regions (comma-separated)
+            </label>
+            <input
+              id="regions"
+              type="text"
+              // value={settings.shippingSettings.regions?.join(', ') || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleShippingChange(
+                  'regions',
+                  e.target.value
+                    .split(',')
+                    .map(k => k.trim())
+                    .filter(k => k.length > 0)
+                )
+              }
+              placeholder="e.g., North America, Europe"
+              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+            />
+          </div>
+          <div>
+            <label htmlFor="pickupInstructions" className="block text-sm font-semibold text-gray-700">
+              Pickup Instructions
+            </label>
+            <textarea
+              id="pickupInstructions"
+              rows={3}
+              // value={settings.shippingSettings.pickupInstructions || ''}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                handleShippingChange('pickupInstructions', e.target.value)
+              }
+              placeholder="e.g., Pick up at our main office between 9am-5pm."
+              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none transition duration-150 ease-in-out"
+            />
+          </div>
+          <div className="flex items-center">
+            <input
+              id="enablePickup"
+              type="checkbox"
+              // checked={settings.shippingSettings.enablePickup || false}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleShippingChange('enablePickup', e.target.checked)
+              }
+              className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+            />
+            <label htmlFor="enablePickup" className="ml-2 block text-sm font-semibold text-gray-700">
+              Enable local pickup
+            </label>
+          </div>
+        </div>
+      </section>
 
       {/* Carrier & Tracking */}
       <section className="mb-6">
@@ -51,7 +155,7 @@ export default function ShippingAccordion({
               <input
                 id="carrierName"
                 type="text"
-                value={carrierName}
+                // value={carrierName}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('carrierName', e.target.value)}
                 placeholder="DHL, FedEx, etc."
                 className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -64,7 +168,7 @@ export default function ShippingAccordion({
               <input
                 id="trackingUrl"
                 type="text"
-                value={trackingUrl}
+                // value={trackingUrl}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('trackingUrl', e.target.value)}
                 placeholder="https://tracking.example.com/track?code={tracking_number}"
                 className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -85,7 +189,7 @@ export default function ShippingAccordion({
             <input
               id="regions"
               type="text"
-              value={regions.join(', ')}
+              // value={regions.join(', ')}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 updateField('regions', e.target.value.split(',').map(r => r.trim()))
               }
@@ -105,7 +209,7 @@ export default function ShippingAccordion({
             <input
               id="enablePickup"
               type="checkbox"
-              checked={enablePickup}
+              // checked={enablePickup}
               onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('enablePickup', e.target.checked)}
               className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
             />
@@ -113,7 +217,7 @@ export default function ShippingAccordion({
               Enable Local Pickup
             </label>
           </div>
-          {enablePickup && (
+          {/* {enablePickup && ( */}
             <div>
               <label htmlFor="pickupInstructions" className="block text-xs font-medium text-gray-600">
                 Pickup Instructions
@@ -121,13 +225,13 @@ export default function ShippingAccordion({
               <textarea
                 id="pickupInstructions"
                 rows={3}
-                value={pickupInstructions}
+                // value={pickupInstructions}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateField('pickupInstructions', e.target.value)}
                 placeholder="Provide details for customers picking up orders locally..."
                 className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
               />
             </div>
-          )}
+          {/* )} */}
         </fieldset>
       </section>
     </div>
