@@ -1,6 +1,8 @@
 import React, { ChangeEvent } from 'react';
 
-
+/**
+ * Interface for Shipping settings, directly mapping to the Prisma schema model.
+ */
 export interface ShippingSettings {
   id?: string;
   companyId?: string;
@@ -11,23 +13,29 @@ export interface ShippingSettings {
   pickupInstructions?: string | null;
 }
 
+/**
+ * Props for the ShippingAccordion component.
+ */
 export interface ShippingAccordionProps {
   shippingSettings: ShippingSettings;
   onChange: (updated: ShippingSettings) => void;
 }
 
+/**
+ * A component for editing shipping-related settings.
+ * It handles input fields for carrier info, regions, and local pickup options.
+ */
 export default function ShippingAccordion({
   shippingSettings,
   onChange,
 }: ShippingAccordionProps) {
-  // const {
-  //   carrierName,
-  //   trackingUrl,
-  //   regions,
-  //   enablePickup,
-  //   pickupInstructions,
-  // } = shippingSettings;
 
+  /**
+   * A generic handler to update a specific field in the shipping settings object.
+   * It creates a new object with the updated field and calls the parent onChange handler.
+   * @param key The key of the field to update.
+   * @param value The new value for the field.
+   */
   const updateField = <K extends keyof ShippingSettings>(
     key: K,
     value: ShippingSettings[K]
@@ -35,23 +43,14 @@ export default function ShippingAccordion({
     onChange({ ...shippingSettings, [key]: value });
   };
 
-  const handleShippingChange = (key: keyof ShippingSettings, value: any) => {
-    // onChange({
-    //   shippingSettings: {
-    //     ...settings.shippingSettings,
-    //     [key]: value,
-    //   },
-    // });
-  };
-
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="flex justify-between items-center text-2xl font-bold text-gray-800 mb-4">
-        <span>Shipping Settings</span>
-        <span className="text-xl">🚚</span>
-      </h2>
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-2xl">
+      <div className="flex justify-between items-center mb-6 border-b pb-4">
+        <h2 className="text-2xl font-bold text-gray-800">Shipping Settings</h2>
+        <span className="text-2xl" role="img" aria-label="settings">🚚</span>
+      </div>
 
-       {/* Shipping Settings Section */}
+      {/* Shipping Configuration Section */}
       <section className="p-6 border border-gray-200 rounded-xl bg-gray-50">
         <h3 className="text-xl font-bold text-gray-800 mb-4">
           Shipping Configuration
@@ -67,9 +66,10 @@ export default function ShippingAccordion({
             <input
               id="carrierName"
               type="text"
-              // value={settings.shippingSettings.carrierName || ''}
+              // Correctly binding the value to the prop
+              value={shippingSettings?.carrierName || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                handleShippingChange('carrierName', e.target.value)
+                updateField('carrierName', e.target.value)
               }
               placeholder="e.g., FedEx"
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
@@ -82,9 +82,10 @@ export default function ShippingAccordion({
             <input
               id="trackingUrl"
               type="text"
-              // value={settings.shippingSettings.trackingUrl || ''}
+              // Correctly binding the value to the prop
+              value={shippingSettings?.trackingUrl || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                handleShippingChange('trackingUrl', e.target.value)
+                updateField('trackingUrl', e.target.value)
               }
               placeholder="e.g., https://www.fedex.com/track?tracknum="
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
@@ -97,9 +98,10 @@ export default function ShippingAccordion({
             <input
               id="regions"
               type="text"
-              // value={settings.shippingSettings.regions?.join(', ') || ''}
+              // Correctly binding the value to the prop
+              value={shippingSettings?.regions?.join(', ') || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                handleShippingChange(
+                updateField(
                   'regions',
                   e.target.value
                     .split(',')
@@ -111,28 +113,14 @@ export default function ShippingAccordion({
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
             />
           </div>
-          <div>
-            <label htmlFor="pickupInstructions" className="block text-sm font-semibold text-gray-700">
-              Pickup Instructions
-            </label>
-            <textarea
-              id="pickupInstructions"
-              rows={3}
-              // value={settings.shippingSettings.pickupInstructions || ''}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                handleShippingChange('pickupInstructions', e.target.value)
-              }
-              placeholder="e.g., Pick up at our main office between 9am-5pm."
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none transition duration-150 ease-in-out"
-            />
-          </div>
           <div className="flex items-center">
             <input
               id="enablePickup"
               type="checkbox"
-              // checked={settings.shippingSettings.enablePickup || false}
+              // Correctly binding the checked state to the prop
+              checked={shippingSettings?.enablePickup || false}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                handleShippingChange('enablePickup', e.target.checked)
+                updateField('enablePickup', e.target.checked)
               }
               className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
             />
@@ -140,99 +128,26 @@ export default function ShippingAccordion({
               Enable local pickup
             </label>
           </div>
-        </div>
-      </section>
-
-      {/* Carrier & Tracking */}
-      <section className="mb-6">
-        <fieldset className="border border-gray-200 rounded-lg p-4 space-y-4">
-          <legend className="text-sm font-medium text-gray-600 px-2">Carrier & Tracking</legend>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Conditionally render the pickup instructions field */}
+          {(shippingSettings?.enablePickup || false) && (
             <div>
-              <label htmlFor="carrierName" className="block text-xs font-medium text-gray-600">
-                Carrier Name
-              </label>
-              <input
-                id="carrierName"
-                type="text"
-                // value={carrierName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('carrierName', e.target.value)}
-                placeholder="DHL, FedEx, etc."
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label htmlFor="trackingUrl" className="block text-xs font-medium text-gray-600">
-                Tracking URL Template
-              </label>
-              <input
-                id="trackingUrl"
-                type="text"
-                // value={trackingUrl}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('trackingUrl', e.target.value)}
-                placeholder="https://tracking.example.com/track?code={tracking_number}"
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </fieldset>
-      </section>
-
-      {/* Shipping Regions */}
-      <section className="mb-6">
-        <fieldset className="border border-gray-200 rounded-lg p-4 space-y-2">
-          <legend className="text-sm font-medium text-gray-600 px-2">Regions</legend>
-          <div>
-            <label htmlFor="regions" className="block text-xs font-medium text-gray-600">
-              Shipping Regions
-            </label>
-            <input
-              id="regions"
-              type="text"
-              // value={regions.join(', ')}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField('regions', e.target.value.split(',').map(r => r.trim()))
-              }
-              placeholder="e.g. US, EU, Asia"
-              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <p className="mt-1 text-xs text-gray-500">Comma-separated list of regions you ship to.</p>
-          </div>
-        </fieldset>
-      </section>
-
-      {/* Pickup Options */}
-      <section>
-        <fieldset className="border border-gray-200 rounded-lg p-4 space-y-4">
-          <legend className="text-sm font-medium text-gray-600 px-2">Local Pickup</legend>
-          <div className="flex items-center">
-            <input
-              id="enablePickup"
-              type="checkbox"
-              // checked={enablePickup}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('enablePickup', e.target.checked)}
-              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-            />
-            <label htmlFor="enablePickup" className="ml-2 block text-sm font-medium text-gray-700">
-              Enable Local Pickup
-            </label>
-          </div>
-          {/* {enablePickup && ( */}
-            <div>
-              <label htmlFor="pickupInstructions" className="block text-xs font-medium text-gray-600">
+              <label htmlFor="pickupInstructions" className="block text-sm font-semibold text-gray-700">
                 Pickup Instructions
               </label>
               <textarea
                 id="pickupInstructions"
                 rows={3}
-                // value={pickupInstructions}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateField('pickupInstructions', e.target.value)}
-                placeholder="Provide details for customers picking up orders locally..."
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                // Correctly binding the value to the prop
+                value={shippingSettings?.pickupInstructions || ''}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                  updateField('pickupInstructions', e.target.value)
+                }
+                placeholder="e.g., Pick up at our main office between 9am-5pm."
+                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none transition duration-150 ease-in-out"
               />
             </div>
-          {/* )} */}
-        </fieldset>
+          )}
+        </div>
       </section>
     </div>
   );

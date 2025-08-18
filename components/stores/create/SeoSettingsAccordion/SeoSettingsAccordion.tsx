@@ -1,46 +1,49 @@
 import React, { ChangeEvent } from 'react';
 
+/**
+ * Interface for SEO settings, directly mapping to the Prisma schema model.
+ */
 export interface SEOSettings {
   id: string;
   description?: string | null;
-  title?: string | null;
+  title?: string | null | undefined;
   keywords: string[];
   companyId?: string | null;
 }
 
-
+/**
+ * Props for the SeoSettingsAccordion component.
+ */
 export interface SeoSettingsAccordionProps {
   seo: SEOSettings;
   onChange: (updated: SEOSettings) => void;
 }
 
+/**
+ * A component for editing SEO-related settings.
+ * It handles the input fields for title, description, and keywords.
+ */
 export default function SeoSettingsAccordion({
   seo,
   onChange,
 }: SeoSettingsAccordionProps) {
 
-  const updateField = (key: keyof SEOSettings, value: string | string[]) => {
-    onChange({ ...seo, [key]: value });
-  };
-
+  /**
+   * Handles changes to any of the SEO fields and updates the parent state.
+   * @param key The key of the field being updated (e.g., 'title', 'description').
+   * @param value The new value for the field.
+   */
   const handleSeoChange = (key: keyof SEOSettings, value: any) => {
+    // This updates the local copy of the SEO object before calling the parent onChange handler.
     onChange({ ...seo, [key]: value });
-    // onChange({
-    //   seo: {
-    //     ...seo,
-    //     [key]: value,
-    //   },
-    // });
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-2 ">
+    <div className="max-w-3xl mx-auto p-2">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">SEO & Config</h2>
         <span className="text-2xl" role="img" aria-label="settings">🔧</span>
       </div>
-
-      {/* SEO Settings Section */}
       
       {/* SEO Settings Section */}
       <section className="mb-8 p-6 border border-gray-200 rounded-xl bg-gray-50">
@@ -58,7 +61,8 @@ export default function SeoSettingsAccordion({
             <input
               id="seoTitle"
               type="text"
-              value={''}//settings.seo?.title || 
+              // Correctly bind the input value to the 'title' property from the props.
+              value={seo?.title || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 handleSeoChange('title', e.target.value)
               }
@@ -77,7 +81,8 @@ export default function SeoSettingsAccordion({
             <textarea
               id="metaDescription"
               rows={3}
-              value={''}//settings.seo.description || 
+              // Correctly bind the textarea value to the 'description' property.
+              value={seo?.description || ''}
               onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                 handleSeoChange('description', e.target.value)
               }
@@ -96,7 +101,8 @@ export default function SeoSettingsAccordion({
             <input
               id="keywords"
               type="text"
-              value={''}//settings.seo.keywords?.join(', ') || 
+              // Correctly bind the input value to the 'keywords' array.
+              value={seo?.keywords?.join(', ') || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 handleSeoChange(
                   'keywords',
