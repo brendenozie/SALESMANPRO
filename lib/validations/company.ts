@@ -18,17 +18,6 @@ const faqSchema = z.object({
   order: z.number().optional(),
 });
 
-// const testimonialSchema = z.object({
-//   quote: z.string().min(1),
-//   // authorName: z.string().min(1).optional(),
-//   // authorTitle: z.string().optional(),
-//   avatarUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
-//   authorName: z.string().min(1).nullable().optional(), // Allows string, null, or undefined
-//   authorTitle: z.string().nullable().optional(),  
-//   rating: z.number().min(1).max(5).optional(),
-//   order: z.number().optional(),
-// });
-
 const testimonialSchema = z.object({
   quote: z.string().min(1),
   authorName: z.string().min(1).nullable().optional(),
@@ -37,19 +26,6 @@ const testimonialSchema = z.object({
   rating: z.number().min(1).max(5).nullable().optional(),
   order: z.number().optional(),
 });
-
-// const heroSlideSchema = z.object({
-//   imageUrl: z.string().url(),
-//   productImageUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
-//   headline: z.string().optional(),
-//   subline: z.string().optional(),
-//   ctaText: z.string().optional(),
-//   ctaLink: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
-//   badgeText: z.string().optional(),
-//   price: z.string().optional(),
-//   endsAt: z.string().datetime().optional().nullable(),
-//   order: z.number().default(0),
-// });
 
 const heroSlideSchema = z.object({
   imageUrl: z.string().url(),
@@ -63,17 +39,6 @@ const heroSlideSchema = z.object({
   endsAt: z.string().datetime().optional().nullable(),
   order: z.number().default(0),
 });
-
-// const promotionSchema = z.object({
-//     title: z.string().min(1),
-//     code: z.string().optional(),
-//     description: z.string().optional(),
-//     startsAt: z.string().datetime().optional().nullable(),
-//     endsAt: z.string().datetime().optional().nullable(),
-//     ctaText: z.string().optional(),
-//     ctaLink: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
-//     bannerUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
-// });
 
 const promotionSchema = z.object({
     title: z.string().min(1),
