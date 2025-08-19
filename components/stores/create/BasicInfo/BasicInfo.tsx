@@ -9,8 +9,8 @@ export interface BasicInfoProps {
   category: string;
   hasWebsite: boolean | null | undefined;
   description?: string  | undefined | null;
-  tagline: string;
-  domain: string;
+  tagline: string | null;
+  domain: string | null;
   handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
@@ -58,7 +58,7 @@ export default function BasicInfo({
             id="tagline"
             name="tagline"
             type="text"
-            value={tagline}
+            value={tagline || ''}
             onChange={handleChange}
             placeholder="Empower Your Journey"
             className="mt-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
@@ -102,7 +102,7 @@ export default function BasicInfo({
             id="domain"
             name="domain"
             type="text"
-            value={domain}
+            value={domain || ''}
             readOnly
             className="mt-2 p-3 border border-gray-200 bg-gray-100 rounded-xl text-gray-600 cursor-not-allowed"
           />
