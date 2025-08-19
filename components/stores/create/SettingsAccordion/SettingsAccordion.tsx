@@ -16,7 +16,7 @@ export interface AnalyticsConfig {
  * Props for the SettingsAccordion component.
  */
 export interface SettingsAccordionProps {
-  analyticsConfig: AnalyticsConfig;
+  analyticsConfig: AnalyticsConfig | null;
   onChange: (updated: AnalyticsConfig) => void;
 }
 

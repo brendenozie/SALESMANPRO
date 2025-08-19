@@ -139,6 +139,7 @@ export async function PUT(
                 displayName: sc.displayName,
                 icon: sc.icon,
                 sortOrder: sc.sortOrder,
+                subcategories:sc.subcategories,
                 category: { connect: { id: sc.id } }
             }))
         } : undefined,
