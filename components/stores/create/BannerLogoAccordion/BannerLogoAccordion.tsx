@@ -6,8 +6,8 @@ import {
 } from '@heroicons/react/24/outline';
 
 export interface BannerLogoAccordionProps {
-  logoUrl?: string;
-  bannerUrl?: string;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
   onUpload: (field: 'logoUrl' | 'bannerUrl', file: File) => void;
   onRemove: (field: 'logoUrl' | 'bannerUrl') => void;
 }

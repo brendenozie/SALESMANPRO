@@ -3,7 +3,7 @@ import { MapPinIcon } from '@heroicons/react/24/outline';
 import ShippingAddress from '@/components/shippingAddress';
 
 export interface LocationAccordionProps {
-  address?: string;
+  address?: string | null;
   onAddressSelect: (address: string, geoLocation: { lat: number; lng: number }) => void;
 }
 
