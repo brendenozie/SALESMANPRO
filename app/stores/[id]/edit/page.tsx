@@ -13,6 +13,7 @@ import {
   SocialChannel,
   StoreForm,
 } from "@/types/typings";
+import { User } from "@prisma/client"; // Import the User type from Prisma
 
 export const dynamic = "force-dynamic";
 
@@ -43,12 +44,11 @@ export default async function EditStorePage({
   const store = await prisma.company.findUnique({
     where: { id },
     include: {
-      // One-to-many relations
       socialLinks: true,
       policies: true,
       faqs: true,
       testimonials: { include: { author: true } },
-      heroSlides: true, // Banners
+      heroSlides: true,
       promotions: true,
       blogs: true,
       PageSection: true,
@@ -57,30 +57,28 @@ export default async function EditStorePage({
       courses: true,
       Writer: {
         include: {
-          user: true, // or whatever relation gives the full user object
+          user: true,
         },
       },
-      
-      salesAgents: true,
+      salesAgents: {
+        include: {
+          user: true,
+        },
+      },
       Doctor: {
         include: {
-          User: true, // fetch the full user record
+          User: true,
         },
       },
-
       Podcast: true,
       services: true,
       marketplaceListings: true,
       Announcement: true,
-
-      // One-to-one relations (which are technically one-to-many in the schema)
       settings: true,
       SEO: true,
       AnalyticsConfig: true,
       PaymentSettings: true,
       ShippingSettings: true,
-
-      // Junction/Join Tables
       StoreCategory: {
         include: {
           category: true,
@@ -112,24 +110,8 @@ export default async function EditStorePage({
   const locationData = await locationRes.json();
   const availableLocations: ILocation[] = locationData.data || [];
 
-  // Safely get the first item from relations defined as arrays but used as one-to-one
-  const seoData = store.SEO && store.SEO.length > 0 ? store.SEO[0] : null;
-  const analyticsConfigData =
-    store.AnalyticsConfig && store.AnalyticsConfig.length > 0
-      ? store.AnalyticsConfig[0]
-      : null;
-  const paymentSettingsData =
-    store.PaymentSettings && store.PaymentSettings.length > 0
-      ? store.PaymentSettings[0]
-      : null;
-  const shippingSettingsData =
-    store.ShippingSettings && store.ShippingSettings.length > 0
-      ? store.ShippingSettings[0]
-      : null;
-
   // --- Map the comprehensive Prisma object to the StoreForm shape ---
   const storeFormData: StoreForm = {
-    // Spread direct fields from the store object
     id: store.id,
     name: store.name,
     slug: store.slug,
@@ -141,8 +123,6 @@ export default async function EditStorePage({
     sEOId: store.sEOId,
     site: store.site,
     category: store.category,
-
-    // Safely handle nullable and JSON fields
     tagline: store.tagline ?? "",
     description: store.description ?? "",
     hasWebsite: store.hasWebsite ?? false,
@@ -154,8 +134,6 @@ export default async function EditStorePage({
     address: store.address ?? "",
     currency: store.currency ?? "KES",
     locale: store.locale ?? "en-US",
-
-    // Safely parse JSON fields using the helper
     geoLocation: safeJsonParse(store.geoLocation, { lat: 0, lng: 0 }),
     openingHours: safeJsonParse(store.openingHours, {}),
     themeSettings: safeJsonParse(store.themeSettings, {}),
@@ -163,8 +141,6 @@ export default async function EditStorePage({
     metrics: safeJsonParse(store.metrics, []),
     stats: safeJsonParse(store.stats, []),
     pricingTiers: safeJsonParse(store.pricingTiers, []),
-
-    // Map one-to-many relations
     socialLinks: store.socialLinks.map((s) => ({
       ...s,
       channel: s.channel as unknown as SocialChannel,
@@ -180,64 +156,29 @@ export default async function EditStorePage({
     promotions: store.promotions,
     blogs: store.blogs,
     pageSections: store.PageSection,
-
-    // FIXED: Explicitly map `appPromos` and parse the `buttons` JSON field.
     appPromos: store.appPromos.map((p) => ({
       ...p,
-      buttons: safeJsonParse(p.buttons, []), // Parse the JSON buttons field
+      buttons: safeJsonParse(p.buttons, []),
     })),
-
     events: store.events,
     courses: store.courses,
     
-    Writer: store.Writer.map((w) => ({
-      ...w.user, // spread the full user fields
-      // and add writer-specific fields if any
-    })),
+    // ✅ FIX 1: Pass the entire salesAgents array. The 'user' object is nested inside.
     salesAgents: store.salesAgents,
+
+    // ✅ FIX 2: Extract the user object and use a type guard to filter out nulls.
+    Writer: store.Writer.map((w) => w.user),
+    Doctor: store.Doctor.map((d) => d.User).filter((user): user is User => !!user),
     
-    Doctor: store.Doctor.map(d => ({
-      id: d.id,
-      name: null,
-      address: d.address ?? null,
-      createdAt: d.createdAt ?? null,
-      updatedAt: d.updatedAt ?? null,
-      companyId: d.companyId ?? null,
-      status: null, // or cast if you can map DoctorStatus → UserStatus
-      phone: d.phone ?? null,
-      bio: null,
-      profilePicture: null,
-      email: "",
-      password: null,
-      role: null,
-      emailVerified: null,
-      image: null,
-      username: null,
-      dateOfBirth: null,
-      gender: null,
-      settingsId: null,
-      studentId: null,
-      educatorId: null,
-      parentId: null,
-      headTeacherId: null,
-      lastLogin: null,
-    })),
-
-
     Podcast: store.Podcast,
     services: store.services,
     marketplaceListings: store.marketplaceListings,
-    
     Announcement: store.Announcement,
-
-    // Handle one-to-one relations
     settings: store.settings ?? null,
-    seo: seoData,
-    analyticsConfig: analyticsConfigData,
-    paymentSettings: paymentSettingsData,
-    shippingSettings: shippingSettingsData,
-
-    // Map junction tables
+    seo: store.SEO ?? null,
+    analyticsConfig: store.AnalyticsConfig ?? null,
+    paymentSettings: store.PaymentSettings ?? null,
+    shippingSettings: store.ShippingSettings ?? null,
     StoreCategory: store.StoreCategory.map((sc) => ({
       ...sc,
       displayName: sc.displayName ?? sc.category.name,
@@ -246,16 +187,14 @@ export default async function EditStorePage({
       allBrands: safeJsonParse(sc.allBrands, []) as string[],
       category: {
         ...sc.category,
-        subcategories: (sc.category.subcategories ?? []) as unknown as ISubcategory[],
+        subcategories: (sc.category.subcategories ??
+          []) as unknown as ISubcategory[],
       },
     })),
-
-
     CompanyLocation: store.CompanyLocation.map((cl) => ({
       ...cl,
-      displayName: cl.displayName ?? null, // ✅ now matches string | null
+      displayName: cl.displayName ?? null,
     })),
-    
   };
 
   return (

@@ -3,7 +3,7 @@ import { z } from "zod";
 // Schemas for nested JSON fields or related models
 const socialLinkSchema = z.object({
   channel: z.enum(["TWITTER", "FACEBOOK", "INSTAGRAM", "LINKEDIN"]),
-  url: z.string().url("Invalid URL format"),
+  url: z.string(),//.url("Invalid URL format"),
 });
 
 const policySchema = z.object({
@@ -18,37 +18,72 @@ const faqSchema = z.object({
   order: z.number().optional(),
 });
 
+// const testimonialSchema = z.object({
+//   quote: z.string().min(1),
+//   // authorName: z.string().min(1).optional(),
+//   // authorTitle: z.string().optional(),
+//   avatarUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
+//   authorName: z.string().min(1).nullable().optional(), // Allows string, null, or undefined
+//   authorTitle: z.string().nullable().optional(),  
+//   rating: z.number().min(1).max(5).optional(),
+//   order: z.number().optional(),
+// });
+
 const testimonialSchema = z.object({
   quote: z.string().min(1),
-  authorName: z.string().min(1),
-  authorTitle: z.string().optional(),
-  avatarUrl: z.string().url().optional().or(z.literal('')),
-  rating: z.number().min(1).max(5).optional(),
+  authorName: z.string().min(1).nullable().optional(),
+  authorTitle: z.string().nullable().optional(),
+  avatarUrl: z.string().url().nullable().optional().or(z.literal('')),
+  rating: z.number().min(1).max(5).nullable().optional(),
   order: z.number().optional(),
 });
 
+// const heroSlideSchema = z.object({
+//   imageUrl: z.string().url(),
+//   productImageUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
+//   headline: z.string().optional(),
+//   subline: z.string().optional(),
+//   ctaText: z.string().optional(),
+//   ctaLink: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
+//   badgeText: z.string().optional(),
+//   price: z.string().optional(),
+//   endsAt: z.string().datetime().optional().nullable(),
+//   order: z.number().default(0),
+// });
+
 const heroSlideSchema = z.object({
   imageUrl: z.string().url(),
-  productImageUrl: z.string().url().optional().or(z.literal('')),
-  headline: z.string().optional(),
-  subline: z.string().optional(),
-  ctaText: z.string().optional(),
-  ctaLink: z.string().url().optional().or(z.literal('')),
-  badgeText: z.string().optional(),
-  price: z.string().optional(),
+  productImageUrl: z.string().url().nullable().optional().or(z.literal('')),
+  headline: z.string().nullable().optional(),
+  subline: z.string().nullable().optional(),
+  ctaText: z.string().nullable().optional(),
+  ctaLink: z.string().nullable().optional().or(z.literal('')),//.url()
+  badgeText: z.string().nullable().optional(),
+  price: z.string().nullable().optional(),
   endsAt: z.string().datetime().optional().nullable(),
   order: z.number().default(0),
 });
 
+// const promotionSchema = z.object({
+//     title: z.string().min(1),
+//     code: z.string().optional(),
+//     description: z.string().optional(),
+//     startsAt: z.string().datetime().optional().nullable(),
+//     endsAt: z.string().datetime().optional().nullable(),
+//     ctaText: z.string().optional(),
+//     ctaLink: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
+//     bannerUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
+// });
+
 const promotionSchema = z.object({
     title: z.string().min(1),
-    code: z.string().optional(),
-    description: z.string().optional(),
+    code: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
     startsAt: z.string().datetime().optional().nullable(),
     endsAt: z.string().datetime().optional().nullable(),
-    ctaText: z.string().optional(),
-    ctaLink: z.string().url().optional().or(z.literal('')),
-    bannerUrl: z.string().url().optional().or(z.literal('')),
+    ctaText: z.string().nullable().optional(),
+    ctaLink: z.string().url().nullable().optional().or(z.literal('')),
+    bannerUrl: z.string().url().nullable().optional().or(z.literal('')),
 });
 
 const companyLocationSchema = z.object({
@@ -64,7 +99,7 @@ const companyLocationSchema = z.object({
     longitudeOverride: z.number().optional(),
     sortOrder: z.number().optional(),
     visible: z.boolean().optional(),
-})
+});
 
 const storeCategorySchema = z.object({
     id: z.string(), // This is the categoryId
@@ -85,7 +120,7 @@ export const companySchema = z.object({
   tagline: z.string().optional(),
   description: z.string().optional(),
   category: z.string().min(1),
-  logoUrl: z.string().url().optional().or(z.literal('')),
+  logoUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
   bannerUrl: z.string().url().optional().or(z.literal('')),
   contactEmail: z.string().email(),
   contactPhone: z.string().optional(),
@@ -112,35 +147,35 @@ export const companySchema = z.object({
   promotions: z.array(promotionSchema).optional(),
   
   // -- These are arrays in the schema --
-  seo: z.array(z.object({
+  seo: z.object({
       title: z.string().optional(),
       description: z.string().optional(),
       keywords: z.array(z.string()).optional(),
-  })).optional(),
+  }),//z.array().optional(),
   
-  analyticsConfig: z.array(z.object({
+  analyticsConfig: z.object({
       googleTag: z.string().optional(),
       facebookTag: z.string().optional(),
       hotjarSiteId: z.string().optional(),
       isActive: z.boolean().default(false),
-  })).optional(),
+  }),//z.array().optional(),
   
-  paymentSettings: z.array(z.object({
+  paymentSettings: z.object({
       stripeKey: z.string().optional(),
       paypalKey: z.string().optional(),
       mpesaShortcode: z.string().optional(),
       mpesaConsumerKey: z.string().optional(),
       mpesaConsumerSecret: z.string().optional(),
       mpesaCallbackUrl: z.string().optional(),
-  })).optional(),
+  }),//z.array().optional(),
 
-  shippingSettings: z.array(z.object({
+  shippingSettings: z.object({
       carrierName: z.string().optional(),
       trackingUrl: z.string().url().optional().or(z.literal('')),
       regions: z.any().optional(),
       enablePickup: z.boolean().optional(),
       pickupInstructions: z.string().optional(),
-  })).optional(),
+  }),//z.array().optional(),
   
   // -- Many-to-Many through explicit join table --
   storeCategories: z.array(storeCategorySchema).optional(),

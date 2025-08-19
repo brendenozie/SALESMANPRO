@@ -7,8 +7,8 @@ export interface BasicInfoProps {
   name: string;
   slug: string;
   category: string;
-  hasWebsite: boolean;
-  description?: string  | undefined;
+  hasWebsite: boolean | null | undefined;
+  description?: string  | undefined | null;
   tagline: string;
   domain: string;
   handleChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -86,7 +86,7 @@ export default function BasicInfo({
           <input
             type="checkbox"
             name="hasWebsite"
-            checked={hasWebsite}
+            checked={hasWebsite || false}
             onChange={handleChange}
           />
           <span>I’d like to set up a public website too</span>
@@ -118,7 +118,7 @@ export default function BasicInfo({
             id="description"
             name="description"
             rows={4}
-            value={description}
+            value={description || ""}
             onChange={handleChange}
             placeholder="Describe your store’s mission, products, or services..."
             className="mt-2 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"

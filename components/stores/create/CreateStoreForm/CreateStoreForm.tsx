@@ -206,11 +206,11 @@ export default function CreateStoreForm({
       description: null,
       title: null,
       keywords: [],
-      companyId: null
+      // companyId: null
     },
     analyticsConfig: {
       id: "",
-      companyId: "",
+      // companyId: "",
       googleTag: null,
       facebookTag: null,
       hotjarSiteId: null,
@@ -218,7 +218,7 @@ export default function CreateStoreForm({
     },
     paymentSettings: {
       id: "",
-      companyId: "",
+      // companyId: "",
       stripeKey: null,
       paypalKey: null,
       mpesaShortcode: null,
@@ -228,7 +228,7 @@ export default function CreateStoreForm({
     },
     shippingSettings: {
       id: "",
-      companyId: "",
+      // companyId: "",
       carrierName: null,
       trackingUrl: null,
       regions: null,

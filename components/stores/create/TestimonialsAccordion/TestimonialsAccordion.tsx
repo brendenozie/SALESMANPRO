@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 export interface Testimonial {
-  author: string;
+  authorName: string;
   quote: string;
   avatarUrl?: string;
   rating?: number;
@@ -27,8 +27,8 @@ export default function TestimonialsAccordion({
   onAddTestimonial,
   onRemoveTestimonial,
 }: TestimonialsAccordionProps) {
-  const allFilled = testimonials.every(t => t.author && t.quote);
-  const visibleTestimonials = testimonials.length > 0 ? testimonials : [{ author: '', quote: '' }];
+  const allFilled = testimonials.every(t => t.authorName && t.quote);
+  const visibleTestimonials = testimonials.length > 0 ? testimonials : [{ authorName: '', quote: '' }];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
@@ -52,9 +52,9 @@ export default function TestimonialsAccordion({
           >
             <input
               placeholder="Author name"
-              value={t.author}
+              value={t.authorName}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                onUpdateTestimonial(idx, 'author', e.target.value)
+                onUpdateTestimonial(idx, 'authorName', e.target.value)
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />

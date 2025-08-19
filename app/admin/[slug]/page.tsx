@@ -294,6 +294,8 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
         return <HealthcareDashboardClient params= { {adminSlug : companyId} }/>;
       case 'saas & web apps':
         return <SaaSDashboardClient />;
+      case 'dashboards':
+        return <SaaSDashboardClient />;
       case 'media & entertainment':
         return <MediaDashboardClient />;
       case 'finance & legal':

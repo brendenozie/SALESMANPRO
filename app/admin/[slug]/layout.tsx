@@ -39,8 +39,8 @@ export default async function AdminStoreLayout({
     where: { id: params.slug },
     include: {
       socialLinks: true, policies: true, faqs: true, testimonials: true,
-      heroSlides: true, promotions: true, seo: true, analyticsConfig: true,
-      paymentSettings: true, shippingSettings: true,
+      heroSlides: true, promotions: true, SEO: true, AnalyticsConfig: true,
+      PaymentSettings: true, ShippingSettings: true,
       marketplaceListings: {
         take: 12, select: {
           id: true, name: true, description: true, finalPrice: true, images: true,

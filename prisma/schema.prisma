@@ -37,13 +37,6 @@ enum UserStatus {
   SUSPENDED
 }
 
-// enum Plan {
-//   FREE
-//   STARTER
-//   PRO
-//   BUSINESS
-// }
-
 enum ROLE {
   USER
   CONSUMER
@@ -242,7 +235,7 @@ model Company {
   updatedAt DateTime? @updatedAt
 
   deletedAt DateTime?
-  sEOId     String?   @db.ObjectId
+  // sEOId     String?   @db.ObjectId
 
   awards  Json?
   metrics Json?
@@ -341,10 +334,29 @@ model Company {
   FinanceAppointment              FinanceAppointment[]
   Invoice                         Invoice[]
   Package                         Package[]
-  SEO                             SEO[]
-  AnalyticsConfig                 AnalyticsConfig[]
-  PaymentSettings                 PaymentSettings[]
-  ShippingSettings                ShippingSettings[]
+
+  sEOId String? @unique @db.ObjectId
+  SEO   SEO?    @relation(fields: [sEOId], references: [id], onDelete: NoAction)
+
+  analyticsConfigId String?          @unique @db.ObjectId
+  AnalyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id], onDelete: NoAction)
+
+  paymentSettingsId String?          @unique @db.ObjectId
+  PaymentSettings   PaymentSettings? @relation(fields: [paymentSettingsId], references: [id], onDelete: NoAction)
+
+  shippingSettingsId String?           @unique @db.ObjectId
+  ShippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id], onDelete: NoAction)
+
+  Subscription Subscription[]
+
+  // SEO                             SEO?                              @relation(fields: [sEOId], references: [id]) //            @relation(fields: [sEOId], references: [id])
+  // AnalyticsConfig                 AnalyticsConfig?                   @relation(fields: [analyticsConfigId], references: [id])
+  // PaymentSettings                 PaymentSettings?                  @relation(fields: [paymentSettingsId], references: [id]) //    @relation(fields: [paymentSettingsId], references: [id])
+  // ShippingSettings                ShippingSettings?                 @relation(fields: [shippingSettingsId], references: [id]) //    @relation(fields: [shippingSettingsId], references: [id])
+
+  // paymentSettingsId               String?                           @db.ObjectId
+  // shippingSettingsId              String?                           @db.ObjectId
+  // analyticsConfigId               String?                           @db.ObjectId
 }
 
 enum CategoryStatus {
@@ -416,20 +428,18 @@ model AnalyticsConfig {
 
   isActive Boolean @default(false)
 
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @db.ObjectId
+  company Company?
 }
 
 model PaymentSettings {
-  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   stripeKey           String?
   paypalKey           String?
   mpesaShortcode      String?
   mpesaConsumerKey    String?
   mpesaConsumerSecret String?
   mpesaCallbackUrl    String?
-  company             Company @relation(fields: [companyId], references: [id])
-  companyId           String  @db.ObjectId
+  company             Company?
 }
 
 model ShippingSettings {
@@ -439,8 +449,7 @@ model ShippingSettings {
   regions            Json?
   enablePickup       Boolean?
   pickupInstructions String?
-  company            Company  @relation(fields: [companyId], references: [id])
-  companyId          String   @db.ObjectId
+  company            Company?
 }
 
 model PageSection {
@@ -836,8 +845,7 @@ model SEO {
   title       String?
   description String?
   keywords    String[]
-  Company     Company? @relation(fields: [companyId], references: [id])
-  companyId   String?  @db.ObjectId
+  Company     Company?
 }
 
 model Comment {
@@ -1193,12 +1201,10 @@ model User {
   Subscription Subscription[]
   Patient      Patient[]      @relation("patient")
 
-  // Staff               Staff?
-  // Patient             Patient?
   BillingTransactions BillingTransaction[]
   PatientInvoices     PatientInvoices[]    @relation("PatientInvoices")
-  // Staff               Staff? relation("staff")
-  Video               Video[]
+
+  Video Video[]
 
   content    Content[]
   Photo      Photo[]
@@ -3931,8 +3937,14 @@ model Plan {
 model Subscription {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
+  // on specific website we use userId to register subscriptions
+  // but on main dashboards site we use companyId to register subscriptions
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   planId String @db.ObjectId
   plan   Plan   @relation(fields: [planId], references: [id])

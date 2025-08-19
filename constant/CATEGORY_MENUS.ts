@@ -399,6 +399,68 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         icon: ServerStackIcon,
       }
     ],
+    
+
+  "Dashboards": [
+      {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },
+      {
+        label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
+      {
+        label: "Plans & Subscriptions",
+        href: `/admin/${adminSlug}/saas-plans`,
+        icon: ClipboardDocumentListIcon,
+      },
+      {
+        label: "Billing & Payments",
+        href: `/admin/${adminSlug}/saas-billing`,
+        icon: CreditCardIcon,
+      },
+      {
+        label: "General Settings",
+        href: `/admin/${adminSlug}/saas-settings`,
+        icon: Cog6ToothIcon,
+      },
+      {
+        label: "Analytics",
+        href: `/admin/${adminSlug}/saas-analytics`,
+        icon: ChartBarIcon,
+      },
+      {
+        label: "Reports",
+        href: `/admin/${adminSlug}/saas-reports`,
+        icon: DocumentChartBarIcon,
+      },
+      {
+        label: "Support Tickets",
+        href: `/admin/${adminSlug}/saas-support`,
+        icon: LifebuoyIcon,
+      },
+      {
+        label: "Announcements",
+        href: `/admin/${adminSlug}/saas-announcements`,
+        icon: MegaphoneIcon,
+      },
+      {
+        label: "Content (CMS)",
+        href: `/admin/${adminSlug}/saas-content`,
+        icon: DocumentTextIcon,
+      },
+      {
+        label: "API Keys",
+        href: `/admin/${adminSlug}/saas-api-keys`,
+        icon: KeyIcon,
+      },
+      {
+        label: "Audit Log",
+        href: `/admin/${adminSlug}/saas-audit-log`,
+        icon: ClipboardDocumentCheckIcon,
+      },
+      {
+        label: "System Status",
+        href: `/admin/${adminSlug}/saas-status`,
+        icon: ServerStackIcon,
+      }
+    ],
 
   "Media & Entertainment": [
     { 
