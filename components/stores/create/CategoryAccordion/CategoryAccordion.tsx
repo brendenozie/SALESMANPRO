@@ -74,6 +74,11 @@ export default function CategoryTree({
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
+  console.log("selectedCategories");
+  console.log(selectedCategories);
+  console.log("availableCategories");
+  console.log(availableCategories);
+
   const filteredBySite = useMemo(() => {
     const allowedNames = STORE_CATEGORY_MAP[category] || [];
     return availableCategories.filter(cat => allowedNames.includes(cat.name || ''));

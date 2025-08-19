@@ -4,14 +4,14 @@ import React, { ChangeEvent } from 'react';
  * Interface for Payment settings, matching the Prisma schema model.
  */
 export interface PaymentSettings {
-  id?: string;
-  companyId?: string;
-  stripeKey?: string | null;
-  paypalKey?: string | null;
-  mpesaShortcode?: string | null;
-  mpesaConsumerKey?: string | null;
-  mpesaConsumerSecret?: string | null;
-  mpesaCallbackUrl?: string | null;
+  id?: string | null | undefined;
+  companyId?: string | null | undefined;
+  stripeKey?: string | null | undefined;
+  paypalKey?: string | null | undefined;
+  mpesaShortcode?: string | null | undefined;
+  mpesaConsumerKey?: string | null | undefined;
+  mpesaConsumerSecret?: string | null | undefined;
+  mpesaCallbackUrl?: string | null | undefined;
 }
 
 /**
