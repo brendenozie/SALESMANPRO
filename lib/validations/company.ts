@@ -70,6 +70,7 @@ const storeCategorySchema = z.object({
     id: z.string(), // This is the categoryId
     displayName: z.string().optional(),
     icon: z.string().optional(),
+    categoryId: z.string().optional(),
     sortOrder: z.number().optional(),
     visible: z.boolean().optional(),
     subcategories: z.any().optional(), // For JSON fields, z.any() is a safe default
@@ -143,6 +144,6 @@ export const companySchema = z.object({
   }),//z.array().optional(),
   
   // -- Many-to-Many through explicit join table --
-  storeCategories: z.array(storeCategorySchema).optional(),
+  StoreCategory: z.array(storeCategorySchema).optional(),
   companyLocations: z.array(companyLocationSchema).optional(),
 });

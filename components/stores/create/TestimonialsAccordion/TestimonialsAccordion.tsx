@@ -5,17 +5,18 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
+import { Testimonial } from '@/types/typings';
 
-export interface Testimonial {
-  authorName: string;
-  quote: string;
-  avatarUrl?: string;
-  rating?: number;
-  order?: number;
-}
+// export interface Testimonial {
+//   authorName: string;
+//   quote: string;
+//   avatarUrl?: string;
+//   rating?: number;
+//   order?: number;
+// }
 
 export interface TestimonialsAccordionProps {
-  testimonials: Testimonial[];
+  testimonials: Testimonial[] | null | undefined;
   onUpdateTestimonial: (index: number, field: keyof Testimonial, value: string | number) => void;
   onAddTestimonial: () => void;
   onRemoveTestimonial: (index: number) => void;
@@ -27,8 +28,8 @@ export default function TestimonialsAccordion({
   onAddTestimonial,
   onRemoveTestimonial,
 }: TestimonialsAccordionProps) {
-  const allFilled = testimonials.every(t => t.authorName && t.quote);
-  const visibleTestimonials = testimonials.length > 0 ? testimonials : [{ authorName: '', quote: '' }];
+  const allFilled = testimonials && testimonials.every(t => t.authorName && t.quote);
+  const visibleTestimonials = testimonials && testimonials.length > 0 ? testimonials : [{ authorName: '', quote: '' }];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
@@ -39,7 +40,7 @@ export default function TestimonialsAccordion({
           Customer Testimonials
         </span>
         <span className="text-lg">
-          {testimonials.length > 1 ? '✅' : <PlusIcon className="h-5 w-5" />}
+          {testimonials && testimonials.length > 1 ? '✅' : <PlusIcon className="h-5 w-5" />}
         </span>
       </div>
 
@@ -52,7 +53,7 @@ export default function TestimonialsAccordion({
           >
             <input
               placeholder="Author name"
-              value={t.authorName}
+              value={t.authorName || ""}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 onUpdateTestimonial(idx, 'authorName', e.target.value)
               }

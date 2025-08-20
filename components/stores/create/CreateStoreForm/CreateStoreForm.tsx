@@ -827,7 +827,7 @@ export default function CreateStoreForm({
       }
 
       // Modified: Get the correct ID from the subcategory object, prioritizing tempId if no other ID exists
-      const subId = subcategory._id?.$oid || subcategory.id || subcategory.tempId;
+      const subId = subcategory.id || subcategory._id?.$oid || subcategory.tempId;
 
       if (!subId) {
         // This should ideally not happen if you're generating tempIds,
@@ -980,6 +980,9 @@ const onBulkToggle = (ids: string[]) => {
    const idSet = new Set(ids);
 
    for (const parent of availableCategories) {
+    //**this should only select bulk for the specific store not all the other categories** 
+    // note to correctly update this ** */
+
     // FIX: Updated the filter logic to correctly find the ID
     const matchedSubcategories = parent.subcategories.filter((item: any) =>
      idSet.has(item._id?.$oid || item.id)

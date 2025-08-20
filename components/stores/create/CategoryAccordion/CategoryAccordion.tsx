@@ -111,7 +111,7 @@ const filtered = useMemo(() => {
 
   const selectedParentMap = useMemo(() => {
     const map = new Map<string, IStoreCategory>();
-    selectedCategories.forEach(p => map.set(p.id, p));
+    selectedCategories.forEach(p => map.set(p.categoryId || p.id, p));
     return map;
   }, [selectedCategories]);
 
@@ -173,7 +173,7 @@ const filtered = useMemo(() => {
               <p className="text-gray-500 text-sm italic">No categories selected yet.</p>
             )}
             {selectedCategories.map(parent => (
-              <div key={parent.id}>
+              <div key={parent.categoryId || parent.id}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="h-8 w-8 bg-indigo-100 text-indigo-600 flex items-center justify-center rounded-full text-sm font-medium">
                     {parent.icon}
@@ -188,7 +188,7 @@ const filtered = useMemo(() => {
                     >
                       {item.name}
                       <button
-                        onClick={() => onToggleSub(parent.id, item)}
+                        onClick={() => onToggleSub(parent.categoryId || parent.id, item)}
                         className="ml-1 focus:outline-none"
                       >
                         <XMarkIcon className="h-4 w-4" />
@@ -254,7 +254,7 @@ const filtered = useMemo(() => {
           <AnimatePresence>
             {filtered.map(cat => {
               const selectedParent = selectedParentMap.get(cat.id);
-              const selSubIds = selectedParent?.subcategories.map(i => i.id) || [];
+              const selSubIds = selectedParent?.subcategories.map(i => i.id || i._id?.$oid) || [];
               const totalItems = cat.subcategories.length;
               const isOpen = expanded.has(cat.id);
               const isPartiallySelected = isParentPartiallySelected(cat);
@@ -314,7 +314,7 @@ const filtered = useMemo(() => {
                         {cat.subcategories.length > 0 && (
                           <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                             {cat.subcategories.map((item:any) => {
-                              const subId = item._id?.$oid || item.id; // Correctly get the ID
+                              const subId = item.id || item._id?.$oid ; // Correctly get the ID
                               const isSel = selSubIds.includes(subId);
                               return (
                                 <motion.button
@@ -366,14 +366,6 @@ const filtered = useMemo(() => {
             })}
           </AnimatePresence>
         </ul>
-        <div className="mt-8">
-          <button
-            onClick={onApply}
-            className="w-full py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 transition lg:hidden"
-          >
-            Apply
-          </button>
-        </div>
       </main>
     </div>
   );

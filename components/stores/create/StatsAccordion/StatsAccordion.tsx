@@ -16,7 +16,7 @@ type Stat = {
 };
 
 type StatsAccordionProps = {
-  stats: Stat[];
+  stats: Stat[] | null;
   onAdd: () => void;
   onUpdate: (idx: number, field: keyof Stat, value: string) => void;
   onRemove: (idx: number) => void;
@@ -27,10 +27,10 @@ export const StatsAccordion: React.FC<StatsAccordionProps> = ({ stats, onAdd, on
 
   // Ensure at least one stat exists
   useEffect(() => {
-    if (stats.length === 0) onAdd();
+    if (stats && stats.length === 0) onAdd();
   }, [stats, onAdd]);
 
-  const canAdd = stats.every(s => s.label.trim() && s.value.toString().trim());
+  const canAdd = stats && stats.every(s => s.label.trim() && s.value.toString().trim());
 
   return (
     <section className="max-w-4xl mx-auto overflow-hidden">
@@ -51,7 +51,7 @@ export const StatsAccordion: React.FC<StatsAccordionProps> = ({ stats, onAdd, on
         <div className="px-6 py-8 space-y-6">
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {stats.map((stat, idx) => (
+            {stats && stats.map((stat, idx) => (
               <div
                 key={idx}
                 className="relative bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-lg transition"

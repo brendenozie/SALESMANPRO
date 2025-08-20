@@ -86,7 +86,7 @@ export async function PUT(
     testimonials,
     heroSlides,
     promotions,
-    storeCategories,
+    StoreCategory,
     ...companyData // The rest are direct fields of the company
   } = parseResult.data;
 
@@ -133,14 +133,14 @@ export async function PUT(
             })) 
         } : undefined,
 
-        StoreCategory: storeCategories ? {
-            deleteMany: {},
-            create: storeCategories.map(sc => ({
+        StoreCategory: StoreCategory ? {
+            deleteMany: { companyId: params.id },
+            create: StoreCategory.map(sc => ({
                 displayName: sc.displayName,
                 icon: sc.icon,
                 sortOrder: sc.sortOrder,
                 subcategories:sc.subcategories,
-                category: { connect: { id: sc.id } }
+                category: { connect: { id: sc.categoryId } }
             }))
         } : undefined,
       },

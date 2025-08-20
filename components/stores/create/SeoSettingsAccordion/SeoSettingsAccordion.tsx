@@ -4,10 +4,10 @@ import React, { ChangeEvent } from 'react';
  * Interface for SEO settings, directly mapping to the Prisma schema model.
  */
 export interface SEOSettings {
-  id: string;
+  id?: string | undefined;
   description?: string | null;
   title?: string | null | undefined;
-  keywords: string[];
+  keywords?: string[] | undefined; 
   companyId?: string | null;
 }
 
@@ -15,7 +15,7 @@ export interface SEOSettings {
  * Props for the SeoSettingsAccordion component.
  */
 export interface SeoSettingsAccordionProps {
-  seo: SEOSettings;
+  seo: SEOSettings | null;
   onChange: (updated: SEOSettings) => void;
 }
 

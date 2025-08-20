@@ -9,7 +9,7 @@ export interface AnalyticsConfig {
   googleTag?: string | null;
   facebookTag?: string | null;
   hotjarSiteId?: string | null;
-  isActive: boolean;
+  isActive?: boolean | undefined; 
 }
 
 /**

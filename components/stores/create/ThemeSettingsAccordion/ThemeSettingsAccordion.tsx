@@ -14,7 +14,7 @@ export interface ThemeSettings {
 }
 
 export interface ThemeSettingsAccordionProps {
-  themeSettings: ThemeSettings;
+  themeSettings: ThemeSettings | null;
   onChange: (updated: ThemeSettings) => void;
 }
 
@@ -101,7 +101,7 @@ export default function ThemeSettingsAccordion({
             <div className="flex items-center space-x-2">
               <input
                 type="color"
-                value={themeSettings.primaryColor}
+                value={themeSettings?.primaryColor}
                 onChange={(e) =>
                   updateField('primaryColor', e.target.value)
                 }
@@ -109,7 +109,7 @@ export default function ThemeSettingsAccordion({
               />
               <input
                 type="text"
-                value={themeSettings.primaryColor}
+                value={themeSettings?.primaryColor}
                 onChange={(e) =>
                   updateField('primaryColor', e.target.value)
                 }
@@ -126,7 +126,7 @@ export default function ThemeSettingsAccordion({
             <div className="flex items-center space-x-2">
               <input
                 type="color"
-                value={themeSettings.secondaryColor}
+                value={themeSettings?.secondaryColor}
                 onChange={(e) =>
                   updateField('secondaryColor', e.target.value)
                 }
@@ -134,7 +134,7 @@ export default function ThemeSettingsAccordion({
               />
               <input
                 type="text"
-                value={themeSettings.secondaryColor}
+                value={themeSettings?.secondaryColor}
                 onChange={(e) =>
                   updateField('secondaryColor', e.target.value)
                 }
@@ -183,15 +183,15 @@ export default function ThemeSettingsAccordion({
           lockPreview ? '' : 'hover:shadow-lg'
         }`}
         style={{
-          backgroundColor: themeSettings.secondaryColor,
-          fontFamily: themeSettings.fontFamily,
+          backgroundColor: themeSettings?.secondaryColor,
+          fontFamily: themeSettings?.fontFamily,
         }}
       >
         <div className="flex justify-between items-start">
           <div>
             <h3
               className="text-xl font-bold mb-2"
-              style={{ color: themeSettings.primaryColor }}
+              style={{ color: themeSettings?.primaryColor }}
             >
               Sample Heading
             </h3>
@@ -214,7 +214,7 @@ export default function ThemeSettingsAccordion({
         <button
           className="px-5 py-2.5 rounded-full font-medium shadow transition-transform transform hover:scale-105"
           style={{
-            backgroundColor: themeSettings.primaryColor,
+            backgroundColor: themeSettings?.primaryColor,
             color: '#fff',
           }}
         >

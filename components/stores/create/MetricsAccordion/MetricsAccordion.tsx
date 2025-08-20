@@ -16,7 +16,7 @@ type Metric = {
 };
 
 type MetricsAccordionProps = {
-  metrics: Metric[];
+  metrics: Metric[] | null;
   onAdd: () => void;
   onUpdate: (idx: number, field: keyof Metric, value: any) => void;
   onRemove: (idx: number) => void;
@@ -27,11 +27,11 @@ export const MetricsAccordion: React.FC<MetricsAccordionProps> = ({ metrics, onA
 
   // Auto-add initial metric if none
   useEffect(() => {
-    if (metrics.length === 0) onAdd();
+    if (metrics?.length === 0) onAdd();
   }, [metrics, onAdd]);
 
   // Determine if next can be added
-  const canAddNew = metrics.every(m => m.label.trim() && m.value !== null);
+  const canAddNew = metrics?.every(m => m.label.trim() && m.value !== null);
 
   return (
     <section className="max-w-4xl mx-auto overflow-hidden">
@@ -53,7 +53,7 @@ export const MetricsAccordion: React.FC<MetricsAccordionProps> = ({ metrics, onA
         <div className="px-6 py-8 space-y-6">
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {metrics.map((metric, idx) => (
+            {metrics && metrics.map((metric, idx) => (
               <div
                 key={idx}
                 className="relative bg-gray-50 rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-lg transition"

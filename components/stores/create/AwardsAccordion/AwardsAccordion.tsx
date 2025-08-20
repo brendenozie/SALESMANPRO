@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface Props {
-  awards: Award[];
+  awards: Award[] | null;
   onAdd: () => void;
   onUpdate: (index: number, field: keyof Award, value: any) => void;
   onRemove: (index: number) => void;
@@ -19,10 +19,10 @@ const isFilled = (award: Award) => award.name.trim() && award.iconUrl.trim();
 
 export const AwardsAccordion: React.FC<Props> = ({ awards, onAdd, onUpdate, onRemove }) => {
   const [open, setOpen] = useState(true);
-  const canAdd = awards.length === 0 || isFilled(awards[awards.length - 1]);
+  const canAdd = awards?.length === 0 || awards && isFilled(awards?.[awards?.length - 1]);
 
   useEffect(() => {
-    if (!awards.length) onAdd();
+    if (!awards?.length) onAdd();
   }, [awards, onAdd]);
 
   return (
@@ -47,7 +47,7 @@ export const AwardsAccordion: React.FC<Props> = ({ awards, onAdd, onUpdate, onRe
         <div className="px-4 sm:px-6 py-6 space-y-6">
           {/* Awards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            {awards.map((award, idx) => (
+            {awards && awards.map((award, idx) => (
               <div key={idx} className="bg-yellow-50 rounded-lg border border-yellow-200 p-4 sm:p-5 shadow-sm">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-md font-medium text-yellow-800">Award {idx + 1}</h4>
