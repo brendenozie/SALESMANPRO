@@ -90,8 +90,8 @@ export async function POST(req: Request) {
         promotions: data.promotions ? { create: data.promotions.map(p => ({...p, startsAt: p.startsAt ? new Date(p.startsAt) : undefined, endsAt: p.endsAt ? new Date(p.endsAt) : undefined})) } : undefined,
         
         // Many-to-Many relation through 'StoreCategory' join table
-        StoreCategory: data.storeCategories ? {
-            create: data.storeCategories.map(sc => ({
+        StoreCategory: data.StoreCategory ? {
+            create: data.StoreCategory.map(sc => ({
                 displayName: sc.displayName,
                 icon: sc.icon,
                 sortOrder: sc.sortOrder,
