@@ -52,26 +52,67 @@ export function categoryReducer(state: SelectedState, action: CategoryAction): S
     }
 
     case 'TOGGLE_SUB': {
-      const { parentId, subcategory, parentData } = action.payload;
-      // Get existing parent or create a new one if it's the first selection
-      let parentEntry = newState[parentId] ? { ...newState[parentId] } : createEmptyParent(parentData);
-      
-      const isSelected = parentEntry.subcategories.some(s => s.id === subcategory.id);
-      
-      if (isSelected) {
-        parentEntry.subcategories = parentEntry.subcategories.filter(s => s.id !== subcategory.id);
-      } else {
-        parentEntry.subcategories = [...parentEntry.subcategories, subcategory];
+        const { parentId, subcategory, parentData } = action.payload;
+
+        // Resolve a unique ID for the subcategory (consistent with your old logic)
+        const subId = subcategory.id || subcategory._id?.$oid || subcategory.tempId;
+        if (!subId) {
+          console.warn("Subcategory missing unique identifier", subcategory);
+          return newState;
+        }
+
+        // Clone or create parent entry
+        let parentEntry = newState[parentId] 
+          ? { ...newState[parentId] } 
+          : createEmptyParent(parentData);
+
+        const isSelected = parentEntry.subcategories.some(s => s.id === subId);
+
+        if (isSelected) {
+          parentEntry.subcategories = parentEntry.subcategories.filter(s => s.id !== subId);
+        } else {
+          parentEntry.subcategories = [
+            ...parentEntry.subcategories,
+            {
+              id: subId,
+              name: subcategory.name,
+              slug: subcategory.slug,
+              tempId: subcategory.tempId
+            }
+          ];
+        }
+
+        // Remove parent entry if it's empty
+        if (parentEntry.subcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
+          delete newState[parentId];
+        } else {
+          newState[parentId] = parentEntry;
+        }
+
+        return newState;
       }
 
-      // If the parent entry becomes empty, remove it from the state object
-      if (parentEntry.subcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
-        delete newState[parentId];
-      } else {
-        newState[parentId] = parentEntry;
-      }
-      return newState;
-    }
+    // case 'TOGGLE_SUB': {
+    //   const { parentId, subcategory, parentData } = action.payload;
+    //   // Get existing parent or create a new one if it's the first selection
+    //   let parentEntry = newState[parentId] ? { ...newState[parentId] } : createEmptyParent(parentData);
+      
+    //   const isSelected = parentEntry.subcategories.some(s => s.id === subcategory.id);
+      
+    //   if (isSelected) {
+    //     parentEntry.subcategories = parentEntry.subcategories.filter(s => s.id !== subcategory.id);
+    //   } else {
+    //     parentEntry.subcategories = [...parentEntry.subcategories, subcategory];
+    //   }
+
+    //   // If the parent entry becomes empty, remove it from the state object
+    //   if (parentEntry.subcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
+    //     delete newState[parentId];
+    //   } else {
+    //     newState[parentId] = parentEntry;
+    //   }
+    //   return newState;
+    // }
 
     case 'TOGGLE_BRAND': {
         const { parentId, brand, parentData } = action.payload;
