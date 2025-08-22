@@ -20,7 +20,7 @@ import { MetricsAccordion } from '../components/stores/create/MetricsAccordion/M
 import { StatsAccordion } from '../components/stores/create/StatsAccordion/StatsAccordion';
 import ProductPricingAndTiers  from '../components/stores/create/PricingTiers/PricingTiers';
 import CategorySelect from '../components/stores/create/CategorySelect/CategorySelect';
-import { StepConfig } from '@/types/typings';
+import { CategoryAction, StepConfig } from '@/types/typings';
 import LocationSelectionAccordion from '@/components/stores/create/LocationSelectionAccordion/LocationSelectionAccordion';
 
 // Interfaces
@@ -38,17 +38,22 @@ export const storeSteps: StepConfig[] = [
   {
     key: 'categories',
     title: 'Categories',
-    render: (f, h, cats) => (
+    render: (f, h, cats,allLocs, 
+        selectedLocationsForDisplay,
+        selectedCategoriesArray,
+        dispatch) => (
       <CategoryAccordion
         category={f.category}
         availableCategories={cats}
-        selectedCategories={f.StoreCategory}
-        onToggleParent={h.onToggleParent}
-        onToggleSub={h.onToggleSub}
-        onToggleBrand={h.onToggleBrand}
-        onBulkToggle={h.onBulkToggle}
-        onApply={() => console.log(f.StoreCategory)}
-      />
+        // selectedCategories={f.StoreCategory}
+        selectedCategories={selectedCategoriesArray}
+
+        // onToggleParent={h.onToggleParent}
+        // onToggleSub={h.onToggleSub}
+        // onToggleBrand={h.onToggleBrand}
+        // onBulkToggle={h.onBulkToggle}
+        onApply={() => console.log(f.StoreCategory)} 
+        dispatch={dispatch}      />
     ),
   },  
   {

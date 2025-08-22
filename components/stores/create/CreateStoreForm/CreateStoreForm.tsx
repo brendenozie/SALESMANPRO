@@ -7,6 +7,7 @@ import React, {
   FormEvent,
   useMemo,
   useCallback,
+  useReducer,
 } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -20,6 +21,7 @@ import {
   ILocation,
   IProductCategory,
   ISubcategory,
+  CategoryAction,
 } from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
@@ -33,6 +35,8 @@ import {
 
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 import { CompanyLocation, Promotion } from "@prisma/client";
+import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
+import { categoryReducer } from "@/hooks/categoryReducer";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -744,279 +748,49 @@ export default function CreateStoreForm({
   };
 
   //............................
+// State is an object map for O(1) lookups: { [categoryId]: IStoreCategory }
+type SelectedState = Record<string, IStoreCategory>;
+// Assume `availableCategories` is your full list from props/API.
+// Assume `form.StoreCategory` is your initial raw selected data.
 
-  // Utility function to get a deep clone of a category for immutability
-  const cloneCategory = (category: IProductCategory) => ({
-    ...category,    
-    displayName: category.name,
-    categoryId: category.id,
-    subcategories: category.subcategories ? [...category.subcategories] : [],
-    allBrands: category.allBrands ? [...category.allBrands] : [],
-  });
+// 1. Initializer function runs ONLY ONCE to set up the reducer's initial state.
+// It normalizes the raw array from the form into our efficient object map.
+const initializer = (rawSelected: IStoreCategory[]): SelectedState => {
+    const initialState: SelectedState = {};
+    for (const selection of rawSelected) {
+        const catId = selection.categoryId;
+        if (!catId) continue;
 
-  // ✅ 1) Toggle parent
-
-  const onToggleParent = (parent: IProductCategory) => {
-  setForm((prev: StoreForm) => {
-   const existingParentIndex = prev.StoreCategory.findIndex(
-    (sc) => sc.id === parent.id
-   );
-
-   const totalSubcategories = parent.subcategories.map((child:any) => ({
-    id: child._id?.$oid || child.id,
-    name: child.name,
-    slug: child.slug,
-   }));
-
-   if (existingParentIndex === -1) {
-    return {
-     ...prev,
-     StoreCategory: [ // Correct key
-      ...prev.StoreCategory,
-      {
-       ...cloneCategory(parent),
-       subcategories: totalSubcategories,
-       allBrands: parent.allBrands ? [...parent.allBrands] : [],
-      },
-     ],
-    };
-   }
-
-   const existingEntry = prev.StoreCategory[existingParentIndex];
-   const totalSubcategoryCount = totalSubcategories.length;
-   const selectedSubcategoryCount = existingEntry.subcategories.length;
-   const totalBrands = parent.allBrands?.length || 0;
-   const selectedBrandCount = existingEntry.allBrands?.length || 0;
-
-   const isFullySelected =
-    selectedSubcategoryCount === totalSubcategoryCount &&
-    selectedBrandCount === totalBrands;
-
-   if (!isFullySelected) {
-    const updatedParent = {
-     ...cloneCategory(parent),
-     subcategories: totalSubcategories,
-     allBrands: parent.allBrands ? [...parent.allBrands] : [],
-    };
-    const updatedStoreCategories = prev.StoreCategory.map((sc) =>
-     sc.id === parent.id ? updatedParent : sc
-    );
-    // FIX: Changed 'storeCategories' to 'StoreCategory'
-    return { ...prev, StoreCategory: updatedStoreCategories };
-   } else {
-    const filteredStoreCategories = prev.StoreCategory.filter(
-     (sc) => sc.id !== parent.id
-    );
-    // FIX: Changed 'storeCategories' to 'StoreCategory'
-    return { 
-     ...prev, 
-     StoreCategory: filteredStoreCategories 
-    };
-   }
-  });
- };
-  
-  // ✅ 2) Toggle subcategory
-  const onToggleSub = (parentId: string, subcategory: ISubcategory) => {
-    setForm((prev: StoreForm) => {
-      const parentEntry = prev.StoreCategory.find((sc) => sc.id === parentId);
-      const parentData = availableCategories.find((cat) => cat.id === parentId);
-
-      if (!parentData) {
-        return prev;
-      }
-
-      // Modified: Get the correct ID from the subcategory object, prioritizing tempId if no other ID exists
-      const subId = subcategory.id || subcategory._id?.$oid || subcategory.tempId;
-
-      if (!subId) {
-        // This should ideally not happen if you're generating tempIds,
-        // but good for a safeguard or logging
-        console.warn("Subcategory has no unique ID (id, _id.$oid, or tempId)", subcategory);
-        return prev;
-      }
-
-      // Case 1: Parent is not yet in the form state
-      if (!parentEntry) {
-        return {
-          ...prev,
-          StoreCategory: [
-            ...prev.StoreCategory,
-            {
-              ...cloneCategory(parentData),
-              subcategories: [
-                {
-                  id: subId, // Store the resolved ID
-                  name: subcategory.name,
-                  slug: subcategory.slug,
-                  tempId: subcategory.tempId // Also store tempId if it was used for identification
+        // This handles potential duplicate categoryId entries from raw data by merging them.
+        if (initialState[catId]) {
+            const existing = initialState[catId];
+            const subIds = new Set(existing.subcategories.map(s => s.id));
+            selection.subcategories.forEach(sub => {
+                if (!subIds.has(sub.id)) {
+                    existing.subcategories.push(sub);
                 }
-              ],
-              allBrands: [],
-            },
-          ],
-        };
-      }
-
-      // Case 2: Parent is already in the form state
-      const isCurrentlySelected = parentEntry.subcategories.some(
-        // Compare using the resolved subId
-        (s) => s.id === subId
-      );
-
-      let updatedSubcategories;
-      if (isCurrentlySelected) {
-        updatedSubcategories = parentEntry.subcategories.filter(
-          // Filter using the resolved subId
-          (s) => s.id !== subId
-        );
-      } else {
-        updatedSubcategories = [
-          ...parentEntry.subcategories,
-          {
-            id: subId, // Store the resolved ID
-            name: subcategory.name,
-            slug: subcategory.slug,
-            tempId: subcategory.tempId // Also store tempId if it was used for identification
-          },
-        ];
-      }
-
-      if (updatedSubcategories.length === 0 && (parentEntry.allBrands?.length || 0) === 0) {
-        return {
-          ...prev,
-          StoreCategory: prev.StoreCategory.filter((sc) => sc.id !== parentId),
-        };
-      }
-
-      return {
-        ...prev,
-        StoreCategory: prev.StoreCategory.map((sc) =>
-          sc.id === parentId ? { ...sc, subcategories: updatedSubcategories } : sc
-        ),
-      };
-    });
-  };
-
-  // ✅ 3) Toggle brand
-  const onToggleBrand = (parentId: string, brand: string) => {
-    setForm((prev: StoreForm) => {
-      const parentEntry = prev.StoreCategory.find(
-        (sc) => sc.id === parentId
-      );
-      const parentData = availableCategories.find(
-        (cat) => cat.id === parentId
-      );
-
-      if (!parentData) {
-        console.warn(
-          `Parent category with ID ${parentId} not found in availableCategories.`
-        );
-        return prev;
-      }
-
-      if (!parentEntry) {
-        return {
-          ...prev,
-          StoreCategory: [
-            ...prev.StoreCategory,
-            {
-              id: parentData.id,
-              companyId: form.id,
-              categoryId: parentData.id,
-              displayName: parentData.name ?? null,
-              icon: parentData.icon ?? null,
-              sortOrder: parentData.sortOrder,
-              visible: parentData.visible,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              subcategories: [],
-              allBrands: [brand],
-            },
-          ],
-        };
-      }
-
-      const isCurrentlySelected = parentEntry.allBrands?.includes(brand);
-
-      let updatedBrands: string[];
-      if (isCurrentlySelected) {
-        updatedBrands = (parentEntry.allBrands || []).filter(
-          (b: string) => b !== brand
-        );
-      } else {
-        updatedBrands = [...(parentEntry.allBrands || []), brand];
-      }
-
-      if (
-        updatedBrands.length === 0 &&
-        (parentEntry.subcategories?.length || 0) === 0
-      ) {
-        return {
-          ...prev,
-          StoreCategory: prev.StoreCategory.filter(
-            (sc) => sc.id !== parentId
-          ),
-        };
-      }
-
-      return {
-        ...prev,
-        StoreCategory: prev.StoreCategory.map((sc) =>
-          sc.id === parentId ? { ...sc, allBrands: updatedBrands } : sc
-        ),
-      };
-    });
-  };
-
-
-const onBulkToggle = (ids: string[]) => {
-  setForm((prev: StoreForm) => {
-   if (ids.length === 0) {
-    return { ...prev, StoreCategory: [] };
-   }
-
-   const nextStoreCategories: IStoreCategory[] = [];
-   const idSet = new Set(ids);
-
-   for (const parent of availableCategories) {
-    //**this should only select bulk for the specific store not all the other categories** 
-    // note to correctly update this ** */
-
-    // FIX: Updated the filter logic to correctly find the ID
-    const matchedSubcategories = parent.subcategories.filter((item: any) =>
-     idSet.has(item._id?.$oid || item.id)
-    );
-    const matchedBrands =
-     parent.allBrands?.filter((brand: any) => idSet.has(brand)) || [];
-
-    if (matchedSubcategories.length === 0 && matchedBrands.length === 0) {
-     continue;
+            });
+            const brandSet = new Set(existing.allBrands || []);
+            (selection.allBrands || []).forEach(brand => {
+                if (!brandSet.has(brand)) {
+                    existing.allBrands.push(brand);
+                }
+            });
+        } else {
+            initialState[catId] = selection;
+        }
     }
+    return initialState;
+};
 
-    nextStoreCategories.push({
-     id: parent.id,
-     companyId: form.id,
-     categoryId: parent.id,
-     displayName: parent.name ?? null,
-     icon: parent.icon ?? null,
-     sortOrder: parent.sortOrder,
-     visible: parent.visible,
-     createdAt: new Date(),
-     updatedAt: new Date(),
-     // FIX: Also ensure the correct ID is used when mapping
-     subcategories: matchedSubcategories.map((c:any) => ({
-      id: c._id?.$oid || c.id,
-      name: c.name,
-      slug: c.slug,
-     })),
-     allBrands: matchedBrands,
-    });
-   }
+// 2. Initialize the reducer.
+const [selectedState, dispatch] = useReducer(categoryReducer, form.StoreCategory, initializer);
 
-   return { ...prev, StoreCategory: nextStoreCategories };
-  });
- };
+// 3. Create the memoized array of selected categories to pass to the child component and for form submission.
+const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [selectedState]);
+
+
+
   //............................
  
 
@@ -1121,12 +895,13 @@ const onBulkToggle = (ids: string[]) => {
 
     setAddress,
     onChangeSettings,
-    onBulkToggle,
+    // onBulkToggle,
     onToggleDay,
 
-    onToggleParent,
-    onToggleSub,
-    onToggleBrand,
+    // onToggleParent,
+    // onToggleSub,
+    // onToggleBrand,
+    categoryDispatch: dispatch,
 
     onUpdateHeroSlide,
     onAddHeroSlide,
@@ -1363,7 +1138,7 @@ const onBulkToggle = (ids: string[]) => {
 
   // Render step or review
   const StepContent =  stepIndex < allSteps.length ? ( 
-        allSteps[stepIndex].render(form, handlers, availableCategories, availableLocations, selectedLocationsForDisplay)
+        allSteps[stepIndex].render(form, handlers, availableCategories, availableLocations, selectedLocationsForDisplay, selectedCategoriesArray, dispatch)
       ) : (
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold">Review Your Store</h2>

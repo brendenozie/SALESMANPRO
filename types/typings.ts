@@ -147,7 +147,6 @@ export interface SocialLink {
   channel: SocialChannel;
   url: string;
 }
-
 export interface Policy {
   id?: string;
   type: PolicyType;
@@ -651,7 +650,9 @@ export interface IEvent extends Event {
 //## HANDLERS & MISC
 //################################################################################
 
+
 export interface Handlers {
+  // ✅ General form handlers (unchanged)
   handleChange: (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
@@ -665,12 +666,18 @@ export interface Handlers {
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
   setAddress: (address: string, geo: GeoLocation) => void;
   onChangeSettings: (updated: Partial<StoreForm>) => void;
-  onBulkToggle: (ids: string[]) => void;
   onToggleDay: (dayKey: string) => void;
-  onToggleParent: (cat: IProductCategory) => void;
-  onToggleSub: (parentId: string, sub: ISubcategory) => void;
-  onToggleBrand: (parentId: string, brand: any) => void;
 
+  // 🔥 REMOVED: Old category toggle functions
+  // onBulkToggle: (ids: string[], categoryContext: string) => void;
+  // onToggleParent: (cat: IProductCategory) => void;
+  // onToggleSub: (parentId: string, sub: ISubcategory) => void;
+  // onToggleBrand: (parentId: string, brand: any) => void;
+
+  // ✨ ADDED: Reducer dispatch for all category actions
+  categoryDispatch: React.Dispatch<CategoryAction>;
+
+  // ✅ Hero slide handlers (unchanged)
   onUpdateHeroSlide: (
       index: number,
       field: keyof HeroSlide,
@@ -683,6 +690,8 @@ export interface Handlers {
       file: File,
       field: keyof HeroSlide
     ) => void;
+    
+  // ✅ Promotion handlers (unchanged)
   onUpdatePromotion: (
       index: number,
       field: keyof Promotion,
@@ -692,12 +701,62 @@ export interface Handlers {
   onRemovePromotion: (index: number) => void;
   onPromotionImageUpload: (index: number, file: File) => void;
 
+  // ✅ Location handlers (unchanged)
   onToggleLocation: (location: Location, isSelected: boolean) => void;
   onBulkToggleLocations: (locationIds: string[]) => void;
 
+  // ✅ Media handlers (unchanged)
   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
   handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
 }
+// export interface Handlers {
+//   handleChange: (
+//     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+//   ) => void;
+//   onUpdateArray: <T>(
+//     key: keyof StoreForm,
+//     idx: number,
+//     field: keyof T,
+//     value: any
+//   ) => void;
+//   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
+//   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
+//   setAddress: (address: string, geo: GeoLocation) => void;
+//   onChangeSettings: (updated: Partial<StoreForm>) => void;
+//   onBulkToggle: (ids: string[], categoryContext: string) => void;
+//   onToggleDay: (dayKey: string) => void;
+//   onToggleParent: (cat: IProductCategory) => void;
+//   onToggleSub: (parentId: string, sub: ISubcategory) => void;
+//   onToggleBrand: (parentId: string, brand: any) => void;
+
+//   onUpdateHeroSlide: (
+//       index: number,
+//       field: keyof HeroSlide,
+//       value: string
+//     ) => void;
+//   onAddHeroSlide: () => void;
+//   onRemoveHeroSlide: (index: number) => void;
+//   handleSlideImageUpload: (
+//       index: number,
+//       file: File,
+//       field: keyof HeroSlide
+//     ) => void;
+//   onUpdatePromotion: (
+//       index: number,
+//       field: keyof Promotion,
+//       value: string
+//     ) => void;
+//   onAddPromotion: () => void;
+//   onRemovePromotion: (index: number) => void;
+//   onPromotionImageUpload: (index: number, file: File) => void;
+
+//   onToggleLocation: (location: Location, isSelected: boolean) => void;
+//   onBulkToggleLocations: (locationIds: string[]) => void;
+
+//   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
+//   handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
+  
+// }
 
 export interface StepConfig {
   key: string;
@@ -707,6 +766,15 @@ export interface StepConfig {
     handlers: Handlers,
     availableCategories: IProductCategory[],
     allLocs: ILocation[], 
-    selectedLocationsForDisplay: SelectedLocation[]
+    selectedLocationsForDisplay: SelectedLocation[],
+    selectedCategoriesArray: IStoreCategory[],
+    dispatch: React.Dispatch<CategoryAction>
   ) => React.ReactNode;
 }
+
+// Define all possible actions for type safety
+export type CategoryAction =
+  | { type: 'TOGGLE_PARENT'; payload: { parent: IProductCategory } }
+  | { type: 'TOGGLE_SUB'; payload: { parentId: string; subcategory: ISubcategory; parentData: IProductCategory } }
+  | { type: 'TOGGLE_BRAND'; payload: { parentId: string; brand: string; parentData: IProductCategory } }
+  | { type: 'BULK_UPDATE'; payload: { ids: Set<string>; availableForContext: IProductCategory[] } };
