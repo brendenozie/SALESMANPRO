@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   try {
     const companies = await prisma.company.findMany({
       where: { userId: session.user.id },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'asc' }
     });
     return NextResponse.json(companies);
   } catch (error) {

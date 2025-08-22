@@ -238,7 +238,8 @@ export async function DELETE(
     try {
         const companyToDelete = await prisma.company.findFirst({
             where: { id: params.companyId, userId: session.user.id },
-            select: { sEOId: true, analyticsConfigId: true, paymentSettingsId: true, shippingSettingsId: true }
+            select: { sEOId: true, analyticsConfigId: true, paymentSettingsId: true, shippingSettingsId: true },
+            orderBy: { createdAt: 'desc' }
         });
 
         if (!companyToDelete) {
