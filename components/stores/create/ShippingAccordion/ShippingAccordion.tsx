@@ -17,7 +17,7 @@ export interface ShippingSettings {
  * Props for the ShippingAccordion component.
  */
 export interface ShippingAccordionProps {
-  shippingSettings: ShippingSettings;
+  shippingSettings: ShippingSettings| null;
   onChange: (updated: ShippingSettings) => void;
 }
 

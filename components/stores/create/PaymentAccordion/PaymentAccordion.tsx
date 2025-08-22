@@ -18,7 +18,7 @@ export interface PaymentSettings {
  * Props for the PaymentAccordion component.
  */
 export interface PaymentAccordionProps {
-  paymentSettings: PaymentSettings;
+  paymentSettings: PaymentSettings| null;
   onChange: (updated: PaymentSettings) => void;
 }
 
