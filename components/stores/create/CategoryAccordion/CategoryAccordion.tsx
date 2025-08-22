@@ -99,6 +99,8 @@ export default function CategoryTree({
         };
     };
 
+    const resolveId = (sub: ISubcategory) => sub.id || sub._id?.$oid || sub.tempId;
+
     return (
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
             <aside className="w-full lg:w-1/3 sticky top-20">
@@ -177,10 +179,25 @@ export default function CategoryTree({
                                             <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
                                                 {cat.subcategories.length > 0 && 
                                                     <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 border-t">
-                                                        {cat.subcategories.map(item => {
-                                                            const isSel = selectedParent?.subcategories.some(s => s.id === item.id);
-                                                            return <motion.button key={item.id} onClick={() => dispatch({ type: 'TOGGLE_SUB', payload: { parentId: cat.id, subcategory: item, parentData: cat } })} className={`px-3 py-2 rounded-lg border text-sm text-center ${isSel ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white hover:bg-indigo-50 hover:border-indigo-300'}`}>{item.name}</motion.button>;
-                                                        })}
+                                                      {cat.subcategories.map(item => {
+                                                          const isSel = selectedParent?.subcategories.some( s => resolveId(s) === resolveId(item));
+                                                          return (
+                                                              <motion.button
+                                                                  key={resolveId(item)}
+                                                                  onClick={() => dispatch({
+                                                                      type: 'TOGGLE_SUB',
+                                                                      payload: { parentId: cat.id, subcategory: item, parentData: cat }
+                                                                  })}
+                                                                  className={`px-3 py-2 rounded-lg border text-sm text-center ${
+                                                                      isSel
+                                                                        ? 'bg-indigo-600 text-white border-indigo-600'
+                                                                        : 'bg-white hover:bg-indigo-50 hover:border-indigo-300'
+                                                                  }`}
+                                                              >
+                                                                  {item.name}
+                                                              </motion.button>
+                                                          );
+                                                      })}
                                                     </div>
                                                 }
                                                 {(cat.allBrands || []).length > 0 && (
