@@ -930,9 +930,15 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
+
+    console.log("sub 1");
+
     e.preventDefault();
     if (isSubmitting) return;
     if (!session?.user?.id) return;
+
+    
+    console.log("sub 2");
 
     setIsSubmitting(true);
 
@@ -943,6 +949,8 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     // 2) Build upload promises, but write each returned URL into `payload`
     const uploadPromises: Promise<void>[] = [];
 
+    
+    console.log("sub 3");
     // 2.a) Logo
     if (logoFile) {
       const p = (async () => {
@@ -965,6 +973,8 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
       uploadPromises.push(p);
     }
 
+    
+    console.log("sub 4");
     // 2.b) Banner
     if (bannerFile) {
       const p = (async () => {
