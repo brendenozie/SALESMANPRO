@@ -4,17 +4,29 @@ import {
   TrashIcon,
   PhotoIcon,
 } from '@heroicons/react/24/outline';
-import { Promotion } from '@/types/typings';
+import { IPromotion } from '@/types/typings';
 
+// interface PromotionsAccordionProps {
+//   promotions: IPromotion[];
+//   onUpdatePromotion: (index: number, field: string | number | symbol, value: string) => void;
+//   onAddPromotion: () => void;
+//   onRemovePromotion: (index: number) => void;
+//   onImageUpload: (index: number, file: File) => void;
+// }
 
-
-export interface PromotionsAccordionProps {
-  promotions: Promotion[];
-  onUpdatePromotion: (index: number, field: keyof Promotion, value: string) => void;
+interface PromotionsAccordionProps {
+  promotions: IPromotion[];
+  onUpdatePromotion: <K extends keyof IPromotion>(
+    index: number,
+    field: K,
+    value: IPromotion[K]
+  ) => void;
   onAddPromotion: () => void;
   onRemovePromotion: (index: number) => void;
   onImageUpload: (index: number, file: File) => void;
 }
+
+
 
 export default function PromotionsAccordion({
   promotions,
@@ -24,7 +36,7 @@ export default function PromotionsAccordion({
   onImageUpload,
 }: PromotionsAccordionProps) {
   const allFilled = promotions.every(
-    (promo) => promo.title.trim() && promo.description.trim()
+    (promo) => promo.title.trim() && promo.description?.trim()
   );
 
   // Ensure at least one promotion exists on mount
@@ -72,7 +84,7 @@ export default function PromotionsAccordion({
                 {/* Description */}
                 <textarea
                   placeholder="Description"
-                  value={promo.description}
+                  value={promo.description || ''}
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                     onUpdatePromotion(idx, 'description', e.target.value)
                   }
@@ -85,18 +97,36 @@ export default function PromotionsAccordion({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     type="date"
-                    value={promo.startsAt || ''}
-                    onChange={(e) => onUpdatePromotion(idx, 'startsAt', e.target.value)}
+                    value={
+                      promo.startsAt
+                        ? typeof promo.startsAt === 'string'
+                          ? promo.startsAt
+                          : promo.startsAt.toISOString().slice(0, 10)
+                        : ''
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     placeholder="Start Date"
                   />
                   <input
                     type="date"
-                    value={promo.endsAt || ''}
-                    onChange={(e) => onUpdatePromotion(idx, 'endsAt', e.target.value)}
+                    value={
+                      promo.endsAt
+                        ? typeof promo.endsAt === 'string'
+                          ? promo.endsAt
+                          : promo.endsAt.toISOString().slice(0, 10)
+                        : ''
+                    }
+                    onChange={(e) =>
+                      onUpdatePromotion(
+                        idx,
+                        "endsAt",
+                        e.target.value ? new Date(e.target.value) : null
+                      )
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     placeholder="End Date"
                   />
+
                 </div>
 
                 {/* Banner Image Upload */}

@@ -19,8 +19,6 @@ import {
   IStoreCategory,
   ILocation,
   IProductCategory,
-  ISubcategory,
-  CategoryAction,
 } from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
@@ -34,7 +32,6 @@ import {
 import { useSession } from 'next-auth/react';
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 import { CompanyLocation, Promotion } from "@prisma/client";
-import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
 import { categoryReducer } from "@/hooks/categoryReducer";
 
 const SITE_CATEGORIES_WITH_PRICING = [

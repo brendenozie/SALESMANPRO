@@ -20,7 +20,7 @@ import { MetricsAccordion } from '../components/stores/create/MetricsAccordion/M
 import { StatsAccordion } from '../components/stores/create/StatsAccordion/StatsAccordion';
 import ProductPricingAndTiers  from '../components/stores/create/PricingTiers/PricingTiers';
 import CategorySelect from '../components/stores/create/CategorySelect/CategorySelect';
-import { CategoryAction, StepConfig } from '@/types/typings';
+import { CategoryAction, StepConfig, IPromotion } from '@/types/typings';
 import LocationSelectionAccordion from '@/components/stores/create/LocationSelectionAccordion/LocationSelectionAccordion';
 
 // Interfaces
@@ -38,20 +38,12 @@ export const storeSteps: StepConfig[] = [
   {
     key: 'categories',
     title: 'Categories',
-    render: (f, h, cats,allLocs, 
-        selectedLocationsForDisplay,
-        selectedCategoriesArray,
+    render: (f, h, cats,allLocs, selectedLocationsForDisplay,  selectedCategoriesArray,
         dispatch) => (
       <CategoryAccordion
         category={f.category}
         availableCategories={cats}
-        // selectedCategories={f.StoreCategory}
         selectedCategories={selectedCategoriesArray}
-
-        // onToggleParent={h.onToggleParent}
-        // onToggleSub={h.onToggleSub}
-        // onToggleBrand={h.onToggleBrand}
-        // onBulkToggle={h.onBulkToggle}
         onApply={() => console.log(f.StoreCategory)} 
         dispatch={dispatch}      />
     ),
@@ -75,14 +67,74 @@ export const paymentSteps: StepConfig[] = [
     key: 'payment',
     title: 'Payment',
     render: (f, h) => (
-      <PaymentAccordion paymentSettings={f.paymentSettings} onChange={(upd) => h.onChangeSettings({ paymentSettings: upd })} />
+      <PaymentAccordion
+        paymentSettings={{
+          id: f.paymentSettings?.id ?? '',
+          stripeKey: f.paymentSettings?.stripeKey ?? null,
+          paypalKey: f.paymentSettings?.paypalKey ?? null,
+          mpesaShortcode: f.paymentSettings?.mpesaShortcode ?? null,
+          mpesaConsumerKey: f.paymentSettings?.mpesaConsumerKey ?? null,
+          mpesaConsumerSecret: f.paymentSettings?.mpesaConsumerSecret ?? null,
+          mpesaCallbackUrl: f.paymentSettings?.mpesaCallbackUrl ?? null,
+        }}
+        onChange={(upd) =>
+          h.onChangeSettings({
+            paymentSettings: {
+              id: upd.id ?? '',
+              stripeKey: upd.stripeKey ?? null,
+              paypalKey: upd.paypalKey ?? null,
+              mpesaShortcode: upd.mpesaShortcode ?? null,
+              mpesaConsumerKey: upd.mpesaConsumerKey ?? null,
+              mpesaConsumerSecret: upd.mpesaConsumerSecret ?? null,
+              mpesaCallbackUrl: upd.mpesaCallbackUrl ?? null,
+            }
+          })
+        }
+      />
     ),
   },
   {
     key: 'shipping',
     title: 'Shipping',
     render: (f, h) => (
-      <ShippingAccordion shippingSettings={f.shippingSettings} onChange={(upd) => h.onChangeSettings({ shippingSettings: upd })} />
+      <ShippingAccordion
+        shippingSettings={
+          f.shippingSettings
+            ? {
+                id: f.shippingSettings.id ?? '',
+                carrierName: f.shippingSettings.carrierName ?? null,
+                trackingUrl: f.shippingSettings.trackingUrl ?? null,
+                regions:
+                  Array.isArray(f.shippingSettings.regions)
+                    ? f.shippingSettings.regions.filter((r): r is string => typeof r === 'string')
+                    : typeof f.shippingSettings.regions === 'string'
+                    ? [f.shippingSettings.regions]
+                    : [],
+                enablePickup: f.shippingSettings.enablePickup ?? null,
+                pickupInstructions: f.shippingSettings.pickupInstructions ?? null,
+              }
+            : {
+                id: '',
+                carrierName: null,
+                trackingUrl: null,
+                regions: [],
+                enablePickup: null,
+                pickupInstructions: null,
+              }
+        }
+        onChange={(upd) =>
+          h.onChangeSettings({
+            shippingSettings: {
+              id: upd.id ?? '',
+              carrierName: upd.carrierName ?? null,
+              trackingUrl: upd.trackingUrl ?? null,
+              regions: upd.regions ?? [],
+              enablePickup: upd.enablePickup ?? null,
+              pickupInstructions: upd.pickupInstructions ?? null,
+            }
+          })
+        }
+      />
     ),
   }
 ];
@@ -232,18 +284,42 @@ export const websiteSteps: StepConfig[] = [
     render: (f, h) => (
       <PromotionsAccordion
         promotions={f.promotions}
-        onUpdatePromotion={h.onUpdatePromotion}
+        onUpdatePromotion={(
+          index,
+          field,
+          value
+        ) => h.onUpdatePromotion(index, field, value !== null ? String(value) : '')}
         onAddPromotion={h.onAddPromotion}
         onRemovePromotion={h.onRemovePromotion}
         onImageUpload={h.onPromotionImageUpload}
       />
     ),
+    
   },
   {
     key: 'seo',
     title: 'SEO Settings',
     render: (f, h) => (
-      <SeoSettingsAccordion seo={f.seo} onChange={(upd) => h.onChangeSettings({ seo: upd })} />
+      <SeoSettingsAccordion
+        seo={{
+          ...f.seo,
+          id: f.seo?.id ?? '',
+          title: f.seo?.title ?? null,
+          description: f.seo?.description ?? null,
+          keywords: f.seo?.keywords ?? [],
+        }}
+        onChange={(upd) =>
+          h.onChangeSettings({
+            seo: {
+              ...upd,
+              id: upd.id ?? '',
+              title: upd.title ?? null,
+              description: upd.description ?? null,
+              keywords: upd.keywords ?? [],
+            }
+          })
+        }
+      />
     ),
   },
   {
@@ -257,7 +333,26 @@ export const websiteSteps: StepConfig[] = [
     key: 'analytics',
     title: 'Analytics',
     render: (f, h) => (
-      <SettingsAccordion analyticsConfig={f.analyticsConfig} onChange={(upd) => h.onChangeSettings({ analyticsConfig: upd })} />
+      <SettingsAccordion
+        analyticsConfig={{
+          id: f.analyticsConfig?.id ?? '',
+          googleTag: f.analyticsConfig?.googleTag ?? null,
+          facebookTag: f.analyticsConfig?.facebookTag ?? null,
+          hotjarSiteId: f.analyticsConfig?.hotjarSiteId ?? null,
+          isActive: f.analyticsConfig?.isActive ?? false,
+        }}
+        onChange={(upd) =>
+          h.onChangeSettings({
+            analyticsConfig: {
+              id: upd.id ?? '',
+              googleTag: upd.googleTag ?? null,
+              facebookTag: upd.facebookTag ?? null,
+              hotjarSiteId: upd.hotjarSiteId ?? null,
+              isActive: upd.isActive ?? false,
+            },
+          })
+        }
+      />
     ),
   },
 ];
