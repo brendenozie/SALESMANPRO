@@ -18,7 +18,7 @@ import {
   HeroSlide,
   IStoreCategory,
   ILocation,
-  IProductCategory,
+  IProductCategory
 } from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
@@ -53,7 +53,6 @@ export interface SelectedLocation {
 }
 
 type Props = {  
-  // session: Session; // ✅ gets session from server
   availableCategories: IProductCategory[];
   availableLocations: ILocation[];
   initialData?: Partial<StoreForm> & { id: string };
@@ -1124,6 +1123,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
       // 4) Now payload contains the correct URLs (not the stale form)
       const toSend = {
         ...payload,
+        StoreCategory: selectedCategoriesArray,
         userId: session.user.id,
       };
 

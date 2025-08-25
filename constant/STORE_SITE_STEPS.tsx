@@ -20,7 +20,7 @@ import { MetricsAccordion } from '../components/stores/create/MetricsAccordion/M
 import { StatsAccordion } from '../components/stores/create/StatsAccordion/StatsAccordion';
 import ProductPricingAndTiers  from '../components/stores/create/PricingTiers/PricingTiers';
 import CategorySelect from '../components/stores/create/CategorySelect/CategorySelect';
-import { CategoryAction, StepConfig, IPromotion } from '@/types/typings';
+import { StepConfig } from '@/types/typings';
 import LocationSelectionAccordion from '@/components/stores/create/LocationSelectionAccordion/LocationSelectionAccordion';
 
 // Interfaces
