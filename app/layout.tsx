@@ -6,8 +6,7 @@ import Footer from "../components/shop/footer/Footer";
 import Providers from "./providers";
 import siteMetadata from "../data/siteMetadata";
 import { Metadata } from "next";
-import { getServerSession } from "next-auth"; // ✅ import
-import { getAuthSession } from "@/lib/auth";     // ✅ your NextAuth config
+import { getAuthSession } from "@/lib/auth";   
 
 
 export const metadata: Metadata = {
