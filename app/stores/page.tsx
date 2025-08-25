@@ -1,19 +1,16 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
-  PencilIcon,
-  TrashIcon,
-  PhoneIcon,
   BuildingStorefrontIcon,
   ArrowLeftCircleIcon,
   ArrowRightCircleIcon,
 } from "@heroicons/react/24/outline";
-import { WalletIcon } from '@heroicons/react/24/solid';
 import StoreCard from '@/components/stores/StoreCard';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
+
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -29,10 +26,9 @@ interface Store {
 }
 
 export default function StoresPage() {
-  const { data: session, status } = useSession();
-  // const [stores, setStores] = useState<Store[]>([]);
-  const [page, setPage] = useState(1);
-  const [loadingStores, setLoadingStores] = useState(false);
+
+  const { data: session, status } = useSession();  
+  const [page, setPage] = useState(1);  
   const router = useRouter(); 
 
   const { data: stores = [], error, isLoading } = useSWR<Store[]>(
@@ -50,17 +46,14 @@ export default function StoresPage() {
   const handleEdit = (id: string) => router.push(`/stores/${id}/edit`);
 
   const handleDelete = async (id: string) => {
-    const confirmDelete = confirm('Are you sure you want to delete this store?');
-    if (!confirmDelete) return;
+    if (!confirm('Are you sure you want to delete this store?')) return;
 
     try {
       const res = await fetch(`/api/stores/${id}`, { method: 'DELETE' });
-      if (!res.ok) {
-        throw new Error('Delete failed');
-      }
+      if (!res.ok) throw new Error('Delete failed');
+      mutate(`/api/stores?userId=${session?.user?.id}`); // refresh list
     } catch (err) {
       console.error(err);
-      // Restore state if needed
     }
   };
 
@@ -68,11 +61,8 @@ export default function StoresPage() {
 
   const isAuthLoading = status === 'loading';
 
-  if (isAuthLoading) {
-    return <p className="p-8 text-center">Checking session…</p>;
-  }
-
   return (
+    
     <div className="min-h-screen bg-gray-50 p-8">
       <header className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-extrabold text-gray-800">Your Stores</h1>
@@ -85,12 +75,20 @@ export default function StoresPage() {
         </button>
       </header>
 
-      {loadingStores ? (
+      {isAuthLoading ? (
+        <p className="p-8 text-center">Checking session…</p>
+      ) : !session ? (
+        <p className="p-8 text-center">Please sign in to manage your stores.</p>
+      ) : error ? (
+        <p className="p-8 text-center text-red-600">Failed to load stores.</p>
+      ) : isLoading ? (
         <p className="text-center">Fetching your stores…</p>
       ) : stores.length === 0 ? (
         <p className="text-center text-gray-600">You haven’t created any stores yet.</p>
       ) : (
         <>
+          {/* grid + pagination */}
+          <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedStores.map(store => (
                <StoreCard
@@ -125,7 +123,10 @@ export default function StoresPage() {
             </div>
           )}
         </>
+        </>
       )}
+
     </div>
+
   );
 }

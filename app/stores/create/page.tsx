@@ -7,6 +7,7 @@ import React from 'react';
 export const dynamic = 'force-dynamic';
 
 export default async function CreateStorePage() {
+ 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
     { cache: 'no-store' }
@@ -21,11 +22,15 @@ export default async function CreateStorePage() {
       
   const availableLocations = dataLoctions.data || [];
 
-  return <CreateStoreForm availableCategories={availableCategories} availableLocations={availableLocations} />;
+  return <CreateStoreForm 
+    availableCategories={availableCategories} 
+    availableLocations={availableLocations} 
+  />;
 }
 
 // Import client component below
 import CreateStoreForm from '../../../components/stores/create/CreateStoreForm/CreateStoreForm';
+
 
 
 

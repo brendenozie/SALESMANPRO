@@ -251,10 +251,11 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
+    
     async session({ session, token }) {
       if (session.user) {
         Object.assign(session.user, {
-          id: token.id,
+          id:  token.id as string ,// token.id
           name: token.name,
           email: token.email,
           phone: token.phone,

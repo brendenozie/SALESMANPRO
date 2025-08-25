@@ -1,12 +1,13 @@
 // app/layout.tsx
-
 import "./globals.css";
 
 import Header from "../components/shop/header/Header";
 import Footer from "../components/shop/footer/Footer";
 import Providers from "./providers";
-import siteMetadata from '../data/siteMetadata';
-import { Metadata } from 'next';
+import siteMetadata from "../data/siteMetadata";
+import { Metadata } from "next";
+import { getServerSession } from "next-auth"; // ✅ import
+import { getAuthSession } from "@/lib/auth";     // ✅ your NextAuth config
 
 
 export const metadata: Metadata = {
@@ -19,16 +20,16 @@ export const metadata: Metadata = {
   openGraph: {
     title: siteMetadata.title,
     description: siteMetadata.description,
-    url: './',
+    url: "./",
     siteName: siteMetadata.title,
     images: [siteMetadata.socialBanner],
-    locale: 'en_US',
-    type: 'website',
+    locale: "en_US",
+    type: "website",
   },
   alternates: {
-    canonical: './',
+    canonical: "./",
     types: {
-      'application/rss+xml': `${siteMetadata.siteUrl}/feed.xml`,
+      "application/rss+xml": `${siteMetadata.siteUrl}/feed.xml`,
     },
   },
   robots: {
@@ -37,25 +38,31 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   twitter: {
     title: siteMetadata.title,
-    card: 'summary_large_image',
+    card: "summary_large_image",
     images: [siteMetadata.socialBanner],
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const basePath = process.env.BASE_PATH || '';
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const basePath = process.env.BASE_PATH || "";
+
+  // ✅ Fetch the session on the server
+  const session = await getAuthSession();
 
   return (
-    <html 
+    <html
       lang={siteMetadata.language}
-      // className={`${space_grotesk.variable} scroll-smooth`}
       suppressHydrationWarning
     >
       <link
@@ -82,12 +89,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         color="#5bbad5"
       />
       <meta name="msapplication-TileColor" content="#000000" />
-      <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fff" />
-      <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
+      <meta
+        name="theme-color"
+        media="(prefers-color-scheme: light)"
+        content="#fff"
+      />
+      <meta
+        name="theme-color"
+        media="(prefers-color-scheme: dark)"
+        content="#000"
+      />
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
-      
+
       <body className="bg-gradient-to-br from-gray-50 to-gray-100">
-        <Providers>
+        {/* ✅ Pass session down to Providers */}
+        <Providers session={session}>
           <Header />
           <main>{children}</main>
           <Footer />

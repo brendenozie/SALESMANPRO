@@ -10,7 +10,6 @@ import React, {
   useReducer,
 } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import {
   StoreForm,
   Handlers,
@@ -32,7 +31,7 @@ import {
   locationsSteps,
   paymentSteps,
 } from "@/constant/STORE_SITE_STEPS";
-
+import { useSession } from 'next-auth/react';
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 import { CompanyLocation, Promotion } from "@prisma/client";
 import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
@@ -56,7 +55,8 @@ export interface SelectedLocation {
   children: SelectedLocation[];
 }
 
-type Props = {
+type Props = {  
+  // session: Session; // ✅ gets session from server
   availableCategories: IProductCategory[];
   availableLocations: ILocation[];
   initialData?: Partial<StoreForm> & { id: string };
@@ -137,10 +137,13 @@ export default function CreateStoreForm({
   availableCategories,
   availableLocations,
   initialData,
+  // session
 }: Props) {
-  const { data: session } = useSession();
+  
   const router = useRouter();
   
+  const { data: session, status } = useSession();  
+
   const [stepIndex, setStepIndex] = useState(0);
   
   // UPDATE: The defaultForm object is now initialized with all the fields
@@ -932,6 +935,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   const handleSubmit = async (e: FormEvent) => {
 
     console.log("sub 1");
+    console.log(session?.user);
 
     e.preventDefault();
     if (isSubmitting) return;
