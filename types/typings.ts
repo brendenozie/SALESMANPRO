@@ -607,6 +607,7 @@ export interface StoreForm {
   testimonials: Testimonial[];
   promotions: IPromotion[];
   Announcement: any[]; // Define IAnnouncement if needed
+  Collection: any[]; // Define IAnnouncement if needed
   pageSections: IPageSection[];
   heroSlides: HeroSlide[];
   appPromos: AppPromo[];
