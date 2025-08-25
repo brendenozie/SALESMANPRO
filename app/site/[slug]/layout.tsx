@@ -70,10 +70,10 @@ export default async function StoreLayout({
       testimonials: { orderBy: { order: 'asc' } }, // Fetch testimonials, ordered
       heroSlides: { orderBy: { order: 'asc' } }, // This corresponds to the Banner model
       promotions: true,
-      seo: true,
-      analyticsConfig: true,
-      paymentSettings: true,
-      shippingSettings: true,
+      SEO: true,
+      AnalyticsConfig: true,
+      PaymentSettings: true,
+      ShippingSettings: true,
       
       // --- NEW: Added missing relations from the updated interface ---
       PageSection: { orderBy: { order: 'asc' } }, // For modular page content

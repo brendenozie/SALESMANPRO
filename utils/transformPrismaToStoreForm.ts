@@ -65,42 +65,42 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     endsAt: p.endsAt?.toISOString() ?? undefined,
     bannerUrl: p.bannerUrl ?? '',
   })),
-  seo: raw.seo
+  seo: raw.SEO
     ? {
-      id: String(raw.seo.id),
-      title: raw.seo.title ?? null,
-      description: raw.seo.description ?? null,
-      keywords: Array.isArray(raw.seo.keywords) ? raw.seo.keywords : [],
+      id: String(raw.SEO.id),
+      title: raw.SEO.title ?? null,
+      description: raw.SEO.description ?? null,
+      keywords: Array.isArray(raw.SEO.keywords) ? raw.SEO.keywords : [],
     }
     : null,
-  analyticsConfig: raw.analyticsConfig
+  analyticsConfig: raw.AnalyticsConfig
     ? {
-      id: String(raw.analyticsConfig.id),
-      googleTag: raw.analyticsConfig.googleTag ?? null,
-      facebookTag: raw.analyticsConfig.facebookTag ?? null,
-      hotjarSiteId: raw.analyticsConfig.hotjarSiteId ?? null,
-      isActive: typeof raw.analyticsConfig.isActive === 'boolean' ? raw.analyticsConfig.isActive : false,
+      id: String(raw.AnalyticsConfig.id),
+      googleTag: raw.AnalyticsConfig.googleTag ?? null,
+      facebookTag: raw.AnalyticsConfig.facebookTag ?? null,
+      hotjarSiteId: raw.AnalyticsConfig.hotjarSiteId ?? null,
+      isActive: typeof raw.AnalyticsConfig.isActive === 'boolean' ? raw.AnalyticsConfig.isActive : false,
     }
     : null,
-  paymentSettings: raw.paymentSettings
+  paymentSettings: raw.PaymentSettings
     ? {
-      id: String(raw.paymentSettings.id),
-      stripeKey: raw.paymentSettings.stripeKey ?? null,
-      paypalKey: raw.paymentSettings.paypalKey ?? null,
-      mpesaShortcode: raw.paymentSettings.mpesaShortcode ?? null,
-      mpesaConsumerKey: raw.paymentSettings.mpesaConsumerKey ?? null,
-      mpesaConsumerSecret: raw.paymentSettings.mpesaConsumerSecret ?? null,
-      mpesaCallbackUrl: raw.paymentSettings.mpesaCallbackUrl ?? null,
+      id: String(raw.PaymentSettings.id),
+      stripeKey: raw.PaymentSettings.stripeKey ?? null,
+      paypalKey: raw.PaymentSettings.paypalKey ?? null,
+      mpesaShortcode: raw.PaymentSettings.mpesaShortcode ?? null,
+      mpesaConsumerKey: raw.PaymentSettings.mpesaConsumerKey ?? null,
+      mpesaConsumerSecret: raw.PaymentSettings.mpesaConsumerSecret ?? null,
+      mpesaCallbackUrl: raw.PaymentSettings.mpesaCallbackUrl ?? null,
     }
     : null,
-  shippingSettings: raw.shippingSettings
+  shippingSettings: raw.ShippingSettings
     ? {
-      id: String(raw.shippingSettings.id),
-      carrierName: raw.shippingSettings.carrierName ?? null,
-      trackingUrl: raw.shippingSettings.trackingUrl ?? null,
-      regions: raw.shippingSettings.regions ?? [],
-      enablePickup: typeof raw.shippingSettings.enablePickup === 'boolean' ? raw.shippingSettings.enablePickup : null,
-      pickupInstructions: raw.shippingSettings.pickupInstructions ?? null,
+      id: String(raw.ShippingSettings.id),
+      carrierName: raw.ShippingSettings.carrierName ?? null,
+      trackingUrl: raw.ShippingSettings.trackingUrl ?? null,
+      regions: raw.ShippingSettings.regions ?? [],
+      enablePickup: typeof raw.ShippingSettings.enablePickup === 'boolean' ? raw.ShippingSettings.enablePickup : null,
+      pickupInstructions: raw.ShippingSettings.pickupInstructions ?? null,
     }
     : null,
   StoreCategory: raw.StoreCategory.map((sc: any) => ({
