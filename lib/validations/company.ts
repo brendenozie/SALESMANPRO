@@ -120,9 +120,9 @@ export const companySchema = z.object({
   }),//z.array().optional(),
   
   analyticsConfig: z.object({
-      googleTag: z.string().optional(),
-      facebookTag: z.string().optional(),
-      hotjarSiteId: z.string().optional(),
+      googleTag: z.string().nullable().optional(),
+      facebookTag: z.string().nullable().optional(),
+      hotjarSiteId: z.string().nullable().optional(),
       isActive: z.boolean().default(false),
   }),//z.array().optional(),
   

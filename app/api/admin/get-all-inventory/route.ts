@@ -126,8 +126,8 @@ export async function GET(req: Request) {
         usageInstructions:  p.usageInstructions|| '',
         expirationDate:     p.expirationDate?.toISOString() || null,
         // real-estate
-        bedrooms:           p.bedrooms         || 0,
-        studios:            p.studios          || 0,
+        bedrooms:           p.bedrooms         || {},
+        studios:            p.studios          || {},
         bathrooms:          p.bathrooms        || 0,
         area:               p.area             || '',
         propertyTypeId:     p.propertyTypeId   || '',

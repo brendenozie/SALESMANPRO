@@ -1,4 +1,5 @@
 // app/[slug]/layout.tsx
+
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
 import prisma from '@/server/db/prismadb';
@@ -6,8 +7,10 @@ import { StoreContextProvider } from '@/contexts/StoreContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
 
-export const dynamic = 'force-dynamic';
+// Add this line to cache the page for 60 seconds
+export const revalidate = 60; 
 
+// generateMetadata can remain the same, as it only needs a subset of data.
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const raw = await prisma.company.findUnique({
     where: { slug: params.slug },
@@ -49,6 +52,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
+
 export default async function StoreLayout({
   params,
   children,
@@ -56,28 +60,55 @@ export default async function StoreLayout({
   params: { slug: string };
   children: ReactNode;
 }) {
-  // Refactored to fetch only essential data for the layout.
+  // MOVE THE FULL PRISMA QUERY HERE
   const raw = await prisma.company.findUnique({
     where: { slug: params.slug },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      category: true,
-      logoUrl: true,
-      socialLinks: true, // Assuming social links are in the header/footer
-      Announcement: { orderBy: { publishedAt: 'desc' }, take: 1 }, // For a header announcement bar
+    // This is the complete query from your original page.tsx
+    include: {
+      socialLinks: true,
+      blogs: { orderBy: { publishedAt: 'desc' } },
+      policies: true,
+      faqs: { orderBy: { order: 'asc' } },
+      testimonials: { orderBy: { order: 'asc' } },
+      heroSlides: { orderBy: { order: 'asc' } },
+      promotions: true,
+      SEO: true,
+      AnalyticsConfig: true,
+      PaymentSettings: true,
+      ShippingSettings: true,
+      PageSection: { orderBy: { order: 'asc' } },
+      appPromos: true,
+      Collection: { orderBy: { order: 'asc' } },
+      Announcement: { orderBy: { publishedAt: 'desc' } },
+      events: { orderBy: { startDateTime: 'asc' } },
+      marketplaceListings: {
+        where: { status: 'ACTIVE' },
+        take: 20,
+        select: {
+          id: true, name: true, description: true, finalPrice: true, sellingPrice: true, images: true, isAvailable: true, isFeatured: true, category: true,
+        },
+      },
+      StoreCategory: { orderBy: { sortOrder: 'asc' }, include: { category: { select: { id: true, name: true, slug: true, image: true, icon: true } } } },
+      Writer: { include: { user: { select: { id: true, name: true, image: true } } } },
+      Doctor: { include: { User: { select: { id: true, name: true, image: true } } } },
+      salesAgents: { include: { user: { select: { id: true, name: true, image: true } } } },
+      Podcast: true,
+      courses: true,
+      services: true,
+      CompanyLocation: { include: { location: true } }
     },
   });
 
   if (!raw) return notFound();
 
+  // Now, the context will be initialized with the FULL data
   const storeFormData = transformCompanyToStoreForm(raw);
   
   const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
   const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
 
   return (
+    // Initialize the context with the COMPLETE store data
     <StoreContextProvider initialStore={storeFormData} userRole='ADMIN' userId={``}>
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
         <Suspense fallback={<div>Loading layout…</div>}>

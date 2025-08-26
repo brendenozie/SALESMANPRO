@@ -57,14 +57,18 @@ export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
+    // Destructure the id from params immediately
+  const { id } = params;
+
   const session = await getAuthSession();
+  
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Ensure companyId is present
-  if (!params.id) {
-      return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
+  // Use the destructured 'id' variable for the check
+  if (!id) {
+    return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
   }
 
   const body = await req.json();

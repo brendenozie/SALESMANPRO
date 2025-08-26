@@ -16,7 +16,7 @@ import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
 
 // Assuming ProductForm, StoreCategory, ProductCategory, BookingSlotType are defined in typings.ts
-import { ProductForm, StoreCategory } from '@/types/typings'; 
+import { ProductForm, IStoreCategory } from '@/types/typings'; 
 import PricingDetails from './PricingDetails';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
@@ -29,7 +29,7 @@ export interface AddProductModalProps {
   setShowRequestProductModal: (open: boolean) => void;
   product: ProductForm | null;           // TODO: replace with your Product type
   companyId: string;
-  categories: StoreCategory[];
+  categories: IStoreCategory[];
 }
 
 export interface BookingSlotType {
@@ -273,9 +273,9 @@ function useProductForm(
         option: p.option || [],
         amenities: p.amenities || [],
 
-        bedrooms: p.bedrooms ?? 0, // Initialized as number
-        studios: p.studios ?? 0, // Initialized as number
-        bathrooms: p.bathrooms ?? 0, // Initialized as number
+        bedrooms: p.bedrooms ?? [], // Initialized as number
+        studios: p.studios ?? [], // Initialized as number
+        bathrooms: p.bathrooms ?? "", // Initialized as number
         area: p.area || '',
 
         propertyTypeId: p.propertyTypeId || '',

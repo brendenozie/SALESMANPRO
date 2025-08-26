@@ -72,7 +72,7 @@ export default async function EditStorePage({
       },
       Podcast: true,
       services: true,
-      marketplaceListings: true,
+      // marketplaceListings: true,
       Announcement: true,
       settings: true,
       SEO: true,
@@ -162,17 +162,14 @@ export default async function EditStorePage({
     })),
     events: store.events,
     courses: store.courses,
-    
-    // ✅ FIX 1: Pass the entire salesAgents array. The 'user' object is nested inside.
-    salesAgents: store.salesAgents,
 
-    // ✅ FIX 2: Extract the user object and use a type guard to filter out nulls.
+    salesAgents: store.salesAgents,
     Writer: store.Writer.map((w) => w.user),
     Doctor: store.Doctor.map((d) => d.User).filter((user): user is User => !!user),
-    
+
     Podcast: store.Podcast,
     services: store.services,
-    marketplaceListings: store.marketplaceListings,
+    marketplaceListings: [],//store.marketplaceListings,
     Announcement: store.Announcement,
     settings: store.settings ?? null,
     seo: store.SEO ?? null,
@@ -195,6 +192,7 @@ export default async function EditStorePage({
       ...cl,
       displayName: cl.displayName ?? null,
     })),
+    Collection: []
   };
 
   return (
