@@ -1,98 +1,120 @@
 // middleware.ts
 import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-// import prisma  from "@/server/db/prismadb";           // your prisma client
 
-// 1) Your primary host — update to your own production app domain:
-const PRIMARY_HOST = "app.your-production-domain.com";
+// Your app’s main host
+const PRIMARY_HOST = "127.0.0.1:3000";//"ghuba.shop";//app.your-production-domain.com
 
-// 2) Paths requiring session-based auth
+// Protected paths that require authentication
 const protectedPaths = [
-  // "/admin",
-  // "/clients",
-  // "/agents",
-  // "/users",
-  // "/shop/profile",
-  // "/destinations",
-  // "/addcity",
-  // "/adddestination",
-  // "/addhotel",
-  "/addtravelstyle",
+  "/admin",
+  "/clients",
+  "/agents",
+  "/users",
 ];
 
-// 3) API key header name and secret env var
+// API key protection
 const API_KEY_HEADER = process.env.NEXT_PUBLIC_API_KEY_HEADER!;
-const API_SECRET     = process.env.NEXT_PUBLIC_API_SECRET!;
+const API_SECRET = process.env.NEXT_PUBLIC_API_SECRET!;
 
+// Middleware config
+
+// Match everything except Next internals (_next) and static files
 export const config = {
   matcher: [
-    // run on all API calls + protected app routes
-    "/api/:path*",
-    ...protectedPaths,
+    "/((?!_next/|.*\\..*).*)", // all paths except _next/* and static assets
   ],
 };
 
 export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
-  const url     = request.nextUrl.clone();
+  const url = request.nextUrl.clone();
   const pathname = url.pathname;
-  const host     = request.headers.get("host")?.split(":")[0] || "";
+  const host = request.headers.get("host")?.split(":")[0] || "";
 
   //
-  // ---- CUSTOM DOMAIN RESOLUTION ----
+  // ---- 3. API KEY PROTECTION ----
   //
-  // if (host && host !== PRIMARY_HOST) {
-  //   // Try to find a company by this custom domain
-  //   const company = await prisma.company.findUnique({
-  //     where: { domain: host },
-  //     select: { id: true },
-  //   });
+  if (pathname.startsWith("/api/")) {
+    if (!API_KEY_HEADER) {
+      return new NextResponse(
+        JSON.stringify({ error: "Server misconfiguration: API key header not set" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-  //   if (company) {
-  //     // inject company ID for your pages / layouts / data loading
-  //     const res = NextResponse.next();
-  //     res.headers.set("x-company-id", company.id);
-  //     return res;
-  //   }
-  //   // if no company, just fall through (404s or public pages will handle it)
-  // }
+    const apiKey = request.headers.get(API_KEY_HEADER);
+    if (apiKey !== API_SECRET) {
+      return new NextResponse(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-  //
-  // ---- API KEY PROTECTION ----
-  //
-  // if (pathname.startsWith("/api/")) {
-  //   if (!API_KEY_HEADER) {
-  //     return new NextResponse(
-  //       JSON.stringify({ error: "Server misconfiguration: API key header not set" }),
-  //       { status: 500, headers: { "Content-Type": "application/json" } }
-  //     );
-  //   }
+    return NextResponse.next();
+  }
 
-  //   const apiKey = request.headers.get(API_KEY_HEADER);
-  //   if (apiKey !== API_SECRET) {
-  //     return new NextResponse(
-  //       JSON.stringify({ error: "Unauthorized" }),
-  //       { status: 403, headers: { "Content-Type": "application/json" } }
-  //     );
-  //   }
-
-  //   return NextResponse.next();
-  // }
 
   //
-  // ---- SESSION-BASED PROTECTION FOR APP ROUTES ----
+  // ---- 1. CUSTOM DOMAIN HANDLING ----
+  //
+  if (host && host !== PRIMARY_HOST && !host.endsWith(".ghuba.shop")) {
+    // Instead of Prisma query, forward host for lookup later
+    if (pathname === "/") {
+      url.pathname = `/404`;
+      return NextResponse.rewrite(url);
+    }
+
+    url.pathname = `/site/${pathname}`;
+    const res = NextResponse.rewrite(url);
+    res.headers.set("x-requested-host", host);
+    res.headers.set("x-original-path", pathname); 
+    return res;
+  }
+
+  //
+  // ---- 2. SUBDOMAIN HANDLING (slug.ghuba.shop) ----
+  //
+  // ---- 2. SUBDOMAIN HANDLING (slug.ghuba.shop OR slug.localhost) ----
+  if (
+    host.endsWith(".ghuba.shop") ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".127.0.0.1") ||
+    host.endsWith(".test")
+  ) {
+    const subdomain = host
+      .replace(".ghuba.shop", "")
+      .replace(".localhost", "")
+      .replace(".127.0.0.1", "")
+      .replace(".test", "");
+
+    if (subdomain && subdomain !== "www") {
+      if (pathname === "/") {
+        url.pathname = `/404`;
+        return NextResponse.rewrite(url);
+      }
+
+      url.pathname = `/site/${subdomain}${pathname}`;
+      const res = NextResponse.rewrite(url);
+
+      res.headers.set("x-requested-subdomain", subdomain);
+      res.headers.set("x-original-path", pathname); 
+      res.headers.set("x-requested-host", host);
+      return res;
+    }
+  }
+  
+  //
+  // ---- 4. SESSION-BASED PROTECTION ----
   //
   if (protectedPaths.some((p) => pathname.startsWith(p))) {
-
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
     if (!token) {
-      // redirect to sign-in
       url.pathname = "/signin";
       url.searchParams.set("callbackUrl", request.url);
       return NextResponse.redirect(url);
     }
 
-    // optional: role-based allow/deny
     const role = token.role?.toLowerCase();
     if (
       ["admin", "senior", "junior"].includes(role!) ||
@@ -102,11 +124,12 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
       return NextResponse.next();
     }
 
-    // forbidden
     url.pathname = "/403";
     return NextResponse.rewrite(url);
   }
 
-  // Default: continue
+  //
+  // ---- 5. DEFAULT ----
+  //
   return NextResponse.next();
 }

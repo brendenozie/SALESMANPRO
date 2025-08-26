@@ -1,57 +1,53 @@
 // app/[slug]/layout.tsx
-
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
+import { headers } from 'next/headers';
 import prisma from '@/server/db/prismadb';
+import { ListingStatus } from '@prisma/client';
 import { StoreContextProvider } from '@/contexts/StoreContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
+import type { Metadata } from "next";
 
-// Add this line to cache the page for 60 seconds
-export const revalidate = 60; 
+// Cache the page and its data for 60 seconds (ISR)
+export const revalidate = 60;
 
-// generateMetadata can remain the same, as it only needs a subset of data.
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const raw = await prisma.company.findUnique({
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const company = await prisma.company.findUnique({
     where: { slug: params.slug },
     select: {
       name: true,
-      description: true,
+      SEO: {
+        select: { title: true, description: true, keywords: true }
+      },
       logoUrl: true,
     },
   });
 
-  if (!raw) {
-    return {
-      title: 'Store not found',
-      description: "We couldn’t find that store.",
-    };
+  if (!company) {
+    return { title: 'Store not found' };
   }
 
+  const title = company.SEO?.title || company.name;
+  const description = company.SEO?.description || `Discover our exclusive collection of products.`;
+
   return {
-    title: `${raw.name}`,
-    description: raw.description ?? 'Discover our exclusive collection of products.',
+    title,
+    description,
+    keywords: company.SEO?.keywords || "ecommerce, ghuba, shops, marketplace",
     openGraph: {
-      title: `${raw.name} – Shop`,
-      description: raw.description ?? '',
-      images: [
-        {
-          url: raw.logoUrl ?? 'https://via.placeholder.com/1200x630?text=Store',
-          width: 1200,
-          height: 630,
-          alt: raw.name,
-        },
-      ],
+      title,
+      description,
+      images: [company.logoUrl || ''],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${raw.name} – Shop`,
-      description: raw.description ?? '',
-      images: [raw.logoUrl ?? 'https://via.placeholder.com/1200x630?text=Store'],
+      title,
+      description,
+      images: [company.logoUrl || ''],
     },
   };
 }
-
 
 export default async function StoreLayout({
   params,
@@ -60,35 +56,83 @@ export default async function StoreLayout({
   params: { slug: string };
   children: ReactNode;
 }) {
-  // MOVE THE FULL PRISMA QUERY HERE
-  const raw = await prisma.company.findUnique({
-    where: { slug: params.slug },
-    // This is the complete query from your original page.tsx
-    include: {
+  const hdrs = await headers();
+  const requestedHost = hdrs.get("x-requested-host");
+  const requestedSubdomain = hdrs.get("x-requested-subdomain");
+
+  let raw = null;
+
+  // ---- 1. Lookup by forwarded custom domain ----
+  if (requestedHost) {
+    raw = await prisma.company.findUnique({
+      where: { domain: requestedHost },
+      include: baseInclude(),
+    });
+  }
+
+  // ---- 2. Lookup by forwarded subdomain ----
+  if (!raw && requestedSubdomain) {
+    raw = await prisma.company.findUnique({
+      where: { slug: requestedSubdomain },
+      include: baseInclude(),
+    });
+  }
+
+  // ---- 3. Fallback to slug param ----
+  if (!raw) {
+    raw = await prisma.company.findUnique({
+      where: { slug: params.slug },
+      include: baseInclude(),
+    });
+  }
+
+  if (!raw) {
+    notFound();
+  }
+
+  const storeFormData = transformCompanyToStoreForm(raw);
+  const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
+  const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
+
+  // TODO: Replace hardcoded userId with actual session data if available
+  const userId = '';
+
+  return (
+    <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
+      <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+        <Suspense fallback={<div>Loading...</div> /* Consider a Skeleton UI */}>
+          <LayoutComponent params={{ storeFormData }}>{children}</LayoutComponent>
+        </Suspense>
+      </div>
+    </StoreContextProvider>
+  );
+}
+
+function baseInclude() {
+  return {
       socialLinks: true,
-      blogs: { orderBy: { publishedAt: 'desc' } },
+      blogs: { orderBy: { publishedAt: "desc" as const } },
       policies: true,
-      faqs: { orderBy: { order: 'asc' } },
-      testimonials: { orderBy: { order: 'asc' } },
-      heroSlides: { orderBy: { order: 'asc' } },
+      faqs: { orderBy: { order: "asc" as const } },
+      testimonials: { orderBy: { order: "asc" as const } },
+      heroSlides: { orderBy: { order: "asc" as const } },
       promotions: true,
       SEO: true,
       AnalyticsConfig: true,
       PaymentSettings: true,
       ShippingSettings: true,
-      PageSection: { orderBy: { order: 'asc' } },
+      PageSection: { orderBy: { order: "asc" as const } },
       appPromos: true,
-      Collection: { orderBy: { order: 'asc' } },
-      Announcement: { orderBy: { publishedAt: 'desc' } },
-      events: { orderBy: { startDateTime: 'asc' } },
+      Collection: { orderBy: { order: "asc" as const } },
+      Announcement: { orderBy: { publishedAt: "desc" as const } },
       marketplaceListings: {
-        where: { status: 'ACTIVE' },
+        where: { status: ListingStatus.ACTIVE },
         take: 20,
         select: {
           id: true, name: true, description: true, finalPrice: true, sellingPrice: true, images: true, isAvailable: true, isFeatured: true, category: true,
         },
       },
-      StoreCategory: { orderBy: { sortOrder: 'asc' }, include: { category: { select: { id: true, name: true, slug: true, image: true, icon: true } } } },
+      StoreCategory: { orderBy: { sortOrder: "asc" as const }, include: { category: { select: { id: true, name: true, slug: true, image: true, icon: true } } } },
       Writer: { include: { user: { select: { id: true, name: true, image: true } } } },
       Doctor: { include: { User: { select: { id: true, name: true, image: true } } } },
       salesAgents: { include: { user: { select: { id: true, name: true, image: true } } } },
@@ -96,27 +140,7 @@ export default async function StoreLayout({
       courses: true,
       services: true,
       CompanyLocation: { include: { location: true } }
-    },
-  });
-
-  if (!raw) return notFound();
-
-  // Now, the context will be initialized with the FULL data
-  const storeFormData = transformCompanyToStoreForm(raw);
-  
-  const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
-  const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
-
-  return (
-    // Initialize the context with the COMPLETE store data
-    <StoreContextProvider initialStore={storeFormData} userRole='ADMIN' userId={``}>
-      <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-        <Suspense fallback={<div>Loading layout…</div>}>
-          <LayoutComponent params={{ storeFormData }}>{children}</LayoutComponent>
-        </Suspense>
-      </div>
-    </StoreContextProvider>
-  );
+    };    
 }
 
 function normalizeHeaderFooterCategory(raw: string) {
