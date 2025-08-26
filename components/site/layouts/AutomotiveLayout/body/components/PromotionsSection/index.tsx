@@ -82,8 +82,7 @@ interface HeroSectionProps {
 export default function  PromotionsSection({ bannerUrl }:HeroSectionProps) {
   const [isBuy, setIsBuy] = useState(true);
 
-  return (
-    
+  return     
            (
             <section className="py-16 bg-white dark:bg-gray-800">
               <div className="max-w-7xl mx-auto px-6">
@@ -123,26 +122,27 @@ export default function  PromotionsSection({ bannerUrl }:HeroSectionProps) {
                       className="bg-gray-100 dark:bg-gray-700 rounded-2xl overflow-hidden cursor-pointer transition"
                     >
                       <div className="relative h-52">
-                        <Image
+                        {/* <Image
                           src={promo.bannerUrl}
                           alt={promo.title}
                           fill
                           loader={loader}
                           className="object-cover"
-                        />
+                        /> */}
                       </div>
                       <div className="p-6">
-                        <h3 className="text-xl font-semibold mb-2">
+                        {/* <h3 className="text-xl font-semibold mb-2">
                           {promo.title}
                         </h3>
                         <p className="text-gray-700 dark:text-gray-300">
                           {promo.description}
-                        </p>
+                        </p> */}
                       </div>
                     </motion.div>
                   ))}
                 </div>
               </div>
             </section>
-          )};
+          )
+        };
     

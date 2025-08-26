@@ -27,19 +27,19 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     channel: s.channel,
     url: s.url,
   })),
-  policies: raw.policies.map((p: any) => ({
+  policies: raw.policies?.map((p: any) => ({
     id: p.id,
     type: p.type,
     title: p.title ?? undefined,
     content: p.content,
   })),
-  faqs: raw.faqs.map((f: any) => ({
+  faqs: raw.faqs?.map((f: any) => ({
     id: f.id,
     question: f.question,
     answer: f.answer,
     order: f.order,
   })),
-  testimonials: raw.testimonials.map((t: any) => ({
+  testimonials: raw.testimonials?.map((t: any) => ({
     id: t.id,
     author: t.author,
     quote: t.quote,
@@ -47,7 +47,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     avatarUrl: t.avatarUrl ?? undefined,
     order: t.order,
   })),
-  heroSlides: raw.heroSlides.map((h: any) => ({
+  heroSlides: raw.heroSlides?.map((h: any) => ({
     id: h.id,
     imageUrl: h.imageUrl,
     headline: h.headline ?? '',
@@ -56,7 +56,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     ctaLink: h.ctaLink ?? '',
     order: h.order,
   })),
-  promotions: raw.promotions.map((p: any) => ({
+  promotions: raw.promotions?.map((p: any) => ({
     id: p.id,
     code: p.code ?? undefined,
     title: p.title,
@@ -103,7 +103,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       pickupInstructions: raw.ShippingSettings.pickupInstructions ?? null,
     }
     : null,
-  StoreCategory: raw.StoreCategory.map((sc: any) => ({
+  StoreCategory: raw.StoreCategory?.map((sc: any) => ({
     id: sc.categoryId,
     name: sc.displayName ?? sc.category.name,
     icon: sc.icon ?? undefined,
@@ -115,7 +115,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     sortOrder: sc.sortOrder,
     visible: sc.visible,
   })),
-  marketplaceListings: raw.marketplaceListings.map((m: any) => ({
+  marketplaceListings: raw.marketplaceListings?.map((m: any) => ({
     id: m.id,
     title: m.title,
     name: m.name,

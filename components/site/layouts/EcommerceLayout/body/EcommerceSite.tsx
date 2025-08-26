@@ -1,99 +1,57 @@
-// File: app/site/layouts/EcommerceLayouts/body/EcommerceSite.tsx
 'use client';
 
 import React from 'react';
 import HeroSlider from '@/components/site/layouts/EcommerceLayout/body/components/HeroSlider';
-import ProductGrid from '@/components/site/productGrid/ProductGrid';
+// import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import MetricsSection from '@/components/site/MetricsSection';
-import AwardsSection from '@/components/site/AwardsSection';
-import TestimonialsSection from '@/components/site/TestimonialsSection/NewsletterSection';
-import PromotionsSection from '@/components/site/PromotionsSection';
-import { useStoreContext } from '@/contexts/StoreContext';
+// import AwardsSection from '@/components/site/AwardsSection';
+// import TestimonialsSection from '@/components/site/TestimonialsSection/TestimonialsSection';
+// import PromotionsSection from '@/components/site/PromotionsSection';
 import CategorySection from './components/CategorySection';
-import PromoSection from './components/PromoSection';
+// import PromoSection from './components/PromoSection';
 import PopularProducts from './components/PopularProducts';
 import DailyBestSells from './components/DailyBestSells';
 import FeaturesSection from './components/FeaturesSection';
 import SleepTapeAd from './components/SleepTapeAd';
 import Trending from './components/Trending';
 import AllProducts from './components/AllProducts';
+import { StoreForm } from '@/types/typings'; // Adjust path
+// import TestimonialsSection from './components/site/TestimonialsSection/TestimonialsSection';
 
-export default function EcommerceSite() {
-  // Grab everything from context instead of receiving a `store` prop
-  const { storeFormData } = useStoreContext();
+type EcommerceSiteProps = {
+  storeData: StoreForm;
+};
+
+export default function EcommerceSite({ storeData }: EcommerceSiteProps) {
   const {
-    storeCategories = [],          // previously StoreCategory
-    marketplaceListings = [],      // previously store.products
-    testimonials = [],             // same shape as before
-    awards = [],                   // array of award image URLs or names
-    metrics = {},                  // object containing key metrics
-    promotions = [],               // array of promotion objects
-  } = storeFormData || {};
+    StoreCategory = [],
+    marketplaceListings = [],
+    testimonials = [],
+    awards = [],
+    promotions = [],
+  } = storeData || {};
 
-  // Example metrics fallback if metrics object is empty
-  const defaultMetrics = {
-    products: marketplaceListings.length,
-    customers: 0,
-    awards: awards.length,
-    support: 24,
-  };
-
-  const products = defaultMetrics.products;
-  // metrics.products ?? 
-  const customers = defaultMetrics.customers;
-  // metrics.customers ?? 
-  const awardsCount =defaultMetrics.awards;
-  // metrics.awards ?? 
-  const support =defaultMetrics.support;
-  // metrics.support ?? 
-
-  // Framer Motion variants for metric cards
-  const metricVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.2 } }),
-  };
+  const products = marketplaceListings.length;
+  const customers = 0; // Or from your `storeData`
+  const awardsCount = awards?.length || 0;
+  const support = 24; // Or from your `storeData`
 
   return (
     <>
-      {/* Hero slider */}
       <HeroSlider />
-
-      {/* Category banners */}
       <CategorySection />
-
-      {/* Promo Section */}
-      <PromoSection promotions={promotions}/>
-
-      {/* Popular Products */}
-      <PopularProducts />      
-
-      {/* Metrics  */}
-      <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support}/>
-
-      {/* Daily Best Sells */}
-      <DailyBestSells />
-
-      {/* Trending Products */}
+      {/* <PromoSection promotions={promotions} /> */}
+      {/* <PopularProducts /> */}
+      <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support} />
+      {/* <DailyBestSells />
       <SleepTapeAd />
-
-      {/* Trending Products */}
       <Trending />
-      
-      {/* FeaturesSection Products */}
       <FeaturesSection />
-
-      {/* Trending Products */}
-      <AllProducts />
-
-      {/* Awards */}
-      <AwardsSection awards={awards}/>
-
-      {/* Customer Testimonials */}
-      <TestimonialsSection testimonials={testimonials}/>
-
-      {/* Newsletter signup */}
-      <NewsletterSection />
+      <AllProducts /> */}
+      {/* <AwardsSection awards={awards} /> */}
+      {/* <TestimonialsSection testimonials={testimonials} /> */}
+      {/* <NewsletterSection /> */}
     </>
   );
 }
