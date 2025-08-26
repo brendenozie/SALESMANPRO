@@ -14,7 +14,7 @@ interface Award {
 }
 
 interface AwardsSectionProps {
-  awards: (Award | string)[];
+  awards: Award[] | null;
 }
 
 const containerVariants: Variants = {
@@ -30,8 +30,8 @@ const cardVariants: Variants = {
 export default function AwardsSection({ awards }: AwardsSectionProps) {
   const { storeFormData } = useStoreContext();
   const { themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings.primaryColor || '#10B981';
-  const secondary = themeSettings.secondaryColor || '#3B82F6';
+  const primary = themeSettings?.primaryColor || '#10B981';
+  const secondary = themeSettings?.secondaryColor || '#3B82F6';
 
   if (!awards || awards.length === 0) return null;
 
@@ -55,9 +55,9 @@ export default function AwardsSection({ awards }: AwardsSectionProps) {
               altText = `Award ${idx + 1}`;
               label = undefined;
             } else {
-              src = award.imageUrl ?? award.url ?? award.icon ?? '';
-              altText = award.name ?? `Award ${idx + 1}`;
-              label = award.name;
+              src = award?.imageUrl ?? award?.url ?? award?.icon ?? '';
+              altText = award?.name ?? `Award ${idx + 1}`;
+              label = award?.name;
             }
 
             return (

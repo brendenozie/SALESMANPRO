@@ -2,7 +2,6 @@
 
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { MarketplaceListingForm } from '@/types/typings';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import ProductCard from '../ProductCard';
@@ -13,8 +12,8 @@ export default function AllProducts() {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings.primaryColor || '#f97316';
-  const secondary = themeSettings.secondaryColor || '#3b82f6';
+  const primary = themeSettings?.primaryColor || '#f97316';
+  const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
   const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
 
@@ -30,7 +29,7 @@ export default function AllProducts() {
         </div>
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {storeFormData.marketplaceListings.map((product) => (
+          {marketplaceListings.map((product) => (
               <ProductCard key={product.id} product={product} primary={primary} />
           ))}
         </div>

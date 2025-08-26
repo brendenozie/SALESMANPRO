@@ -12,8 +12,8 @@ export default function PopularProducts() {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings.primaryColor || '#f97316';
-  const secondary = themeSettings.secondaryColor || '#3b82f6';
+  const primary = themeSettings?.primaryColor || '#f97316';
+  const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
   const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
     
@@ -28,7 +28,7 @@ export default function PopularProducts() {
           </button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {storeFormData && storeFormData.marketplaceListings.map((product) => (
+          {storeFormData && storeFormData.marketplaceListings?.length > 0 && storeFormData.marketplaceListings?.map((product) => (
             <ProductCard key={product.id} product={product} primary={primary}/>
           ))}
         </div>

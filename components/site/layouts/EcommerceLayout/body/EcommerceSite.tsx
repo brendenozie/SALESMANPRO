@@ -5,19 +5,18 @@ import HeroSlider from '@/components/site/layouts/EcommerceLayout/body/component
 // import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import MetricsSection from '@/components/site/MetricsSection';
-// import AwardsSection from '@/components/site/AwardsSection';
-// import TestimonialsSection from '@/components/site/TestimonialsSection/TestimonialsSection';
+import AwardsSection from '@/components/site/AwardsSection';
+import TestimonialsSection from '@/components/site/TestimonialsSection/TestimonialsSection';
 // import PromotionsSection from '@/components/site/PromotionsSection';
 import CategorySection from './components/CategorySection';
-// import PromoSection from './components/PromoSection';
+import PromoSection from './components/PromoSection';
 import PopularProducts from './components/PopularProducts';
 import DailyBestSells from './components/DailyBestSells';
 import FeaturesSection from './components/FeaturesSection';
 import SleepTapeAd from './components/SleepTapeAd';
 import Trending from './components/Trending';
 import AllProducts from './components/AllProducts';
-import { StoreForm } from '@/types/typings'; // Adjust path
-// import TestimonialsSection from './components/site/TestimonialsSection/TestimonialsSection';
+import { StoreForm } from '@/types/typings';
 
 type EcommerceSiteProps = {
   storeData: StoreForm;
@@ -39,19 +38,19 @@ export default function EcommerceSite({ storeData }: EcommerceSiteProps) {
 
   return (
     <>
-      <HeroSlider />
-      <CategorySection />
-      {/* <PromoSection promotions={promotions} /> */}
-      {/* <PopularProducts /> */}
+      <HeroSlider storeFormData={storeData} />
+      <CategorySection  storeFormData={storeData} />
+      <PromoSection promotions={promotions} />
+      <PopularProducts />
       <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support} />
-      {/* <DailyBestSells />
+      <DailyBestSells />
       <SleepTapeAd />
       <Trending />
       <FeaturesSection />
-      <AllProducts /> */}
-      {/* <AwardsSection awards={awards} /> */}
-      {/* <TestimonialsSection testimonials={testimonials} /> */}
-      {/* <NewsletterSection /> */}
+      <AllProducts /> 
+      <AwardsSection awards={awards} />
+      <TestimonialsSection testimonials={testimonials} />
+      <NewsletterSection />
     </>
   );
 }

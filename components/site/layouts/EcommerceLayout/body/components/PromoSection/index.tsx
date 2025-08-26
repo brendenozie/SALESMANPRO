@@ -1,18 +1,12 @@
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
+import { IPromotion } from '@/types/typings';
 import React from 'react';
 
-export interface PromoItem {
-  bannerUrl?: string;
-  title: string;
-  description: string;
-  ctaText?: string;
-  ctaLink?: string;
-}
 
 export interface PromotionsSectionProps {
-  promotions: PromoItem[];
+  promotions: IPromotion[];
 }
 
 export default function PromoSection({ promotions }: PromotionsSectionProps) {
@@ -20,8 +14,8 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
   const { themeSettings = {} } = storeFormData || {};
 
   // Use theme colors to style the CTA button
-  const primary = themeSettings.primaryColor || '#10B981';
-  const secondary = themeSettings.secondaryColor || '#3B82F6';
+  const primary = themeSettings?.primaryColor || '#10B981';
+  const secondary = themeSettings?.secondaryColor || '#3B82F6';
 
   if (!promotions || promotions.length === 0) return null;
 

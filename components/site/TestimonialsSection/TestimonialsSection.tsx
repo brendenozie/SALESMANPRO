@@ -5,11 +5,7 @@ import { motion } from 'framer-motion';
 import { useStoreContext } from '../../../contexts/StoreContext';
 import Section from '../Section/Section';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-
-interface Testimonial {
-  quote: string;
-  author: string;
-}
+import { Testimonial } from '@/types/typings';
 
 interface TestimonialsSectionProps {
   testimonials: Testimonial[];
@@ -18,8 +14,8 @@ interface TestimonialsSectionProps {
 export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
   const { storeFormData } = useStoreContext();
   const { themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings.primaryColor || '#f97316';
-  const secondary = themeSettings.secondaryColor || '#3b82f6';
+  const primary = themeSettings?.primaryColor || '#f97316';
+  const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
   if (!testimonials || testimonials.length === 0) return null;
 
@@ -68,7 +64,7 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
 
                 {/* Author */}
                 <p className="mt-6 text-sm font-medium text-gray-500 dark:text-gray-400 text-right">
-                  — {t.author}
+                  — {t.authorName}
                 </p>
               </div>
             </motion.div>

@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link'; // Use Link for internal navigation
 import { useStoreContext } from '../../../../../../../contexts/StoreContext';
+import { StoreForm } from '@/types/typings';
 
 // Loader remains the same so Next.js can optimize your images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -25,11 +26,14 @@ interface Slide {
 const transitionDuration = 0.8;
 const autoAdvanceDelay = 5000;
 
-export default function HeroSlider() {
-  const { storeFormData } = useStoreContext();
+export interface HeroSliderProps {
+  storeFormData: StoreForm | null;
+}
+
+export default function HeroSlider({ storeFormData }: HeroSliderProps) {
 
   // Map your backend “heroSlides” into our shape:
-  const heroSlides: Slide[] = (storeFormData.heroSlides || []).map((slide: any) => ({
+  const heroSlides: Slide[] = (storeFormData?.heroSlides || []).map((slide: any) => ({
     imageUrl: slide.imageUrl,
     subline: slide.subline || 'Exclusive Offer', // More engaging default
     headline: slide.headline || 'Unlock Amazing Deals Now!', // More engaging default
@@ -41,8 +45,8 @@ export default function HeroSlider() {
   }));
 
   // These theme colors control the little progress bar at the bottom:
-  const primary = storeFormData.themeSettings?.primaryColor || '#6B46C1'; // default: deep purple
-  const secondary = storeFormData.themeSettings?.secondaryColor || '#D53F8C'; // default: vibrant pink
+  const primary = storeFormData?.themeSettings?.primaryColor || '#6B46C1'; // default: deep purple
+  const secondary = storeFormData?.themeSettings?.secondaryColor || '#D53F8C'; // default: vibrant pink
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);

@@ -4,16 +4,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '../../../../../../../contexts/StoreContext';
+import { IStoreCategory, StoreForm } from '@/types/typings';
 
-interface Category {
-  id: string;
-  name: string;
-  icon?: string; // emoji or image URL
+export interface HeroSliderProps {
+  storeFormData: StoreForm | null;
 }
 
-export default function CategorySection() {
-  const { storeFormData } = useStoreContext();
-  const { storeCategories = [], themeSettings = {} } = storeFormData || {};
+export default function CategorySection({ storeFormData }: HeroSliderProps) {
+
+  const { StoreCategory = [], themeSettings = {} } = storeFormData || {};
 
   const primary = themeSettings?.primaryColor || '#10B981';
   const secondary = themeSettings?.secondaryColor || '#3B82F6';
@@ -33,7 +32,7 @@ export default function CategorySection() {
 
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {storeCategories.map((cat: Category) => (
+          {StoreCategory.map((cat: IStoreCategory) => (
             <motion.div
               key={cat.id}
               whileHover={{ scale: 1.05 }}
@@ -46,7 +45,7 @@ export default function CategorySection() {
                   {cat.icon.startsWith('http') ? (
                     <img
                       src={cat.icon}
-                      alt={cat.name}
+                      alt={cat.displayName || ''}
                       className="w-8 h-8 object-contain"
                     />
                   ) : (
@@ -56,7 +55,7 @@ export default function CategorySection() {
               )}
 
               {/* Name */}
-              <h3 className="text-sm font-semibold text-gray-800">{cat.name}</h3>
+              <h3 className="text-sm font-semibold text-gray-800">{cat.displayName}</h3>
               <p className="text-xs text-gray-500 mt-1">View</p>
             </motion.div>
           ))}
