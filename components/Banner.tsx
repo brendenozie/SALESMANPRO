@@ -1,110 +1,206 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
-import { motion as Motion } from "framer-motion";
-import heroImage from "../assets/hero_image.png";
 
-// Features data is great, no need to change it.
+import React from "react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { BuildingLibraryIcon, GlobeAltIcon, LightBulbIcon } from "@heroicons/react/24/outline";
+
+// --- Feature Data ---
+// Icons remain the same but will stand out more against the light background.
 const features = [
-  { title: "Manage Products", description: "Track your inventory and keep everything organized.", icon: "📦" },
-  { title: "Client Insights", description: "Understand your clients with powerful analytics.", icon: "👥" },
-  { title: "Close Deals", description: "Streamline your sales process to close more deals.", icon: "📈" },
+  {
+    title: "Instant Storefront",
+    description: "Create and customize your online store in just a few clicks.",
+    icon: <BuildingLibraryIcon className="h-8 w-8 text-red-500" />,
+  },
+  {
+    title: "Free Website",
+    description: "Get a stunning, modern website automatically with your store.",
+    icon: <GlobeAltIcon className="h-8 w-8 text-red-500" />,
+  },
+  {
+    title: "All-in-One Toolkit",
+    description: "Manage products, payments, and orders from a single dashboard.",
+    icon: <LightBulbIcon className="h-8 w-8 text-red-500" />,
+  },
 ];
 
-const Banner = () => {
-  const { data: session, status } = useSession();
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  if (status === "loading") return <div className="text-center p-10">Loading...</div>;
-
+// --- Main Banner Component ---
+export default function Banner() {
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-6 lg:p-16 pt-20">
-      
-      {/* Dynamic Background Accents */}
-      <div className="absolute inset-0 bg-gray-50 -z-10">
-        <div className="absolute w-full h-full bg-radial-gradient-to-t from-gray-100 to-transparent animate-pulse-slow"></div>
-        <div className="absolute w-[600px] h-[600px] bg-gradient-to-br from-pink-600 via-red-500 to-yellow-400 rounded-full blur-3xl top-[-200px] left-[-300px] opacity-40 animate-spin-slow"></div>
-        <div className="absolute w-[500px] h-[500px] bg-gradient-to-tl from-yellow-300 to-orange-200 rounded-full blur-3xl bottom-[-100px] right-[-200px] opacity-30 animate-spin-slow-reverse"></div>
-      </div>
-
-      {/* Main Content Container */}
-      <div className="z-10 w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-24">
-        
-        {/* Left Section: Hero Text and Call-to-Action */}
-        <Motion.div
-          className="text-center lg:text-left space-y-8"
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-900 leading-tight">
-            Revolutionize Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">Sales</span>
-          </h1>
-          <p className="text-lg lg:text-xl text-gray-700 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-            Achieve your sales goals effortlessly with cutting-edge tools designed to simplify your workflow and maximize your results.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mt-8">
-            <Motion.button
-              className="px-8 py-4 bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 text-white font-bold rounded-full shadow-lg hover:from-purple-700 hover:to-pink-600 transition-transform duration-300 hover:scale-105"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get Started Now
-            </Motion.button>
-            <Motion.button
-              className="px-8 py-4 border-2 border-gray-300 text-gray-900 font-bold rounded-full shadow-md hover:bg-gray-900 hover:text-white transition-colors duration-300 hover:scale-105"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Learn More
-            </Motion.button>
-          </div>
-        </Motion.div>
-
-        {/* Right Section: Hero Image */}
-        <div className="relative flex justify-center items-center">
-          <Motion.img
-            src={heroImage.src}
-            alt="Hero Illustration"
-            className="w-full h-auto max-w-md lg:max-w-xl drop-shadow-2xl"
-            initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+    <div className="bg-white">
+      <div className="relative overflow-hidden">
+        {/* --- Animated Aurora Background (Light Version) --- */}
+        {/* Switched to lighter, pastel gradients with higher opacity to create a soft, ethereal glow on a light background. */}
+        <div className="absolute inset-0 z-0">
+          <motion.div
+            className="absolute top-0 left-0 h-[500px] w-[500px] rounded-full bg-gradient-to-r from-pink-200/70 via-red-200/70 to-transparent blur-3xl"
+            initial={{ x: -200, y: -200, opacity: 0 }}
+            animate={{ x: 0, y: 0, opacity: 1, transition: { duration: 1.5 } }}
+          />
+          <motion.div
+            className="absolute bottom-0 right-0 h-[400px] w-[600px] rounded-full bg-gradient-to-tl from-cyan-200/70 via-yellow-200/70 to-transparent blur-3xl"
+            initial={{ x: 200, y: 200, opacity: 0 }}
+            animate={{ x: 0, y: 0, opacity: 1, transition: { duration: 1.5, delay: 0.3 } }}
           />
         </div>
 
-      </div>
-
-      {/* Feature Cards Section (Optional, can be placed below the hero) */}
-      <div className="absolute -bottom-24 w-full flex justify-center z-20 px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
-          {features.map((feature, index) => (
-            <Motion.div
-              key={index}
-              className="p-6 bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-              initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
-              viewport={{ once: true }}
+        {/* --- Hero Content Section --- */}
+        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 min-h-screen grid grid-cols-1 md:grid-cols-2 items-center gap-12 pt-24 md:pt-0">
+          {/* Left: Text Content */}
+          {/* Text colors changed from white/slate-300 to dark gray for readability */}
+          <motion.div
+            className="space-y-8 text-center md:text-left"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
+            }}
+          >
+            <motion.h1
+              className="text-4xl lg:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+              }}
             >
-              <div className="text-4xl mb-4 text-purple-600">{feature.icon}</div>
-              <h3 className="text-xl font-bold text-gray-900">{feature.title}</h3>
-              <p className="text-gray-500 mt-2">{feature.description}</p>
-            </Motion.div>
-          ))}
+              Launch Your
+              <br />
+              <span className=" text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 ">
+                Online Universe
+              </span>
+            </motion.h1>
+
+            <motion.p
+              className="text-lg text-gray-700 max-w-lg mx-auto md:mx-0"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+              }}
+            >
+              Build your store, get a free website, and start selling with an
+              all-in-one toolkit designed for growth. No hassle, just results.
+            </motion.p>
+
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+              }}
+            >
+              <motion.button
+                className="px-8 py-4 bg-red-600 text-white font-bold rounded-full shadow-lg shadow-red-200/80"
+                whileHover={{ scale: 1.05, boxShadow: "0px 0px 30px rgba(129, 140, 248, 0.7)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Create Your Store
+              </motion.button>
+              <motion.button
+                className="px-8 py-4 border border-gray-300 text-gray-800 font-bold rounded-full"
+                whileHover={{ scale: 1.05, backgroundColor: "rgba(0, 0, 0, 0.05)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                How It Works
+              </motion.button>
+            </motion.div>
+          </motion.div>
+
+          {/* Right: Interactive Hero Image */}
+          <InteractiveHeroImage />
+        </div>
+
+        {/* --- Features Section --- */}
+        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 py-24">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <FeatureCard key={index} index={index} {...feature} />
+            ))}
+          </div>
         </div>
       </div>
-
     </div>
   );
-};
+}
 
-export default Banner;
+// --- Interactive Hero Image Sub-component ---
+function InteractiveHeroImage() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useTransform(mouseY, [-400, 400], [10, -10], { clamp: true });
+  const rotateY = useTransform(mouseX, [-400, 400], [-10, 10], { clamp: true });
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const { clientX, clientY, currentTarget } = event;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const x = clientX - left - width / 2;
+    const y = clientY - top - height / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  return (
+    <motion.div
+      className="relative flex justify-center items-center h-full row-start-1 md:col-start-2"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ perspective: "1000px" }}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1, transition: { duration: 1, delay: 0.5, ease: "easeOut" } }}
+    >
+      <motion.div
+        className="relative w-full max-w-md lg:max-w-lg"
+        style={{ rotateX, rotateY, transition: "transform 0.1s ease-out" }}
+      >
+        <img
+          src="https://placehold.co/600x600/F9FAFB/374151?text=Hero+Image"
+          alt="Hero Illustration"
+          className="w-full h-auto drop-shadow-2xl rounded-2xl"
+        />
+        {/* Floating UI elements with updated colors for light mode */}
+        <motion.div
+          className="absolute top-10 -right-12 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-800"
+          style={{ translateX: useTransform(mouseX, [-200, 200], [20, -20]), translateY: useTransform(mouseY, [-200, 200], [20, -20]) }}
+        >
+          🎉 Free Website Included
+        </motion.div>
+        <motion.div
+          className="absolute bottom-10 -left-12 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-800"
+          style={{ translateX: useTransform(mouseX, [-200, 200], [-20, 20]), translateY: useTransform(mouseY, [-200, 200], [-20, 20]) }}
+        >
+          🚀 Ready to Sell
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// --- Feature Card Sub-component ---
+function FeatureCard({ icon, title, description, index }: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  index: number;
+}) {
+  return (
+    <motion.div
+      // Switched from dark to a semi-transparent white background with a light border
+      className="p-8 bg-white/50 backdrop-blur-lg rounded-2xl border border-gray-200 text-center"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
+      viewport={{ once: true, amount: 0.5 }}
+      whileHover={{ y: -8, transition: { duration: 0.3 } }}
+    >
+      <div className="flex justify-center mb-4">{icon}</div>
+      <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+      <p className="text-gray-600 mt-2">{description}</p>
+    </motion.div>
+  );
+}

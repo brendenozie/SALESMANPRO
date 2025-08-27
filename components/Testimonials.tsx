@@ -1,31 +1,34 @@
 "use client";
-import React, { useState } from "react";
-import { motion as Motion } from "framer-motion";
-import { testimonialsData } from "../data/testimonialsData";
 
-// Using SVG icons instead of raster images for better quality and styling
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { testimonialsData } from "../data/testimonialsData";
+import Image from "next/image"; // Use Next.js Image component for optimization
+
+// Mocking the image loader for demonstration purposes
+const customLoader = ({ src, width, quality }:any) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
+// --- SVG Icons ---
 const leftArrow = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-8 w-8 transition-transform transform hover:scale-110"
-    fill="currentColor"
     viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
+    fill="currentColor"
+    className="h-6 w-6"
   >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    <path fillRule="evenodd" d="M11.03 9.72a.75.75 0 010 1.06L7.81 14.25a.75.75 0 01-1.06-1.06l1.22-1.22H3a.75.75 0 010-1.5h5.97l-1.22-1.22a.75.75 0 011.06-1.06l3.22 3.22zM19.5 14.25a.75.75 0 01-1.5 0v-4.5a.75.75 0 011.5 0v4.5z" clipRule="evenodd" />
   </svg>
 );
 const rightArrow = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-8 w-8 transition-transform transform hover:scale-110"
-    fill="currentColor"
     viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
+    fill="currentColor"
+    className="h-6 w-6"
   >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    <path fillRule="evenodd" d="M12.97 9.72a.75.75 0 010 1.06L16.19 14.25a.75.75 0 01-1.06 1.06l-3.22-3.22a.75.75 0 010-1.06l3.22-3.22a.75.75 0 011.06 0zm-5.97 4.5a.75.75 0 01-1.5 0v-4.5a.75.75 0 011.5 0v4.5z" clipRule="evenodd" />
   </svg>
 );
 
@@ -43,119 +46,102 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="relative w-full py-24 bg-gray-50 overflow-hidden">
-      {/* Background Shapes */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute w-[400px] h-[400px] bg-gradient-to-r from-pink-300 via-red-200 to-yellow-400 rounded-full blur-3xl opacity-30 top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute w-[300px] h-[300px] bg-gradient-to-l from-yellow-200 to-orange-100 rounded-full blur-3xl opacity-20 bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2"></div>
+    <section className="relative w-full py-24 bg-white overflow-hidden">
+      {/* Background Shape */}
+      <div className="absolute inset-0 z-0 opacity-40">
+        <div className="absolute w-[800px] h-[800px] bg-gradient-to-tr from-indigo-50 to-pink-50 rounded-full blur-3xl -top-1/4 -left-1/4"></div>
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12 relative z-10 flex flex-col lg:flex-row gap-12 sm:gap-16 items-center justify-between">
-        {/* Left Section: Text Content */}
-        <Motion.div
-          className="flex-1 flex flex-col gap-6 text-center lg:text-left"
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
+      <div className="container mx-auto px-6 lg:px-12 relative z-10 text-center">
+        {/* Section Heading */}
+        <motion.div
+          className="mb-16"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-base font-bold uppercase text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 tracking-widest">
-            Testimonials
+          <h2 className="text-base font-bold uppercase text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-pink-500 tracking-widest">
+            What Our Customers Say
           </h2>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900">
-            Sales That <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400">
-              Speak Success
-            </span>
+          <h1 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900">
+            Hear It From <br className="hidden md:inline" />The People Who Know
           </h1>
+        </motion.div>
 
-          {/* Testimonial Review */}
-          <Motion.p
+        {/* Testimonial Card */}
+        <div className="relative mx-auto max-w-2xl">
+          <motion.div
             key={selected}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            className="relative p-8 md:p-12 rounded-2xl bg-white shadow-xl border border-gray-200"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -20 }}
             transition={transition}
-            className="text-lg md:text-xl text-gray-700 italic leading-relaxed"
           >
-            "{testimonialsData[selected].review}"
-          </Motion.p>
-
-          <div className="text-gray-500 text-sm md:text-base mt-2">
-            <Motion.span
-              key={testimonialsData[selected].name}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="font-bold text-gray-900"
-            >
-              {testimonialsData[selected].name}
-            </Motion.span>{" "}
-            -{" "}
-            <Motion.span
-              key={testimonialsData[selected].name + 'status'}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-gray-600"
-            >
-              {testimonialsData[selected].status}
-            </Motion.span>
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              {/* Testimonial Image */}
+              <motion.div
+                initial={{ opacity: 0, rotate: -5 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="w-28 h-28 flex-shrink-0 rounded-full overflow-hidden shadow-lg border-2 border-indigo-500"
+              >
+                <Image
+                  src={testimonialsData[selected].image?.src}
+                  alt={testimonialsData[selected].name}
+                  width={112}
+                  height={112}
+                  loader={customLoader}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              {/* Review and Details */}
+              <div className="text-center md:text-left">
+                <p className="text-lg md:text-xl text-gray-800 italic leading-relaxed">
+                  "{testimonialsData[selected].review}"
+                </p>
+                <p className="mt-4 text-sm md:text-base text-gray-500">
+                  <span className="font-bold text-gray-900">{testimonialsData[selected].name}</span>
+                  <span className="ml-1 text-gray-600">- {testimonialsData[selected].status}</span>
+                </p>
+              </div>
+            </div>
+            
+            {/* Navigation Controls */}
+            <div className="flex justify-center md:justify-end gap-6 mt-8 md:mt-0 md:absolute md:bottom-8 md:right-8">
+              <button
+                onClick={handlePrevious}
+                aria-label="Previous Testimonial"
+                className="p-3 rounded-full bg-white text-indigo-600 shadow-md hover:bg-gray-100 transition-colors"
+              >
+                {leftArrow}
+              </button>
+              <button
+                onClick={handleNext}
+                aria-label="Next Testimonial"
+                className="p-3 rounded-full bg-white text-indigo-600 shadow-md hover:bg-gray-100 transition-colors"
+              >
+                {rightArrow}
+              </button>
+            </div>
+          </motion.div>
+          
+          {/* Pagination Dots */}
+          <div className="flex justify-center mt-8 space-x-2">
+            {testimonialsData.map((_, index) => (
+              <motion.div
+                key={index}
+                className={`h-2 rounded-full cursor-pointer transition-all ${
+                  index === selected ? "bg-indigo-500 w-8" : "bg-gray-300 w-2"
+                }`}
+                onClick={() => setSelected(index)}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+              />
+            ))}
           </div>
-        </Motion.div>
-
-        {/* Right Section: Image & Arrows */}
-        <Motion.div
-          className="flex-1 relative flex justify-center items-center h-[450px]"
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          {/* Background Gradient & Border Elements */}
-          <Motion.div
-            className="absolute w-72 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl border-4 border-red-600 z-10"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-          ></Motion.div>
-          <Motion.div
-            className="absolute w-72 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 z-0"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.1 }}
-          ></Motion.div>
-
-          {/* Testimonial Image */}
-          <Motion.img
-            key={selected}
-            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-            transition={transition}
-            src={testimonialsData[selected].image?.src}
-            alt={testimonialsData[selected].name}
-            className="relative w-64 h-72 object-cover rounded-2xl shadow-2xl z-20"
-          />
-
-          {/* Arrow Controls */}
-          <div className="absolute flex gap-6 bottom-4 md:bottom-auto md:top-1/2 md:right-0 transform md:-translate-y-1/2 translate-y-1/2">
-            <button
-              onClick={handlePrevious}
-              aria-label="Previous Testimonial"
-              className="p-2 rounded-full bg-white text-red-600 shadow-md hover:bg-gray-100 transition-colors"
-            >
-              {leftArrow}
-            </button>
-            <button
-              onClick={handleNext}
-              aria-label="Next Testimonial"
-              className="p-2 rounded-full bg-white text-red-600 shadow-md hover:bg-gray-100 transition-colors"
-            >
-              {rightArrow}
-            </button>
-          </div>
-        </Motion.div>
+        </div>
       </div>
     </section>
   );

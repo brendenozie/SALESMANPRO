@@ -123,7 +123,7 @@ const Header = () => {
               </>
             ) : (
               <Link
-                href="/dashboard"
+                href="/dashboards"
                 className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 shadow-lg hover:scale-105 transition-all duration-300"
               >
                 Dashboard

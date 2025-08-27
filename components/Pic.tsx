@@ -52,9 +52,9 @@ const Pic = () => {
           viewport={{ once: true }}
         >
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
-            Discover Our
+            Discover Our 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 ">
-              Powerful Features
+               Powerful Features
             </span>
           </h2>
           <p className="mt-4 text-lg max-w-3xl mx-auto text-gray-600">
