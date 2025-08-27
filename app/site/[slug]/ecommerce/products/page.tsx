@@ -8,7 +8,6 @@ import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 
 type Category = { id: string; name: string };
-type Product = { id: string; name: string; price: number; imageUrl: string; slug?: string };
 
 interface PageProps {
   params: { slug: string };
@@ -19,7 +18,6 @@ interface PageProps {
     sort?: string;
   };
 }
-
 
 export const dynamic = 'force-dynamic';
 
@@ -46,19 +44,26 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   if (sort === 'priceDesc') orderBy = { finalPrice: 'desc' };
   if (sort === 'rating') orderBy = { rating: 'desc' };
 
-  // Fetch data
+  // Fetch data while omitting problematic field
   const [listings, totalCount, categories] = await Promise.all([
     prisma.marketplaceListings.findMany({
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy,
-      // include: { images: true }
+      select: {
+        id: true,
+        name: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        // bedrooms intentionally omitted to avoid type mismatch
+      },
     }),
     prisma.marketplaceListings.count({ where }),
     prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
   ]);
-  
+
   const cats: Category[] = categories.map(c => ({ id: c.id, name: c.name }));
   const totalPages = Math.ceil(totalCount / pageSize);
 

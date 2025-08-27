@@ -30,7 +30,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const reviews = 149; // Example static value
 
   const discount =
-    sellingPrice && sellingPrice > sellingPrice
+    sellingPrice && finalPrice != null && sellingPrice > finalPrice
       ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
       : null;
 
@@ -94,9 +94,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="text-3xl font-extrabold"
             style={{ color: primary }}
           >
-            ${finalPrice.toFixed(2)}
+            ${(finalPrice ?? 0).toFixed(2)}
           </span>
-          {sellingPrice && sellingPrice > finalPrice && (
+          {sellingPrice && finalPrice && sellingPrice > finalPrice && (
             <span className="text-base line-through text-gray-500">
               ${sellingPrice.toFixed(2)}
             </span>

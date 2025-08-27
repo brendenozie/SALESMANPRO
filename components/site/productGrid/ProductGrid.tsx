@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useStoreContext } from '../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 import Section from '../Section/Section';
 import ProductCard from '../layouts/EcommerceLayout/body/components/ProductCard';
 
@@ -9,8 +9,8 @@ export default function ProductGrid({ title }: any) {
   
   const { storeFormData } = useStoreContext();
   const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings.primaryColor || '#f97316';
-  const secondary = themeSettings.secondaryColor || '#3b82f6';
+  const primary = themeSettings?.primaryColor || '#f97316';
+  const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
   return (
     <Section background="none">
