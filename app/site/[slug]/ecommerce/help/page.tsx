@@ -2,38 +2,38 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSearch, FaChevronDown, FaCreditCard, FaShippingFast, FaUndo, FaUser, FaLock, FaBoxOpen } from 'react-icons/fa';
 import Section from '@/components/site/Section/Section';
 import { useStore } from '@/contexts/StoreContext';
+import { ArchiveBoxIcon, BackspaceIcon, ChevronDoubleDownIcon, CogIcon, CreditCardIcon, MagnifyingGlassCircleIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 
 const helpCategories = [
   {
     title: 'Orders & Shipping',
-    icon: <FaShippingFast />,
+    icon: <CogIcon className='text-blue-500 w-8 h-8' />,
     description: 'Track your order, check delivery times, and more.',
     slug: 'orders-shipping',
   },
   {
     title: 'Payments & Billing',
-    icon: <FaCreditCard />,
+    icon: <CreditCardIcon  className='text-blue-500 w-8 h-8' />,
     description: 'Information on payment methods, invoices, and refunds.',
     slug: 'payments-billing',
   },
   {
     title: 'Returns & Refunds',
-    icon: <FaUndo />,
+    icon: <BackspaceIcon  className='text-blue-500 w-8 h-8' />,
     description: 'How to return an item or request a refund.',
     slug: 'returns-refunds',
   },
   {
     title: 'My Account',
-    icon: <FaUser />,
+    icon: <UserCircleIcon  className='text-blue-500 w-8 h-8' />,
     description: 'Manage your profile, password, and account settings.',
     slug: 'my-account',
   },
   {
     title: 'Product Information',
-    icon: <FaBoxOpen />,
+    icon: <ArchiveBoxIcon  className='text-blue-500 w-8 h-8' />,
     description: 'Find details about products, materials, and care.',
     slug: 'product-info',
   },
@@ -67,7 +67,7 @@ const faqs = [
   },
 ];
 
-const CollapsibleFAQ = ({ question, answer, isOpen, onClick }) => {
+const CollapsibleFAQ = ({ question, answer, isOpen, onClick }:any) => {
   return (
     <div className="border-b border-gray-200 dark:border-gray-700">
       <motion.button
@@ -82,7 +82,7 @@ const CollapsibleFAQ = ({ question, answer, isOpen, onClick }) => {
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.3 }}
         >
-          <FaChevronDown />
+          <ChevronDoubleDownIcon  className='text-blue-500 w-8 h-8' />
         </motion.span>
       </motion.button>
       <AnimatePresence>
@@ -107,7 +107,7 @@ const CollapsibleFAQ = ({ question, answer, isOpen, onClick }) => {
 export default function HelpCenterPage() {
   const store = useStore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [openFAQ, setOpenFAQ] = useState(null);
+  const [openFAQ, setOpenFAQ] = useState<string | null>(null);
 
   const filteredFaqs = faqs.filter(faq =>
     faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -134,7 +134,7 @@ export default function HelpCenterPage() {
           {/* Search Bar */}
           <div className="text-center">
             <div className="relative max-w-2xl mx-auto">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xl" />
+              <MagnifyingGlassCircleIcon className="absolute w-8 h-8 left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xl" />
               <input
                 type="text"
                 placeholder="Search for an answer..."

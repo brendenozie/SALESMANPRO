@@ -2,15 +2,15 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronDown, FaShieldAlt, FaCookieBite, FaHandsHelping, FaUser, FaLink } from 'react-icons/fa';
 import Section from '@/components/site/Section/Section';
 import { useStore } from '@/contexts/StoreContext';
+import { ChevronDoubleDownIcon, HandRaisedIcon, KeyIcon, LinkIcon, ShieldExclamationIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 
 // Define the content for each privacy policy section
 const privacySections = [
   {
     title: 'Our Commitment to Your Privacy',
-    icon: <FaShieldAlt />,
+    icon: <ShieldExclamationIcon className='w-8 h-8' />,
     id: 'commitment',
     content: (
       <>
@@ -21,7 +21,7 @@ const privacySections = [
   },
   {
     title: 'What Information We Collect',
-    icon: <FaUser />,
+    icon: <UserCircleIcon  className='w-8 h-8' />,
     id: 'data-collection',
     content: (
       <>
@@ -41,7 +41,7 @@ const privacySections = [
   },
   {
     title: 'How and Why We Use Your Information',
-    icon: <FaHandsHelping />,
+    icon: <HandRaisedIcon  className='w-8 h-8' />,
     id: 'data-usage',
     content: (
       <>
@@ -57,7 +57,7 @@ const privacySections = [
   },
   {
     title: 'Sharing Your Information with Third Parties',
-    icon: <FaLink />,
+    icon: <LinkIcon  className='w-8 h-8' />,
     id: 'third-parties',
     content: (
       <>
@@ -73,7 +73,7 @@ const privacySections = [
   },
   {
     title: 'Our Use of Cookies',
-    icon: <FaCookieBite />,
+    icon: <KeyIcon  className='w-8 h-8' />,
     id: 'cookies',
     content: (
       <>
@@ -84,7 +84,7 @@ const privacySections = [
   },
 ];
 
-const CollapsibleSection = ({ title, icon, content, isOpen, onClick }) => {
+const CollapsibleSection = ({ title, icon, content, isOpen, onClick }:any) => {
   return (
     <div className="border-b border-gray-200 dark:border-gray-700">
       <motion.button
@@ -100,7 +100,7 @@ const CollapsibleSection = ({ title, icon, content, isOpen, onClick }) => {
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.3 }}
         >
-          <FaChevronDown />
+          <ChevronDoubleDownIcon  className='w-8 h-8' />
         </motion.span>
       </motion.button>
       <AnimatePresence>
@@ -126,8 +126,8 @@ export default function PrivacyPolicyPage() {
   const store = useStore();
   const [openSection, setOpenSection] = useState('commitment');
 
-  const toggleSection = (id) => {
-    setOpenSection(openSection === id ? null : id);
+  const toggleSection = (id : string) => {
+    setOpenSection(openSection === id ? '' : id);
   };
 
   if (!store) {

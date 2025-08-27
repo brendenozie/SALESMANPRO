@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 import Section from '@/components/site/Section/Section';
 import { useStore } from '@/contexts/StoreContext';
+import { EnvelopeIcon, MapIcon, PhoneIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { UsersIcon } from '@heroicons/react/24/solid';
 
 export default function ContactPage() {
   const store = useStore();
@@ -65,17 +66,17 @@ export default function ContactPage() {
             
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <FaMapMarkerAlt className="text-blue-500 text-2xl" />
+                <MapIcon className="text-blue-500 text-2xl" />
                 <span className="text-lg">123 E-Commerce St, Suite 456, City, State 12345</span>
               </div>
               <div className="flex items-center space-x-3">
-                <FaEnvelope className="text-blue-500 text-2xl" />
+                <EnvelopeIcon className="text-blue-500 text-2xl" />
                 <a href="mailto:support@yourstore.com" className="text-lg hover:underline">
                   support@yourstore.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
-                <FaPhone className="text-blue-500 text-2xl" />
+                <PhoneIcon className="text-blue-500 text-2xl" />
                 <span className="text-lg">+1 (555) 123-4567</span>
               </div>
             </div>
@@ -84,13 +85,13 @@ export default function ContactPage() {
               <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Follow Us</h3>
               <div className="flex space-x-4 mt-2">
                 <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  <FaFacebookF size={32} />
+                  <UserCircleIcon className='text-blue-500 w-8 h-8' />
                 </a>
                 <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  <FaInstagram size={32} />
+                  <UserGroupIcon className='text-blue-500 w-8 h-8' />
                 </a>
                 <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  <FaTwitter size={32} />
+                  <UsersIcon className='text-blue-500 w-8 h-8' />
                 </a>
               </div>
             </div>
