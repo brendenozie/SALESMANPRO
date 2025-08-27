@@ -1,5 +1,5 @@
 import React, { useState} from "react";
-import load from "../../../assets/load.png";
+import load from "@/assets/load.png";
 import Image from "next/image";
 
 const loaderProp = ({ src, width, quality }) => {

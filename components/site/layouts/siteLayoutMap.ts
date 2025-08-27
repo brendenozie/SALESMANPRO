@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic';
 
 // Header/Footer Layouts
+const GhubaLayout = dynamic(() => import('@/components/site/layouts/GhubaLayout/GhubaLayout'));
 const EcommerceLayout = dynamic(() => import('@/components/site/layouts/EcommerceLayout/EcommerceLayout'));
 const ServicesLayout = dynamic(() => import('@/components/site/layouts/ServicesLayout/ServicesLayout'));
 const BookingsLayout = dynamic(() => import('@/components/site/layouts/BookingsLayout/BookingsLayout'));
@@ -32,6 +33,7 @@ type LayoutHeaderFooterComponent = React.ComponentType<{
 }>;
 
 export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent> = {
+  'ghuba': GhubaLayout,
   'ecommerce': EcommerceLayout,
   'e-commerce': EcommerceLayout,
   'services': ServicesLayout,
@@ -75,6 +77,7 @@ export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterCom
 
 // Maps category to layout folder name
 export const folderMap: Record<string, string> = {
+  'ghuba': 'GhubaLayout',
   'ecommerce': 'EcommerceLayout',
   'e-commerce': 'EcommerceLayout',
   'services': 'ServicesLayout',
@@ -117,6 +120,7 @@ export const folderMap: Record<string, string> = {
 
 // Maps layout folder name to specific Site component name
 export const siteComponentNameMap: Record<string, string> = {
+  'GhubaLayout': 'GhubaSite',
   'EcommerceLayout': 'EcommerceSite',
   'ServicesLayout': 'ServiceSite',
   'BookingsLayout': 'BookingsSite',

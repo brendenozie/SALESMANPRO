@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import load from "../../../assets/load.png";
+import load from "@/assets/load.png";
 import Image from "next/image";
 
 const loaderProp = ({ src, width, quality }:any) => {

@@ -1,7 +1,7 @@
 // components/layouts/ShopLayout.tsx
 import React from 'react';
-import Header from './site/layouts/GhubaLayout/body/header/Header';
-import Footer from './site/layouts/GhubaLayout/body/footer/Footer';
+import Header from './site/layouts/GhubaLayout/header/Header';
+import Footer from './site/layouts/GhubaLayout/footer/Footer';
 import Cart from "./site/layouts/GhubaLayout/body/components/cart";
 // import SignInModal from "../../components/signInModal";
 // import { useStateContext } from '../../contexts/ContextProvider';

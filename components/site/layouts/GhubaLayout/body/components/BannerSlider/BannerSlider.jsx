@@ -7,9 +7,9 @@ import "slick-carousel/slick/slick-theme.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import asset1 from "../../../assets/asset1.png";
-import asset2 from "../../../assets/asset2.png";
-import asset3 from "../../../assets/asset3.png";
+import asset1 from "@/assets/asset1.png";
+import asset2 from "@/assets/asset2.png";
+import asset3 from "@/assets/asset3.png";
 import {
   ArrowLeftCircleIcon,
   ArrowRightCircleIcon

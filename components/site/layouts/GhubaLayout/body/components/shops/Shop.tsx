@@ -3,7 +3,7 @@ import { PlusIcon, ArrowPathIcon, ArrowRightCircleIcon, ShoppingCartIcon } from 
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import load from "../../assets/load.png";
+import load from "@/assets/load.png";
 import Image from "next/image";
 
 const loaderProp = ({ src, width, quality }:any) => {

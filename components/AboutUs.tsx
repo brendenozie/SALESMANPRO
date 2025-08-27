@@ -144,7 +144,7 @@ export default function AboutUs() {
           className="relative flex justify-center items-center"
         >
           {/* Glowing Border Effect remains effective */}
-          <div className="relative w-full max-w-md p-1 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500">
+          <div className="relative w-full max-w-md p-1 rounded-2xl bg-gradient-to-br from-red-500 to-yellow-500">
             {/* Inner background is now white */}
             <div className="w-full h-full bg-white rounded-xl overflow-hidden shadow-2xl shadow-indigo-500/20">
               {/* Replaced Next.js Image with a standard img tag to resolve the error */}

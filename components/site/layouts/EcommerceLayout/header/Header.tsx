@@ -51,8 +51,8 @@ export default function Header() {
   } = storeFormData || {};
 
   // Fallback to emerald/blue if no colors are provided
-  const primaryColor = themeSettings.primaryColor || '#10B981';   // Emerald
-  const secondaryColor = themeSettings.secondaryColor || '#3B82F6'; // Blue
+  const primaryColor = themeSettings?.primaryColor || '#10B981';   // Emerald
+  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6'; // Blue
 
   // Handle outside clicks for closing search and mobile menu
   useEffect(() => {

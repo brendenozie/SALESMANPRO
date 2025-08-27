@@ -14,32 +14,32 @@ import {
 // --- Feature Data ---
 const features = [
   {
-    icon: <SparklesIcon className="h-10 w-10 text-indigo-500" />,
+    icon: <SparklesIcon className="h-10 w-10 text-red-500" />,
     title: "Effortless Setup",
     description: "Get your store up and running in minutes, not days. Our intuitive tools guide you every step of the way.",
   },
   {
-    icon: <ShieldCheckIcon className="h-10 w-10 text-indigo-500" />,
+    icon: <ShieldCheckIcon className="h-10 w-10 text-red-500" />,
     title: "Secure & Reliable",
     description: "Your business and customer data are protected by top-tier security protocols and constant monitoring.",
   },
   {
-    icon: <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-indigo-500" />,
+    icon: <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-red-500" />,
     title: "24/7 Support",
     description: "Our dedicated team is always on standby to help you with any questions or issues, day or night.",
   },
   {
-    icon: <ArrowsRightLeftIcon className="h-10 w-10 text-indigo-500" />,
+    icon: <ArrowsRightLeftIcon className="h-10 w-10 text-red-500" />,
     title: "Seamless Integration",
     description: "Connect with your favorite marketing, analytics, and shipping tools effortlessly.",
   },
   {
-    icon: <CloudArrowUpIcon className="h-10 w-10 text-indigo-500" />,
+    icon: <CloudArrowUpIcon className="h-10 w-10 text-red-500" />,
     title: "Scalable Infrastructure",
     description: "Our platform grows with your business, handling everything from a few sales to millions of transactions.",
   },
   {
-    icon: <Cog6ToothIcon className="h-10 w-10 text-indigo-500" />,
+    icon: <Cog6ToothIcon className="h-10 w-10 text-red-500" />,
     title: "Fully Customizable",
     description: "Tailor every aspect of your storefront to match your brand's unique identity and vision.",
   },
@@ -52,7 +52,7 @@ export default function WhyChooseUs() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="text-center">
           <motion.p
-            className="text-base font-bold uppercase text-indigo-600 tracking-widest"
+            className="text-base font-bold uppercase text-red-600 tracking-widest"
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -91,7 +91,7 @@ export default function WhyChooseUs() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true, amount: 0.4 }}
             >
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 mb-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
                 {feature.icon}
               </div>
               <h3 className="mt-4 text-xl font-bold tracking-tight text-gray-900">{feature.title}</h3>

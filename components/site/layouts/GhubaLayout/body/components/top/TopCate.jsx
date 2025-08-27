@@ -5,7 +5,7 @@ import "slick-carousel/slick/slick-theme.css";
 import Tdata from "./Tdata";
 import { ArrowRightCircleIcon, ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
-import load from "../../../assets/load.png";
+import load from "@/assets/load.png";
 import Image from "next/image";
 
 const loaderProp = ({ src, width, quality }) => {

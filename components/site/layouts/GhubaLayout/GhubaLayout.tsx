@@ -1,15 +1,15 @@
 "use client"
 import React, { ReactNode, useState } from "react";
-import { StoreForm } from "../../../../types/typings";
-import Footer from "./body/footer/Footer";
-import Header from "./body/header/Header";
+import { StoreForm } from "@/types/typings";
+import Footer from "./footer/Footer";
+import Header from "./header/Header";
 
-interface EcommerceHeaderLayoutProps {
+interface GhubaHeaderLayoutProps {
   params: { storeFormData: StoreForm };
   children: ReactNode;
 }
 
-const EcommerceHeaderLayout: React.FC<EcommerceHeaderLayoutProps> = (
+const GhubaHeaderLayout: React.FC<GhubaHeaderLayoutProps> = (
   {
     params,
     children,
@@ -28,4 +28,4 @@ const EcommerceHeaderLayout: React.FC<EcommerceHeaderLayoutProps> = (
   );
 };
 
-export default EcommerceHeaderLayout;
+export default GhubaHeaderLayout;

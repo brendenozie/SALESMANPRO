@@ -1,7 +1,7 @@
 "use client"
 import React, {useState} from 'react';
 import { PlusIcon, MinusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import load from "../../../assets/load.png";
+import load from "@/assets/load.png";
 import Image from "next/image";
 
 const loaderProp = ({ src, width, quality }) => {

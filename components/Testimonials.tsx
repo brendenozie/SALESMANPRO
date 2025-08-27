@@ -49,7 +49,7 @@ const Testimonials = () => {
     <section className="relative w-full py-24 bg-white overflow-hidden">
       {/* Background Shape */}
       <div className="absolute inset-0 z-0 opacity-40">
-        <div className="absolute w-[800px] h-[800px] bg-gradient-to-tr from-indigo-50 to-pink-50 rounded-full blur-3xl -top-1/4 -left-1/4"></div>
+        <div className="absolute w-[800px] h-[800px] bg-gradient-to-tr from-red-50 to-yellow-50 rounded-full blur-3xl -top-1/4 -left-1/4"></div>
       </div>
 
       <div className="container mx-auto px-6 lg:px-12 relative z-10 text-center">
@@ -61,7 +61,7 @@ const Testimonials = () => {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-base font-bold uppercase text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-pink-500 tracking-widest">
+          <h2 className="text-base font-bold uppercase text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500 tracking-widest">
             What Our Customers Say
           </h2>
           <h1 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900">
@@ -85,7 +85,7 @@ const Testimonials = () => {
                 initial={{ opacity: 0, rotate: -5 }}
                 animate={{ opacity: 1, rotate: 0 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
-                className="w-28 h-28 flex-shrink-0 rounded-full overflow-hidden shadow-lg border-2 border-indigo-500"
+                className="w-28 h-28 flex-shrink-0 rounded-full overflow-hidden shadow-lg border-2 border-red-500"
               >
                 <Image
                   src={testimonialsData[selected].image?.src}
@@ -113,14 +113,14 @@ const Testimonials = () => {
               <button
                 onClick={handlePrevious}
                 aria-label="Previous Testimonial"
-                className="p-3 rounded-full bg-white text-indigo-600 shadow-md hover:bg-gray-100 transition-colors"
+                className="p-3 rounded-full bg-white text-red-600 shadow-md hover:bg-gray-100 transition-colors"
               >
                 {leftArrow}
               </button>
               <button
                 onClick={handleNext}
                 aria-label="Next Testimonial"
-                className="p-3 rounded-full bg-white text-indigo-600 shadow-md hover:bg-gray-100 transition-colors"
+                className="p-3 rounded-full bg-white text-red-600 shadow-md hover:bg-gray-100 transition-colors"
               >
                 {rightArrow}
               </button>
@@ -133,7 +133,7 @@ const Testimonials = () => {
               <motion.div
                 key={index}
                 className={`h-2 rounded-full cursor-pointer transition-all ${
-                  index === selected ? "bg-indigo-500 w-8" : "bg-gray-300 w-2"
+                  index === selected ? "bg-red-500 w-8" : "bg-gray-300 w-2"
                 }`}
                 onClick={() => setSelected(index)}
                 whileHover={{ scale: 1.2 }}

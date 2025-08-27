@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
-import logo from "../../../assets/shop.png";
+import logo from "@/assets/shop.png";
 import {
   ShoppingBagIcon,
   XMarkIcon,
@@ -17,7 +17,7 @@ import {
   PhoneIcon,
   MapPinIcon
 } from "@heroicons/react/24/outline";
-import { useStateContext } from "../../../../../../contexts/ContextProvider.js";
+import { useStateContext } from "@/contexts/ContextProvider.js";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { debounce } from "lodash";
