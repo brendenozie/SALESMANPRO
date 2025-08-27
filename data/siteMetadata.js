@@ -6,7 +6,7 @@ const siteMetadata = {
   description: 'Online Shoppin marketplace',
   language: 'en-us',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://ghuba.shop',
+  siteUrl: 'https://tulivuapps.com',
   siteRepo: 'https://github.com/brendenozie/ghuba',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.png`,

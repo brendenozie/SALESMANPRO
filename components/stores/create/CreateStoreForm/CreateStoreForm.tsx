@@ -594,7 +594,7 @@ export default function CreateStoreForm({
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    setForm((f) => ({ ...f, slug, domain: `https://www.${slug}.ghuba.shop` }));
+    setForm((f) => ({ ...f, slug, domain: `https://www.${slug}.tulivuapps.com` }));
   }, [form.name, initialData]);
 
   // the locations below are for the selection of locations for items like travel and vehicle 

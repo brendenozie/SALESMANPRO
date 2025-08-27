@@ -102,7 +102,7 @@ export type StoreForm = {
 //       sat: '',
 //       sun: ''
 //     },
-//     domain: 'https://www.educational-online-courses.ghuba.shop',
+//     domain: 'https://www.educational-online-courses.tulivuapps.com',
 //     currency: 'KES',
 //     locale: 'en-US',
 //     pricingTiers: [],
