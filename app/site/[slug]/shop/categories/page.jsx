@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useStateContext } from '../../../contexts/ContextProvider';
+import { useStateContext } from '../../../../../contexts/ContextProvider';
 import { useRouter } from "next/navigation";
 
 const loaderProp = ({ src, width, quality }) => {

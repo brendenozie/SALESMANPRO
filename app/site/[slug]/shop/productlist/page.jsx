@@ -5,7 +5,7 @@ import debounce from "lodash.debounce";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
-import Filters from "../../../components/Filters";
+import Filters from "../../../../../components/Filters";
 import load from "../../../assets/load.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

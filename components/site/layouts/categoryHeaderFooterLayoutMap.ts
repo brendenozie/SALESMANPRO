@@ -1,6 +1,7 @@
 // In a separate file (e.g. siteLayoutMap.ts)
 import dynamic from 'next/dynamic';
 
+const GhubaLayout = dynamic(() => import('@/components/site/layouts/GhubaLayout/GhubaLayout'));
 const EcommerceLayout = dynamic(() => import('@/components/site/layouts/EcommerceLayout/EcommerceLayout'));
 const ServicesLayout = dynamic(() =>  import('@/components/site/layouts/ServicesLayout/ServicesLayout'));
 const BookingsLayout = dynamic(() => import( '@/components/site/layouts/BookingsLayout/BookingsLayout'));
@@ -30,6 +31,7 @@ type LayoutHeaderFooterComponent = React.ComponentType<{
 }>;
 
 const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent> = {
+    'ghuba': GhubaLayout,
     'ecommerce': EcommerceLayout,
     'e‐commerce': EcommerceLayout,
     'services': ServicesLayout,

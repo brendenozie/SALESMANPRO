@@ -6,22 +6,22 @@ import { usePathname } from 'next/navigation';
 import ClientCookieWrapper from "@/components/site/ClientCookieWrapper";
 
 import LocationModal from "@/components/locationManager";
-import Cart from "@/components/shop/cart";
-import SignInModal from "@/components/shop/SignInModal/SignInModal";
+import Cart from "@/components/site/layouts/GhubaLayout/body/components/cart";
+import SignInModal from "@/components/site/layouts/GhubaLayout/body/components/SignInModal/SignInModal";
 
 const Footer = () => {
   const path = usePathname();
   // bail out on /stores or any deeper stores route
-  if (path.startsWith('/stores')) return null;
-  if (path.startsWith('/admin')) return null;
-  if (path.startsWith('/agent')) return null;
-  if (path.startsWith('/clients')) return null;  
-  if (path.startsWith('/site')) return null;
-  if (path.startsWith('/shop/profile')) return null;
-  if (path.startsWith('/dashboards')) return null;
-  if (path.startsWith('/play')) return null;
-  if (path.startsWith('/doctor')) return null;
-  if (path.startsWith('/patient')) return null;
+  // if (path.startsWith('/stores')) return null;
+  // if (path.startsWith('/admin')) return null;
+  // if (path.startsWith('/agent')) return null;
+  // if (path.startsWith('/clients')) return null;  
+  // if (path.startsWith('/site')) return null;
+  // if (path.startsWith('/shop/profile')) return null;
+  // if (path.startsWith('/dashboards')) return null;
+  // if (path.startsWith('/play')) return null;
+  // if (path.startsWith('/doctor')) return null;
+  // if (path.startsWith('/patient')) return null;
 
   return (
     <>

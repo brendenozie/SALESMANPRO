@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React, { useState, useEffect } from "react";
 import logo from "../../../assets/shop.png";
@@ -17,108 +17,39 @@ import {
   PhoneIcon,
   MapPinIcon
 } from "@heroicons/react/24/outline";
-import { useStateContext } from "../../../contexts/ContextProvider.js";
+import { useStateContext } from "../../../../../../contexts/ContextProvider.js";
 import { motion } from "framer-motion";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { debounce } from "lodash";
+import { usePathname } from 'next/navigation';
 
 const Header = () => {
-  const {
-    user,
-    isDarkMode,
-    setMode,
-    cart,
-    isCartOpen,
-    setIsCartOpen,
-    location,
-    setLocation,
-    locationName,
-    setLocationName,
-    isOpen,
-    setIsOpen,
-    onClose,
-    onUpdate,
-  } = useStateContext();
-
+  const {user, isDarkMode, setMode, cart, isCartOpen, setIsCartOpen, location, setLocation, locationName, setLocationName,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  // const [tenant, setTenant] = useState<{ host?: string; subdomain?: string }>({});
-  const path = usePathname();
 
-  // Sticky header on scroll
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 100);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fetch tenant context injected by middleware
-  const [tenant, setTenant] = useState({
-    host: undefined,
-    subdomain: undefined,
-    originalPath: undefined
-  });
-
-useEffect(() => {
-  fetch("/api/context")
-    .then((res) => res.json())
-    .then((data) => setTenant(data))
-    .catch(() => {});
-}, []);
-
-// Bail out on protected paths *using originalPath if available*
-const currentPath = tenant.originalPath || path;
-
-if (currentPath.startsWith("/stores")) return null;
-if (path.startsWith('/site')) return null;
-if (currentPath.startsWith("/admin")) return null;
-if (currentPath.startsWith("/agent")) return null;
-if (currentPath.startsWith("/clients")) return null;
-if (currentPath.startsWith("/shop/profile")) return null;
-if (currentPath.startsWith("/dashboards")) return null;
-if (currentPath.startsWith("/play")) return null;
-if (currentPath.startsWith("/doctor")) return null;
-if (currentPath.startsWith("/patient")) return null;
-
-// Bail out entirely if this is a tenant subdomain
-if (tenant.subdomain) return null;
-
-  useEffect(() => {
-    fetch("/api/context")
-      .then((res) => res.json())
-      .then((data) => setTenant(data))
-      .catch(() => {});
-  }, []);
-
-  // Bail out on protected dashboards/admin/etc
-  if (path.startsWith("/stores")) return null;
-  if (path.startsWith("/admin")) return null;
-  if (path.startsWith("/agent")) return null;
-  if (path.startsWith("/clients")) return null;
-  if (path.startsWith("/shop/profile")) return null;
-  if (path.startsWith("/dashboards")) return null;
-  if (path.startsWith("/play")) return null;
-  if (path.startsWith("/doctor")) return null;
-  if (path.startsWith("/patient")) return null;
-
-  // Bail out if we're in a tenant site (middleware set subdomain)
-  if (tenant.subdomain) {
-    return null;
-  }
-
+  const path = usePathname();
+  // bail out on /stores or any deeper stores route
+  if (path.startsWith('/stores')) return null;  
+  if (path.startsWith('/admin')) return null;
+  if (path.startsWith('/agent')) return null;
+  if (path.startsWith('/clients')) return null;
+  if (path.startsWith('/site')) return null;
+  if (path.startsWith('/shop/profile')) return null;
+  if (path.startsWith('/dashboards')) return null;
+  if (path.startsWith('/play')) return null;
+  if (path.startsWith('/doctor')) return null;
+  if (path.startsWith('/patient')) return null;
+  
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">
-      <TopBar
-        location={location}
-        setLocation={setLocation}
-        locationName={locationName}
-        setLocationName={setLocationName}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        onClose={onClose}
-        onUpdate={onUpdate}
-      />
-
+      <TopBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName} isOpen={isOpen} setIsOpen={setIsOpen} onClose={onClose} onUpdate={onUpdate}/>
       <nav
         className={`sticky top-0 z-50 bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black bg-opacity-90 backdrop-blur-md transition-all duration-300 ${
           isSticky ? "shadow-2xl" : "shadow-none"
@@ -133,14 +64,7 @@ if (tenant.subdomain) return null;
               loading="lazy"
             />
           </a>
-
-          <SearchBar
-            location={location}
-            setLocation={setLocation}
-            locationName={locationName}
-            setLocationName={setLocationName}
-          />
-
+          <SearchBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName}/>
           <NavIcons
             user={user}
             cart={cart}
@@ -148,11 +72,10 @@ if (tenant.subdomain) return null;
             setIsMobileMenuOpen={setIsMobileMenuOpen}
             isDarkMode={isDarkMode}
             setDarkMode={setMode}
-            isCartOpen={isCartOpen}
+            isCartOpen={isCartOpen} 
             setIsCartOpen={setIsCartOpen}
           />
         </div>
-
         {/* Desktop Menu */}
         <DesktopMenu />
       </nav>
@@ -160,7 +83,7 @@ if (tenant.subdomain) return null;
       {isMobileMenuOpen && (
         <MobileMenu setIsMobileMenuOpen={setIsMobileMenuOpen} />
       )}
-
+      
       <BottomNav />
     </header>
   );

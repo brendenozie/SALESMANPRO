@@ -1,139 +1,75 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import BannerSlider from "../components/shop/BannerSlider/BannerSlider";
-import FlashDeals from "../components/shop/flashDeals/FlashDeals";
-import TopCate from "../components/shop/top/TopCate";
-import NewArrivals from "../components/shop/newarrivals/NewArrivals";
-import Discount from "../components/shop/discount/Discount";
-import Shop from "../components/shops/Shop";
-import Annocument from "../components/shop/annocument/Annocument";
-import Wrapper from "../components/shop/wrapper/Wrapper";
-import { useStateContext } from '../contexts/ContextProvider';
-// import PricingTable from "../../components/pricingTable";
+import { useSession } from "next-auth/react";
+import MainLayout from "@/components/MainLayout";
+import Banner from "@/components/Banner";
+import OurPrograms from "@/components/ourprograms"; // Assuming this will be updated to a feature section
+import Reasons from "@/components/Reasons"; // Assuming this will be updated to a feature section
+import PlayStoreBanner from "@/components/PlayStoreBanner"; // Assuming this will be updated to a CTA section
+import PricingTable from "@/components/pricingTable";
+import Testimonials from "@/components/Testimonials";
+import Join from "@/components/Join";
+import Pic from "@/components/Pic";
 
-const HomePage = () => {
-  const [categories, setCategories] = useState<any>([]);
-  const [productsByCategory, setProductsByCategory] = useState<any>({});
-  const [offers, setOffers] = useState<any>([]);
-  const [flashDeals, setFlashDeals] = useState<any>([]);
-  const [newArrivals, setNewArrivals] = useState<any>([]);
-  const [discounts, setDiscounts] = useState<any>([]);
-  const [featured, setFeatured] = useState<any>([]);
-  const [loading, setLoading] = useState<any>(false);
-  const [error, setError] = useState<any>(null);
-  const [CartItem, setCartItem] = useState<any>([]);
-  const [featuredCategories, setFeaturedCategories] = useState<any>({});
-  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
-  const [isModalOpen, setModalOpen] = useState<any>(true);
+const Home = () => {
+  const { status } = useSession();
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch('/api/shop/categories');
-        if (!response.ok) throw new Error("Failed to fetch categories.");
-        const data = await response.json();
-        setCategories(data.categories);
-        setFeaturedCategories(data.categories[2]);
-      } catch (err:any) {
-        setError(err.message);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchProductsByCategory = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const products: { [key: string]: any } = {};
-        const response = await fetch(`/api/shop/productsByCategory?categoryId=${featuredCategories.id}`);
-        if (!response.ok) throw new Error(`Failed to fetch products for category ${featuredCategories.name}.`);
-        const data = await response.json();
-        products[String(featuredCategories.name)] = data;
-        setProductsByCategory(products);
-        
-        console.log(products);
-      } catch (err:any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (categories.length > 0) {
-      fetchProductsByCategory();
-    }
-  }, [featuredCategories]);
-
-  useEffect(() => {
-    const fetchProductsByFlag = async (flag: string, setState: any) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`/api/shop/productsByFlag?flag=${flag}`);
-        if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
-        const responsedata = await response.json();
-        setState(responsedata.data);
-      } catch (err:any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProductsByFlag("isOnOffer", setOffers);
-    fetchProductsByFlag("isFlashDeal", setFlashDeals);
-    fetchProductsByFlag("isNewArrival", setNewArrivals);
-    fetchProductsByFlag("isDiscounted", setDiscounts);
-    fetchProductsByFlag("isFeatured", setFeatured);
-  }, []);
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-pink-600 via-red-500 to-yellow-400">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+          <p className="text-white text-xl font-semibold mt-4">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {categories && <BannerSlider categories={categories} />}
-      {flashDeals && (
-        <FlashDeals
-          productItems={flashDeals}
-          addToCart={addToCart}
-          decreaseQuantity={decreaseQuantity}
-          removeFromCart={removeFromCart}
-        />
-      )}
-      {categories.length > 0 && <TopCate categories={categories} />}
-      {newArrivals && (
-        <NewArrivals
-          productItems={newArrivals}
-          addToCart={addToCart}
-          decreaseQuantity={decreaseQuantity}
-          removeFromCart={removeFromCart}
-        />
-      )}
-      {discounts && (
-        <Discount
-          productItems={discounts}
-          addToCart={addToCart}
-          decreaseQuantity={decreaseQuantity}
-          removeFromCart={removeFromCart}
-        />
-      )}
-      {featuredCategories &&
-        productsByCategory[featuredCategories.name] && (
-          <Shop
-            category={featuredCategories}
-            shopItems={productsByCategory[featuredCategories.name]}
-            addToCart={addToCart}
-            decreaseQuantity={decreaseQuantity}
-            removeFromCart={removeFromCart}
-          />
-        )}
-      <Annocument />
-      <Wrapper />
-      
-    </>
+    <MainLayout>
+      <div className="flex flex-col gap-32 lg:gap-48 overflow-x-hidden">
+        {/*
+          Hero Section: The main entry point to the site, designed to be visually
+          stunning and immediately grab the user's attention.
+        */}
+        <Banner />      
+
+        {/*
+          Feature Showcase: A series of components highlighting the core benefits
+          and features of the product in an engaging carousel format.
+        */}
+        <OurPrograms />
+        
+        {/*
+          Feature Showcase: A series of components highlighting the core benefits
+          and features of the product in an engaging carousel format.
+        */}
+        <Pic />
+
+        {/*
+          Social Proof: Testimonials from satisfied customers to build trust and credibility.
+        */}
+        <Testimonials />
+
+        {/*
+          Feature List: A more detailed look at the core reasons to choose the product.
+        */}
+        <Reasons />
+        
+        {/*
+          Pricing: A clear and concise pricing table to help users make a decision.
+        */}
+        <PricingTable />
+
+        {/*
+          Final Call-to-Action: A compelling section to drive user sign-ups or downloads.
+          This includes the Join and PlayStoreBanner components.
+        */}
+        <Join />
+        <PlayStoreBanner />
+      </div>
+    </MainLayout>
   );
 };
 
-export default HomePage;
+export default Home;

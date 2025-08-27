@@ -17,7 +17,7 @@ import {
   PhoneIcon,
   MapPinIcon
 } from "@heroicons/react/24/outline";
-import { useStateContext } from "../../../contexts/ContextProvider.js";
+import { useStateContext } from "../../../../../../contexts/ContextProvider.js";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { debounce } from "lodash";
@@ -34,18 +34,18 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const path = usePathname();
+  // const path = usePathname();
   // bail out on /stores or any deeper stores route
-  if (path.startsWith('/stores')) return null;  
-  if (path.startsWith('/admin')) return null;
-  if (path.startsWith('/agent')) return null;
-  if (path.startsWith('/clients')) return null;
-  if (path.startsWith('/site')) return null;
-  if (path.startsWith('/shop/profile')) return null;
-  if (path.startsWith('/dashboards')) return null;
-  if (path.startsWith('/play')) return null;
-  if (path.startsWith('/doctor')) return null;
-  if (path.startsWith('/patient')) return null;
+  // if (path.startsWith('/stores')) return null;  
+  // if (path.startsWith('/admin')) return null;
+  // if (path.startsWith('/agent')) return null;
+  // if (path.startsWith('/clients')) return null;
+  // if (path.startsWith('/site')) return null;
+  // if (path.startsWith('/shop/profile')) return null;
+  // if (path.startsWith('/dashboards')) return null;
+  // if (path.startsWith('/play')) return null;
+  // if (path.startsWith('/doctor')) return null;
+  // if (path.startsWith('/patient')) return null;
   
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">

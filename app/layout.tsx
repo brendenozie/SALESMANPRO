@@ -1,8 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
 
-import Header from "../components/shop/header/Header";
-import Footer from "../components/shop/footer/Footer";
 import Providers from "./providers";
 import siteMetadata from "../data/siteMetadata";
 import { Metadata } from "next";
@@ -103,9 +101,7 @@ export default async function RootLayout({
       <body className="bg-gradient-to-br from-gray-50 to-gray-100">
         {/* ✅ Pass session down to Providers */}
         <Providers session={session}>
-          <Header />
           <main>{children}</main>
-          <Footer />
         </Providers>
       </body>
     </html>
