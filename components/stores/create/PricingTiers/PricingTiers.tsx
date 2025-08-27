@@ -7,9 +7,10 @@ import {
   TrashIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  StarIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
-
-import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the correct type for your main form data
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PricingTier {
   name: string;
@@ -21,195 +22,248 @@ interface PricingTier {
 }
 
 interface ProductPricingAndTiersProps {
-  pricingTiers: PricingTier[]; // Use the actual type for the entire form data
-  setFormData: (name: string, value: any) => void; // Matches the signature from useProductForm
+  pricingTiers: PricingTier[];
+  setFormData: (name: string, value: any) => void;
 }
 
 export default function ProductPricingAndTiers({
   pricingTiers,
-  setFormData, // Renamed from setFormData
+  setFormData,
 }: ProductPricingAndTiersProps) {
   const [open, setOpen] = useState(true);
 
-  // Memoize handler functions using useCallback
   const handleAddPricingTier = useCallback(() => {
     const currentTiers = pricingTiers || [];
-    const newTier: PricingTier = { name: '', price: 0, features: [], isFeatured: false }; // Ensure default for isFeatured
+    const newTier: PricingTier = {
+      name: '',
+      price: 0,
+      features: [],
+      isFeatured: false,
+    };
     setFormData('pricingTiers', [...currentTiers, newTier]);
   }, [pricingTiers, setFormData]);
 
   const handleUpdatePricingTier = useCallback(
-    (
-      index: number,
-      field: keyof PricingTier,
-      value: string | number | boolean | string[]
-    ) => {
-      const currentTiers = pricingTiers || [];
-      // Create a shallow copy to ensure immutability
-      const updatedTiers = [...currentTiers];
+    (index: number, field: keyof PricingTier, value: any) => {
+      const updatedTiers = [...(pricingTiers || [])];
+      if (!updatedTiers[index]) return;
 
-      if (!updatedTiers[index]) {
-        console.warn(`Attempted to update non-existent tier at index ${index}. This might indicate a timing issue.`);
-        return;
-      }
+      // updatedTiers[index][field] = value;
+      updatedTiers[index] = { ...updatedTiers[index], [field]: value } as PricingTier; 
 
-      // Handle 'features' field specifically: convert comma-separated string to array
-      if (field === 'features' && typeof value === 'string') {
-        updatedTiers[index] = {
-          ...updatedTiers[index],
-          [field]: value.split(',').map((f) => f.trim()).filter(Boolean),
-        } as PricingTier; // Type assertion for safety
-      } else {
-        // For other fields, directly update the property
-        updatedTiers[index] = { ...updatedTiers[index], [field]: value } as PricingTier; // Type assertion
-      }
-      setFormData('pricingTiers', updatedTiers); // Update the parent state
+      setFormData('pricingTiers', updatedTiers);
     },
     [pricingTiers, setFormData]
   );
 
-  const handleRemovePricingTier = useCallback((index: number) => {
-    const currentTiers = pricingTiers || [];
-    // Filter out the tier at the given index
-    const updatedTiers = currentTiers.filter((_, i) => i !== index);
-    setFormData('pricingTiers', updatedTiers);
-  }, [pricingTiers, setFormData]);
+  const handleRemovePricingTier = useCallback(
+    (index: number) => {
+      const updatedTiers = pricingTiers.filter((_, i) => i !== index);
+      setFormData('pricingTiers', updatedTiers);
+    },
+    [pricingTiers, setFormData]
+  );
 
-  // Effect to add an initial pricing tier if none exist
   useEffect(() => {
-    if (!pricingTiers ||pricingTiers.length === 0) {
+    if (!pricingTiers || pricingTiers.length === 0) {
       handleAddPricingTier();
     }
-  }, [pricingTiers, handleAddPricingTier]); // Dependency on handleAddPricingTier is crucial
+  }, [pricingTiers, handleAddPricingTier]);
 
   return (
-    <section className="max-w-4xl mx-auto overflow-hidden rounded-2xl shadow-xl border border-gray-200"> {/* Added main section styling for consistency */}
+    <section className="max-w-4xl mx-auto overflow-hidden rounded-2xl shadow-xl border border-gray-200">
+      {/* Toggle Header */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-400 text-white rounded-t-2xl" // Rounded top for button
+        className="w-full flex justify-between items-center px-6 py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-2xl"
       >
         <div className="flex items-center space-x-3">
           <TrophyIcon className="h-6 w-6" />
           <h3 className="text-lg font-semibold">Pricing & Tiers</h3>
         </div>
-        <span className="flex items-center">
-          {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
-        </span>
+        {open ? (
+          <ChevronUpIcon className="h-5 w-5" />
+        ) : (
+          <ChevronDownIcon className="h-5 w-5" />
+        )}
       </button>
 
-      {open && (
-        <div className="px-4 sm:px-6 py-6 space-y-6 bg-white"> {/* Added bg-white */}
-          <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
-              <h4 className="text-2xl font-semibold text-gray-800">Pricing Tiers / Packages</h4>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="px-6 py-6 bg-white space-y-6"
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-xl font-semibold text-gray-800">
+                Pricing Tiers / Packages
+              </h4>
               <button
                 type="button"
                 onClick={handleAddPricingTier}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                className="inline-flex items-center px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow transition"
               >
-                <PlusCircleIcon className="-ml-1 mr-2 h-5 w-5" />
-                Add Pricing Tier
+                <PlusCircleIcon className="h-5 w-5 mr-2" />
+                Add Tier
               </button>
             </div>
 
+            {/* Tiers */}
             <div className="space-y-6">
-              {(pricingTiers || []).length === 0 && (
-                <p className="text-center text-gray-500 py-4">
-                  Click "Add Pricing Tier" to get started with your pricing options.
-                </p>
-              )}
-              {(pricingTiers || []).map((tier, index) => (
-                <div key={index} className="relative bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm">
-                  <h5 className="text-xl font-bold mb-4 text-gray-800">Tier #{index + 1}</h5>
-                  {/* Remove button moved to top right corner of each tier */}
+              {pricingTiers.map((tier, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className={`relative p-6 rounded-xl border shadow-sm ${
+                    tier.isFeatured
+                      ? 'border-blue-500 ring-2 ring-blue-300'
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  {/* Remove button */}
                   <button
                     type="button"
                     onClick={() => handleRemovePricingTier(index)}
-                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 p-1 rounded-full bg-red-50 hover:bg-red-100 transition-colors"
-                    aria-label="Remove pricing tier"
-                    title="Remove this pricing tier"
+                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 p-1 rounded-full bg-red-50 hover:bg-red-100"
                   >
-                    <TrashIcon className="w-5 h-5" />
+                    <TrashIcon className="h-5 w-5" />
                   </button>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                    <label className="block">
-                      <span className="text-gray-700 text-sm font-medium">Tier Name</span>
-                      <input
-                        type="text"
-                        value={tier.name}
-                        onChange={(e) => handleUpdatePricingTier(index, 'name', e.target.value)}
-                        placeholder="E.g., Basic Package, Premium Plan"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="text-gray-700 text-sm font-medium">Tier Price ($)</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={tier.price}
-                        onChange={(e) => handleUpdatePricingTier(index, 'price', Number(e.target.value))}
-                        placeholder="0.00"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="text-gray-700 text-sm font-medium">Duration (Optional)</span>
-                      <input
-                        type="text"
-                        value={tier.duration || ''}
-                        onChange={(e) => handleUpdatePricingTier(index, 'duration', e.target.value)}
-                        placeholder="E.g., 1 hour, 3 days, Monthly"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </label>
+                  {/* Tier title */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <h5 className="text-lg font-bold text-gray-800">
+                      Tier #{index + 1}
+                    </h5>
+                    {tier.isFeatured && (
+                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">
+                        <StarIcon className="h-4 w-4" />
+                        Featured
+                      </span>
+                    )}
                   </div>
 
-                  <label className="flex items-center gap-2 mt-4">
-                    <input
-                      type="checkbox"
-                      name="isFeatured"
-                      checked={!!tier.isFeatured} // Ensure boolean
-                      onChange={(e) => handleUpdatePricingTier(index, 'isFeatured', e.target.checked)}
-                      className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out rounded"
-                    />
-                    <span className="text-sm text-gray-700 font-medium">Mark as Featured Tier</span>
-                  </label>
-
-                  <label className="block mt-4">
-                    <span className="text-gray-700 text-sm font-medium">Description</span>
-                    <textarea
-                      rows={2}
-                      value={tier.description || ''}
-                      onChange={(e) => handleUpdatePricingTier(index, 'description', e.target.value)}
-                      placeholder="Brief description of what this tier includes, e.g., 'Access to all basic features plus premium support.'"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </label>
-
-                  <label className="block mt-4">
-                    <span className="text-gray-700 text-sm font-medium">Features (comma-separated list of benefits)</span>
+                  {/* Inputs */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <input
                       type="text"
-                      value={tier.features.join(', ')}
-                      onChange={(e) => handleUpdatePricingTier(index, 'features', e.target.value)}
-                      placeholder="Feature A, Feature B, Unlimited access, Priority support"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      value={tier.name}
+                      onChange={(e) =>
+                        handleUpdatePricingTier(index, 'name', e.target.value)
+                      }
+                      placeholder="Tier Name"
+                      className="p-2 border rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Enter each feature separated by a comma. These will be displayed as a list of benefits.
-                    </p>
+                    <input
+                      type="number"
+                      value={tier.price}
+                      onChange={(e) =>
+                        handleUpdatePricingTier(index, 'price', +e.target.value)
+                      }
+                      placeholder="Price"
+                      className="p-2 border rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="text"
+                      value={tier.duration || ''}
+                      onChange={(e) =>
+                        handleUpdatePricingTier(index, 'duration', e.target.value)
+                      }
+                      placeholder="Duration"
+                      className="p-2 border rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* Featured Checkbox */}
+                  <label className="flex items-center gap-2 mb-3">
+                    <input
+                      type="checkbox"
+                      checked={!!tier.isFeatured}
+                      onChange={(e) =>
+                        handleUpdatePricingTier(
+                          index,
+                          'isFeatured',
+                          e.target.checked
+                        )
+                      }
+                      className="h-4 w-4 text-blue-600"
+                    />
+                    <span className="text-sm">Mark as Featured</span>
                   </label>
-                </div>
+
+                  {/* Description */}
+                  <textarea
+                    rows={2}
+                    value={tier.description || ''}
+                    onChange={(e) =>
+                      handleUpdatePricingTier(
+                        index,
+                        'description',
+                        e.target.value
+                      )
+                    }
+                    placeholder="Tier description..."
+                    className="w-full p-2 border rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+
+                  {/* Features as Tags */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Features
+                    </label>
+
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {tier.features.map((feature, i) => (
+                        <span
+                          key={i}
+                          className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
+                        >
+                          {feature}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = tier.features.filter(
+                                (_, idx) => idx !== i
+                              );
+                              handleUpdatePricingTier(index, 'features', updated);
+                            }}
+                          >
+                            <XMarkIcon className="h-4 w-4 text-blue-600 hover:text-blue-800" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    <input
+                      type="text"
+                      placeholder="Type a feature and press Enter"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          e.preventDefault();
+                          const newFeature = e.currentTarget.value.trim();
+                          handleUpdatePricingTier(index, 'features', [
+                            ...tier.features,
+                            newFeature,
+                          ]);
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                      className="w-full p-2 border rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </motion.div>
               ))}
             </div>
-          </section>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
