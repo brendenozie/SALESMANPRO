@@ -169,7 +169,7 @@ export default async function EditStorePage({
 
     Podcast: store.Podcast,
     services: store.services,
-    marketplaceListings: [],//store.marketplaceListings,
+    marketplaceListings: [], //store.marketplaceListings,
     Announcement: store.Announcement,
     settings: store.settings ?? null,
     seo: store.SEO ?? null,
@@ -192,7 +192,11 @@ export default async function EditStorePage({
       ...cl,
       displayName: cl.displayName ?? null,
     })),
-    Collection: []
+    Collection: [],
+    coreValues: store.coreValues.map((cv) => ({
+      ...cv,
+      icon: cv.icon ?? "",
+    })),
   };
 
   return (

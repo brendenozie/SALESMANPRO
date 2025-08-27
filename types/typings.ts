@@ -142,6 +142,12 @@ export type OpeningHours = Record<
 
 export interface IUser extends User {}
 
+export interface ICoreValue {
+  title: string;
+  description: string;
+  icon: string;
+}
+
 export interface SocialLink {
   id?: string;
   channel: SocialChannel;
@@ -589,6 +595,7 @@ export interface StoreForm {
   updatedAt: Date | null;
   deletedAt: Date | null;
   sEOId: string | null;
+  coreValues: ICoreValue[];
 
   // Manually typed JSON and relational fields for client-side use
   geoLocation: GeoLocation | null;

@@ -357,12 +357,22 @@ model Company {
   // paymentSettingsId               String?                           @db.ObjectId
   // shippingSettingsId              String?                           @db.ObjectId
   // analyticsConfigId               String?                           @db.ObjectId
+  CoreValue CoreValue[]
 }
 
 enum CategoryStatus {
   ACTIVE
   DRAFT
   ARCHIVED
+}
+
+model CoreValue {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  company     Company @relation(fields: [companyId], references: [id])
+  companyId   String  @db.ObjectId
+  title       String
+  description String
+  icon        String
 }
 
 model SocialLink {

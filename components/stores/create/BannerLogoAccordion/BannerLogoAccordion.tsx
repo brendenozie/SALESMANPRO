@@ -18,6 +18,9 @@ export interface BannerLogoAccordionProps {
   onUpload: (field: 'logoUrl' | 'bannerUrl', file: File) => void;
   onRemove: (field: 'logoUrl' | 'bannerUrl') => void;  
   coreValues?: CoreValue[] | null;
+  handleUpdateCoreValue: (index: number, field: keyof CoreValue, value: string) => void;
+  handleAddCoreValue: () => void;
+  handleRemoveCoreValue: (index: number) => void;
 }
 
 export default function BannerLogoAccordion({
@@ -25,7 +28,10 @@ export default function BannerLogoAccordion({
   bannerUrl,
   onUpload,
   onRemove,
-  coreValues
+  coreValues,
+  handleUpdateCoreValue,
+  handleAddCoreValue,
+  handleRemoveCoreValue
 }: BannerLogoAccordionProps) {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -39,24 +45,24 @@ export default function BannerLogoAccordion({
   };
 
   
-  const handleUpdateCoreValue = (index: number, field: keyof CoreValue, value: string) => {
-    const updated = [...(coreValues || [])];
-    updated[index] = { ...updated[index], [field]: value };
-    // setFormData('coreValues', updated);
-  };
+  // const handleUpdateCoreValue = (index: number, field: keyof CoreValue, value: string) => {
+  //   const updated = [...(coreValues || [])];
+  //   updated[index] = { ...updated[index], [field]: value };
+  //   // setFormData('coreValues', updated);
+  // };
 
-  const handleAddCoreValue = () => {
-    const updated = [
-      ...(coreValues || []),
-      { title: '', description: '', icon: 'StarIcon' },
-    ];
-    // setFormData('coreValues', updated);
-  };
+  // const handleAddCoreValue = () => {
+  //   const updated = [
+  //     ...(coreValues || []),
+  //     { title: '', description: '', icon: 'StarIcon' },
+  //   ];
+  //   // setFormData('coreValues', updated);
+  // };
 
-  const handleRemoveCoreValue = (index: number) => {
-    const updated = (coreValues || []).filter((_, i) => i !== index);
-    // setFormData('coreValues', updated);
-  };
+  // const handleRemoveCoreValue = (index: number) => {
+  //   const updated = (coreValues || []).filter((_, i) => i !== index);
+  //   // setFormData('coreValues', updated);
+  // };
 
 
   return (
