@@ -3,13 +3,21 @@ import {
   PhotoIcon,
   PencilIcon,
   TrashIcon,
+  PlusCircleIcon,
 } from '@heroicons/react/24/outline';
+
+interface CoreValue {
+  title: string;
+  description: string;
+  icon: string; // store as string key for flexibility
+}
 
 export interface BannerLogoAccordionProps {
   logoUrl?: string | null;
   bannerUrl?: string | null;
   onUpload: (field: 'logoUrl' | 'bannerUrl', file: File) => void;
-  onRemove: (field: 'logoUrl' | 'bannerUrl') => void;
+  onRemove: (field: 'logoUrl' | 'bannerUrl') => void;  
+  coreValues?: CoreValue[] | null;
 }
 
 export default function BannerLogoAccordion({
@@ -17,6 +25,7 @@ export default function BannerLogoAccordion({
   bannerUrl,
   onUpload,
   onRemove,
+  coreValues
 }: BannerLogoAccordionProps) {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -28,6 +37,27 @@ export default function BannerLogoAccordion({
     const file = e.target.files?.[0];
     if (file) onUpload(field, file);
   };
+
+  
+  const handleUpdateCoreValue = (index: number, field: keyof CoreValue, value: string) => {
+    const updated = [...(coreValues || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    // setFormData('coreValues', updated);
+  };
+
+  const handleAddCoreValue = () => {
+    const updated = [
+      ...(coreValues || []),
+      { title: '', description: '', icon: 'StarIcon' },
+    ];
+    // setFormData('coreValues', updated);
+  };
+
+  const handleRemoveCoreValue = (index: number) => {
+    const updated = (coreValues || []).filter((_, i) => i !== index);
+    // setFormData('coreValues', updated);
+  };
+
 
   return (
     <section className="max-w-4xl mx-auto p-2 space-y-8">
@@ -121,6 +151,61 @@ export default function BannerLogoAccordion({
           className="hidden"
           onChange={e => handleFileChange('bannerUrl', e)}
         />
+      </div>
+
+      {/* Core Values */}
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <label className="block text-sm font-medium">Core Values</label>
+          <button
+            type="button"
+            onClick={handleAddCoreValue}
+            className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+          >
+            <PlusCircleIcon className="h-5 w-5 mr-1" />
+            Add Value
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {(coreValues || []).map((cv, i) => (
+            <div
+              key={i}
+              className="p-3 border rounded-md bg-gray-50 dark:bg-gray-800 relative"
+            >
+              {/* Remove Button */}
+              <button
+                type="button"
+                onClick={() => handleRemoveCoreValue(i)}
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+
+              <input
+                type="text"
+                placeholder="Title"
+                value={cv.title}
+                onChange={(e) => handleUpdateCoreValue(i, 'title', e.target.value)}
+                className="w-full p-2 mb-2 border rounded-md text-sm"
+              />
+              <textarea
+                rows={2}
+                placeholder="Description"
+                value={cv.description}
+                onChange={(e) => handleUpdateCoreValue(i, 'description', e.target.value)}
+                className="w-full p-2 mb-2 border rounded-md text-sm"
+              />
+              <input
+                type="text"
+                placeholder="Icon name (e.g. StarIcon, TruckIcon)"
+                value={cv.icon}
+                onChange={(e) => handleUpdateCoreValue(i, 'icon', e.target.value)}
+                className="w-full p-2 border rounded-md text-sm"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
