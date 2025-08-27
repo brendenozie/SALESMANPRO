@@ -48,7 +48,7 @@ const Header = () => {
           <Link href="/" aria-label="Home" className="flex items-center gap-3">
             <img
               src={fit1.src}
-              alt="SalesPro Logo"
+              alt="TulivuApps Logo"
               className="w-10 h-10 md:w-12 md:h-12 object-contain cursor-pointer transition-transform duration-300 hover:scale-110"
             />
             <span
@@ -56,7 +56,7 @@ const Header = () => {
                 "hidden lg:block text-2xl font-extrabold tracking-tight transition-colors duration-300 text-gray-900" 
               )}
             >
-              SalesPro
+              TulivuApps
             </span>
           </Link>
         </Motion.div>
