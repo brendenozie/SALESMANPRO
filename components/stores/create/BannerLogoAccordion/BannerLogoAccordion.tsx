@@ -1,24 +1,25 @@
-import React, { useRef, ChangeEvent } from 'react';
+import React, { useRef, ChangeEvent } from "react";
 import {
   PhotoIcon,
   PencilIcon,
   TrashIcon,
   PlusCircleIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
+import { ICoreValue } from "@/types/typings";
 
-interface CoreValue {
-  title: string;
-  description: string;
-  icon: string; // store as string key for flexibility
-}
 
 export interface BannerLogoAccordionProps {
   logoUrl?: string | null;
   bannerUrl?: string | null;
-  onUpload: (field: 'logoUrl' | 'bannerUrl', file: File) => void;
-  onRemove: (field: 'logoUrl' | 'bannerUrl') => void;  
-  coreValues?: CoreValue[] | null;
-  handleUpdateCoreValue: (index: number, field: keyof CoreValue, value: string) => void;
+  onUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
+  onRemove: (field: "logoUrl" | "bannerUrl") => void;
+  coreValues?: ICoreValue[] | null;
+  handleUpdateCoreValue: (
+    index: number,
+    field: keyof ICoreValue,
+    value: string
+  ) => void;
   handleAddCoreValue: () => void;
   handleRemoveCoreValue: (index: number) => void;
 }
@@ -31,47 +32,35 @@ export default function BannerLogoAccordion({
   coreValues,
   handleUpdateCoreValue,
   handleAddCoreValue,
-  handleRemoveCoreValue
+  handleRemoveCoreValue,
 }: BannerLogoAccordionProps) {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (
-    field: 'logoUrl' | 'bannerUrl',
+    field: "logoUrl" | "bannerUrl",
     e: ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
     if (file) onUpload(field, file);
   };
 
-  
-  // const handleUpdateCoreValue = (index: number, field: keyof CoreValue, value: string) => {
-  //   const updated = [...(coreValues || [])];
-  //   updated[index] = { ...updated[index], [field]: value };
-  //   // setFormData('coreValues', updated);
-  // };
-
-  // const handleAddCoreValue = () => {
-  //   const updated = [
-  //     ...(coreValues || []),
-  //     { title: '', description: '', icon: 'StarIcon' },
-  //   ];
-  //   // setFormData('coreValues', updated);
-  // };
-
-  // const handleRemoveCoreValue = (index: number) => {
-  //   const updated = (coreValues || []).filter((_, i) => i !== index);
-  //   // setFormData('coreValues', updated);
-  // };
-
-
   return (
-    <section className="max-w-4xl mx-auto p-2 space-y-8">
-      <h2 className="text-2xl font-bold text-gray-900">Company Media Upload</h2>
+    <section className="max-w-5xl mx-auto px-4 py-8 space-y-10">
+      <motion.h2
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-3xl font-bold text-gray-900 text-center"
+      >
+        Company Media & Values
+      </motion.h2>
 
       {/* Logo Upload */}
-      <div className="flex flex-col md:flex-row items-center gap-6">
-        <div className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 flex items-center gap-6 transition"
+      >
+        <div className="w-28 h-28 bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
           {logoUrl ? (
             <img
               src={logoUrl}
@@ -82,49 +71,55 @@ export default function BannerLogoAccordion({
             <PhotoIcon className="w-12 h-12 text-gray-300" />
           )}
         </div>
-        <div className="flex-1 space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">Logo</label>
-          <div className="flex gap-2">
+        <div className="flex-1 space-y-3">
+          <p className="font-semibold text-gray-700">Company Logo</p>
+          <div className="flex gap-3">
             <button
               onClick={() => logoInputRef.current?.click()}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+              className="px-4 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-2 hover:bg-indigo-700 shadow transition"
             >
-              <PencilIcon className="w-5 h-5 mr-2" />
-              {logoUrl ? 'Change' : 'Upload'}
+              <PencilIcon className="w-5 h-5" />
+              {logoUrl ? "Change" : "Upload"}
             </button>
             {logoUrl && (
               <button
-                onClick={() => onRemove('logoUrl')}
-                className="inline-flex items-center px-4 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition"
+                onClick={() => onRemove("logoUrl")}
+                className="px-4 py-2 rounded-xl bg-red-100 text-red-600 flex items-center gap-2 hover:bg-red-200 shadow transition"
               >
-                <TrashIcon className="w-5 h-5 mr-2" />
+                <TrashIcon className="w-5 h-5" />
                 Remove
               </button>
             )}
           </div>
-          <p className="text-xs text-gray-500">Recommended size: 200×200px, PNG/JPG</p>
+          <p className="text-xs text-gray-500">
+            Recommended size: <span className="font-medium">200×200px</span>{" "}
+            PNG/JPG
+          </p>
         </div>
         <input
           ref={logoInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={e => handleFileChange('logoUrl', e)}
+          onChange={(e) => handleFileChange("logoUrl", e)}
         />
-      </div>
+      </motion.div>
 
       {/* Banner Upload */}
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700">Banner</label>
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-3"
+      >
+        <p className="font-semibold text-gray-700">Company Banner</p>
         <div
-          className="relative w-full h-48 bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center"
+          className="relative w-full h-56 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer group"
           onClick={() => bannerInputRef.current?.click()}
         >
           {bannerUrl ? (
             <img
               src={bannerUrl}
               alt="Banner Preview"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:opacity-90 transition"
             />
           ) : (
             <div className="text-center">
@@ -132,87 +127,109 @@ export default function BannerLogoAccordion({
               <p className="text-gray-500">Click to upload a banner</p>
             </div>
           )}
+
           {bannerUrl && (
             <div className="absolute top-4 right-4 flex space-x-2">
               <button
-                onClick={e => { e.stopPropagation(); bannerInputRef.current?.click(); }}
-                className="p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  bannerInputRef.current?.click();
+                }}
+                className="p-2 bg-white/80 rounded-full shadow hover:bg-white transition"
               >
-                <PencilIcon className="w-5 h-5 text-gray-600" />
+                <PencilIcon className="w-5 h-5 text-gray-700" />
               </button>
               <button
-                onClick={e => { e.stopPropagation(); onRemove('bannerUrl'); }}
-                className="p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove("bannerUrl");
+                }}
+                className="p-2 bg-white/80 rounded-full shadow hover:bg-red-100 transition"
               >
                 <TrashIcon className="w-5 h-5 text-red-600" />
               </button>
             </div>
           )}
         </div>
-        <p className="text-xs text-gray-500">Recommendation: 1200×300px for best display</p>
+        <p className="text-xs text-gray-500">
+          Recommendation:{" "}
+          <span className="font-medium">1200×300px</span> for best display
+        </p>
         <input
           ref={bannerInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={e => handleFileChange('bannerUrl', e)}
+          onChange={(e) => handleFileChange("bannerUrl", e)}
         />
-      </div>
+      </motion.div>
 
       {/* Core Values */}
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <label className="block text-sm font-medium">Core Values</label>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-6"
+      >
+        <div className="flex justify-between items-center">
+          <p className="font-semibold text-gray-700">Core Values</p>
           <button
             type="button"
             onClick={handleAddCoreValue}
-            className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+            className="flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium"
           >
             <PlusCircleIcon className="h-5 w-5 mr-1" />
             Add Value
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid gap-4">
           {(coreValues || []).map((cv, i) => (
-            <div
+            <motion.div
               key={i}
-              className="p-3 border rounded-md bg-gray-50 dark:bg-gray-800 relative"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative bg-gray-50 rounded-xl border shadow-sm p-4 space-y-3"
             >
-              {/* Remove Button */}
+              {/* Remove */}
               <button
                 type="button"
                 onClick={() => handleRemoveCoreValue(i)}
-                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                className="absolute top-3 right-3 text-red-500 hover:text-red-700"
               >
-                <TrashIcon className="h-4 w-4" />
+                <TrashIcon className="h-5 w-5" />
               </button>
 
               <input
                 type="text"
-                placeholder="Title"
+                placeholder="Value Title"
                 value={cv.title}
-                onChange={(e) => handleUpdateCoreValue(i, 'title', e.target.value)}
-                className="w-full p-2 mb-2 border rounded-md text-sm"
+                onChange={(e) =>
+                  handleUpdateCoreValue(i, "title", e.target.value)
+                }
+                className="w-full p-2 border rounded-md text-sm focus:ring-indigo-400 focus:border-indigo-400"
               />
               <textarea
                 rows={2}
                 placeholder="Description"
                 value={cv.description}
-                onChange={(e) => handleUpdateCoreValue(i, 'description', e.target.value)}
-                className="w-full p-2 mb-2 border rounded-md text-sm"
+                onChange={(e) =>
+                  handleUpdateCoreValue(i, "description", e.target.value)
+                }
+                className="w-full p-2 border rounded-md text-sm focus:ring-indigo-400 focus:border-indigo-400"
               />
               <input
                 type="text"
-                placeholder="Icon name (e.g. StarIcon, TruckIcon)"
+                placeholder="Icon name (e.g. StarIcon)"
                 value={cv.icon}
-                onChange={(e) => handleUpdateCoreValue(i, 'icon', e.target.value)}
-                className="w-full p-2 border rounded-md text-sm"
+                onChange={(e) =>
+                  handleUpdateCoreValue(i, "icon", e.target.value)
+                }
+                className="w-full p-2 border rounded-md text-sm focus:ring-indigo-400 focus:border-indigo-400"
               />
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

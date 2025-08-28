@@ -595,7 +595,7 @@ export interface StoreForm {
   updatedAt: Date | null;
   deletedAt: Date | null;
   sEOId: string | null;
-  coreValues: ICoreValue[];
+  CoreValues: ICoreValue[];
 
   // Manually typed JSON and relational fields for client-side use
   geoLocation: GeoLocation | null;

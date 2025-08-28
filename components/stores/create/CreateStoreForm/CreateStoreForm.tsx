@@ -259,7 +259,7 @@ export default function CreateStoreForm({
     sEOId: null,
     settings: null,
     Collection: [],
-    coreValues: []
+    CoreValues: []
   };
 
   const [form, setForm] = useState<StoreForm>(() => {

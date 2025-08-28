@@ -72,6 +72,7 @@ export default async function EditStorePage({
       },
       Podcast: true,
       services: true,
+      CoreValues: true,
       // marketplaceListings: true,
       Announcement: true,
       settings: true,
@@ -193,7 +194,7 @@ export default async function EditStorePage({
       displayName: cl.displayName ?? null,
     })),
     Collection: [],
-    coreValues: store.coreValues.map((cv) => ({
+    CoreValues: store.CoreValues.map((cv) => ({
       ...cv,
       icon: cv.icon ?? "",
     })),

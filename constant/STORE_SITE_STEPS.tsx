@@ -171,10 +171,20 @@ export const websiteSteps: StepConfig[] = [
         bannerUrl={f.bannerUrl}
         onUpload={h.handleMediaUpload}
         onRemove={h.handleMediaRemove}
-        handleUpdateCoreValue={(i, field, v) => h.onUpdateArray('coreValues', i, field, v)}
-        handleAddCoreValue={() => h.onAddArray('coreValues', { channel: '', url: '' })}
-        handleRemoveCoreValue={(i) => h.onRemoveArray('coreValues', i)}
-      />
+        coreValues={f.CoreValues} // ← you also need to pass this in!
+        handleUpdateCoreValue={(i, field, v) =>
+          h.onUpdateArray('CoreValues', i, field, v)
+        }
+        handleAddCoreValue={() =>
+          h.onAddArray('CoreValues', {
+            title: '',
+            description: '',
+            icon: '',
+          })
+        }
+        handleRemoveCoreValue={(i) => h.onRemoveArray('CoreValues', i)}
+/>
+
     ),
   },
   {

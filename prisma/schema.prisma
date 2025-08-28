@@ -357,7 +357,7 @@ model Company {
   // paymentSettingsId               String?                           @db.ObjectId
   // shippingSettingsId              String?                           @db.ObjectId
   // analyticsConfigId               String?                           @db.ObjectId
-  CoreValue CoreValue[]
+  CoreValues CoreValues[]
 }
 
 enum CategoryStatus {
@@ -366,7 +366,7 @@ enum CategoryStatus {
   ARCHIVED
 }
 
-model CoreValue {
+model CoreValues {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   company     Company @relation(fields: [companyId], references: [id])
   companyId   String  @db.ObjectId
