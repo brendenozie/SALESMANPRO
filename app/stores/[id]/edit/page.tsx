@@ -154,7 +154,21 @@ export default async function EditStorePage({
     faqs: store.faqs,
     testimonials: store.testimonials,
     heroSlides: store.heroSlides,
-    promotions: store.promotions,
+    promotions: store.promotions.map((p) => ({
+      ...p,
+      perks: safeJsonParse(p.perks, []),
+      createdAt: p.createdAt ?? undefined,
+      updatedAt: p.updatedAt ?? undefined,
+      bannerUrl: p.bannerUrl ?? undefined,
+      ctaText: p.ctaText ?? undefined,
+      ctaLink: p.ctaLink ?? undefined,
+      badgeText: p.badgeText ?? undefined,
+      price: p.price ?? undefined,
+      themePrimary: p.themePrimary ?? undefined,
+      themeSecondary: p.themeSecondary ?? undefined,
+    })),
+
+    
     blogs: store.blogs,
     pageSections: store.PageSection,
     appPromos: store.appPromos.map((p) => ({

@@ -127,20 +127,20 @@ export const companySchema = z.object({
   }),//z.array().optional(),
   
   paymentSettings: z.object({
-      stripeKey: z.string().optional(),
-      paypalKey: z.string().optional(),
-      mpesaShortcode: z.string().optional(),
-      mpesaConsumerKey: z.string().optional(),
-      mpesaConsumerSecret: z.string().optional(),
-      mpesaCallbackUrl: z.string().optional(),
+      stripeKey: z.string().nullable().optional(),
+      paypalKey: z.string().nullable().optional(),
+      mpesaShortcode: z.string().nullable().optional(),
+      mpesaConsumerKey: z.string().nullable().optional(),
+      mpesaConsumerSecret: z.string().nullable().optional(),
+      mpesaCallbackUrl: z.string().nullable().optional(),
   }),//z.array().optional(),
 
   shippingSettings: z.object({
-      carrierName: z.string().optional(),
-      trackingUrl: z.string().url().optional().or(z.literal('')),
-      regions: z.any().optional(),
-      enablePickup: z.boolean().optional(),
-      pickupInstructions: z.string().optional(),
+      carrierName: z.string().nullable().optional(),
+      trackingUrl: z.string().url().nullable().optional().or(z.literal('')),
+      regions: z.any().nullable().optional(),
+      enablePickup: z.boolean().nullable().optional(),
+      pickupInstructions: z.string().nullable().optional(),
   }),//z.array().optional(),
   
   // -- Many-to-Many through explicit join table --

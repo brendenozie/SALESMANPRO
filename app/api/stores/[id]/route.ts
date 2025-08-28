@@ -109,8 +109,25 @@ export async function PUT(
         // 1. Update direct company fields
         ...companyData,
         
+        CoreValues: body.CoreValues ? {
+          deleteMany: {}, // remove all existing core values for this company
+          create: body.CoreValues.map((cv: any) => ({
+            title: cv.title,
+            description: cv.description,
+            icon: cv.icon || "",
+          }))
+        } : undefined,
+        
         // 2. Handle nested relations correctly
-        SEO: seo ? { update: seo } : undefined,
+        
+        SEO: seo ? {
+          upsert: {
+            create: seo,
+            update: seo,
+          }
+        } : undefined,
+
+
         AnalyticsConfig: analyticsConfig ? { update: analyticsConfig } : undefined,
         PaymentSettings: paymentSettings ? { update: paymentSettings } : undefined,
         ShippingSettings: shippingSettings ? { update: shippingSettings } : undefined,

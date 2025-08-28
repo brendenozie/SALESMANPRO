@@ -10,13 +10,8 @@ import bannerLaundry from "@/assets/homebanner.png"; // Example image
 import bannerDelivery from "@/assets/homebanner.png"; // Example image
 import bannerCatering from "@/assets/homebanner.png"; // Example image
 
-import bannerFallback from "@/assets/homebanner.png";
-
-// Icons (choose from a library like Heroicons or custom SVGs)
-import { LaundryOutlineIcon, DeliveryOutlineIcon, CookingOutlineIcon } from "./icons"; // Assume these are custom icons
-
 // --- HeroSection Component ---
-export default function HeroSection({ storeFormData }) { // Assume storeFormData is passed as a prop
+export default function HeroSection({ storeFormData }: { storeFormData: any }) { // Assume storeFormData is passed as a prop
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
 
   // Fallback data for demonstration
@@ -181,7 +176,7 @@ export default function HeroSection({ storeFormData }) { // Assume storeFormData
         {storeCategories && storeCategories.length > 0 && (
           <div className="absolute bottom-0 w-full flex justify-center pb-4 lg:pb-6">
             <div className="flex gap-4">
-              {storeCategories.map((category, index) => (
+              {storeCategories.map((category: any, index: number) => (
                 <motion.div
                   key={category.id}
                   className={`flex flex-col items-center p-4 rounded-xl cursor-pointer transition-all duration-300 border-2
@@ -213,20 +208,20 @@ export default function HeroSection({ storeFormData }) { // Assume storeFormData
 }
 
 // Placeholder for custom icon components (you would define these or import from a library)
-const LaundryOutlineIcon = (props) => (
+const LaundryOutlineIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" d="M11.354 1.5A.5.5 0 0 1 12 2v2.5a.5.5 0 0 1-1 0V2a.5.5 0 0 1 .354-.447ZM15 3h1.5A1.5 1.5 0 0 1 18 4.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-1.5" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-16a7 7 0 1 1 0 14 7 7 0 0 1 0-14Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
   </svg>
 );
-const DeliveryOutlineIcon = (props) => (
+const DeliveryOutlineIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5c.576 0 1.05-.474 1.05-1.05V13.5h-2.1v4.95c0 .576.474 1.05 1.05 1.05ZM12 4.5v9m0 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM10 11.5h4c.552 0 1-.448 1-1V5.5c0-.552-.448-1-1-1h-4c-.552 0-1 .448-1 1V10.5c0 .552.448 1 1 1Z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v-2a.5.5 0 0 1 1 0v2" />
   </svg>
 );
-const CookingOutlineIcon = (props) => (
+const CookingOutlineIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM12 18.375a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75ZM5.625 12a.375.375 0 1 0 0-.75.375.375 0 0 0 0 .75Zm12.75-9.75v16.5c0 .548-.452 1-.996 1-.548 0-.996-.452-.996-1V2.25c0-.548.452-1 .996-1 .548 0 .996.452.996 1Zm-13.5 0V2.25c0-.548.452-1 .996-1 .548 0 .996.452.996 1v16.5c0 .548-.452 1-.996 1-.548 0-.996-.452-.996-1Z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15.375a3.375 3.375 0 1 0 0-6.75 3.375 3.375 0 0 0 0 6.75Z" />

@@ -144,8 +144,8 @@ export interface IUser extends User {}
 
 export interface ICoreValue {
   title: string;
-  description: string;
-  icon: string;
+  description: string | null;
+  icon: string | null;
 }
 
 export interface SocialLink {
@@ -180,7 +180,40 @@ export interface Testimonial {
 }
 
 export interface HeroSlide extends Banner {}
-export interface IPromotion extends Promotion {}
+// export interface IPromotion extends Promotion {}
+export interface IPromotion {
+  id?: string;
+  companyId: string;
+
+  code?: string | null;
+  title: string;
+  description?: string | null;
+
+  startsAt?: Date | string | null;
+  endsAt?: Date | string | null;
+
+  ctaText?: string | null;
+  ctaLink?: string | null;
+  bannerUrl?: string | null;
+
+  featureImage1?: string | null;
+  featureImage2?: string | null;
+  featureImage3?: string | null;
+
+  badgeText?: string | null;
+  price?: string | null;
+
+  perks: { icon: string; label: string }[];
+  trustLogos: string[];
+
+  themePrimary?: string | null;
+  themeSecondary?: string | null;
+
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+
 
 export interface Award {
   name: string;
@@ -702,7 +735,7 @@ export interface Handlers {
   // ✅ Promotion handlers (unchanged)
   onUpdatePromotion: (
       index: number,
-      field: keyof Promotion,
+      field: keyof IPromotion,
       value: string
     ) => void;
   onAddPromotion: () => void;

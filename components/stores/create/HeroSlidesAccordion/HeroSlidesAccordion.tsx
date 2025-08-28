@@ -129,7 +129,7 @@ export default function HeroSlidesAccordion({
                 <div className="flex-1 space-y-4">
                   <input
                     placeholder="Headline"
-                    value={slide.headline}
+                    value={slide.headline || ""}
                     onChange={(e) => onUpdateSlide(idx, "headline", e.target.value)}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
                     required

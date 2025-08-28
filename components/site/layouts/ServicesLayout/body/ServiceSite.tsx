@@ -48,7 +48,7 @@ export default function ServiceSite() {
   return (
     <>
       {/* Hero Section */}
-      <HeroSection />
+      <HeroSection storeFormData={storeFormData} />
 
       <AboutSection />
 

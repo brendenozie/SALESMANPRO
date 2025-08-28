@@ -371,8 +371,8 @@ model CoreValues {
   company     Company @relation(fields: [companyId], references: [id])
   companyId   String  @db.ObjectId
   title       String
-  description String
-  icon        String
+  description String?
+  icon        String?
 }
 
 model SocialLink {
@@ -408,21 +408,42 @@ model Banner {
   price           String?
   endsAt          DateTime?
   order           Int       @default(0)
+
+  // NEW FIELDS
+  iconKey         String? // e.g. "laundry", "delivery"
+  backgroundColor String? // optional customization
+  textColor       String? // optional customization
 }
 
 //this promotion on the other hand is a promotion table that highlights the promotions or offers a company offers something lika a banner
 model Promotion {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  company     Company   @relation(fields: [companyId], references: [id])
-  companyId   String    @db.ObjectId
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @db.ObjectId
+
   code        String?
   title       String
   description String?
-  startsAt    DateTime?
-  endsAt      DateTime?
-  ctaText     String?
-  ctaLink     String?
-  bannerUrl   String?
+
+  startsAt DateTime?
+  endsAt   DateTime?
+
+  badgeText String?
+  price     String?
+
+  ctaText   String?
+  ctaLink   String?
+  bannerUrl String?
+
+  // New fields for richer site promotion
+  featureImage1 String?
+  featureImage2 String?
+  featureImage3 String?
+
+  perks          Json? // e.g. [{ icon: "SparklesIcon", label: "Uncompromising Quality" }]
+  trustLogos     String[] // e.g. ["/logos/google.svg", "/logos/microsoft.svg"]
+  themePrimary   String? // overrides store.themeSettings.primaryColor
+  themeSecondary String? // overrides store.themeSettings.secondaryColor
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
