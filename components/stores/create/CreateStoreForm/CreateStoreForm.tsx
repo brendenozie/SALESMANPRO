@@ -530,49 +530,54 @@ export default function CreateStoreForm({
     });
   }, []);
 
-  const createEmptyPromotion = (companyId: string) => ({
-  id: "", 
+  // Factory function: always consistent types
+const createEmptyPromotion = (companyId: string): IPromotion => ({
+  id: "",
   companyId,
-  code: null,
+  code: "",
+
+  // Strings
   title: "",
-  description: null,
-  startsAt: null,
-  endsAt: null,
-  ctaText: null,
-  ctaLink: null,
-  bannerUrl: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  description: "",
+  ctaText: "",
+  ctaLink: "",
+  bannerUrl: "",
+  featureImage1: "",
+  featureImage2: "",
+  featureImage3: "",
 
-  // New fields for richer site promotion
-  featureImage1: null,
-  featureImage2: null,
-  featureImage3: null,
+  // Dates always stored as ISO strings (empty string = not set)
+  startsAt: "",
+  endsAt: "",
 
-  // Always normalized
+  // Arrays
   perks: [] as { icon: string; label: string }[],
   trustLogos: [] as string[],
 
-  themePrimary: null,
-  themeSecondary: null,
+  // Colors
+  themePrimary: "#0d9488",   // sensible defaults
+  themeSecondary: "#f97316",
+
+  // Meta
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 });
 
+// Add promotion
 const onAddPromotion = () => {
   setForm((prev) => ({
     ...prev,
-    promotions: [
-      ...prev.promotions,
-      createEmptyPromotion(prev.id), // use factory function
-    ],
+    promotions: [...prev.promotions, createEmptyPromotion(prev.id)],
   }));
 };
 
-  const onRemovePromotion = (idx: number) => {
-    setForm((prev) => ({
-      ...prev,
-      promotions: prev.promotions.filter((_, i) => i !== idx),
-    }));
-  };
+// Remove promotion
+const onRemovePromotion = (idx: number) => {
+  setForm((prev) => ({
+    ...prev,
+    promotions: prev.promotions.filter((_, i) => i !== idx),
+  }));
+};
 
 const onUpdatePromotion = <K extends keyof IPromotion>(
   index: number,
@@ -580,33 +585,56 @@ const onUpdatePromotion = <K extends keyof IPromotion>(
   value: IPromotion[K]
 ) => {
   setForm((prev) => {
-    // Create a new promotions array immutably
     const newPromotions = prev.promotions.map((promotion, idx) => {
       if (idx === index) {
-        // Create a new promotion object for the one being updated
+        // Normalize only for perks and trustLogos
+        if (field === "perks") {
+          return {
+            ...promotion,
+            perks: Array.isArray(value)
+              ? (value as { icon: string; label: string }[])
+              : [],
+          };
+        }
+        if (field === "trustLogos") {
+          return {
+            ...promotion,
+            trustLogos: Array.isArray(value) ? (value as string[]) : [],
+          };
+        }
+
+        // Default case (no special normalization)
         return { ...promotion, [field]: value };
       }
       return promotion;
     });
 
-    // Return the new top-level form state object
     return { ...prev, promotions: newPromotions };
   });
 };
 
-  const onPromotionImageUpload = (index: number, file: File) => {
-    setPromotionSlideFiles((prev) => {
-      const copy = [...prev];
-      copy[index] = file;
-      return copy;
-    });
-    const previewURL = URL.createObjectURL(file);
-    setForm((prev) => {
-      const promos = [...prev.promotions];
-      promos[index] = { ...promos[index], bannerUrl: previewURL };
-      return { ...prev, promotions: promos };
-    });
-  };
+// Upload + preview image for any field
+const onPromotionImageUpload = (
+  index: number,
+  file: File,
+  field: keyof IPromotion = "bannerUrl"
+) => {
+  // keep track of raw files if needed
+  setPromotionSlideFiles((prev) => {
+    const copy = [...prev];
+    copy[index] = file;
+    return copy;
+  });
+
+  // create preview
+  const previewURL = URL.createObjectURL(file);
+
+  setForm((prev) => {
+    const promos = [...prev.promotions];
+    promos[index] = { ...promos[index], [field]: previewURL };
+    return { ...prev, promotions: promos };
+  });
+};
 
   // ─────────────────────────────────────────────────────────────────────
   // 5) Generic form handlers (arrays, opening hours, etc.)
