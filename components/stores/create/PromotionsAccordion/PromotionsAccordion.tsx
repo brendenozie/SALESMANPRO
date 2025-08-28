@@ -293,7 +293,7 @@ export default function PromotionsAccordion({
                     Perks
                   </label>
                   <div className="space-y-2">
-                    {(Array.isArray(promo.perks) ? promo.perks : []).map((perk, pIdx) => (
+                    {Array.isArray(promo.perks) ? promo.perks.map((perk, pIdx) => (
                       <div key={pIdx} className="flex items-center gap-2">
                         <input
                           placeholder="Icon Name (e.g., SparklesIcon)"
@@ -319,7 +319,33 @@ export default function PromotionsAccordion({
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          placeholder="Icon Name (e.g., SparklesIcon)"
+                          value=""
+                          onChange={(e) =>
+                            handleUpdatePerk(idx, -1, 'icon', e.target.value)
+                          }
+                          className="flex-1 border rounded-lg px-3 py-2"
+                        />
+                        <input
+                          placeholder="Label"
+                          value=""
+                          onChange={(e) =>
+                            handleUpdatePerk(idx, -1, 'label', e.target.value)
+                          }
+                          className="flex-1 border rounded-lg px-3 py-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePerk(idx, -1)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleAddPerk(idx)}
@@ -335,7 +361,7 @@ export default function PromotionsAccordion({
                     Trust Logos
                   </label>
                   <div className="space-y-2">
-                    {(Array.isArray(promo.trustLogos) ? promo.trustLogos : []).map(
+                    {Array.isArray(promo.trustLogos) ? promo.trustLogos.map(
                       (logoUrl, lIdx) => (
                         <div key={lIdx} className="flex items-center gap-2">
                           <input
@@ -355,6 +381,17 @@ export default function PromotionsAccordion({
                           </button>
                         </div>
                       ),
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          placeholder="Logo URL"
+                          value=""
+                          onChange={(e) =>
+                            handleUpdateTrustLogo(idx, -1, e.target.value)
+                          }
+                          className="flex-1 border rounded-lg px-3 py-2"
+                        />
+                      </div>
                     )}
                     <button
                       type="button"
