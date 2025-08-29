@@ -59,6 +59,7 @@ interface PromotionsAccordionProps {
   onRemoveTrustLogo: (promoIndex: number, logoIndex: number) => void;
 }
 
+
 export default function PromotionsAccordion({
   promotions,
   onUpdatePromotion,
@@ -90,40 +91,7 @@ export default function PromotionsAccordion({
   ) => {
     onUpdatePromotion(index, field, value);
   };
-//   const handleAddPerk = (promoIndex: number) => {
-//   console.log('Adding perk for promotion index:', promoIndex); // <-- Add this line
-//   const currentPerks = promotions[promoIndex].perks || [];
-//   const updatedPerks = [...currentPerks, { icon: '', label: '' }];
-//   onUpdatePromotion(promoIndex, 'perks', updatedPerks);
-// };
-  // Handler to add a new empty perk to a specific promotion
-  // const handleAddPerk = (promoIndex: number) => {
-  //   const currentPerks = promotions[promoIndex].perks || [];
-  //   const updatedPerks = [...currentPerks, { icon: '', label: '' }];
-  //   onUpdatePromotion(promoIndex, 'perks', updatedPerks);
-  // };
   
-  // Handler to remove a perk from a specific promotion
-  // const handleRemovePerk = (promoIndex: number, perkIndex: number) => {
-  //   const currentPerks = promotions[promoIndex].perks || [];
-  //   const updatedPerks = currentPerks.filter((_, i) => i !== perkIndex);
-  //   onUpdatePromotion(promoIndex, 'perks', updatedPerks);
-  // };
-  
-  // // Handler to add a new empty trust logo to a specific promotion
-  // const handleAddTrustLogo = (promoIndex: number) => {
-  //   const currentLogos = promotions[promoIndex].trustLogos || [];
-  //   const updatedLogos = [...currentLogos, ''];
-  //   onUpdatePromotion(promoIndex, 'trustLogos', updatedLogos);
-  // };
-  
-  // // Handler to remove a trust logo from a specific promotion
-  // const handleRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
-  //   const currentLogos = promotions[promoIndex].trustLogos || [];
-  //   const updatedLogos = currentLogos.filter((_, i) => i !== logoIndex);
-  //   onUpdatePromotion(promoIndex, 'trustLogos', updatedLogos);
-  // };
-
   return (
     <div className="max-w-4xl mx-auto space-y-6 p-4 md:p-8 bg-gray-50 rounded-xl shadow-lg">
       <header className="text-center mb-8">
