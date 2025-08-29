@@ -629,15 +629,15 @@ const onPromotionImageUpload = (
 };
 
 // Add a new perk to a specific promotion
+
 const onAddPerk = (promoIndex: number) => {
   setForm((prev) => {
     const newPromotions = prev.promotions.map((promo, idx) => {
       if (idx === promoIndex) {
-        // Get existing perks or an empty array
         const currentPerks = promo.perks || [];
-        // Create a new perk object and add it
-        const updatedPerks = [...currentPerks, { icon: '', label: '' }];
-        // Return the updated promotion object
+        // Generate a unique ID for the new perk
+        const newPerk = { id: crypto.randomUUID(), icon: '', label: '' };
+        const updatedPerks = [...currentPerks, newPerk];
         return { ...promo, perks: updatedPerks };
       }
       return promo;

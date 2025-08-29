@@ -91,7 +91,7 @@ export default function PromotionsAccordion({
   ) => {
     onUpdatePromotion(index, field, value);
   };
-  
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 p-4 md:p-8 bg-gray-50 rounded-xl shadow-lg">
       <header className="text-center mb-8">
@@ -474,8 +474,8 @@ function ListManager<T>({ title, items, onAdd, onRemove, renderItem }: ListManag
     <div>
       <h4 className="block text-sm font-medium text-gray-700 mb-3">{title}</h4>
       <div className="space-y-4">
-        {safeItems.map((item, index) => (
-          <div key={index} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg">
+        {safeItems.map((item:any, index) => (
+          <div key={item.id} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg">
             <div className="flex-1">{renderItem(item, index)}</div>
             <button
               type="button"
