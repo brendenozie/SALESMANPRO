@@ -203,8 +203,8 @@ export interface IPromotion {
   badgeText?: string | null;
   price?: string | null;
 
-  perks: { icon: string; label: string }[];
-  trustLogos: string[];
+  perks: { id:string; icon: string; label: string }[];
+  trustLogos: { id:string; url: string }[];
 
   themePrimary?: string | null;
   themeSecondary?: string | null;

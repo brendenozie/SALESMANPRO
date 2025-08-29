@@ -312,16 +312,16 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
                     <InputField
                       label="Logo URL"
                       placeholder="https://..."
-                      value={logoUrl}
+                      value={logoUrl.url}
                       onChange={(e) => {
                         const newLogos = [...(promo.trustLogos || [])];
-                        newLogos[lIdx] = e.target.value;
+                        newLogos[lIdx] = { id: newLogos[lIdx].id, url: e.target.value };
                         onUpdate(idx, 'trustLogos', newLogos);
                       }}
                       className="flex-1"
                     />
                     {logoUrl && (
-                      <img src={logoUrl} alt="Logo" className="h-8 w-auto rounded-md object-contain" />
+                      <img src={logoUrl.url} alt="Logo" className="h-8 w-auto rounded-md object-contain" />
                     )}
                   </div>
                 )}
@@ -475,7 +475,7 @@ function ListManager<T>({ title, items, onAdd, onRemove, renderItem }: ListManag
       <h4 className="block text-sm font-medium text-gray-700 mb-3">{title}</h4>
       <div className="space-y-4">
         {safeItems.map((item:any, index) => (
-          <div key={item.id} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg">
+          <div key={item.id ?? index} className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg">
             <div className="flex-1">{renderItem(item, index)}</div>
             <button
               type="button"

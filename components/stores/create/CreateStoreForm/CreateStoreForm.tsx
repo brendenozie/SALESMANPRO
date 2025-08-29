@@ -519,16 +519,39 @@ export default function CreateStoreForm({
 
   
   useEffect(() => {
-    setForm((prev) => {
-      const normalizedPromotions = prev.promotions.map((promo) => ({
-        ...promo,
-        // Always normalize to arrays
-        perks: Array.isArray(promo.perks) ? promo.perks : [],
-        trustLogos: Array.isArray(promo.trustLogos) ? promo.trustLogos : [],
-      }));
-      return { ...prev, promotions: normalizedPromotions };
+  setForm(prev => {
+    const normalizedPromotions = prev.promotions.map(promo => {
+      const nextPerks = Array.isArray(promo.perks)
+        ? promo.perks.map((perk: any) => {
+            // handles: string, {icon,label}, or already-correct {id,icon,label}
+            if (perk && typeof perk === 'object' && 'id' in perk) return perk;
+            return {
+              id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
+              icon: typeof perk === 'object' ? perk.icon ?? '' : '',
+              label: typeof perk === 'object' ? perk.label ?? '' : String(perk ?? ''),
+            };
+          })
+        : [];
+
+      const nextTrustLogos = Array.isArray(promo.trustLogos)
+        ? promo.trustLogos.map((logo: any) => {
+            // handles: string or already-correct {id,url}
+            if (logo && typeof logo === 'object' && 'id' in logo && 'url' in logo) return logo;
+            const url = typeof logo === 'string' ? logo : logo?.url ?? '';
+            return {
+              id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
+              url,
+            };
+          })
+        : [];
+
+      return { ...promo, perks: nextPerks, trustLogos: nextTrustLogos };
     });
-  }, []);
+
+    return { ...prev, promotions: normalizedPromotions };
+  });
+}, []);
+
 
   // Factory function: always consistent types
 const createEmptyPromotion = (companyId: string): IPromotion => ({
@@ -551,8 +574,8 @@ const createEmptyPromotion = (companyId: string): IPromotion => ({
   endsAt: "",
 
   // Arrays
-  perks: [] as { icon: string; label: string }[],
-  trustLogos: [] as string[],
+  perks: [] as { id: string; icon: string; label: string }[],
+  trustLogos: [] as { id: string; url: string; }[],
 
   // Colors
   themePrimary: "#0d9488",   // sensible defaults
@@ -664,7 +687,7 @@ const onAddTrustLogo = (promoIndex: number) => {
   setForm((prev) => {
     const newPromotions = prev.promotions.map((promo, idx) => {
       if (idx === promoIndex) {
-        const updatedLogos = [...(promo.trustLogos || []), ''];
+        const updatedLogos = [...(promo.trustLogos || []), { id: crypto.randomUUID(), url: '' }];
         return { ...promo, trustLogos: updatedLogos };
       }
       return promo;
