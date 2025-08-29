@@ -830,7 +830,7 @@ model Blog {
   comments    Comment[]
 
   description  String? // Use this for a longer description if needed
-  contentUrl   String // For video URL (e.g., YouTube embed URL)
+  contentUrl   String? // For video URL (e.g., YouTube embed URL)
   thumbnailUrl String? // For video thumbnail URL
   contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
   category     String? // e.g., "Nature", "History", "Wildlife"
@@ -839,7 +839,7 @@ model Blog {
 
   published Boolean @default(false) // Whether the tour is live
 
-  type String // e.g., "Article", "PhotoAlbum", "VideoAlbum"
+  type String? // e.g., "Article", "PhotoAlbum", "VideoAlbum"
 
   publishDate DateTime?
   author      User?     @relation(fields: [authorId], references: [id])
@@ -4227,7 +4227,7 @@ model Content {
   title        String
   excerpt      String?
   description  String? // Use this for a longer description if needed
-  contentUrl   String // For video URL (e.g., YouTube embed URL)
+  contentUrl   String? // For video URL (e.g., YouTube embed URL)
   thumbnailUrl String? // For video thumbnail URL
   contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
   category     String? // e.g., "Nature", "History", "Wildlife"
@@ -4238,7 +4238,7 @@ model Content {
   company      Company     @relation(fields: [companyId], references: [id])
   published    Boolean     @default(false) // Whether the tour is live
 
-  type        String // e.g., "Article", "PhotoAlbum", "VideoAlbum"
+  type        String? // e.g., "Article", "PhotoAlbum", "VideoAlbum"
   status      ContentStatus @default(Draft)
   publishDate DateTime?
   author      User?         @relation(fields: [authorId], references: [id])

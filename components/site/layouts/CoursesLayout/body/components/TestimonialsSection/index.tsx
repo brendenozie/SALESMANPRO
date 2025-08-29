@@ -12,7 +12,7 @@ export type Testimonial = {
   id: string | number | undefined;
   name?: string;
   role?: string;
-  author?: string; // Corresponds to author name
+  authorName?: string; // Corresponds to author name
   quote: string; // Corresponds to the testimonial text
   rating?: number; // 1-5 stars
   avatarUrl?: string; // URL for the author's image
@@ -140,11 +140,11 @@ export default function TestimonialSection() {
         .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
         .map(t => ({
           id: t.id,
-          name: t.author,
-          author: t.author.includes('Dr.') ? 'Educator' : (t.author.includes('Parent') ? 'Parent' : 'Student/Alumnus'), // Simple role derivation
+          name: t.authorName || '',
+          author: t.authorName?.includes('Dr.') ? 'Educator' : (t.authorName?.includes('Parent') ? 'Parent' : 'Student/Alumnus'), // Simple role derivation
           quote: t.quote,
           rating: t.rating || 5, // Default to 5 if rating is not provided
-          avatarUrl: t.avatarUrl || `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${t.author.split(' ').map(n => n[0]).join('')}`, // Fallback avatar with initials
+          avatarUrl: t.avatarUrl || `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${t.authorName?.split(' ').map(n => n[0]).join('')}`, // Fallback avatar with initials
         }))
     : fallbackTestimonials;
 

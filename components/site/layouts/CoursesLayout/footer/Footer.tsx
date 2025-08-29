@@ -19,7 +19,7 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks,
-    storeCategories,
+    StoreCategory,
   } = storeFormData;
 
   return (
@@ -96,7 +96,7 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold mb-4">Categories</h3>
           <ul className="space-y-2">
-            {storeCategories.map((cat) => (
+            {StoreCategory.map((cat) => (
               <li key={cat.id}>
                 <Link
                   href={`/${slug}/category/${cat.id}`}

@@ -104,35 +104,35 @@ const renderStars = (count: number | undefined) => {
 const fallbackTestimonials: Testimonial[] = [
   {
     id: 'fallback-1',
-    author: 'Sarah L.',
+    authorName: 'Sarah L.',
     quote: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
     rating: 5,
     avatarUrl: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah',
-    title: 'Satisfied Client',
+    authorTitle: 'Satisfied Client',
   },
   {
     id: 'fallback-2',
-    author: 'Dr. Alex M.',
+    authorName: 'Dr. Alex M.',
     quote: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
     rating: 5,
     avatarUrl: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
-    title: 'Registered Therapist',
+    authorTitle: 'Registered Therapist',
   },
   {
     id: 'fallback-3',
-    author: 'Jessica P.',
+    authorName: 'Jessica P.',
     quote: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
     rating: 4,
     avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
-    title: 'Regular User',
+    authorTitle: 'Regular User',
   },
   {
     id: 'fallback-4',
-    author: 'Mark T.',
+    authorName: 'Mark T.',
     quote: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
     rating: 5,
     avatarUrl: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
-    title: 'Community Member',
+    authorTitle: 'Community Member',
   },
 ];
 
@@ -182,11 +182,11 @@ const TestimonialsSection = () => {
         .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
         .map(t => ({
           id: t.id,
-          author: t.author,
+          author: t.authorName,
           quote: t.quote,
           rating: t.rating || 5, // Default to 5 if rating is not provided
           avatarUrl: t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback image
-          title: t.author.includes('Dr.') ? 'Registered Therapist' : 'Satisfied Client', // Derive title based on name or a generic
+          title: t.authorName?.includes('Dr.') ? 'Registered Therapist' : 'Satisfied Client', // Derive title based on name or a generic
         }))
     : fallbackTestimonials; // Use static fallback testimonials
 
@@ -265,7 +265,7 @@ const TestimonialsSection = () => {
                   <div className="flex items-center gap-4 mt-6"> {/* Increased gap */}
                     <Image
                       src={t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User'} // Fallback image
-                      alt={t.author}
+                      alt={t.authorName}
                       width={48} // Larger avatar
                       height={48}
                       loader={loader}
@@ -274,7 +274,7 @@ const TestimonialsSection = () => {
                     />
                     <div className="text-left">
                       <p className="text-md font-semibold text-gray-900 dark:text-white h-7 overflow-hidden">{t.quote}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t.authorTitle}</p>
                       {renderStars(t.rating)}
                     </div>
                   </div>
@@ -302,7 +302,7 @@ const TestimonialsSection = () => {
               <div className="flex items-center gap-4 mt-6">
                 <Image
                   src={t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User'}
-                  alt={t.author}
+                  alt={t.authorName || ''}
                   width={48}
                   height={48}
                   loader={loader}
@@ -311,7 +311,7 @@ const TestimonialsSection = () => {
                 />
                 <div className="text-left">
                   <p className="text-md font-semibold text-gray-900 dark:text-white  h-7 overflow-hidden">{t.quote}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t.title}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t.authorTitle}</p>
                   {renderStars(t.rating)}
                 </div>
               </div>

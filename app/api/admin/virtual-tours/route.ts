@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       location: tour.location || 'N/A',
       duration: tour.duration || 'N/A',
       category: tour.category || 'Uncategorized',
-      videoUrl: tour.contentUrl,
+      videoUrl: tour.contentUrl || 'N/A',
       thumbnailUrl: tour.thumbnailUrl || 'https://placehold.co/400x250/E0E7FF/4338CA?text=No+Thumbnail',
       description: tour.description || '', // Include description if it exists
       published: tour.published,

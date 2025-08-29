@@ -59,7 +59,7 @@ export async function PUT(request, { params }) {
       location: updatedTour.location || 'N/A',
       duration: updatedTour.duration || 'N/A',
       category: updatedTour.category || 'Uncategorized',
-      videoUrl: updatedTour.contentUrl,
+      videoUrl: updatedTour.contentUrl || 'N/A',
       thumbnailUrl: updatedTour.thumbnailUrl || 'https://placehold.co/400x250/E0E7FF/4338CA?text=No+Thumbnail',
       description: updatedTour.description || '',
       published: updatedTour.published,
