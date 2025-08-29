@@ -742,6 +742,11 @@ export interface Handlers {
   onRemovePromotion: (index: number) => void;
   onPromotionImageUpload: (index: number, file: File) => void;
 
+  onAddPerk: (promoIndex: number) => void;
+  onRemovePerk: (promoIndex: number, perkIndex: number) => void;
+  onAddTrustLogo: (promoIndex: number) => void;
+  onRemoveTrustLogo: (promoIndex: number, logoIndex: number) => void;
+
   // ✅ Location handlers (unchanged)
   onToggleLocation: (location: Location, isSelected: boolean) => void;
   onBulkToggleLocations: (locationIds: string[]) => void;

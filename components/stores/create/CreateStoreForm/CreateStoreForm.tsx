@@ -579,39 +579,31 @@ const onRemovePromotion = (idx: number) => {
   }));
 };
 
+// In your Parent Form Component
 const onUpdatePromotion = <K extends keyof IPromotion>(
   index: number,
   field: K,
   value: IPromotion[K]
 ) => {
   setForm((prev) => {
+    // 1. Create a new promotions array using .map()
     const newPromotions = prev.promotions.map((promotion, idx) => {
-      if (idx === index) {
-        // Normalize only for perks and trustLogos
-        if (field === "perks") {
-          return {
-            ...promotion,
-            perks: Array.isArray(value)
-              ? (value as { icon: string; label: string }[])
-              : [],
-          };
-        }
-        if (field === "trustLogos") {
-          return {
-            ...promotion,
-            trustLogos: Array.isArray(value) ? (value as string[]) : [],
-          };
-        }
-
-        // Default case (no special normalization)
-        return { ...promotion, [field]: value };
+      // 2. If it's not the promotion we're updating, do nothing
+      if (idx !== index) {
+        return promotion;
       }
-      return promotion;
+      
+      // 3. If it IS the promotion, create a new object,
+      //    spreading the old properties and setting the updated field.
+      //    This works for 'title', 'description', and 'perks' perfectly.
+      return { ...promotion, [field]: value };
     });
 
+    // 4. Return the new top-level state object
     return { ...prev, promotions: newPromotions };
   });
 };
+
 
 // Upload + preview image for any field
 const onPromotionImageUpload = (
@@ -633,6 +625,64 @@ const onPromotionImageUpload = (
     const promos = [...prev.promotions];
     promos[index] = { ...promos[index], [field]: previewURL };
     return { ...prev, promotions: promos };
+  });
+};
+
+// Add a new perk to a specific promotion
+const onAddPerk = (promoIndex: number) => {
+  setForm((prev) => {
+    const newPromotions = prev.promotions.map((promo, idx) => {
+      if (idx === promoIndex) {
+        // Get existing perks or an empty array
+        const currentPerks = promo.perks || [];
+        // Create a new perk object and add it
+        const updatedPerks = [...currentPerks, { icon: '', label: '' }];
+        // Return the updated promotion object
+        return { ...promo, perks: updatedPerks };
+      }
+      return promo;
+    });
+    return { ...prev, promotions: newPromotions };
+  });
+};
+
+// Also add a dedicated function for removing a perk
+const onRemovePerk = (promoIndex: number, perkIndex: number) => {
+  setForm((prev) => {
+    const newPromotions = prev.promotions.map((promo, idx) => {
+      if (idx === promoIndex) {
+        const updatedPerks = (promo.perks || []).filter((_, i) => i !== perkIndex);
+        return { ...promo, perks: updatedPerks };
+      }
+      return promo;
+    });
+    return { ...prev, promotions: newPromotions };
+  });
+};
+
+const onAddTrustLogo = (promoIndex: number) => {
+  setForm((prev) => {
+    const newPromotions = prev.promotions.map((promo, idx) => {
+      if (idx === promoIndex) {
+        const updatedLogos = [...(promo.trustLogos || []), ''];
+        return { ...promo, trustLogos: updatedLogos };
+      }
+      return promo;
+    });
+    return { ...prev, promotions: newPromotions };
+  });
+};
+
+const onRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
+  setForm((prev) => {
+    const newPromotions = prev.promotions.map((promo, idx) => {
+      if (idx === promoIndex) {
+        const updatedLogos = (promo.trustLogos || []).filter((_, i) => i !== logoIndex);
+        return { ...promo, trustLogos: updatedLogos };
+      }
+      return promo;
+    });
+    return { ...prev, promotions: newPromotions };
   });
 };
 
@@ -982,6 +1032,13 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onRemovePromotion,
 
     onPromotionImageUpload,
+
+    onAddPerk,
+    onRemovePerk,
+
+    onAddTrustLogo,
+
+    onRemoveTrustLogo,
 
     // Media (logo/banner)
     handleMediaUpload,
