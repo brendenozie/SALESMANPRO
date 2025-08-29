@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowLongRightIcon, XMarkIcon, CalendarDaysIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import { ArrowLongRightIcon, XMarkIcon, CalendarDaysIcon, CurrencyDollarIcon, TagIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStoreContext } from "@/contexts/StoreContext";
@@ -24,8 +24,8 @@ export default function ServicesSection() {
   }
 
   const { marketplaceListings, themeSettings, slug } = storeFormData;
-  const primaryColor = themeSettings?.primaryColor ?? "#4CAF50"; // Green fallback
-  const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107"; // Yellow fallback
+  const primaryColor = themeSettings?.primaryColor ?? "#4CAF50";
+  const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107";
 
   // Animation variants
   const fadeIn = {
@@ -38,7 +38,7 @@ export default function ServicesSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.15,
       },
     },
   };
@@ -56,8 +56,19 @@ export default function ServicesSection() {
   return (
     <>
       <section className="bg-white dark:bg-gray-950 py-16 lg:py-24 relative overflow-hidden">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 bg-dot-pattern opacity-5 dark:bg-dot-pattern-dark z-0" />
+        {/* Subtle background shapes */}
+        <motion.div
+          className="absolute rounded-full opacity-5 blur-3xl -top-20 -right-20 w-80 h-80"
+          style={{ backgroundColor: primaryColor }}
+          animate={{ x: [0, -50, 0], y: [0, 30, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear", repeatType: "mirror" }}
+        />
+        <motion.div
+          className="absolute rounded-full opacity-5 blur-3xl -bottom-20 -left-20 w-96 h-96"
+          style={{ backgroundColor: secondaryColor }}
+          animate={{ x: [0, 40, 0], y: [0, -20, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear", repeatType: "mirror", delay: 3 }}
+        />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6">
           <motion.div
@@ -69,7 +80,7 @@ export default function ServicesSection() {
           >
             <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight">
               Explore Our{" "}
-              <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
+              <span className="bg-clip-text text-transparent" style={{ backgroundColor: `${primaryColor}` }}>
                 Exceptional Services
               </span>
             </h2>
@@ -88,30 +99,36 @@ export default function ServicesSection() {
               viewport={{ once: true, amount: 0.2 }}
             >
               {/* Left: Featured Service Image */}
-              <motion.div variants={fadeIn} className="relative w-full aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden shadow-xl group cursor-pointer" onClick={() => setSelectedService(featuredService)}>
+              <motion.div variants={fadeIn} className="relative w-full aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl group cursor-pointer" onClick={() => setSelectedService(featuredService)}>
                 <div className="absolute inset-0 rounded-3xl -z-10 transition-all duration-500 transform translate-x-3 translate-y-3 group-hover:translate-x-0 group-hover:translate-y-0" style={{ background: primaryColor }} />
                 <Image
                   src={featuredService.images[0] || "/placeholder-service.jpg"}
-                  alt={featuredService.name || featuredService.title}
+                  alt={featuredService.name}
                   layout="fill"
                   objectFit="cover"
                   className="transition-transform duration-500 ease-in-out group-hover:scale-110"
                   loader={loader}
                 />
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-black/20" />
               </motion.div>
               
               {/* Right: Featured Service Details */}
-              <motion.div variants={staggerContainer}>
-                <motion.span className="text-sm font-semibold uppercase tracking-wider mb-2 inline-block" style={{ color: secondaryColor }}>
-                  Our Signature Offering
-                </motion.span>
-                <motion.h3 className="text-4xl lg:text-5xl font-extrabold mb-4" variants={fadeIn}>
-                  {featuredService.name || featuredService.title}
+              <motion.div variants={staggerContainer} className="space-y-6">
+                <motion.div variants={fadeIn} className="flex items-center space-x-2">
+                  <div className="text-sm font-semibold uppercase tracking-wider px-3 py-1 rounded-full text-white" style={{ backgroundColor: secondaryColor }}>
+                    Signature
+                  </div>
+                  <span className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Our Top Offering
+                  </span>
+                </motion.div>
+                <motion.h3 className="text-4xl lg:text-5xl font-extrabold" variants={fadeIn}>
+                  {featuredService.name}
                 </motion.h3>
-                <motion.p className="text-lg text-gray-700 dark:text-gray-300 mb-6" variants={fadeIn}>
+                <motion.p className="text-lg text-gray-700 dark:text-gray-300" variants={fadeIn}>
                   {featuredService.description || "A comprehensive service designed to meet your needs with exceptional quality and attention to detail."}
                 </motion.p>
-                <motion.div className="flex items-center gap-6 mb-8" variants={fadeIn}>
+                <motion.div className="flex flex-wrap items-center gap-6" variants={fadeIn}>
                   <div className="flex items-center text-xl font-bold">
                     <CurrencyDollarIcon className="w-6 h-6 mr-2" style={{ color: secondaryColor }} />
                     <span className="text-gray-900 dark:text-gray-100">${(featuredService.finalPrice ?? 0).toFixed(2)}</span>
@@ -139,17 +156,20 @@ export default function ServicesSection() {
 
           {/* Other Services Grid */}
           {otherServices.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
               {otherServices.map((svc: ServiceItem, index: number) => (
                 <motion.div
                   key={svc.id}
                   className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform border border-gray-100 dark:border-gray-700 flex flex-col cursor-pointer group"
                   variants={fadeIn}
-                  initial="hidden"
-                  whileInView="visible"
+                  transition={{ delay: index * 0.05 }}
                   whileHover={{ scale: 1.02 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ delay: index * 0.1 }}
                   onClick={() => setSelectedService(svc)}
                 >
                   <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden mb-4">
@@ -162,12 +182,14 @@ export default function ServicesSection() {
                       className="transition-transform duration-500 group-hover:scale-110"
                     />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                    {svc.name || svc.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-                    {svc.description || "A professional service tailored to your needs."}
-                  </p>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                      {svc.name || svc.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                      {svc.description || "A professional service tailored to your needs."}
+                    </p>
+                  </div>
                   <div className="flex items-center justify-between mt-auto">
                     <span className="text-lg font-bold" style={{ color: secondaryColor }}>
                       ${(svc.finalPrice ?? 0).toFixed(2)}
@@ -186,7 +208,7 @@ export default function ServicesSection() {
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {/* Call to action for full services page */}
@@ -242,7 +264,7 @@ export default function ServicesSection() {
                   <Image
                     src={selectedService.images[0] || "/placeholder-modal.jpg"}
                     loader={loader}
-                    alt={`${selectedService.name || selectedService.title} details`}
+                    alt={`${selectedService.name } details`}
                     layout="fill"
                     objectFit="cover"
                   />
@@ -283,6 +305,12 @@ export default function ServicesSection() {
                       <p className="flex items-center text-gray-700 dark:text-gray-300">
                         <CalendarDaysIcon className="w-5 h-5 mr-2" style={{ color: secondaryColor }} />
                         <span className="font-semibold">Duration:</span> {selectedService.duration}
+                      </p>
+                    )}
+                    {selectedService.category && (
+                      <p className="flex items-center text-gray-700 dark:text-gray-300">
+                        <TagIcon className="w-5 h-5 mr-2" style={{ color: secondaryColor }} />
+                        <span className="font-semibold">Category:</span> {selectedService.category.displayName || ''}
                       </p>
                     )}
                   </div>
