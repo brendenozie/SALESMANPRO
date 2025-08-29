@@ -744,13 +744,21 @@ const onRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
   });
 };
 
-const onUpdateTrustLogo = (promoIndex: number, logoIndex: number, url: string) => {
+// In your Parent Form Component
+
+const onUpdateTrustLogo = (
+  promoIndex: number, 
+  logoIndex: number, 
+  field: 'id' | 'url', // Add the 'field' parameter
+  value: string      // The last parameter is the 'value'
+) => {
   setForm((prev) => {
     const newPromotions = prev.promotions.map((promo, idx) => {
       if (idx === promoIndex) {
         const updatedLogos = (promo.trustLogos || []).map((logo, i) => {
           if (i === logoIndex) {
-            return { ...logo, url };
+            // Use dynamic property keys to update the correct field
+            return { ...logo, [field]: value };
           }
           return logo;
         });

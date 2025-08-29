@@ -9,7 +9,6 @@ import {
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { IPromotion } from '@/types/typings';
-import { add } from 'lodash';
 
 // Custom hook to manage accordion state
 const useAccordion = (initialIndex: number | null, count: number) => {
@@ -57,7 +56,7 @@ interface PromotionsAccordionProps {
   onUpdatePerk: (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => void;
   onRemovePerk: (promoIndex: number, perkIndex: number) => void;
   onAddTrustLogo: (promoIndex: number) => void;
-  onUpdateTrustLogo: (promoIndex: number, logoIndex: number, url: string) => void;
+  onUpdateTrustLogo: (promoIndex: number, logoIndex: number, field: 'id' | 'url', value: string) => void;
   onRemoveTrustLogo: (promoIndex: number, logoIndex: number) => void;
 }
 
