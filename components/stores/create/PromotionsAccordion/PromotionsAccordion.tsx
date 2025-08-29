@@ -54,8 +54,10 @@ interface PromotionsAccordionProps {
   onRemovePromotion: (index: number) => void;
   onImageUpload: (index: number, file: File, field?: keyof IPromotion) => void;
   onAddPerk: (promoIndex: number) => void;
+  onUpdatePerk: (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => void;
   onRemovePerk: (promoIndex: number, perkIndex: number) => void;
   onAddTrustLogo: (promoIndex: number) => void;
+  onUpdateTrustLogo: (promoIndex: number, logoIndex: number, url: string) => void;
   onRemoveTrustLogo: (promoIndex: number, logoIndex: number) => void;
 }
 
@@ -67,8 +69,10 @@ export default function PromotionsAccordion({
   onRemovePromotion,
   onImageUpload,
   onAddPerk,
+  onUpdatePerk,
   onRemovePerk,
   onAddTrustLogo,
+  onUpdateTrustLogo,
   onRemoveTrustLogo
 }: PromotionsAccordionProps) {
   const { openIndex, toggle } = useAccordion(0, promotions.length);
@@ -113,8 +117,10 @@ export default function PromotionsAccordion({
           onRemove={onRemovePromotion}
           onUpdate={handleUpdate}
           onAddPerk={onAddPerk}
+          onUpdatePerk={onUpdatePerk}
           onRemovePerk={onRemovePerk}
           onAddTrustLogo={onAddTrustLogo}
+          onUpdateTrustLogo={onUpdateTrustLogo}
           onRemoveTrustLogo={onRemoveTrustLogo}
           onImageUpload={onImageUpload}
         />
@@ -148,8 +154,10 @@ interface PromotionCardProps {
   onRemove: (index: number) => void;
   onUpdate: <K extends keyof IPromotion>(index: number, field: K, value: IPromotion[K]) => void;
   onAddPerk: (index: number) => void;
+  onUpdatePerk: (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => void;
   onRemovePerk: (promoIndex: number, perkIndex: number) => void;
   onAddTrustLogo: (index: number) => void;
+  onUpdateTrustLogo: (promoIndex: number, logoIndex: number, field: 'id' | 'url', value: string) => void;
   onRemoveTrustLogo: (promoIndex: number, logoIndex: number) => void;
   onImageUpload: (index: number, file: File, field?: keyof IPromotion) => void;
 }
@@ -163,8 +171,10 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
   onRemove,
   onUpdate,
   onAddPerk,
+  onUpdatePerk,
   onRemovePerk,
   onAddTrustLogo,
+  onUpdateTrustLogo,
   onRemoveTrustLogo,
   onImageUpload,
 }) => {
@@ -280,22 +290,25 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
                       label="Icon"
                       placeholder="e.g., SparklesIcon"
                       value={perk.icon}
-                      onChange={(e) => {
-                        const newPerks = [...(promo.perks || [])];
-                        newPerks[pIdx] = { ...newPerks[pIdx], icon: e.target.value };
-                        onUpdate(idx, 'perks', newPerks);
-                      }}
+                      // onChange={(e) => {
+                      //   const newPerks = [...(promo.perks || [])];
+                      //   newPerks[pIdx] = { ...newPerks[pIdx], icon: e.target.value };
+                      //   onUpdate(idx, 'perks', newPerks);
+                      // }}
+                      onChange={(e) => onUpdatePerk(idx, pIdx, 'icon', e.target.value)}
                       className="flex-1"
                     />
                     <InputField
                       label="Label"
                       placeholder="e.g., Free Shipping"
                       value={perk.label}
-                      onChange={(e) => {
-                        const newPerks = [...(promo.perks || [])];
-                        newPerks[pIdx] = { ...newPerks[pIdx], label: e.target.value };
-                        onUpdate(idx, 'perks', newPerks);
-                      }}
+                      // onChange={(e) => {
+                      //   const newPerks = [...(promo.perks || [])];
+                      //   newPerks[pIdx] = { ...newPerks[pIdx], label: e.target.value };
+                      //   onUpdate(idx, 'perks', newPerks);
+                      // }}
+                      onChange={(e) => onUpdatePerk(idx, pIdx, 'label', e.target.value)}
+                
                       className="flex-1"
                     />
                     {getIconComponent(perk.icon, 'h-6 w-6 text-indigo-500')}
@@ -313,11 +326,12 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
                       label="Logo URL"
                       placeholder="https://..."
                       value={logoUrl.url}
-                      onChange={(e) => {
-                        const newLogos = [...(promo.trustLogos || [])];
-                        newLogos[lIdx] = { id: newLogos[lIdx].id, url: e.target.value };
-                        onUpdate(idx, 'trustLogos', newLogos);
-                      }}
+                      // onChange={(e) => {
+                      //   const newLogos = [...(promo.trustLogos || [])];
+                      //   newLogos[lIdx] = { id: newLogos[lIdx].id, url: e.target.value };
+                      //   onUpdate(idx, 'trustLogos', newLogos);
+                      // }}
+                      onChange={(e) => onUpdateTrustLogo(idx, lIdx, 'url', e.target.value)}
                       className="flex-1"
                     />
                     {logoUrl && (

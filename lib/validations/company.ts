@@ -49,6 +49,29 @@ const promotionSchema = z.object({
     ctaText: z.string().nullable().optional(),
     ctaLink: z.string().url().nullable().optional().or(z.literal('')),
     bannerUrl: z.string().url().nullable().optional().or(z.literal('')),
+    backgroundColor: z.string().nullable().optional(),
+    textColor: z.string().nullable().optional(),
+
+    badgeText: z.string().nullable().optional(),
+    price: z.string().nullable().optional(),
+
+    // New fields for richer site promotion
+    featureImage1: z.string().nullable().optional(),
+    featureImage2: z.string().nullable().optional(),
+    featureImage3: z.string().nullable().optional(),
+
+    perks: z.array(z.object({
+        icon: z.string(),
+        label: z.string(),
+    })).nullable().optional(),
+    trustLogos: z.array(z.object({
+        // id: z.string(),
+        url: z.string(),
+    })).nullable().optional(),
+    themePrimary: z.string().nullable().optional(),
+    themeSecondary: z.string().nullable().optional(),
+
+    
 });
 
 const companyLocationSchema = z.object({

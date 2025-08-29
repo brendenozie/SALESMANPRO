@@ -305,9 +305,11 @@ export const websiteSteps: StepConfig[] = [
         onAddPromotion={h.onAddPromotion}
         onRemovePromotion={h.onRemovePromotion}
         onImageUpload={h.onPromotionImageUpload}
-        onAddPerk={h.onAddPerk} // <-- Pass the new function here
+        onAddPerk={h.onAddPerk}
+        onUpdatePerk={h.onUpdatePerk}
         onRemovePerk={h.onRemovePerk}
         onAddTrustLogo={h.onAddTrustLogo}
+        onUpdateTrustLogo={h.onUpdateTrustLogo}
         onRemoveTrustLogo={h.onRemoveTrustLogo}
       />
     ),

@@ -52,7 +52,6 @@ export async function GET(
 }
 
 // PUT (update) a company
-// PUT (update) a company
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
@@ -127,7 +126,6 @@ export async function PUT(
           }
         } : undefined,
 
-
         AnalyticsConfig: analyticsConfig ? { update: analyticsConfig } : undefined,
         PaymentSettings: paymentSettings ? { update: paymentSettings } : undefined,
         ShippingSettings: shippingSettings ? { update: shippingSettings } : undefined,
@@ -149,8 +147,19 @@ export async function PUT(
             deleteMany: {}, 
             create: promotions.map(p => ({
                 ...p, 
+                
+                perks: p.perks ? p.perks.map((perk: any) => ({
+                  ...perk,
+                  id: perk.id || undefined,
+                })) : [],
+                trustLogos: p.trustLogos ? p.trustLogos.map((logo: any) => ({
+                  ...logo,
+                  id: logo.id || undefined,
+                })) : [],
                 startsAt: p.startsAt ? new Date(p.startsAt) : undefined, 
-                endsAt: p.endsAt ? new Date(p.endsAt) : undefined
+                endsAt: p.endsAt ? new Date(p.endsAt) : undefined,
+
+
             })) 
         } : undefined,
 
@@ -164,6 +173,7 @@ export async function PUT(
                 category: { connect: { id: sc.categoryId } }
             }))
         } : undefined,
+
       },
     });
 

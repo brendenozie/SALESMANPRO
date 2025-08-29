@@ -669,6 +669,40 @@ const onAddPerk = (promoIndex: number) => {
   });
 };
 
+// In your Parent Form Component
+
+// New, more specific handler for updating a perk
+const onUpdatePerk = (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => {
+  setForm((prev) => {
+    // Create a deep copy to ensure we don't mutate state
+    const newPromotions = prev.promotions.map((promo, pIdx) => {
+      // If it's not the promotion we're interested in, return it as is
+      if (pIdx !== promoIndex) {
+        return promo;
+      }
+
+      // Now, update the specific perk within this promotion
+      const updatedPerks = (promo.perks || []).map((perk, perIdx) => {
+        // If it's not the perk we're updating, return it as is
+        if (perIdx !== perkIndex) {
+          return perk;
+        }
+
+        // Return a new object for the updated perk, preserving its ID
+        return { ...perk, [field]: value };
+      });
+
+      // Return the promotion with the updated perks array
+      return { ...promo, perks: updatedPerks };
+    });
+
+    // Return the new top-level state
+    return { ...prev, promotions: newPromotions };
+  });
+};
+
+// You will also need to add onUpdatePerk to the props passed to PromotionsAccordion
+
 // Also add a dedicated function for removing a perk
 const onRemovePerk = (promoIndex: number, perkIndex: number) => {
   setForm((prev) => {
@@ -696,11 +730,30 @@ const onAddTrustLogo = (promoIndex: number) => {
   });
 };
 
+
 const onRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
   setForm((prev) => {
     const newPromotions = prev.promotions.map((promo, idx) => {
       if (idx === promoIndex) {
         const updatedLogos = (promo.trustLogos || []).filter((_, i) => i !== logoIndex);
+        return { ...promo, trustLogos: updatedLogos };
+      }
+      return promo;
+    });
+    return { ...prev, promotions: newPromotions };
+  });
+};
+
+const onUpdateTrustLogo = (promoIndex: number, logoIndex: number, url: string) => {
+  setForm((prev) => {
+    const newPromotions = prev.promotions.map((promo, idx) => {
+      if (idx === promoIndex) {
+        const updatedLogos = (promo.trustLogos || []).map((logo, i) => {
+          if (i === logoIndex) {
+            return { ...logo, url };
+          }
+          return logo;
+        });
         return { ...promo, trustLogos: updatedLogos };
       }
       return promo;
@@ -1057,10 +1110,11 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onPromotionImageUpload,
 
     onAddPerk,
+    onUpdatePerk,
     onRemovePerk,
 
     onAddTrustLogo,
-
+    onUpdateTrustLogo,
     onRemoveTrustLogo,
 
     // Media (logo/banner)

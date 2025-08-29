@@ -743,8 +743,10 @@ export interface Handlers {
   onPromotionImageUpload: (index: number, file: File) => void;
 
   onAddPerk: (promoIndex: number) => void;
+  onUpdatePerk: (promoIndex: number, perkIndex: number, field: keyof { id:string; icon: string; label: string }, value: string) => void;
   onRemovePerk: (promoIndex: number, perkIndex: number) => void;
   onAddTrustLogo: (promoIndex: number) => void;
+  onUpdateTrustLogo: (promoIndex: number, logoIndex: number, url: string) => void;
   onRemoveTrustLogo: (promoIndex: number, logoIndex: number) => void;
 
   // ✅ Location handlers (unchanged)

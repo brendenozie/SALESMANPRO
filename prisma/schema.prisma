@@ -441,7 +441,7 @@ model Promotion {
   featureImage3 String?
 
   perks          Json? // e.g. [{ icon: "SparklesIcon", label: "Uncompromising Quality" }]
-  trustLogos     String[] // e.g. ["/logos/google.svg", "/logos/microsoft.svg"]
+  trustLogos     Json? // e.g. ["/logos/google.svg", "/logos/microsoft.svg"]
   themePrimary   String? // overrides store.themeSettings.primaryColor
   themeSecondary String? // overrides store.themeSettings.secondaryColor
 
