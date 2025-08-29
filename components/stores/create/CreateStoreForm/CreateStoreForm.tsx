@@ -1097,12 +1097,9 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 
     setAddress,
     onChangeSettings,
-    // onBulkToggle,
+    
     onToggleDay,
-
-    // onToggleParent,
-    // onToggleSub,
-    // onToggleBrand,
+    
     categoryDispatch: dispatch,
 
     onUpdateHeroSlide,

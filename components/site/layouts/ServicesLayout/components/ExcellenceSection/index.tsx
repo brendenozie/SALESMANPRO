@@ -14,7 +14,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 // Placeholder for company logos - You should replace these with actual paths to your partner/trust logos
 const companyLogos: string[] = [
-  '/images/logos/google.svg', // Example: Replace with your actual logo paths
+  '/images/logos/google.svg',
   '/images/logos/microsoft.svg',
   '/images/logos/shopify.svg',
   '/images/logos/stripe.svg',
@@ -38,20 +38,17 @@ export default function ExcellenceSection() {
     themeSettings,
   } = storeFormData;
 
-  const primary = themeSettings?.primaryColor ?? '#0d9488'; // teal-600 fallback
-  const secondary = themeSettings?.secondaryColor ?? '#f97316'; // orange-500 fallback
+  // Use the same primary and secondary colors for consistency
+  const primaryColor = themeSettings?.primaryColor ?? "#4CAF50";
+  const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107";
 
-  // Dynamically pull images from storeFormData if available, or use fallbacks
-  const featureImages: string[] = [
-    storeFormData?.themeSettings?.featureImage1 || '/images/placeholders/feature-main.jpg',
-    storeFormData?.themeSettings?.featureImage2 || '/images/placeholders/feature-sub1.jpg',
-    storeFormData?.themeSettings?.featureImage3 || '/images/placeholders/feature-sub2.jpg',
-  ];
+  // Dynamically pull a single key image from storeFormData or use a fallback
+  const featureImage: string = storeFormData?.themeSettings?.aboutImage || '/images/placeholders/feature-main.jpg';
 
   // Animation variants
-  const slideInUp = {
+  const fadeIn = {
     hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
   };
 
   const staggerContainer = {
@@ -59,7 +56,7 @@ export default function ExcellenceSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.2,
       },
     },
   };
@@ -69,182 +66,178 @@ export default function ExcellenceSection() {
     visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 120, damping: 12 } },
   };
 
-  return (
-    <section className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 py-16 lg:py-24 overflow-hidden">
-      {/* Trust Bar / Logos - More subtle and integrated */}
-      <motion.div
-        className="max-w-7xl mx-auto px-6 mb-16 opacity-75"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={staggerContainer}
-      >
-        <h3 className="text-center text-gray-500 dark:text-gray-400 text-lg font-semibold uppercase mb-8">Trusted by industry leaders and happy clients</h3>
-        <div className="flex justify-center items-center flex-wrap gap-x-12 gap-y-8">
-          {companyLogos.map((logoUrl: string, idx: number) => (
-            <motion.div
-              key={idx}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: idx * 0.08 } },
-              }}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.5 }}
-            >
-              <Image
-                loader={loader}
-                src={logoUrl}
-                alt={`Partner logo ${idx + 1}`}
-                width={140}
-                height={60}
-                className="object-contain h-14 w-auto grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
-              />
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+  const textReveal = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+  };
 
-      {/* Main Excellence Card - Enhanced Design */}
-      <div className="max-w-7xl mx-auto px-6">
+  return (
+    <section className="relative bg-gray-50 py-16 lg:py-24 overflow-hidden text-gray-900">
+
+      {/* Dynamic Background Element */}
+      <div
+        className="absolute top-0 left-0 w-full h-full hidden lg:block"
+        style={{
+          background: primaryColor,
+          clipPath: 'polygon(0% 0, 100% 0, 100% 50%, 0% 100%)',
+          zIndex: 0,
+          opacity: 0.05
+        }}
+      />
+
+      {/* Main Content Container with a higher z-index */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
+
+        {/* Top Section: Trust Bar */}
         <motion.div
-          className="relative rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between p-8 md:p-16 lg:p-20"
-          style={{
-            background: `linear-gradient(145deg, ${primary}EE, ${secondary}EE)`, // Slightly more opaque for richness
-            color: 'white',
-          }}
+          className="mb-16 text-center"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={slideInUp}
+          viewport={{ once: true, amount: 0.2 }}
+          variants={staggerContainer}
         >
-          {/* Background pattern/gradient overlay */}
-          <motion.div
-            className="absolute inset-0 z-0 opacity-10 bg-diagonal-lines" // Assuming bg-diagonal-lines is defined in your global CSS
-            style={{
-              backgroundImage: `radial-gradient(circle at 10% 20%, ${primary}50, transparent 70%),
-                               radial-gradient(circle at 90% 80%, ${secondary}50, transparent 70%)`,
-            }}
-            animate={{ scale: [1, 1.01, 1], rotate: [0, 0.5, 0] }} // Subtle motion
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          />
-
-          {/* Text Section */}
-          <div className="relative z-10 w-full md:w-1/2 md:pr-12 text-center md:text-left mb-10 md:mb-0">
-            <motion.h2
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg"
-              variants={slideInUp} // Using slideInUp for headline for consistency with section
+          <motion.h3
+            className="text-gray-500 text-lg font-semibold uppercase tracking-wider mb-8"
+            variants={textReveal}
+          >
+            Trusted by
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
             >
-              Our Commitment to <br />
-              <span className="text-white" style={{ background: `linear-gradient(to right, #ffffff, ${secondary})`, WebkitBackgroundClip: 'text', color: 'transparent' }}>
-                Excellence Experiences
+              {" "}Industry Leaders
+            </span>
+          </motion.h3>
+          <div className="flex justify-center items-center flex-wrap gap-x-12 gap-y-8">
+            {companyLogos.map((logoUrl: string, idx: number) => (
+              <motion.div
+                key={idx}
+                variants={fadeIn}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <Image
+                  loader={loader}
+                  src={logoUrl}
+                  alt={`Partner logo ${idx + 1}`}
+                  width={120}
+                  height={50}
+                  className="object-contain h-12 w-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* --- */}
+
+        {/* Main Excellence Section - Three-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 lg:gap-24 items-start">
+          
+          {/* Left Column: Image with unique background frame */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            variants={fadeIn}
+            viewport={{ once: true, amount: 0.3 }}
+            className="relative w-full aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden group col-span-1 lg:col-span-1"
+          >
+            {/* Background "Frame" with a subtle offset for depth */}
+            <div
+              className="absolute inset-0 rounded-3xl -z-10 transition-all duration-500 transform translate-x-3 translate-y-3 group-hover:translate-x-0 group-hover:translate-y-0"
+              style={{ background: secondaryColor }}
+            />
+            {/* Main Image */}
+            <Image
+              src={featureImage}
+              alt="Our commitment to excellence"
+              layout="fill"
+              objectFit="cover"
+              className="rounded-3xl shadow-xl transition-all duration-500 ease-in-out group-hover:scale-105"
+              loader={loader}
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-black/20" />
+          </motion.div>
+
+          {/* Center Column: Main Headline and Description */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            variants={staggerContainer}
+            viewport={{ once: true, amount: 0.3 }}
+            className="space-y-6 col-span-1 lg:col-span-2 text-center lg:text-left flex flex-col justify-center"
+          >
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight"
+              variants={textReveal}
+            >
+              We’re Driven by{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+              >
+                Excellence
               </span>
             </motion.h2>
 
             <motion.p
-              className="text-white/90 text-lg sm:text-xl mb-8 max-w-lg mx-auto md:mx-0"
-              variants={slideInUp} // Using slideInUp for paragraph
+              className="text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0 opacity-90"
+              variants={textReveal}
             >
-              Explore the core mission and vision that drives us every day. We're not just about services; we're about crafting **lasting value, unparalleled quality, and genuine trust** in every interaction.
+              We go beyond just providing a service. We're dedicated to crafting a seamless and exceptional experience, ensuring every detail is handled with precision and care.
             </motion.p>
 
-            {/* Enhanced Perks / Value Propositions */}
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 mb-10 text-white">
-              <motion.li className="flex items-center text-lg font-semibold" variants={listItemVariants}>
-                <SparklesIcon className="w-6 h-6 mr-3" style={{ color: secondary }} />
-                <span>Uncompromising Quality</span>
-              </motion.li>
-              <motion.li className="flex items-center text-lg font-semibold" variants={listItemVariants}>
-                <PuzzlePieceIcon className="w-6 h-6 mr-3" style={{ color: secondary }} />
-                <span>Tailored Solutions</span>
-              </motion.li>
-              <motion.li className="flex items-center text-lg font-semibold" variants={listItemVariants}>
-                <CheckCircleIcon className="w-6 h-6 mr-3" style={{ color: secondary }} />
-                <span>Reliable & Efficient</span>
-              </motion.li>
-              <motion.li className="flex items-center text-lg font-semibold" variants={listItemVariants}>
-                <RocketLaunchIcon className="w-6 h-6 mr-3" style={{ color: secondary }} />
-                <span>Innovative Approach</span>
-              </motion.li>
-            </ul>
-
-            <Link
-              href={`/${slug}/services`}
-              className="inline-block bg-white hover:bg-white/95 text-gray-900 font-extrabold px-8 py-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+            <motion.div
+              className="pt-4 flex justify-center lg:justify-start"
+              variants={textReveal}
             >
-              Explore Our Services
-            </Link>
-          </div>
+              <Link
+                href={`/${slug}/services`}
+                className="inline-block px-8 py-4 rounded-full text-white font-bold shadow-lg transition-all duration-300 ease-in-out
+                       hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-opacity-50"
+                style={{ backgroundColor: primaryColor, "--tw-ring-color": primaryColor } as React.CSSProperties}
+              >
+                Learn More
+              </Link>
+            </motion.div>
+          </motion.div>
 
-          {/* Image Collage - More dynamic and artistic */}
-          <motion.div
-            className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-[3/4] lg:aspect-[4/5] flex items-center justify-center p-4"
-            initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
-            whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          {/* Right Column: Value Propositions List */}
+          <motion.ul
+            className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8 pt-4 col-span-1 lg:col-span-1"
+            initial="hidden"
+            whileInView="visible"
+            variants={staggerContainer}
             viewport={{ once: true, amount: 0.3 }}
           >
-            <div className="relative w-full h-full">
-              {/* Main Image - Central, larger, with border */}
-              {featureImages[0] && (
-                <motion.div
-                  className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-xl border-4 border-white transform hover:scale-105 transition-transform duration-500 ease-in-out cursor-pointer"
-                  style={{ zIndex: 3 }}
-                  initial={{ rotate: -3 }}
-                  whileHover={{ rotate: 0, scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Image
-                    src={featureImages[0]}
-                    loader={loader}
-                    alt="Our primary commitment to excellence"
-                    layout="fill"
-                    objectFit="cover"
-                    className="object-cover"
-                  />
-                </motion.div>
-              )}
+            {[
+              { title: "Uncompromising Quality", icon: <SparklesIcon className="w-8 h-8" /> },
+              { title: "Tailored Solutions", icon: <PuzzlePieceIcon className="w-8 h-8" /> },
+              { title: "Reliable & Efficient", icon: <CheckCircleIcon className="w-8 h-8" /> },
+              { title: "Innovative Approach", icon: <RocketLaunchIcon className="w-8 h-8" /> },
+            ].map((item, index) => (
+              <motion.li
+                key={index}
+                className="flex flex-col items-start space-y-2 p-4 rounded-xl transition-all duration-300 transform"
+                style={{
+                  border: '2px solid transparent',
+                  borderImage: `linear-gradient(45deg, ${primaryColor}, ${secondaryColor}) 1`,
+                }}
+                whileHover={{ y: -5, boxShadow: "0px 8px 15px rgba(0,0,0,0.1)" }}
+              >
+                <div className="flex-shrink-0" style={{ color: secondaryColor }}>
+                  {item.icon}
+                </div>
+                <h3 className="text-lg font-bold">{item.title}</h3>
+                <p className="text-sm text-gray-600">A short description goes here to explain the value proposition.</p>
+              </motion.li>
+            ))}
+          </motion.ul>
 
-              {/* Secondary Image - Top right, smaller, overlapping */}
-              {featureImages[1] && (
-                <motion.div
-                  className="absolute top-0 right-0 w-1/2 h-1/2 rounded-2xl overflow-hidden shadow-2xl border-4 border-white transform translate-x-1/4 -translate-y-1/4 hover:scale-110 transition-transform duration-500 ease-in-out cursor-pointer"
-                  style={{ zIndex: 4 }}
-                  initial={{ rotate: 5 }}
-                  whileHover={{ rotate: 0, scale: 1.15 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Image
-                    src={featureImages[1]}
-                    loader={loader}
-                    alt="Tailored solutions for every client"
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </motion.div>
-              )}
-
-              {/* Tertiary Image - Bottom left, smaller, overlapping */}
-              {featureImages[2] && (
-                <motion.div
-                  className="absolute bottom-0 left-0 w-1/2 h-1/2 rounded-2xl overflow-hidden shadow-2xl border-4 border-white transform -translate-x-1/4 translate-y-1/4 hover:scale-110 transition-transform duration-500 ease-in-out cursor-pointer"
-                  style={{ zIndex: 4 }}
-                  initial={{ rotate: -5 }}
-                  whileHover={{ rotate: 0, scale: 1.15 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Image
-                    src={featureImages[2]}
-                    loader={loader}
-                    alt="Innovative approaches to modern challenges"
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

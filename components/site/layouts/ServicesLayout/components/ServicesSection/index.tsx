@@ -15,7 +15,7 @@ export default function ServicesSection() {
   const { storeFormData } = useStoreContext();
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
 
-  if (!storeFormData) {
+  if (!storeFormData || !storeFormData.marketplaceListings) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900">
         <p className="text-gray-600 dark:text-gray-300 text-lg animate-pulse">Curating our premium services...</p>
@@ -24,89 +24,135 @@ export default function ServicesSection() {
   }
 
   const { marketplaceListings, themeSettings, slug } = storeFormData;
-  const primaryColor = themeSettings?.primaryColor ?? "#2563EB"; // Default Blue
-  const secondaryColor = themeSettings?.secondaryColor ?? "#EC4899"; // Default Pink
+  const primaryColor = themeSettings?.primaryColor ?? "#4CAF50"; // Green fallback
+  const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107"; // Yellow fallback
 
-  // Animation variants for section title
-  const titleVariants = {
-    hidden: { opacity: 0, y: 30 },
+  // Animation variants
+  const fadeIn = {
+    hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
   };
 
-  // Animation variants for service cards
-  const cardVariants = {
-    hidden: { opacity: 0, y: 80, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 100, damping: 12, mass: 0.8 } },
-    hover: {
-      scale: 1.05,
-      boxShadow: "0 25px 50px rgba(0,0,0,0.2)",
-      transition: { duration: 0.3, ease: "easeOut" }
-    },
-    tap: { scale: 0.98 },
-  };
-
-  // Animation variants for modal backdrop
-  const backdropVariants = {
+  const staggerContainer = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3 } },
-    exit: { opacity: 0, transition: { duration: 0.3 } },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
   };
 
-  // Animation variants for modal content
   const modalVariants = {
     hidden: { opacity: 0, y: 50, scale: 0.9 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 100, damping: 15, delay: 0.1 } },
     exit: { opacity: 0, y: 50, scale: 0.9, transition: { duration: 0.2 } },
   };
 
-  // Group services for a "featured" layout, if applicable
-  const featuredServices = marketplaceListings.slice(0, 3); // Display top 3 as featured
-  const otherServices = marketplaceListings.slice(3); // The rest
+  // Select a single featured service (e.g., the first one)
+  const featuredService = marketplaceListings.length > 0 ? marketplaceListings[0] : null;
+  const otherServices = marketplaceListings.slice(1);
 
   return (
     <>
-      <section className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 py-16 lg:py-24 relative overflow-hidden">
-        {/* Abstract background blobs for visual interest */}
-        <div
-          className="absolute -top-1/4 -left-1/4 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob-slow"
-          style={{ backgroundColor: primaryColor }}
-        />
-        <div
-          className="absolute -bottom-1/4 -right-1/4 w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob-slow animation-delay-4000"
-          style={{ backgroundColor: secondaryColor }}
-        />
+      <section className="bg-white dark:bg-gray-950 py-16 lg:py-24 relative overflow-hidden">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 bg-dot-pattern opacity-5 dark:bg-dot-pattern-dark z-0" />
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <motion.h2
-            className="text-center text-4xl sm:text-5xl font-extrabold mb-16 text-gray-900 dark:text-gray-100 leading-tight"
-            variants={titleVariants}
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div
+            className="text-center mb-16 space-y-4"
+            variants={fadeIn}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
           >
-            Discover Our <br className="sm:hidden" />
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
-              Exceptional Services
-            </span> ✨
-          </motion.h2>
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight">
+              Explore Our{" "}
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
+                Exceptional Services
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              From our most popular offerings to comprehensive solutions, discover how we can elevate your experience.
+            </p>
+          </motion.div>
 
-          {/* Featured Services Grid - More prominent */}
-          {featuredServices.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
-              {featuredServices.map((svc: ServiceItem, index: number) => (
+          {/* Featured Service Section - Hero-like presentation */}
+          {featuredService && (
+            <motion.div
+              className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center mb-24"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              {/* Left: Featured Service Image */}
+              <motion.div variants={fadeIn} className="relative w-full aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden shadow-xl group cursor-pointer" onClick={() => setSelectedService(featuredService)}>
+                <div className="absolute inset-0 rounded-3xl -z-10 transition-all duration-500 transform translate-x-3 translate-y-3 group-hover:translate-x-0 group-hover:translate-y-0" style={{ background: primaryColor }} />
+                <Image
+                  src={featuredService.images[0] || "/placeholder-service.jpg"}
+                  alt={featuredService.name || featuredService.title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="transition-transform duration-500 ease-in-out group-hover:scale-110"
+                  loader={loader}
+                />
+              </motion.div>
+              
+              {/* Right: Featured Service Details */}
+              <motion.div variants={staggerContainer}>
+                <motion.span className="text-sm font-semibold uppercase tracking-wider mb-2 inline-block" style={{ color: secondaryColor }}>
+                  Our Signature Offering
+                </motion.span>
+                <motion.h3 className="text-4xl lg:text-5xl font-extrabold mb-4" variants={fadeIn}>
+                  {featuredService.name || featuredService.title}
+                </motion.h3>
+                <motion.p className="text-lg text-gray-700 dark:text-gray-300 mb-6" variants={fadeIn}>
+                  {featuredService.description || "A comprehensive service designed to meet your needs with exceptional quality and attention to detail."}
+                </motion.p>
+                <motion.div className="flex items-center gap-6 mb-8" variants={fadeIn}>
+                  <div className="flex items-center text-xl font-bold">
+                    <CurrencyDollarIcon className="w-6 h-6 mr-2" style={{ color: secondaryColor }} />
+                    <span className="text-gray-900 dark:text-gray-100">${(featuredService.finalPrice ?? 0).toFixed(2)}</span>
+                  </div>
+                  {featuredService.duration && (
+                    <div className="flex items-center text-lg text-gray-600 dark:text-gray-400">
+                      <CalendarDaysIcon className="w-5 h-5 mr-2" />
+                      <span>{featuredService.duration}</span>
+                    </div>
+                  )}
+                </motion.div>
+                <motion.div variants={fadeIn}>
+                  <button
+                    onClick={() => setSelectedService(featuredService)}
+                    className="inline-flex items-center px-8 py-4 rounded-full text-white font-bold shadow-xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-opacity-50"
+                    style={{ backgroundColor: primaryColor, "--tw-ring-color": primaryColor } as React.CSSProperties}
+                  >
+                    Explore This Service
+                    <ArrowLongRightIcon className="w-5 h-5 ml-2 transition-transform" />
+                  </button>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Other Services Grid */}
+          {otherServices.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {otherServices.map((svc: ServiceItem, index: number) => (
                 <motion.div
                   key={svc.id}
-                  className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden cursor-pointer group"
-                  variants={cardVariants}
+                  className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform border border-gray-100 dark:border-gray-700 flex flex-col cursor-pointer group"
+                  variants={fadeIn}
                   initial="hidden"
                   whileInView="visible"
-                  whileHover="hover"
-                  whileTap="tap"
+                  whileHover={{ scale: 1.02 }}
                   viewport={{ once: true, amount: 0.2 }}
-                  transition={{ delay: index * 0.15 }}
+                  transition={{ delay: index * 0.1 }}
                   onClick={() => setSelectedService(svc)}
                 >
-                  <div className="aspect-[4/3] w-full overflow-hidden relative">
+                  <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden mb-4">
                     <Image
                       src={svc.images[0] || "/placeholder-service.jpg"}
                       loader={loader}
@@ -115,111 +161,49 @@ export default function ServicesSection() {
                       objectFit="cover"
                       className="transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                      <h3 className="text-2xl font-bold text-white drop-shadow-lg">{svc.name || svc.title}</h3>
-                    </div>
-                    {/* Price tag badge */}
-                    <span className="absolute top-4 right-4 bg-white/90 text-gray-900 dark:bg-gray-700 dark:text-gray-100 px-3 py-1.5 rounded-full text-lg font-semibold shadow-md">
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    {svc.name || svc.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                    {svc.description || "A professional service tailored to your needs."}
+                  </p>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="text-lg font-bold" style={{ color: secondaryColor }}>
                       ${(svc.finalPrice ?? 0).toFixed(2)}
                     </span>
-                  </div>
-
-                  <div className="p-6 flex flex-col flex-grow">
-                    <p className="text-gray-700 dark:text-gray-300 mb-6 flex-grow line-clamp-3">
-                      {svc.description || "A comprehensive service designed to meet your needs with exceptional quality and attention to detail."}
-                    </p>
-                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Click to learn more</span>
-                      <button
-                        className="flex items-center gap-1 font-semibold transition-all duration-200 hover:gap-2 group-hover:gap-3"
-                        style={{ color: primaryColor }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedService(svc);
-                        }}
-                      >
-                        Explore Details
-                        <ArrowLongRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                      </button>
-                    </div>
+                    <button
+                      className="inline-flex items-center gap-1 font-semibold text-sm transition-all duration-200 hover:gap-2"
+                      style={{ color: primaryColor }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedService(svc);
+                      }}
+                    >
+                      View Details
+                      <ArrowLongRightIcon className="w-4 h-4" />
+                    </button>
                   </div>
                 </motion.div>
               ))}
             </div>
           )}
 
-          {/* Other Services (if any) - A more compact, list-like presentation */}
-          {otherServices.length > 0 && (
-            <div className="mt-16 bg-gray-100 dark:bg-gray-800 rounded-3xl p-8 shadow-inner">
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8 text-center"
-                  style={{ color: primaryColor }}>
-                All Our Offerings
-              </h3>
-              <ul className="space-y-6">
-                {otherServices.map((svc: ServiceItem, index: number) => (
-                  <motion.li
-                    key={svc.id}
-                    className="flex flex-col sm:flex-row items-center justify-between bg-white dark:bg-gray-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-                    initial={{ opacity: 0, x: -50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ delay: index * 0.08 }}
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => setSelectedService(svc)}
-                  >
-                    <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
-                      <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
-                        <Image
-                          src={svc.images[0] || "/placeholder-thumbnail.jpg"}
-                          loader={loader}
-                          alt={svc.name || svc.title}
-                          layout="fill"
-                          objectFit="cover"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">{svc.name || svc.title}</h4>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-1">{svc.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                      <p className="text-xl font-extrabold text-gray-900 dark:text-gray-100">
-                        <span style={{ color: secondaryColor }}>${(svc.finalPrice ?? 0).toFixed(2)}</span>
-                      </p>
-                      <button
-                        className="flex items-center gap-1 font-semibold text-sm transition-all duration-200 hover:gap-2"
-                        style={{ color: primaryColor }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedService(svc);
-                        }}
-                      >
-                        View
-                        <ArrowLongRightIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Call to action for full services page, if not all are displayed */}
-          {marketplaceListings.length > featuredServices.length && (
-            <div className="text-center mt-16">
-              <Link href={`/${slug}/services`} passHref>
-                <motion.button
-                  className="inline-flex items-center px-10 py-4 border-2 rounded-full font-bold text-lg transition-all duration-300 ease-in-out hover:scale-105 group"
-                  style={{ borderColor: primaryColor, color: primaryColor }}
-                  whileHover={{ backgroundColor: primaryColor, color: "white" }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  View All Services
-                  <ArrowLongRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </motion.button>
-              </Link>
-            </div>
-          )}
+          {/* Call to action for full services page */}
+          <div className="text-center mt-16">
+            <Link href={`/${slug}/services`} passHref>
+              <motion.button
+                className="inline-flex items-center px-10 py-4 border-2 rounded-full font-bold text-lg transition-all duration-300 ease-in-out hover:scale-105 group"
+                style={{ borderColor: primaryColor, color: primaryColor }}
+                whileHover={{ backgroundColor: primaryColor, color: "white" }}
+                whileTap={{ scale: 0.95 }}
+                variants={fadeIn}
+              >
+                View All Services
+                <ArrowLongRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -231,11 +215,11 @@ export default function ServicesSection() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            variants={backdropVariants}
+            variants={fadeIn}
           >
             {/* Backdrop */}
             <motion.div
-              className="fixed inset-0 bg-black/75 backdrop-blur-md" // Darker, more blurred backdrop
+              className="fixed inset-0 bg-black/75 backdrop-blur-md"
               onClick={() => setSelectedService(null)}
             />
 
@@ -253,7 +237,7 @@ export default function ServicesSection() {
               </button>
 
               <div className="grid md:grid-cols-2 gap-8 lg:gap-12 p-8 md:p-12">
-                {/* Modal Image & Gallery (if multiple images) */}
+                {/* Modal Image & Gallery */}
                 <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden shadow-lg">
                   <Image
                     src={selectedService.images[0] || "/placeholder-modal.jpg"}
@@ -262,7 +246,6 @@ export default function ServicesSection() {
                     layout="fill"
                     objectFit="cover"
                   />
-                  {/* Potentially add a small image gallery here if svc.images has more */}
                   {selectedService.images.length > 1 && (
                     <div className="absolute bottom-4 left-4 right-4 flex gap-2 overflow-x-auto p-1 bg-black/30 rounded-lg">
                       {selectedService.images.map((img: string, idx: number) => (
@@ -294,7 +277,7 @@ export default function ServicesSection() {
                     <span>Price: <span style={{ color: primaryColor }}>${(selectedService.finalPrice ?? 0).toFixed(2)}</span></span>
                   </div>
 
-                  {/* Additional details (e.g., duration, features) */}
+                  {/* Additional details */}
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
                     {selectedService.duration && (
                       <p className="flex items-center text-gray-700 dark:text-gray-300">
@@ -302,19 +285,6 @@ export default function ServicesSection() {
                         <span className="font-semibold">Duration:</span> {selectedService.duration}
                       </p>
                     )}
-                    {/* Add more dynamic details here if ServiceItem type includes them */}
-                    {/* Example:
-                    {selectedService.features && selectedService.features.length > 0 && (
-                      <div>
-                        <h4 className="font-semibold text-lg mb-2">Key Features:</h4>
-                        <ul className="list-disc list-inside text-gray-600 dark:text-gray-300">
-                          {selectedService.features.map((feature: string, idx: number) => (
-                            <li key={idx}>{feature}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    */}
                   </div>
 
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">

@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 // Placeholder for dynamic data (replace with your actual context/props)
-
 import bannerLaundry from "@/assets/homebanner.png"; // Example image
 import bannerDelivery from "@/assets/homebanner.png"; // Example image
 import bannerCatering from "@/assets/homebanner.png"; // Example image
 
 // --- HeroSection Component ---
-export default function HeroSection({ storeFormData }: { storeFormData: any }) { // Assume storeFormData is passed as a prop
+export default function HeroSection({ storeFormData }: { storeFormData: any }) {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
 
   // Fallback data for demonstration
@@ -20,40 +20,40 @@ export default function HeroSection({ storeFormData }: { storeFormData: any }) {
     name: "Your Local Service Pro",
     description: "Making your life easier, one service at a time.",
     themeSettings: {
-      primaryColor: "#4CAF50", // Green for welcome
-      secondaryColor: "#FFC107", // Amber for accent
+      primaryColor: "#4CAF50",
+      secondaryColor: "#FFC107",
     },
     storeCategories: [
       {
         id: "cat1",
         name: "Washing & Laundry",
         shortDescription: "Fresh clothes, delivered clean.",
-        icon: <LaundryOutlineIcon className="w-16 h-16" />,
+        icon: <LaundryOutlineIcon className="w-8 h-8 md:w-10 md:h-10" />,
         banner: bannerLaundry.src,
-        slug: "laundry"
+        slug: "laundry",
       },
       {
         id: "cat2",
         name: "Swift Deliveries",
         shortDescription: "Fast, reliable, every time.",
-        icon: <DeliveryOutlineIcon className="w-16 h-16" />,
+        icon: <DeliveryOutlineIcon className="w-8 h-8 md:w-10 md:h-10" />,
         banner: bannerDelivery.src,
-        slug: "delivery"
+        slug: "delivery",
       },
       {
         id: "cat3",
         name: "Gourmet Catering",
         shortDescription: "Exquisite flavors for any event.",
-        icon: <CookingOutlineIcon className="w-16 h-16" />,
+        icon: <CookingOutlineIcon className="w-8 h-8 md:w-10 md:h-10" />,
         banner: bannerCatering.src,
-        slug: "catering"
+        slug: "catering",
       },
-      // Add more categories as needed
     ],
   };
 
   const currentStoreData = storeFormData || defaultStoreData;
-  const { slug, name, description, themeSettings, storeCategories } = currentStoreData;
+  const { slug, name, description, themeSettings, storeCategories } =
+    currentStoreData;
 
   const primaryColor = themeSettings?.primaryColor ?? "#4CAF50";
   const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107";
@@ -62,152 +62,215 @@ export default function HeroSection({ storeFormData }: { storeFormData: any }) {
   useEffect(() => {
     if (storeCategories && storeCategories.length > 1) {
       const interval = setInterval(() => {
-        setActiveCategoryIndex((prevIndex) =>
-          (prevIndex + 1) % storeCategories.length
+        setActiveCategoryIndex(
+          (prevIndex) => (prevIndex + 1) % storeCategories.length
         );
       }, 7000); // Change category every 7 seconds
       return () => clearInterval(interval);
     }
   }, [storeCategories]);
 
-  const activeCategory = storeCategories ? storeCategories[activeCategoryIndex] : null;
+  const activeCategory = storeCategories
+    ? storeCategories[activeCategoryIndex]
+    : null;
 
   // Animation Variants
-  const textReveal = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
-  };
-
-  const buttonSlideIn = {
+  const contentVariants = {
     hidden: { opacity: 0, x: -50 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.7, delay: 0.4, ease: "easeOut" } },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        staggerChildren: 0.1, // Adjusted for more snappy reveal
+        duration: 0.8,
+        ease: "easeOut",
+      },
+    },
   };
 
-  const categoryCardRise = {
-    hidden: { opacity: 0, y: 100, scale: 0.9 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.8, ease: "easeOut", delay: 0.6 } },
+  // New variant for staggered text animation
+  const wordReveal = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   };
 
-  const backgroundFade = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 1.5, ease: "easeInOut" } },
+  const buttonReveal = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.2, ease: "easeOut" } },
+  };
+
+  const imageFade = {
+    initial: { opacity: 0, scale: 1.05 },
+    animate: { opacity: 1, scale: 1, transition: { duration: 1.5, ease: "easeInOut" } },
+    exit: { opacity: 0, transition: { duration: 1, ease: "easeInOut" } },
+  };
+
+  const dynamicTextFade = {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.3 } },
   };
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gray-100">
-      {/* Background Image / Video (Dynamic) */}
-      <motion.div
-        key={activeCategory?.banner || "default-banner"} // Key for re-animating on category change
-        className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${activeCategory?.banner || bannerLaundry.src})` }}
-        variants={backgroundFade}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Subtle Gradient Overlay for Readability and Mood */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 50%, ${primaryColor}40 100%)`, // Dark top, light bottom with theme color
-          }}
-        ></div>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(90deg, ${primaryColor}20 0%, transparent 50%, ${secondaryColor}20 100%)`, // Subtle horizontal accent
-          }}
-        ></div>
-        {/* Optional: Add a subtle texture or noise overlay for depth */}
-        <div className="absolute inset-0 bg-noise-overlay opacity-10"></div>
-      </motion.div>
+    <section className="relative w-full min-h-screen flex flex-col items-stretch overflow-hidden bg-gray-50 text-gray-900">
+      {/* Visual background element for enhanced appeal */}
+      <div
+        className="absolute top-0 right-0 w-3/4 h-full hidden lg:block"
+        style={{
+          background: primaryColor,
+          clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
+          zIndex: 0,
+        }}
+      ></div>
 
-      {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 sm:py-32 lg:py-40 text-white text-center flex flex-col items-center">
-        {/* Headline */}
-        <motion.h1
-          className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight drop-shadow-lg"
-          variants={textReveal}
-          initial="hidden"
-          animate="visible"
-        >
-          {name || "Your Life."} <span style={{ color: secondaryColor }}>{activeCategory?.name || "Simplified."}</span>
-        </motion.h1>
-
-        {/* Sub-headline / Description */}
-        <motion.p
-          className="mt-4 text-xl sm:text-2xl max-w-3xl text-gray-100 leading-relaxed drop-shadow-md"
-          variants={textReveal}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.2 }}
-        >
-          {activeCategory?.shortDescription || description || "Effortless solutions for your everyday needs."}
-        </motion.p>
-
-        {/* Call to Action Buttons */}
-        <motion.div
-          className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
-          variants={buttonSlideIn}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link href={`/${slug}/services/${activeCategory?.slug || "all-services"}`} passHref>
-            <motion.button
-              className="px-8 py-4 bg-white text-gray-800 font-bold rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              style={{ backgroundColor: secondaryColor, color: "white" }} // Use secondary color for primary CTA
-              whileHover={{ scale: 1.05, boxShadow: "0px 8px 20px rgba(0,0,0,0.3)" }}
-              whileTap={{ scale: 0.95 }}
+      <div className="relative z-10 w-full min-h-screen flex flex-col lg:flex-row items-stretch">
+        {/* Left Side: Image Section */}
+        <div className="relative w-full lg:w-1/2 min-h-[50vh] lg:min-h-screen flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeCategory?.banner || "default-banner"}
+              className="absolute inset-0 z-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${activeCategory?.banner || bannerLaundry.src})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+              variants={imageFade}
+              initial="initial"
+              animate="animate"
+              exit="exit"
             >
-              Explore Services
-            </motion.button>
-          </Link>
-          <Link href={`/${slug}/contact`} passHref>
-            <motion.button
-              className="px-8 py-4 border-2 border-white text-white font-semibold rounded-full text-lg hover:bg-white hover:text-gray-800 transition-all duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get a Quote
-            </motion.button>
-          </Link>
-        </motion.div>
+              {/* Subtle Gradient Overlay for Depth and Color */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(270deg, rgba(255,255,255,0.8) 0%, transparent 60%)`,
+                }}
+              ></motion.div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-        {/* Dynamic Category Navigator/Showcase */}
-        {storeCategories && storeCategories.length > 0 && (
-          <div className="absolute bottom-0 w-full flex justify-center pb-4 lg:pb-6">
-            <div className="flex gap-4">
-              {storeCategories.map((category: any, index: number) => (
-                <motion.div
-                  key={category.id}
-                  className={`flex flex-col items-center p-4 rounded-xl cursor-pointer transition-all duration-300 border-2
-                              ${index === activeCategoryIndex ? 'scale-110 shadow-lg' : 'opacity-70'}
-                              `}
+        {/* Right Side: Content Section */}
+        <div className="relative w-full lg:w-1/2 p-8 md:p-12 lg:p-20 flex flex-col justify-center lg:items-start text-center lg:text-left">
+          <motion.div
+            className="flex flex-col items-center lg:items-start"
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* Main Headline with staggered word animation */}
+            <motion.h1
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight drop-shadow-sm"
+              variants={contentVariants}
+            >
+              {(name || "Your Life.").split(" ").map((word : string, i : number) => (
+                <motion.span key={i} className="inline-block mr-2" variants={wordReveal}>
+                  {word}
+                </motion.span>
+              ))}
+            </motion.h1>
+
+            {/* Dynamic Sub-Headline with AnimatePresence */}
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={activeCategory?.name || "default"}
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight drop-shadow-sm"
+                style={{
+                  backgroundImage: `linear-gradient(45deg, ${secondaryColor}EE, ${secondaryColor}AA)`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+                variants={dynamicTextFade}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {activeCategory?.name || "Simplified."}
+              </motion.h2>
+            </AnimatePresence>
+
+            {/* Sub-headline */}
+            <motion.p
+              className="mt-6 text-xl sm:text-2xl max-w-lg font-light text-gray-600 leading-relaxed"
+              variants={wordReveal}
+            >
+              {activeCategory?.shortDescription ||
+                description ||
+                "Effortless solutions for your everyday needs."}
+            </motion.p>
+
+            {/* Call to Action Buttons */}
+            <motion.div
+              className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
+              variants={buttonReveal}
+            >
+              <Link href={`/${slug}/services/${activeCategory?.slug || "all-services"}`} passHref>
+                <motion.button
+                  className="px-8 py-4 font-bold rounded-full text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
                   style={{
-                    backgroundColor: index === activeCategoryIndex ? `white` : `rgba(255,255,255,0.15)`,
-                    borderColor: index === activeCategoryIndex ? secondaryColor : `rgba(255,255,255,0.3)`,
-                    color: index === activeCategoryIndex ? primaryColor : "white",
+                    background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
+                    color: "white",
                   }}
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => setActiveCategoryIndex(index)}
-                  variants={categoryCardRise}
-                  initial="hidden"
-                  animate="visible"
+                  whileHover={{ scale: 1.05, boxShadow: "0px 8px 20px rgba(0,0,0,0.1)" }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="mb-2 text-current">
-                    {category.icon}
-                  </div>
-                  <span className="text-sm font-semibold">{category.name}</span>
-                </motion.div>
+                  Explore {activeCategory?.name || "Our"} Services
+                </motion.button>
+              </Link>
+              <Link href={`/${slug}/contact`} passHref>
+                <motion.button
+                  className="px-8 py-4 border-2 font-semibold rounded-full text-lg transition-all duration-300 transform hover:scale-105"
+                  style={{
+                    borderColor: primaryColor,
+                    color: primaryColor,
+                  }}
+                  onHoverStart={(e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.backgroundColor = primaryColor; e.currentTarget.style.color = 'white'; }}
+                  onHoverEnd={(e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = primaryColor; }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Get a Quote
+                </motion.button>
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* New Category Navigation Tabs at the bottom */}
+          {storeCategories && storeCategories.length > 0 && (
+            <div className="mt-12 flex justify-center lg:justify-start gap-4 flex-wrap">
+              {storeCategories.map((category: any, index: number) => (
+                <motion.button
+                  key={category.id}
+                  className={`flex items-center gap-2 py-3 px-6 rounded-full text-sm font-medium transition-colors duration-300 transform
+                    ${index === activeCategoryIndex ? 'bg-white shadow-md text-gray-900' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}
+                  `}
+                  onClick={() => setActiveCategoryIndex(index)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {category.icon}
+                  <span>{category.name}</span>
+                </motion.button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* Scroll Down Indicator */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-600 animate-bounce hidden md:block"
+        initial={{ y: -10 }}
+        animate={{ y: 10 }}
+        transition={{ y: { duration: 1.5, repeat: Infinity, ease: "easeInOut" } }}
+      >
+        <ChevronDownIcon className="w-8 h-8" />
+      </motion.div>
     </section>
   );
 }
 
-// Placeholder for custom icon components (you would define these or import from a library)
+// Placeholder for custom icon components
 const LaundryOutlineIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" d="M11.354 1.5A.5.5 0 0 1 12 2v2.5a.5.5 0 0 1-1 0V2a.5.5 0 0 1 .354-.447ZM15 3h1.5A1.5 1.5 0 0 1 18 4.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-1.5" />
