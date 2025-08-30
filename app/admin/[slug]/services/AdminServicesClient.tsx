@@ -486,14 +486,9 @@ export default function AdminServicesClient({
         onClose={() => setIsFormModalOpen(false)}
         onSave={handleSaveService}
         initialData={serviceToEdit}
-        // Pass all necessary data for dropdowns/theme to the form
-        productCategories={categoriesData} // Pass the full categoriesData to the form
+        productCategories={categoriesData}
         paymentOptions={paymentOptions}
         deliveryMethods={deliveryMethods}
-        // sellers={sellers}
-        // companies={companies}
-        companyId={companyId}
-        themeSettings={storeFormData?.themeSettings}
       />
     </div>
   );
