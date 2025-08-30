@@ -1,11 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FormData } from './ServiceListingForm'; // Import types from parent
-
+import { MarketListingForm } from '@/types/typings';
 interface ServiceCategoryTabProps {
-    formData: FormData;
+    MarketListingForm: MarketListingForm;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-    errors: Partial<FormData & { [key: string]: string }>;
+    errors: Partial<MarketListingForm & { [key: string]: string }>;
     fieldVariants: any;
     tabContentVariants: any;
     primaryColor: string;
@@ -13,7 +12,7 @@ interface ServiceCategoryTabProps {
 }
 
 const ServiceCategoryTab: React.FC<ServiceCategoryTabProps> = ({
-    formData,
+    MarketListingForm,
     handleChange,
     errors,
     fieldVariants,
@@ -23,7 +22,7 @@ const ServiceCategoryTab: React.FC<ServiceCategoryTabProps> = ({
 }) => {
     // Find the full category object that is currently selected
     const selectedCategoryObject = productCategories.find(
-        (cat) => cat.categoryId === formData.productCategoryId
+        (cat) => cat.categoryId === MarketListingForm.productCategoryId
     );
 
     // Get the subcategories from the selected category, or an empty array if none is selected
@@ -64,7 +63,7 @@ const ServiceCategoryTab: React.FC<ServiceCategoryTabProps> = ({
                         name="productCategoryId"
                         className={`block w-full rounded-lg border ${errors.productCategoryId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 pr-10 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.productCategoryId}
+                        value={MarketListingForm.productCategoryId}
                         onChange={handleCategoryChange} // Use the new handler
                         required
                     >
@@ -96,7 +95,7 @@ const ServiceCategoryTab: React.FC<ServiceCategoryTabProps> = ({
                             name="subCategoryName"
                             className={`block w-full rounded-lg border ${errors.subCategoryName ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 pr-10 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none`}
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                            value={formData.subCategoryName}
+                            value={MarketListingForm.subCategoryName || ''}
                             onChange={handleChange}
                             required
                         >
@@ -132,12 +131,12 @@ export default ServiceCategoryTab;
 // // components/admin/components/ServiceCategoryTab.tsx
 // import React from 'react';
 // import { motion } from 'framer-motion';
-// import { FormData } from './ServiceListingForm'; // Import types from parent
+// import { MarketListingForm } from './ServiceListingForm'; // Import types from parent
 
 // interface ServiceCategoryTabProps {
-//     formData: FormData;
+//     MarketListingForm: MarketListingForm;
 //     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-//     errors: Partial<FormData & { [key: string]: string }>;
+//     errors: Partial<MarketListingForm & { [key: string]: string }>;
 //     fieldVariants: any;
 //     tabContentVariants: any;
 //     primaryColor: string;
@@ -145,7 +144,7 @@ export default ServiceCategoryTab;
 // }
 
 // const ServiceCategoryTab: React.FC<ServiceCategoryTabProps> = ({
-//     formData,
+//     MarketListingForm,
 //     handleChange,
 //     errors,
 //     fieldVariants,
@@ -170,7 +169,7 @@ export default ServiceCategoryTab;
 //                         name="productCategoryId"
 //                         className={`block w-full rounded-lg border ${errors.productCategoryId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 pr-10 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none`}
 //                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-//                         value={formData.productCategoryId}
+//                         value={MarketListingForm.productCategoryId}
 //                         onChange={handleChange}
 //                         required
 //                     >

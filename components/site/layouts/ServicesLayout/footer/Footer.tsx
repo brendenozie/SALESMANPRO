@@ -19,19 +19,9 @@ import {
 // } from "react-icons/fa";
 
 interface FooterProps {
-  storeFormData: {
-    name: string;
-    slug: string;
-    tagline: string;
-    themeSettings?: {
-      primaryColor?: string;
-      secondaryColor?: string;
-    };
-    contactEmail?: string;
-    contactPhone?: string;
-    address?: string;
-  };
+  storeFormData:any;
 }
+
 
 const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
   const primary = storeFormData.themeSettings?.primaryColor || "#0f766e";

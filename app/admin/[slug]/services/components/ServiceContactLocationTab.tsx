@@ -1,12 +1,12 @@
 // components/admin/components/ServiceContactLocationTab.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FormData } from './ServiceListingForm'; // Import types from parent
+import { MarketListingForm } from '@/types/typings';
 
 interface ServiceContactLocationTabProps {
-    formData: FormData;
+    MarketListingForm: MarketListingForm;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-    errors: Partial<FormData & { [key: string]: string }>;
+    errors: Partial<MarketListingForm & { [key: string]: string }>;
     fieldVariants: any;
     tabContentVariants: any;
     primaryColor: string;
@@ -15,7 +15,7 @@ interface ServiceContactLocationTabProps {
 }
 
 const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
-    formData,
+    MarketListingForm,
     handleChange,
     errors,
     fieldVariants,
@@ -39,7 +39,7 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                 <input
                     type="text"
                     name="contactName"
-                    value={formData.contactName || ''}
+                    value={MarketListingForm.contactName || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -51,7 +51,7 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                 <input
                     type="tel"
                     name="contact"
-                    value={formData.contact || ''}
+                    value={MarketListingForm.contact || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border ${errors.contact ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -64,7 +64,7 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                 <input
                     type="email"
                     name="email"
-                    value={formData.email || ''}
+                    value={MarketListingForm.email || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -77,7 +77,7 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                 <input
                     type="text"
                     name="locationName"
-                    value={formData.locationName || ''}
+                    value={MarketListingForm.locationName || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -91,7 +91,7 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                         type="number"
                         name="latitude"
                         step="any"
-                        value={formData.latitude || ''}
+                        value={MarketListingForm.latitude || ''}
                         onChange={handleChange}
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -104,7 +104,7 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                         type="number"
                         name="longitude"
                         step="any"
-                        value={formData.longitude || ''}
+                        value={MarketListingForm.longitude || ''}
                         onChange={handleChange}
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -116,19 +116,19 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                 <input
                     type="checkbox"
                     name="delivery"
-                    checked={formData.delivery}
+                    checked={MarketListingForm.delivery}
                     onChange={handleChange}
                     className="form-checkbox h-5 w-5 text-current rounded"
                     style={{ color: primaryColor }}
                 />
                 <span className="text-gray-700 dark:text-gray-300 font-medium">Offer Delivery?</span>
             </motion.label>
-            {formData.delivery && (
+            {MarketListingForm.delivery && (
                 <motion.label initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="block mt-4">
                     <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Delivery Method</span>
                     <select
                         name="deliveryMethod"
-                        value={formData.deliveryMethod || ''}
+                        value={MarketListingForm.deliveryMethod || ''}
                         onChange={handleChange}
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -144,7 +144,7 @@ const ServiceContactLocationTab: React.FC<ServiceContactLocationTabProps> = ({
                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Payment Option</span>
                 <select
                     name="paymentOption"
-                    value={formData.paymentOption || ''}
+                    value={MarketListingForm.paymentOption || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}

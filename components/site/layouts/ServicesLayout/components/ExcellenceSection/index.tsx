@@ -3,12 +3,6 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import {
-  SparklesIcon,
-  PuzzlePieceIcon,
-  RocketLaunchIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { IPromotion } from "@/types/typings";

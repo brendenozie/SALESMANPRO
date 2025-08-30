@@ -1,12 +1,12 @@
 // components/admin/components/ServiceDetailsTab.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FormData, SellerType } from './ServiceListingForm'; // Import types from parent
+import { MarketListingForm } from '@/types/typings';
 
 interface ServiceDetailsTabProps {
-    formData: FormData;
+    MarketListingForm: MarketListingForm;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-    errors: Partial<FormData & { [key: string]: string }>;
+    errors: Partial<MarketListingForm & { [key: string]: string }>;
     fieldVariants: any; // Framer motion variants
     tabContentVariants: any; // Framer motion variants
     primaryColor: string;
@@ -15,7 +15,7 @@ interface ServiceDetailsTabProps {
 }
 
 const ServiceDetailsTab: React.FC<ServiceDetailsTabProps> = ({
-    formData,
+    MarketListingForm,
     handleChange,
     errors,
     fieldVariants,
@@ -39,7 +39,7 @@ const ServiceDetailsTab: React.FC<ServiceDetailsTabProps> = ({
                 <input
                     type="text"
                     name="title"
-                    value={formData.title}
+                    value={MarketListingForm.name}
                     onChange={handleChange}
                     required
                     className={`mt-1 block w-full rounded-lg border ${errors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
@@ -53,7 +53,7 @@ const ServiceDetailsTab: React.FC<ServiceDetailsTabProps> = ({
                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Description <span className="text-red-500">*</span></span>
                 <textarea
                     name="description"
-                    value={formData.description || ""}
+                    value={MarketListingForm.description || ""}
                     onChange={handleChange}
                     required
                     rows={5}
@@ -69,7 +69,7 @@ const ServiceDetailsTab: React.FC<ServiceDetailsTabProps> = ({
                     <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Seller Type</span>
                     <select
                         name="sellerType"
-                        value={formData.sellerType || ''}
+                        value={MarketListingForm.sellerType || ''}
                         onChange={handleChange}
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -79,12 +79,12 @@ const ServiceDetailsTab: React.FC<ServiceDetailsTabProps> = ({
                         <option value="COMPANY">Company</option>
                     </select>
                 </label> */}
-                {/* {formData.sellerType === 'COMPANY' && (
+                {/* {MarketListingForm.sellerType === 'COMPANY' && (
                     <label className="block">
                         <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Company</span>
                         <select
                             name="companyId"
-                            value={formData.companyId || ''}
+                            value={MarketListingForm.companyId || ''}
                             onChange={handleChange}
                             className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -96,12 +96,12 @@ const ServiceDetailsTab: React.FC<ServiceDetailsTabProps> = ({
                         </select>
                     </label>
                 )}
-                {formData.sellerType === 'INDIVIDUAL' && (
+                {MarketListingForm.sellerType === 'INDIVIDUAL' && (
                     <label className="block">
                         <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Seller</span>
                         <select
                             name="sellerId"
-                            value={formData.sellerId || ''}
+                            value={MarketListingForm.sellerId || ''}
                             onChange={handleChange}
                             className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}

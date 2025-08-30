@@ -28,7 +28,7 @@ import ServiceAvailabilityTab from './ServiceAvailabilityTab';
 import ServiceMediaTab from './ServiceMediaTab';
 import ServiceContactLocationTab from './ServiceContactLocationTab';
 import ServiceAdvancedOptionsTab from './ServiceAdvancedOptionsTab';
-import { IStoreCategory } from '@/types/typings';
+import { IStoreCategory, MarketListingForm } from '@/types/typings';
 
 // --- Type Definitions (Centralized) ---
 export type SellerType = "INDIVIDUAL" | "COMPANY";
@@ -48,68 +48,9 @@ export interface PricingTier {
     features: string[];
 }
 
-export interface FormData {
-    id?: string;
-    title: string; // Renamed from 'name' for clarity in UI
-    description: string;
-    sellerId?: string;
-    companyId?: string;
-    sellerType?: SellerType;
-    
-    productCategoryId: string; // This will hold the ID of the actual ProductCategory
-    category: IStoreCategory | null; // This holds the *selected IStoreCategory object*
-    subCategory: any; // JSON from IStoreCategory.items or ProductCategory.subcategories
-    subCategoryName: string; // If you derive a name from subCategory JSON
-      
-
-    sellingPrice: number;
-    buyingPrice: number;
-    profitMargin?: number;
-    tax?: number;
-    shippingCost?: number;
-    discount?: number;
-    quantity?: number;
-    serviceSchedule?: string;
-    hourlyRate?: number;
-    minimumHours?: number;
-    minNoticePeriod?: string;
-    maxBookingAhead?: string;
-    totalCapacity?: number;
-    deliveryMethod?: string;
-    fulfillmentStatus?: string;
-    providerRating?: number;
-    bookingSlots: BookingSlot[];
-    pricingTiers: PricingTier[];
-    tags: string[];
-    amenities: string[];
-    requiredClientInfo: string[];
-    images: string[];
-    video?: string;
-    contactName?: string;
-    contact?: string;
-    email?: string;
-    locationName?: string;
-    latitude?: number;
-    longitude?: number;
-    isAvailable: boolean;
-    isOnOffer: boolean;
-    isFlashDeal: boolean;
-    isNewArrival: boolean;
-    isDiscounted: boolean;
-    isFeatured: boolean;
-    startDealDate?: string;
-    endDealDate?: string;
-    availabilityStart?: string;
-    availabilityEnd?: string;
-    delivery: boolean;
-    showOnGhuba?: boolean;
-    paymentOption?: string;
-    status: ListingStatus;
-}
-
 // Dummy initial form data
-const initialFormData: FormData = {
-    title: '',
+const initialFormData: MarketListingForm = {
+    name: '',
     description: '',
     productCategoryId: '',
     sellingPrice: 0,
@@ -130,7 +71,20 @@ const initialFormData: FormData = {
     status: 'PENDING',
     category: null,
     subCategory: undefined,
-    subCategoryName: ''
+    subCategoryName: '',
+    duration: undefined,
+    id: '',
+    option: [],
+    color: [],
+    size: [],
+    weight: [],
+    material: [],
+    quantity: 0,
+    bedrooms: [],
+    studios: [],
+    features: [],
+    paymentOption: '',
+    location: null
 };
 
 // Mock data for dropdowns if not provided by context
@@ -146,12 +100,20 @@ const mockDeliveryMethods = ['In-person', 'Online', 'Hybrid'];
 const mockPaymentOptions = ['Credit Card', 'Cash', 'Bank Transfer'];
 
 
+export type FormErrors = {
+    [K in keyof MarketListingForm]?: string;
+} & {
+    // Index signature for nested errors like 'pricingTiers[0].name'
+    [key: string]: string;
+};
+
+
 // Main component props
 interface ServiceListingFormProps {
     isOpen: boolean; // Controls modal visibility
     onClose: () => void; // Function to close the modal
-    onSave: (data: FormData) => Promise<void>; // Function to save the form data, now async
-    initialData?: FormData | null; // Data for editing an existing service
+    onSave: (data: MarketListingForm) => Promise<void>; // Function to save the form data, now async
+    initialData?: MarketListingForm | null; // Data for editing an existing service
     // Data for dropdowns passed from parent (AdminServicesClient)
     productCategories?: any[]; // Full category data from storeFormData
     paymentOptions?: string[];
@@ -175,9 +137,9 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
     const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
     const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316';
 
-    const [formData, setFormData] = useState<FormData>(initialData || initialFormData);
+    const [MarketListingForm, setFormData] = useState<MarketListingForm>(initialData || initialFormData);
     const [activeTabIndex, setActiveTabIndex] = useState(0); // Use index for walkthrough
-    const [errors, setErrors] = useState<Partial<FormData & { [key: string]: string }>>({});
+    const [errors, setErrors] = useState<Partial<MarketListingForm & { [key: string]: string }>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Use props data or mock data as fallback
@@ -242,19 +204,19 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
         });
 
         // Clear error for the field being changed
-        if (errors[name as keyof FormData]) {
+        if (errors[name as keyof MarketListingForm]) {
             setErrors((prevErrors) => ({ ...prevErrors, [name]: undefined }));
         }
     };
 
     // Handler for array fields (comma-separated strings)
-    const handleArrayFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof FormData) => {
+    const handleArrayFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof MarketListingForm) => {
         const value = e.target.value;
         setFormData((prev) => ({
             ...prev,
             [fieldName]: value.split(',').map(item => item.trim()).filter(item => item !== ''),
         }));
-        if (errors[fieldName as keyof FormData]) {
+        if (errors[fieldName as keyof MarketListingForm]) {
             setErrors((prevErrors) => ({ ...prevErrors, [fieldName]: undefined }));
         }
     };
@@ -294,13 +256,21 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
         setFormData((prev) => {
             const updatedTiers = [...(prev.pricingTiers || [])];
             if (field === "features") {
-                updatedTiers[index] = { ...updatedTiers[index], [field]: typeof value === 'string' ? value.split(',').map(f => f.trim()).filter(f => f !== '') : value };
+                const featuresArray =
+                    typeof value === "string"
+                    ? value.split(",").map((f) => f.trim()).filter((f) => f !== "")
+                    : (value as string[]); // explicitly cast
+                updatedTiers[index] = { ...updatedTiers[index], features: featuresArray };
+            } else if (field === "price") {
+                updatedTiers[index] = { ...updatedTiers[index], price: Number(value) };
             } else {
                 updatedTiers[index] = { ...updatedTiers[index], [field]: value };
             }
+
             return { ...prev, pricingTiers: updatedTiers };
         });
     };
+    
 
     const handleRemovePricingTier = (index: number) => {
         setFormData((prev) => ({
@@ -313,64 +283,65 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
     // This function now validates ALL fields, but `handleNext` will use it
     // to check only the *current* tab's fields.
     const validateForm = () => {
-        let newErrors: Partial<FormData & { [key: string]: string }> = {};
+        let newErrors: Partial<MarketListingForm & { [key: string]: string }> = {};
 
         // Details Tab
-        if (!formData.title.trim()) newErrors.title = 'Listing Title is required.';
-        if (!formData.description.trim()) newErrors.description = 'Description is required.';
+        if (!MarketListingForm.name.trim()) newErrors.title = 'Listing Title is required.';
+        if (!MarketListingForm.description?.trim()) newErrors.description = 'Description is required.';
         // Add validation for sellerType, companyId, sellerId if required
-        // if (!formData.sellerType) newErrors.sellerType = 'Seller type is required.';
-        // if (formData.sellerType === 'COMPANY' && !formData.companyId) newErrors.companyId = 'Company is required.';
-        // if (formData.sellerType === 'INDIVIDUAL' && !formData.sellerId) newErrors.sellerId = 'Seller is required.';
+        // if (!MarketListingForm.sellerType) newErrors.sellerType = 'Seller type is required.';
+        // if (MarketListingForm.sellerType === 'COMPANY' && !MarketListingForm.companyId) newErrors.companyId = 'Company is required.';
+        // if (MarketListingForm.sellerType === 'INDIVIDUAL' && !MarketListingForm.sellerId) newErrors.sellerId = 'Seller is required.';
 
         // Category Tab
-        if (!formData.productCategoryId.trim()) newErrors.productCategoryId = 'Category is required.';
+        if (!MarketListingForm.productCategoryId.trim()) newErrors.productCategoryId = 'Category is required.';
 
         // Pricing Tab
-        if (formData.sellingPrice <= 0) newErrors.sellingPrice = 'Selling Price must be positive.';
-        if (formData.buyingPrice <= 0) newErrors.buyingPrice = 'Buying Price must be positive.';
-        formData.pricingTiers?.forEach((tier, index) => {
+        if (MarketListingForm.sellingPrice <= 0) newErrors.sellingPrice = 'Selling Price must be positive.';
+        if (MarketListingForm.buyingPrice <= 0) newErrors.buyingPrice = 'Buying Price must be positive.';
+
+        MarketListingForm.pricingTiers?.forEach((tier, index) => {
             if (!tier.name.trim()) newErrors[`pricingTiers[${index}].name`] = 'Tier name is required.';
             if (tier.price < 0) newErrors[`pricingTiers[${index}].price`] = 'Price cannot be negative.';
         });
 
         // Service Specifics Tab
-        if (formData.hourlyRate !== undefined && formData.hourlyRate < 0) newErrors.hourlyRate = 'Hourly Rate cannot be negative.';
-        if (formData.minimumHours !== undefined && formData.minimumHours < 0) newErrors.minimumHours = 'Minimum Hours cannot be negative.';
+        if (MarketListingForm.hourlyRate !== undefined && MarketListingForm.hourlyRate < 0) newErrors.hourlyRate = 'Hourly Rate cannot be negative.';
+        if (MarketListingForm.minimumHours !== undefined && MarketListingForm.minimumHours < 0) newErrors.minimumHours = 'Minimum Hours cannot be negative.';
         // Add validation for amenities and requiredClientInfo if they are mandatory arrays
-        // if (formData.amenities.length === 0) newErrors.amenities = 'At least one amenity is required.';
-        // if (formData.requiredClientInfo.length === 0) newErrors.requiredClientInfo = 'At least one required client info is needed.';
+        // if (MarketListingForm.amenities.length === 0) newErrors.amenities = 'At least one amenity is required.';
+        // if (MarketListingForm.requiredClientInfo.length === 0) newErrors.requiredClientInfo = 'At least one required client info is needed.';
 
 
         // Availability Tab
-        formData.bookingSlots?.forEach((slot, index) => {
+        MarketListingForm.bookingSlots?.forEach((slot, index) => {
             if (!slot.date) newErrors[`bookingSlots[${index}].date`] = 'Date is required.';
             if (!slot.time) newErrors[`bookingSlots[${index}].time`] = 'Time is required.';
             if (slot.capacity <= 0) newErrors[`bookingSlots[${index}].capacity`] = 'Capacity must be positive.';
         });
-        if (formData.availabilityStart && formData.availabilityEnd && new Date(formData.availabilityStart) >= new Date(formData.availabilityEnd)) {
+        if (MarketListingForm.availabilityStart && MarketListingForm.availabilityEnd && new Date(MarketListingForm.availabilityStart) >= new Date(MarketListingForm.availabilityEnd)) {
             newErrors.availabilityStart = 'Start date must be before end date.';
             newErrors.availabilityEnd = 'End date must be after start date.';
         }
-        if (formData.isOnOffer && formData.startDealDate && formData.endDealDate && new Date(formData.startDealDate) >= new Date(formData.endDealDate)) {
+        if (MarketListingForm.isOnOffer && MarketListingForm.startDealDate && MarketListingForm.endDealDate && new Date(MarketListingForm.startDealDate) >= new Date(MarketListingForm.endDealDate)) {
             newErrors.startDealDate = 'Deal start date must be before end date.';
             newErrors.endDealDate = 'Deal end date must be after start date.';
         }
 
         // Media Tab
-        // if (formData.images.length === 0) newErrors.images = 'At least one image is required.';
+        // if (MarketListingForm.images.length === 0) newErrors.images = 'At least one image is required.';
 
         // Contact & Location Tab
-        if (formData.contact && !/^\+?[0-9\s\-()]{7,20}$/.test(formData.contact)) newErrors.contact = 'Invalid phone number format.';
-        if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format.';
+        if (MarketListingForm.contact && !/^\+?[0-9\s\-()]{7,20}$/.test(MarketListingForm.contact)) newErrors.contact = 'Invalid phone number format.';
+        if (MarketListingForm.email && !/\S+@\S+\.\S+/.test(MarketListingForm.email)) newErrors.email = 'Invalid email format.';
         // Add validation for locationName, latitude, longitude if mandatory
-        // if (!formData.locationName) newErrors.locationName = 'Location name is required.';
+        // if (!MarketListingForm.locationName) newErrors.locationName = 'Location name is required.';
 
 
         // Advanced Options Tab
-        // if (!formData.tags || formData.tags.length === 0) newErrors.tags = 'At least one tag is required.';
-        // if (!formData.status) newErrors.status = 'Status is required.';
-        if (formData.providerRating !== undefined && (formData.providerRating < 1 || formData.providerRating > 5)) {
+        // if (!MarketListingForm.tags || MarketListingForm.tags.length === 0) newErrors.tags = 'At least one tag is required.';
+        // if (!MarketListingForm.status) newErrors.status = 'Status is required.';
+        if (MarketListingForm.providerRating !== undefined && (MarketListingForm.providerRating < 1 || MarketListingForm.providerRating > 5)) {
             newErrors.providerRating = 'Rating must be between 1 and 5.';
         }
 
@@ -382,16 +353,16 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
         const allErrors = validateForm();
         const currentTabFields = tabs[activeTabIndex].fields;
         let currentTabHasErrors = false;
-        let tabSpecificErrors: Partial<FormData & { [key: string]: string }> = {};
+        let tabSpecificErrors: Partial<MarketListingForm & { [key: string]: string }> = {};
 
         for (const field of currentTabFields) {
-            if (allErrors[field as keyof FormData]) {
-                tabSpecificErrors[field as keyof FormData] = allErrors[field as keyof FormData];
+            if (allErrors[field as keyof MarketListingForm]) {
+                tabSpecificErrors[field as keyof MarketListingForm] = allErrors[field as keyof MarketListingForm];
                 currentTabHasErrors = true;
             }
             // Handle nested array errors like pricingTiers[0].name
-            if (field === 'pricingTiers' && formData.pricingTiers) {
-                formData.pricingTiers.forEach((_, index) => {
+            if (field === 'pricingTiers' && MarketListingForm.pricingTiers) {
+                MarketListingForm.pricingTiers.forEach((_, index) => {
                     if (allErrors[`pricingTiers[${index}].name`]) {
                         tabSpecificErrors[`pricingTiers[${index}].name`] = allErrors[`pricingTiers[${index}].name`];
                         currentTabHasErrors = true;
@@ -402,8 +373,8 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                     }
                 });
             }
-            if (field === 'bookingSlots' && formData.bookingSlots) {
-                formData.bookingSlots.forEach((_, index) => {
+            if (field === 'bookingSlots' && MarketListingForm.bookingSlots) {
+                MarketListingForm.bookingSlots.forEach((_, index) => {
                     if (allErrors[`bookingSlots[${index}].date`]) {
                         tabSpecificErrors[`bookingSlots[${index}].date`] = allErrors[`bookingSlots[${index}].date`];
                         currentTabHasErrors = true;
@@ -484,7 +455,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
         setIsSubmitting(true);
         try {
-            await onSave(formData);
+            await onSave(MarketListingForm);
             // onClose() will be called by parent after successful save
         } catch (error) {
             console.error('Failed to save service:', error);
@@ -543,7 +514,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                         {/* Header */}
                         <h3 className="text-4xl font-extrabold mb-6 text-gray-900 dark:text-gray-100 leading-tight">
-                            {initialData ? `Edit: ${initialData.title || 'Service Listing'}` : "Add New Service Listing"}
+                            {initialData ? `Edit: ${initialData.name || 'Service Listing'}` : "Add New Service Listing"}
                         </h3>
 
                         <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row flex-grow">
@@ -574,7 +545,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                             <tab.icon className="w-5 h-5" />
                                             {tab.name}
                                             {/* Error indicator for tab */}
-                                            {tab.fields.some(field => errors[field as keyof FormData]) ||
+                                            {tab.fields.some(field => errors[field as keyof MarketListingForm]) ||
                                              (tab.id === 'pricing' && (errors['pricingTiers[0].name'] || errors['pricingTiers[0].price'])) || // Specific check for nested errors
                                              (tab.id === 'availability' && (errors['bookingSlots[0].date'] || errors['bookingSlots[0].time'] || errors['bookingSlots[0].capacity']))
                                             ? (
@@ -590,7 +561,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                 <AnimatePresence mode="wait">
                                     {activeTabId === 'details' && (
                                         <ServiceDetailsTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             errors={errors}
                                             fieldVariants={fieldVariants}
@@ -603,7 +574,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                                     {activeTabId === 'productcategory' && (
                                         <ServiceCategoryTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             errors={errors}
                                             fieldVariants={fieldVariants}
@@ -615,7 +586,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                                     {activeTabId === 'pricing' && (
                                         <ServicePricingTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             handleArrayFieldChange={handleArrayFieldChange}
                                             handleAddPricingTier={handleAddPricingTier}
@@ -630,7 +601,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                                     {activeTabId === 'service' && (
                                         <ServiceSpecificsTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             handleArrayFieldChange={handleArrayFieldChange}
                                             errors={errors}
@@ -642,7 +613,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                                     {activeTabId === 'availability' && (
                                         <ServiceAvailabilityTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             handleAddBookingSlot={handleAddBookingSlot}
                                             handleUpdateBookingSlot={handleUpdateBookingSlot}
@@ -656,7 +627,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                                     {activeTabId === 'media' && (
                                         <ServiceMediaTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             errors={errors}
                                             fieldVariants={fieldVariants}
@@ -667,7 +638,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                                     {activeTabId === 'contactLocation' && (
                                         <ServiceContactLocationTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             errors={errors}
                                             fieldVariants={fieldVariants}
@@ -680,7 +651,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                                     {activeTabId === 'advanced' && (
                                         <ServiceAdvancedOptionsTab
-                                            formData={formData}
+                                            MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
                                             handleArrayFieldChange={handleArrayFieldChange}
                                             errors={errors}

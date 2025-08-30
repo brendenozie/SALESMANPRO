@@ -1,21 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FormData } from './ServiceListingForm'; // Import types from parent
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MarketListingForm } from '@/types/typings';
 
 interface ServiceSpecificsTabProps {
-    formData: FormData;
+    MarketListingForm: MarketListingForm;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     // The prop below is no longer used by this component but is kept for API consistency.
-    handleArrayFieldChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof FormData) => void;
-    errors: Partial<FormData & { [key: string]: string }>;
+    handleArrayFieldChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof MarketListingForm) => void;
+    errors: Partial<MarketListingForm & { [key: string]: string }>;
     fieldVariants: any;
     tabContentVariants: any;
     primaryColor: string;
 }
 
 const ServiceSpecificsTab: React.FC<ServiceSpecificsTabProps> = ({
-    formData,
+    MarketListingForm,
     handleChange,
     errors,
     fieldVariants,
@@ -24,12 +24,12 @@ const ServiceSpecificsTab: React.FC<ServiceSpecificsTabProps> = ({
 }) => {
     // A single, reusable handler to manage updates for our dynamic lists ('amenities', 'requiredClientInfo')
     const handleListUpdate = (
-        fieldName: keyof FormData,
+        fieldName: keyof MarketListingForm,
         action: 'update' | 'add' | 'remove',
         index?: number,
         value?: string
     ) => {
-        const list = (formData[fieldName] as string[]) || [];
+        const list = (MarketListingForm[fieldName] as string[]) || [];
         let newList = [...list];
 
         if (action === 'update' && index !== undefined) {
@@ -71,7 +71,7 @@ const ServiceSpecificsTab: React.FC<ServiceSpecificsTabProps> = ({
                         name="quantity"
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.quantity || ''}
+                        value={MarketListingForm.quantity || ''}
                         onChange={handleChange}
                         placeholder="1"
                         min="0"
@@ -85,7 +85,7 @@ const ServiceSpecificsTab: React.FC<ServiceSpecificsTabProps> = ({
                         step="0.01"
                         className={`mt-1 block w-full rounded-lg border ${errors.hourlyRate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.hourlyRate || ''}
+                        value={MarketListingForm.hourlyRate || ''}
                         onChange={handleChange}
                         placeholder="0.00"
                         min="0"
@@ -96,7 +96,7 @@ const ServiceSpecificsTab: React.FC<ServiceSpecificsTabProps> = ({
                 {/* --- NEW: Dynamic Amenities Field --- */}
                 <motion.div className="block md:col-span-2 space-y-3" variants={fieldVariants}>
                     <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Amenities</span>
-                    {(formData.amenities || []).map((amenity, index) => (
+                    {(MarketListingForm.amenities || []).map((amenity, index) => (
                         <div key={index} className="flex items-center gap-2">
                             <input
                                 type="text"
@@ -129,7 +129,7 @@ const ServiceSpecificsTab: React.FC<ServiceSpecificsTabProps> = ({
                 {/* --- NEW: Dynamic Required Client Info Field --- */}
                 <motion.div className="block md:col-span-2 space-y-3" variants={fieldVariants}>
                     <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Required Client Information</span>
-                     {(formData.requiredClientInfo || []).map((info, index) => (
+                     {(MarketListingForm.requiredClientInfo || []).map((info, index) => (
                         <div key={index} className="flex items-center gap-2">
                             <input
                                 type="text"

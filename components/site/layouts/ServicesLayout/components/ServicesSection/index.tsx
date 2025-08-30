@@ -5,15 +5,15 @@ import { ArrowLongRightIcon, XMarkIcon, CalendarDaysIcon, CurrencyDollarIcon, Ta
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStoreContext } from "@/contexts/StoreContext";
-import { ServiceItem } from "@/app/admin/[slug]/services/AdminServicesClient";
 import BookingFormModal from "../BookingFormModal";
 import Link from "next/link";
+import { MarketListingForm } from "@/types/typings";
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 export default function ServicesSection() {
   const { storeFormData } = useStoreContext();
-  const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
+  const [selectedService, setSelectedService] = useState<MarketListingForm | null>(null);
 
   console.log(storeFormData);
 
@@ -165,7 +165,7 @@ export default function ServicesSection() {
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
             >
-              {otherServices.map((svc: ServiceItem, index: number) => (
+              {otherServices.map((svc: MarketListingForm, index: number) => (
                 <motion.div
                   key={svc.id}
                   className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform border border-gray-100 dark:border-gray-700 flex flex-col cursor-pointer group"
@@ -290,7 +290,7 @@ export default function ServicesSection() {
                 {/* Modal Text Content & Booking Form */}
                 <div className="space-y-6 text-gray-900 dark:text-gray-100">
                   <h2 className="text-3xl sm:text-4xl font-bold leading-tight" style={{ color: primaryColor }}>
-                    {selectedService.name || selectedService.title}
+                    {selectedService.name }
                   </h2>
                   <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
                     {selectedService.description || "Detailed description of this premium service, highlighting its benefits and what makes it unique."}
@@ -312,7 +312,7 @@ export default function ServicesSection() {
                     {selectedService.category && (
                       <p className="flex items-center text-gray-700 dark:text-gray-300">
                         <TagIcon className="w-5 h-5 mr-2" style={{ color: secondaryColor }} />
-                        <span className="font-semibold">Category:</span> {selectedService.category.displayName || ''}
+                        <span className="font-semibold">Category:</span> {selectedService.category || ''}
                       </p>
                     )}
                   </div>

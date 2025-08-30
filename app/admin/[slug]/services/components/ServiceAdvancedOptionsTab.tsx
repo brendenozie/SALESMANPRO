@@ -1,20 +1,20 @@
 // components/admin/components/ServiceAdvancedOptionsTab.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FormData, ListingStatus } from './ServiceListingForm'; // Import types from parent
+import { MarketListingForm } from '@/types/typings';
 
 interface ServiceAdvancedOptionsTabProps {
-    formData: FormData;
+    MarketListingForm: MarketListingForm;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-    handleArrayFieldChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof FormData) => void;
-    errors: Partial<FormData & { [key: string]: string }>;
+    handleArrayFieldChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof MarketListingForm) => void;
+    errors: Partial<MarketListingForm & { [key: string]: string }>;
     fieldVariants: any; // Framer motion variants for individual fields
     tabContentVariants: any; // Framer motion variants for the tab section
     primaryColor: string;
 }
 
 const ServiceAdvancedOptionsTab: React.FC<ServiceAdvancedOptionsTabProps> = ({
-    formData,
+    MarketListingForm,
     handleChange,
     handleArrayFieldChange,
     errors,
@@ -38,7 +38,7 @@ const ServiceAdvancedOptionsTab: React.FC<ServiceAdvancedOptionsTabProps> = ({
                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">SEO Tags (comma-separated)</span>
                 <textarea
                     name="tags"
-                    value={formData.tags.join(', ') || ''}
+                    value={MarketListingForm.tags.join(', ') || ''}
                     onChange={(e) => handleArrayFieldChange(e, 'tags')}
                     rows={2}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
@@ -52,7 +52,7 @@ const ServiceAdvancedOptionsTab: React.FC<ServiceAdvancedOptionsTabProps> = ({
                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Listing Status</span>
                 <select
                     name="status"
-                    value={formData.status}
+                    value={MarketListingForm.status}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 appearance-none pr-8`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -69,7 +69,7 @@ const ServiceAdvancedOptionsTab: React.FC<ServiceAdvancedOptionsTabProps> = ({
                 <input
                     type="checkbox"
                     name="showOnGhuba"
-                    checked={formData.showOnGhuba || false}
+                    checked={MarketListingForm.showOnGhuba || false}
                     onChange={handleChange}
                     className="form-checkbox h-5 w-5 text-current rounded"
                     style={{ color: primaryColor }}
@@ -86,7 +86,7 @@ const ServiceAdvancedOptionsTab: React.FC<ServiceAdvancedOptionsTabProps> = ({
                     step="0.1"
                     min="1"
                     max="5"
-                    value={formData.providerRating || ''}
+                    value={MarketListingForm.providerRating || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}

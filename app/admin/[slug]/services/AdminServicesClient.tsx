@@ -15,101 +15,11 @@ import {
 import Image from "next/image";
 import { useStoreContext } from "@/contexts/StoreContext";
 import ServiceListingForm from "./components/ServiceListingForm";
-
-// --- Type Definitions (aligned with ServiceListingFormRedesign's FormData) ---
-export type ListingStatus = "ACTIVE" | "PENDING" | "REJECTED" | "ARCHIVED";
-export type SellerType = "INDIVIDUAL" | "COMPANY";
-
-interface BookingSlot {
-  date: string;
-  time: string;
-  capacity: number;
-}
-
-interface PricingTier {
-  name: string;
-  description?: string;
-  price: number;
-  duration?: string;
-  features: string[];
-}
-
-// Full FormData structure from ServiceListingFormRedesign
-interface FormDataForPayload {
-  id?: string;
-  name: string;
-  description: string;
-  productCategoryId: string;
-  sellerId?: string;
-  companyId?: string;
-  sellerType?: SellerType;
-  sellingPrice: number;
-  finalPrice: number;
-  buyingPrice: number;
-  profitMargin?: number;
-  tax?: number;
-  shippingCost?: number;
-  discount?: number;
-  quantity?: number;
-  serviceSchedule?: string;
-  hourlyRate?: number;
-  minimumHours?: number;
-  minNoticePeriod?: string;
-  maxBookingAhead?: string;
-  totalCapacity?: number;
-  deliveryMethod?: string;
-  fulfillmentStatus?: string;
-  providerRating?: number;
-  bookingSlots: BookingSlot[];
-  pricingTiers: PricingTier[];
-  tags: string[];
-  amenities: string[];
-  requiredClientInfo: string[];
-  images: string[]; // Expecting string URLs
-  video?: string; // Expecting string URL
-  contactName?: string;
-  contact?: string;
-  email?: string;
-  locationName?: string;
-  latitude?: number;
-  longitude?: number;
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-  startDealDate?: string; // Expecting string for datetime-local
-  endDealDate?: string; // Expecting string for datetime-local
-  availabilityStart?: string; // Expecting string for datetime-local
-  availabilityEnd?: string; // Expecting string for datetime-local
-  delivery: boolean;
-  showOnGhuba?: boolean;
-  paymentOption?: string;
-  status: ListingStatus;
-  // Note: createdAt and updatedAt are typically handled by backend
-}
-
-// ServiceItem interface for displaying in the list (should be compatible with FormDataForPayload)
-export interface ServiceItem extends Omit<FormDataForPayload, 'startDealDate' | 'endDealDate' | 'availabilityStart' | 'availabilityEnd'> {
-    // title: string;
-    name: string;
-    duration: JSX.Element;
-    id: string; // ID is required for existing items
-    createdAt?: Date | null | undefined;
-    updatedAt?: Date | null | undefined;
-    // Dates might come back as Date objects from backend, handle conversion if needed for display
-    startDealDate?: Date | null | undefined;
-    endDealDate?: Date | null | undefined;
-    availabilityStart?: Date | null | undefined;
-    availabilityEnd?: Date | null | undefined;
-    // Add any other fields specific to the display in the list
-    category?: { displayName?: string; name?: string; icon?: string }; // For category lookup
-}
+import { MarketListingForm } from "@/types/typings";
 
 // Props for this AdminServicesClient component
 interface Props {
-  initialServices: ServiceItem[];
+  initialServices: MarketListingForm[];
   productCategories: { id: string; name: string }[]; // Simplified for this component's use
   paymentOptions: string[];
   deliveryMethods: string[];
@@ -126,8 +36,7 @@ const imageLoader = ({ src, width, quality }: { src: string; width: number; qual
 // --- Helper function to build the API payload ---
 // This function maps the frontend FormData to the backend's expected MarketListingForm structure.
 // It explicitly handles image and video URLs, as well as date formats.
-function buildListingPayload(formData: FormDataForPayload): any {
-  // Ensure dates are in ISO string format if they are Date objects for API
+// Ensure dates are in ISO string format if they are Date objects for API
   // (Assuming formData already has them as strings from datetime-local inputs)
   const formatDateTimeForAPI = (dateString?: string) => {
     if (!dateString) return null;
@@ -141,6 +50,8 @@ function buildListingPayload(formData: FormDataForPayload): any {
     }
   };
 
+function buildListingPayload(formData: MarketListingForm): any {
+  
   return {
     id: formData.id || undefined, // Only include ID if it's an update
     sellerType: formData.sellerType,
@@ -169,9 +80,9 @@ function buildListingPayload(formData: FormDataForPayload): any {
     discount: formData.discount,
     buyingPrice: formData.buyingPrice,
     sellingPrice: formData.sellingPrice,
-    finalPrice: formData.finalPrice, // Ensure this is calculated or passed correctly
-    startDealDate: formatDateTimeForAPI(formData.startDealDate),
-    endDealDate: formatDateTimeForAPI(formData.endDealDate),
+    finalPrice: formData.finalPrice, 
+    startDealDate: formData.startDealDate ? formatDateTimeForAPI(formData.startDealDate.toISOString()) : undefined,
+    endDealDate: formData.endDealDate ? formatDateTimeForAPI(formData.endDealDate.toISOString())  : undefined,
     isAvailable: formData.isAvailable,
     isOnOffer: formData.isOnOffer,
     isFlashDeal: formData.isFlashDeal,
@@ -219,8 +130,9 @@ function buildListingPayload(formData: FormDataForPayload): any {
     // bathrooms: formData.bathrooms,
     // area: formData.area,
     serviceSchedule: formData.serviceSchedule,
-    availabilityStart: formatDateTimeForAPI(formData.availabilityStart),
-    availabilityEnd: formatDateTimeForAPI(formData.availabilityEnd),
+    availabilityStart: formData.availabilityStart ? formatDateTimeForAPI(formData.availabilityStart.toISOString()) : undefined,//formatDateTimeForAPI(formData.availabilityStart),
+    availabilityEnd: formData.availabilityEnd ? formatDateTimeForAPI(formData.availabilityEnd.toISOString()) : undefined,//formatDateTimeForAPI(formData.availabilityEnd),
+    
     bookingSlots: formData.bookingSlots || [],
     minNoticePeriod: formData.minNoticePeriod,
     maxBookingAhead: formData.maxBookingAhead,
@@ -251,10 +163,10 @@ export default function AdminServicesClient({
   companyId = "",
   categoriesData,
 }: Props) {
-  
-  const [services, setServices] = useState<ServiceItem[]>(initialServices);
+
+  const [services, setServices] = useState<MarketListingForm[]>(initialServices);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [serviceToEdit, setServiceToEdit] = useState<ServiceItem | null>(null);
+  const [serviceToEdit, setServiceToEdit] = useState<MarketListingForm | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null); // null: no action, true: success, false: error
   const [message, setMessage] = useState<string>("");
@@ -276,7 +188,7 @@ export default function AdminServicesClient({
   };
 
   // Handle opening the form modal for editing
-  const handleOpenEdit = (service: ServiceItem) => {
+  const handleOpenEdit = (service: MarketListingForm) => {
     setServiceToEdit(service);
     setIsFormModalOpen(true);
     setIsSuccess(null); // Reset messages
@@ -284,7 +196,7 @@ export default function AdminServicesClient({
   };
 
   // Handle saving the service (from the modal form)
-  const handleSaveService = async (data: FormDataForPayload) => {
+  const handleSaveService = async (data: MarketListingForm) => {
     setIsLoading(true);
     setIsSuccess(null);
     setMessage("");
@@ -312,7 +224,7 @@ export default function AdminServicesClient({
 
       // Assuming responseData contains the saved/updated service item,
       // which should ideally match ServiceItem structure.
-      const savedService: ServiceItem = {
+      const savedService: MarketListingForm = {
         ...responseData,
         companyId,
         // Ensure dates are converted back to Date objects if needed for display
@@ -352,7 +264,7 @@ export default function AdminServicesClient({
   };
 
   // Status badge component (enhanced for visual appeal)
-  const StatusBadge = ({ status }: { status: ListingStatus }) => {
+  const StatusBadge = ({ status }: { status: any }) => {
     let colorClass = "";
     let icon = null;
     let text = "";

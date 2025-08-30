@@ -1,7 +1,7 @@
 // app/admin/[slug]/services/page.tsx
 import React from "react";
-import AdminServicesClient, { ServiceItem } from "./AdminServicesClient"; // Adjust path as needed
-import { IStoreCategory } from "@/types/typings";
+import AdminServicesClient from "./AdminServicesClient"; // Adjust path as needed
+import { IStoreCategory, MarketListingForm } from "@/types/typings";
 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -15,7 +15,7 @@ interface PageProps {
 export default async function ServicesPage({ params }: PageProps) {
   const companyId = params.slug;
 
-  let initialServices: ServiceItem[] = [];
+  let initialServices: MarketListingForm[] = [];
   let categoriesData: IStoreCategory[] = [];
 
   try {

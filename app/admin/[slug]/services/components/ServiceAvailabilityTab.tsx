@@ -1,23 +1,24 @@
 // components/admin/components/ServiceAvailabilityTab.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FormData, BookingSlot } from './ServiceListingForm'; // Import types from parent
+import { BookingSlot } from './ServiceListingForm'; // Import types from parent
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline'; // Specific icons
+import { MarketListingForm } from '@/types/typings';
 
 interface ServiceAvailabilityTabProps {
-    formData: FormData;
+    MarketListingForm: MarketListingForm;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     handleAddBookingSlot: () => void;
     handleUpdateBookingSlot: (index: number, field: keyof BookingSlot, value: string | number) => void;
     handleRemoveBookingSlot: (index: number) => void;
-    errors: Partial<FormData & { [key: string]: string }>;
+    errors: Partial<MarketListingForm & { [key: string]: string }>;
     fieldVariants: any;
     tabContentVariants: any;
     primaryColor: string;
 }
 
 const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
-    formData,
+    MarketListingForm,
     handleChange,
     handleAddBookingSlot,
     handleUpdateBookingSlot,
@@ -43,7 +44,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                     <input
                         type="datetime-local"
                         name="availabilityStart"
-                        value={formData.availabilityStart || ''}
+                        value={MarketListingForm.availabilityStart || ''}
                         onChange={handleChange}
                         className={`mt-1 block w-full rounded-lg border ${errors.availabilityStart ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -55,7 +56,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                     <input
                         type="datetime-local"
                         name="availabilityEnd"
-                        value={formData.availabilityEnd || ''}
+                        value={MarketListingForm.availabilityEnd || ''}
                         onChange={handleChange}
                         className={`mt-1 block w-full rounded-lg border ${errors.availabilityEnd ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -66,7 +67,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
 
             <h5 className="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100 pt-6 border-t border-gray-200 dark:border-gray-700">Specific Booking Slots</h5>
             <AnimatePresence>
-                {(formData.bookingSlots || []).map((slot, index) => (
+                {(MarketListingForm.bookingSlots || []).map((slot, index) => (
                     <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 20 }}
@@ -134,21 +135,21 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                 <input
                     type="checkbox"
                     name="isOnOffer"
-                    checked={formData.isOnOffer}
+                    checked={MarketListingForm.isOnOffer}
                     onChange={handleChange}
                     className="form-checkbox h-5 w-5 text-current rounded"
                     style={{ color: primaryColor }}
                 />
                 <span className="text-gray-700 dark:text-gray-300 font-medium">Is On Offer?</span>
             </motion.label>
-            {formData.isOnOffer && (
+            {MarketListingForm.isOnOffer && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                     <label className="block">
                         <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Deal Start Date</span>
                         <input
                             type="datetime-local"
                             name="startDealDate"
-                            value={formData.startDealDate || ''}
+                            value={MarketListingForm.startDealDate || ''}
                             onChange={handleChange}
                             className={`mt-1 block w-full rounded-lg border ${errors.startDealDate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -160,7 +161,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                         <input
                             type="datetime-local"
                             name="endDealDate"
-                            value={formData.endDealDate || ''}
+                            value={MarketListingForm.endDealDate || ''}
                             onChange={handleChange}
                             className={`mt-1 block w-full rounded-lg border ${errors.endDealDate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -171,7 +172,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                         <input
                             type="checkbox"
                             name="isFlashDeal"
-                            checked={formData.isFlashDeal}
+                            checked={MarketListingForm.isFlashDeal}
                             onChange={handleChange}
                             className="form-checkbox h-5 w-5 text-current rounded"
                             style={{ color: primaryColor }}
@@ -184,7 +185,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                 <input
                     type="checkbox"
                     name="isNewArrival"
-                    checked={formData.isNewArrival}
+                    checked={MarketListingForm.isNewArrival}
                     onChange={handleChange}
                     className="form-checkbox h-5 w-5 text-current rounded"
                     style={{ color: primaryColor }}
@@ -195,7 +196,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                 <input
                     type="checkbox"
                     name="isDiscounted"
-                    checked={formData.isDiscounted}
+                    checked={MarketListingForm.isDiscounted}
                     onChange={handleChange}
                     className="form-checkbox h-5 w-5 text-current rounded"
                     style={{ color: primaryColor }}
@@ -206,7 +207,7 @@ const ServiceAvailabilityTab: React.FC<ServiceAvailabilityTabProps> = ({
                 <input
                     type="checkbox"
                     name="isFeatured"
-                    checked={formData.isFeatured}
+                    checked={MarketListingForm.isFeatured}
                     onChange={handleChange}
                     className="form-checkbox h-5 w-5 text-current rounded"
                     style={{ color: primaryColor }}

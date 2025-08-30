@@ -1,23 +1,24 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FormData, PricingTier } from './ServiceListingForm'; // Import types from parent
+import { PricingTier } from './ServiceListingForm'; // Import types from parent
 import { PlusIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/outline'; // Updated icons
+import { MarketListingForm } from '@/types/typings';
 
 interface ServicePricingTabProps {
-    formData: FormData;
+    MarketListingForm: MarketListingForm;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-    handleArrayFieldChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof FormData) => void;
+    handleArrayFieldChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: keyof MarketListingForm) => void;
     handleAddPricingTier: () => void;
     handleUpdatePricingTier: (index: number, field: keyof PricingTier, value: any) => void;
     handleRemovePricingTier: (index: number) => void;
-    errors: Partial<FormData & { [key: string]: string }>;
+    errors: Partial<MarketListingForm & { [key: string]: string }>;
     fieldVariants: any;
     tabContentVariants: any;
     primaryColor: string;
 }
 
 const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
-    formData,
+    MarketListingForm,
     handleChange,
     // handleArrayFieldChange is not used in this version but kept for prop consistency
     handleArrayFieldChange,
@@ -31,20 +32,20 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
 }) => {
     // Handler to update a specific feature within a tier
     const handleFeatureChange = (tierIndex: number, featureIndex: number, value: string) => {
-        const newFeatures = [...formData.pricingTiers[tierIndex].features];
+        const newFeatures = [...MarketListingForm.pricingTiers[tierIndex].features];
         newFeatures[featureIndex] = value;
         handleUpdatePricingTier(tierIndex, 'features', newFeatures);
     };
 
     // Handler to add a new, empty feature to a tier
     const handleAddFeature = (tierIndex: number) => {
-        const newFeatures = [...formData.pricingTiers[tierIndex].features, '']; // Add an empty string for the new feature
+        const newFeatures = [...MarketListingForm.pricingTiers[tierIndex].features, '']; // Add an empty string for the new feature
         handleUpdatePricingTier(tierIndex, 'features', newFeatures);
     };
 
     // Handler to remove a feature from a tier
     const handleRemoveFeature = (tierIndex: number, featureIndex: number) => {
-        const newFeatures = formData.pricingTiers[tierIndex].features.filter((_, i) => i !== featureIndex);
+        const newFeatures = MarketListingForm.pricingTiers[tierIndex].features.filter((_: string, i : number) => i !== featureIndex);
         handleUpdatePricingTier(tierIndex, 'features', newFeatures);
     };
 
@@ -69,7 +70,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                         step="0.01"
                         className={`mt-1 block w-full rounded-lg border ${errors.sellingPrice ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.sellingPrice}
+                        value={MarketListingForm.sellingPrice}
                         onChange={handleChange}
                         required
                         placeholder="0.00"
@@ -86,7 +87,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                         step="0.01"
                         className={`mt-1 block w-full rounded-lg border ${errors.buyingPrice ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.buyingPrice}
+                        value={MarketListingForm.buyingPrice}
                         onChange={handleChange}
                         required
                         placeholder="0.00"
@@ -102,7 +103,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                         step="0.01"
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.profitMargin || ''}
+                        value={MarketListingForm.profitMargin || ''}
                         onChange={handleChange}
                         placeholder="0.00"
                         min="0"
@@ -116,7 +117,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                         step="0.01"
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.tax || ''}
+                        value={MarketListingForm.tax || ''}
                         onChange={handleChange}
                         placeholder="0.00"
                         min="0"
@@ -130,7 +131,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                         step="0.01"
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.shippingCost || ''}
+                        value={MarketListingForm.shippingCost || ''}
                         onChange={handleChange}
                         placeholder="0.00"
                         min="0"
@@ -144,7 +145,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                         step="1"
                         className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                         style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                        value={formData.discount || ''}
+                        value={MarketListingForm.discount || ''}
                         onChange={handleChange}
                         placeholder="0"
                         min="0"
@@ -155,7 +156,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
 
             <h4 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100 pt-6 border-t border-gray-200 dark:border-gray-700">Pricing Tiers/Packages</h4>
             <AnimatePresence>
-                {(formData.pricingTiers || []).map((tier, index) => (
+                {(MarketListingForm.pricingTiers || []).map((tier, index) => (
                     <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 20 }}
@@ -216,7 +217,7 @@ const ServicePricingTab: React.FC<ServicePricingTabProps> = ({
                             {/* --- NEW: Dynamic Features Section --- */}
                             <div className="md:col-span-2 space-y-3">
                                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Features</span>
-                                {tier.features.map((feature, featureIndex) => (
+                                {tier.features.map((feature:any, featureIndex:number) => (
                                     <div key={featureIndex} className="flex items-center gap-2">
                                         <input
                                             type="text"
