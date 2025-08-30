@@ -18,7 +18,7 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks,
-    storeCategories,
+    StoreCategory,
     themeSettings,
   } = storeFormData;
 
@@ -102,7 +102,7 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold mb-4 text-white">Programs</h3>
           <ul className="space-y-2 max-h-48 overflow-auto">
-            {storeCategories.map((cat) => (
+            {StoreCategory.map((cat) => (
               <li key={cat.id}>
                 <Link
                   href={`/${slug}/category/${cat.id}`}

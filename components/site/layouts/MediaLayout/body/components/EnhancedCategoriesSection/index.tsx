@@ -9,16 +9,16 @@ import { ArrowRightIcon } from '@heroicons/react/24/solid'; // Keeping ArrowRigh
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  imageUrl?: string;
-  icon?: string; // Optional icon for the category
-}
+// interface Category {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   imageUrl?: string;
+//   icon?: string; // Optional icon for the category
+// }
 
 interface EnhancedCategoriesSectionProps {
-  categories: Category[];
+  categories: any[];
   slug: string; // Base slug for navigation, e.g., 'movies', 'tv-shows'
 }
 
@@ -60,7 +60,7 @@ export default function EnhancedCategoriesSection({
 
         {/* Categories Grid */}
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {categories.map((cat, index) => {
+          {categories?.map((cat, index) => {
             const IconComponent = cat.icon; // Get the icon component if provided
             return (
               <motion.div

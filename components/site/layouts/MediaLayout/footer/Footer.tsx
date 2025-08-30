@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
             Categories
           </h3>
           <ul className="space-y-2 text-sm">
-            {storeFormData.storeCategories.map((cat) => (
+            {storeFormData.StoreCategory.map((cat) => (
               <li key={cat.id}>
                 <Link
                   href={`/site/${storeFormData.slug}/category/${cat.id}`}

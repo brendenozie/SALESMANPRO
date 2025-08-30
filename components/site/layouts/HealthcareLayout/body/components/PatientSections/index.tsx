@@ -10,7 +10,7 @@ interface PatientSectionProps {
   slug: string; // Clinic slug for linking to a 'all testimonials' or 'reviews' page
   testimonials: Array<{
     id: string; // Unique ID for each testimonial
-    author: string;
+    authorName: string;
     quote: string;
     rating: number; // e.g., 4, 5 for star rating
     service?: string; // Optional: service received (e.g., "Dental Check-up")
@@ -114,18 +114,18 @@ export default function PatientSection({ name, slug, testimonials }: PatientSect
                   <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-teal-500 dark:border-teal-400 flex-shrink-0">
                     <img
                       src={t.avatarUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"} // Using img tag for mock loader, replace with Next.js Image for production
-                      alt={t.author}
+                      alt={t.authorName}
                       className="object-cover w-full h-full"
                     />
                   </div>
                 ) : (
                   <div className="w-14 h-14 rounded-full bg-teal-100 dark:bg-teal-700 flex items-center justify-center text-teal-700 dark:text-teal-100 font-bold text-xl flex-shrink-0 border-2 border-teal-500 dark:border-teal-400">
-                    {t.author[0]}
+                    {t.authorName}
                   </div>
                 )}
                 <div className="text-left">
                   <p className="font-semibold text-xl text-gray-900 dark:text-white leading-tight">
-                    {t.author}
+                    {t.authorName}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Verified Patient</p>
                   {t.service && (

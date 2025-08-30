@@ -27,7 +27,7 @@ const mockStoreData = {
     { id: "h2", imageUrl: "/images/media-hero-2.jpg", headline: "Beyond the Headlines", subline: "Dive deep into exclusive features and interviews.", slug: "behind-scenes" },
     { id: "h3", imageUrl: "/images/media-hero-3.jpg", headline: "Future of Entertainment", subline: "Explore cutting-edge tech and emerging trends.", slug: "tech-future" },
   ],
-  storeCategories: [ // Renamed to match the context variable name
+  StoreCategory: [ // Renamed to match the context variable name
     { id: "cat1", name: "News & Current Events", slug: "news", icon: "AcademicCapIcon" },
     { id: "cat2", name: "Entertainment & Culture", slug: "entertainment", icon: "PlayCircleIcon" },
     { id: "cat3", name: "Technology & Innovation", slug: "tech", icon: "BanknotesIcon" },
@@ -162,7 +162,7 @@ export default function MediaSite() {
 
       {/* Categories Section */}
       <EnhancedCategoriesSection
-        categories={displayData.storeCategories}
+        categories={displayData.StoreCategory}
         slug={displayData.slug}
       />
 

@@ -177,8 +177,8 @@ export default function TestimonialsNewsSection() {
               </p>
               <div className="flex items-center space-x-4">
                 <Image
-                  src={test.avatarUrl || `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${test.author.split(' ').map(n => n[0]).join('')}`}
-                  alt={test.author}
+                  src={test.avatarUrl || `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${test.authorName?.split(' ').map(n => n[0]).join('')}`}
+                  alt={test.authorName}
                   width={60}
                   height={60}
                   className="rounded-full border-2 border-orange-300 shadow-md"
@@ -186,7 +186,7 @@ export default function TestimonialsNewsSection() {
                   onError={handleImageError}
                 />
                 <h4 className="font-bold text-gray-900 text-xl">
-                  {test.author}
+                  {test.authorName}
                 </h4>
               </div>
             </motion.div>

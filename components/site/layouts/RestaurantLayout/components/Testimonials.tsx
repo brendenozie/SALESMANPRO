@@ -12,10 +12,10 @@ import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as nee
 // Define types for the data expected from StoreContext, aligning with a potential backend schema
 export type Testimonial = {
   id: string;
-  author: string; // Corresponds to author name
+  authorName?: string; // Corresponds to authorName name
   quote: string; // Corresponds to the testimonial text
   rating?: number; // 1-5, optional as per schema.txt example
-  avatarUrl?: string; // URL for the author's image
+  avatarUrl?: string; // URL for the authorName's image
   order?: number; // For sorting
   dishMention?: string; // Optional: specific dish mentioned, not directly from schema but useful for restaurant
 };
@@ -76,7 +76,7 @@ interface TestimonialCardProps {
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryColor }) => {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
-    const initials = testimonial.author.split(' ').map(n => n[0]).join('');
+    const initials = testimonial.authorName.split(' ').map(n => n[0]).join('');
     e.currentTarget.src = `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${initials}`;
   };
 
@@ -89,8 +89,8 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryC
       <div className="flex items-center mb-4">
         <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 mr-4 flex-shrink-0">
           <Image
-            src={testimonial.avatarUrl || `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${testimonial.author.split(' ').map(n => n[0]).join('')}`} // Fallback with initials
-            alt={testimonial.author}
+            src={testimonial.avatarUrl || `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${testimonial.authorName?.split(' ').map(n => n[0]).join('')}`} // Fallback with initials
+            alt={testimonial.authorName}
             fill
             className="object-cover"
             loader={loader}
@@ -98,7 +98,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryC
           />
         </div>
         <div>
-          <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">{testimonial.author}</h4>
+          <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">{testimonial.authorName}</h4>
           {testimonial.dishMention && (
             <p className="text-sm text-gray-600 dark:text-gray-400">
               About: <span className="font-medium" style={{ color: primaryColor }}>{testimonial.dishMention}</span>
@@ -128,7 +128,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryC
 const fallbackTestimonials: Testimonial[] = [
   {
     id: "fb-t1",
-    author: "Alice Johnson",
+    authorName: "Alice Johnson",
     quote: "The Classic Beef Burger was an absolute delight! Juicy, flavorful, and perfectly cooked. This is my new go-to spot!",
     rating: 5,
     avatarUrl: "https://placehold.co/60x60/A0A0A0/FFFFFF?text=AJ",
@@ -137,7 +137,7 @@ const fallbackTestimonials: Testimonial[] = [
   },
   {
     id: "fb-t2",
-    author: "Bob Williams",
+    authorName: "Bob Williams",
     quote: "I'm usually picky with pizza, but their Pepperoni Pizza exceeded all expectations. Crispy crust and delicious toppings!",
     rating: 4,
     avatarUrl: "https://placehold.co/60x60/808080/FFFFFF?text=BW",
@@ -146,7 +146,7 @@ const fallbackTestimonials: Testimonial[] = [
   },
   {
     id: "fb-t3",
-    author: "Charlie Brown",
+    authorName: "Charlie Brown",
     quote: "The Chicken Teriyaki Subway is fantastic! Fresh ingredients and a wonderful balance of sweet and savory. Highly recommend.",
     rating: 5,
     avatarUrl: "https://placehold.co/60x60/606060/FFFFFF?text=CB",
@@ -155,7 +155,7 @@ const fallbackTestimonials: Testimonial[] = [
   },
   {
     id: "fb-t4",
-    author: "Diana Prince",
+    authorName: "Diana Prince",
     quote: "Loved the cozy ambiance and the exceptional service. Every dish was a culinary masterpiece. Can't wait to return!",
     rating: 5,
     avatarUrl: "https://placehold.co/60x60/404040/FFFFFF?text=DP",
