@@ -431,6 +431,7 @@ export interface ProductForm {
 }
 
 export interface MarketListingForm {
+  duration: JSX.Element;
   // Manual definition matching Prisma's marketplaceListings model
   id: string;
   companyId?: string | null;

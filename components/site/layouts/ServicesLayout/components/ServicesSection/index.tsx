@@ -15,6 +15,8 @@ export default function ServicesSection() {
   const { storeFormData } = useStoreContext();
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
 
+  console.log(storeFormData);
+
   if (!storeFormData || !storeFormData.marketplaceListings) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900">
@@ -176,7 +178,7 @@ export default function ServicesSection() {
                     <Image
                       src={svc.images[0] || "/placeholder-service.jpg"}
                       loader={loader}
-                      alt={svc.name || svc.title}
+                      alt={svc.name || ""}
                       layout="fill"
                       objectFit="cover"
                       className="transition-transform duration-500 group-hover:scale-110"
@@ -184,7 +186,7 @@ export default function ServicesSection() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                      {svc.name || svc.title}
+                      {svc.name || ""}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                       {svc.description || "A professional service tailored to your needs."}

@@ -92,14 +92,17 @@ interface FormDataForPayload {
 
 // ServiceItem interface for displaying in the list (should be compatible with FormDataForPayload)
 export interface ServiceItem extends Omit<FormDataForPayload, 'startDealDate' | 'endDealDate' | 'availabilityStart' | 'availabilityEnd'> {
+    // title: string;
+    name: string;
+    duration: JSX.Element;
     id: string; // ID is required for existing items
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt?: Date | null | undefined;
+    updatedAt?: Date | null | undefined;
     // Dates might come back as Date objects from backend, handle conversion if needed for display
-    startDealDate?: Date;
-    endDealDate?: Date;
-    availabilityStart?: Date;
-    availabilityEnd?: Date;
+    startDealDate?: Date | null | undefined;
+    endDealDate?: Date | null | undefined;
+    availabilityStart?: Date | null | undefined;
+    availabilityEnd?: Date | null | undefined;
     // Add any other fields specific to the display in the list
     category?: { displayName?: string; name?: string; icon?: string }; // For category lookup
 }
@@ -248,6 +251,7 @@ export default function AdminServicesClient({
   companyId = "",
   categoriesData,
 }: Props) {
+  
   const [services, setServices] = useState<ServiceItem[]>(initialServices);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState<ServiceItem | null>(null);

@@ -28,7 +28,7 @@ import ServiceAvailabilityTab from './ServiceAvailabilityTab';
 import ServiceMediaTab from './ServiceMediaTab';
 import ServiceContactLocationTab from './ServiceContactLocationTab';
 import ServiceAdvancedOptionsTab from './ServiceAdvancedOptionsTab';
-import { StoreCategory } from '@/types/typings';
+import { IStoreCategory } from '@/types/typings';
 
 // --- Type Definitions (Centralized) ---
 export type SellerType = "INDIVIDUAL" | "COMPANY";
@@ -57,8 +57,8 @@ export interface FormData {
     sellerType?: SellerType;
     
     productCategoryId: string; // This will hold the ID of the actual ProductCategory
-    category: StoreCategory | null; // This holds the *selected StoreCategory object*
-    subCategory: any; // JSON from StoreCategory.items or ProductCategory.subcategories
+    category: IStoreCategory | null; // This holds the *selected IStoreCategory object*
+    subCategory: any; // JSON from IStoreCategory.items or ProductCategory.subcategories
     subCategoryName: string; // If you derive a name from subCategory JSON
       
 
@@ -128,6 +128,9 @@ const initialFormData: FormData = {
     isFeatured: false,
     delivery: false,
     status: 'PENDING',
+    category: null,
+    subCategory: undefined,
+    subCategoryName: ''
 };
 
 // Mock data for dropdowns if not provided by context

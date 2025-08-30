@@ -126,7 +126,7 @@ function baseInclude() {
       Collection: { orderBy: { order: "asc" as const } },
       Announcement: { orderBy: { publishedAt: "desc" as const } },
       marketplaceListings: {
-        where: { status: ListingStatus.ACTIVE },
+        // where: { status: ListingStatus.ACTIVE },
         take: 20,
         select: {
           id: true, name: true, description: true, finalPrice: true, sellingPrice: true, images: true, isAvailable: true, isFeatured: true, category: true,
