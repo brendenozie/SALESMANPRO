@@ -139,6 +139,7 @@ function baseInclude() {
       Podcast: true,
       courses: true,
       services: true,
+      CoreValues:true,
       CompanyLocation: { include: { location: true } }
     };    
 }

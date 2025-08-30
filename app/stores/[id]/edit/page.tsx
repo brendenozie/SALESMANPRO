@@ -157,6 +157,7 @@ export default async function EditStorePage({
     promotions: store.promotions.map((p) => ({
       ...p,
       perks: safeJsonParse(p.perks, []),
+      trustLogos: safeJsonParse(p.trustLogos, []),
       createdAt: p.createdAt ?? undefined,
       updatedAt: p.updatedAt ?? undefined,
       bannerUrl: p.bannerUrl ?? undefined,

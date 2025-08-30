@@ -1,7 +1,7 @@
 // app/admin/[slug]/services/page.tsx
 import React from "react";
 import AdminServicesClient, { ServiceItem } from "./AdminServicesClient"; // Adjust path as needed
-import { StoreCategory } from "@/types/typings";
+import { IStoreCategory } from "@/types/typings";
 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -16,7 +16,7 @@ export default async function ServicesPage({ params }: PageProps) {
   const companyId = params.slug;
 
   let initialServices: ServiceItem[] = [];
-  let categoriesData: StoreCategory[] = [];
+  let categoriesData: IStoreCategory[] = [];
 
   try {
     // Fetch marketplace listings for the given companyId
@@ -34,7 +34,7 @@ export default async function ServicesPage({ params }: PageProps) {
     );
 
     if (categoriesRes.ok) {
-      const { results } = await categoriesRes.json() as { results: StoreCategory[] };
+      const { results } = await categoriesRes.json() as { results: IStoreCategory[] };
       categoriesData = Array.isArray(results) ? results : [];
     }
 

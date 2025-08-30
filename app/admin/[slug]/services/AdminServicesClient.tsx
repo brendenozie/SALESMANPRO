@@ -535,7 +535,7 @@ export default function AdminServicesClient({
                 {/* Action Buttons on Card */}
                 <div className="mt-4 flex justify-end gap-2">
                   <motion.button
-                    onClick={(e) => {
+                    onClick={(e:any) => {
                       e.stopPropagation();
                       // Implement view details logic (e.g., open a read-only modal or navigate to detail page)
                       alert(`Viewing details for: ${svc.name}`);
@@ -547,7 +547,7 @@ export default function AdminServicesClient({
                     <EyeIcon className="w-4 h-4" /> View
                   </motion.button>
                   <motion.button
-                    onClick={(e) => {
+                    onClick={(e:any) => {
                       e.stopPropagation();
                       handleOpenEdit(svc);
                     }}

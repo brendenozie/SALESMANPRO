@@ -247,6 +247,6 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   settings: null,
   Announcement: Array.isArray(raw.Announcement) ? raw.Announcement : [],  
   Collection: Array.isArray(raw.Collection) ? raw.Collection : [],
- 
+  CoreValues: Array.isArray(raw.CoreValues) ? raw.CoreValues : typeof raw.CoreValues === 'string' ? JSON.parse(raw.CoreValues) : [],
 };
 }
