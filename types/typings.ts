@@ -213,8 +213,6 @@ export interface IPromotion {
   updatedAt?: Date | string;
 }
 
-
-
 export interface Award {
   name: string;
   iconUrl: string;
