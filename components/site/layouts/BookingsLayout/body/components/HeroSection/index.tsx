@@ -1,44 +1,58 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 // If you have custom datepicker styles, import them here:
 // import '../styles/custom-datepicker.css';
+
+// Import Heroicons for a cleaner look
+import { StarIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+
+// We'll assume these types and contexts exist for a complete example
 import { useStoreContext } from "@/contexts/StoreContext";
-import { StarIcon } from "@heroicons/react/24/solid";
-import { MarketplaceListingForm } from "@/types/typings"; // Corrected type name from MarketListingForm
+import { MarketplaceListingForm } from "@/types/typings";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// More inviting and benefit-driven hero text
-const heroText = [
-  "Discover & Book Top Professionals ✨",
-  "Your Perfect Service, Just a Tap Away 📱",
-  "Effortless Appointments, Exceptional Results ✅",
-];
+// Simplified hero text for a cleaner look
+const heroText = "Your Next Service, Just a Click Away.";
 
 export default function Hero() {
   const { storeFormData } = useStoreContext();
-  const { name, description, bannerUrl, marketplaceListings = [] } = storeFormData;
+
+  // Provided sample data in case storeFormData is empty
+  const defaultFormData = {
+    name: "The Booking Hub",
+    description: "Connect with verified professionals and book services with ease. From personal care to home repair, we've got you covered.",
+    bannerUrl: "https://images.unsplash.com/photo-1542626991-cbc9322c34d4?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    marketplaceListings: [
+      { id: "1", name: "Hair Stylist", isAvailable: true, finalPrice: 75, images: ["https://images.unsplash.com/photo-1596461404986-e88e404b4c73?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "2", name: "Electrician", isAvailable: true, finalPrice: 150, images: ["https://images.unsplash.com/photo-1581094042850-25e40733d31b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "3", name: "Plumber", isAvailable: true, finalPrice: 120, images: ["https://images.unsplash.com/photo-1587569145888-0f1e8e8f8c7e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "4", name: "Lawn Care Service", isAvailable: true, finalPrice: 80, images: ["https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+    ],
+  };
+
+  const {
+    name = defaultFormData.name,
+    description = defaultFormData.description,
+    bannerUrl = defaultFormData.bannerUrl,
+    marketplaceListings = defaultFormData.marketplaceListings
+  } = storeFormData || {};
 
   const [searchTerm, setSearchTerm] = useState("");
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
-  const [showForm, setShowForm] = useState(false);
-  const [displayedText, setDisplayedText] = useState("");
-  const [textIndex, setTextIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLUListElement>(null);
+  const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   // Memoize filteredServices for performance and correct dependency
-  const filteredServices = React.useMemo(() => {
+  const filteredServices = useMemo(() => {
     return marketplaceListings
       ?.filter((item) =>
         item.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -49,111 +63,70 @@ export default function Hero() {
         isAvailable: item.isAvailable,
         price: item.finalPrice,
         imageUrl: item.images?.[0] ?? null,
-        // averageRating: item.averageRating ?? null, // Uncomment if available in your type
-      }));
+      }))
+      .slice(0, 5); // Limit to 5 results for a cleaner dropdown
   }, [searchTerm, marketplaceListings]);
 
-
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
+        !dropdownRef.current.contains(event.target) &&
         inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
+        !inputRef.current.contains(event.target)
       ) {
         setActiveIndex(-1); // Close dropdown when clicking outside
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    // Reveal form slightly faster for better responsiveness
-    const t = setTimeout(() => setShowForm(true), 500);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDisplayedText(heroText[textIndex].slice(0, charIndex + 1));
-      if (charIndex === heroText[textIndex].length) {
-        setTimeout(() => {
-          setCharIndex(0);
-          setTextIndex((prev) => (prev + 1) % heroText.length);
-        }, 2000); // Increased delay between full sentences
-      } else {
-        setCharIndex((prev) => prev + 1);
-      }
-    }, 80); // Slightly faster typing speed
-    return () => clearInterval(interval);
-  }, [charIndex, textIndex]);
-
-
   const handleSearch = () => {
-    // You'd typically navigate or filter results here
     alert(`Searching "${searchTerm}" on ${date.toLocaleDateString()} at ${time.toLocaleTimeString()}`);
   };
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-white text-gray-900 flex items-center justify-center">
+    <section className="relative h-screen w-full flex items-center justify-center text-gray-900 overflow-hidden">
+      {/* Background with subtle overlay */}
       {bannerUrl && (
-        <div className="absolute inset-0 z-0">
+        <>
           <Image
             src={bannerUrl}
             loader={loader}
-            alt="Banner"
+            alt="Professional services banner"
             fill
-            className="object-cover object-center opacity-60" // Kept opacity for a soft background
+            className="object-cover object-center"
             priority
           />
-          {/* Subtle light gradient overlay for text contrast on image */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent"></div>
-        </div>
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm"></div>
+        </>
       )}
 
-      <div className="relative z-10 container mx-auto px-6 py-20 md:py-32 lg:py-48 flex flex-col md:flex-row items-center justify-center gap-16 md:gap-20">
-        {/* Left: Text Content */}
+      {/* Main Content: Centered Card */}
+      <div className="relative z-10 p-4 md:p-8 w-full max-w-lg mx-auto">
         <motion.div
-          className="min-w-full md:min-w-[30rem] max-w-xl space-y-8 text-center md:text-left"
-          initial={{ opacity: 0, x: -50 }} // Slide in from left
-          animate={{ opacity: 1, x: 0 }}
+          className="bg-white rounded-3xl p-8 md:p-12 shadow-2xl border border-gray-200"
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <h1 className="text-5xl md:text-6xl font-black leading-tight text-gray-900 tracking-tight">
-            {name || "Your Go-To Booking Platform"} {/* Fallback if name is empty */}
-          </h1>
-          <p className="text-2xl font-light text-teal-700"> {/* Adjusted teal for better contrast on light background */}
-            {displayedText}
-          </p>
-          {description && (
-            <motion.p
-              className="text-lg md:text-xl text-gray-700 leading-relaxed" // Adjusted text color, removed drop-shadow for light mode
-              initial={{ opacity: 0, x: -30 }} // Slight delay for description
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            >
-              {description}
-            </motion.p>
-          )}
-        </motion.div>
+          <div className="text-center space-y-4 mb-8">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-teal-600">
+              {name}
+            </h1>
+            <p className="text-xl text-gray-700">
+              {heroText}
+            </p>
+          </div>
 
-        {/* Right: Booking Form */}
-        {showForm && (
-          <motion.div
-            className="w-full max-w-md bg-white p-8 rounded-3xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/20" // Light background, adjusted shadow and border for light mode
-            initial={{ opacity: 0, x: 50 }} // Slide in from right
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
-          >
-            <div className="space-y-6">
-              {/* Search Input with Dropdown */}
+          {/* Booking Form */}
+          <div className="space-y-6">
+            {/* Search Input with Autocomplete */}
+            <div className="relative">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 sr-only">Search for a Service</label>
               <div className="relative">
-                <label htmlFor="search" className="block text-sm font-semibold text-gray-700 mb-1"> {/* Changed label color for light mode */}
-                  Search for a Professional
-                </label>
+                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
                 <input
                   id="search"
                   ref={inputRef}
@@ -165,7 +138,6 @@ export default function Hero() {
                   }}
                   onKeyDown={(e) => {
                     if (filteredServices.length === 0) return;
-
                     if (e.key === "ArrowDown") {
                       setActiveIndex((prev) => (prev + 1) % filteredServices.length);
                       e.preventDefault();
@@ -175,67 +147,60 @@ export default function Hero() {
                     } else if (e.key === "Enter") {
                       if (filteredServices[activeIndex]) {
                         setSearchTerm(filteredServices[activeIndex].name);
-                        setActiveIndex(-1); // Close dropdown on selection
+                        setActiveIndex(-1);
                       }
                     }
                   }}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition border border-gray-200" // Light background for input, added border
-                  placeholder="e.g., Hair Stylist, Electrician" // More specific examples
+                  className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  placeholder="e.g., Hair Stylist, Electrician"
                 />
-
-                {filteredServices.length > 0 && searchTerm.length > 0 && activeIndex !== -1 && ( // Only show if search term is active and not explicitly closed
-                  <ul
-                    ref={dropdownRef}
-                    className="absolute left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-white rounded-xl shadow-lg z-50 text-gray-900 border border-gray-200"
-                  >
-                    {filteredServices.slice(0, 6).map((item, index) => (
-                      <li
-                        key={item.id}
-                        onClick={() => {
-                          setSearchTerm(item.name);
-                          setActiveIndex(-1);
-                        }}
-                        className={`px-4 py-3 cursor-pointer transition flex items-center gap-3 ${
-                          index === activeIndex ? 'bg-teal-100' : 'hover:bg-teal-50'
-                        }`}
-                      >
-                        {item.imageUrl && (
-                            <Image
-                              src={item.imageUrl}
-                              loader={loader}
-                              alt={item.name}
-                              width={32} // Slightly larger image in dropdown
-                              height={32}
-                              className="rounded-full object-cover border border-gray-200"
-                            />
-                        )}
-                        <span>{item.name}</span>
-                        {/* Example for displaying average rating if available (requires data) */}
-                        {/* {item.averageRating && (
-                          <span className="flex items-center text-yellow-500 text-sm ml-auto">
-                            <StarIcon className="w-4 h-4 mr-1" /> {item.averageRating.toFixed(1)}
-                          </span>
-                        )} */}
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
 
-              {/* Date */}
+              {/* Autocomplete Dropdown */}
+              {searchTerm && filteredServices.length > 0 && activeIndex !== -1 && (
+                <ul
+                  ref={dropdownRef}
+                  className="absolute z-20 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-h-48 overflow-y-auto"
+                >
+                  {filteredServices.map((item, index) => (
+                    <li
+                      key={item.id}
+                      onClick={() => {
+                        setSearchTerm(item.name);
+                        setActiveIndex(-1);
+                      }}
+                      className={`flex items-center gap-3 p-3 cursor-pointer transition ${index === activeIndex ? 'bg-teal-100' : 'hover:bg-teal-50'}`}
+                    >
+                      {item.imageUrl && (
+                        <Image
+                          src={item.imageUrl}
+                          loader={loader}
+                          alt={item.name}
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover"
+                        />
+                      )}
+                      <span className="text-gray-800 font-medium">{item.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Date and Time Pickers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold w-full text-gray-700 mb-1">When do you need it?</label> {/* Changed label color for light mode */}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                 <DatePicker
                   selected={date}
                   onChange={(d) => d && setDate(d)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition border border-gray-200" // Light background for input, added border
                   dateFormat="MMM d, yyyy"
+                  className="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                 />
               </div>
-
-              {/* Time */}
               <div>
-                <label className="block text-sm w-full font-semibold text-gray-700 mb-1">At what time?</label> {/* Changed label color for light mode */}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
                 <DatePicker
                   selected={time}
                   onChange={(t) => t && setTime(t)}
@@ -243,25 +208,22 @@ export default function Hero() {
                   showTimeSelectOnly
                   timeIntervals={30}
                   dateFormat="h:mm aa"
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 transition border border-gray-200" // Light background for input, added border
+                  className="w-full px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                 />
               </div>
-
-              {/* CTA */}
-              <motion.button
-                whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0, 200, 150, 0.4)" }} // Still works well for light mode
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSearch}
-                className="w-full bg-teal-500 hover:bg-teal-600 text-white px-5 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Book Your Service
-              </motion.button>
             </div>
-          </motion.div>
-        )}
+
+            {/* CTA Button */}
+            <motion.button
+              whileHover={{ scale: 1.02, boxShadow: "0 12px 25px rgba(0, 150, 136, 0.4)" }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSearch}
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 rounded-xl text-lg shadow-lg transition-all duration-300"
+            >
+              Find & Book Now
+            </motion.button>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
