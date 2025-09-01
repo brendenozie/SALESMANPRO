@@ -7,10 +7,10 @@ import {
   BuildingStorefrontIcon,
   ArrowLeftCircleIcon,
   ArrowRightCircleIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import StoreCard from '@/components/stores/StoreCard';
 import useSWR, { mutate } from 'swr';
-
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -25,11 +25,87 @@ interface Store {
   category?: string;
 }
 
+
+// A component for the custom confirmation dialog.
+const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }: { isOpen: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void; }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+            <div className="relative p-6 bg-white w-96 max-w-full m-4 shadow-xl rounded-lg text-center transform transition-all">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-xl leading-6 font-bold text-gray-900">{title}</h3>
+                <div className="mt-2">
+                    <p className="text-sm text-gray-500">{message}</p>
+                </div>
+                <div className="mt-5 flex justify-center space-x-4">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:text-sm"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// A component for the animated loading state.
+const SkeletonCard = () => (
+    <div className="relative flex flex-col justify-between bg-white rounded-lg shadow-md animate-pulse p-6">
+        <div className="w-full h-40 bg-gray-300 rounded-t-lg mb-4"></div>
+        <div className="space-y-2">
+            <div className="h-6 bg-gray-300 rounded-md w-3/4"></div>
+            <div className="h-4 bg-gray-300 rounded-md"></div>
+            <div className="h-4 bg-gray-300 rounded-md w-5/6"></div>
+        </div>
+        <div className="flex justify-end mt-4">
+            <div className="h-6 w-16 bg-gray-300 rounded-md mr-2"></div>
+            <div className="h-6 w-16 bg-gray-300 rounded-md"></div>
+        </div>
+    </div>
+);
+
+
+// A component for a visually engaging empty state.
+const EmptyState = ({ title, message, buttonText, onButtonClick }: { title: string; message: string; buttonText: string; onButtonClick: () => void; }) => (
+    <div className="text-center py-20 px-4 sm:px-6 lg:px-8">
+        <BuildingStorefrontIcon className="mx-auto h-20 w-20 text-gray-400" />
+        <h3 className="mt-4 text-2xl font-medium text-gray-900">{title}</h3>
+        <p className="mt-2 text-sm text-gray-500">{message}</p>
+        <div className="mt-6">
+            <button
+                type="button"
+                onClick={onButtonClick}
+                className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+            >
+                <BuildingStorefrontIcon className="-ml-1 mr-3 h-5 w-5" aria-hidden="true" />
+                {buttonText}
+            </button>
+        </div>
+    </div>
+);
+
 export default function StoresPage() {
 
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const { data: session, status } = useSession();  
-  const [page, setPage] = useState(1);  
+  const [page, setPage] = useState<number>(1);
   const router = useRouter(); 
+
+  const [store, setStore] = useState<Store | null>(null);
 
   const { data: stores = [], error, isLoading } = useSWR<Store[]>(
     session?.user?.id ? `/api/stores?userId=${session.user.id}` : null,
@@ -61,8 +137,24 @@ export default function StoresPage() {
 
   const isAuthLoading = status === 'loading';
 
+  const confirmDelete = async ( store: Store ) => {
+      setIsModalOpen(false);
+      setIsDeleting(true);
+      try {
+          const res = await fetch(`/api/stores/${store.id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Delete failed');
+          // Optimistically update the cache without waiting for the next fetch
+          // This makes the UI feel much faster
+          mutate(`/api/stores?userId=${session?.user?.id}`);
+      } catch (err) {
+          console.error('Failed to delete store:', err);
+      } finally {
+          setIsDeleting(false);
+      }
+  };
+
   return (
-    
+    <>
     <div className="min-h-screen bg-gray-50 p-8">
       <header className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-extrabold text-gray-800">Your Stores</h1>
@@ -82,9 +174,16 @@ export default function StoresPage() {
       ) : error ? (
         <p className="p-8 text-center text-red-600">Failed to load stores.</p>
       ) : isLoading ? (
-        <p className="text-center">Fetching your stores…</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(pageSize)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
       ) : stores.length === 0 ? (
-        <p className="text-center text-gray-600">You haven’t created any stores yet.</p>
+        <EmptyState 
+          title="No Stores Found"
+          message="It looks like you haven't created any stores yet. Click the button below to get started!"
+          buttonText="Create Your First Store"
+          onButtonClick={handleCreate}
+        />
       ) : (
         <>
           {/* grid + pagination */}
@@ -102,31 +201,48 @@ export default function StoresPage() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="mt-8 flex justify-center items-center space-x-4">
-              <button
-                onClick={() => setPage(p => Math.max(p - 1, 1))}
-                disabled={page === 1}
-                className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
-              >
-                <ArrowLeftCircleIcon className="h-6 w-6 text-gray-600" />
-              </button>
-              <span className="text-gray-700">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-                disabled={page === totalPages}
-                className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
-              >
-                <ArrowRightCircleIcon className="h-6 w-6 text-gray-600" />
-              </button>
-            </div>
+            <PaginationControls page={page} totalPages={totalPages} setPage={setPage} />
           )}
         </>
         </>
       )}
 
     </div>
-
+     <ConfirmationModal
+          isOpen={isModalOpen}
+          title="Confirm Deletion"
+          message="Are you sure you want to delete this store? This action cannot be undone."
+          onConfirm={() => {
+            if (store) confirmDelete(store);
+          }}
+          onCancel={() => setIsModalOpen(false)}
+      />
+    </>
   );
 }
+
+
+// A component for the pagination controls.
+const PaginationControls = (
+  { page, totalPages, setPage }: { page: number; totalPages: number; setPage: React.Dispatch<React.SetStateAction<number>> }
+) => (
+  <div className="mt-8 flex justify-center items-center space-x-4">
+    <button
+      onClick={() => setPage(p => Math.max(p - 1, 1))}
+      disabled={page === 1}
+      className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+    >
+      <ArrowLeftCircleIcon className="h-6 w-6 text-gray-600" />
+    </button>
+    <span className="text-gray-700">
+      Page {page} of {totalPages}
+    </span>
+    <button
+      onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+      disabled={page === totalPages}
+      className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+    >
+      <ArrowRightCircleIcon className="h-6 w-6 text-gray-600" />
+    </button>
+  </div>
+);
