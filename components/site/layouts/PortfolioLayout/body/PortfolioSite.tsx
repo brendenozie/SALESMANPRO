@@ -51,7 +51,9 @@ export default function PortfolioSite() {
       
       <TestimonialsSection/> 
 
-      {/* <FeaturedProjects /> */}
+      {/* <FeaturedProjects projects={[]} slug={''} loader={function (_: any): string {
+        throw new Error('Function not implemented.');
+      } } /> */}
 
       <FAQSection/>
 
