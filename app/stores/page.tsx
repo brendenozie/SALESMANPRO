@@ -25,7 +25,6 @@ interface Store {
   category?: string;
 }
 
-
 // A component for the custom confirmation dialog.
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }: { isOpen: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void; }) => {
     if (!isOpen) return null;

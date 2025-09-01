@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 // Header/Footer Layouts
 const GhubaLayout = dynamic(() => import('@/components/site/layouts/GhubaLayout/GhubaLayout'));
 const EcommerceLayout = dynamic(() => import('@/components/site/layouts/EcommerceLayout/EcommerceLayout'));
+const EcommerceShoesLayout = dynamic(() => import('@/components/site/layouts/EcommerceShoesLayout/EcommerceShoesLayout'));
 const ServicesLayout = dynamic(() => import('@/components/site/layouts/ServicesLayout/ServicesLayout'));
 const BookingsLayout = dynamic(() => import('@/components/site/layouts/BookingsLayout/BookingsLayout'));
 const DefaultLayout = dynamic(() => import('@/components/site/layouts/DefaultLayout/DefaultLayout'));
@@ -36,6 +37,8 @@ export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterCom
   'ghuba': GhubaLayout,
   'ecommerce': EcommerceLayout,
   'e-commerce': EcommerceLayout,
+  'shoes-store': EcommerceShoesLayout,
+  'shoes store': EcommerceShoesLayout,
   'services': ServicesLayout,
   'service provider': ServicesLayout,
   'bookings': BookingsLayout,
@@ -80,6 +83,8 @@ export const folderMap: Record<string, string> = {
   'ghuba': 'GhubaLayout',
   'ecommerce': 'EcommerceLayout',
   'e-commerce': 'EcommerceLayout',
+  'shoes-store': 'EcommerceShoesLayout',
+  'shoes store': 'EcommerceShoesLayout',
   'services': 'ServicesLayout',
   'service provider': 'ServicesLayout',
   'bookings': 'BookingsLayout',
@@ -122,6 +127,7 @@ export const folderMap: Record<string, string> = {
 export const siteComponentNameMap: Record<string, string> = {
   'GhubaLayout': 'GhubaSite',
   'EcommerceLayout': 'EcommerceSite',
+  'EcommerceShoesLayout': 'EcommerceShoesSite',
   'ServicesLayout': 'ServiceSite',
   'BookingsLayout': 'BookingsSite',
   'RealEstateLayout': 'RealEstateSite',
