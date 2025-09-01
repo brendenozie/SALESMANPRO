@@ -35,6 +35,7 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'ghuba': GhubaLayout,
     'ecommerce': EcommerceLayout,
     'shoes-store': EcommerceShoesLayout,
+    'shoes store': EcommerceShoesLayout,
     'e-commerce': EcommerceLayout,
     'services': ServicesLayout,
     'service provider': ServicesLayout, 
