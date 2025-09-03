@@ -348,16 +348,7 @@ model Company {
   ShippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id], onDelete: NoAction)
 
   Subscription Subscription[]
-
-  // SEO                             SEO?                              @relation(fields: [sEOId], references: [id]) //            @relation(fields: [sEOId], references: [id])
-  // AnalyticsConfig                 AnalyticsConfig?                   @relation(fields: [analyticsConfigId], references: [id])
-  // PaymentSettings                 PaymentSettings?                  @relation(fields: [paymentSettingsId], references: [id]) //    @relation(fields: [paymentSettingsId], references: [id])
-  // ShippingSettings                ShippingSettings?                 @relation(fields: [shippingSettingsId], references: [id]) //    @relation(fields: [shippingSettingsId], references: [id])
-
-  // paymentSettingsId               String?                           @db.ObjectId
-  // shippingSettingsId              String?                           @db.ObjectId
-  // analyticsConfigId               String?                           @db.ObjectId
-  CoreValues CoreValues[]
+  CoreValues   CoreValues[]
 }
 
 enum CategoryStatus {
@@ -408,11 +399,9 @@ model Banner {
   price           String?
   endsAt          DateTime?
   order           Int       @default(0)
-
-  // NEW FIELDS
   iconKey         String? // e.g. "laundry", "delivery"
-  backgroundColor String? // optional customization
-  textColor       String? // optional customization
+  backgroundColor String?
+  textColor       String?
 }
 
 //this promotion on the other hand is a promotion table that highlights the promotions or offers a company offers something lika a banner
@@ -3645,24 +3634,6 @@ model StudentFeeRecord {
   @@map("studentFeeRecords") // MongoDB collection name for student fee records
 }
 
-// model Donor {
-//   id String @id @default(auto()) @map("_id") @db.ObjectId
-
-//   // loginCode   String?  @unique
-//   phoneNumber String?
-//   companyId   String?  @db.ObjectId
-//   company     Company? @relation(fields: [companyId], references: [id])
-
-//   userId String @unique @db.ObjectId // Link to User model
-//   user   User   @relation("DonorProfile", fields: [userId], references: [id])
-
-//   createdAt DateTime? @default(now())
-//   updatedAt DateTime? @updatedAt
-
-//   ClientInventoryLog ClientInventoryLog[]
-//   Donation           Donation[]
-// }
-
 model Donor {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -3681,27 +3652,6 @@ model Donor {
   ClientInventoryLog ClientInventoryLog[] // If Donor also logs inventory
   Donation           Donation[] // Donations made specifically through this Donor profile
 }
-
-// // --- Company Model (assuming it exists or will be created) ---
-// model Company {
-//   id                   String               @id @default(auto()) @map("_id") @db.ObjectId
-//   name                 String
-//   // ... other fields in Company
-//   donors               Donor[]
-// }
-
-// // --- Donation Model (adjusted to link to Donor) ---
-// // This model will primarily link to the Donor profile for donations
-// model Donation {
-//   id           String     @id @default(auto()) @map("_id") @db.ObjectId
-//   donorId      String     @db.ObjectId // Donation must come from a Donor profile
-//   donor        Donor      @relation(fields: [donorId], references: [id])
-//   // ... other fields for Donation (amount, currency, etc.)
-//   // If you also want to track donations made directly by a User (not through a Donor profile),
-//   // you could add:
-//   // userId       String?    @db.ObjectId
-//   // user         User?      @relation(fields: [userId], references: [id])
-// }
 
 model Inquiry {
   id                  String        @id @default(auto()) @map("_id") @db.ObjectId
@@ -4175,38 +4125,6 @@ enum VideoStatus {
   REJECTED
 }
 
-// model Video {
-//   id           String      @id @default(auto()) @map("_id") @db.ObjectId
-//   title        String
-//   url          String? // The S3 URL of the video file
-//   thumbnailUrl String? // The URL of the video's thumbnail image
-//   description  String?
-//   duration     String? // Duration of the video in seconds
-//   views        Int         @default(0)
-//   status       VideoStatus @default(DRAFT)
-//   tags         String[] // For filtering and search
-
-//   // Date of upload/creation
-//   date DateTime
-
-//   // URL for the thumbnail image
-//   imageUrl String
-
-//   // Optional relations for tracking who owns the video
-//   companyId String?  @db.ObjectId
-//   company   Company? @relation(fields: [companyId], references: [id])
-//   userId    String?  @db.ObjectId
-//   user      User?    @relation(fields: [userId], references: [id])
-
-//   // Timestamps
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   // Add indexes for faster lookups
-//   @@index([companyId])
-//   @@index([userId])
-// }
-
 enum ContentStatus {
   Draft
   Scheduled
@@ -4219,7 +4137,10 @@ enum ContentType {
   VIDEO
   ARTICLE
   IMAGE_GALLERY
-  // Add other content types as needed
+  VIRTUAL_TOUR
+  // 3D_MODEL
+  INTERACTIVE_3D
+  // 360_VIDEO
 }
 
 model Content {

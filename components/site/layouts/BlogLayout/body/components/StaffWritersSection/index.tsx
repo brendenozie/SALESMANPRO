@@ -122,12 +122,12 @@ const fallbackStaffWriters = [
 export default function StaffWritersSection() {
   // Destructure storeFormData from context, providing a fallback for when context is not available
   const { storeFormData } = useStoreContext() || {};
-  const { writers: dynamicWriters, themeSettings: { primaryColor = '#F59E0B' } = {} } = storeFormData || {}; // Default primary color (Tailwind amber-500)
+  const { Writer: dynamicWriters, themeSettings: { primaryColor = '#F59E0B' } = {} } = storeFormData || {}; // Default primary color (Tailwind amber-500)
 
   // Map dynamic writer data to our display shape, or use fallback data
   const writersToDisplay = Array.isArray(dynamicWriters) && dynamicWriters.length > 0
     ? dynamicWriters.map(writer => ({
-        name: writer.user.name || 'Unknown Writer',
+        name: writer.name || 'Unknown Writer',
         // Use writer.bio for role, or fallback to a default 'Writer'
         role: writer.bio || 'Writer', 
         img: writer.profilePicture || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback for missing profile picture

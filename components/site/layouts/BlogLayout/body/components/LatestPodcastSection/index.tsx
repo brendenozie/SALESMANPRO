@@ -102,7 +102,7 @@ const fallbackPodcasts: Podcast[] = [
 export default function LatestPodcastSection() {
   // Destructure storeFormData from context, providing a fallback for when context is not available
   const { storeFormData } = useStoreContext() || {};
-  const { podcasts: dynamicPodcasts, themeSettings: { primaryColor = '#F59E0B' } = {} } = storeFormData || {}; // Default primary color (Tailwind amber-500)
+  const { Podcast: dynamicPodcasts, themeSettings: {  primaryColor = '#F59E0B' } = {} } = storeFormData || {}; // Default primary color (Tailwind amber-500)
 
   // Determine which podcast data to use
   const podcastsToRender = Array.isArray(dynamicPodcasts) && dynamicPodcasts.length > 0
