@@ -28,7 +28,7 @@ const testimonialSchema = z.object({
 });
 
 const heroSlideSchema = z.object({
-  imageUrl: z.string().url(),
+  imageUrl: z.string().nullable().optional(),
   productImageUrl: z.string().url().nullable().optional().or(z.literal('')),
   headline: z.string().nullable().optional(),
   subline: z.string().nullable().optional(),

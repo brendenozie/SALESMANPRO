@@ -45,6 +45,8 @@ const categoryBodyLayoutMap: Record<string, LayoutBodyComponent>  = {
   'e-commerce':     EcommerceSite,
   'ecommerce':      EcommerceSite,
 
+  // 'shoes store':    ShoesStoreSite,
+
   // services
   'services':    ServiceSite,
   'service provider': ServiceSite,

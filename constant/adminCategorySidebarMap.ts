@@ -52,6 +52,29 @@ export const adminCategorySidebarMap: Record<
     { label: "Settings", icon: Cog6ToothIcon, href: (id) => `/admin/${id}/settings` },
   ],
 
+  "shoes store": [
+    { label: "Dashboard", icon: HomeIcon, href: (id) => `/admin/${id}` },
+    {
+      label: "Products",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: (id) => `/admin/${id}/inventory` },
+        { label: "Market List", href: (id) => `/admin/${id}/mymarketplace` },
+      ],
+    },
+    {
+      label: "Orders",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Agent Orders", href: (id) => `/admin/${id}/agentorders` },
+        { label: "Client Orders", href: (id) => `/admin/${id}/clientorders` },
+        { label: "Marketplace", href: (id) => `/admin/${id}/customerorders` },
+      ],
+    },
+    { label: "Reports", icon: ChartBarIcon, href: (id) => `/admin/${id}/reports` },
+    { label: "Messages", icon: ChatBubbleBottomCenterTextIcon, href: (id) => `/admin/${id}/messages` },
+    { label: "Settings", icon: Cog6ToothIcon, href: (id) => `/admin/${id}/settings` },
+  ],
   "real estate": [
     { label: "Dashboard", icon: HomeIcon, href: (id) => `/admin/${id}` },
     { label: "Properties", icon: BuildingOfficeIcon, href: (id) => `/admin/${id}/properties` },

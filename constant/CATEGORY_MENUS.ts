@@ -90,6 +90,40 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
 
+   "Shoes Store": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    {
+      label: "Products",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
+    },
+    {
+      label:"Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+      ],
+    },
+    {
+      label: "Orders",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+      ],
+    },
+    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+  ],
+
   "Service Provider": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
     { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },

@@ -245,14 +245,14 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
               id={`startsAt-${idx}`}
               type="date"
               value={formatDate(promo.startsAt)}
-              onChange={(e) => onUpdate(idx, 'startsAt', e.target.value ? new Date(e.target.value) : null)}
+              onChange={(e) => onUpdate(idx, 'startsAt', e.target.value ? new Date(e.target.value).toISOString() : null)}
             />
             <InputField
               label="End Date"
               id={`endsAt-${idx}`}
               type="date"
               value={formatDate(promo.endsAt)}
-              onChange={(e) => onUpdate(idx, 'endsAt', e.target.value ? new Date(e.target.value) : null)}
+              onChange={(e) => onUpdate(idx, 'endsAt', e.target.value ? new Date(e.target.value).toISOString() : null)}
             />
           </div>
           
