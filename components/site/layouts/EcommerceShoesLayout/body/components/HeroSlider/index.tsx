@@ -1,27 +1,32 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useStoreContext } from '../../../../../../../contexts/StoreContext';
+import { StoreForm } from '@/types/typings';
 
-// Loader remains the same so Next.js can optimize your images
+// Loader remains the same for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
+// Interface for each slide
 interface Slide {
   imageUrl: string;
   headline: string;
+  subline: string;
   description: string;
   ctaText: string;
   ctaLink: string;
 }
 
-const slides: Slide[] = [
+const defaultSlides: Slide[] = [
   {
     imageUrl: '/images/nike-shoe.png',
     headline: 'STEP INTO STYLE & COMFORT',
+    subline: 'Shoes',
     description:
       'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
     ctaText: 'Buy Now',
@@ -30,6 +35,7 @@ const slides: Slide[] = [
   {
     imageUrl: '/images/another-shoe.png',
     headline: 'ELEVATE YOUR LOOK TODAY',
+    subline: 'Awesome',
     description:
       'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
     ctaText: 'Shop Now',
@@ -40,7 +46,25 @@ const slides: Slide[] = [
 const transitionDuration = 0.6;
 const autoAdvanceDelay = 6000;
 
-export default function HeroSlider() {
+export interface HeroSliderProps {
+  storeFormData: StoreForm | null;
+}
+
+export default function HeroSlider({ storeFormData }: HeroSliderProps) {
+  // Use a different name for the slides data to avoid conflict
+  const storeSlides: Slide[] | undefined = storeFormData?.heroSlides as Slide[];
+
+  // Use store data if available, otherwise fall back to default slides
+  const slides: Slide[] =
+    (storeSlides && storeSlides.length > 0 ? storeSlides : defaultSlides).map((slide, index) => ({
+      imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
+      headline: slide.headline || defaultSlides[index]?.headline,
+      subline: slide.subline || defaultSlides[index]?.subline,
+      description: slide.description || defaultSlides[index]?.description,
+      ctaText: slide.ctaText || defaultSlides[index]?.ctaText,
+      ctaLink: slide.ctaLink || defaultSlides[index]?.ctaLink,
+    }));
+
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -48,14 +72,14 @@ export default function HeroSlider() {
   useEffect(() => {
     resetTimer();
     return () => clearTimeout(timeoutRef.current);
-  }, [current]);
+  }, [current, slides]); // Added slides to the dependency array to reset the timer when data changes
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       nextSlide();
     }, autoAdvanceDelay);
-  };
+  }, [slides]);
 
   const prevSlide = () => {
     setDirection(-1);
@@ -111,10 +135,10 @@ export default function HeroSlider() {
                 {/* Overlay big SNEAKERS text */}
                 <div
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                             text-[min(20vw,220px)] font-extrabold text-gray-200 opacity-40 pointer-events-none z-0"
+                                     text-[min(20vw,220px)] font-extrabold text-gray-200 opacity-40 pointer-events-none z-0"
                   style={{ whiteSpace: 'nowrap' }}
                 >
-                  SNEAKERS
+                  {slide.subline || 'SNEAKERS'}
                 </div>
 
                 {/* LEFT CONTENT */}

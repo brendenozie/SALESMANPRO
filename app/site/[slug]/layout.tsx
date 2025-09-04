@@ -91,6 +91,10 @@ export default async function StoreLayout({
   }
 
   const storeFormData = transformCompanyToStoreForm(raw);
+
+  console.log(raw);
+  console.log(storeFormData);
+
   const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
   const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
 

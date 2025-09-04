@@ -107,10 +107,10 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     id: sc.categoryId,
     name: sc.displayName ?? sc.category.name,
     icon: sc.icon ?? undefined,
-    items: Array.isArray(sc.items)
-      ? sc.items
-      : typeof sc.items === 'string'
-        ? JSON.parse(sc.items)
+    items: Array.isArray(sc.subcategories)
+      ? sc.subcategories
+      : typeof sc.subcategories === 'string'
+        ? JSON.parse(sc.subcategories)
         : [],
     sortOrder: sc.sortOrder,
     visible: sc.visible,

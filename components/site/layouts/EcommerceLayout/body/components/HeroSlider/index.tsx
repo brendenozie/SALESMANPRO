@@ -12,7 +12,7 @@ import { StoreForm } from '@/types/typings';
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Interface for each slide
+// Interface for each slide, now including 'subline' for the new design
 interface Slide {
   imageUrl: string;
   subline: string;
@@ -29,20 +29,42 @@ export interface HeroSliderProps {
   storeFormData: StoreForm | null;
 }
 
+// Default slides with a subline and a full, rich set of content
+const defaultSlides: Slide[] = [
+  {
+    imageUrl: '/images/nike-shoe.png',
+    subline: 'Exclusive Offer',
+    headline: 'STEP INTO\nSTYLE & COMFORT',
+    description: 'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
+    ctaText: 'Buy Now',
+    ctaLink: '/shop',
+  },
+  {
+    imageUrl: '/images/another-shoe.png',
+    subline: 'New Collection',
+    headline: 'ELEVATE YOUR\nLOOK TODAY',
+    description: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
+    ctaText: 'Shop Now',
+    ctaLink: '/collection',
+  },
+];
+
 export default function HeroSlider({ storeFormData }: HeroSliderProps) {
-  // Map backend "heroSlides" to the slide shape, providing engaging defaults
-  const heroSlides: Slide[] = (storeFormData?.heroSlides || []).map((slide: any) => ({
-    imageUrl: slide.imageUrl,
+  const storeSlides: Slide[] | undefined = storeFormData?.heroSlides;
+  const defaultPrimaryColor = '#6B46C1'; // deep purple
+  const defaultSecondaryColor = '#D53F8C'; // vibrant pink
+
+  const heroSlides: Slide[] = (storeSlides && storeSlides.length > 0 ? storeSlides : defaultSlides).map((slide, index) => ({
+    imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
     subline: slide.subline || 'Exclusive Offer',
-    headline: slide.headline || 'Unlock Amazing Deals Now!',
-    description: slide.description || 'Discover curated collections and exceptional savings on your favorite products.',
+    headline: slide.headline || defaultSlides[index]?.headline || 'Unlock Amazing Deals Now!',
+    description: slide.description || defaultSlides[index]?.description || 'Discover curated collections and exceptional savings on your favorite products.',
     ctaText: slide.ctaText || 'Explore Collections',
     ctaLink: slide.ctaLink || '/shop',
   }));
 
-  // Define theme colors with light-mode-friendly defaults
-  const primary = storeFormData?.themeSettings?.primaryColor || '#6B46C1'; // deep purple
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#D53F8C'; // vibrant pink
+  const primary = storeFormData?.themeSettings?.primaryColor || defaultPrimaryColor;
+  const secondary = storeFormData?.themeSettings?.secondaryColor || defaultSecondaryColor;
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -97,7 +119,6 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
     else if (offset > 50) prevSlide();
   };
 
-  // Variants for dynamic entrance/exit animations
   const slideVariants = {
     enter: (dir: number) => ({
       x: dir > 0 ? '100%' : '-100%',
@@ -274,7 +295,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                   ref={progressRef}
                   className="absolute left-0 top-0 h-full rounded-full"
                   style={{
-                    backgroundColor: 'white', // Progress bar is now white for visibility
+                    backgroundColor: 'white',
                     width: '0%',
                   }}
                 />
