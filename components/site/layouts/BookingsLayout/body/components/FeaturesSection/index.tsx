@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { motion, useInView } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { ICoreValue } from '@/types/typings';
 
 // Animation variants for staggered appearance
 const containerVariants = {
@@ -41,6 +42,40 @@ const itemVariants = {
 export default function FeaturesSection() {
   const { storeFormData } = useStoreContext();
 
+
+  const features : ICoreValue[] = [
+    {
+      icon: 'CheckIcon',
+      title: 'Effortless Booking',
+      description: 'Book any service in seconds—anywhere, anytime. Streamlined for your convenience.',
+    },
+    {
+      icon: 'UserGroupIcon',
+      title: 'Top Service Providers',
+      description: `Choose from amongst highly skilled, local professionals.`,
+    },
+    {
+      icon: 'LockClosedIcon',
+      title: 'Secure & Transparent Payments',
+      description: 'Protected transactions with MPESA, Card, and more trusted local options. Your peace of mind is our priority.',
+    },
+    {
+      icon: 'AdjustmentsVerticalIcon',
+      title: 'Tailored Packages',
+      description: 'Find flexible options and customized plans to perfectly suit your unique needs.',
+    },
+    {
+      icon: 'ClockIcon',
+      title: 'Real-time Availability',
+      description: 'See live schedules and book instantly. No more waiting games—just clear, up-to-date information.',
+    },
+    {
+      icon: 'Cog6ToothIcon',
+      title: 'Trusted & Vetted Experts',
+      description: 'Every professional is hand-verified and rigorously vetted for exceptional quality and unwavering reliability.',
+    },
+  ];
+
   const sampleData = {
     name: 'SwiftCare',
     description: 'Experience seamless booking and unparalleled service quality for all your needs—fast, flexible, and utterly reliable. Simplify your life with us.',
@@ -49,6 +84,8 @@ export default function FeaturesSection() {
     },
     marketplaceListings: Array(5).fill({}),
     pricingTiers: [{ isFeatured: true, description: 'Find flexible options and customized plans to perfectly suit your unique needs.' }],
+  
+    CoreValues: features,
   };
 
   const {
@@ -57,42 +94,12 @@ export default function FeaturesSection() {
     themeSettings,
     marketplaceListings = [],
     pricingTiers = [],
+    CoreValues = [],
   } = storeFormData || sampleData;
 
-  const features = [
-    {
-      Icon: CheckIcon,
-      title: 'Effortless Booking',
-      description: 'Book any service in seconds—anywhere, anytime. Streamlined for your convenience.',
-    },
-    {
-      Icon: UserGroupIcon,
-      title: 'Top Service Providers',
-      description: `Choose from ${marketplaceListings.length > 0 ? marketplaceListings.length : 'many'} highly skilled, local professionals.`,
-    },
-    {
-      Icon: LockClosedIcon,
-      title: 'Secure & Transparent Payments',
-      description: 'Protected transactions with MPESA, Card, and more trusted local options. Your peace of mind is our priority.',
-    },
-    {
-      Icon: AdjustmentsVerticalIcon,
-      title: 'Tailored Packages',
-      description: pricingTiers[0]?.description || 'Find flexible options and customized plans to perfectly suit your unique needs.',
-    },
-    {
-      Icon: ClockIcon,
-      title: 'Real-time Availability',
-      description: 'See live schedules and book instantly. No more waiting games—just clear, up-to-date information.',
-    },
-    {
-      Icon: Cog6ToothIcon,
-      title: 'Trusted & Vetted Experts',
-      description: 'Every professional is hand-verified and rigorously vetted for exceptional quality and unwavering reliability.',
-    },
-  ];
-
   const primaryColor = themeSettings?.primaryColor || '#00A880';
+
+  const processCoreValues = CoreValues.length ? CoreValues : features;
 
   return (
     <section className="relative bg-gray-50 py-24 px-6 sm:px-12 text-gray-900 overflow-hidden">
@@ -155,7 +162,7 @@ export default function FeaturesSection() {
         whileInView="visible"
         viewport={{ once: true }}
       >
-        {features.map(({ Icon, title, description }, i) => (
+        {processCoreValues.map(({ icon, title, description }, i) => (
           <motion.div
             key={title}
             className="bg-white/70 backdrop-filter backdrop-blur-lg rounded-2xl border border-gray-200 p-8 shadow-xl hover:shadow-2xl transition-all duration-300 group cursor-pointer relative overflow-hidden"
@@ -178,7 +185,12 @@ export default function FeaturesSection() {
                 boxShadow: `0 0 15px ${primaryColor}66`,
               }}
             >
-              <Icon className="w-7 h-7 text-white group-hover:scale-110 transition-transform duration-200" />
+              {icon === 'CheckIcon' && <CheckIcon className="w-7 h-7 text-white" />}
+              {icon === 'UserGroupIcon' && <UserGroupIcon className="w-7 h-7 text-white" />}
+              {icon === 'LockClosedIcon' && <LockClosedIcon className="w-7 h-7 text-white" />}
+              {icon === 'AdjustmentsVerticalIcon' && <AdjustmentsVerticalIcon className="w-7 h-7 text-white" />}
+              {icon === 'ClockIcon' && <ClockIcon className="w-7 h-7 text-white" />}
+              {icon === 'Cog6ToothIcon' && <Cog6ToothIcon className="w-7 h-7 text-white" />}
             </div>
             <h3 className="text-xl font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 relative z-10">
               {title}

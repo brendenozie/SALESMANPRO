@@ -145,7 +145,7 @@ export interface IUser extends User {}
 export interface ICoreValue {
   title: string;
   description: string | null;
-  icon: string | null;
+  icon: string | null ;
 }
 
 export interface SocialLink {

@@ -5,15 +5,15 @@ import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '../../../contexts/StoreContext';
 import Section from '../Section/Section';
-import { Award } from '../../types'; // Assuming this is defined elsewhere
+import { Award } from '@/types/typings';
 
 // Sample Data to demonstrate the component
-const sampleAwards = [
-  { imageUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3?w=800&q=80', name: 'Digital Innovator Award', url: '#' },
-  { imageUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598?w=800&q=80', name: 'Excellence in E-commerce', url: '#' },
-  { imageUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033?w=800&q=80', name: 'Best New Product 2023', url: '#' },
-  { imageUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e?w=800&q=80', name: 'Industry Leader of the Year', url: '#' },
-  { imageUrl: 'https://images.unsplash.com/photo-1621376823337-3715c97f4c02?w=800&q=80', name: 'Consumer Choice Winner', url: '#' },
+const sampleAwards:any = [
+  { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3?w=800&q=80', name: 'Digital Innovator Award', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598?w=800&q=80', name: 'Excellence in E-commerce', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033?w=800&q=80', name: 'Best New Product 2023', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e?w=800&q=80', name: 'Industry Leader of the Year', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1621376823337-3715c97f4c02?w=800&q=80', name: 'Consumer Choice Winner', url: '#' },
   { name: 'Recognized by Forbes', url: '#' }, // Example with no image
   { name: 'Top 10 Startup', url: '#' }, // Example with no image
 ];
@@ -56,8 +56,8 @@ export default function AwardsSection({ awards = sampleAwards }: { awards?: Awar
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          {awards.map((award, idx) => {
-            const src = award?.imageUrl ?? award?.url ?? award?.icon ?? '';
+          {awards.map((award:any, idx) => {
+            const src = award?.imageUrl ?? award?.url ?? award?.iconUrl ?? '';
             const altText = award?.name ?? `Award ${idx + 1}`;
             const label = award?.name;
 

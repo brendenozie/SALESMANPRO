@@ -1,46 +1,54 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowDownIcon, BoltIcon, TrophyIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
-import { SparklesIcon, TrophyIcon, ArrowRightIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { StoreForm, Testimonial, Award } from '@/types/typings';
 
-// Type definitions (as provided in your original code)
-interface ThemeSettings {
-  primaryColor?: string;
-  secondaryColor?: string;
-}
+// Framer Motion variants for staggered animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
 
-interface HeroSlide {
-  headline?: string;
-  subline?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  imageUrl?: string;
-  productImageUrl?: string;
-}
+const itemVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 10,
+    },
+  },
+};
 
-interface Testimonial {
-  rating?: number;
-}
-
-interface Award {
-  name: string;
-  iconUrl?: string;
-}
-
-interface StoreFormData {
-  name: string;
-  slug: string;
-  tagline?: string;
-  bannerUrl?: string;
-  themeSettings?: ThemeSettings;
-  heroSlides?: HeroSlide[];
-  testimonials?: Testimonial[];
-  awards?: Award[];
+// Helper function to render the headline with dynamic coloring
+function renderHeadline(headline: string, primaryColor: string) {
+  const words = headline.split(' ');
+  if (words.length <= 1) {
+    return headline;
+  }
+  const lastWord = words.pop();
+  return (
+    <>
+      {words.join(' ')}{' '}
+      <span style={{ color: primaryColor }}>
+        {lastWord}
+      </span>
+    </>
+  );
+  
 }
 
 // Loader for next/image
@@ -48,283 +56,149 @@ const imageLoader = ({ src, width, quality }: { src: string; width: number; qual
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-export default function HeroSectionAsymmetrical() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
+export default function HeroSection() {
+  const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
   const {
     name,
-    slug,
-    bannerUrl,
     themeSettings = {},
     heroSlides = [],
     testimonials = [],
     awards = [],
   } = storeFormData;
 
-  const primaryColor = themeSettings.primaryColor || '#3b82f6'; // Default Tailwind blue-500
-  const secondaryColor = themeSettings.secondaryColor || '#2563eb'; // Default Tailwind blue-600
+  const primaryColor = themeSettings?.primaryColor || '#00A880';
+  const secondaryColor = themeSettings?.secondaryColor || '#10B981';
+  const tagline = storeFormData.tagline || 'Crafting exceptional digital experiences.';
+  const headline = heroSlides[0]?.headline || 'Building Digital Experiences';
+  const imageUrl = heroSlides[0]?.productImageUrl || 'https://images.unsplash.com/photo-1517404215200-1c3970b889b7?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
-  const slide = heroSlides[0] || {};
-  const {
-    headline = `Welcome to ${name}`,
-    subline = storeFormData.tagline || 'Crafting exceptional experiences.',
-    ctaText = 'Discover More',
-    ctaLink = `/${slug}/#services`,
-    imageUrl,
-    productImageUrl,
-  } = slide;
-
-  const bgImageSrc = bannerUrl || productImageUrl || imageUrl || '/placeholder-hero.jpg';
-
-  const validTestimonials = testimonials.filter(t => typeof t.rating === 'number');
+  const validTestimonials: Testimonial[] = Array.isArray(testimonials) ? testimonials.filter(t => typeof t.rating === 'number') : [];
   const reviewCount = validTestimonials.length;
   const averageRating =
     reviewCount > 0
       ? validTestimonials.reduce((sum, t) => sum + (typeof t.rating === 'number' ? t.rating : 0), 0) / reviewCount
       : 0;
-
   const roundedRating = Math.round(averageRating * 2) / 2;
-
-  // Framer Motion variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
-  };
-
-  const ctaButtonVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 10,
-        delay: 0.5,
-      },
-    },
-    hover: {
-      scale: 1.03,
-      boxShadow: `0 10px 25px ${primaryColor}40`,
-      transition: { duration: 0.2 },
-    },
-    tap: { scale: 0.98 },
-  };
-
-  const imageRevealVariants = {
-    hidden: { opacity: 0, x: 100, rotate: 5, scale: 0.9 },
-    show: {
-      opacity: 1,
-      x: 0,
-      rotate: -3, // Slightly rotate for a dynamic feel
-      scale: 1,
-      transition: { delay: 0.4, duration: 0.8, ease: "easeOut" }
-    },
-    hover: {
-      rotate: 0, // Straighten on hover
-      scale: 1.02,
-      boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
-      transition: { duration: 0.4, ease: "easeOut" },
-    },
-  };
+  const awardsData: Award[] = Array.isArray(awards) && awards.length > 0 ? awards : [];
 
   return (
-    <section className="relative overflow-hidden py-24 md:py-36 bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900">
-      {/* Background radial gradient */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full mix-blend-multiply filter blur-3xl opacity-20"
-        style={{ background: `radial-gradient(circle at center, ${primaryColor}20, ${secondaryColor}10, transparent 70%)` }}
-      ></div>
+    <AnimatePresence>
+      <section
+        id="hero"
+        className="relative flex items-center justify-center min-h-screen py-24 md:py-32 px-6 lg:px-12 bg-white dark:bg-gray-950 overflow-hidden"
+      >
+        {/* Dynamic Background Gradients */}
+        <div
+          className="absolute inset-0 z-0 opacity-10 dark:opacity-20 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at 10% 20%, ${primaryColor}20, transparent 40%), radial-gradient(circle at 90% 80%, ${secondaryColor}20, transparent 40%)`,
+          }}
+        />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center gap-16 relative z-10">
-        {/* Left Content: Headline, Subline, CTA, Trust Signals */}
+        {/* Hero Image - Soft-focus and blurred */}
         <motion.div
-          className="flex-1 max-w-xl text-center md:text-left space-y-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
+          className="absolute inset-0 z-0 w-full h-full"
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 0.2, scale: 1 }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
         >
-          <motion.h1
-            className="text-4xl md:text-5xl lg:text-7xl font-extrabold leading-tight text-gray-900 dark:text-white drop-shadow-sm"
-            variants={itemVariants}
-          >
-            {renderHeadline(headline, primaryColor)}
-          </motion.h1>
+          <Image
+            src={imageUrl || 'https://images.unsplash.com/photo-1517404215200-1c3970b889b7?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+            loader={imageLoader}
+            alt="Hero Background"
+            fill
+            priority
+            className="object-cover object-center filter blur-xl scale-110"
+          />
+          <div className="absolute inset-0 bg-white dark:bg-gray-950 opacity-50" />
+        </motion.div>
 
-          {subline && (
-            <motion.p
-              className="text-gray-700 dark:text-gray-300 text-lg md:text-xl leading-relaxed"
+        {/* Hero Content */}
+        <div className="max-w-7xl mx-auto relative z-10 text-center">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* Main Title */}
+            <motion.h1
+              className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-gray-900 dark:text-white leading-tight mb-6 drop-shadow-md"
               variants={itemVariants}
             >
-              {subline}
-            </motion.p>
-          )}
+              {renderHeadline(headline, primaryColor)}
+            </motion.h1>
 
-          <motion.div
-            className="flex flex-wrap justify-center md:justify-start gap-4 pt-4"
-            variants={ctaButtonVariants}
-            initial="hidden"
-            animate="show"
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <Link
-              href={ctaLink}
-              className="px-8 py-3 rounded-full text-lg font-semibold shadow-xl transition-all duration-300 ease-in-out flex items-center gap-2"
-              style={{
-                backgroundColor: primaryColor,
-                color: '#fff',
-                // backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
-              }}
+            {/* Subtitle/Description */}
+            <motion.p
+              className="mt-4 text-gray-700 dark:text-gray-300 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed"
+              variants={itemVariants}
             >
-              {ctaText}
-              <ChevronRightIcon className="w-5 h-5 ml-1" /> {/* Modernized arrow */}
-            </Link>
-          </motion.div>
+              {tagline}
+            </motion.p>
 
-          {/* Trust Signals Block - Combined and more visually cohesive */}
-          <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-6 mt-10"
-            variants={itemVariants}
-          >
-            {reviewCount > 0 && (
-              <div className="flex items-center gap-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm px-5 py-2 rounded-full shadow-lg border border-gray-100 dark:border-gray-700">
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => {
-                    const idx = i + 1;
-                    return (
+            {/* Call-to-Action Buttons */}
+            <motion.div
+              className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6"
+              variants={itemVariants}
+            >
+              <Link
+                href="#portfolio"
+                className="inline-flex items-center gap-2 text-base font-semibold px-8 py-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+                style={{ backgroundColor: primaryColor, color: '#fff' }}
+              >
+                <ArrowDownIcon className="w-5 h-5" />
+                Explore My Work
+              </Link>
+              <Link
+                href="#contact"
+                className="inline-flex items-center gap-2 text-base font-semibold px-8 py-4 rounded-full transition-all duration-300 ease-in-out transform hover:scale-105"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: primaryColor,
+                  border: `2px solid ${primaryColor}`,
+                  boxShadow: `0 4px 6px -1px ${primaryColor}50, 0 2px 4px -2px ${primaryColor}50`,
+                }}
+              >
+                <BoltIcon className="w-5 h-5" />
+                Let's Talk
+              </Link>
+            </motion.div>
+
+            {/* Trust Signals */}
+            <motion.div
+              className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-gray-700 dark:text-gray-300"
+              variants={itemVariants}
+            >
+              {reviewCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
                       <StarIcon
                         key={i}
-                        className={`w-5 h-5 ${
-                          idx <= Math.floor(roundedRating)
-                            ? 'text-yellow-400'
-                            : idx === Math.ceil(roundedRating) && roundedRating % 1 !== 0
-                            ? 'text-yellow-400 opacity-50'
-                            : 'text-gray-300 dark:text-gray-600'
-                        }`}
+                        className={`w-5 h-5 ${i < Math.floor(roundedRating) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
                       />
-                    );
-                  })}
-                </div>
-                <span className="text-base font-semibold text-gray-800 dark:text-gray-100">
-                  {averageRating.toFixed(1)}/5
-                </span>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  ({reviewCount} reviews)
-                </span>
-              </div>
-            )}
-
-            {awards.length > 0 && (
-              <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                {awards.map((award, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm px-5 py-2 rounded-full shadow-lg border border-gray-100 dark:border-gray-700"
-                  >
-                    {award.iconUrl ? (
-                      <Image
-                        src={award.iconUrl}
-                        loader={imageLoader}
-                        alt={award.name}
-                        width={24}
-                        height={24}
-                        className="object-contain"
-                      />
-                    ) : (
-                      <TrophyIcon className="w-6 h-6 text-yellow-500" />
-                    )}
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                      {award.name}
-                    </span>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                  <span className="text-sm font-semibold">
+                    {averageRating.toFixed(1)}/5
+                  </span>
+                  <span className="text-sm">
+                    ({reviewCount} reviews)
+                  </span>
+                </div>
+              )}
+              {awardsData.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <TrophyIcon className="w-5 h-5 text-yellow-400" />
+                  <span className="text-sm font-semibold">
+                    {awardsData[0]?.name}
+                  </span>
+                </div>
+              )}
+            </motion.div>
           </motion.div>
-        </motion.div>
-
-        {/* Right Content: Image with dynamic background shape */}
-        <motion.div
-          className="flex-1 w-full max-w-2xl relative min-h-[400px] md:min-h-[550px] lg:min-h-[650px] flex items-center justify-center md:ml-16"
-          variants={imageRevealVariants}
-          initial="hidden"
-          whileInView="show"
-          whileHover="hover"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {/* Abstract background elements behind the image */}
-          <div
-            className="absolute top-0 right-0 w-full h-full rounded-3xl opacity-20 z-0"
-            style={{
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-              transform: 'scale(1.05) rotate(5deg)',
-              filter: 'blur(40px)',
-            }}
-          ></div>
-           <div
-            className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full mix-blend-multiply filter blur-2xl opacity-30"
-            style={{ background: primaryColor }}
-          ></div>
-
-          <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-3xl border border-gray-200 dark:border-gray-800 z-10">
-            <Image
-              src={bgImageSrc}
-              loader={imageLoader}
-              alt={headline}
-              fill
-              priority
-              className="object-cover object-center"
-            />
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Global CSS for custom animations and shadow */}
-      <style jsx global>{`
-        .shadow-3xl {
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-        .dark .shadow-3xl {
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 0, 0, 0.2);
-        }
-      `}</style>
-    </section>
+        </div>
+      </section>
+    </AnimatePresence>
   );
-}
-
-// Helper to highlight last word or use {primary} token
-function renderHeadline(headline: string, primaryColor: string) {
-  if (headline.includes('{primary}')) {
-    const parts = headline.split('{primary}');
-    return parts.map((part, idx) =>
-      idx % 2 === 1 ? (
-        <span key={idx} style={{ color: primaryColor }}>
-          {part}
-        </span>
-      ) : (
-        <React.Fragment key={idx}>{part}</React.Fragment>
-      )
-    );
-  }
-  const match = headline.match(/(.*)\s+([\w’'-]+)$/);
-  if (match) {
-    return (
-      <>
-        <span>{match[1]} </span>
-        <span style={{ color: primaryColor }}>{match[2]}</span>
-      </>
-    );
-  }
-  return <>{headline}</>;
 }

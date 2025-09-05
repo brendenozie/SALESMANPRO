@@ -9,13 +9,14 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   ClockIcon,
+  StarIcon, // Added StarIcon for a generic perk icon
 } from '@heroicons/react/24/solid';
 
 // Utility function for Next.js Image loader
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Define benefits with updated icons and descriptions
-const brandBenefits = [
+// Define fallback benefits with icons and descriptions
+const defaultBenefits = [
   {
     title: 'Effortless Booking',
     description: 'A seamless, intuitive process that gets you scheduled in just a few clicks.',
@@ -49,7 +50,8 @@ export default function AboutAndBenefitsSection() {
     themeSettings: {
       primaryColor: '#00A880',
       secondaryColor: '#FFB300',
-    }
+    },
+    promotions: [],
   };
 
   const {
@@ -57,10 +59,22 @@ export default function AboutAndBenefitsSection() {
     description,
     bannerUrl,
     themeSettings,
+    promotions,
   } = storeFormData || sampleData;
 
   const primaryColor = themeSettings?.primaryColor || '#00A880';
   const secondaryColor = themeSettings?.secondaryColor || '#FFB300';
+
+  // Determine benefits to display: use promotions if available, otherwise use defaultBenefits.
+  // The new data structure has an array of perks, which we'll map to our component's format.
+  // We'll use a generic icon (like StarIcon) for the perks from the store data, as the API might not provide specific icons.
+  const brandBenefits = promotions?.[0]?.perks?.length > 0
+    ? promotions[0].perks.map((perk: any) => ({
+      title: perk.label,
+      description: perk.description || '', // Use an empty string if description is not available
+      Icon: StarIcon, // A generic icon for dynamic perks
+    }))
+    : defaultBenefits;
 
   // Animation variants for staggered effects
   const containerVariants = {
@@ -78,8 +92,11 @@ export default function AboutAndBenefitsSection() {
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 12 } },
   };
 
+  const sectionRef = React.useRef(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
+
   return (
-    <section className="relative bg-gray-50 py-24 lg:py-36 text-gray-900 overflow-hidden">
+    <section className="relative bg-gray-50 py-24 lg:py-36 text-gray-900 overflow-hidden" ref={sectionRef}>
       {/* Dynamic Background Blob Shapes */}
       <div className="absolute inset-0 z-0 opacity-5 blur-3xl">
         <motion.div
@@ -102,9 +119,8 @@ export default function AboutAndBenefitsSection() {
           <motion.div
             className="relative w-full aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 group"
             initial={{ opacity: 0, scale: 0.95, rotate: -3 }}
-            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+            animate={isInView ? { opacity: 1, scale: 1, rotate: 0 } : {}}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true, amount: 0.4 }}
           >
             <Image
               src={bannerUrl || '/images/relaxed-woman.jpg'}
@@ -121,9 +137,8 @@ export default function AboutAndBenefitsSection() {
           <motion.div
             className="space-y-8"
             initial="hidden"
-            whileInView="show"
+            animate={isInView ? "show" : "hidden"}
             variants={containerVariants}
-            viewport={{ once: true, amount: 0.3 }}
           >
             <motion.span
               className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200 shadow-sm"
@@ -143,7 +158,7 @@ export default function AboutAndBenefitsSection() {
             >
               {description || 'We are dedicated to providing an unparalleled service experience, focusing on your comfort, convenience, and complete satisfaction.'}
             </motion.p>
-            
+
             {/* Benefits Grid */}
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6"
@@ -165,7 +180,7 @@ export default function AboutAndBenefitsSection() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 leading-tight">{title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{description}</p>
+                    {description && <p className="text-sm text-gray-600 mt-1">{description}</p>}
                   </div>
                 </motion.div>
               ))}

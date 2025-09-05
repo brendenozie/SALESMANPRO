@@ -1,21 +1,23 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 import {
   BriefcaseIcon,
   UsersIcon,
   ChartBarIcon,
   StarIcon,
   ArrowRightIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
-
+import Image from 'next/image';
 
 // Type definitions for clarity
 interface ThemeSettings {
   primaryColor?: string;
   secondaryColor?: string;
+  accentColor?: string;
 }
 
 interface HeroSlide {
@@ -47,67 +49,68 @@ const storeData = {
   tagline: 'Dedicated to Excellence and Innovation',
   description: `I am a passionate professional committed to crafting exceptional experiences and delivering innovative solutions. With a relentless focus on quality and a deep understanding of modern challenges, I help individuals and businesses achieve their full potential. My work is driven by curiosity, precision, and a genuine desire to make a lasting impact.`,
   themeSettings: {
-    primaryColor: '#00A880',
-    secondaryColor: '#10B981',
+    primaryColor: '#6366F1', // A clean, modern blue-purple
+    secondaryColor: '#EC4899', // A vibrant pink for accent
+    accentColor: '#F97316', // A warm orange
   },
   stats: [
     { label: 'Years Experience', value: '10+' },
     { label: 'Clients Served', value: '250+' },
     { label: 'Projects Completed', value: '300+' },
-    { label: 'Awards & Recognitions', value: '15' },
+    { label: 'Awards', value: '15' },
   ],
-  heroSlides: [{ productImageUrl: 'https://placehold.co/600x600/00A880/ffffff?text=Professional+Image' }],
+  heroSlides: [{ productImageUrl: 'https://images.unsplash.com/photo-1519085360753-af0f19c307d8?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }],
   bannerUrl: null,
   logoUrl: null,
   slug: 'john-doe',
   contactEmail: 'contact@example.com',
 };
 
-// Framer Motion variants for a cohesive animation sequence
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
+// Next.js Image Loader
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-const textVariants = {
+// Framer Motion Variants
+const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring',
-      damping: 10,
-      stiffness: 100,
+      duration: 0.8,
+      ease: 'easeOut',
+      staggerChildren: 0.2,
     },
   },
 };
 
-const imageVariants = {
-  hidden: { opacity: 0, scale: 0.8, rotate: -5 },
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 10,
+    },
+  },
+};
+
+const statVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
   visible: {
     opacity: 1,
     scale: 1,
-    rotate: 0,
     transition: {
       type: 'spring',
-      damping: 10,
       stiffness: 100,
-      delay: 0.3,
+      damping: 10,
     },
   },
 };
 
-export default function AboutSection() {
-
+export default function AboutSectionLight() {
   const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
-
-  // Set a default resume URL, or make it configurable in storeFormData
-  const resumeUrl: string | null = "https://example.com/your-resume.pdf"; // Replace with actual URL or make dynamic
 
   const {
     name,
@@ -116,170 +119,137 @@ export default function AboutSection() {
     themeSettings = {},
     stats = [],
     heroSlides = [],
-    bannerUrl,
-    logoUrl,
     slug,
     contactEmail,
   } = storeFormData || storeData;
 
-  // Ensure primary and secondary colors have defaults
-  const primaryColor = themeSettings.primaryColor || '#007bff'; // A more vibrant blue default
-  const secondaryColor = themeSettings.secondaryColor || '#6c757d'; // A complementary gray default
-  
+  const primaryColor = themeSettings.primaryColor || '#6366F1';
+  const secondaryColor = themeSettings.secondaryColor || '#EC4899';
+  const accentColor = themeSettings.accentColor || '#F97316';
 
-  const title = name ? `About ${name}` : 'About Me';
-  const subtitle = tagline || 'Dedicated to Excellence and Innovation';
-  const aboutText = description || `I am a passionate professional committed to crafting exceptional experiences and delivering innovative solutions. With a relentless focus on quality and a deep understanding of modern challenges, I help individuals and businesses achieve their full potential. My work is driven by curiosity, precision, and a genuine desire to make a lasting impact.`;
+  const title = name || 'John Doe';
+  const aboutText = description || storeData.description;
 
   const defaultStatsData = [
     { label: 'Years Experience', value: '10+' },
     { label: 'Clients Served', value: '250+' },
     { label: 'Projects Completed', value: '300+' },
-    { label: 'Awards & Recognitions', value: '15' },
+    { label: 'Awards', value: '15' },
   ];
   const statsData = Array.isArray(stats) && stats.length > 0 ? stats : defaultStatsData;
 
-  const imgSrc = (heroSlides[0]?.productImageUrl || heroSlides[0]?.imageUrl || storeData.bannerUrl || storeData.logoUrl) ||
-    `https://placehold.co/600x600/${primaryColor.substring(1)}/ffffff?text=About+Image`;
+  const imgSrc = heroSlides[0]?.productImageUrl || heroSlides[0]?.imageUrl || storeData.heroSlides[0]?.productImageUrl;
 
   const contactHref = contactEmail ? `mailto:${contactEmail}` : slug ? `/${slug}/contact` : '/contact';
-  const resumeHref = resumeUrl;
-
-  const statIcons = [
-    <BriefcaseIcon key="briefcase" className="w-6 h-6 mb-2" style={{ color: primaryColor }} />,
-    <UsersIcon key="users" className="w-6 h-6 mb-2" style={{ color: primaryColor }} />,
-    <ChartBarIcon key="chart" className="w-6 h-6 mb-2" style={{ color: primaryColor }} />,
-    <StarIcon key="star" className="w-6 h-6 mb-2" style={{ color: primaryColor }} />,
-  ];
 
   return (
-    <section id="about" className="relative overflow-hidden bg-gray-50 py-24 md:py-32">
-      {/* Background Gradients/Shapes - Larger, softer, and more integrated */}
-      <div className="absolute inset-0 z-0 opacity-10"
-        style={{
-          background: `radial-gradient(circle at 15% 15%, ${primaryColor} 0%, transparent 40%),
-                       radial-gradient(circle at 85% 85%, ${secondaryColor} 0%, transparent 40%)`,
-        }}
-      />
-      
-      {/* Subtle Pattern */}
-      <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: 'url("/assets/dot-grid-light.svg")', backgroundSize: '20px 20px' }} />
+    <AnimatePresence>
+      <section id="about" className="relative overflow-hidden bg-gray-50 text-gray-900 py-24 md:py-32">
+        {/* Dynamic Background Shapes */}
+        <div className="absolute inset-0 z-0">
+          <motion.div
+            className="absolute -top-40 -left-40 w-80 h-80 rounded-full mix-blend-multiply opacity-10 filter blur-3xl"
+            style={{ backgroundColor: primaryColor }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.1 }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'linear', repeatType: 'reverse' }}
+          />
+          <motion.div
+            className="absolute bottom-0 right-0 w-96 h-96 rounded-full mix-blend-multiply opacity-8 filter blur-3xl"
+            style={{ backgroundColor: secondaryColor }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.08 }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear', repeatType: 'reverse' }}
+          />
+        </div>
 
-      <div className="relative max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
-        {/* Image Section */}
-        <motion.div
-          className="flex justify-center lg:justify-start"
-          variants={imageVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          <div className="relative w-full max-w-md h-[420px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl border border-gray-200 transform -rotate-3 hover:rotate-0 transition-transform duration-500 ease-in-out group">
-            <img
-              src={imgSrc}
-              alt={name ? `Portrait of ${name}` : 'About Image'}
-              className="absolute inset-0 object-cover object-center w-full h-full group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            
-            {name && (
-              <motion.div
-                className="absolute bottom-6 left-6 bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 text-sm font-semibold text-gray-800 flex items-center gap-2"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <StarIcon className="w-5 h-5 text-yellow-500" />
-                {name}
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Text Section */}
-        <motion.div
-          className="flex-1 text-center lg:text-left pt-8 lg:pt-0"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <motion.h2
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 leading-tight drop-shadow-sm"
-            variants={textVariants}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left Column: Image with "floating" card effect */}
+          <motion.div
+            className="relative w-full max-w-md h-[550px] md:h-[650px] mx-auto lg:mx-0 rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-200 transition-all duration-500 group"
+            variants={sectionVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
           >
-            {title}
-            <span
-              className="block w-24 h-2 mt-3 rounded-full mx-auto lg:mx-0"
-              style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+            <Image
+              src={imgSrc || storeData.heroSlides[0].productImageUrl}
+              alt={`Portrait of ${title}`}
+              layout="fill"
+              objectFit="cover"
+              className="group-hover:scale-105 transition-transform duration-500"
+              loader={loader}
             />
-          </motion.h2>
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-200/60 to-transparent" />
+          </motion.div>
 
-          {subtitle && (
-            <motion.h3
-              className="text-xl md:text-2xl font-semibold mb-6 text-gray-700"
-              variants={textVariants}
-            >
-              {subtitle}
-            </motion.h3>
-          )}
-
-          {aboutText && (
+          {/* Right Column: Text Content and Stats Grid */}
+          <motion.div
+            className="flex flex-col justify-center space-y-6"
+            variants={sectionVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
             <motion.p
-              className="text-base md:text-lg text-gray-700 leading-relaxed mb-8"
-              variants={textVariants}
+              className="uppercase tracking-widest text-sm font-semibold text-gray-600"
+              variants={itemVariants}
+            >
+              Who We Are
+            </motion.p>
+            <motion.h2
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-sm text-gray-900"
+              variants={itemVariants}
+            >
+              Discover <span style={{ color: primaryColor }}>{title}</span>
+            </motion.h2>
+
+            <motion.p
+              className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-prose"
+              variants={itemVariants}
             >
               {aboutText}
             </motion.p>
-          )}
 
-          {/* Stats Grid - More visual, with icons */}
-          <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12" variants={containerVariants}>
-            {statsData.map(({ label, value }, idx) => (
-              <motion.div
-                key={idx}
-                className="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-                variants={textVariants}
-              >
-                {statIcons[idx]}
-                <p className="text-2xl font-bold" style={{ color: primaryColor }}>
-                  {value}
-                </p>
-                <p className="text-xs sm:text-sm text-gray-500 text-center mt-1">
-                  {label}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* CTA Buttons - Premium and clear */}
-          <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-            <motion.a
-              href={contactHref}
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full text-lg font-semibold text-white shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl"
-              style={{ background: primaryColor }}
-              variants={textVariants}
+            {/* Stats Grid - Cleaner, horizontal layout */}
+            <motion.div
+              className="grid grid-cols-2 sm:grid-cols-4 gap-6 py-4"
+              variants={sectionVariants}
             >
-              Get in Touch
-              <ArrowRightIcon className="ml-2 w-5 h-5" />
-            </motion.a>
-            {resumeUrl && (
-              <motion.a
-                href={resumeHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full text-lg font-semibold border-2 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:bg-white/10"
-                style={{ borderColor: primaryColor, color: primaryColor }}
-                variants={textVariants}
+              {statsData.map(({ label, value }, idx) => (
+                <motion.div
+                  key={idx}
+                  className="flex flex-col items-start"
+                  variants={statVariants}
+                >
+                  <p className="text-3xl md:text-4xl font-bold" style={{ color: primaryColor }}>
+                    {value}
+                  </p>
+                  <p className="text-sm uppercase tracking-widest text-gray-500 mt-1">
+                    {label}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Call to Action - More prominent button */}
+            <motion.div variants={itemVariants} className="mt-8">
+              <a
+                href={contactHref}
+                className="inline-flex items-center justify-center px-8 py-4 rounded-full text-lg font-semibold shadow-xl transition-all duration-300 transform hover:scale-105"
+                style={{
+                  backgroundColor: accentColor,
+                  color: 'white',
+                  boxShadow: `0 8px 25px ${accentColor}44`,
+                }}
               >
-                Download Resume
-                <BriefcaseIcon className="ml-2 w-5 h-5" />
-              </motion.a>
-            )}
-          </div>
-        </motion.div>
-      </div>
-    </section>
+                Learn More About Us
+                <ArrowRightIcon className="ml-3 w-5 h-5" />
+              </a>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+    </AnimatePresence>
   );
 }

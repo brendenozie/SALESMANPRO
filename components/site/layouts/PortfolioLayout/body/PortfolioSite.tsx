@@ -10,6 +10,7 @@ import { useStoreContext } from '../../../../../contexts/StoreContext';
 // import { MarketplaceListingForm } from '../../../../../types/typings';
 import HeroSection from './components/HeroSection';
 import BusinessSection from './components/BusinessSection';
+import MarketplaceListingsSection from './components/MarketplaceListingsSection';
 import GettingStartedSection from './components/GettingStartedSection';
 import FeaturesSection from './components/FeaturesSection';
 import AboutSection from './components/AboutSection';
@@ -38,6 +39,8 @@ export default function PortfolioSite() {
       <HeroSection /> 
 
       <BusinessSection/>
+
+      <MarketplaceListingsSection/>
 
       <GettingStartedSection />
 
