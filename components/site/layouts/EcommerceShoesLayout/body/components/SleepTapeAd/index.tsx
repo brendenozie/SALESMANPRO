@@ -6,18 +6,16 @@ import Link from 'next/link';
 
 // Dummy data for when no promotions are available
 const dummyPromotionData = {
-  title: 'Discover Something New',
-  description:
-    'Explore our latest collection and find items designed to fit your lifestyle. Quality, comfort, and style combined for everyday living.',
-  bannerUrl:
-    'https://images.unsplash.com/photo-1523275335684-37898b6baf30', // a neutral lifestyle/product image
+  title: 'Discover Something New Sample',
+  description:'Explore our latest collection and find items designed to fit your lifestyle. Quality, comfort, and style combined for everyday living.',
+  bannerUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30', // a neutral lifestyle/product image
   ctaText: 'Shop Now',
   ctaLink: '/shop',
   themePrimary: '#0A192F', // Deep Navy
   themeSecondary: '#532D93', // Muted Lavender
-  featureImage1: null,
-  featureImage2: null,
-  featureImage3: null,
+  featureImage1: 'https://images.unsplash.com/photo-1513708925885-1e3a4f3bfbf2',
+  featureImage2: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+  featureImage3: 'https://images.unsplash.com/photo-1513708925885-1e3a4f3bfbf2',
   perks: [
     { icon: 'TruckIcon', text: 'Fast & Reliable Delivery' },
     { icon: 'ShieldCheckIcon', text: 'Secure Checkout' },
@@ -73,9 +71,9 @@ export default function SleepTapeAd() {
         {/* Image Block */}
         <div className="flex justify-center md:justify-end relative z-10">
           <div className="relative">
-            {adData.bannerUrl && (
+            {(
               <img
-                src={adData.bannerUrl}
+                src={adData.bannerUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}
                 alt={adData.title || 'Ad Image'}
                 className="w-72 md:w-80 lg:w-96 rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300 border-2 border-white/20"
               />

@@ -272,6 +272,8 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
         return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
       case 'ecommerce':
         return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
+      case 'shoes store':
+        return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
       case 'real estate':
         return <RealEstateDashboardClient />;
       case 'service provider':
