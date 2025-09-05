@@ -45,7 +45,7 @@ export default function EcommerceShoesSite({ storeData }: EcommerceSiteShoesProp
       <PopularProducts />
       <MetricsSection  storeFormData={storeData} />
       <DailyBestSells />
-    <SleepTapeAd />
+      <SleepTapeAd />
       <Trending />
       <FeaturesSection />
       <AllProducts /> 
