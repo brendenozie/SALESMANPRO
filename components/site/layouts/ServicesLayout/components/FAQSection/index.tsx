@@ -71,7 +71,7 @@ export default function FAQSection() {
         viewport={{ once: true, amount: 0.3 }}
       >
         <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={itemVariants}>
-          Frequently Asked <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Questions</span>
+          Frequently Asked <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>Questions</span>
         </motion.h2>
         <motion.p className="text-xl text-gray-600 dark:text-gray-400 mb-16 max-w-2xl mx-auto" variants={itemVariants}>
           Find quick answers to the most common questions about our services.

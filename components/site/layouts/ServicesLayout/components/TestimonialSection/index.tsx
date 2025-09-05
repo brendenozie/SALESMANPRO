@@ -74,7 +74,7 @@ export default function TestimonialSection() {
         viewport={{ once: true, amount: 0.3 }}
       >
         <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={textVariants}>
-          What Our <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Amazing Clients</span> Say
+          What Our <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>Amazing Clients</span> Say
         </motion.h2>
         <motion.p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-16 max-w-2xl mx-auto" variants={textVariants}>
           Don't just take our word for it—hear directly from those who've experienced our commitment to excellence.
@@ -118,7 +118,7 @@ export default function TestimonialSection() {
                   <Image
                     loader={loader}
                     src={testimonial.avatarUrl}
-                    alt={testimonial.author}
+                    alt={testimonial.authorName || 'Client Avatar'}
                     width={80}
                     height={80}
                     className="w-20 h-20 rounded-full object-cover ring-4 ring-offset-2 dark:ring-offset-gray-800"
@@ -129,7 +129,7 @@ export default function TestimonialSection() {
                     className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold"
                     style={{ backgroundColor: primaryColor }}
                   >
-                    {testimonial.author ? testimonial.author.charAt(0).toUpperCase() : '?'}
+                    {testimonial.author ? testimonial.authorName?.charAt(0).toUpperCase() : '?'}
                   </div>
                 )}
                 {/* Star Rating */}
@@ -147,9 +147,9 @@ export default function TestimonialSection() {
 
               {/* Author Info */}
               <div className="pt-4 border-t border-gray-100 dark:border-gray-700 w-full">
-                <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">{testimonial.author}</h4>
-                {testimonial.role && <p className="text-sm text-gray-500 mt-1">{testimonial.role}</p>}
-                {testimonial.company && <p className="text-sm text-gray-500">at {testimonial.company}</p>}
+                <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">{testimonial.authorName}</h4>
+                {/* {testimonial.role && <p className="text-sm text-gray-500 mt-1">{testimonial.role}</p>}
+                {testimonial.company && <p className="text-sm text-gray-500">at {testimonial.company}</p>} */}
               </div>
             </motion.div>
           ))}

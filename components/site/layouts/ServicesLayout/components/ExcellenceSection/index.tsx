@@ -39,10 +39,8 @@ export default function ExcellenceSection() {
     promotions && promotions.length > 0 ? promotions[0] : null;
 
   // Colors
-  const primaryColor =
-    promotion?.themePrimary ?? themeSettings?.primaryColor ?? "#43A047";
-  const secondaryColor =
-    promotion?.themeSecondary ?? themeSettings?.secondaryColor ?? "#FFB300";
+  const primaryColor ="#43A047";
+  const secondaryColor = "#FFB300";
 
   // Feature Image
   const featureImage =
@@ -218,7 +216,7 @@ export default function ExcellenceSection() {
               >
                 <Image
                   loader={loader}
-                  src={logoUrl}
+                  src={logoUrl || 'https://via.placeholder.com/150'}
                   alt={`Partner logo ${idx + 1}`}
                   width={120}
                   height={50}
@@ -244,7 +242,7 @@ export default function ExcellenceSection() {
               style={{ background: secondaryColor }}
             />
             <Image
-              src={featureImage}
+              src={featureImage || 'https://via.placeholder.com/600x400'}
               alt={promotion?.title || "Our commitment to excellence"}
               layout="fill"
               objectFit="cover"

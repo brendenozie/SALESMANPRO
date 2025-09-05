@@ -94,7 +94,7 @@ export default function GetStartedSection() {
           <div className="relative z-10 max-w-xl text-center md:text-left flex-shrink-0 md:pr-12">
             <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight mb-6" variants={itemVariants}>
               Ready for a <br />
-              <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
+              <span className="bg-clip-text text-transparent" style={{ backgroundColor: `${primaryColor}` }}>
                 Sparkling New Beginning?
               </span>
             </motion.h2>
@@ -124,7 +124,7 @@ export default function GetStartedSection() {
                 <motion.button
                   className="inline-flex items-center justify-center px-10 py-4 rounded-full font-bold text-lg shadow-xl transition-all duration-300 ease-in-out gap-2
                              text-white group relative overflow-hidden" // Added group and relative/overflow for button hover effect
-                  style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                  style={{ backgroundColor: ` ${primaryColor} ` }}
                   variants={buttonHoverTap}
                   whileHover="hover"
                   whileTap="tap"

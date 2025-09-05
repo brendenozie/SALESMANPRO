@@ -94,7 +94,7 @@ export default function PricingSection() {
       >
         <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4" variants={sectionVariants}>
           Flexible{" "}
-          <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
+          <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>
             Pricing
           </span>{" "}
           for Every Need
@@ -115,7 +115,7 @@ export default function PricingSection() {
                 onClick={() => setBillingCycle(option as 'Monthly' | 'Yearly' | 'One-time')}
                 className={`px-6 py-2 rounded-full font-semibold transition-colors duration-300 relative z-10 text-base ${
                   billingCycle === option
-                    ? 'text-white'
+                    ? 'text-black'
                     : 'text-gray-700 dark:text-gray-300'
                 }`}
               >

@@ -10,7 +10,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?src=${src}&w=${width}&q=${quality || 75}`;
 
 // Placeholder data for cleaning tips (replace with dynamic data from storeFormData if available)
-const defaultTips = [
+const defaultTips : any = [
   {
     id: 1, // Add unique IDs for better keying
     title: '55 Best Cleaning Tips for Every Room in Your Home',
@@ -41,7 +41,7 @@ export default function CleaningTipsSection() {
   const { storeFormData } = useStoreContext(); // Access storeFormData for theme settings
 
   // Use dynamic tips from storeFormData if available, otherwise fallback to default
-  const tips = storeFormData?.blogPosts || defaultTips;
+  const tips = storeFormData?.blogs || defaultTips;
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488'; // teal-600 fallback
   const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316'; // orange-500 fallback
@@ -92,7 +92,7 @@ export default function CleaningTipsSection() {
         viewport={{ once: true, amount: 0.3 }}
       >
         <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={titleVariants}>
-          Insights & <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Cleaning Wisdom</span>
+          Insights & <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>Cleaning Wisdom</span>
         </motion.h2>
         <motion.p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto" variants={titleVariants}>
           Stay informed with our latest cleaning tips, industry news, and expert advice to keep your space sparkling.
@@ -100,7 +100,7 @@ export default function CleaningTipsSection() {
       </motion.div>
 
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-        {tips.map((tip, index) => (
+        {tips.map((tip: { id?: string; title: string; description: string; image: string; link: string; date: string }, index:number) => (
           <motion.div
             key={tip.id || index} // Use unique ID for key
             className="rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 cursor-pointer"
@@ -152,8 +152,8 @@ export default function CleaningTipsSection() {
             <button
               className="inline-flex items-center px-8 py-4 rounded-full font-bold text-lg shadow-md transition-all duration-300 ease-in-out hover:scale-105"
               style={{ backgroundColor: primaryColor, color: 'white' }}
-              whileHover={{ backgroundColor: secondaryColor }}
-              whileTap={{ scale: 0.95 }}
+              // whileHover={{ backgroundColor: secondaryColor }}
+              // whileTap={{ scale: 0.95 }}
             >
               View All Tips
               <ArrowLongRightIcon className="w-5 h-5 ml-2" />
