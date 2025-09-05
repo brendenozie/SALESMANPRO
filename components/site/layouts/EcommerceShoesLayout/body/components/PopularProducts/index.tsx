@@ -365,7 +365,7 @@ export default function PopularProducts() {
 
         {/* See More Button */}
         <div className="mt-20">
-          <Link href="/products" passHref>
+          {/* <Link href="/products" passHref> */}
             <motion.a
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 400, damping: 10 }}
@@ -374,7 +374,7 @@ export default function PopularProducts() {
             >
               View All Products
             </motion.a>
-          </Link>
+          {/* </Link> */}
         </div>
       </div>
     </section>

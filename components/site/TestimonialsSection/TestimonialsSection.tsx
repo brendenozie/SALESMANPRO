@@ -47,7 +47,7 @@ export default function App() {
             >
               <div className="w-24 h-24 mb-4">
                 <img
-                  src={testimonial.avatar}
+                  src={testimonial.avatar || 'https://placehold.co/100x100/FFF?text=User'}
                   alt={testimonial.name}
                   className="rounded-full w-full h-full object-cover border-4 border-red-500"
                 />

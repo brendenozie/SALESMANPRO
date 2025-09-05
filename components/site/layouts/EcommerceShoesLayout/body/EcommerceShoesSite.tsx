@@ -45,15 +45,14 @@ export default function EcommerceShoesSite({ storeData }: EcommerceSiteShoesProp
       <PopularProducts />
       <MetricsSection  storeFormData={storeData} />
       <DailyBestSells />
-      <SleepTapeAd />
+    <SleepTapeAd />
       <Trending />
       <FeaturesSection />
       <AllProducts /> 
       <AwardsSection awards={awards} />
-      <TestimonialsSection/>
-       {/* testimonials={testimonials} /> */}
+      <TestimonialsSection/> 
       <BannerSection/>
-      <NewsletterSection />
+      <NewsletterSection /> 
     </>
   );
 }

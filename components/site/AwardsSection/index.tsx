@@ -77,7 +77,7 @@ export default function AwardsSection({ awards = sampleAwards }: { awards?: Awar
                 <div className="relative w-full aspect-video bg-gray-100 flex items-center justify-center">
                   {src ? (
                     <Image
-                      src={src}
+                      src={src || 'https://via.placeholder.com/300x200?text=No+Image'}
                       alt={altText}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

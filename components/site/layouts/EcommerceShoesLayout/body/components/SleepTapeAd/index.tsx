@@ -60,7 +60,7 @@ export default function SleepTapeAd() {
             {adData.description || dummyPromotionData.description}
           </p>
           {adData.ctaLink && (
-            <Link href={adData.ctaLink} passHref>
+            <Link href={adData.ctaLink || '/shop'} passHref>
               <button className="mt-8 inline-block bg-white text-black font-semibold py-4 px-10 rounded-full shadow-lg hover:bg-gray-200 transition duration-300 transform hover:scale-105">
                 {adData.ctaText || 'Learn More'}
               </button>

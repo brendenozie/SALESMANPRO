@@ -27,7 +27,9 @@ const dummyPromotionData = {
     { icon: 'SparklesIcon', label: 'Fast Shipping' },
     { icon: 'SparklesIcon', label: 'Uncompromising Quality' },
   ],
-  trustLogos: ['/logos/nike.svg', '/logos/adidas.svg', '/logos/puma.svg'],
+  trustLogos: [ 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', 
+     'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'],
 };
 
 export default function CategorySection({ storeFormData }: CategorySectionProps) {
@@ -63,7 +65,7 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
             className="relative w-full flex items-center justify-center -rotate-6"
           >
             <Image
-              src={categoryData.bannerUrl}
+              src={categoryData.bannerUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
               alt={categoryData.title}
               width={500}
               height={500}
@@ -101,7 +103,7 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
           {/* Secondary shoe + CTA button */}
           <div className="flex items-center justify-between">
             <Image
-              src={categoryData.featureImage1}
+              src={categoryData.featureImage1  || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
               alt="Secondary shoe"
               width={280}
               height={280}
@@ -109,7 +111,7 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
               className="object-contain -rotate-6"
             />
 
-            <Link href={categoryData.ctaLink}>
+            <Link href={categoryData.ctaLink || '/shop'}>
               <div className="bg-red-500 text-white font-bold px-4 py-20 flex items-center justify-center cursor-pointer hover:bg-red-600 transition">
                 <span className="rotate-90 text-lg flex items-center gap-1">
                   {categoryData.ctaText} <ArrowUpRightIcon className="h-5 w-5" />

@@ -33,7 +33,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               {item.bannerUrl && (
                 <div className="relative h-64 overflow-hidden">
                   <img
-                    src={item.bannerUrl}
+                    src={item.bannerUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />

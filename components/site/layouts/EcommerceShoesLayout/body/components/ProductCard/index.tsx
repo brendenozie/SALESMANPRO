@@ -11,6 +11,7 @@ import Image from 'next/image'; // Import Next.js Image component
 // Loader for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
+
 interface ProductCardProps {
   product: MarketListingForm;
   primary?: string; // Optional prop, as themeSettings will provide it
@@ -22,8 +23,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { slug } = storeFormData || {};
   
   // Default colors, overridden by theme settings
-  const primary = storeFormData && storeFormData.themeSettings?.primaryColor || '#10B981'; // Default: Emerald
-  const secondary = storeFormData && storeFormData.themeSettings?.secondaryColor || '#3B82F6'; // Default: Blue
+  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981'; // Default: Emerald
+  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6'; // Default: Blue
 
   const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
   const quantity = getQuantity(product.id);
@@ -36,6 +37,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     sellingPrice && finalPrice != null && sellingPrice > finalPrice
       ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
       : null;
+
+  // ✅ Safe image source (no empty strings)
+  // ✅ Safe image source (handles non-string values)
+  const rawImage = images && images.length > 0 ? images[0] : null;
+  const imageSrc =
+    typeof rawImage === 'string' && rawImage.trim() !== ''
+      ? rawImage
+      : 'https://via.placeholder.com/300';
+      
 
   return (
     <motion.div
@@ -51,7 +61,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
           className="absolute top-3 left-3 z-10 text-white text-sm font-bold px-3 py-1 rounded-lg shadow-md"
-          style={{ backgroundColor: secondary }} // Use secondary color for a vibrant badge
+          style={{ backgroundColor: secondary }}
         >
           -{discount}% OFF
         </motion.div>
@@ -60,19 +70,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Product Image */}
       <Link
         href={`/site/${slug}/ecommerce/products/${product.id}`}
-        className="block relative h-64 w-full overflow-hidden" // Increased height for visual impact
+        className="block relative h-64 w-full overflow-hidden"
       >
-        {images && images.length > 0 && (
-          <Image
-            src={images[0] || 'https://via.placeholder.com/300'} // Fallback image
-            alt={name}
-            loader={loader}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-110" // More pronounced zoom
-            priority
-          />
-        )}
+        <Image
+          src={imageSrc}
+          alt={name || 'Product image'}
+          loader={loader}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover object-center transition-transform duration-500 group-hover:scale-110"
+          priority
+        />
+
         {/* Image Overlay on Hover */}
         <div className="absolute inset-0 bg-black bg-opacity-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <motion.span

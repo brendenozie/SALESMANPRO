@@ -140,7 +140,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                     className="relative z-10 w-full max-w-[500px]"
                   >
                     <Image
-                      src={slide.imageUrl}
+                      src={slide.imageUrl || defaultSlides[0].imageUrl || ''}
                       alt={slide.headline}
                       loader={loader}
                       width={600}
