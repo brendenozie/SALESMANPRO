@@ -51,44 +51,43 @@ export interface HeroSliderProps {
 }
 
 export default function HeroSlider({ storeFormData }: HeroSliderProps) {
-  // Use a different name for the slides data to avoid conflict
-  const storeSlides: Slide[] | undefined = storeFormData?.heroSlides as Slide[];
-
-  // Use store data if available, otherwise fall back to default slides
+  // Map the store data to the Slide interface, providing fallbacks for missing data
   const slides: Slide[] =
-    (storeSlides && storeSlides.length > 0 ? storeSlides : defaultSlides).map((slide, index) => ({
-      imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
-      headline: slide.headline || defaultSlides[index]?.headline,
-      subline: slide.subline || defaultSlides[index]?.subline,
-      description: slide.description || defaultSlides[index]?.description,
-      ctaText: slide.ctaText || defaultSlides[index]?.ctaText,
-      ctaLink: slide.ctaLink || defaultSlides[index]?.ctaLink,
-    }));
+    (storeFormData?.heroSlides && storeFormData.heroSlides.length > 0
+      ? storeFormData.heroSlides.map((slide) => ({
+          imageUrl: slide.imageUrl || defaultSlides[0].imageUrl,
+          headline: slide.headline || defaultSlides[0].headline,
+          subline: slide.subline || defaultSlides[0].subline,
+          description: (slide as any).description || defaultSlides[0].description, // Safely handle the description property
+          ctaText: slide.ctaText || defaultSlides[0].ctaText,
+          ctaLink: slide.ctaLink || defaultSlides[0].ctaLink,
+        }))
+      : defaultSlides);
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  useEffect(() => {
-    resetTimer();
-    return () => clearTimeout(timeoutRef.current);
-  }, [current, slides]); // Added slides to the dependency array to reset the timer when data changes
+  const nextSlide = useCallback(() => {
+    setDirection(1);
+    setCurrent((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
 
   const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       nextSlide();
     }, autoAdvanceDelay);
-  }, [slides]);
+  }, [nextSlide]);
+
+  useEffect(() => {
+    resetTimer();
+    return () => clearTimeout(timeoutRef.current);
+  }, [current, resetTimer]);
 
   const prevSlide = () => {
     setDirection(-1);
     setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const nextSlide = () => {
-    setDirection(1);
-    setCurrent((prev) => (prev + 1) % slides.length);
   };
 
   const handleDragEnd = (_: any, info: PanInfo) => {
@@ -105,24 +104,24 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
     center: {
       x: 0,
       opacity: 1,
-      transition: { duration: transitionDuration },
+      transition: { duration: transitionDuration, ease: 'easeInOut' },
     },
     exit: (dir: number) => ({
       x: dir < 0 ? '100%' : '-100%',
       opacity: 0,
-      transition: { duration: transitionDuration },
+      transition: { duration: transitionDuration, ease: 'easeInOut' },
     }),
   };
 
   return (
-    <section className="relative mt-12 py-12 bg-white overflow-hidden">
+    <section className="relative mt-12 py-20 overflow-hidden bg-gradient-to-br from-gray-50 to-white">
       <div className="container mx-auto px-6 md:px-12 lg:px-20 relative">
         <AnimatePresence initial={false} custom={direction}>
           {slides.map((slide, idx) =>
             idx === current ? (
               <motion.div
                 key={idx}
-                className="relative flex flex-col md:flex-row items-center justify-between"
+                className="relative flex flex-col-reverse md:flex-row items-center justify-between"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
@@ -132,52 +131,53 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                 dragConstraints={{ left: 0, right: 0 }}
                 onDragEnd={handleDragEnd}
               >
-                {/* Overlay big SNEAKERS text */}
-                <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                                     text-[min(20vw,220px)] font-extrabold text-gray-200 opacity-40 pointer-events-none z-0"
-                  style={{ whiteSpace: 'nowrap' }}
-                >
-                  {slide.subline || 'SNEAKERS'}
+                {/* Image & Text Overlay */}
+                <div className="w-full md:w-1/2 relative flex justify-center items-center p-4">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                    className="relative z-10 w-full max-w-[500px]"
+                  >
+                    <Image
+                      src={slide.imageUrl}
+                      alt={slide.headline}
+                      loader={loader}
+                      width={600}
+                      height={600}
+                      className="object-contain drop-shadow-2xl"
+                      priority
+                    />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[min(20vw,200px)] font-extrabold text-gray-200 opacity-40 pointer-events-none z-0 select-none">
+                      {slide.subline || 'SNEAKERS'}
+                    </div>
+                  </motion.div>
                 </div>
 
-                {/* LEFT CONTENT */}
-                <div className="w-full md:w-1/2 relative z-10">
-                  <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-black">
-                    {slide.headline.split(' ').map((word, i, arr) =>
-                      i === arr.length - 1 ? (
-                        <span key={i} className="text-black">
-                          {word}
-                        </span>
-                      ) : (
-                        word + ' '
-                      )
-                    )}
+                {/* Content */}
+                <div className="w-full md:w-1/2 relative z-10 text-center md:text-left mt-10 md:mt-0 px-4">
+                  <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-black">
+                    {slide.headline.split(' ').map((word, i, arr) => (
+                      <span key={i} className="inline-block">
+                        {word}
+                        {i === arr.length - 1 && (
+                          <span className="text-red-500">.</span>
+                        )}
+                        {i !== arr.length - 1 && ' '}
+                      </span>
+                    ))}
                   </h2>
 
-                  <p className="text-gray-600 text-sm sm:text-base mt-6 max-w-sm">
+                  <p className="text-gray-600 text-sm sm:text-base mt-6 max-w-lg mx-auto md:mx-0">
                     {slide.description}
                   </p>
 
                   <Link
                     href={slide.ctaLink}
-                    className="inline-block mt-6 font-semibold text-sm sm:text-base px-6 py-3 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+                    className="inline-block mt-8 font-semibold text-sm sm:text-base px-8 py-4 rounded-full bg-red-500 text-white shadow-lg transition-all hover:bg-red-600 hover:scale-105"
                   >
                     {slide.ctaText}
                   </Link>
-                </div>
-
-                {/* RIGHT IMAGE */}
-                <div className="w-full md:w-1/2 relative flex justify-center items-center mt-10 md:mt-0">
-                  <Image
-                    src={slide.imageUrl}
-                    alt={slide.headline}
-                    loader={loader}
-                    width={500}
-                    height={500}
-                    className="object-contain drop-shadow-2xl"
-                    priority
-                  />
                 </div>
               </motion.div>
             ) : null
@@ -187,13 +187,13 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
         {/* Navigation Arrows */}
         <button
           onClick={prevSlide}
-          className="absolute top-1/2 left-4 -translate-y-1/2 p-3 rounded-full bg-gray-100 text-gray-700 shadow hover:bg-gray-200 transition z-20"
+          className="absolute top-1/2 left-4 md:left-12 -translate-y-1/2 p-3 rounded-full bg-white/50 backdrop-blur-sm text-gray-700 shadow-md transition-all hover:bg-white z-20"
         >
           <ArrowLeftIcon className="h-6 w-6" />
         </button>
         <button
           onClick={nextSlide}
-          className="absolute top-1/2 right-4 -translate-y-1/2 p-3 rounded-full bg-gray-100 text-gray-700 shadow hover:bg-gray-200 transition z-20"
+          className="absolute top-1/2 right-4 md:right-12 -translate-y-1/2 p-3 rounded-full bg-white/50 backdrop-blur-sm text-gray-700 shadow-md transition-all hover:bg-white z-20"
         >
           <ArrowRightIcon className="h-6 w-6" />
         </button>

@@ -135,6 +135,12 @@ export default function HeroSlidesAccordion({
                     required
                   />
                   <input
+                    placeholder="Badge Text (optional)"
+                    value={slide.badgeText || ""}
+                    onChange={(e) => onUpdateSlide(idx, "badgeText", e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                  />
+                  <input
                     placeholder="Subline (optional)"
                     value={slide.subline || ""}
                     onChange={(e) => onUpdateSlide(idx, "subline", e.target.value)}
