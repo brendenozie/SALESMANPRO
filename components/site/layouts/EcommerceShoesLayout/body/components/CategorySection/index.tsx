@@ -19,10 +19,10 @@ export interface CategorySectionProps {
 const dummyPromotionData = {
   title: 'Summer Collection',
   description: 'We have a lot of trendy shoes with wholesale prices in the summer collection.',
-  bannerUrl: '/images/yellow-shoe.png', // main image
+  bannerUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', // main image
   ctaText: 'Explore',
   ctaLink: '/shop/summer',
-  featureImage1: '/images/black-white-shoe.png', // secondary image
+  featureImage1: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', // secondary image
   perks: [
     { icon: 'SparklesIcon', label: 'Fast Shipping' },
     { icon: 'SparklesIcon', label: 'Uncompromising Quality' },

@@ -6,21 +6,11 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useStoreContext } from '../../../../../../../contexts/StoreContext';
-import { StoreForm } from '@/types/typings';
+import { HeroSlide, StoreForm } from '@/types/typings';
 
 // Loader remains the same for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
-
-// Interface for each slide, now including 'subline' for the new design
-interface Slide {
-  imageUrl: string;
-  subline: string;
-  headline: string;
-  description?: string;
-  ctaText?: string;
-  ctaLink?: string;
-}
 
 const transitionDuration = 0.8;
 const autoAdvanceDelay = 5000;
@@ -30,37 +20,64 @@ export interface HeroSliderProps {
 }
 
 // Default slides with a subline and a full, rich set of content
-const defaultSlides: Slide[] = [
+const defaultSlides: HeroSlide[] = [
   {
-    imageUrl: '/images/nike-shoe.png',
+    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
     subline: 'Exclusive Offer',
     headline: 'STEP INTO\nSTYLE & COMFORT',
-    description: 'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
+    badgeText: 'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
     ctaText: 'Buy Now',
     ctaLink: '/shop',
+    id: '',
+    companyId: '',
+    productImageUrl: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
   {
-    imageUrl: '/images/another-shoe.png',
+    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
     subline: 'New Collection',
     headline: 'ELEVATE YOUR\nLOOK TODAY',
-    description: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
+    badgeText: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
     ctaText: 'Shop Now',
     ctaLink: '/collection',
+    id: '',
+    companyId: '',
+    productImageUrl: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
 ];
 
 export default function HeroSlider({ storeFormData }: HeroSliderProps) {
-  const storeSlides: Slide[] | undefined = storeFormData?.heroSlides;
+  const storeSlides: HeroSlide[] | undefined = storeFormData?.heroSlides;
   const defaultPrimaryColor = '#6B46C1'; // deep purple
   const defaultSecondaryColor = '#D53F8C'; // vibrant pink
 
-  const heroSlides: Slide[] = (storeSlides && storeSlides.length > 0 ? storeSlides : defaultSlides).map((slide, index) => ({
+  const heroSlides: HeroSlide[] = (storeSlides && storeSlides.length > 0 ? storeSlides : defaultSlides).map((slide, index) => ({
     imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
     subline: slide.subline || 'Exclusive Offer',
     headline: slide.headline || defaultSlides[index]?.headline || 'Unlock Amazing Deals Now!',
-    description: slide.description || defaultSlides[index]?.description || 'Discover curated collections and exceptional savings on your favorite products.',
+    badgeText: slide.badgeText || defaultSlides[index]?.badgeText || 'Discover curated collections and exceptional savings on your favorite products.',
     ctaText: slide.ctaText || 'Explore Collections',
     ctaLink: slide.ctaLink || '/shop',
+    id: slide.id || '',
+    companyId: slide.companyId || '',
+    productImageUrl: slide.productImageUrl || null,
+    price: slide.price || null,
+    endsAt: slide.endsAt || null,
+    order: slide.order || 0,
+    iconKey: slide.iconKey || null,
+    backgroundColor: slide.backgroundColor || null,
+    textColor: slide.textColor || null
   }));
 
   const primary = storeFormData?.themeSettings?.primaryColor || defaultPrimaryColor;
@@ -186,7 +203,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                       transition={{ delay: 0.4, duration: 0.5 }}
                       className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg"
                     >
-                      {slide.headline.split('\n').map((line, lineIdx) => (
+                      {slide.headline?.split('\n').map((line, lineIdx) => (
                         <React.Fragment key={lineIdx}>
                           {line.includes('$') ? (
                             <>
@@ -196,20 +213,20 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                           ) : (
                             line
                           )}
-                          {lineIdx < slide.headline.split('\n').length - 1 && <br />}
+                          {slide.headline && slide.headline?.length > 0 && lineIdx < slide.headline?.split('\n').length - 1 && <br />}
                         </React.Fragment>
                       ))}
                     </motion.h2>
 
                     {/* Description */}
-                    {slide.description && (
+                    {slide.badgeText && (
                       <motion.p
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.6, duration: 0.5 }}
                         className="text-gray-700 text-base sm:text-lg max-w-md line-clamp-3"
                       >
-                        {slide.description}
+                        {slide.badgeText}
                       </motion.p>
                     )}
 
@@ -251,7 +268,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                   {/* Product image */}
                   <Image
                     src={slide.imageUrl}
-                    alt={slide.headline}
+                    alt={slide.headline || 'Hero Image'}
                     fill
                     className="object-cover object-center rounded-r-3xl transition-transform duration-500 ease-out group-hover:scale-105"
                     loader={loader}

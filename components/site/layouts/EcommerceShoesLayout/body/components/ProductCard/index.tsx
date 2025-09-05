@@ -8,6 +8,9 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image'; // Import Next.js Image component
 
+// Loader for Next.js image optimization
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 interface ProductCardProps {
   product: MarketListingForm;
   primary?: string; // Optional prop, as themeSettings will provide it
@@ -61,8 +64,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       >
         {images && images.length > 0 && (
           <Image
-            src={images[0]}
+            src={images[0] || 'https://via.placeholder.com/300'} // Fallback image
             alt={name}
+            loader={loader}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover object-center transition-transform duration-500 group-hover:scale-110" // More pronounced zoom

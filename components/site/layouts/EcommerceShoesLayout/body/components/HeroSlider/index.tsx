@@ -24,7 +24,7 @@ interface Slide {
 
 const defaultSlides: Slide[] = [
   {
-    imageUrl: '/images/nike-shoe.png',
+    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
     headline: 'STEP INTO STYLE & COMFORT',
     subline: 'Shoes',
     badgeText:
@@ -33,7 +33,7 @@ const defaultSlides: Slide[] = [
     ctaLink: '/shop',
   },
   {
-    imageUrl: '/images/another-shoe.png',
+    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
     headline: 'ELEVATE YOUR LOOK TODAY',
     subline: 'Awesome',
     badgeText:
