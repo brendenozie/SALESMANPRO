@@ -15,49 +15,47 @@ export interface CategorySectionProps {
   storeFormData: StoreForm | null;
 }
 
-// Dummy data fallback
-const dummyData = {
-  mainCard: {
-    imageUrl: '/images/yellow-shoe.png',
-    headline: 'Summer Collection',
-    description: 'We have a lot of trendy shoes with wholesale prices in the summer collection.',
-    ctaLink: '/shop/summer',
-    tags: [
-      { id: 't1', name: 'COMFORT' },
-      { id: 't2', name: 'STYLISH AND MODERN' },
-      { id: 't3', name: 'ORIGINAL' },
-    ],
-  },
-  secondaryImage: '/images/black-white-shoe.png',
+// New dummy promotion data
+const dummyPromotionData = {
+  title: 'Summer Collection',
+  description: 'We have a lot of trendy shoes with wholesale prices in the summer collection.',
+  bannerUrl: '/images/yellow-shoe.png', // main image
+  ctaText: 'Explore',
+  ctaLink: '/shop/summer',
+  featureImage1: '/images/black-white-shoe.png', // secondary image
+  perks: [
+    { icon: 'SparklesIcon', label: 'Fast Shipping' },
+    { icon: 'SparklesIcon', label: 'Uncompromising Quality' },
+  ],
+  trustLogos: ['/logos/nike.svg', '/logos/adidas.svg', '/logos/puma.svg'],
 };
 
 export default function CategorySection({ storeFormData }: CategorySectionProps) {
-  const { StoreCategory = [] } = storeFormData || {};
+  const { promotions = [] } = storeFormData || {};
 
   const categoryData =
-    StoreCategory.length > 0
+    promotions.length > 0
       ? {
-          mainCard: {
-            imageUrl: StoreCategory[0].imageUrl || '/images/yellow-shoe.png',
-            headline: StoreCategory[0].displayName || 'Featured Collection',
-            description: StoreCategory[0].description || 'Discover our latest and most popular collection.',
-            ctaLink: StoreCategory[0].slug || '/shop',
-            tags: [
-              { id: 't1', name: 'TRENDY' },
-              { id: 't2', name: 'POPULAR' },
-              { id: 't3', name: 'LATEST' },
-            ],
-          },
-          secondaryImage: StoreCategory[1]?.imageUrl || '/images/black-white-shoe.png',
+          title: promotions[0].title || 'Featured Collection',
+          description: promotions[0].description || 'Discover our latest and most popular collection.',
+          bannerUrl: promotions[0].bannerUrl || '/images/yellow-shoe.png',
+          ctaText: 'Explore',
+          ctaLink: promotions[0].ctaLink || '/shop',
+          featureImage1: promotions[0]?.featureImage1 || '/images/black-white-shoe.png',
+          perks: promotions[0].perks || [
+            { icon: 'SparklesIcon', label: 'TRENDY' },
+            { icon: 'SparklesIcon', label: 'POPULAR' },
+            { icon: 'SparklesIcon', label: 'LATEST' },
+          ],
+          trustLogos: ['/logos/nike.svg', '/logos/adidas.svg', '/logos/puma.svg'],
         }
-      : dummyData;
+      : dummyPromotionData;
 
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-12">
-        {/* LEFT SIDE: Main image + tags */}
+        {/* LEFT SIDE: Main image + perks */}
         <div className="w-full lg:w-3/5 flex flex-col items-center">
-          {/* Sneaker image */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -65,8 +63,8 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
             className="relative w-full flex items-center justify-center -rotate-6"
           >
             <Image
-              src={categoryData.mainCard.imageUrl}
-              alt={categoryData.mainCard.headline}
+              src={categoryData.bannerUrl}
+              alt={categoryData.title}
               width={500}
               height={500}
               loader={loader}
@@ -74,14 +72,14 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
             />
           </motion.div>
 
-          {/* Tag buttons */}
+          {/* Perks */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
-            {categoryData.mainCard.tags.map((tag) => (
+            {categoryData.perks.map((perk, idx) => (
               <button
-                key={tag.id}
+                key={idx}
                 className="px-6 py-2 rounded-full border border-gray-400 text-sm font-medium text-gray-800 bg-white hover:bg-gray-50 transition"
               >
-                {tag.name}
+                {perk.label}
               </button>
             ))}
           </div>
@@ -93,17 +91,17 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
           <div className="bg-pink-100 p-8">
             <span className="text-xs font-semibold text-gray-600">Trendy Styles</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">
-              {categoryData.mainCard.headline}
+              {categoryData.title}
             </h2>
             <p className="mt-3 text-gray-700 text-sm md:text-base">
-              {categoryData.mainCard.description}
+              {categoryData.description}
             </p>
           </div>
 
-          {/* Secondary shoe + Explore button */}
+          {/* Secondary shoe + CTA button */}
           <div className="flex items-center justify-between">
             <Image
-              src={categoryData.secondaryImage}
+              src={categoryData.featureImage1}
               alt="Secondary shoe"
               width={280}
               height={280}
@@ -111,13 +109,20 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
               className="object-contain -rotate-6"
             />
 
-            <Link href={categoryData.mainCard.ctaLink}>
+            <Link href={categoryData.ctaLink}>
               <div className="bg-red-500 text-white font-bold px-4 py-20 flex items-center justify-center cursor-pointer hover:bg-red-600 transition">
                 <span className="rotate-90 text-lg flex items-center gap-1">
-                  Explore <ArrowUpRightIcon className="h-5 w-5" />
+                  {categoryData.ctaText} <ArrowUpRightIcon className="h-5 w-5" />
                 </span>
               </div>
             </Link>
+          </div>
+
+          {/* Trust logos */}
+          <div className="flex items-center gap-6 mt-4">
+            {categoryData.trustLogos.map((logo, idx) => (
+              <Image key={idx} src={logo} alt="Brand logo" width={60} height={30} loader={loader} />
+            ))}
           </div>
         </div>
       </div>

@@ -64,6 +64,18 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     startsAt: p.startsAt?.toISOString() ?? undefined,
     endsAt: p.endsAt?.toISOString() ?? undefined,
     bannerUrl: p.bannerUrl ?? '',
+    ctaText: p.ctaText ?? '',
+    ctaLink: p.ctaLink ?? '',
+
+    // New fields for richer site promotion
+    featureImage1: p.featureImage1 ?? '',
+    featureImage2: p.featureImage2 ?? '',
+    featureImage3: p.featureImage3 ?? '',
+
+    perks: p.perks ?? [],
+    trustLogos: p.trustLogos ?? [],
+    themePrimary: p.themePrimary ?? '',
+
   })),
   seo: raw.SEO
     ? {

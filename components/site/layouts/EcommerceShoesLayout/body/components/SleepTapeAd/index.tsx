@@ -1,28 +1,46 @@
+'use client';
+
 import { useStoreContext } from '@/contexts/StoreContext';
 import React from 'react';
+import Link from 'next/link';
 
-// Sample data to be used when props are not available
-const sampleData = {
-  slug: 'blume-sleep-tape',
-  marketplaceListings: [],
-  themeSettings: {
-    primaryColor: '#0A192F', // Deep Navy
-    secondaryColor: '#532D93', // Muted Lavender
-  },
-  bannerUrl: 'http://googleusercontent.com/image_generation_content/0',
+// Dummy data for when no promotions are available
+const dummyPromotionData = {
+  title: 'Discover Something New',
+  description:
+    'Explore our latest collection and find items designed to fit your lifestyle. Quality, comfort, and style combined for everyday living.',
+  bannerUrl:
+    'https://images.unsplash.com/photo-1523275335684-37898b6baf30', // a neutral lifestyle/product image
+  ctaText: 'Shop Now',
+  ctaLink: '/shop',
+  themePrimary: '#0A192F', // Deep Navy
+  themeSecondary: '#532D93', // Muted Lavender
+  featureImage1: null,
+  featureImage2: null,
+  featureImage3: null,
+  perks: [
+    { icon: 'TruckIcon', text: 'Fast & Reliable Delivery' },
+    { icon: 'ShieldCheckIcon', text: 'Secure Checkout' },
+    { icon: 'PhoneIcon', text: '24/7 Customer Support' },
+  ],
+  trustLogos: [],
 };
+
 
 export default function SleepTapeAd() {
   const { storeFormData } = useStoreContext();
-  const {
-    slug,
-    marketplaceListings = [],
-    themeSettings = {},
-    bannerUrl,
-  } = storeFormData || sampleData;
+  const { promotions = [], themeSettings = {} } = storeFormData || {};
 
-  const primary = themeSettings.primaryColor || '#f97316'; // fallback orange
-  const secondary = themeSettings.secondaryColor || '#3b82f6'; // fallback blue
+  // Find an active promotion to use for the ad.
+  // We can use the first promotion in the list for this component.
+  const promotion = promotions.length > 1 ? promotions[2] : null;
+
+  // Use the promotion data if available, otherwise fall back to dummy data
+  const adData = promotion || dummyPromotionData;
+
+  // Use the promotion's theme colors, or fall back to store settings, then to defaults
+  const primary = adData.themePrimary || themeSettings?.primaryColor || '#f97316';
+  const secondary = adData.themeSecondary || themeSettings?.secondaryColor || '#3b82f6';
 
   return (
     <section
@@ -35,27 +53,33 @@ export default function SleepTapeAd() {
         {/* Text Block */}
         <div className="text-center md:text-left z-10">
           <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
-            Dreamy Sleep, Waking Glow
+            {adData.title || dummyPromotionData.title}
           </h1>
           <h2 className="mt-4 text-2xl md:text-4xl font-semibold text-white/90 font-serif">
             Experience Tranquility
           </h2>
           <p className="mt-6 text-base md:text-lg text-white/80 max-w-xl">
-            Improve your nightly rest with Blume Sleep Tape. Experience a serene journey to deep relaxation and rejuvenation, night after night.
+            {adData.description || dummyPromotionData.description}
           </p>
-          <button className="mt-8 inline-block bg-white text-black font-semibold py-4 px-10 rounded-full shadow-lg hover:bg-gray-200 transition duration-300 transform hover:scale-105">
-            Begin Your Restful Night
-          </button>
+          {adData.ctaLink && (
+            <Link href={adData.ctaLink} passHref>
+              <button className="mt-8 inline-block bg-white text-black font-semibold py-4 px-10 rounded-full shadow-lg hover:bg-gray-200 transition duration-300 transform hover:scale-105">
+                {adData.ctaText || 'Learn More'}
+              </button>
+            </Link>
+          )}
         </div>
 
         {/* Image Block */}
         <div className="flex justify-center md:justify-end relative z-10">
           <div className="relative">
-            <img
-              src={bannerUrl}
-              alt="Blume Sleep Tape"
-              className="w-72 md:w-80 lg:w-96 rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300 border-2 border-white/20"
-            />
+            {adData.bannerUrl && (
+              <img
+                src={adData.bannerUrl}
+                alt={adData.title || 'Ad Image'}
+                className="w-72 md:w-80 lg:w-96 rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300 border-2 border-white/20"
+              />
+            )}
             {/* Soft, glowing orb effect */}
             <div
               className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full opacity-40 blur-3xl animate-pulse-slow"

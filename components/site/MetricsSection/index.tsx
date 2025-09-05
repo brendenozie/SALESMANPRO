@@ -1,13 +1,27 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import {
-  ShieldCheckIcon,
-  PhoneIcon,
-  TruckIcon,
-} from '@heroicons/react/24/outline';
+import * as OutlineIcons from '@heroicons/react/24/outline';
+
+interface CoreValue {
+  id: string;
+  companyId: string;
+  title: string;
+  description: string;
+  icon: string; // string name of the icon
+}
 
 // MetricCard component to display a single feature
-const MetricCard = ({ title, description, Icon }) => {
+const MetricCard = ({
+  title,
+  description,
+  Icon,
+}: {
+  title: string;
+  description: string;
+  Icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
+}) => {
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
@@ -30,25 +44,37 @@ const MetricCard = ({ title, description, Icon }) => {
   );
 };
 
-// Main App component containing the updated section
-export default function App() {
-  const features = [
+// Main section
+export default function MetricsSection({ storeFormData }: { storeFormData: any }) {
+
+  const CoreValues = [
     {
+      id: '68ba95433e05e5090f8bb781',
+      companyId: '68b597b7de9bdd2ba7479f34',
       title: 'Secure Payment',
       description: 'Secure on every order',
-      Icon: ShieldCheckIcon,
+      icon: 'ShieldCheckIcon',
     },
     {
+      id: '68ba95433e05e5090f8bb782',
+      companyId: '68b597b7de9bdd2ba7479f34',
       title: '24/7 Support',
       description: 'Contact us 24 hrs a day',
-      Icon: PhoneIcon,
+      icon: 'PhoneIcon',
     },
     {
+      id: '68ba95433e05e5090f8bb783',
+      companyId: '68b597b7de9bdd2ba7479f34',
       title: 'Fast Delivery',
       description: 'Fast delivery on your doorstep',
-      Icon: TruckIcon,
+      icon: 'TruckIcon',
     },
   ];
+
+  const coreValues = storeFormData?.coreValues?.length
+    ? storeFormData.coreValues
+    : CoreValues;
+
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
@@ -60,110 +86,19 @@ export default function App() {
           We're committed to providing the best experience with our top-tier service.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {features.map((feature, index) => (
-            <MetricCard
-              key={index}
-              title={feature.title}
-              description={feature.description}
-              Icon={feature.Icon}
-            />
-          ))}
+          {coreValues.map((value: CoreValue) => {
+            const Icon = (OutlineIcons as any)[value.icon] || OutlineIcons.SparklesIcon;
+            return (
+              <MetricCard
+                key={value.id}
+                title={value.title}
+                description={value.description}
+                Icon={Icon}
+              />
+            );
+          })}
         </div>
       </section>
     </div>
   );
 }
-
-
-// 'use client';
-
-// import React from 'react';
-// import { motion } from 'framer-motion';
-// import {
-//   CubeIcon,
-//   UserGroupIcon,
-//   TrophyIcon,
-//   LifebuoyIcon,
-// } from '@heroicons/react/24/outline';
-// import { useStoreContext } from '@/contexts/StoreContext';
-
-// interface MetricsSectionProps {
-//   products: number;
-//   customers: number;
-//   awardsCount: number;
-//   support: string | number;
-// }
-
-// const MetricCard = ({
-//   label,
-//   value,
-//   Icon,
-//   primary,
-//   secondary,
-// }: {
-//   label: string;
-//   value: number | string;
-//   Icon: any;
-//   primary: string;
-//   secondary: string;
-// }) => {
-//   return (   
-//     <motion.div
-//       whileHover={{ scale: 1.05 }}
-//       initial={{ opacity: 0, y: 40 }}
-//       whileInView={{ opacity: 1, y: 0 }}
-//       transition={{ duration: 0.7, ease: 'easeOut' }}
-//       viewport={{ once: true }}
-//       className="flex flex-col items-center text-center space-y-4 p-4"
-//     >
-//       <Icon className="w-12 h-12 text-green-600" style={{color:`${primary}`}}/>
-//       <h3 className="text-lg font-semibold text-gray-800">
-//         {value}
-//       </h3>
-//       <p className="text-gray-600 text-sm">{label}</p>
-//     </motion.div>
-//   );
-// };
-
-// export default function MetricsSection({
-//   products,
-//   customers,
-//   awardsCount,
-//   support,
-// }: MetricsSectionProps) {
-//   const { storeFormData } = useStoreContext();
-//   const { themeSettings = {} } = storeFormData || {};
-//   const primary = themeSettings.primaryColor || '#6366f1';
-//   const secondary = themeSettings.secondaryColor || '#14b8a6';
-
-//   const metrics = [
-//     { label: 'Products Available', value: products, Icon: CubeIcon },
-//     { label: 'Happy Customers', value: customers, Icon: UserGroupIcon },
-//     { label: 'Awards Achieved', value: awardsCount, Icon: TrophyIcon },
-//     { label: '24/7 Support Hours', value: support, Icon: LifebuoyIcon },
-//   ];
-
-//   return (
-//     <section
-//       className="py-24 bg-gradient-to-b from-white to-gray-100 dark:from-zinc-950 dark:to-zinc-900"
-//     >
-//       <div className="max-w-7xl mx-auto px-6 text-center">
-//         <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-12">
-//           Powered by Impact
-//         </h2>
-//         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-//           {metrics.map((metric, index) => (            
-//             <MetricCard
-//               key={metric.label}
-//               label={metric.label}
-//               value={metric.value}
-//               Icon={metric.Icon}
-//               primary={primary}
-//               secondary={secondary}
-//             />
-//           ))}
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }

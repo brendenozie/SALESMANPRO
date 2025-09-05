@@ -120,7 +120,27 @@ function baseInclude() {
       faqs: { orderBy: { order: "asc" as const } },
       testimonials: { orderBy: { order: "asc" as const } },
       heroSlides: { orderBy: { order: "asc" as const } },
-      promotions: true,
+      promotions: {
+        select:{
+          title: true,
+          description: true,
+          startsAt: true,
+          endsAt: true,
+          badgeText: true,
+          price: true,
+          ctaText: true,
+          ctaLink: true,
+          bannerUrl: true,
+
+          // New fields for richer site promotion
+          featureImage1: true,
+          featureImage2: true,
+          featureImage3: true,
+
+          perks: true, // e.g. [{ icon: "SparklesIcon", label: "Uncompromising Quality" }]
+          trustLogos: true, // e.g. ["/logos/google.svg", "/logos/microsoft.svg"]
+        }
+      },
       SEO: true,
       AnalyticsConfig: true,
       PaymentSettings: true,

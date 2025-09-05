@@ -43,8 +43,7 @@ export default function EcommerceShoesSite({ storeData }: EcommerceSiteShoesProp
       <CategorySection  storeFormData={storeData} />
       <PromoSection promotions={promotions} />
       <PopularProducts />
-      <MetricsSection/>
-      {/* // products={products} customers={customers} awardsCount={awardsCount} support={support} /> */}
+      <MetricsSection  storeFormData={storeData} />
       <DailyBestSells />
       <SleepTapeAd />
       <Trending />

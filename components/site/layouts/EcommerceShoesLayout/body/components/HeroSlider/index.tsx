@@ -17,7 +17,7 @@ interface Slide {
   imageUrl: string;
   headline: string;
   subline: string;
-  description: string;
+  badgeText: string;
   ctaText: string;
   ctaLink: string;
 }
@@ -27,7 +27,7 @@ const defaultSlides: Slide[] = [
     imageUrl: '/images/nike-shoe.png',
     headline: 'STEP INTO STYLE & COMFORT',
     subline: 'Shoes',
-    description:
+    badgeText:
       'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
     ctaText: 'Buy Now',
     ctaLink: '/shop',
@@ -36,7 +36,7 @@ const defaultSlides: Slide[] = [
     imageUrl: '/images/another-shoe.png',
     headline: 'ELEVATE YOUR LOOK TODAY',
     subline: 'Awesome',
-    description:
+    badgeText:
       'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
     ctaText: 'Shop Now',
     ctaLink: '/collection',
@@ -58,7 +58,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
           imageUrl: slide.imageUrl || defaultSlides[0].imageUrl,
           headline: slide.headline || defaultSlides[0].headline,
           subline: slide.subline || defaultSlides[0].subline,
-          description: (slide as any).description || defaultSlides[0].description, // Safely handle the description property
+          badgeText: (slide as any).badgeText || defaultSlides[0].badgeText, // Safely handle the description property
           ctaText: slide.ctaText || defaultSlides[0].ctaText,
           ctaLink: slide.ctaLink || defaultSlides[0].ctaLink,
         }))
@@ -149,7 +149,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                       priority
                     />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[min(20vw,200px)] font-extrabold text-gray-200 opacity-40 pointer-events-none z-0 select-none">
-                      {slide.subline || 'SNEAKERS'}
+                      {slide.subline || 'SNRS'}
                     </div>
                   </motion.div>
                 </div>
@@ -169,7 +169,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                   </h2>
 
                   <p className="text-gray-600 text-sm sm:text-base mt-6 max-w-lg mx-auto md:mx-0">
-                    {slide.description}
+                    {slide.badgeText}
                   </p>
 
                   <Link
