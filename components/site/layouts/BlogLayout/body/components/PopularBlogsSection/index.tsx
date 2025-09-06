@@ -1,241 +1,129 @@
-"use client";
+import React from 'react';
+import { motion } from 'framer-motion';
 
-import React from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { CalendarIcon } from "@heroicons/react/24/solid";
-import { useStoreContext } from "@/contexts/StoreContext";
-
-// Define the structure of a single blog post as it comes from StoreForm
-export type Blog = {
-  id: string;
-  title: string;
-  slug: string;
-  content: string; // Full content might not be used here, but part of the type
-  coverImage: string | null;
-  categories: string[]; // Assuming array of strings
-  tags: string[]; // Assuming array of strings
-  author?: { // Author is optional and includes name and profileImage
-    name: string | null;
-    profileImage: string | null;
-  };
-  status: string; // e.g., "Published", "Draft"
-  publishedAt: string | null; // ISO string date
-  views: number; // Added 'views' property as per the mock data and sorting logic
-};
-
-// Define the relevant parts of StoreForm that PopularBlogsSection uses
-export type StoreForm = {
-  blogs?: Blog[]; // Array of Blog objects
-  themeSettings?: {
-    primaryColor?: string;
-  };
-};
-
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import and ensure
-// your StoreContext provides data conforming to the StoreForm type,
-// including an array of 'blogs' with 'views' property.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     blogs: [
-//       {
-//         id: 'blog1',
-//         title: 'How to build a scalable design system from scratch',
-//         publishedAt: '2023-04-20T10:00:00Z',
-//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-//         coverImage: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Design+System',
-//         slug: 'design-system-from-scratch',
-//         views: 1500,
-//         categories: [], tags: [], status: 'Published', // Added missing properties for type completeness
-//       },
-//       {
-//         id: 'blog2',
-//         title: 'The art of balancing creativity and user experience in design',
-//         publishedAt: '2023-04-19T11:30:00Z',
-//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-//         coverImage: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Creativity+UX',
-//         slug: 'creativity-user-experience',
-//         views: 1200,
-//         categories: [], tags: [], status: 'Published',
-//       },
-//       {
-//         id: 'blog3',
-//         title: 'The science behind effective call-to-action buttons',
-//         publishedAt: '2023-04-18T09:00:00Z',
-//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-//         coverImage: 'https://placehold.co/600x400/F97316/FFFFFF?text=CTA+Science',
-//         slug: 'effective-cta-buttons',
-//         views: 1100,
-//         categories: [], tags: [], status: 'Published',
-//       },
-//       {
-//         id: 'blog4',
-//         title: '10 must-have features for a modern portfolio website',
-//         publishedAt: '2023-04-17T14:00:00Z',
-//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-//         coverImage: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Portfolio+Features',
-//         slug: 'modern-portfolio-website',
-//         views: 950,
-//         categories: [], tags: [], status: 'Published',
-//       },
-//       {
-//         id: 'blog5',
-//         title: 'How to create a seamless user journey on your website',
-//         publishedAt: '2023-04-16T16:00:00Z',
-//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
-//         coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=User+Journey',
-//         slug: 'seamless-user-journey',
-//         views: 800,
-//         categories: [], tags: [], status: 'Published',
-//       },
-//       {
-//         id: 'blog6',
-//         title: 'Why mobile-first design is no longer optional in 2024',
-//         publishedAt: '2023-04-15T10:00:00Z',
-//         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.',
-//         coverImage: 'https://placehold.co/600x400/10B981/FFFFFF?text=Mobile+First',
-//         slug: 'mobile-first-design',
-//         views: 750,
-//         categories: [], tags: [], status: 'Published',
-//       },
-//     ],
-//     themeSettings: { primaryColor: '#F59E0B' }, // Tailwind 'amber-500'
-//   } as StoreForm, // Cast to StoreForm for type safety in mock
-// });
-
-// Local loader for next/image (required for external URLs with next/image)
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Static fallback data, used if dynamic data from useStoreContext is not available
-const fallbackBlogs = [
-  { title: 'How to build a scalable design system from scratch', readTime: '5 min read', date: 'April 20, 2023', img: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Design+System', link: '#' },
-  { title: 'The art of balancing creativity and user experience in design', readTime: '3 min read', date: 'April 19, 2023', img: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Creativity+UX', link: '#' },
-  { title: 'The science behind effective call-to-action buttons', readTime: '4 min read', date: 'April 18, 2023', img: 'https://placehold.co/600x400/F97316/FFFFFF?text=CTA+Science', link: '#' },
-  { title: '10 must-have features for a modern portfolio website', readTime: '2 min read', date: 'April 17, 2023', img: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Portfolio+Features', link: '#' },
-  { title: 'How to create a seamless user journey on your website', readTime: '3 min read', date: 'April 16, 2023', img: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=User+Journey', link: '#' },
-  { title: 'Why mobile-first design is no longer optional in 2024', readTime: '6 min read', date: 'April 15, 2023', img: 'https://placehold.co/600x400/10B981/FFFFFF?text=Mobile+First', link: '#' },
+// Mock data for blog posts to make the component runnable
+const relatedBlogs = [
+  {
+    id: 'related1',
+    title: 'How to build a sustainable home',
+    category: 'Lifestyle',
+    author: 'Sarah Johnson',
+    img: 'https://placehold.co/600x400/1E40AF/FFFFFF?text=Sustainable+Home',
+  },
+  {
+    id: 'related2',
+    title: 'The future of artificial intelligence in design',
+    category: 'Technology',
+    author: 'David Chen',
+    img: 'https://placehold.co/600x400/6D28D9/FFFFFF?text=AI+in+Design',
+  },
+  {
+    id: 'related3',
+    title: 'Exploring the hidden gems of the Amazon rainforest',
+    category: 'Travel',
+    author: 'Maria Garcia',
+    img: 'https://placehold.co/600x400/059669/FFFFFF?text=Amazon+Rainforest',
+  },
+  {
+    id: 'related4',
+    title: 'Mastering the art of digital photography',
+    category: 'Photography',
+    author: 'Emily White',
+    img: 'https://placehold.co/600x400/94A3B8/FFFFFF?text=Digital+Photography',
+  },
 ];
 
-export default function PopularBlogsSection() {
-  // Destructure storeFormData from context, providing a fallback for when context is not available
-  const { storeFormData } = useStoreContext() || {};
-  const { blogs: dynamicBlogs, themeSettings: { primaryColor = '#F59E0B' } = {} } = storeFormData || {}; // Default primary color (Tailwind amber-500)
+const App = () => {
+  const handleImageError = (e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found';
+  };
 
-  // Map dynamic blog posts to our blog item shape, sorting by views if available, then slicing to 6
-  const blogItems = Array.isArray(dynamicBlogs) && dynamicBlogs.length > 0
-    ? dynamicBlogs
-        // .sort((a, b) => (b.views || 0) - (a.views || 0)) // Sort by views descending
-        .slice(0, 6) // Take top 6
-        .map(post => ({
-          title: post.title,
-          date: post.publishedAt
-            ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-            : 'Unknown date',
-          readTime: post.content ? `${Math.ceil(post.content.length / 200)} min read` : 'N/A min read', // Calculate read time based on content length (approx 200 words/min)
-          img: post.coverImage || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image', // Fallback for missing coverImage
-          link: post.slug ? `/blogs/${post.slug}` : '#', // Fallback for missing slug
-        }))
-    : fallbackBlogs; // Fallback to static data if no dynamic blogs are provided
-
-  // Function to handle image loading errors, replacing with a generic placeholder
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
-    e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
+  const variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 py-12 md:py-20 font-inter">
-      {/* Section Title */}
-      <motion.h2
-        className="text-3xl sm:text-4xl font-extrabold text-center mb-10 text-gray-900"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Popular Reads
-      </motion.h2>
-
-      {/* Grid of Popular Blogs */}
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {blogItems.map((blog, idx) => (
-          <motion.article
-            key={idx}
-            className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: idx * 0.1 }}
-            whileHover={{ scale: 1.01 }} // Subtle scale on hover
-          >
-            <a href={blog.link} className="block"> {/* Wrap entire card with link */}
-              {/* Blog Image */}
-              <div className="w-full h-48 overflow-hidden">
-                <Image
-                  loader={loader}
-                  src={blog.img}
-                  alt={blog.title}
-                  width={600} // Increased width for better quality on larger screens
-                  height={320} // Adjusted height for a consistent aspect ratio
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  onError={handleImageError} // Image error fallback
-                />
-              </div>
-              
-              {/* Blog Content */}
-              <div className="p-5 flex flex-col justify-between h-auto">
-                {/* Title */}
-                <h3 className="font-bold text-xl mb-3 text-gray-800 leading-snug">
-                  {blog.title}
-                </h3>
-                {/* Date and Read Time */}
-                <div className="flex justify-between items-center text-gray-500 text-sm mb-4">
-                  <span className="flex items-center">
-                    <CalendarIcon className="h-4 w-4 mr-2" style={{ color: primaryColor }} /> {blog.date}
-                  </span>
-                  <span>{blog.readTime}</span>
-                </div>
-                {/* Read More Link/Button */}
-                <span // Changed from <a> to <span> as the entire card is now a link
-                  className="inline-flex items-center mt-auto px-5 py-2 rounded-full font-semibold text-sm transition-all duration-300
-                             bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900" // Default styling
-                  style={{
-                    backgroundColor: `rgba(${parseInt(primaryColor.slice(1, 3), 16)}, ${parseInt(primaryColor.slice(3, 5), 16)}, ${parseInt(primaryColor.slice(5, 7), 16)}, 0.1)`, // Light background from primary color
-                    color: primaryColor, // Text color from primary color
-                    borderColor: primaryColor,
-                    borderWidth: '1px'
-                  }}
-                >
-                  Read more
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                  </svg>
-                </span>
-              </div>
-            </a>
-          </motion.article>
-        ))}
-      </div>
-
-      {/* View All Blogs Button */}
-      <motion.div
-        className="text-center mt-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: blogItems.length * 0.1 + 0.2 }}
-      >
-        <a
-          href="/blogs" // Link to your main blog archive page
-          className="inline-block px-8 py-4 rounded-full font-bold text-lg shadow-md transition-all duration-300
-                     bg-white text-gray-800 hover:bg-gray-100 hover:shadow-lg transform hover:scale-105"
-          style={{
-            borderColor: primaryColor,
-            borderWidth: '2px',
-            color: primaryColor,
-          }}
+    <section className="bg-slate-950 py-20 font-sans">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8 }}
+          variants={variants}
         >
-          View All Blogs
-        </a>
-      </motion.div>
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-sky-400 to-indigo-500 mb-4">
+            Blogs You Might Like
+          </h2>
+          <p className="text-lg sm:text-xl text-center text-slate-400 max-w-2xl mx-auto mb-12">
+            Explore more great articles from our community of writers.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ staggerChildren: 0.2, duration: 0.6 }}
+        >
+          {relatedBlogs.map((blog, idx) => (
+            <motion.article
+              key={blog.id}
+              className="bg-slate-800 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer group"
+              variants={variants}
+            >
+              <a href="#" className="block">
+                <div className="w-full h-40 overflow-hidden">
+                  <img
+                    src={blog.img}
+                    alt={blog.title}
+                    width={400}
+                    height={260}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    onError={handleImageError}
+                  />
+                </div>
+                <div className="p-5">
+                  <div className="mb-2">
+                    <span className="inline-block bg-slate-700 text-slate-300 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                      {blog.category}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-xl leading-snug text-white group-hover:text-violet-400 transition-colors">
+                    {blog.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-400">By {blog.author}</p>
+                </div>
+              </a>
+            </motion.article>
+          ))}
+        </motion.div>
+        
+        <motion.div
+          className="text-center mt-12"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          variants={variants}
+        >
+          <a
+            href="/blogs"
+            className="inline-block px-8 py-4 rounded-full font-bold text-lg shadow-md transition-all duration-300 transform hover:scale-105"
+            style={{
+              background: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
+              color: 'white',
+            }}
+          >
+            Explore All Blogs &rarr;
+          </a>
+        </motion.div>
+      </div>
     </section>
   );
-}
+};
+
+export default App;

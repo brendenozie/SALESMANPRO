@@ -8,13 +8,16 @@ import PopularBlogsSection from './components/PopularBlogsSection';
 import StaffWritersSection from './components/StaffWritersSection';
 import LatestNewsSection from './components/LatestNewsSection';
 import CtaSection from './components/CtaSection';
+import FeaturedCategoriesSection from './components/FeaturedCategoriesSection';
 
 export default function BlogSite() {
   
   return (
-    <main className="container mx-auto flex-1 px-6 py-8 space-y-16">
+    <>
 
       <HeroSection />
+
+      <FeaturedCategoriesSection />
 
       <LatestNewsSection />
 
@@ -26,7 +29,7 @@ export default function BlogSite() {
 
       <CtaSection/>
       
-    </main>
+    </>
   );
 }
 
