@@ -395,6 +395,7 @@ model Banner {
   subline         String?
   ctaText         String?
   ctaLink         String?
+  videoLink       String?
   badgeText       String?
   price           String?
   endsAt          DateTime?
