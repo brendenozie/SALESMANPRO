@@ -268,7 +268,7 @@ export default function CoursesSection() {
                 </p>
                 {/* Info row */}
                 <div className="flex items-center text-sm text-gray-700 gap-6 mb-6">
-                  {course.gradeLevel && (
+                  {/* {course.gradeLevel && (
                     <span className="flex items-center gap-2 font-medium">
                       <TvIcon className={`w-5 h-5`} style={{ color: accentColor }} /> {course.gradeLevel}
                     </span>
@@ -282,7 +282,7 @@ export default function CoursesSection() {
                     <span className="flex items-center gap-2 font-medium">
                       <UsersIcon className={`w-5 h-5`} style={{ color: accentColor }} /> {course.enrolledStudents.toLocaleString()} Students
                     </span>
-                  )}
+                  )} */}
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.02, boxShadow: `0 5px 15px ${primaryColor}40` }}
@@ -294,9 +294,10 @@ export default function CoursesSection() {
                     // background: `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
                     // '--tw-ring-color': `${accentColor} !important` as any
                   }}
-                  onClick={() => window.location.href = course.ctaLink || '#'}
+                  // onClick={() => window.location.href = course.ctaLink || '#'}
                 >
-                  {course.ctaText || 'Learn More'}
+                  {'Learn More'}
+                  {/* course.ctaText ||  */}
                 </motion.button>
               </div>
             </motion.div>
