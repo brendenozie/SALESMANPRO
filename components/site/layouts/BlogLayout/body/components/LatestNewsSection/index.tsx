@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // A placeholder for the StoreContext hook, mirroring the provided structure
-const useStoreContext = () => ({
-  storeFormData: {
-    blogs: [
+const blogsSample= [
       {
         id: 'blog1',
         title: 'Global leaders unite to address climate crisis at COP26',
@@ -77,10 +76,7 @@ const useStoreContext = () => ({
         author: { name: 'Frank Green', profileImage: 'https://placehold.co/50x50/B0E0E6/000000?text=FG' },
         status: 'Published',
       },
-    ],
-    themeSettings: { primaryColor: '#0EA5E9' },
-  },
-});
+    ];
 
 // Static fallback data, used if dynamic data from useStoreContext is not available
 const fallbackNews = [
@@ -134,7 +130,11 @@ const fallbackNews = [
   },
 ];
 
-const App = () => {
+const LatestNewsSection = () => {
+
+  // const { storeFormData } = useStoreContext() || {};
+  // const { blogs } = storeFormData || {};
+
   // SVG for a calendar icon
   const CalendarIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-2">
@@ -151,7 +151,7 @@ const App = () => {
 
   // Destructure storeFormData from context, providing a fallback
   const { storeFormData } = useStoreContext() || {};
-  const { blogs: dynamicNews, themeSettings: { primaryColor = '#0EA5E9' } = {} } = storeFormData || {};
+  const { blogs: dynamicNews, themeSettings } = storeFormData || {};
 
   // Map dynamic blog posts to our news item shape, or use fallback data
   const newsItems = Array.isArray(dynamicNews) && dynamicNews.length > 0
@@ -162,13 +162,13 @@ const App = () => {
           : 'Unknown date',
         img: post.coverImage || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image',
         link: post.slug ? `/blogs/${post.slug}` : '#',
-        authorName: post.author?.name || 'Guest Author',
-        authorImage: post.author?.profileImage || null,
+        authorName: post.authorName|| 'Guest Author',
+        authorImage: post.coverImage || null,
       }))
     : fallbackNews;
 
   // Function to handle image loading errors
-  const handleImageError = (e) => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.onerror = null;
     e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found';
   };
@@ -251,9 +251,9 @@ const App = () => {
                   <span
                     className="inline-flex items-center mt-auto px-5 py-2 rounded-full font-semibold text-sm transition-all duration-300 transform hover:scale-105"
                     style={{
-                      backgroundColor: `rgba(${parseInt(primaryColor.slice(1, 3), 16)}, ${parseInt(primaryColor.slice(3, 5), 16)}, ${parseInt(primaryColor.slice(5, 7), 16)}, 0.1)`,
-                      color: primaryColor,
-                      borderColor: primaryColor,
+                      backgroundColor: `rgba(${parseInt(themeSettings?.primaryColor.slice(1, 3), 16)}, ${parseInt(themeSettings?.primaryColor.slice(3, 5), 16)}, ${parseInt(themeSettings?.primaryColor.slice(5, 7), 16)}, 0.1)`,
+                      color: themeSettings?.primaryColor,
+                      borderColor: themeSettings?.primaryColor,
                       borderWidth: '1px'
                     }}
                   >
@@ -279,9 +279,9 @@ const App = () => {
             className="inline-block px-8 py-4 rounded-full font-bold text-lg shadow-md transition-all duration-300
                        bg-white text-gray-800 hover:bg-gray-100 hover:shadow-lg transform hover:scale-105"
             style={{
-              borderColor: primaryColor,
+              borderColor: themeSettings?.primaryColor,
               borderWidth: '2px',
-              color: primaryColor,
+              color: themeSettings?.primaryColor,
             }}
           >
             View All Articles
@@ -292,4 +292,4 @@ const App = () => {
   );
 }
 
-export default App;
+export default LatestNewsSection;

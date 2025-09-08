@@ -1,74 +1,75 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // A placeholder for the StoreContext hook, mirroring the provided structure
-const useStoreContext = () => ({
-  storeFormData: {
-    writers: [
-      {
-        id: 'writer1',
-        userId: 'user1',
-        user: { name: 'Kristin Watson', email: 'kristin@example.com', role: 'EDUCATOR' },
-        profilePicture: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Kristin',
-        bio: 'Senior Writer',
-        companyId: 'comp1',
-        loginCode: '12345',
-        totalArticles: 150,
-        articlesThisMonth: 10,
-        lastArticleDate: '2024-07-20T00:00:00Z',
-        status: 'Active',
-        createdAt: '2023-01-01T00:00:00Z',
-        updatedAt: '2024-07-23T00:00:00Z',
-      },
-      {
-        id: 'writer2',
-        userId: 'user2',
-        user: { name: 'Marvin Roy', email: 'marvin@example.com', role: 'EDUCATOR' },
-        profilePicture: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Marvin',
-        bio: 'Journalist',
-        companyId: 'comp1',
-        loginCode: '67890',
-        totalArticles: 80,
-        articlesThisMonth: 5,
-        lastArticleDate: '2024-07-18T00:00:00Z',
-        status: 'Active',
-        createdAt: '2023-03-15T00:00:00Z',
-        updatedAt: '2024-07-22T00:00:00Z',
-      },
-      {
-        id: 'writer3',
-        userId: 'user3',
-        user: { name: 'Leslie Aria', email: 'leslie@example.com', role: 'EDUCATOR' },
-        profilePicture: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Leslie',
-        bio: 'Publisher',
-        companyId: 'comp1',
-        loginCode: '11223',
-        totalArticles: 200,
-        articlesThisMonth: 12,
-        lastArticleDate: '2024-07-21T00:00:00Z',
-        status: 'Active',
-        createdAt: '2022-11-01T00:00:00Z',
-        updatedAt: '2024-07-23T00:00:00Z',
-      },
-      {
-        id: 'writer4',
-        userId: 'user4',
-        user: { name: 'Hawkins Alex', email: 'hawkins@example.com', role: 'EDUCATOR' },
-        profilePicture: 'https://placehold.co/200x200/10B981/FFFFFF?text=Hawkins',
-        bio: 'Content Writer',
-        companyId: 'comp1',
-        loginCode: '44556',
-        totalArticles: 90,
-        articlesThisMonth: 7,
-        lastArticleDate: '2024-07-19T00:00:00Z',
-        status: 'Active',
-        createdAt: '2023-05-20T00:00:00Z',
-        updatedAt: '2024-07-22T00:00:00Z',
-      },
-    ],
-    themeSettings: { primaryColor: '#F59E0B' },
-  },
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     writers: [
+//       {
+//         id: 'writer1',
+//         userId: 'user1',
+//         user: { name: 'Kristin Watson', email: 'kristin@example.com', role: 'EDUCATOR' },
+//         profilePicture: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Kristin',
+//         bio: 'Senior Writer',
+//         companyId: 'comp1',
+//         loginCode: '12345',
+//         totalArticles: 150,
+//         articlesThisMonth: 10,
+//         lastArticleDate: '2024-07-20T00:00:00Z',
+//         status: 'Active',
+//         createdAt: '2023-01-01T00:00:00Z',
+//         updatedAt: '2024-07-23T00:00:00Z',
+//       },
+//       {
+//         id: 'writer2',
+//         userId: 'user2',
+//         user: { name: 'Marvin Roy', email: 'marvin@example.com', role: 'EDUCATOR' },
+//         profilePicture: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Marvin',
+//         bio: 'Journalist',
+//         companyId: 'comp1',
+//         loginCode: '67890',
+//         totalArticles: 80,
+//         articlesThisMonth: 5,
+//         lastArticleDate: '2024-07-18T00:00:00Z',
+//         status: 'Active',
+//         createdAt: '2023-03-15T00:00:00Z',
+//         updatedAt: '2024-07-22T00:00:00Z',
+//       },
+//       {
+//         id: 'writer3',
+//         userId: 'user3',
+//         user: { name: 'Leslie Aria', email: 'leslie@example.com', role: 'EDUCATOR' },
+//         profilePicture: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Leslie',
+//         bio: 'Publisher',
+//         companyId: 'comp1',
+//         loginCode: '11223',
+//         totalArticles: 200,
+//         articlesThisMonth: 12,
+//         lastArticleDate: '2024-07-21T00:00:00Z',
+//         status: 'Active',
+//         createdAt: '2022-11-01T00:00:00Z',
+//         updatedAt: '2024-07-23T00:00:00Z',
+//       },
+//       {
+//         id: 'writer4',
+//         userId: 'user4',
+//         user: { name: 'Hawkins Alex', email: 'hawkins@example.com', role: 'EDUCATOR' },
+//         profilePicture: 'https://placehold.co/200x200/10B981/FFFFFF?text=Hawkins',
+//         bio: 'Content Writer',
+//         companyId: 'comp1',
+//         loginCode: '44556',
+//         totalArticles: 90,
+//         articlesThisMonth: 7,
+//         lastArticleDate: '2024-07-19T00:00:00Z',
+//         status: 'Active',
+//         createdAt: '2023-05-20T00:00:00Z',
+//         updatedAt: '2024-07-22T00:00:00Z',
+//       },
+//     ],
+//     themeSettings: { primaryColor: '#F59E0B' },
+//   },
+// });
 
 // Static fallback data for staff writers
 const fallbackStaffWriters = [
@@ -78,21 +79,21 @@ const fallbackStaffWriters = [
   { name: 'Hawkins Alex', role: 'Content Writer', img: 'https://placehold.co/200x200/10B981/FFFFFF?text=Hawkins' },
 ];
 
-const App = () => {
+const StaffWritersSection = () => {
   // Destructure storeFormData from context, providing a fallback for when context is not available
   const { storeFormData } = useStoreContext() || {};
-  const dynamicWriters = storeFormData?.writers;
+  const dynamicWriters = storeFormData?.Writer;
 
   // Map dynamic writer data to our display shape, or use fallback data
   const writersToDisplay = Array.isArray(dynamicWriters) && dynamicWriters.length > 0
     ? dynamicWriters.map(writer => ({
-        name: writer.user?.name || 'Unknown Writer',
+        name: writer.name || 'Unknown Writer',
         role: writer.bio || 'Writer',
         img: writer.profilePicture || 'https://placehold.co/200x200/CCCCCC/333333?text=User',
       }))
     : fallbackStaffWriters;
 
-  const handleImageError = (e) => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.onerror = null;
     e.currentTarget.src = 'https://placehold.co/200x200/CCCCCC/333333?text=User';
   };
@@ -165,4 +166,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default StaffWritersSection;

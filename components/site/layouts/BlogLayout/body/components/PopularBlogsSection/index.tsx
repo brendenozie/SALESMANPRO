@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Mock data for blog posts to make the component runnable
 const relatedBlogs = [
@@ -7,34 +8,56 @@ const relatedBlogs = [
     id: 'related1',
     title: 'How to build a sustainable home',
     category: 'Lifestyle',
-    author: 'Sarah Johnson',
+    authorName: 'Sarah Johnson',
     img: 'https://placehold.co/600x400/1E40AF/FFFFFF?text=Sustainable+Home',
   },
   {
     id: 'related2',
     title: 'The future of artificial intelligence in design',
     category: 'Technology',
-    author: 'David Chen',
+    authorName: 'David Chen',
     img: 'https://placehold.co/600x400/6D28D9/FFFFFF?text=AI+in+Design',
   },
   {
     id: 'related3',
     title: 'Exploring the hidden gems of the Amazon rainforest',
     category: 'Travel',
-    author: 'Maria Garcia',
+    authorName: 'Maria Garcia',
     img: 'https://placehold.co/600x400/059669/FFFFFF?text=Amazon+Rainforest',
   },
   {
     id: 'related4',
     title: 'Mastering the art of digital photography',
     category: 'Photography',
-    author: 'Emily White',
+    authorName: 'Emily White',
     img: 'https://placehold.co/600x400/94A3B8/FFFFFF?text=Digital+Photography',
   },
 ];
 
-const App = () => {
-  const handleImageError = (e) => {
+const PopularBlogsSection = () => {
+
+  // Destructure storeFormData from context, providing a fallback
+  const { storeFormData } = useStoreContext() || {};
+  const { blogs: dynamicNews, themeSettings } = storeFormData || {};
+
+  // Map dynamic blog posts to our news item shape, or use fallback data
+  const newsItems = Array.isArray(dynamicNews) && dynamicNews.length > 0
+    ? dynamicNews.slice(0, 6).map(post => ({
+        title: post.title,
+        date: post.publishedAt
+          ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+          : 'Unknown date',
+        img: post.coverImage || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image',
+        link: post.slug ? `/blogs/${post.slug}` : '#',
+        authorName: post.authorName|| 'Guest Author',
+        authorImage: post.coverImage || null,
+        category: post.category || 'General',
+        id: post.id || Math.random().toString(36).substr(2, 9),
+      }))
+    : relatedBlogs;
+  
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.onerror = null;
     e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found';
   };
@@ -69,7 +92,7 @@ const App = () => {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ staggerChildren: 0.2, duration: 0.6 }}
         >
-          {relatedBlogs.map((blog, idx) => (
+          {newsItems.map((blog, idx) => (
             <motion.article
               key={blog.id}
               className="bg-slate-800 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer group"
@@ -95,7 +118,7 @@ const App = () => {
                   <h3 className="font-bold text-xl leading-snug text-white group-hover:text-violet-400 transition-colors">
                     {blog.title}
                   </h3>
-                  <p className="mt-2 text-sm text-slate-400">By {blog.author}</p>
+                  <p className="mt-2 text-sm text-slate-400">By {blog.authorName}</p>
                 </div>
               </a>
             </motion.article>
@@ -126,4 +149,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default PopularBlogsSection;

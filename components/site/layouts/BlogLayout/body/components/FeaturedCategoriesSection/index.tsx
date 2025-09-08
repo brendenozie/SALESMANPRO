@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Mock data for blog categories to make the component runnable
 const categories = [
@@ -59,11 +60,19 @@ const categories = [
   },
 ];
 
-const App = () => {
+const FeaturedCategoriesSection = () => {
   const variants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0 },
   };
+
+  const { storeFormData } = useStoreContext() || {};
+  const { StoreCategory } = storeFormData || {};
+  
+  // Use dynamic data if available, otherwise use the static fallback
+  const storecategories = (Array.isArray(StoreCategory) && StoreCategory.length > 0)
+    ? [...StoreCategory]
+    : categories;
 
   return (
     <section className="bg-slate-950 py-20 font-sans">
@@ -127,4 +136,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default FeaturedCategoriesSection;

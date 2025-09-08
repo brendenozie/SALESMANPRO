@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { PlayIcon } from '@heroicons/react/24/solid';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Mock data for blog podcasts to make the component runnable
 const fallbackPodcasts = [
@@ -30,8 +31,26 @@ const fallbackPodcasts = [
   },
 ];
 
-const App = () => {
-  const handleImageError = (e) => {
+const LatestPodcastSection = () => {
+
+
+    // Destructure storeFormData from context, providing a fallback
+    const { storeFormData } = useStoreContext() || {};
+    const { Podcast : podcasts } = storeFormData || {};
+  
+    // Map dynamic blog posts to our news item shape, or use fallback data
+    const podcastItems = Array.isArray(podcasts) && podcasts.length > 0
+      ? podcasts.slice(0, 6).map(podcast => ({
+          id: podcast.id,
+          title: podcast.title,
+          description: podcast.description,
+          audioUrl: podcast.audioUrl,
+          coverImage: podcast.coverImage,
+          slug: podcast.slug,
+        }))
+      : fallbackPodcasts;
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.onerror = null;
     e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Podcast+Image';
   };
@@ -79,7 +98,7 @@ const App = () => {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ staggerChildren: 0.2, duration: 0.6 }}
         >
-          {fallbackPodcasts.map((pc, idx) => (
+          {podcastItems.map((pc, idx) => (
             <motion.div
               key={pc.id || idx}
               className="bg-slate-800 rounded-2xl overflow-hidden shadow-lg border border-slate-700 transition-all duration-300 transform hover:scale-105 cursor-pointer group flex flex-col relative"
@@ -157,4 +176,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default LatestPodcastSection;
