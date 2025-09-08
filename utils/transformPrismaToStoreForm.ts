@@ -52,6 +52,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     imageUrl: h.imageUrl,
     headline: h.headline ?? '',
     subline: h.subline ?? '',
+    badgeText: h.badgeText ?? '',
     ctaText: h.ctaText ?? '',
     ctaLink: h.ctaLink ?? '',
     order: h.order,

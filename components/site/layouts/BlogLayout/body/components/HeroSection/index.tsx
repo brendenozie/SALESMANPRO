@@ -1,47 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useStateContext } from "@/contexts/ContextProvider";
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // NOTE: This placeholder mimics your useStoreContext hook.
 // In your actual application, you would use the real hook.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'GLOBAL INSIGHTS',
-    tagline: 'Your Daily Dose of Knowledge and Inspiration',
-    themeSettings: { primaryColor: '#EF4444' }, // Tailwind 'red-500'
-    heroSlides: [
-      {
-        id: 'hero1',
-        imageUrl: 'https://placehold.co/1200x800/1E90FF/FFFFFF?text=AI+Future',
-        headline: 'The Future of AI: Innovations Shaping Our World',
-        subline: 'Explore the cutting-edge advancements in artificial intelligence.',
-        ctaText: 'Read More',
-        ctaLink: '#',
-        order: 1,
-        badgeText: 'TECHNOLOGY',
-      },
-      {
-        id: 'hero2',
-        imageUrl: 'https://placehold.co/1200x800/32CD32/FFFFFF?text=Mindful+Living',
-        headline: 'Mindful Living: A Guide to Wellness and Balance',
-        subline: 'Discover practices for a healthier and more balanced life.',
-        ctaText: 'Discover',
-        ctaLink: '#',
-        order: 2,
-        badgeText: 'HEALTH',
-      },
-      {
-        id: 'hero3',
-        imageUrl: 'https://placehold.co/1200x800/FFD700/000000?text=Travel+Adventure',
-        headline: 'Exploring Hidden Gems: Your Next Adventure Awaits',
-        subline: 'Uncover breathtaking destinations and travel tips.',
-        ctaText: 'Plan Trip',
-        ctaLink: '#',
-        order: 3,
-        badgeText: 'TRAVEL',
-      },
-    ],
-  },
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'GLOBAL INSIGHTS',
+//     tagline: 'Your Daily Dose of Knowledge and Inspiration',
+//     themeSettings: { primaryColor: '#EF4444' }, // Tailwind 'red-500'
+//     heroSlides: [
+//       {
+//         id: 'hero1',
+//         imageUrl: 'https://placehold.co/1200x800/1E90FF/FFFFFF?text=AI+Future',
+//         headline: 'The Future of AI: Innovations Shaping Our World',
+//         subline: 'Explore the cutting-edge advancements in artificial intelligence.',
+//         ctaText: 'Read More',
+//         ctaLink: '#',
+//         order: 1,
+//         badgeText: 'TECHNOLOGY',
+//       },
+//       {
+//         id: 'hero2',
+//         imageUrl: 'https://placehold.co/1200x800/32CD32/FFFFFF?text=Mindful+Living',
+//         headline: 'Mindful Living: A Guide to Wellness and Balance',
+//         subline: 'Discover practices for a healthier and more balanced life.',
+//         ctaText: 'Discover',
+//         ctaLink: '#',
+//         order: 2,
+//         badgeText: 'HEALTH',
+//       },
+//       {
+//         id: 'hero3',
+//         imageUrl: 'https://placehold.co/1200x800/FFD700/000000?text=Travel+Adventure',
+//         headline: 'Exploring Hidden Gems: Your Next Adventure Awaits',
+//         subline: 'Uncover breathtaking destinations and travel tips.',
+//         ctaText: 'Plan Trip',
+//         ctaLink: '#',
+//         order: 3,
+//         badgeText: 'TRAVEL',
+//       },
+//     ],
+//   },
+// });
 
 // A static fallback array for when no dynamic data is available
 const STATIC_SLIDES = [
@@ -77,7 +79,7 @@ const STATIC_SLIDES = [
   },
 ];
 
-const App = () => {
+const HeroSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { storeFormData } = useStoreContext() || {};
   const { heroSlides } = storeFormData || {};
@@ -137,7 +139,7 @@ const App = () => {
         >
           <img
             src={currentSlide.imageUrl}
-            alt={currentSlide.headline}
+            alt={currentSlide.headline || 'Hero Image'}
             className="w-full h-full object-cover"
             onError={handleImageError}
           />
@@ -194,4 +196,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default HeroSection;
