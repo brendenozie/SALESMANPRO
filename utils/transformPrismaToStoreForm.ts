@@ -249,7 +249,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       attributes: cl.location.attributes,
     }))
     : [],
-  courses: [],  
+  courses: Array.isArray(raw.courses) ? raw.courses : [],  
   companyCategoryId: null,  
   site: null,  
   userId: null,

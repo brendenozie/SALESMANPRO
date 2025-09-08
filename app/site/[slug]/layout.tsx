@@ -162,6 +162,7 @@ function baseInclude() {
       salesAgents: { include: { user: { select: { id: true, name: true, image: true } } } },
       Podcast: true,
       courses: true,
+      events:true,
       services: true,
       CoreValues:true,
       CompanyLocation: { include: { location: true } }
