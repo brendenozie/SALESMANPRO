@@ -163,6 +163,9 @@ export default function CoursesSection() {
     ? storeFormData.courses
     : fallbackCourses;
 
+
+  console.log('Courses to Render:', coursesToRender);
+  
   // Animation variants for section content
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -245,7 +248,7 @@ export default function CoursesSection() {
             >
               <div className="relative w-full h-56 overflow-hidden">
                 <Image
-                  src={course.imageUrl}
+                  src={course.imageUrl || 'https://placehold.co/600x350/A0A0A0/FFFFFF?text=Course+Image'}
                   alt={course.title}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-110"
