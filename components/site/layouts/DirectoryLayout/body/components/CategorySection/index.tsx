@@ -17,7 +17,7 @@ import {
   QuestionMarkCircleIcon, // Generic fallback icon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { StoreCategory } from '@/types/typings';
+import { IStoreCategory } from '@/types/typings';
 
 // Map string names to Heroicon components
 const heroIconMap: Record<string, React.ElementType> = {
@@ -45,7 +45,7 @@ const heroIconMap: Record<string, React.ElementType> = {
 // };
 
 export type StoreForm = {
-  storeCategories?: StoreCategory[];
+  storeCategories?: IStoreCategory[];
   // Add other relevant StoreForm fields if needed
 };
 
@@ -86,7 +86,7 @@ const fallbackCategories = [
 export default function CategoryGridSection() {
   // Destructure storeFormData from context
   const { storeFormData } = useStoreContext() || {};
-  const { storeCategories: dynamicCategories } = storeFormData || {};
+  const { StoreCategory: dynamicCategories } = storeFormData || {};
 
   // Determine which categories to render: dynamic or fallback
   const categoriesToRender = Array.isArray(dynamicCategories) && dynamicCategories.length > 0
@@ -101,7 +101,7 @@ export default function CategoryGridSection() {
             name: cat.displayName,
             Icon: IconComponent,
             emoji: isEmoji ? cat.icon : undefined, // Store emoji separately if it's an emoji
-            count: `${(cat.items?.length || 0).toLocaleString()}+ listings`, // Use items length for count
+            count: `${(cat.subcategories?.length || 0).toLocaleString()}+ listings`, // Use items length for count
             slug: cat.displayName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-*|-*$/g, ''), // Generate slug from name
           };
         })
