@@ -15,6 +15,7 @@ import bcrypt from 'bcryptjs'; // Keep bcryptjs for your existing email/password
 // Utility to find any existing user across multiple models by EMAIL
 async function findExistingUserByEmail(email: string) {
   const user = await prisma.user.findUnique({ where: { email } });
+  console.log("User found in DB:", user); 
   if (user) return user;
   return null;
 }
@@ -90,14 +91,19 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
+
+        console.log("1");
         
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
+        console.log(credentials.email);
         const userFoundInDb = await findExistingUserByEmail(credentials.email);
 
-        if (!userFoundInDb || !userFoundInDb.password) {
+        
+        console.log("2");
+        if (!userFoundInDb || !userFoundInDb.password ) {// when testing remove password check since the user does have a password
           console.error("No user found with this email or user has no password set.");
           return null;
         }
@@ -138,6 +144,7 @@ export const authOptions: NextAuthOptions = {
             determinedRole = 'EDUCATOR';
         }
 
+        console.log("3");
         return {
           id: userFoundInDb.id,
           name: userFoundInDb.name ?? undefined,

@@ -143,6 +143,7 @@ export type OpeningHours = Record<
 export interface IUser extends User {}
 
 export interface ICoreValue {
+  id?: string;
   title: string;
   description: string | null;
   icon: string | null ;

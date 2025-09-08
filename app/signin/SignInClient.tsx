@@ -18,11 +18,12 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
   const loginUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const res = await signIn("credentials", { ...data, redirect: false });
+    const res = await signIn("credentials-email-password", { ...data, redirect: false });
     setIsLoading(false);
 
     if (res?.error) {
-      console.error(res.error);
+      // console.error(res.error);
+      console.log("Login failed");
       return;
     }
     router.push("/");

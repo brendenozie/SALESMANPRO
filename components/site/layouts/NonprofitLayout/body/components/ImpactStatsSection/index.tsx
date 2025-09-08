@@ -2,92 +2,118 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-// Assuming useStoreContext is available and provides storeFormData
-import { useStoreContext } from '@/contexts/StoreContext';
+import { useInView } from 'react-intersection-observer';
+import { FaHeart, FaUserFriends, FaDollarSign, FaChild } from 'react-icons/fa';
+import { CurrencyDollarIcon, HeartIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-export type Stat = {
-  id: string; // Added ID for keying
-  label: string;
-  value: string; // Value can be a number or string like "5000+"
-  order: number; // For sorting
-};
+// Placeholder for useStoreContext
+const useStoreContext = () => ({
+  storeFormData: {
+    name: 'Children\'s Hope Foundation',
+    metrics: [
+      { id: 'metric-1', label: "Children Fed", value: "1,200+", order: 1, icon: <UserCircleIcon className="text-blue-500 w-6 h-6" /> },
+      { id: 'metric-2', label: "Lives Touched", value: "850+", order: 2, icon: <HeartIcon className="text-red-500 w-6 h-6" /> },
+      { id: 'metric-3', label: "Volunteers Engaged", value: "300+", order: 3, icon: <UserGroupIcon className="text-green-500 w-6 h-6" /> },
+      { id: 'metric-4', label: "Funds Raised", value: "$500K+", order: 4, icon: <CurrencyDollarIcon className="text-yellow-500 w-6 h-6" /> },
+    ],
+    themeSettings: {
+      primaryColor: "#FF5722",
+    },
+  },
+});
 
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
-
-export type StoreForm = {
-  name?: string; // For section title
-  metrics?: Stat[]; // Array of Stat objects for impact metrics (renamed from 'stats' to 'metrics' for clarity with schema)
-  themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed for this section
-};
-
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     name: 'Children\'s Hope Foundation',
-//     metrics: [
-//       { id: 'metric-1', label: "Children Fed", value: "1,200+", order: 1 },
-//       { id: 'metric-2', label: "Lives Touched", value: "850+", order: 2 },
-//       { id: 'metric-3', label: "Volunteers Engaged", value: "300+", order: 3 },
-//       { id: 'metric-4', label: "Funds Raised", value: "$500K+", order: 4 },
-//     ],
-//     themeSettings: {
-//       primaryColor: "#FF5722", // Orange for primary actions
-//       secondaryColor: "#FFFFFF", // White for secondary actions/text
-//     },
-//   } as StoreForm,
-// });
+const StatCard = ({ stat, primaryColor, isInView }:any) => (
+  <motion.div
+    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+    animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+    transition={{ duration: 0.8, ease: "easeOut" }}
+    className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 flex flex-col items-center justify-center text-center relative z-10 overflow-hidden"
+  >
+    {/* Background pulse effect */}
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={isInView ? { scale: 1 } : {}}
+      transition={{ duration: 1.5, ease: "easeInOut" }}
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full opacity-10 blur-3xl"
+      style={{ backgroundColor: primaryColor }}
+    />
+    {/* Icon with animated background */}
+    <motion.div
+      initial={{ scale: 0, rotate: -180 }}
+      animate={isInView ? { scale: 1, rotate: 0 } : {}}
+      transition={{ duration: 0.8, delay: 0.4, ease: "backOut" }}
+      className="w-20 h-20 rounded-full flex items-center justify-center mb-6 text-white"
+      style={{ backgroundColor: primaryColor }}
+    >
+      <div className="text-4xl">{stat.icon}</div>
+    </motion.div>
+    
+    <h3
+      className="text-5xl md:text-6xl font-extrabold"
+      style={{ color: primaryColor }}
+    >
+      {stat.value}
+    </h3>
+    <p className="mt-2 text-lg text-gray-700 font-semibold leading-tight">
+      {stat.label}
+    </p>
+  </motion.div>
+);
 
 export default function ImpactStatsSection() {
   const { storeFormData } = useStoreContext();
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.4 });
 
-  // Dynamic colors from storeFormData
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722'; // Default Orange
-
-  // Determine which metrics to render: dynamic or fallback
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
   const metricsToRender = Array.isArray(storeFormData?.metrics) && storeFormData.metrics.length > 0
-    ? storeFormData.metrics.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
-    : [ // Fallback stats if `metrics` from context is empty
-        { id: 'fb-metric-1', value: "1,200+", label: "Children Fed", order: 1 },
-        { id: 'fb-metric-2', value: "850+", label: "Lives Touched", order: 2 },
-        { id: 'fb-metric-3', value: "300+", label: "Volunteers", order: 3 },
-        { id: 'fb-metric-4', value: "$500K+", label: "Funds Raised", order: 4 },
+    ? storeFormData.metrics.sort((a, b) => (a.order || 0) - (b.order || 0))
+    : [
+        { id: 'fb-metric-1', value: "1,500+", label: "Lives Impacted", order: 1, icon: <UserGroupIcon className='text-indigo-500 w-6 h-6' /> },
+        { id: 'fb-metric-2', value: "50+", label: "Projects Completed", order: 2, icon: <HeartIcon className='text-red-500 w-6 h-6' /> },
+        { id: 'fb-metric-3', value: "800+", label: "Donors Supported", order: 3, icon: <UserGroupIcon className='text-green-500 w-6 h-6' /> },
+        { id: 'fb-metric-4', value: "20+", label: "Communities Served", order: 4, icon: <CurrencyDollarIcon className='text-yellow-500 w-6 h-6' /> },
       ];
 
   const sectionTitle = storeFormData?.name ? `Our Impact in Numbers at ${storeFormData.name}` : "Our Impact in Numbers";
 
   return (
-    <section className="py-20 bg-gradient-to-r from-orange-50 to-red-50">
-      <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
-          {sectionTitle}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {metricsToRender.map((stat, i) => (
-            <motion.div
-              key={i} // Use unique ID from data
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ delay: 0.2 * i, duration: 0.6 }}
-              className="text-center bg-white p-8 rounded-xl shadow-lg flex flex-col items-center justify-center"
-            >
-              <h3
-                className="text-5xl md:text-6xl font-extrabold animate-pulse"
-                style={{ color: primaryColor }}
+    <section className="py-24 bg-gray-50 relative overflow-hidden">
+      {/* Dynamic background with brand color */}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          background: `radial-gradient(ellipse at top left, ${primaryColor} 0%, transparent 50%), radial-gradient(ellipse at bottom right, #fca5a5 0%, transparent 50%)`,
+        }}
+      />
+      <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8 }}
+          className="mb-16"
+        >
+          <p className="text-sm uppercase tracking-widest text-blue-600 font-semibold mb-2">Our Results Speak for Themselves</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+            {sectionTitle}
+          </h2>
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            Every contribution, no matter how small, adds up to a monumental impact. Here's a look at the change we've created together.
+          </p>
+        </motion.div>
+        <div ref={ref}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+            {metricsToRender.map((stat, i) => (
+              <motion.div
+                key={stat.id || i}
+                initial={{ opacity: 0, y: 50 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.15 * i, duration: 0.7 }}
               >
-                {stat.value}
-              </h3>
-              <p className="mt-3 text-lg text-gray-700 font-semibold">
-                {stat.label}
-              </p>
-            </motion.div>
-          ))}
+                <StatCard stat={stat} primaryColor={primaryColor} isInView={inView} />
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
