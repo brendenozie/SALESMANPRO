@@ -176,6 +176,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   pageSections: Array.isArray(raw.PageSection) ? raw.PageSection : [],
   appPromos: Array.isArray(raw.appPromos) ? raw.appPromos : [],
   events: Array.isArray(raw.events) ? raw.events : [],
+  projects: Array.isArray(raw.projects) ? raw.projects : [],
 
   awards: Array.isArray(raw.awards) ? raw.awards : typeof raw.awards === 'string' ? JSON.parse(raw.awards) : [],
   metrics: Array.isArray(raw.metrics) ? raw.metrics : typeof raw.metrics === 'string' ? JSON.parse(raw.metrics) : [],

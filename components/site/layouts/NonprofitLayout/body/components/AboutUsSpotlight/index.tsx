@@ -58,17 +58,7 @@ export default function AboutUsSpotlight() {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
   const aboutImage = storeFormData?.bannerUrl || "https://placehold.co/600x450/CCCCCC/333333?text=Image+Not+Found";
   
-  const dynamicStats = storeFormData?.metrics;
-  const fallbackStats = [
-    { id: 'fb-stat-1', label: "Lives Impacted", value: "1500+", order: 1, iconUrl: <UserCircleIcon className="text-4xl text-white" /> },
-    { id: 'fb-stat-2', label: "Projects Completed", value: "50", order: 2, iconUrl: <UserGroupIcon className="text-4xl text-white" /> },
-    { id: 'fb-stat-3', label: "Donors Supported", value: "800", order: 3, iconUrl: <HandRaisedIcon className="text-4xl text-white" /> },
-    { id: 'fb-stat-4', label: "Communities Served", value: "20", order: 4, iconUrl: <UserIcon className="text-4xl text-white" /> },
-  ];
 
-  const statsToRender = Array.isArray(dynamicStats) && dynamicStats.length > 0
-    ? dynamicStats.sort((a, b) => (a.order || 0) - (b.order || 0))
-    : fallbackStats;
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null;
@@ -133,7 +123,7 @@ export default function AboutUsSpotlight() {
           </motion.div>
         </div>
 
-        <motion.div
+        {/* <motion.div
           ref={ref}
           variants={containerVariants}
           initial="hidden"
@@ -160,7 +150,7 @@ export default function AboutUsSpotlight() {
               </p>
             </motion.div>
           ))}
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   );

@@ -10,6 +10,7 @@ import ImpactStatsSection from './components/ImpactStatsSection';
 import ProgramsCausesSection from './components/ProgramsCausesSection';
 import TestimonialsNewsSection from './components/TestimonialsNewsSection';
 import EventsUpdatesSection from './components/EventsUpdatesSection';
+import NewsSection from './components/NewsSection';
 
 export default function NonProfitApp() {
   return (
@@ -31,6 +32,8 @@ export default function NonProfitApp() {
 
         {/* Impact Stats */}
         <EventsUpdatesSection />/
+
+        <NewsSection />
 
         {/* Testimonials & News */}
         <TestimonialsNewsSection />

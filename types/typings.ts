@@ -15,7 +15,8 @@ import {
   ShippingSettings,
   CompanySettings,
   ListingStatus,
-  Prisma
+  Prisma,
+  Project
 } from "@prisma/client";
 import "next-auth";
 import { ChangeEvent } from "react";
@@ -654,6 +655,7 @@ export interface StoreForm {
   events: Event[];
   courses: ICourse[];
   blogs: IBlog[];
+  projects: Project[];
   seo: SEO | null;
   analyticsConfig: AnalyticsConfig | null;
   paymentSettings: PaymentSettings | null;

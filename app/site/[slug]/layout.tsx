@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
 import { headers } from 'next/headers';
 import prisma from '@/server/db/prismadb';
-import { ListingStatus } from '@prisma/client';
 import { StoreContextProvider } from '@/contexts/StoreContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
@@ -163,6 +162,7 @@ function baseInclude() {
       Podcast: true,
       courses: true,
       events:true,
+      Project:true,
       services: true,
       CoreValues:true,
       CompanyLocation: { include: { location: true } }

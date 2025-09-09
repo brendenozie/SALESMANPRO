@@ -238,6 +238,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Campaigns", href: `/admin/${adminSlug}/campaigns`, icon: MegaphoneIcon }, // Added Campaigns link
     { label: "Donors", href: `/admin/${adminSlug}/donors`, icon: UsersIcon },
     { label: "Members", href: `/admin/${adminSlug}/members`, icon: UsersIcon },
+    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
+    { label: "Manage Events", href: `/admin/${adminSlug}/manage-events`, icon: TicketIcon },
   ],
 
   "Restaurant & Food Delivery": [
@@ -247,6 +249,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Menu", href: `/admin/${adminSlug}/menu`, icon: ClipboardDocumentListIcon },
     { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
     { label: "Delivery", href: `/admin/${adminSlug}/delivery`, icon: GlobeAltIcon },
+    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
   ],
   
  "Event & Ticketing": [
@@ -265,7 +268,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Tickets", href: `/admin/${adminSlug}/manage-tickets`, icon: TicketIcon }, // Changed icon to TicketIcon for clarity
     { label: "Attendees", href: `/admin/${adminSlug}/manage-attendees`, icon: UsersIcon },
     { label: "Orders", href: `/admin/${adminSlug}/manage-event-orders`, icon: ShoppingBagIcon }, // Added Orders for transaction tracking
-    { label: "Check-in", href: `/admin/${adminSlug}/manage-check-in`, icon: QrCodeIcon }, // For attendee check-in at events
+    { label: "Check-in", href: `/admin/${adminSlug}/manage-check-in`, icon: QrCodeIcon }, // For attendee check-in at events    
+    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
   ],
 
   "Content Management": [

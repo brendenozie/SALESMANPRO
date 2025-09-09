@@ -9,36 +9,36 @@ import { ArrowRightIcon } from '@heroicons/react/24/outline'; // Added for consi
 import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define types based on your schema.txt for MarketplaceListing and Product
-export type Product = {
-  id: string;
-  name: string;
-  description?: string;
-  images?: string[]; // Array of image URLs
-  // Add other relevant product fields if needed
-};
+// export type Product = {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   images?: string[]; // Array of image URLs
+//   // Add other relevant product fields if needed
+// };
 
-export type MarketplaceListing = {
-  id: string;
-  name: string;
-  description?: string;
-  images?: string[]; // Array of image URLs for the listing itself
-  product?: Product; // Nested product details
-  order: number; // For sorting
-  // Add other relevant listing fields if needed
-};
+// export type MarketplaceListing = {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   images?: string[]; // Array of image URLs for the listing itself
+//   product?: Product; // Nested product details
+//   order: number; // For sorting
+//   // Add other relevant listing fields if needed
+// };
 
 export type ThemeSettings = {
   primaryColor?: string;
   secondaryColor?: string;
 };
 
-export type StoreForm = {
-  name?: string; // For section title
-  slug?: string; // For constructing dynamic links
-  marketplaceListings?: MarketplaceListing[]; // Array of marketplace listings (programs/causes)
-  themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed for this section
-};
+// export type StoreForm = {
+//   name?: string; // For section title
+//   slug?: string; // For constructing dynamic links
+//   marketplaceListings?: MarketplaceListing[]; // Array of marketplace listings (programs/causes)
+//   themeSettings?: ThemeSettings;
+//   // Add other relevant StoreForm fields if needed for this section
+// };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
@@ -120,8 +120,8 @@ export default function ProgramsCausesSection() {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722'; // Default Orange
 
   // Determine which listings to render: dynamic or fallback
-  const listingsToRender = Array.isArray(storeFormData?.projects) && storeFormData.marketplaceListings.length > 0
-    ? storeFormData.marketplaceListings//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
+  const listingsToRender = Array.isArray(storeFormData?.projects) && storeFormData.projects.length > 0
+    ? storeFormData.projects//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackCauses;
 
   const organizationSlug = storeFormData?.slug || 'non-profit'; // Fallback slug for links
@@ -147,7 +147,7 @@ export default function ProgramsCausesSection() {
           {listingsToRender.map((listing, i) => {
             const progName = listing.name;
             const progDescription = listing.description ?? "";
-            const imageUrl = listing.images?.[0] ?? `https://placehold.co/600x400/D1D5DB/4B5563?text=Program+${i + 1}`; // Fallback placeholder
+            const imageUrl = `https://placehold.co/600x400/D1D5DB/4B5563?text=Program+${i + 1}`; //listing.images?.[0] ??  Fallback placeholder
             const progSlug = listing.id;
 
             return (

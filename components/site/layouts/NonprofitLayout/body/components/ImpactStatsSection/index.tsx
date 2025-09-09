@@ -3,88 +3,94 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaHeart, FaUserFriends, FaDollarSign, FaChild } from 'react-icons/fa';
-import { CurrencyDollarIcon, HeartIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, HeartIcon, UserGroupIcon, UserIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Placeholder for useStoreContext
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    metrics: [
-      { id: 'metric-1', label: "Children Fed", value: "1,200+", order: 1, icon: <UserCircleIcon className="text-blue-500 w-6 h-6" /> },
-      { id: 'metric-2', label: "Lives Touched", value: "850+", order: 2, icon: <HeartIcon className="text-red-500 w-6 h-6" /> },
-      { id: 'metric-3', label: "Volunteers Engaged", value: "300+", order: 3, icon: <UserGroupIcon className="text-green-500 w-6 h-6" /> },
-      { id: 'metric-4', label: "Funds Raised", value: "$500K+", order: 4, icon: <CurrencyDollarIcon className="text-yellow-500 w-6 h-6" /> },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722",
-    },
-  },
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     metrics: [
+//       { id: 'metric-1', label: "Children Fed", value: "1,200+", order: 1, icon: <FaChild className="text-white w-6 h-6" /> },
+//       { id: 'metric-2', label: "Lives Touched", value: "850+", order: 2, icon: <FaHeart className="text-white w-6 h-6" /> },
+//       { id: 'metric-3', label: "Volunteers Engaged", value: "300+", order: 3, icon: <FaUserFriends className="text-white w-6 h-6" /> },
+//       { id: 'metric-4', label: "Funds Raised", value: "$500K+", order: 4, icon: <FaDollarSign className="text-white w-6 h-6" /> },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722",
+//     },
+//   },
+// });
 
-const StatCard = ({ stat, primaryColor, isInView }:any) => (
-  <motion.div
-    initial={{ opacity: 0, y: 50, scale: 0.95 }}
-    animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-    transition={{ duration: 0.8, ease: "easeOut" }}
-    className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 flex flex-col items-center justify-center text-center relative z-10 overflow-hidden"
-  >
-    {/* Background pulse effect */}
+const StatCard = ({ stat, primaryColor, isInView }: any) => {
+  return (
     <motion.div
-      initial={{ scale: 0 }}
-      animate={isInView ? { scale: 1 } : {}}
-      transition={{ duration: 1.5, ease: "easeInOut" }}
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full opacity-10 blur-3xl"
-      style={{ backgroundColor: primaryColor }}
-    />
-    {/* Icon with animated background */}
-    <motion.div
-      initial={{ scale: 0, rotate: -180 }}
-      animate={isInView ? { scale: 1, rotate: 0 } : {}}
-      transition={{ duration: 0.8, delay: 0.4, ease: "backOut" }}
-      className="w-20 h-20 rounded-full flex items-center justify-center mb-6 text-white"
-      style={{ backgroundColor: primaryColor }}
+      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 flex flex-col items-center justify-center text-center relative z-10 overflow-hidden"
     >
-      <div className="text-4xl">{stat.icon}</div>
+      <motion.div
+        initial={{ scale: 0, rotate: -180 }}
+        animate={isInView ? { scale: 1, rotate: 0 } : {}}
+        transition={{ duration: 0.8, delay: 0.2, ease: "backOut" }}
+        className="w-20 h-20 rounded-full flex items-center justify-center mb-6 text-white bg-opacity-90"
+        style={{ backgroundColor: primaryColor }}
+      >
+        <div className="text-4xl">{stat.icon}</div>
+      </motion.div>
+
+      <motion.h3
+        initial={{ opacity: 0, y: 20 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        className="text-5xl md:text-6xl font-extrabold"
+        style={{ color: primaryColor }}
+      >
+        {stat.value}
+      </motion.h3>
+      
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, delay: 0.6 }}
+        className="mt-2 text-lg text-gray-700 font-semibold leading-tight"
+      >
+        {stat.label}
+      </motion.p>
     </motion.div>
-    
-    <h3
-      className="text-5xl md:text-6xl font-extrabold"
-      style={{ color: primaryColor }}
-    >
-      {stat.value}
-    </h3>
-    <p className="mt-2 text-lg text-gray-700 font-semibold leading-tight">
-      {stat.label}
-    </p>
-  </motion.div>
-);
+  );
+};
 
 export default function ImpactStatsSection() {
   const { storeFormData } = useStoreContext();
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.4 });
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
+
   const metricsToRender = Array.isArray(storeFormData?.metrics) && storeFormData.metrics.length > 0
     ? storeFormData.metrics.sort((a, b) => (a.order || 0) - (b.order || 0))
     : [
-        { id: 'fb-metric-1', value: "1,500+", label: "Lives Impacted", order: 1, icon: <UserGroupIcon className='text-indigo-500 w-6 h-6' /> },
-        { id: 'fb-metric-2', value: "50+", label: "Projects Completed", order: 2, icon: <HeartIcon className='text-red-500 w-6 h-6' /> },
-        { id: 'fb-metric-3', value: "800+", label: "Donors Supported", order: 3, icon: <UserGroupIcon className='text-green-500 w-6 h-6' /> },
-        { id: 'fb-metric-4', value: "20+", label: "Communities Served", order: 4, icon: <CurrencyDollarIcon className='text-yellow-500 w-6 h-6' /> },
+        { id: 'fb-metric-1', value: "1,500+", label: "Lives Impacted", order: 1, icon: <UserGroupIcon className='text-white w-6 h-6' /> },
+        { id: 'fb-metric-2', value: "50+", label: "Projects Completed", order: 2, icon: <HeartIcon className='text-white w-6 h-6' /> },
+        { id: 'fb-metric-3', value: "800+", label: "Donors Supported", order: 3, icon: <CurrencyDollarIcon className='text-white w-6 h-6' /> },
+        { id: 'fb-metric-4', value: "20+", label: "Communities Served", order: 4, icon: <UserIcon className='text-white w-6 h-6' /> },
       ];
 
   const sectionTitle = storeFormData?.name ? `Our Impact in Numbers at ${storeFormData.name}` : "Our Impact in Numbers";
 
   return (
     <section className="py-24 bg-gray-50 relative overflow-hidden">
-      {/* Dynamic background with brand color */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          background: `radial-gradient(ellipse at top left, ${primaryColor} 0%, transparent 50%), radial-gradient(ellipse at bottom right, #fca5a5 0%, transparent 50%)`,
-        }}
-      />
+      <div className="absolute inset-0 z-0">
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            background: `radial-gradient(ellipse at top left, ${primaryColor} 0%, transparent 50%), radial-gradient(ellipse at bottom right, #fca5a5 0%, transparent 50%)`,
+          }}
+        />
+        <div className="absolute inset-0 bg-white opacity-20" />
+      </div>
+
       <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -93,7 +99,9 @@ export default function ImpactStatsSection() {
           transition={{ duration: 0.8 }}
           className="mb-16"
         >
-          <p className="text-sm uppercase tracking-widest text-blue-600 font-semibold mb-2">Our Results Speak for Themselves</p>
+          <p className="text-sm uppercase tracking-widest text-blue-600 font-semibold mb-2" style={{ color: primaryColor }}>
+            Our Results Speak for Themselves
+          </p>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
             {sectionTitle}
           </h2>
@@ -101,19 +109,10 @@ export default function ImpactStatsSection() {
             Every contribution, no matter how small, adds up to a monumental impact. Here's a look at the change we've created together.
           </p>
         </motion.div>
-        <div ref={ref}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-            {metricsToRender.map((stat, i) => (
-              <motion.div
-                key={stat.id || i}
-                initial={{ opacity: 0, y: 50 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.15 * i, duration: 0.7 }}
-              >
-                <StatCard stat={stat} primaryColor={primaryColor} isInView={inView} />
-              </motion.div>
-            ))}
-          </div>
+        <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+          {metricsToRender.map((stat, i) => (
+            <StatCard key={i} stat={stat} primaryColor={primaryColor} isInView={inView} />
+          ))}
         </div>
       </div>
     </section>
