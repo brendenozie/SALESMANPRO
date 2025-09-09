@@ -61,7 +61,7 @@ export default function AboutSection() {
 
   // 2) Collect up to 4 images from store.collections (assuming each item has an `image` field)
   //    If your real collection type differs, adjust this mapping accordingly.
-  const imageUrls = (store.collections ?? [])
+  const imageUrls = (store.Collection ?? [])
     .map((c: any) => c.image as string)
     .filter(Boolean)
     .slice(0, 4);

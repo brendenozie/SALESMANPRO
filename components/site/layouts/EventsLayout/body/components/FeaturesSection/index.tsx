@@ -78,8 +78,9 @@ export default function WhyChooseUsSection() {
   
   // Try to pull a dynamic feature list out of themeSettings:
   // (e.g. stored in your DB as [{ icon, title, description }, ...])
-  let features: FeatureItem[] = [];
-  const raw = (store.themeSettings?.whyChooseFeatures as any[]) ?? [];
+  let features: FeatureItem[] = fallbackFeatures;//[];
+
+  const raw = (store.promotions as any[]) ?? [];
   if (
     Array.isArray(raw) &&
     raw.every(
@@ -143,7 +144,7 @@ export default function WhyChooseUsSection() {
                 <h3 className="text-xl font-bold mb-2 text-white">
                   {f.title}
                 </h3>
-                <p className="text-gray-400">{f.description}</p>
+                <p className="text-gray-400">{f.description || "Browse events happening down the street or explore unique happenings around the world."}</p>
               </div>
             </motion.div>
           ))}

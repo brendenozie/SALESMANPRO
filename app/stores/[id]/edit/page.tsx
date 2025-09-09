@@ -57,17 +57,17 @@ export default async function EditStorePage({
       courses: true,
       Writer: {
         include: {
-          user: true,
+          user: false,
         },
       },
       salesAgents: {
         include: {
-          user: true,
+          user: false,
         },
       },
       Doctor: {
         include: {
-          User: true,
+          User: false,
         },
       },
       Podcast: true,
@@ -168,8 +168,7 @@ export default async function EditStorePage({
       themePrimary: p.themePrimary ?? undefined,
       themeSecondary: p.themeSecondary ?? undefined,
     })),
-
-    
+    projects: [],    
     blogs: store.blogs,
     pageSections: store.PageSection,
     appPromos: store.appPromos.map((p) => ({
@@ -179,9 +178,9 @@ export default async function EditStorePage({
     events: store.events,
     courses: store.courses,
 
-    salesAgents: store.salesAgents,
-    Writer: store.Writer.map((w) => w.user),
-    Doctor: store.Doctor.map((d) => d.User).filter((user): user is User => !!user),
+    salesAgents: [],//store.salesAgents,
+    Writer: [],//store.Writer.map((w) => w.user),
+    Doctor: [],//store.Doctor.map((d) => d.User).filter((user): user is User => !!user),
 
     Podcast: store.Podcast,
     services: store.services,
