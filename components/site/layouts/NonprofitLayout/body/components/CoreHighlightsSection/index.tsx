@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { HandRaisedIcon, HeartIcon, LightBulbIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -12,49 +13,49 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 };
 
 // Placeholder for useStoreContext
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    CoreValues: [
-      {
-        id: 'feat-1',
-        title: "Medical Aid",
-        description: "Providing essential healthcare and medical support to vulnerable children, ensuring they receive the care they need to thrive.",
-        icon: <HeartIcon className="text-red-500 w-5 h-5" />,
-        order: 1,
-      },
-      {
-        id: 'feat-2',
-        title: "Education Support",
-        description: "Ensuring access to quality education and learning resources for a brighter future, empowering young minds with knowledge.",
-        icon: <LightBulbIcon className="text-yellow-500 w-5 h-5" />,
-        order: 2,
-      },
-      {
-        id: 'feat-3',
-        title: "Community Development",
-        description: "Investing in sustainable community projects that uplift families and children, building a foundation for long-term success.",
-        icon: <HandRaisedIcon className="text-green-500 w-5 h-5" />,
-        order: 3,
-      },
-      {
-        id: 'feat-4',
-        title: "Emergency Relief",
-        description: "Delivering urgent aid and support in times of crisis and natural disasters, acting as a lifeline when it's needed most.",
-        icon: <ShieldCheckIcon className="text-blue-500 w-5 h-5" />,
-        order: 4,
-      },
-      // You can add more for demonstration purposes
-      {
-        id: 'feat-5',
-        title: "Clean Water Initiatives",
-        description: "Implementing projects to provide safe and accessible drinking water to communities, fostering health and sanitation.",
-        icon: <HandRaisedIcon className="text-teal-500 w-5 h-5" />,
-        order: 5,
-      },
-    ],
-  },
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     CoreValues: [
+//       {
+//         id: 'feat-1',
+//         title: "Medical Aid",
+//         description: "Providing essential healthcare and medical support to vulnerable children, ensuring they receive the care they need to thrive.",
+//         icon: <HeartIcon className="text-red-500 w-5 h-5" />,
+//         order: 1,
+//       },
+//       {
+//         id: 'feat-2',
+//         title: "Education Support",
+//         description: "Ensuring access to quality education and learning resources for a brighter future, empowering young minds with knowledge.",
+//         icon: <LightBulbIcon className="text-yellow-500 w-5 h-5" />,
+//         order: 2,
+//       },
+//       {
+//         id: 'feat-3',
+//         title: "Community Development",
+//         description: "Investing in sustainable community projects that uplift families and children, building a foundation for long-term success.",
+//         icon: <HandRaisedIcon className="text-green-500 w-5 h-5" />,
+//         order: 3,
+//       },
+//       {
+//         id: 'feat-4',
+//         title: "Emergency Relief",
+//         description: "Delivering urgent aid and support in times of crisis and natural disasters, acting as a lifeline when it's needed most.",
+//         icon: <ShieldCheckIcon className="text-blue-500 w-5 h-5" />,
+//         order: 4,
+//       },
+//       // You can add more for demonstration purposes
+//       {
+//         id: 'feat-5',
+//         title: "Clean Water Initiatives",
+//         description: "Implementing projects to provide safe and accessible drinking water to communities, fostering health and sanitation.",
+//         icon: <HandRaisedIcon className="text-teal-500 w-5 h-5" />,
+//         order: 5,
+//       },
+//     ],
+//   },
+// });
 
 // Static fallback data with React Icons
 const fallbackFeatures = [
@@ -108,7 +109,7 @@ export default function CoreHighlightsSection() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.3 });
 
   const featuresToRender = Array.isArray(storeFormData?.CoreValues) && storeFormData.CoreValues.length > 0
-    ? storeFormData.CoreValues.sort((a, b) => (a.order || 0) - (b.order || 0))
+    ? storeFormData.CoreValues//.sort((a, b) => (a.order || 0) - (b.order || 0))
     : fallbackFeatures;
 
   const sectionTitle = storeFormData?.name ? `Our Core Mission at ${storeFormData.name}` : "Our Core Mission";

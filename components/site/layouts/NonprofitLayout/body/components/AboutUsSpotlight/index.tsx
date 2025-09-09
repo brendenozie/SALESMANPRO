@@ -5,25 +5,26 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { HandRaisedIcon, UserCircleIcon, UserGroupIcon, UserIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Placeholder for useStoreContext
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Children\'s Hope Foundation',
-    description: 'We’ve been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. Join us in our endeavor to uplift lives and create lasting change.',
-    aboutImageUrl: 'https://images.unsplash.com/photo-1594918231010-0a3b2b5f5f0b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    stats: [
-      { id: 'stat-1', label: "Children Helped", value: "1200", order: 1, icon: <UserCircleIcon className="text-4xl text-white w-5 h-5" /> },
-      { id: 'stat-2', label: "Schools Built", value: "15", order: 2, icon: <UserGroupIcon className="text-4xl text-white w-5 h-5" /> },
-      { id: 'stat-3', label: "Volunteers Engaged", value: "500", order: 3, icon: <HandRaisedIcon className="text-4xl text-white w-5 h-5" /> },
-      { id: 'stat-4', label: "Communities Served", value: "20", order: 4, icon: <UserIcon className="text-4xl text-white w-5 h-5" /> },
-    ],
-    themeSettings: {
-      primaryColor: "#FF5722",
-      secondaryColor: "#FFFFFF",
-    },
-  },
-});
+// const useStoreContext = () => ({
+//   storeFormData: {
+//     name: 'Children\'s Hope Foundation',
+//     description: 'We’ve been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. Join us in our endeavor to uplift lives and create lasting change.',
+//     aboutImageUrl: 'https://images.unsplash.com/photo-1594918231010-0a3b2b5f5f0b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+//     stats: [
+//       { id: 'stat-1', label: "Children Helped", value: "1200", order: 1, icon: <UserCircleIcon className="text-4xl text-white w-5 h-5" /> },
+//       { id: 'stat-2', label: "Schools Built", value: "15", order: 2, icon: <UserGroupIcon className="text-4xl text-white w-5 h-5" /> },
+//       { id: 'stat-3', label: "Volunteers Engaged", value: "500", order: 3, icon: <HandRaisedIcon className="text-4xl text-white w-5 h-5" /> },
+//       { id: 'stat-4', label: "Communities Served", value: "20", order: 4, icon: <UserIcon className="text-4xl text-white w-5 h-5" /> },
+//     ],
+//     themeSettings: {
+//       primaryColor: "#FF5722",
+//       secondaryColor: "#FFFFFF",
+//     },
+//   },
+// });
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -55,14 +56,14 @@ export default function AboutUsSpotlight() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.3 });
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
-  const aboutImage = storeFormData?.aboutImageUrl || "https://placehold.co/600x450/CCCCCC/333333?text=Image+Not+Found";
+  const aboutImage = storeFormData?.bannerUrl || "https://placehold.co/600x450/CCCCCC/333333?text=Image+Not+Found";
   
-  const dynamicStats = storeFormData?.stats;
+  const dynamicStats = storeFormData?.metrics;
   const fallbackStats = [
-    { id: 'fb-stat-1', label: "Lives Impacted", value: "1500+", order: 1, icon: <UserCircleIcon className="text-4xl text-white" /> },
-    { id: 'fb-stat-2', label: "Projects Completed", value: "50", order: 2, icon: <UserGroupIcon className="text-4xl text-white" /> },
-    { id: 'fb-stat-3', label: "Donors Supported", value: "800", order: 3, icon: <HandRaisedIcon className="text-4xl text-white" /> },
-    { id: 'fb-stat-4', label: "Communities Served", value: "20", order: 4, icon: <UserIcon className="text-4xl text-white" /> },
+    { id: 'fb-stat-1', label: "Lives Impacted", value: "1500+", order: 1, iconUrl: <UserCircleIcon className="text-4xl text-white" /> },
+    { id: 'fb-stat-2', label: "Projects Completed", value: "50", order: 2, iconUrl: <UserGroupIcon className="text-4xl text-white" /> },
+    { id: 'fb-stat-3', label: "Donors Supported", value: "800", order: 3, iconUrl: <HandRaisedIcon className="text-4xl text-white" /> },
+    { id: 'fb-stat-4', label: "Communities Served", value: "20", order: 4, iconUrl: <UserIcon className="text-4xl text-white" /> },
   ];
 
   const statsToRender = Array.isArray(dynamicStats) && dynamicStats.length > 0
@@ -139,9 +140,9 @@ export default function AboutUsSpotlight() {
           animate={inView ? "show" : "hidden"}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-16"
         >
-          {statsToRender.map((stat) => (
+          {statsToRender.map((stat,idx:number) => (
             <motion.div
-              key={stat.id}
+              key={idx}
               variants={itemVariants}
               className="bg-white rounded-3xl p-8 shadow-xl flex flex-col items-center text-center transition-all duration-300 transform hover:scale-105"
             >
@@ -149,7 +150,7 @@ export default function AboutUsSpotlight() {
                 className="w-20 h-20 rounded-full flex items-center justify-center mb-4 text-white"
                 style={{ backgroundColor: primaryColor }}
               >
-                {stat.icon}
+                {stat.iconUrl || <UserCircleIcon className="text-4xl text-white" />}
               </div>
               <h3 className="text-4xl font-extrabold text-gray-900 mb-1">
                 {stat.value}

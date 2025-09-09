@@ -53,10 +53,10 @@ export default function CtaBoldSection() {
   const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#FFFFFF'; // Default White
 
   // Dynamic content with fallbacks
-  const ctaTitle = storeFormData?.ctaSection?.title || 'Ready to Make a Lasting Impact?';
-  const ctaSubtitle = storeFormData?.ctaSection?.subtitle || `Your support helps us build a future filled with hope and opportunities for children and communities worldwide.`;
-  const ctaButtonLabel = storeFormData?.ctaSection?.buttonLabel || 'Join Us Today';
-  const ctaButtonHref = storeFormData?.ctaSection?.buttonHref || `/${storeFormData?.slug || 'non-profit'}/join`;
+  const ctaTitle = 'Ready to Make a Lasting Impact?'; //storeFormData?.ctaSection?.title || 
+  const ctaSubtitle = `Your support helps us build a future filled with hope and opportunities for children and communities worldwide.`; //storeFormData?.ctaSection?.subtitle || 
+  const ctaButtonLabel = 'Join Us Today';//storeFormData?.ctaSection?.buttonLabel || 
+  const ctaButtonHref = `/${storeFormData?.slug || 'non-profit'}/join`;//storeFormData?.ctaSection?.buttonHref || 
 
   return (
     <section

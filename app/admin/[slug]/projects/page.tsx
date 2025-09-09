@@ -53,5 +53,5 @@ export default async function ProjectsPage({ params }: PageProps) {
     console.error("[ProjectsPage] Error fetching projects →", err.message);
   }
 
-  return <ProjectsClient projectsData={projectsData} />;
+  return <ProjectsClient projectsData={projectsData} companyId={companyId}/>;
 }
