@@ -15,6 +15,7 @@ import {
 // Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
 import { TagIcon } from "@heroicons/react/20/solid";
+import { ICoreValue } from "@/types/typings";
 
 // Define types for the data expected from StoreContext
 export type Feature = {
@@ -54,38 +55,38 @@ const loader = ({
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Static fallback features data
-const fallbackFeatures: Feature[] = [
+const fallbackFeatures: ICoreValue[] = [
   {
     id: "f1",
     title: "Fresh & Local Ingredients",
     description: "We source the finest ingredients from local farms, ensuring peak freshness and supporting our community.",
-    iconUrl: "/icons/leaf.svg", // Example SVG path
-    link: "/menu",
-    order: 1,
+    icon: "/icons/leaf.svg", // Example SVG path
+    // link: "/menu",
+    // order: 1,
   },
   {
     id: "f2",
     title: "Masterful Culinary Team",
     description: "Our chefs are artists, blending traditional techniques with innovative flavors to create unforgettable dishes.",
-    iconUrl: "/icons/chef-hat.svg", // Example SVG path
-    link: "/about#team",
-    order: 2,
+    icon: "/icons/chef-hat.svg", // Example SVG path
+    // link: "/about#team",
+    // order: 2,
   },
   {
     id: "f3",
     title: "Cozy & Inviting Atmosphere",
     description: "Dine in comfort with a warm ambiance, perfect for intimate dinners or lively gatherings.",
-    iconUrl: "/icons/restaurant.svg", // Example SVG path
-    link: "/gallery",
-    order: 3,
+    icon: "/icons/restaurant.svg", // Example SVG path
+    // link: "/gallery",
+    // order: 3,
   },
   {
     id: "f4",
     title: "Exceptional Service",
     description: "Our attentive staff is dedicated to making your dining experience seamless and delightful from start to finish.",
-    iconUrl: "/icons/smile.svg", // Example SVG path
-    link: "/contact",
-    order: 4,
+    icon: "/icons/smile.svg", // Example SVG path
+    // link: "/contact",
+    // order: 4,
   },
 ];
 
@@ -132,8 +133,8 @@ export default function WhyDineWithUs() {
   const aboutImage = storeFormData?.bannerUrl || "/images/about-chef-story.jpg"; // Specific image for about section
 
   // Dynamic features from storeFormData or fallback
-  const featuresToRender = Array.isArray(storeFormData?.features) && storeFormData.features.length > 0
-    ? storeFormData.features.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
+  const featuresToRender = Array.isArray(storeFormData?.CoreValues) && storeFormData.CoreValues.length > 0
+    ? storeFormData.CoreValues//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackFeatures;
 
   // Dynamic colors from theme settings
@@ -270,9 +271,9 @@ export default function WhyDineWithUs() {
               className="bg-white dark:bg-gray-800 rounded-xl p-8 flex flex-col items-center text-center shadow-lg transition-all duration-300"
             >
               <div className="w-24 h-24 relative mb-6 rounded-full overflow-hidden border-4 border-orange-100 dark:border-gray-700 flex items-center justify-center icon-container">
-                {f.iconUrl ? (
+                {f.icon ? (
                   <Image
-                    src={f.iconUrl}
+                    src={f.icon}
                     alt={f.title}
                     fill
                     className="object-cover"
@@ -284,7 +285,7 @@ export default function WhyDineWithUs() {
                   <SparklesIcon className="h-10 w-10" style={{ color: primaryColor }} />
                 )}
                 {/* Optional: A subtle overlay for visual consistency if image is used */}
-                {f.iconUrl && (
+                {f.icon && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-800/70 rounded-full">
                     {/* This div acts as a subtle filter over the image, or simply provides a background if no image */}
                   </div>
