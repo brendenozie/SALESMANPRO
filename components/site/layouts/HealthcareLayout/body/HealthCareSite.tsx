@@ -80,7 +80,7 @@ export default function HealthCareSite() {
     aboutImageUrl = defaultAboutImageUrl, // This field is missing from your form data
     aboutText = defaultAboutText, // This field is missing from your form data
     services: svcFromStore,
-    doctors: docFromStore,
+    Doctor: docFromStore,
     testimonials: tFromStore,
     faqs: faqFromStore,
     contactEmail: contactEmailFromStore,

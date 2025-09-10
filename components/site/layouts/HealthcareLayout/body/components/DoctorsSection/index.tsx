@@ -15,7 +15,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 interface DoctorsSectionProps {
-  doctors: Array<{ id: string; name: string; subtitle: string; imageUrl: string; specializations?: string[] }>;
+  doctors: Array<{ id: string; name: string; username: string; subtitle: string; imageUrl: string; specializations?: string[] }>;
   storeSlug: string;
 }
 
@@ -120,7 +120,7 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
               
               {/* Text Content */}
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 leading-tight transition-colors duration-300 group-hover:text-teal-600 dark:group-hover:text-teal-400">
-                Dr. {doc.name}
+                Dr. {doc.name || doc.username}
               </h3>
               <p className="text-base font-medium text-blue-600 dark:text-blue-400">
                 {doc.subtitle}
