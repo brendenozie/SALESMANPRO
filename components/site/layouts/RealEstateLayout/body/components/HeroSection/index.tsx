@@ -7,11 +7,13 @@ import {
   CurrencyDollarIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  // Import relevant icons for categories/types if available, e.g., HomeIcon
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon, PlayCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings"; // Assuming you have these types
 
-// ---------------- Types ----------------
+// --- Types ---
 interface HeroSlide {
   imageUrl: string;
   headline: string;
@@ -22,6 +24,7 @@ interface TrendingLocation {
   name: string;
 }
 
+// Enhanced Store type to include categories
 interface Store {
   heroSlides?: HeroSlide[];
   themeSettings?: {
@@ -31,21 +34,26 @@ interface Store {
       maxPrice?: string;
     };
   };
+  // Assume StoreCategory is available here or passed down
+  StoreCategory?: IStoreCategory[];
 }
 
+// Updated SearchFilters to include category and subcategory
 interface SearchFilters {
   location: string;
   minPrice: string;
   maxPrice: string;
+  category?: string; // The ID or slug of the selected category
+  subcategory?: string; // The ID or slug of the selected subcategory
 }
 
 interface HeroSectionProps {
-  store?: Store;
+  store?: StoreForm | null; // Allow null for initial render or when data isn't ready
   onSearch: (filters: SearchFilters) => void;
   trendingLocations?: TrendingLocation[];
 }
 
-// ---------------- Defaults ----------------
+// --- Defaults ---
 const defaultHeroSlides: HeroSlide[] = [
   {
     imageUrl:
@@ -83,7 +91,7 @@ const defaultTrendingLocations: TrendingLocation[] = [
 const transitionDuration = 0.8;
 const autoAdvanceDelay = 5000;
 
-// ---------------- Variants ----------------
+// --- Variants ---
 const slideVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "100%" : "-100%",
@@ -112,7 +120,7 @@ const slideVariants = {
   }),
 };
 
-// ---------------- Utilities ----------------
+// --- Utilities ---
 const loader = ({
   src,
   width,
@@ -123,14 +131,6 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// const Image = ({
-//   src,
-//   alt,
-//   ...props
-// }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-//   <img src={src} alt={alt} {...props} />
-// );
-
 const Link: React.FC<
   React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }
 > = ({ href, children, ...props }) => (
@@ -139,11 +139,13 @@ const Link: React.FC<
   </a>
 );
 
-// ---------------- Component ----------------
+// --- Component ---
 export default function HeroSection({
   store,
   onSearch,
   trendingLocations = defaultTrendingLocations,
+  // categories, // Expecting categories data
+  // subcategories, // Expecting subcategories data
 }: HeroSectionProps) {
   const heroSlides = store?.heroSlides?.length
     ? store.heroSlides
@@ -152,13 +154,71 @@ export default function HeroSection({
   const [current, setCurrent] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const locationDropdownRef = useRef<HTMLDivElement | null>(null);
+  const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
+  const subcategoryDropdownRef = useRef<HTMLDivElement | null>(null);
 
+  // Search states
   const [location, setLocation] = useState<string>("");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<IStoreCategory | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<ISubcategory | null>(null);
+
+  // Dropdown states
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState<boolean>(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState<boolean>(false);
+  const [isSubcategoryDropdownOpen, setIsSubcategoryDropdownOpen] = useState<boolean>(false);
+  const [isLocationInputFocused, setIsLocationInputFocused] = useState<boolean>(false);
+
+  const categories = (store?.StoreCategory ?? [])
+    .filter((c) => c.visible ?? true)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+  const allSubcategories = categories.flatMap(cat => cat.subcategories || []);
+
+  const displayedCategories = categories.length > 0 && categories.length <= 2 ? allSubcategories : categories;
+  const isDisplayingSubcategories = categories.length > 0 && categories.length <= 2;
+  
+
+  // Filtered lists for dropdowns
+  const filteredSubcategories = selectedCategory
+    ? (selectedCategory.subcategories || []).filter((sub) => sub.visible ?? true)
+    : allSubcategories.filter((sub) => sub.visible ?? true);
+
+  const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSearch({
+      location,
+      minPrice,
+      maxPrice,
+      category: selectedCategory?.categoryId || selectedCategory?.id,
+      subcategory: selectedSubcategory?.slug || selectedSubcategory?.id,
+    });
+    // Optionally close dropdowns after search
+    setIsLocationDropdownOpen(false);
+    setIsCategoryDropdownOpen(false);
+    setIsSubcategoryDropdownOpen(false);
+    setIsLocationInputFocused(false);
+  }, [location, minPrice, maxPrice, selectedCategory, selectedSubcategory, onSearch]);
+
+  const handleTrendingLocationClick = useCallback((loc: TrendingLocation) => {
+    setLocation(loc.name);
+    setIsLocationDropdownOpen(false);
+    setIsLocationInputFocused(false); // Close focus state as well
+  }, []);
+
+  const handleCategorySelect = useCallback((cat: IStoreCategory) => {
+    setSelectedCategory(cat);
+    setSelectedSubcategory(null); // Reset subcategory when category changes
+    setIsCategoryDropdownOpen(false);
+    setIsSubcategoryDropdownOpen(cat.subcategories && cat.subcategories.length > 0); // Open subcategory if available
+  }, []);
+
+  const handleSubcategorySelect = useCallback((subcat: ISubcategory) => {
+    setSelectedSubcategory(subcat);
+    setIsSubcategoryDropdownOpen(false);
+  }, []);
 
   const resetTimer = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -177,57 +237,60 @@ export default function HeroSection({
     };
   }, [current, resetTimer]);
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        locationDropdownRef.current &&
+        !locationDropdownRef.current.contains(event.target as Node)
       ) {
-        setIsDropdownOpen(false);
-        setIsInputFocused(false);
+        setIsLocationDropdownOpen(false);
+        setIsLocationInputFocused(false);
       }
-    }
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCategoryDropdownOpen(false);
+      }
+      if (
+        subcategoryDropdownRef.current &&
+        !subcategoryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsSubcategoryDropdownOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  const goTo = (idx: number, dir: number = 0) => {
+  const goTo = useCallback((idx: number, dir: number = 0) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setDirection(dir);
     setCurrent(idx);
-  };
+  }, []);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     if (heroSlides.length > 0) {
       goTo((current - 1 + heroSlides.length) % heroSlides.length, -1);
     }
-  };
+  }, [current, heroSlides.length, goTo]);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (heroSlides.length > 0) {
       goTo((current + 1) % heroSlides.length, 1);
     }
-  };
+  }, [current, heroSlides.length, goTo]);
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
+  const handleDragEnd = useCallback((_: any, info: PanInfo) => {
     const offset = info.offset.x;
     if (offset < -50) nextSlide();
     else if (offset > 50) prevSlide();
-  };
+  }, [nextSlide, prevSlide]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSearch({ location, minPrice, maxPrice });
-  };
-
-  const handleTrendingLocationClick = (loc: TrendingLocation) => {
-    setLocation(loc.name);
-    setIsDropdownOpen(false);
-    setIsInputFocused(false);
-  };
-
+  // Filter trending locations based on input
   const filteredTrendingLocations = trendingLocations.filter((loc) =>
     loc.name.toLowerCase().includes(location.toLowerCase())
   );
@@ -251,10 +314,9 @@ export default function HeroSection({
               onDragEnd={handleDragEnd}
             >
               <Image
-                src={slide.imageUrl}
+                src={slide.imageUrl|| "https://images.unsplash.com/photo-1560518883-ffc4573f0053?q=80&w=2670&auto=format&fit=crop"}
                 alt={slide.headline || "Real Estate Hero"}
                 layout="fill"
-                // objectfit="cover"
                 priority
                 className="opacity-70 dark:opacity-40 filter brightness-90 saturate-120"
                 loader={loader}
@@ -294,7 +356,6 @@ export default function HeroSection({
           })()}
         </motion.h1>
 
-
         <motion.p
           className="mt-4 text-lg md:text-xl font-light text-gray-600 dark:text-gray-200 max-w-3xl mx-auto drop-shadow-sm"
           initial={{ opacity: 0, y: 40 }}
@@ -302,20 +363,20 @@ export default function HeroSection({
           transition={{ delay: 0.2, duration: 0.8 }}
         >
           {heroSlides[current]?.subline ||
-            "Seamlessly search for properties by location and price range. Your ideal living space awaits."}
+            "Seamlessly search for properties by location, type, and price range. Your ideal living space awaits."}
         </motion.p>
 
         {/* Search Form */}
         <motion.form
-          onSubmit={handleSubmit}
-          className="mt-10 grid grid-cols-1 md:grid-cols-4 gap-4 p-6 sm:p-8 rounded-3xl shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-3xl border border-gray-200/50 dark:border-gray-700/50"
+          onSubmit={handleSearchSubmit}
+          className="mt-10 grid grid-cols-1 md:grid-cols-5 gap-4 p-6 sm:p-8 rounded-3xl shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-3xl border border-gray-200/50 dark:border-gray-700/50"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.7 }}
           aria-label="Search properties form"
         >
           {/* Location Input with Integrated Dropdown */}
-          <div className="relative col-span-full md:col-span-1" ref={dropdownRef}>
+          <div className="relative col-span-full md:col-span-2" ref={locationDropdownRef}>
             <MapPinIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             <input
               type="text"
@@ -323,15 +384,16 @@ export default function HeroSection({
               value={location}
               onChange={(e) => {
                 setLocation(e.target.value);
-                setIsDropdownOpen(e.target.value.length > 0);
+                setIsLocationDropdownOpen(e.target.value.length > 0);
+                setIsLocationInputFocused(true); // Keep focus state when typing
               }}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setTimeout(() => setIsInputFocused(false), 200)}
+              onFocus={() => setIsLocationInputFocused(true)}
+              // onBlur removed to keep dropdown open while typing and clicking on it
               aria-label="Location"
               className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:ring-4 focus:ring-amber-400/50 transition hover:scale-[1.01]"
             />
             <AnimatePresence>
-              {isInputFocused && filteredTrendingLocations.length > 0 && (
+              {isLocationInputFocused && filteredTrendingLocations.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -339,7 +401,7 @@ export default function HeroSection({
                   transition={{ duration: 0.2 }}
                   className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
                 >
-                  <ul className="py-2">
+                  <ul className="py-2 max-h-48 overflow-y-auto">
                     {filteredTrendingLocations.map((loc, index) => (
                       <li key={index}>
                         <button
@@ -356,6 +418,120 @@ export default function HeroSection({
               )}
             </AnimatePresence>
           </div>
+
+          {/* Category Select */}
+          <div className="relative col-span-full md:col-span-1" ref={categoryDropdownRef}>
+            <input
+              type="text"
+              placeholder="Category"
+              value={selectedCategory?.displayName || ""}
+              readOnly
+              onFocus={() => setIsCategoryDropdownOpen(true)}
+              aria-label="Select category"
+              className="w-full pl-4 pr-10 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:ring-4 focus:ring-amber-400/50 transition hover:scale-[1.01]"
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-600 dark:text-emerald-400">
+              {/* Optional: Add an icon here */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <AnimatePresence>
+              {isCategoryDropdownOpen && categories.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+                >
+                  <ul className="py-2 max-h-48 overflow-y-auto">
+                    {categories.map((cat) => (
+                      <li key={cat.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleCategorySelect(cat)}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
+                        >
+                          {cat.displayName}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Subcategory Select */}
+          <div className="relative col-span-full md:col-span-1" ref={subcategoryDropdownRef}>
+            <input
+              type="text"
+              placeholder="Subcategory"
+              value={selectedSubcategory?.name || ""}
+              readOnly
+              disabled={!selectedCategory || filteredSubcategories.length === 0}
+              onFocus={() => {
+                if (selectedCategory && filteredSubcategories.length > 0) {
+                  setIsSubcategoryDropdownOpen(true);
+                }
+              }}
+              aria-label="Select subcategory"
+              className={`w-full pl-4 pr-10 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-700 focus:ring-4 focus:ring-amber-400/50 transition hover:scale-[1.01] ${
+                (!selectedCategory || filteredSubcategories.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-600 dark:text-emerald-400">
+              {/* Optional: Add an icon here */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <AnimatePresence>
+              {isSubcategoryDropdownOpen && filteredSubcategories.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+                >
+                  <ul className="py-2 max-h-48 overflow-y-auto">
+                    {filteredSubcategories.map((subcat) => (
+                      <li key={subcat.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleSubcategorySelect(subcat)}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
+                        >
+                          {subcat.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Min Price Input */}
           <div className="relative col-span-full md:col-span-1">
             <CurrencyDollarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600 dark:text-emerald-400" />
@@ -389,7 +565,7 @@ export default function HeroSection({
             aria-label="Search listings"
           >
             <MagnifyingGlassIcon className="w-6 h-6" />
-            <span>Search Now</span>
+            <span>Search</span>
           </motion.button>
         </motion.form>
 

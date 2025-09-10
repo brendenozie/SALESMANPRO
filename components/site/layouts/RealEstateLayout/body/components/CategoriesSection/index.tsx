@@ -139,7 +139,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
           {isFewParentCategories ? (
             <>
               Explore Properties by{" "}
-              <span className="text-emerald-600 dark:text-teal-400">Subcategory</span>
+              <span className="text-emerald-600 dark:text-teal-400">Category</span>
             </>
           ) : (
             <>
