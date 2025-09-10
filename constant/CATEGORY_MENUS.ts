@@ -372,7 +372,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
         { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
       ],
-    },
+    },    
+    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
     { label: "Reports", href: `/admin/${adminSlug}/health-reports`, icon: ChartBarIcon }, // Generate various clinic reports
     { label: "Settings", href: `/admin/${adminSlug}/health-settings`, icon: Cog6ToothIcon }, // Clinic-wide settings
   ],
