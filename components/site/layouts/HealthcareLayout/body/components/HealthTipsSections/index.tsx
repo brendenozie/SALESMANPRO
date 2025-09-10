@@ -1,193 +1,150 @@
+// components/NewsSection.tsx
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation'; // Correct import for useRouter in Next.js 13+
-import { BookOpenIcon, SparklesIcon, LightBulbIcon, HeartIcon, ClipboardDocumentListIcon, ArrowRightIcon, MoonIcon, ShieldCheckIcon, SunIcon,  } from '@heroicons/react/24/solid'; // Importing more relevant and vibrant solid icons
-import { BeakerIcon, BellIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon } from '@heroicons/react/24/solid'; // Changed to solid for consistency
+import { useInView } from 'react-intersection-observer';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { IBlog } from '@/types/typings';
 
-interface HealthTipsSectionProps {
-  services: Array<{ id: string; name: string; imageUrl: string; storeSlug: string; description?: string }>; // Added optional description
-  storeSlug: string;
-}
+// Optimized image loader
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
+// Helper function for date formatting
+const formatBlogDate = (isoString: string) => {
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  } catch (error) {
+    return "Date N/A";
+  }
+};
+
+const fallbackBlogs= [
+  {
+    id: 'fb-blog-1',
+    title: 'New Study on Heart Health: What You Need to Know',
+    excerpt: 'An in-depth look at recent research findings on cardiovascular wellness and practical tips to protect your heart.',
+    coverImage: 'https://images.unsplash.com/photo-1603512193164-9844f77c8e6b?q=80&w=2670&auto=format&fit=crop',
+    slug: 'new-study-heart-health',
+    publishedAt: '2025-09-01T10:00:00Z',
+  },
+  {
+    id: 'fb-blog-2',
+    title: 'Navigating Your Prescriptions: A Quick Guide',
+    excerpt: 'Simple steps to help you understand your medications, dosage, and when to consult your doctor for refills.',
+    coverImage: 'https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop',
+    slug: 'navigating-your-prescriptions',
+    publishedAt: '2025-08-25T10:00:00Z',
+  },
+  {
+    id: 'fb-blog-3',
+    title: 'The Importance of Mental Health Check-ups',
+    excerpt: 'Learn why regular mental health check-ins are just as vital as physical exams for your overall well-being.',
+    coverImage: 'https://images.unsplash.com/photo-1516574163900-e791b8f041de?q=80&w=2670&auto=format&fit=crop',
+    slug: 'mental-health-checkups',
+    publishedAt: '2025-08-18T10:00:00Z',
+  },
+].map(blog => ({
+  ...blog,
+  // Add other required IBlog fields with mock/null data to match the type
+  companyId: '', slug: blog.slug, content: '', isFeature: false, categories: [], tags: [], authorName: null, status: 'PUBLISHED', views: 0, likes: 0, description: null, contentUrl: null, thumbnailUrl: null, contentType: 'TEXT', category: null, duration: null, location: null, published: true, type: null, publishDate: new Date(blog.publishedAt!), authorId: null, photoAlbumId: null, videoAlbumId: null, createdAt: new Date(), updatedAt: new Date()
+}));
 
 
-export default function HealthTipsSection({ services, storeSlug }: HealthTipsSectionProps) {
-  const router = useRouter();
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.15 } },
+};
 
-  // Animation variants
-  const fadeIn = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
-  };
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
 
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.9, y: 30 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      }
-    }
-  };
+export default function NewsSection() {
+  const { storeFormData } = useStoreContext();
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
+
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#008080';
+  const blogsToRender = Array.isArray(storeFormData?.blogs) && storeFormData.blogs.length > 0
+    ? storeFormData.blogs.slice(0, 3)
+    : fallbackBlogs;
+  const organizationSlug = storeFormData?.slug || 'unbite-healthcare';
 
   return (
-    <section className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 py-20 lg:py-28 relative overflow-hidden">
-      {/* Background Gradients/Shapes for Visual Interest */}
-      <div className="absolute inset-0 z-0 opacity-20">
-        <div className="absolute w-72 h-72 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl top-10 left-1/4 animate-blob"></div>
-        <div className="absolute w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl bottom-10 right-1/4 animate-blob animation-delay-2000"></div>
-        <div className="absolute w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-blob animation-delay-4000"></div>
-      </div>
+    <section id="news" className="py-20 md:py-32 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <p className="text-sm uppercase tracking-widest font-semibold mb-2" style={{ color: primaryColor }}>Latest Insights</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+            Health News & Articles
+          </h2>
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            Stay informed with our latest articles on health, wellness, and medical breakthroughs.
+          </p>
+        </motion.div>
 
-      <div className="container mx-auto px-6 max-w-7xl relative z-10">
-        <div className="text-center mb-16">
-          <motion.span
-            className="inline-block bg-pink-500/15 text-pink-700 dark:bg-pink-400/20 dark:text-pink-400 uppercase text-sm tracking-widest rounded-full px-4 py-2 mb-4 font-semibold shadow-sm"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeIn}
-          >
-            Empower Your Health
-          </motion.span>
-          <motion.h2
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeIn}
-            transition={{ delay: 0.2 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight drop-shadow-lg"
-          >
-            Health Tips & <span className="text-teal-600 dark:text-teal-400">Trusted Insights</span>
-          </motion.h2>
-
-          <motion.p
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeIn}
-            transition={{ delay: 0.3 }}
-            className="text-xl text-gray-700 dark:text-gray-300 text-center mt-4 max-w-3xl mx-auto leading-relaxed"
-          >
-            Explore our curated articles and resources designed to help you live a healthier, happier life.
-          </motion.p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {[
-            {
-              title: 'Nutrition & Diet',
-              description: 'Fuel your body with wholesome foods and discover balanced eating habits for vitality.',
-              icon: <SunIcon className="w-12 h-12 text-green-500 dark:text-green-400" />,
-              link: `/${storeSlug}/blog/nutrition-diet` // Example link
-            },
-            {
-              title: 'Active Lifestyle',
-              description: 'Simple and effective exercise routines to boost your energy and improve fitness.',
-              icon: <BellIcon className="w-12 h-12 text-orange-500 dark:text-orange-400" />,
-              link: `/${storeSlug}/blog/active-lifestyle`
-            },
-            {
-              title: 'Mind & Mental Health',
-              description: 'Strategies for stress management, mindfulness, and fostering emotional resilience.',
-              icon: <BeakerIcon className="w-12 h-12 text-purple-500 dark:text-purple-400" />,
-              link: `/${storeSlug}/blog/mental-health`
-            },
-            {
-              title: 'Preventive Care',
-              description: 'Understand the importance of screenings and vaccinations for long-term wellness.',
-              icon: <ShieldCheckIcon className="w-12 h-12 text-blue-500 dark:text-blue-400" />,
-              link: `/${storeSlug}/blog/preventive-care`
-            },
-            {
-              title: 'Family Health',
-              description: 'Resources and advice for maintaining the well-being of your entire family.',
-              icon: <HeartIcon className="w-12 h-12 text-red-500 dark:text-red-400" />,
-              link: `/${storeSlug}/blog/family-health`
-            },
-            {
-              title: 'Sleep & Recovery',
-              description: 'Optimize your rest and recovery for peak physical and mental performance.',
-              icon: <MoonIcon className="w-12 h-12 text-gray-500 dark:text-gray-400" />,
-              link: `/${storeSlug}/blog/sleep-recovery`
-            },
-          ].map((tip, i) => (
-            <motion.a // Changed to <a> tag for better semantic linking
-              href={tip.link}
-              key={i}
-              whileHover={{ scale: 1.03, boxShadow: '0 15px 30px rgba(0,0,0,0.15)' }} // Stronger shadow on hover
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.3 }} // Trigger earlier
-              variants={cardVariants}
-              transition={{ delay: i * 0.1 }} // Staggered animation
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 text-center flex flex-col items-center justify-between
-                         transition-all duration-300 ease-in-out group transform hover:-translate-y-2 cursor-pointer" // Add translate-y on hover
-              aria-label={`Read more about ${tip.title}`}
+        <motion.div
+          ref={ref}
+          variants={containerVariants}
+          initial="hidden"
+          animate={inView ? "show" : "hidden"}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          {blogsToRender.map((newsItem) => (
+            <motion.div
+              key={newsItem.id}
+              variants={itemVariants}
+              className="bg-gray-100 rounded-3xl overflow-hidden shadow-xl group transition-all duration-500 hover:scale-105 hover:shadow-2xl"
             >
-              <div className="mb-6">
-                {tip.icon}
+              <div className="relative h-48 w-full">
+                <Image
+                  src={newsItem.coverImage || "https://placehold.co/128x128/D1D5DB/4B5563?text=News+Image"}
+                  alt={newsItem.title || 'NEWS IMAGE'}
+                  loader={loader}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
-                {tip.title}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6 flex-grow">
-                {tip.description}
-              </p>
-              <span className="inline-flex items-center text-teal-600 dark:text-teal-400 font-semibold group-hover:underline group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors duration-200">
-                Read Article
-                <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-              </span>
-            </motion.a>
+              <div className="p-6 md:p-8">
+                <span className="text-sm font-medium text-gray-500">{formatBlogDate(newsItem.publishedAt! as unknown as string)}</span>
+                <Link href={`/${organizationSlug}/blog/${newsItem.slug}`} className="block">
+                  <h3 className="font-bold text-xl md:text-2xl my-2 text-gray-900 leading-snug group-hover:text-blue-600 transition-colors"
+                    // style={{ '--tw-hover-text-color': primaryColor }}
+                  >
+                    {newsItem.title}
+                  </h3>
+                </Link>
+                <p className="text-gray-700 text-sm md:text-base line-clamp-3 mb-4">{newsItem.excerpt || 'No excerpt available.'}</p>
+                <Link href={`/${organizationSlug}/blog/${newsItem.slug}`} className="inline-flex items-center font-semibold transition-colors duration-300" style={{ color: primaryColor }}>
+                  Read More
+                  <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Call to action to view all resources/blog */}
-        <div className="text-center mt-20">
-          <motion.button
-            className="inline-flex items-center px-10 py-5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white text-xl font-semibold rounded-full shadow-lg transition-all duration-300
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400"
-            whileHover={{ scale: 1.05, boxShadow: "0px 12px 30px rgba(0,0,0,0.25)" }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/${storeSlug}/blog`)} // Link to your main blog/resources page
-            aria-label="Visit our full Health Blog"
-          >
-            Visit Our Health Blog
-            <BookOpenIcon className="w-6 h-6 ml-3" />
-          </motion.button>
+        <div className="mt-16 text-center">
+          <Link href={`/${organizationSlug}/blog`} className="inline-flex items-center px-8 py-3 rounded-full font-semibold text-white shadow-lg transition duration-300 transform hover:scale-105" style={{ backgroundColor: primaryColor }}>
+            View All News
+            <ArrowRightIcon className="w-5 h-5 ml-2" />
+          </Link>
         </div>
       </div>
-
-      {/* Tailwind CSS keyframes for blob animation (add to your global CSS or an inline style tag if necessary) */}
-      <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </section>
   );
 }

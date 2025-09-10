@@ -123,7 +123,7 @@ export default function HealthCareSite() {
         <MedicalServicesSection services={servicesData} storeSlug={slug} />
 
         {/* Health Tips Section (if you have one, or repurpose 'services' for tips) */}
-        <HealthTipsSection services={servicesData} storeSlug={slug} />
+        <HealthTipsSection/>
 
         {/* Doctors Section */}
         <DoctorsSection doctors={doctorsData} storeSlug={slug} />
