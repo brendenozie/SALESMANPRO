@@ -28,13 +28,14 @@ const testimonialSchema = z.object({
 });
 
 const heroSlideSchema = z.object({
-  imageUrl: z.string().nullable().optional(),
+  imageUrl: z.string().nullable().optional().or(z.literal('')),
   productImageUrl: z.string().url().nullable().optional().or(z.literal('')),
   headline: z.string().nullable().optional(),
   subline: z.string().nullable().optional(),
   ctaText: z.string().nullable().optional(),
   ctaLink: z.string().nullable().optional().or(z.literal('')),//.url()
   badgeText: z.string().nullable().optional(),
+  videoLink: z.string().nullable().optional().or(z.literal('')),//.url()
   price: z.string().nullable().optional(),
   endsAt: z.string().datetime().optional().nullable(),
   order: z.number().default(0),
@@ -89,15 +90,24 @@ const companyLocationSchema = z.object({
     visible: z.boolean().optional(),
 });
 
+// const storeCategorySchema = z.object({
+//     id: z.string(), // This is the categoryId
+//     displayName: z.string().optional(),
+//     icon: z.string().optional(),
+//     categoryId: z.string().optional(),
+//     sortOrder: z.number().optional(),
+//     visible: z.boolean().optional(),
+//     subcategories: z.any().optional(), // For JSON fields, z.any() is a safe default
+//     allBrands: z.any().optional(), // For JSON fields, z.any() is a safe default
+// });
 const storeCategorySchema = z.object({
-    id: z.string(), // This is the categoryId
-    displayName: z.string().optional(),
-    icon: z.string().optional(),
-    categoryId: z.string().optional(),
-    sortOrder: z.number().optional(),
-    visible: z.boolean().optional(),
-    subcategories: z.any().optional(), // For JSON fields, z.any() is a safe default
-    allBrands: z.any().optional(), // For JSON fields, z.any() is a safe default
+  categoryId: z.string(), // This is the ID of the ProductCategory
+  displayName: z.string().optional(),
+  icon: z.string().optional(),
+  sortOrder: z.number().optional(),
+  visible: z.boolean().optional(),
+  subcategories: z.any().optional(),
+  allBrands: z.any().optional(),
 });
 
 

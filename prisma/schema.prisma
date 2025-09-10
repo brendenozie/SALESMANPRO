@@ -389,7 +389,7 @@ model Banner {
   company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
 
-  imageUrl        String
+  imageUrl        String?
   productImageUrl String?
   headline        String?
   subline         String?

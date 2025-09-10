@@ -154,15 +154,9 @@ export default function HeroSection({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const [location, setLocation] = useState<string>(
-    store?.themeSettings?.heroDefaultFilters?.location || ""
-  );
-  const [minPrice, setMinPrice] = useState<string>(
-    store?.themeSettings?.heroDefaultFilters?.minPrice || ""
-  );
-  const [maxPrice, setMaxPrice] = useState<string>(
-    store?.themeSettings?.heroDefaultFilters?.maxPrice || ""
-  );
+  const [location, setLocation] = useState<string>("");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
 
