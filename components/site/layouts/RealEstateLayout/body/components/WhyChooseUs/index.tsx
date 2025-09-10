@@ -62,7 +62,7 @@ const getIconComponent = (iconName: string) => {
 //──────────────────────────────────────────────────────────────────────────────
 // WhyChooseUs
 //──────────────────────────────────────────────────────────────────────────────
-export default function WhyChooseUs({ metrics, awards }: any) {
+export default function WhyChooseUs({ CoreValues, metrics, awards }: any) {
   // `useAnimation` is typically used for more complex, imperative animations.
   // For `whileInView`, `initial`, and `animate` on simple elements, it's often not strictly needed,
   // but we'll keep it here as per your original structure.
@@ -80,6 +80,10 @@ export default function WhyChooseUs({ metrics, awards }: any) {
       transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" },
     }));
   }, [controls]);
+
+   const featuresToRender = Array.isArray(CoreValues) && CoreValues.length > 0
+    ? CoreValues//.sort((a, b) => (a.order || 0) - (b.order || 0))
+    : [];
 
   return (
     <section className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 py-20 sm:py-28 relative overflow-hidden">
@@ -114,8 +118,9 @@ export default function WhyChooseUs({ metrics, awards }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
-          {/* Example Value Card 1 */}
-          <motion.div
+           {featuresToRender.map((item, idx) => (
+            
+          <motion.div key={item.id || idx}
             className="bg-white dark:bg-gray-850 rounded-3xl p-8 shadow-xl flex flex-col items-center
                        border-t-4 border-amber-500 dark:border-amber-400 transform transition-all duration-300
                        hover:scale-[1.01] hover:shadow-2xl hover:-translate-y-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
@@ -125,48 +130,40 @@ export default function WhyChooseUs({ metrics, awards }: any) {
               <ShieldCheckIcon className="w-10 h-10" />
             </div>
             <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-3">
-              Unmatched Trust
+              {item.title}
             </h3>
             <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-              We build lasting relationships on transparency, integrity, and unparalleled client satisfaction. Your trust is our greatest asset.
+              {item.description}
             </p>
           </motion.div>
-
-          {/* Example Value Card 2 */}
-          <motion.div
-            className="bg-white dark:bg-gray-850 rounded-3xl p-8 shadow-xl flex flex-col items-center
-                       border-t-4 border-emerald-500 dark:border-emerald-400 transform transition-all duration-300
-                       hover:scale-[1.01] hover:shadow-2xl hover:-translate-y-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
-            variants={itemVariants}
-          >
-            <div className="p-4 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-800/30 dark:text-emerald-400 mb-6">
-              <SparklesIcon className="w-10 h-10" />
-            </div>
-            <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-3">
-              Tailored Solutions
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-              Your property journey is unique. We offer personalized strategies and expert guidance every step of the way.
-            </p>
-          </motion.div>
-
-          {/* Example Value Card 3 */}
-          <motion.div
-            className="bg-white dark:bg-gray-850 rounded-3xl p-8 shadow-xl flex flex-col items-center
-                       border-t-4 border-teal-500 dark:border-teal-400 transform transition-all duration-300
-                       hover:scale-[1.01] hover:shadow-2xl hover:-translate-y-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
-            variants={itemVariants}
-          >
-            <div className="p-4 rounded-full bg-teal-100 text-teal-600 dark:bg-teal-800/30 dark:text-teal-400 mb-6">
-              <HandThumbUpIcon className="w-10 h-10" />
-            </div>
-            <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-3">
-              Proven Results
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-              With a track record of successful transactions, we consistently deliver exceptional outcomes for our clients.
-            </p>
-          </motion.div>
+                      // <motion.div
+                      //   variants={itemVariants}
+                      //   className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 relative overflow-hidden group transition-all duration-300 transform hover:scale-105"
+                      // >
+                      //   {/* Card background shape */}
+                      //   <div
+                      //     className="absolute inset-0 opacity-10 blur-xl transition-all duration-500 group-hover:opacity-20"
+                      //     style={{ backgroundColor: '#F43F5E' }}
+                      //   ></div>
+                        
+                      //   <div className="relative z-10 flex flex-col items-start text-left">
+                      //     {/* Icon with colored background and subtle animation */}
+                      //     <div
+                      //       className="w-16 h-16 md:w-20 md:h-20 mb-6 flex items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110"
+                      //       style={{ backgroundColor: '#F43F5E' }}
+                      //     >
+                      //       {item.icon}
+                      //     </div>
+                      //     <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-snug group-hover:text-gray-800 transition-colors duration-300">
+                      //       {item.title}
+                      //     </h3>
+                      //     <p className="text-gray-600 text-lg">
+                      //       {item.description}
+                      //     </p>
+                      //   </div>
+                      // </motion.div>
+                    ))}
+      
         </motion.div>
 
         {/* Metrics Section */}

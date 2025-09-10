@@ -132,7 +132,8 @@ export default function RealEstateSite() {
     faqs,
     CompanyLocation,
     blogs,
-    contactPhone
+    contactPhone,
+    CoreValues,
   } = storeData;
 
   // Search form state (remains local to parent for now)
@@ -227,7 +228,7 @@ export default function RealEstateSite() {
       <ListingsSection products={marketplaceListings} slug={slug} />
 
       {/* Why Choose Us Section */}
-      <WhyChooseUs metrics={metrics} awards={awards} />
+      <WhyChooseUs CoreValues={CoreValues} metrics={metrics} awards={awards} />
 
       {/* Agents Section */}
       <AgentsSection agents={salesAgents} slug={slug} />
