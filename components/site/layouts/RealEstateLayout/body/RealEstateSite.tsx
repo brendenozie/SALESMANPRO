@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link"; // Use Next.js Link for client-side navigation
-import Image from "next/image"; // Import Image component
 import { useRouter } from "next/navigation";
 import {
   ChatBubbleBottomCenterTextIcon, // A more modern chat icon for WhatsApp
@@ -33,26 +31,26 @@ const sampleStoreData : StoreForm = {
   description: "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease.",
   bannerUrl: "/banners/main-banner.jpg", // High-quality banner for Hero
   storeCategories: [
-    { id: 1, name: "Apartments", slug: "apartments", imageUrl: "/categories/apartment.jpg", description: "Modern living spaces in the heart of the city." },
-    { id: 2, name: "Villas & Houses", slug: "villas-houses", imageUrl: "/categories/villa.jpg", description: "Spacious homes with private amenities." },
-    { id: 3, name: "Commercial Spaces", slug: "offices", imageUrl: "/categories/office.jpg", description: "Prime locations for your business." },
-    { id: 4, name: "Land Plots", slug: "land-plots", imageUrl: "/categories/land.jpg", description: "Build your vision from the ground up." },
-    { id: 5, name: "Condos", slug: "condos", imageUrl: "/categories/condo.jpg", description: "Convenient and amenity-rich living." },
+    { id: 1, name: "Apartments", slug: "apartments", images: "/categories/apartment.jpg", description: "Modern living spaces in the heart of the city." },
+    { id: 2, name: "Villas & Houses", slug: "villas-houses", images: "/categories/villa.jpg", description: "Spacious homes with private amenities." },
+    { id: 3, name: "Commercial Spaces", slug: "offices", images: "/categories/office.jpg", description: "Prime locations for your business." },
+    { id: 4, name: "Land Plots", slug: "land-plots", images: "/categories/land.jpg", description: "Build your vision from the ground up." },
+    { id: 5, name: "Condos", slug: "condos", images: "/categories/condo.jpg", description: "Convenient and amenity-rich living." },
   ],
   marketplaceListings: [
     { id: "h1", name: "Luxury Penthouse", finalPrice: 12500000, images: ["/properties/apartment1.jpg"], address: "123 Sky Tower, Downtown", beds: 4, baths: 3, sqft: 3200, badge: "Premium", description: "Experience unparalleled luxury with breathtaking city views." },
-    { id: "h2", name: "Seaside Grand Villa", finalPrice: 25000000, imageUrl: "/properties/villa1.jpg", address: "456 Ocean Drive, Coastal Paradise", beds: 6, baths: 5, sqft: 5000, badge: "Exclusive", description: "An exquisite villa offering direct beach access and ultimate privacy." },
-    { id: "h3", name: "Modern Office Suite", finalPrice: 7500000, imageUrl: "/properties/office1.jpg", address: "789 Business Hub, Tech Park", beds: 0, baths: 2, sqft: 2000, badge: "New Listing", description: "State-of-the-art office space designed for productivity and collaboration." },
-    { id: "h4", name: "Spacious Countryside Plot", finalPrice: 4000000, imageUrl: "/properties/land1.jpg", address: "101 Green Fields, Rural Haven", beds: 0, baths: 0, sqft: 43560, badge: "Investment", description: "Expansive land perfect for building your custom estate." },
-    { id: "h5", name: "Charming Suburban Home", finalPrice: 9800000, imageUrl: "/properties/loft1.jpg", address: "234 Elm Street, Quiet Neighborhood", beds: 3, baths: 2, sqft: 2200, badge: "Family Ready", description: "A cozy and inviting home, ideal for growing families." },
-    { id: "h6", name: "Urban Loft Apartment", finalPrice: 6200000, imageUrl: "/properties/home1.jpg", address: "567 Art District, Urban Core", beds: 2, baths: 2, sqft: 1500, badge: "Trendy", description: "Stylish loft living with vibrant city culture at your doorstep." },
-    { id: "h7", name: "Mountain View Cabin", finalPrice: 8000000, imageUrl: "/properties/cabin.jpg", address: "890 Pine Ridge, Serene Mountains", beds: 3, baths: 2, sqft: 1600, badge: "Getaway", description: "Escape to nature in this beautifully designed cabin." },
+    { id: "h2", name: "Seaside Grand Villa", finalPrice: 25000000, images: ["/properties/villa1.jpg"], address: "456 Ocean Drive, Coastal Paradise", beds: 6, baths: 5, sqft: 5000, badge: "Exclusive", description: "An exquisite villa offering direct beach access and ultimate privacy." },
+    { id: "h3", name: "Modern Office Suite", finalPrice: 7500000, images: ["/properties/office1.jpg"], address: "789 Business Hub, Tech Park", beds: 0, baths: 2, sqft: 2000, badge: "New Listing", description: "State-of-the-art office space designed for productivity and collaboration." },
+    { id: "h4", name: "Spacious Countryside Plot", finalPrice: 4000000, images: ["/properties/land1.jpg"], address: "101 Green Fields, Rural Haven", beds: 0, baths: 0, sqft: 43560, badge: "Investment", description: "Expansive land perfect for building your custom estate." },
+    { id: "h5", name: "Charming Suburban Home", finalPrice: 9800000, images: ["/properties/loft1.jpg"], address: "234 Elm Street, Quiet Neighborhood", beds: 3, baths: 2, sqft: 2200, badge: "Family Ready", description: "A cozy and inviting home, ideal for growing families." },
+    { id: "h6", name: "Urban Loft Apartment", finalPrice: 6200000, images: ["/properties/home1.jpg"], address: "567 Art District, Urban Core", beds: 2, baths: 2, sqft: 1500, badge: "Trendy", description: "Stylish loft living with vibrant city culture at your doorstep." },
+    { id: "h7", name: "Mountain View Cabin", finalPrice: 8000000, images: ["/properties/cabin.jpg"], address: "890 Pine Ridge, Serene Mountains", beds: 3, baths: 2, sqft: 1600, badge: "Getaway", description: "Escape to nature in this beautifully designed cabin." },
   ],
   testimonials: [
-    { quote: "DreamNest Realty exceeded all our expectations! Their agents were incredibly knowledgeable and made our home-buying journey seamless.", author: "Alice G.", avatarUrl: "/avatars/avatar1.jpg", rating: 5, role: "First-Time Homeowner" },
-    { quote: "The team at DreamNest is truly professional and transparent. They found us the perfect commercial space much faster than we anticipated.", author: "Brenda K.", avatarUrl: "/avatars/avatar2.jpg", rating: 5, role: "Business Owner" },
-    { quote: "Outstanding service! We were guided every step of the way, and their property selection was vast. Highly recommended!", author: "Charles L.", avatarUrl: "/avatars/avatar3.jpg", rating: 4.5, role: "Real Estate Investor" },
-    { quote: "Their deep market insights gave us a competitive edge. Selling our property was surprisingly stress-free. Thank you, DreamNest!", author: "Diana P.", avatarUrl: "/avatars/avatar4.jpg", rating: 5, role: "Seller" },
+    { quote: "DreamNest Realty exceeded all our expectations! Their agents were incredibly knowledgeable and made our home-buying journey seamless.", authorName: "Alice G.", avatarUrl: "/avatars/avatar1.jpg", rating: 5, role: "First-Time Homeowner" },
+    { quote: "The team at DreamNest is truly professional and transparent. They found us the perfect commercial space much faster than we anticipated.", authorName: "Brenda K.", avatarUrl: "/avatars/avatar2.jpg", rating: 5, role: "Business Owner" },
+    { quote: "Outstanding service! We were guided every step of the way, and their property selection was vast. Highly recommended!", authorName: "Charles L.", avatarUrl: "/avatars/avatar3.jpg", rating: 4.5, role: "Real Estate Investor" },
+    { quote: "Their deep market insights gave us a competitive edge. Selling our property was surprisingly stress-free. Thank you, DreamNest!", authorName: "Diana P.", avatarUrl: "/avatars/avatar4.jpg", rating: 5, role: "Seller" },
   ],
   faqs: [
     { question: "How does the home buying process work with DreamNest Realty?", answer: "We streamline the entire process, from initial consultation and property search to negotiation and closing. Our agents provide personalized guidance every step of the way to ensure a smooth and enjoyable experience." },
@@ -98,10 +96,10 @@ const sampleStoreData : StoreForm = {
     { "id": 4, "name": "Tech Hub North", image: "/locations/techhub.jpg", "listings": 45, "avgPrice": 550000, description: "Modern living near innovation centers." }
   ],
   blogs: [
-    { "id": 1, "title": "5 Essential Tips for First-Time Home Buyers in 2025", "link": "#", imageUrl: "/blog/blog1.jpg", "date": "July 10, 2025", "author": "DreamNest Editorial" },
-    { "id": 2, "title": "Navigating the Current Real Estate Market: Trends and Forecasts", "link": "#", imageUrl: "/blog/blog2.jpg", "date": "June 28, 2025", "author": "Market Analyst" },
-    { "id": 3, "title": "Maximizing Your Home's Value: Effective Staging Techniques", "link": "#", imageUrl: "/blog/blog3.jpg", "date": "June 15, 2025", "author": "Design Team" },
-    { "id": 4, "title": "The Rise of Sustainable Homes: What You Need to Know", "link": "#", imageUrl: "/blog/blog4.jpg", "date": "May 30, 2025", "author": "Green Living Expert" },
+    { "id": 1, "title": "5 Essential Tips for First-Time Home Buyers in 2025", "link": "#", images: "/blog/blog1.jpg", "date": "July 10, 2025", "author": "DreamNest Editorial" },
+    { "id": 2, "title": "Navigating the Current Real Estate Market: Trends and Forecasts", "link": "#", images: "/blog/blog2.jpg", "date": "June 28, 2025", "author": "Market Analyst" },
+    { "id": 3, "title": "Maximizing Your Home's Value: Effective Staging Techniques", "link": "#", images: "/blog/blog3.jpg", "date": "June 15, 2025", "author": "Design Team" },
+    { "id": 4, "title": "The Rise of Sustainable Homes: What You Need to Know", "link": "#", images: "/blog/blog4.jpg", "date": "May 30, 2025", "author": "Green Living Expert" },
   ],
 };
 
@@ -125,15 +123,16 @@ export default function RealEstateSite() {
     slug,
     description,
     bannerUrl,
-    storeCategories, // Renamed for clarity in props
+    StoreCategory, // Renamed for clarity in props
     marketplaceListings,
-    agents,
+    salesAgents,
     metrics,
     awards,
     testimonials,
     faqs,
-    companyLocations,
+    CompanyLocation,
     blogs,
+    contactPhone
   } = storeData;
 
   // Search form state (remains local to parent for now)
@@ -166,7 +165,7 @@ export default function RealEstateSite() {
     <div className="font-sans text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Sticky Contact Agent Button (WhatsApp) */}
       <a
-        href={`https://wa.me/254712345678?text=Hi%20DreamNest%20Realty,%20I'd%20like%20to%20inquire%20about%20a%20listing`}
+        href={`https://wa.me/${contactPhone}?text=Hi%20DreamNest%20Realty,%20I'd%20like%20to%20inquire%20about%20a%20listing`}
         target="_blank"
         rel="noopener noreferrer" // Added for security best practice
         className="fixed bottom-6 right-6 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700
@@ -183,6 +182,20 @@ export default function RealEstateSite() {
       <HeroSection
         store={storeData}
         onSearch={handleSearch}
+        trendingLocations={
+          CompanyLocation
+            ? CompanyLocation.map((loc: any) => ({
+                // Map/transform to Location type as needed
+                name: loc.name,
+                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                metaKeywords: loc.metaKeywords || "",
+                status: loc.status || "active",
+                parentId: loc.parentId || null,
+                // Spread any additional fields if needed
+                ...loc,
+              }))
+            : []
+          }
       />
 
       {/* Property Categories Section */}
@@ -194,8 +207,8 @@ export default function RealEstateSite() {
       {/* Trending Locations Section */}
       <TrendingLocations
         locations={
-          companyLocations
-            ? companyLocations.map((loc: any) => ({
+          CompanyLocation
+            ? CompanyLocation.map((loc: any) => ({
                 // Map/transform to Location type as needed
                 name: loc.name,
                 slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
@@ -217,7 +230,7 @@ export default function RealEstateSite() {
       <WhyChooseUs metrics={metrics} awards={awards} />
 
       {/* Agents Section */}
-      <AgentsSection agents={agents} slug={slug} />
+      <AgentsSection agents={salesAgents} slug={slug} />
 
       {/* Testimonials Carousel Section */}
       <TestimonialsSection testimonials={testimonials} />

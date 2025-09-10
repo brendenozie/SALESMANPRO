@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { StoreCategory, Subcategory, StoreForm } from "@/types/typings"; // Ensure Subcategory is imported
+import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 
 // Loader for Next.js Image
 const customLoader = ({ src, width, quality }: any) =>
@@ -46,74 +46,53 @@ const subcategoryItemVariants = {
   },
 };
 
-
-// Sample fallback categories (updated to include subcategories if applicable)
-const fallbackCategories: StoreCategory[] = [
+// Sample fallback categories for a property store
+const fallbackCategories: IStoreCategory[] = [
   {
     id: "sample-1",
-    categoryId: "property", // Changed to 'property' as per your sample
+    categoryId: "property",
     displayName: "Property",
-    name: "Property", // Added name for consistency
     icon: "🏠",
     sortOrder: 0,
     visible: true,
-    items: [ // Populate with sample subcategories
+    subcategories: [
       { id: "Ho0", name: "Houses", slug: "houses", sortOrder: 0, visible: true },
-      { id: "La1", name: "Land", slug: "land", sortOrder: 1, visible: true },
-      { id: "Co2", name: "Commercial", slug: "commercial", sortOrder: 2, visible: true },
-      { id: "Ap3", name: "Apartments", slug: "apartments", sortOrder: 3, visible: true },
+      { id: "Ap1", name: "Apartments", slug: "apartments", sortOrder: 1, visible: true },
+      { id: "La2", name: "Land", slug: "land", sortOrder: 2, visible: true },
+      { id: "Co3", name: "Commercial", slug: "commercial", sortOrder: 3, visible: true },
       { id: "Va4", name: "Vacation Rentals", slug: "vacation-rentals", sortOrder: 4, visible: true },
+      { id: "Du5", name: "Duplexes", slug: "duplexes", sortOrder: 5, visible: true },
+      { id: "To6", name: "Townhouses", slug: "townhouses", sortOrder: 6, visible: true },
+      { id: "Ru7", name: "Rural Properties", slug: "rural-properties", sortOrder: 7, visible: true },
+      { id: "Fa8", name: "Farms", slug: "farms", sortOrder: 8, visible: true }, // This will be excluded due to the 8-item limit
     ],
     allBrands: [],
     companyId: "",
-    category: {
-      id: "", name: "", slug: "", description: undefined, longDescription: undefined,
-      seoTitle: undefined, seoDescription: undefined, metaKeywords: undefined,
-      sortOrder: undefined, visible: undefined, isFeatured: undefined,
-      showInHomepage: undefined, attributes: undefined, subcategories: undefined,
-      icon: undefined, image: undefined
-    }
   },
-  { // Example of a second parent category if needed for testing isFewCategories = 2
+  {
     id: "sample-2",
     categoryId: "vehicle",
     displayName: "Vehicles",
-    name: "Vehicles",
     icon: "🚗",
     sortOrder: 1,
     visible: true,
-    items: [
+    subcategories: [
       { id: "Ca0", name: "Cars", slug: "cars", sortOrder: 0, visible: true },
       { id: "Mo1", name: "Motorcycles", slug: "motorcycles", sortOrder: 1, visible: true },
     ],
     allBrands: [],
     companyId: "",
-    category: {
-      id: "", name: "", slug: "", description: undefined, longDescription: undefined,
-      seoTitle: undefined, seoDescription: undefined, metaKeywords: undefined,
-      sortOrder: undefined, visible: undefined, isFeatured: undefined,
-      showInHomepage: undefined, attributes: undefined, subcategories: undefined,
-      icon: undefined, image: undefined
-    }
   },
   {
     id: "sample-3",
     categoryId: "electronics",
     displayName: "Electronics",
-    name: "Electronics",
     icon: "📱",
     sortOrder: 2,
     visible: true,
-    items: [], // No subcategories for this example
+    subcategories: [],
     allBrands: [],
     companyId: "",
-    category: {
-      id: "", name: "", slug: "", description: undefined, longDescription: undefined,
-      seoTitle: undefined, seoDescription: undefined, metaKeywords: undefined,
-      sortOrder: undefined, visible: undefined, isFeatured: undefined,
-      showInHomepage: undefined, attributes: undefined, subcategories: undefined,
-      icon: undefined, image: undefined
-    }
   },
 ];
 
@@ -122,31 +101,29 @@ type CategoriesSectionProps = {
 };
 
 export default function CategoriesSection({ store }: CategoriesSectionProps) {
-  // Pull categories from store, sorted and filtered by visibility
-  const rawCategories = ((store && store.storeCategories) ?? [])
+  const rawCategories = (store?.StoreCategory ?? [])
     .slice()
     .filter((c) => c.visible ?? true)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-  // Decide whether to use store categories or fallback
   const categoriesToShow = rawCategories.length > 0 ? rawCategories : fallbackCategories;
 
-  // Determine if we have few parent categories (1 or 2)
   const isFewParentCategories = categoriesToShow.length > 0 && categoriesToShow.length <= 2;
 
-  // Collect all subcategories from the few parent categories to display
-  const subcategoriesToDisplay: Subcategory[] = [];
+  const subcategoriesToDisplay: ISubcategory[] = [];
   if (isFewParentCategories) {
     categoriesToShow.forEach(parentCat => {
-      // Ensure parentCat.items is an array before concatenating
-      if (Array.isArray(parentCat.items)) {
-        subcategoriesToDisplay.push(...parentCat.items
-          .filter(sub => sub.visible ?? true) // Filter visible subcategories
-          .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)) // Sort subcategories
+      if (Array.isArray(parentCat.subcategories)) {
+        subcategoriesToDisplay.push(...parentCat.subcategories
+          .filter(sub => sub.visible ?? true)
+          .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
         );
       }
     });
   }
+
+  // Limit the number of subcategories to a maximum of 8
+  const limitedSubcategories = subcategoriesToDisplay.slice(0, 8);
 
   return (
     <section className="py-16 sm:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
@@ -174,7 +151,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
         </motion.h2>
 
         {isFewParentCategories ? (
-          // Render subcategory cards if there are 1 or 2 parent categories
+          // Render subcategory cards
           <motion.div
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8"
             variants={subcategoryContainerVariants}
@@ -182,21 +159,18 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
           >
-            {subcategoriesToDisplay.length === 0 && (
+            {limitedSubcategories.length === 0 && (
               <p className="col-span-full text-center text-gray-600 dark:text-gray-400 text-lg">
-                No subcategories available for these parent categories.
+                No subcategories available.
               </p>
             )}
-            {subcategoriesToDisplay.map((subcat) => {
-              // You might need a more sophisticated way to get an image for a subcategory
-              // For now, using a placeholder or a generic image
-              const imageUrl = `/images/subcategory-placeholder-${subcat.slug}.jpg` || "/images/category-placeholder.jpg"; // You can map slugs to specific images
-
+            {limitedSubcategories.map((subcat) => {
+              const imageUrl = `/images/subcategory-${subcat.slug}.jpg`;
               return (
-                <Link key={subcat.id} href={`/${store!.slug}/subcategory/${subcat.slug}`} passHref>
+                <Link key={subcat.id} href={`/${store?.slug}/subcategory/${subcat.slug}`} passHref>
                   <motion.a
                     className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
-                               focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
+                                   focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
                     variants={subcategoryItemVariants}
                     whileHover={{ scale: 1.03, zIndex: 1 }}
                     whileTap={{ scale: 0.98 }}
@@ -228,7 +202,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
             })}
           </motion.div>
         ) : (
-          // Render parent category cards as before if there are more than 2 parent categories
+          // Render parent category cards
           <motion.div
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8"
             variants={containerVariants}
@@ -237,14 +211,13 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
             viewport={{ once: true, amount: 0.3 }}
           >
             {categoriesToShow.map((cat) => {
-              const catSlug = (cat.categoryId || cat.displayName || "").toString().toLowerCase();
-              const imageUrl = (cat as any).image || "/images/category-placeholder.jpg"; // Assuming `image` might be on StoreCategory
-
+              const catSlug = cat.categoryId ?? (cat.displayName ?? "").toLowerCase().replace(/\s+/g, '-');
+              const imageUrl = cat.category?.image ?? "/images/category-placeholder.jpg";
               return (
-                <Link key={cat.id} href={`/${store!.slug}/category/${catSlug}`} passHref>
+                <Link key={cat.id} href={`/${store?.slug}/category/${catSlug}`} passHref>
                   <motion.a
                     className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
-                             focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
+                                   focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
                     variants={itemVariants}
                     whileHover={{ scale: 1.03, zIndex: 1 }}
                     whileTap={{ scale: 0.98 }}
@@ -267,9 +240,9 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
                         className="inline-block px-5 py-2 bg-emerald-600/90 dark:bg-emerald-700/90 text-white text-lg font-semibold uppercase tracking-wide rounded-full shadow-lg
                                    group-hover:bg-amber-400 group-hover:text-gray-900 group-hover:scale-105 transition-all duration-300 transform"
                       >
-                        {cat.name || cat.displayName}
-                        {cat.items.length > 0 && (
-                          <span className="ml-2 text-xs opacity-80">({cat.items.length})</span>
+                        {cat.displayName}
+                        {cat.subcategories.length > 0 && (
+                          <span className="ml-2 text-xs opacity-80">({cat.subcategories.length})</span>
                         )}
                       </span>
                     </div>
@@ -279,8 +252,6 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
             })}
           </motion.div>
         )}
-
-        {/* View All CTA - Adjust link based on context */}
         <motion.div
           className="text-center mt-20"
           initial={{ opacity: 0, y: 30 }}
@@ -288,7 +259,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ delay: 0.3, duration: 0.7 }}
         >
-          <Link href={`/${store!.slug}/categories`} passHref>
+          <Link href={`/${store?.slug}/categories`} passHref>
             <motion.a
               className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-lg
                          text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700
@@ -296,7 +267,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
                          focus:outline-none focus:ring-4 focus:ring-amber-400/70 transition duration-300 ease-in-out transform hover:scale-[1.03]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              aria-label="View all categories" // Simplified as it always goes to categories page now
+              aria-label="View all categories"
             >
               View All Categories
               <svg
@@ -307,17 +278,12 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
               >
                 <path
                   fillRule="evenodd"
-                  d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5
-                    5a1 1 0 010 1.414l-5
-                    5a1 1 0 01-1.414 0z"
+                  d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
                   clipRule="evenodd"
                 />
                 <path
                   fillRule="evenodd"
-                  d="M4.293 15.707a1 1 0 010-1.414L8.586
-                    10 4.293 5.707a1 1 0 011.414-1.414l5
-                    5a1 1 0 010 1.414l-5 5a1 1 0
-                    01-1.414 0z"
+                  d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
                   clipRule="evenodd"
                 />
               </svg>

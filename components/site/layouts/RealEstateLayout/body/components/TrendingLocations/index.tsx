@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Location } from '@/types/typings'; // Assuming your types are in this path or similar
+import { ILocation } from '@/types/typings'; // Assuming your types are in this path or similar
 
 // Mocking the image loader for demonstration purposes
 const customLoader = ({ src, width, quality }:any) => {
@@ -41,7 +41,7 @@ const itemVariants = {
 
 // Define the props interface for clarity
 interface TrendingLocationsProps {
-  locations: Location[];
+  locations: ILocation[];
   slug: string;
 }
 
@@ -102,7 +102,7 @@ export default function TrendingLocations({ locations, slug }: TrendingLocations
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {locations.map((loc: Location) => (
+          {locations.map((loc: ILocation) => (
             <motion.div
               key={loc.id}
               className="relative rounded-3xl overflow-hidden shadow-2xl hover:shadow-4xl transition-all duration-500 group cursor-pointer

@@ -36,7 +36,8 @@ const defaultSlides: HeroSlide[] = [
     order: 0,
     iconKey: null,
     backgroundColor: null,
-    textColor: null
+    textColor: null,
+    videoLink:null
   },
   {
     imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
@@ -53,7 +54,8 @@ const defaultSlides: HeroSlide[] = [
     order: 0,
     iconKey: null,
     backgroundColor: null,
-    textColor: null
+    textColor: null,    
+    videoLink:null
   },
 ];
 
@@ -77,7 +79,8 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
     order: slide.order || 0,
     iconKey: slide.iconKey || null,
     backgroundColor: slide.backgroundColor || null,
-    textColor: slide.textColor || null
+    textColor: slide.textColor || null,
+    videoLink: slide.videoLink || null,
   }));
 
   const primary = storeFormData?.themeSettings?.primaryColor || defaultPrimaryColor;

@@ -176,6 +176,7 @@ export default function CreateStoreForm({
     testimonials: [],
     heroSlides: [],
     promotions: [],
+    projects:[],
     StoreCategory: [],
 
     // --- NEW: Added missing core fields ---
@@ -457,7 +458,7 @@ export default function CreateStoreForm({
           iconKey: null,
           backgroundColor: null,
           textColor: null,
-          
+          videoLink:null
         },
       ],
     }));
@@ -1575,7 +1576,7 @@ const renderReviewContent = (stepKey: any, form: any) => {
       );
 
       
-    case 'storeLocations': return <p>{form.companyLocations.map((l:any) => l.name).join(', ')}</p>; // New review content
+    case 'storeLocations': return <p>{form.CompanyLocation?.map((l:any) => l.name).join(', ')}</p>; // New review content
 
     case "basic":
       return (

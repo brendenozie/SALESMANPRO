@@ -104,14 +104,14 @@ export default function FeaturedListings({ listings, slug }: any) {
                   )} */}
                   {/* Price Tag on Image */}
                   <div className="absolute bottom-4 right-4 bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-gray-50 px-4 py-2 rounded-xl backdrop-blur-md shadow-lg font-bold text-lg">
-                    KES {item.finalPrice.toLocaleString()}
+                    KES {item.finalPrice?.toLocaleString()}
                   </div>
                 </div>
 
                 {/* Content Area */}
                 <div className="p-6 space-y-3">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-50 truncate">
-                    {"item.address"}
+                    {item.name}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center space-x-4">
                     <span className="flex items-center"><BedIcon className="w-4 h-4 mr-1 text-emerald-500" /> {item.bedrooms?.length} Beds</span>
