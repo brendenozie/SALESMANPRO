@@ -113,16 +113,11 @@ export default function HealthCareSite() {
   return (
     <>
     
-      <HealthcareHero
-        name={name}
-        slug={slug}
-        description={description}
-        bannerUrl={bannerUrl}
-      />
+      <HealthcareHero />
 
       <div className="space-y-24 font-sans">
         {/* About Section */}
-        <AboutSection aboutImageUrl={aboutImageUrl} aboutText={aboutText} />
+        <AboutSection />
 
         {/* Medical Services Section */}
         <MedicalServicesSection services={servicesData} storeSlug={slug} />

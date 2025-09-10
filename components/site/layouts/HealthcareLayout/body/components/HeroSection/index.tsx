@@ -2,125 +2,167 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PlayCircleIcon, ArrowRightIcon, AcademicCapIcon, BanknotesIcon, HeartIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/solid'; // Changed from outline to solid for more prominence
-import { useRouter } from 'next/navigation'; // Correct import for useRouter in Next.js 13+
-import Image from 'next/image'; // Import Next.js Image component
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { HeartIcon, ClipboardDocumentListIcon, AcademicCapIcon, BanknotesIcon, PlayCircleIcon } from '@heroicons/react/24/solid';
+import { useStoreContext } from "@/contexts/StoreContext";
+import { HeroSlide } from '@/types/typings';
 
-// Mocking the image loader - good for non-Next.js environments, but for Next.js, Image handles this
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+// Define the shape of the hero slide data, exactly matching your provided sample
+// export type HeroSlide = {
+//   id: string;
+//   headline: string;
+//   subline: string;
+//   imageUrl: string;
+//   ctaText?: string;
+//   ctaLink?: string;
+//   badgeText?: string;
+// };
+// New type definition based on the Prisma Banner model
+// export type Banner = {
+//   id: string;
+//   imageUrl: string;
+//   headline?: string | null;
+//   subline?: string | null;
+//   ctaText?: string | null;
+//   ctaLink?: string | null;
+//   videoLink?: string | null;
+//   badgeText?: string | null;
+//   price?: string | null;
+//   endsAt?: Date | null;
+//   order?: number;
+//   iconKey?: string | null;
+//   backgroundColor?: string | null;
+//   textColor?: string | null;
+// };
+
+// Next.js Image loader
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => `${src}?w=${width}&q=${quality || 75}`;
+
+// Animation variants for a staggered, clean entrance
+const containerVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      delayChildren: 0.3,
+      staggerChildren: 0.15,
+    },
+  },
 };
 
-interface HealthcareHeroProps {
-  name: string;
-  slug: string;
-  description?: string;
-  bannerUrl?: string;
-}
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0 },
+};
 
-export default function HealthcareHero({ name, slug, description, bannerUrl }: HealthcareHeroProps) {
+export default function HealthcareHero() {
+  const { storeFormData } = useStoreContext();
+
+  // Access the heroSlides array from the context
+  const heroSlides = storeFormData?.heroSlides;
+
+  // Use the first slide's data, or fall back to a default value with the correct keys
+  const primarySlide = heroSlides?.[0] || {
+    id: "default-slide",
+    headline: "Your Health, Our Passion",
+    subline: "Providing compassionate, comprehensive care for you and your family.",
+    imageUrl: "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    ctaText: "Book an Appointment",
+    ctaLink: `/${storeFormData?.slug || 'unbite-healthcare'}/book`,
+    badgeText: "A Step Towards Wellness",
+  };
+
+  const { headline, subline, imageUrl, ctaText, ctaLink, badgeText } = primarySlide;
+  const slug = storeFormData?.slug || 'unbite-healthcare';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#008080";
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || "#00b3b3";
   const router = useRouter();
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        delayChildren: 0.2,
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
-    <section className="relative min-h-screen flex items-center justify-center text-white overflow-hidden">
-      {/* Dynamic Gradient Overlay with Subtle Animation */}
+    <section className="relative min-h-screen w-full flex items-center justify-center text-white overflow-hidden">
+      {/* Background Image */}
+      <Image
+        src={imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
+        alt={headline || "Healthcare Hero Image"}
+        fill
+        className="object-cover object-center"
+        loader={loader}
+        priority
+      />
+
+      {/* Dark Overlay and Dynamic Gradient */}
+      <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
       <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-teal-700 via-blue-600 to-indigo-600"
+        className="absolute inset-0 bg-gradient-to-br from-teal-700 via-blue-600 to-indigo-600 opacity-75 mix-blend-multiply"
         initial={{ opacity: 0.8 }}
         animate={{ opacity: 0.95 }}
         transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
       />
 
-      {/* Backdrop Image with Enhanced Overlay */}
-      {bannerUrl && (
-        <Image
-          src={bannerUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
-          alt="Healthcare background"
-          fill
-          className="object-cover opacity-25 mix-blend-overlay" // Increased opacity, added mix-blend-overlay for richer blend
-          loader={customLoader} // Keep customLoader if you're not fully in Next.js Image optimization
-          priority
-        />
-      )}
-      {/* Darker, more prominent overlay for content contrast */}
-      <div className="absolute inset-0 bg-black opacity-40" aria-hidden="true" />
-
-      {/* Content */}
+      {/* Content Container */}
       <motion.div
-        className="relative z-10 px-6 py-20 mt-28 text-center max-w-4xl mx-auto" // Added max-width and vertical padding
+        className="relative z-10 px-6 py-20 mt-20 text-center max-w-4xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.span
-          className="inline-block bg-white/25 text-white uppercase text-sm tracking-widest rounded-full px-4 py-2 mb-4 shadow-md" // Enhanced styling
-          variants={itemVariants}
-        >
-          Your Journey to Wellness
-        </motion.span>
-
-        <motion.h1
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 drop-shadow-2xl" // Added drop-shadow
-          variants={itemVariants}
-        >
-          {name}
-        </motion.h1>
-
-        {description && (
+        {/* Badge */}
+        {badgeText && (
           <motion.p
-            className="text-lg sm:text-xl md:text-2xl text-gray-100/95 max-w-3xl mx-auto mb-10 leading-relaxed" // Adjusted text color and line height
+            className="inline-block uppercase text-sm font-semibold tracking-widest rounded-full px-5 py-2 mb-4 drop-shadow-md"
+            style={{ backgroundColor: secondaryColor, color: "white" }}
             variants={itemVariants}
           >
-            {description}
+            {badgeText}
           </motion.p>
         )}
 
-        <motion.div
-          className="flex flex-col sm:flex-row justify-center gap-6" // Increased gap for better spacing
+        {/* Main Headline */}
+        <motion.h1
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-4 drop-shadow-2xl"
           variants={itemVariants}
         >
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0px 8px 20px rgba(0,0,0,0.3)" }} // Added shadow on hover
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/${slug}/services`)}
-            className="flex items-center justify-center bg-white text-teal-700 font-bold px-8 py-4 rounded-full shadow-xl hover:bg-gray-100 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-600" // Enhanced button styles
-            aria-label="Explore Our Services"
-          >
-            <ClipboardDocumentListIcon className="w-6 h-6 mr-3" /> {/* Larger icon */}
-            Explore Services
-          </motion.button>
+          {headline}
+        </motion.h1>
 
-          <motion.button
-            whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.2)", boxShadow: "0px 8px 20px rgba(0,0,0,0.3)" }} // Added background change and shadow on hover
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push(`/${slug}/book`)}
-            className="flex items-center justify-center border-2 border-white text-white font-bold px-8 py-4 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-600" // Enhanced button styles
-            aria-label="Schedule an Appointment"
+        {/* Subline */}
+        <motion.p
+          className="text-lg sm:text-xl md:text-2xl text-gray-100/95 max-w-3xl mx-auto mb-10 leading-relaxed drop-shadow-lg"
+          variants={itemVariants}
+        >
+          {subline}
+        </motion.p>
+
+        {/* CTA Button */}
+        <motion.div className="flex flex-col sm:flex-row justify-center gap-6" variants={itemVariants}>
+          {ctaLink && (
+            <Link
+              href={ctaLink}
+              className="flex items-center justify-center font-bold px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
+              style={{ backgroundColor: primaryColor, color: "white" }}
+            >
+              <ClipboardDocumentListIcon className="w-6 h-6 mr-3" />
+              {ctaText || "Learn More"}
+            </Link>
+          )}
+
+          {/* Optional: Secondary CTA, using a fallback for the sake of the original design */}
+          <Link
+            href={`/${slug}/contact`}
+            className="flex items-center justify-center border-2 border-white text-white font-bold px-8 py-4 rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
+            style={{ borderColor: primaryColor, color: primaryColor }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColor; e.currentTarget.style.color = "white"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = primaryColor; }}
           >
-            <HeartIcon className="w-6 h-6 mr-3" /> {/* Larger icon */}
-            Schedule Appointment
-          </motion.button>
+            <HeartIcon className="w-6 h-6 mr-3" />
+            Find a Doctor
+          </Link>
         </motion.div>
 
-        {/* Optional: Add a subtle scroll indicator or value proposition icons */}
+        {/* Value Proposition Icons */}
         <div className="mt-20 flex justify-center gap-10 opacity-80">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
