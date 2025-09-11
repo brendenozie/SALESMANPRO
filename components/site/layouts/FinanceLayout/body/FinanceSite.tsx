@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext provides data for the site; if not, remove or adjust.
 import { useStoreContext } from "../../../../../contexts/StoreContext";
@@ -21,110 +18,9 @@ import ContactSection from "./components/ContactSection";
 
 // --- Global Theme Colors (for Navbar and Footer consistency) ---
 const darkBackground = "#0A192F"; // Main background for sections, navbar, footer
-const cardBackground = "#1B2A41"; // Used for cards/elements on dark background
-const accentColor = "#66B2FF"; // Primary accent blue
-const textColorLight = "#E0E7FF"; // Lighter text on dark background
-const textColorMuted = "#A7B8D6"; // Muted text for secondary info
-
-// --- Navbar Component ---
-const Navbar = () => {
-  // Navigation links - link to section IDs
-  const navLinks = [
-    { name: "Home", href: "#top" },
-    { name: "Services", href: "#practice-areas" },
-    { name: "Why Us", href: "#why-choose-us" },
-    { name: "Process", href: "#our-process" },
-    { name: "Team", href: "#our-experts" },
-    { name: "Packages", href: "#consultation-packages" },
-    { name: "FAQs", href: "#faqs" },
-    { name: "Contact", href: "#contact-us" },
-  ];
-
-  const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-    `${src}?w=${width}&q=${quality || 75}`;
-
-  return (
-    <motion.nav
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-      className="fixed top-0 left-0 right-0 z-50 py-4 px-6 md:px-8 shadow-lg"
-      style={{ backgroundColor: darkBackground, borderBottom: `1px solid ${cardBackground}` }}
-    >
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        {/* Logo/Brand Name */}
-        <Link href="#top" className="flex items-center space-x-2 text-white text-2xl font-bold hover:text-blue-300 transition-colors duration-300">
-          <Image src="/images/logo-placeholder.png" alt="CapitalEdge Logo" loader={loader} width={40} height={40} className="rounded-full" />
-          <span>CapitalEdge</span>
-        </Link>
-
-        {/* Navigation Links (Desktop) */}
-        <div className="hidden md:flex space-x-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="text-lg font-medium text-blue-200 hover:text-white transition-colors duration-300"
-            >
-              {link.name}
-            </Link>
-          ))}
-        </div>
-
-        {/* Mobile Menu Button (You'd implement actual mobile menu logic here) */}
-        <div className="md:hidden">
-          {/* Example: Hamburger Icon */}
-          <button className="text-white focus:outline-none">
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16m-7 6h7"
-              ></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </motion.nav>
-  );
-};
-
-// --- Footer Component ---
-const Footer = () => {
-  return (
-    <footer className="py-12 px-6 md:px-8" style={{ backgroundColor: darkBackground, borderTop: `1px solid ${cardBackground}` }}>
-      <div className="max-w-7xl mx-auto text-center text-blue-300">
-        <p className="text-lg font-semibold mb-4">CapitalEdge</p>
-        <p className="mb-2">123 Lumina Tower, Suite 500, Strategic Avenue, Nairobi, Kenya</p>
-        <p className="mb-2">+1 (234) 567-890 | info@capitaledge.com</p>
-        <div className="flex justify-center space-x-6 mt-6">
-          {/* Social Media Icons (replace with actual icons/links) */}
-          <a href="#" aria-label="Facebook" className="text-blue-300 hover:text-white transition-colors duration-200">
-            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M14 12.006c0-1.12.92-1.994 2.012-1.994s2.012.875 2.012 1.994-.92 1.994-2.012 1.994-2.012-.875-2.012-1.994zm5-7v14c0 2.761-2.239 5-5 5h-14c-2.761 0-5-2.239-5-5v-14c0-2.761 2.239-5 5-5h14c2.761 0 5 2.239 5 5zm-4 11h-2l-.004-7.107c-.446-.341-.758-.582-1.153-.722-.401-.143-.88-.215-1.439-.215-1.399 0-2.316.892-2.316 2.508v5.536h-2v-11h2v1.765c.379-.652.842-1.229 1.401-1.688.559-.459 1.258-.797 2.091-.797 2.003 0 3.398 1.492 3.398 5.706v6.214z"></path></svg>
-          </a>
-          <a href="#" aria-label="Twitter" className="text-blue-300 hover:text-white transition-colors duration-200">
-            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.29 8.29-4.59 4.59-2.29-2.29c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41L9.7 16.59c.39.39 1.02.39 1.41 0l5.3-5.3c.39-.39.39-1.02 0-1.41s-1.03-.39-1.42 0z"></path></svg>
-          </a>
-          <a href="#" aria-label="LinkedIn" className="text-blue-300 hover:text-white transition-colors duration-200">
-            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
-          </a>
-        </div>
-        <p className="mt-8 text-sm text-blue-400">&copy; {new Date().getFullYear()} CapitalEdge. All rights reserved.</p>
-      </div>
-    </footer>
-  );
-};
 
 
 export default function FinancSite() {
-  const router = useRouter();
   // Using the context, but also providing local 'store' for demo purposes
   // In a real app, you'd likely fetch this data or get it from a CMS.
   const { storeFormData } = useStoreContext(); 
@@ -158,7 +54,7 @@ export default function FinancSite() {
       { id: 'faq4', question: "Are your consultations confidential?", answer: "Absolutely. All consultations and client interactions are treated with the utmost confidentiality and discretion, adhering to the highest standards of professional ethics and legal privacy regulations." },
       { id: 'faq5', question: "How do I schedule an initial consultation?", answer: "You can easily schedule an initial consultation through our website's contact form, by calling our office directly, or by utilizing our online booking system available on the 'Consultation Packages' page." },
     ],
-    experts:[
+      Expert :[
       {
         id: 'exp1',
         name: 'Dr. Evelyn Reed',
@@ -255,47 +151,36 @@ export default function FinancSite() {
   };
 
   // State initialization: Use the combined siteData for child components
-  const [metrics, setMetrics] = useState<any[]>(siteData.metrics);
-  const [services, setServices] = useState<any[]>(siteData.services);
+  // const [metrics, setMetrics] = useState<any[]>(siteData.metrics);
+  // const [services, setServices] = useState<any[]>(siteData.services);
   const [testimonials, setTestimonials] = useState<any[]>(siteData.testimonials);
   const [faqs, setFaqs] = useState<any[]>(siteData.faqs);
-  const [experts, setExperts] = useState<any[]>(siteData.experts);
+  const [experts, setExperts] = useState<any[]>(siteData.Expert);
   const [packages, setPackages] = useState<any[]>(siteData.packages);
 
 
   // useEffect to update states if storeFormData changes (e.g., from a CMS)
   useEffect(() => {
     if (storeFormData && Object.keys(storeFormData).length > 0) {
-      setMetrics(storeFormData.metrics || []);
-      setServices(storeFormData.services || []);
+      // setServices(storeFormData.services || []);
       setTestimonials(storeFormData.testimonials || []);
       setFaqs(storeFormData.faqs || []);
-      setExperts(storeFormData.experts || []);
+      setExperts(storeFormData.Expert || []);
       setPackages(storeFormData.packages || []);
     }
   }, [storeFormData]);
 
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: darkBackground }}>
+      
       {/* Set the main background color for the entire page */}
       <span id="top" className="absolute -top-20" /> {/* Anchor for 'Home' link */}
 
-      {/* Navbar Component */}
-      <Navbar />
-
       {/* Main Content Area - Sections with consistent spacing */}
       <main className="pt-20"> {/* Add padding-top to account for fixed navbar */}
-        <HeroSection
-          headline={siteData.name}
-          subline="Your Partner in Legal & Financial Excellence" // Hardcoded for demo, adjust as needed
-          imageUrl={siteData.bannerUrl ||  'https://via.placeholder.com/1500x600?text=Hero+Image'} // Fallback image
-          metrics={metrics} // Pass metrics to HeroSection
-          primary={siteData.themeSettings?.primaryColor}
-          secondary={siteData.themeSettings?.secondaryColor}
-        />
-
+        <HeroSection />
         <div className="space-y-24 lg:space-y-36"> {/* Consistent vertical spacing between sections */}
-          <PracticeAreasSection services={services} />
+          <PracticeAreasSection/>
           <WhyChooseUsSection />
           <CaseStudiesTestimonials testimonials={testimonials} />
           <ProcessWorkflowSection />
@@ -305,9 +190,6 @@ export default function FinancSite() {
           <ContactSection />
         </div>
       </main>
-
-      {/* Footer Component */}
-      <Footer />
     </div>
   );
 }

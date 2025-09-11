@@ -664,6 +664,7 @@ export interface StoreForm {
   CompanyLocation: ICompanyLocation[];
   marketplaceListings: MarketListingForm[];
   Writer: User[];
+  Expert: User[];
   salesAgents: {
     id: string;
     userId: string;
@@ -677,6 +678,7 @@ export interface StoreForm {
     regions: string[];
   }[];
   Doctor: User[];
+  packages: any[];
   Podcast: any[];
   services: any[];
 }

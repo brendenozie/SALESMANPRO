@@ -208,6 +208,20 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       specializations: [], // Assuming no specializations array on the doctor object
     }))
     : [],
+  Expert: Array.isArray(raw.Expert)
+    ? raw.Expert.map((expert: any) => ({
+      id: expert.id,
+      name: expert.user.name, // Assuming the expert's name is on a nested user object
+      subtitle: expert.specialty ?? '', // Assuming there's a specialty field
+      img: expert.user.image ?? '/images/default-expert.jpg', // Fallback to a default image if none provided
+      bio: expert.bio ?? '', // Assuming there's a bio field
+      // linkedin: expert.linkedin ?? '', // Assuming there's a linkedin field
+      email: expert.email ?? '', // Assuming there's an email field
+      specializations: expert.specializations ?? [], // Assuming there's a specializations array
+      role: expert.role ?? '', // Assuming there's a role field
+      // Add other fields as necessary
+    }))
+    : [],
   Podcast: Array.isArray(raw.Podcast)
     ? raw.Podcast
     : [],
@@ -259,6 +273,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   deletedAt: null,
   sEOId: null,  
   settings: null,
+  packages: Array.isArray(raw.Package) ? raw.Package : [],
   Announcement: Array.isArray(raw.Announcement) ? raw.Announcement : [],  
   Collection: Array.isArray(raw.Collection) ? raw.Collection : [],
   CoreValues: Array.isArray(raw.CoreValues) ? raw.CoreValues : typeof raw.CoreValues === 'string' ? JSON.parse(raw.CoreValues) : [],

@@ -169,7 +169,7 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
                 {member.name}
               </h3>
               <p className="text-blue-400 font-semibold mb-4 text-base">
-                {member.role}
+                {member.role || 'Expert'} {/* Fallback role if not provided */}
               </p>
               <p className="text-blue-100/80 text-sm leading-relaxed mb-6">
                 {member.bio}
