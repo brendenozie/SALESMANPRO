@@ -38,15 +38,15 @@ const ServiceDetailsTab: React.FC<ServiceDetailsTabProps> = ({
                 <span className="text-gray-700 dark:text-gray-300 font-medium text-sm">Listing Title <span className="text-red-500">*</span></span>
                 <input
                     type="text"
-                    name="title"
+                    name="name"
                     value={MarketListingForm.name}
                     onChange={handleChange}
                     required
-                    className={`mt-1 block w-full rounded-lg border ${errors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
+                    className={`mt-1 block w-full rounded-lg border ${errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                     placeholder="E.g., Premium Car Wash Service"
                 />
-                {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
             </motion.label>
 
             <motion.label className="block" variants={fieldVariants}>

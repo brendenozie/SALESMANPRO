@@ -214,7 +214,8 @@ export async function POST(req: Request) {
                                         ? ((parsedFinalPrice - parsedBuyingPrice) / parsedBuyingPrice) * 100 
                                         : 0
                                     )!;
-    const parsedBathrooms        = bathrooms.toString();
+    // const parsedBathrooms        = bathrooms.toString();
+    const parsedBathrooms = bathrooms !== undefined && bathrooms !== null  ? bathrooms.toString() : "0";
     const parsedBedrooms         = bedrooms;
     const parsedStudios          = studios;
     const parsedTotalCapacity    = parseNumber(totalCapacity, 0);

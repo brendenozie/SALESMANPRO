@@ -565,7 +565,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Experts/Team", href: `/admin/${adminSlug}/finance-team`, icon: ShieldCheckIcon }, // Manage experts/advisors
     { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
     { label: "Documents", href: `/admin/${adminSlug}/finance-documents`, icon: DocumentTextIcon },
-    { label: "Appointments", href: `/admin/${adminSlug}/finance-appointments`, icon: CalendarDaysIcon }, // For scheduling consultations
+    { label: "Appointments", href: `/admin/${adminSlug}/finance-appointments`, icon: CalendarDaysIcon }, // For scheduling consultations    
+    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
     { label: "Billing & Invoices", href: `/admin/${adminSlug}/finance-invoices`, icon: ClipboardDocumentListIcon }, // More explicit name
     { label: "Packages & Pricing", href: `/admin/${adminSlug}/finance-packages`, icon: TagIcon }, // Manage consultation packages
     { label: "Testimonials", href: `/admin/${adminSlug}/finance-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client feedback

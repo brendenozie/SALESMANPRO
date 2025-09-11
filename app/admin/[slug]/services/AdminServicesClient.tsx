@@ -81,8 +81,17 @@ function buildListingPayload(formData: MarketListingForm): any {
     buyingPrice: formData.buyingPrice,
     sellingPrice: formData.sellingPrice,
     finalPrice: formData.finalPrice, 
-    startDealDate: formData.startDealDate ? formatDateTimeForAPI(formData.startDealDate.toISOString()) : undefined,
-    endDealDate: formData.endDealDate ? formatDateTimeForAPI(formData.endDealDate.toISOString())  : undefined,
+    // startDealDate: formData.startDealDate ? formatDateTimeForAPI(formData.startDealDate.toISOString()) : undefined,
+    // endDealDate: formData.endDealDate ? formatDateTimeForAPI(formData.endDealDate.toISOString())  : undefined,
+    startDealDate: formData.startDealDate 
+  ? formatDateTimeForAPI(new Date(formData.startDealDate).toISOString()) 
+  : undefined,
+
+endDealDate: formData.endDealDate 
+  ? formatDateTimeForAPI(new Date(formData.endDealDate).toISOString()) 
+  : undefined,
+
+
     isAvailable: formData.isAvailable,
     isOnOffer: formData.isOnOffer,
     isFlashDeal: formData.isFlashDeal,
@@ -130,8 +139,8 @@ function buildListingPayload(formData: MarketListingForm): any {
     // bathrooms: formData.bathrooms,
     // area: formData.area,
     serviceSchedule: formData.serviceSchedule,
-    availabilityStart: formData.availabilityStart ? formatDateTimeForAPI(formData.availabilityStart.toISOString()) : undefined,//formatDateTimeForAPI(formData.availabilityStart),
-    availabilityEnd: formData.availabilityEnd ? formatDateTimeForAPI(formData.availabilityEnd.toISOString()) : undefined,//formatDateTimeForAPI(formData.availabilityEnd),
+    availabilityStart: formData.availabilityStart ? formatDateTimeForAPI(new Date(formData.availabilityStart).toISOString()) : undefined,//formatDateTimeForAPI(formData.availabilityStart),
+    availabilityEnd: formData.availabilityEnd ? formatDateTimeForAPI(new Date(formData.availabilityEnd).toISOString()) : undefined,//formatDateTimeForAPI(formData.availabilityEnd),
     
     bookingSlots: formData.bookingSlots || [],
     minNoticePeriod: formData.minNoticePeriod,

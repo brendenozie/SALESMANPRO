@@ -497,7 +497,8 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                     exit={{ opacity: 0 }}
                 >
                     <motion.div
-                        className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-6xl p-8 relative max-h-[95vh] flex flex-col transform-gpu"
+                        className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-6xl p-8 relative flex flex-col transform-gpu"
+                        // max-h-[95vh] 
                         variants={modalVariants}
                         initial="hidden"
                         animate="visible"

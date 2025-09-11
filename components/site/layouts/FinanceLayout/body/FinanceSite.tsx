@@ -288,7 +288,7 @@ export default function FinancSite() {
         <HeroSection
           headline={siteData.name}
           subline="Your Partner in Legal & Financial Excellence" // Hardcoded for demo, adjust as needed
-          imageUrl={siteData.bannerUrl}
+          imageUrl={siteData.bannerUrl ||  'https://via.placeholder.com/1500x600?text=Hero+Image'} // Fallback image
           metrics={metrics} // Pass metrics to HeroSection
           primary={siteData.themeSettings?.primaryColor}
           secondary={siteData.themeSettings?.secondaryColor}
