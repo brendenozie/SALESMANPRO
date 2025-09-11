@@ -218,7 +218,7 @@ export default function AutomotiveSite() {
     <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
       {/* Hero */}
-      <HeroSection bannerUrl={storeFormData.heroSlides?.[0]?.imageUrl || ""} />
+      <HeroSection store={ storeFormData }/>
 
       <FeaturedListings />
 

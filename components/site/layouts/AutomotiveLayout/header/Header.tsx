@@ -89,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }:any) => {
                 <UserIcon className="h-6 w-6" />
               </motion.button>
 
-              <motion.button
+              {/* <motion.button
                 whileHover={{ scale: 1.1 }}
                 onClick={() => router.push(`/site/${storeFormData.slug}/checkout`)}
                 className="relative text-white"
@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }:any) => {
                     {cart.length}
                   </span>
                 )}
-              </motion.button>
+              </motion.button> */}
 
               <button
                 className="lg:hidden text-white"
