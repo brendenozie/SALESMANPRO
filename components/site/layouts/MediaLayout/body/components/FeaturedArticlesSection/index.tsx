@@ -12,6 +12,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 interface Article {
   id: string;
   name: string; // Renamed from 'title' for consistency if needed, but 'title' is fine too
+  title?:string;
   slug: string;
   imageUrl: string;
   subtitle: string; // Used as a short description/excerpt
@@ -120,7 +121,7 @@ export default function FeaturedArticlesSection({ featured, storeSlug }: Feature
               {/* Article Content */}
               <div className="p-6">
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-2 leading-tight">
-                  {art.name}
+                  {art.name || art.title}
                 </h3>
                 <p className="text-base text-gray-300 line-clamp-3 mb-4"> {/* Added line-clamp */}
                   {art.subtitle}

@@ -1,16 +1,27 @@
-// app/admin/[adminSlug]/content/page.tsx
 "use client";
 
 import React from 'react';
-import AdminLayout from '../../../../components/AdminLayout'; // Adjust path as needed
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { NewspaperIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
+import { NewspaperIcon, VideoCameraIcon, } from '@heroicons/react/24/outline'; // Swapped to outline for a cleaner look
 import { useParams } from 'next/navigation';
+import { PhotoIcon } from '@heroicons/react/24/solid';
+
+// A more vibrant and cohesive color palette
+const COLORS = {
+  bgPrimary: 'bg-slate-900',
+  bgCard: 'bg-slate-800',
+  textPrimary: 'text-white',
+  textSecondary: 'text-slate-400',
+  highlight: 'text-indigo-400',
+  hoverCard: 'hover:bg-slate-700',
+  shadow: 'shadow-2xl',
+};
 
 const contentCategories = [
-  { label: "Article Management", hrefSuffix: "/articles", icon: NewspaperIcon, description: "Create, edit, and publish written content." },
+  { label: "Article Management", hrefSuffix: "/articles", icon: NewspaperIcon, description: "Create, edit, and publish engaging written content." },
   { label: "Video Management", hrefSuffix: "/videos", icon: VideoCameraIcon, description: "Upload, organize, and optimize video content." },
+  { label: "Image Library", hrefSuffix: "/images", icon: PhotoIcon, description: "Organize and manage your visual assets efficiently." },
 ];
 
 export default function ContentLibraryPage() {
@@ -18,31 +29,57 @@ export default function ContentLibraryPage() {
   const adminSlug = params.adminSlug as string;
 
   return (
-    <div>
-      <p className="text-gray-300 text-lg mb-8">
-        Manage all your media assets, including articles, videos, and more.
-      </p>
+    
+      <div className={`p-8 rounded-lg ${COLORS.bgPrimary} min-h-screen`}>
+        {/* Header Section with a subtle animated effect */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 text-center"
+        >
+          <h1 className={`text-5xl font-extrabold mb-4 ${COLORS.textPrimary}`}>
+            Your Creative Hub 🚀
+          </h1>
+          <p className={`text-xl ${COLORS.textSecondary} max-w-2xl mx-auto`}>
+            Effortlessly manage all your media assets from a single, intuitive dashboard.
+          </p>
+        </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {contentCategories.map((category, index) => {
-          const Icon = category.icon;
-          return (
-            <Link key={index} href={`/admin/${adminSlug}${category.hrefSuffix}`} passHref>
+        {/* Grid of interactive cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {contentCategories.map((category, index) => {
+            const Icon = category.icon;
+            return (
               <motion.div
-                className="bg-gray-800 rounded-xl p-8 shadow-lg cursor-pointer group hover:bg-gray-700 transition-colors duration-300 flex flex-col items-center text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.03 }}
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, rotate: 1, transition: { duration: 0.2 } }} // More dynamic hover effect
+                whileTap={{ scale: 0.95 }}
+                className={`${COLORS.bgCard} p-8 rounded-2xl ${COLORS.shadow} border border-slate-700 cursor-pointer transition-transform duration-300 ${COLORS.hoverCard} overflow-hidden relative`}
               >
-                <Icon className="h-16 w-16 text-red-500 mb-4 group-hover:text-red-400 transition-colors" />
-                <h3 className="text-2xl font-bold text-white mb-2">{category.label}</h3>
-                <p className="text-gray-400">{category.description}</p>
+                {/* Background gradient for visual depth */}
+                <div className="absolute inset-0 z-0 opacity-10 blur-xl pointer-events-none" style={{ background: 'radial-gradient(circle at top left, var(--tw-highlight) 0%, transparent 70%)' }} />
+                
+                <Link href={`/admin/${adminSlug}${category.hrefSuffix}`} passHref className="relative z-10 block">
+                  <div className="flex flex-col items-center text-center">
+                    <div className={`p-4 rounded-full bg-slate-700 mb-6 border border-slate-600`}>
+                      <Icon className={`h-12 w-12 ${COLORS.highlight}`} />
+                    </div>
+                    <h3 className={`text-2xl font-bold mb-2 ${COLORS.textPrimary}`}>
+                      {category.label}
+                    </h3>
+                    <p className={`text-sm ${COLORS.textSecondary}`}>
+                      {category.description}
+                    </p>
+                  </div>
+                </Link>
               </motion.div>
-            </Link>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
   );
 }

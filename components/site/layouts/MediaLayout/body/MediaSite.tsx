@@ -181,7 +181,7 @@ export default function MediaSite() {
 
       {/* Featured Articles Section */}
       <FeaturedArticlesSection
-        featured={displayData.featuredArticles}
+        featured={displayData.featuredArticles || displayData.blogs}
         storeSlug={displayData.slug}
       />
 
