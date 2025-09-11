@@ -18,7 +18,7 @@ import FAQsSection from "./components/FAQsSection";
 import TopPicksCarousel from "./components/TopPicksCarouselSection"; // Assuming this is also enhanced
 
 // --- Mock Data for Demonstration (mimicking storeFormData structure) ---
-const mockStoreData = {
+const mockStoreData : any= {
   name: "Pulse Media",
   slug: "pulse-media",
   description: "Your hub for inspiring stories, videos, and insights.",
