@@ -123,7 +123,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
   }
 
   // Limit the number of subcategories to a maximum of 8
-  const limitedSubcategories = subcategoriesToDisplay.slice(0, 8);
+  const limitedSubcategories = subcategoriesToDisplay.slice(0, 10);
 
   return (
     <section className="py-16 sm:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">

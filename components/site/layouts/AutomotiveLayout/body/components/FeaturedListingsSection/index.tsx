@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image"; // Assuming you have next/image configured
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
@@ -84,13 +84,15 @@ const featuredCarsForRent = [
   },
 ];
 
+// Framer Motion variants for animations
 const cardVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   hover: { scale: 1.03, transition: { duration: 0.2 } },
 };
 
-const loader = ({ src, width, quality }: any) => {
+// Next.js Image loader function
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -157,7 +159,7 @@ export default function FeaturedListings() {
           key={activeTab} // Key changes to re-trigger AnimatePresence on tab switch
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
         >
-          {currentListings.map((car, index) => (
+          {currentListings.map((car) => (
             <motion.div
               key={car.id}
               variants={cardVariants}
@@ -165,7 +167,6 @@ export default function FeaturedListings() {
               whileInView="visible"
               whileHover="hover"
               viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: index * 0.1 }}
               className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 overflow-hidden group border border-gray-100"
             >
               <div className="relative w-full h-48 sm:h-56 overflow-hidden">
@@ -175,7 +176,7 @@ export default function FeaturedListings() {
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   className="object-cover object-center transform group-hover:scale-105 transition-transform duration-500 ease-out"
-                  loader={loader}
+                  loader={imageLoader}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                 <span className="absolute bottom-3 left-4 text-white text-xl font-bold">
@@ -190,22 +191,22 @@ export default function FeaturedListings() {
                   <>
                     <p className="text-gray-600 text-sm mb-1">
                       <span className="font-semibold">Mileage:</span>{" "}
-                      {"150000"}
+                      {car.mileage}
                     </p>
                     <p className="text-gray-600 text-sm">
                       <span className="font-semibold">Location:</span>{" "}
-                      {"car.location" }
+                      {car.location}
                     </p>
                   </>
                 )}
                 {activeTab === "rent" && (
                   <>
                     <p className="text-gray-600 text-sm mb-1">
-                      <span className="font-semibold">Type:</span> {"car.type"}
+                      <span className="font-semibold">Type:</span> {car.type}
                     </p>
                     <p className="text-gray-600 text-sm">
                       <span className="font-semibold">Availability:</span>{" "}
-                      {"car.available"}
+                      {car.available}
                     </p>
                   </>
                 )}

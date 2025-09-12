@@ -1,4 +1,3 @@
-// components/BrowseByCategory.tsx
 "use client";
 
 import React from "react";
@@ -6,129 +5,156 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { IStoreCategory, StoreForm, ISubcategory } from "@/types/typings";
 
-// Dummy Data
-const categories = [
-  {
-    name: "SUVs",
-    imageUrl:
-      "https://images.unsplash.com/photo-1593257140889-13045330388d?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    link: "/search?type=suv",
+// Framer Motion animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
   },
-  {
-    name: "Sedans",
-    imageUrl:
-      "https://images.unsplash.com/photo-1502744040961-d70377bb4113?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    link: "/search?type=sedan",
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 10 },
   },
-  {
-    name: "Trucks",
-    imageUrl:
-      "https://images.unsplash.com/photo-1601616428283-d9333917a1d1?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    link: "/search?type=truck",
-  },
-  {
-    name: "Electric Cars",
-    imageUrl:
-      "https://images.unsplash.com/photo-1577717903185-bc879a957a15?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    link: "/search?type=electric",
-  },
-  {
-    name: "Luxury Cars",
-    imageUrl:
-      "https://images.unsplash.com/photo-1502766861239-165f159a4358?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    link: "/search?type=luxury",
-  },
-  {
-    name: "Sport Cars",
-    imageUrl:
-      "https://images.unsplash.com/photo-1502877338535-766e133d3c63?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    link: "/search?type=sport",
-  },
-  // Add more categories as needed
+};
+
+// Loader for Next.js Image
+const customLoader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+// Sample fallback subcategories
+const fallbackSubcategories: ISubcategory[] = [
+  { id: "sedan", name: "Sedan", slug: "sedan", sortOrder: 0, visible: true },
+  { id: "suv", name: "SUV", slug: "suv", sortOrder: 1, visible: true },
+  { id: "truck", name: "Truck", slug: "truck", sortOrder: 2, visible: true },
+  { id: "hatchback", name: "Hatchback", slug: "hatchback", sortOrder: 3, visible: true },
+  { id: "coupe", name: "Coupe", slug: "coupe", sortOrder: 4, visible: true },
+  { id: "minivan", name: "Minivan", slug: "minivan", sortOrder: 5, visible: true },
+  { id: "convertible", name: "Convertible", slug: "convertible", sortOrder: 6, visible: true },
+  { id: "van", name: "Van", slug: "van", sortOrder: 7, visible: true },
+  { id: "wagon", name: "Wagon", slug: "wagon", sortOrder: 8, visible: true }, // This will be excluded
 ];
 
-const categoryCardVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
-  hover: { scale: 1.05, transition: { duration: 0.2 } },
+type AutomotiveSubcategoriesSectionProps = {
+  store: StoreForm | null;
 };
 
-const loader = ({ src, width, quality }: any) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubcategoriesSectionProps) {
+  const allSubcategories: ISubcategory[] = [];
+  
+  // Aggregate all subcategories from all parent categories
+  (store?.StoreCategory ?? []).forEach(parentCat => {
+    if (Array.isArray(parentCat.subcategories)) {
+      allSubcategories.push(...parentCat.subcategories);
+    }
+  });
 
-export default function BrowseByCategory() {
+  // Filter, sort, and slice the subcategories
+  const rawSubcategories = allSubcategories
+    .filter(sub => sub.visible ?? true)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+  const subcategoriesToShow = rawSubcategories.length > 0 ? rawSubcategories : fallbackSubcategories;
+
+  // Limit the number of subcategories to a maximum of 8
+  const limitedSubcategories = subcategoriesToShow.slice(0, 10);
+
   return (
-    <section className="py-16 md:py-24 bg-white overflow-hidden">
+    <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-950 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* Heading */}
         <motion.h2
+          className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 mb-6 drop-shadow-sm"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 drop-shadow-sm"
         >
-          Browse By Category
+          Explore by{" "}
+          <span className="text-blue-600 dark:text-blue-400">
+            Type
+          </span>
         </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto"
-        >
-          Find your preferred vehicle type or explore popular brands with ease.
-        </motion.p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {categories.map((category, index) => (
-            <motion.div
-              key={category.name}
-              variants={categoryCardVariants}
-              initial="hidden"
-              whileInView="visible"
-              whileHover="hover"
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: index * 0.1 }}
-              className="relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group"
-            >
-              <Link href={category.link} className="block">
-                <div className="w-full h-48 relative">
-                  <Image
-                    src={category.imageUrl}
-                    alt={category.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                    className="object-cover object-center transform group-hover:scale-110 transition-transform duration-500 ease-out"
-                    loader={loader}
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-50 transition-colors" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center p-4">
-                  <h3 className="text-white text-2xl font-bold text-center drop-shadow-md">
-                    {category.name}
-                  </h3>
-                  <ArrowRightIcon className="absolute right-4 bottom-4 h-8 w-8 text-white opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300" />
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
+        {/* Dynamic Grid of Cards */}
         <motion.div
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          {limitedSubcategories.length === 0 && (
+            <p className="col-span-full text-center text-gray-600 dark:text-gray-400 text-lg">
+              No subcategories available.
+            </p>
+          )}
+          {limitedSubcategories.map((subcat) => {
+            const imageUrl = `/images/subcategory-${subcat.slug}.jpg`;
+            return (
+              <Link key={subcat.slug} href={`/search?subcategory=${subcat.slug}`} passHref>
+                <motion.a
+                  className="block relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group
+                             focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.03, zIndex: 1 }}
+                  whileTap={{ scale: 0.98 }}
+                  aria-label={`View listings for ${subcat.name} vehicles`}
+                >
+                  <div className="relative w-full h-48 sm:h-56">
+                    <Image
+                      src={imageUrl}
+                      alt={`${subcat.name} vehicle`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="transform transition-transform duration-500 group-hover:scale-110 group-hover:brightness-90"
+                      loader={customLoader}
+                    />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-100 group-hover:opacity-90 transition-opacity duration-300" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
+                    <span
+                      className="inline-block px-5 py-2 bg-blue-600/90 dark:bg-blue-700/90 text-white text-lg font-semibold uppercase tracking-wide rounded-full shadow-lg
+                                   group-hover:bg-blue-400 group-hover:text-gray-900 group-hover:scale-105 transition-all duration-300 transform"
+                    >
+                      {subcat.name}
+                    </span>
+                  </div>
+                </motion.a>
+              </Link>
+            );
+          })}
+        </motion.div>
+
+        {/* View All Button */}
+        <motion.div
+          className="text-center mt-20"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-16"
+          transition={{ delay: 0.3, duration: 0.7 }}
         >
-          <Link
-            href="/all-categories"
-            className="inline-flex items-center px-8 py-4 border border-transparent text-xl font-bold rounded-full shadow-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Explore All Categories
-            <ArrowRightIcon className="ml-3 h-6 w-6" />
+          <Link href={`/all-subcategories`} passHref>
+            <motion.a
+              className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-lg
+                         text-white bg-gradient-to-br from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700
+                         dark:from-cyan-600 dark:to-blue-700 dark:hover:from-cyan-700 dark:hover:to-blue-800
+                         focus:outline-none focus:ring-4 focus:ring-blue-400/70 transition duration-300 ease-in-out transform hover:scale-[1.03]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="View all types"
+            >
+              View All Types
+              <ArrowRightIcon className="ml-2 -mr-1 w-5 h-5" />
+            </motion.a>
           </Link>
         </motion.div>
       </div>
