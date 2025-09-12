@@ -54,8 +54,7 @@ const store = {
   { question: "Are group discounts available?", answer: "Yes, for parties of 5 or more travelers." },
   ],
   };
-  
-  
+    
   const travelTypes = ['Adventure', 'Relaxation', 'Cultural', 'Family'];
   const regions = ['Europe', 'Asia', 'South America', 'Africa', 'Oceania'];
   
@@ -328,16 +327,37 @@ export default function TravelSite() {
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setCategories(storeFormData.storeCategories || []);
-    setFeatured(storeFormData.marketplaceListings || []);
-    setTestimonials(storeFormData.testimonials || []);
-    setFaqs(storeFormData.faqs || []);
+    setCategories(storeFormData?.StoreCategory || []);
+    setFeatured(storeFormData?.marketplaceListings || []);
+    setTestimonials(storeFormData?.testimonials || []);
+    setFaqs(storeFormData?.faqs || []);
   }, [storeFormData]);
+
+  // State for the search form is now managed here
+  const [filters, setFilters] = useState<SearchFilters>({
+    destination: "",
+    tripType: "Adventure Travel", // Set a default type
+    date: "",
+    guests: 2,
+  });
+  
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Searching with filters:", filters);
+    // Add your search/navigation logic here
+  };
+  
 
   return (
     <div className="space-y-20 font-sans">
       {/* Hero Section  */}
-      <Hero storeFormData={storeFormData} />
+      {/* <Hero storeFormData={storeFormData} /> */}
+      <Hero 
+        storeFormData={storeFormData}
+        filters={filters}
+        setFilters={setFilters}
+        onSearch={handleSearch}
+      />
 
       <main className="space-y-16 px-4 lg:px-24">
         {/* Filter Bar */}
