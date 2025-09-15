@@ -131,9 +131,8 @@ export default function HeroSection({ store, trendingLocations, filters, setFilt
               initial={{ scale: 1.15, opacity: 0 }}
               animate={{ scale: 1, opacity: 1, transition: { duration: 1.5, ease: "easeOut" } }}
             >
-              <Image
-              // heroSlides[current].imageUrl || 
-                src={"https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=2670&auto=format&fit=crop"}
+              <Image 
+                src={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=2670&auto=format&fit=crop"}
                 alt={heroSlides[current].headline}
                 fill
                 priority
@@ -149,7 +148,7 @@ export default function HeroSection({ store, trendingLocations, filters, setFilt
             />
           )} */}
           {/* Inverted gradient overlay for light mode */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white/10 via-white/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/50 via-white/40 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
