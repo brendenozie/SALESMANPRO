@@ -438,7 +438,7 @@ export interface ProductForm {
 
 export interface MarketListingForm {
   duration: string | null | undefined;
-  // Manual definition matching Prisma's marketplaceListings model
+  
   id: string;
   companyId?: string | null;
   sellerId?: string | null;
@@ -458,7 +458,6 @@ export interface MarketListingForm {
   color: string[];
   size: string[];
   weight: string[];
-  
   
   condition?: string | null;
   dimensions?: string | null;
@@ -480,8 +479,7 @@ export interface MarketListingForm {
   isNewArrival: boolean;
   isDiscounted: boolean;
   isFeatured: boolean;
-  // startDealDate?: Date | null;
-  // endDealDate?: Date | null;
+  
   author?: string | null;
   publisher?: string | null;
   isbn?: string | null;
@@ -492,13 +490,10 @@ export interface MarketListingForm {
   applianceDimensions?: string | null;
   ingredients?: string | null;
   usageInstructions?: string | null;
-  // expirationDate?: Date | null;
+  
   area?: string | null;
   propertyTypeId?: string | null;
   serviceSchedule?: string | null;
-
-  // availabilityStart?: Date | null;
-  // availabilityEnd?: Date | null;
 
   bedrooms: any[];
   studios: any[];
@@ -551,7 +546,7 @@ export interface MarketListingForm {
   status: ListingStatus;
   createdAt?: Date | null;
   updatedAt?: Date | null;
-  // location?: GeoLocation | null; // Correct client-side type
+  
   location: Prisma.JsonValue; 
   locationName?: string | null;
   latitude?: number | null;
@@ -559,10 +554,8 @@ export interface MarketListingForm {
   locationId?: string | null;
   collectionId?: string | null;
   commissionRateId?: string | null;
-
-  // commissionStartDate: Date | null;
-  // commissionEndDate: Date | null;
-    startDealDate?: string | null;
+  
+  startDealDate?: string | null;
   endDealDate?: string | null;
   expirationDate?: string | null;
   availabilityStart?: string | null;
