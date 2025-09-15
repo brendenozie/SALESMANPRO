@@ -5,16 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
   MapPinIcon,
-  CurrencyDollarIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  ChevronDownIcon,
   TruckIcon,
-  TagIcon,
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import FloatingLabelDropdown from "../FloatingLabelDropdown";
-import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 
 const customLoader = ({ src, width, quality }: any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -128,14 +125,15 @@ export default function HeroSection({ store, trendingLocations, filters, setFilt
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
         >
-          {heroSlides[current].type === "image" ? (
+          {/* {heroSlides[current].type === "image" ? ( */}
             <motion.div
               className="absolute inset-0"
               initial={{ scale: 1.15, opacity: 0 }}
               animate={{ scale: 1, opacity: 1, transition: { duration: 1.5, ease: "easeOut" } }}
             >
               <Image
-                src={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=2670&auto=format&fit=crop"}
+              // heroSlides[current].imageUrl || 
+                src={"https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=2670&auto=format&fit=crop"}
                 alt={heroSlides[current].headline}
                 fill
                 priority
@@ -143,15 +141,15 @@ export default function HeroSection({ store, trendingLocations, filters, setFilt
                 loader={customLoader}
               />
             </motion.div>
-          ) : (
+          {/* ) : (
             <video
               src={heroSlides[current].url}
               autoPlay muted loop playsInline
               className="h-full w-full object-cover"
             />
-          )}
+          )} */}
           {/* Inverted gradient overlay for light mode */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/10 via-white/10 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
@@ -198,7 +196,6 @@ export default function HeroSection({ store, trendingLocations, filters, setFilt
           <motion.form
             variants={itemVariants}
             className="mt-8 grid w-full max-w-4xl grid-cols-1 md:grid-cols-4 gap-4 bg-white/50 backdrop-blur-md p-6 rounded-2xl shadow-2xl border border-gray-200"
-            // Changed bg-black/20 to a white/50 and border-white/10 to border-gray-200
           >
             <FloatingLabelDropdown
               id="location"

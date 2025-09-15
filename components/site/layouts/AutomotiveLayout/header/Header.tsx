@@ -43,7 +43,9 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
   return (
     <header className="absolute inset-x-0 top-0 z-50">
       {/* Light Mode Glassmorphism Effect */}
-      <div className="backdrop-blur-xl bg-white/50 border-b border-gray-200">
+      {/* backdrop-blur-xl */}
+      <div className=" backdrop-blur-sm bg-white/40">
+       {/* border-b border-gray-200 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
