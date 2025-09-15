@@ -84,7 +84,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   // — Automotive & tools flow —
   "Automotive":          [1,3,4,5,7,8,10,12,14,11],
-  "Cars":                [1,3,4,5,7,8,10,12,14,11],
+  "Cars":                [1,3,4,5,8,10,12,14,11],//7,
   "Car Accessories":     [1,3,4,5,7,8,10,12,14,11],
   "Tools":               [1,3,4,5,7,8,10,12,14,11],
   "Hardware":            [1,3,4,5,7,8,10,12,14,11],
