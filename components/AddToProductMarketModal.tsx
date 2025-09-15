@@ -504,7 +504,7 @@ export default function AddToProductMarketModal({
 
   const handleCategoryChange = useCallback(
     (cat: IStoreCategory | null) => {
-      updateField('category', cat?.displayName);
+      updateField('category', cat);
       updateField('productCategoryId', cat?.categoryId || '');
       updateField('subCategory', cat?.subcategories || {});
       updateField('subCategoryName', '');

@@ -7,18 +7,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useClickOutside } from "@/lib/hooks/useClickOutside";
 
-interface Option {
-  id: string;
-  name: string;
-}
+// interface Option {
+//   id: string;
+//   name: string;
+// }
 
 interface FloatingLabelDropdownProps {
   id: string;
   label: string;
   icon: React.ReactNode;
-  options: Option[];
-  selectedValue: Option | null;
-  onSelect: (value: Option | null) => void;
+  options: any[] | undefined;
+  selectedValue: any | null;
+  onSelect: (value: any | null) => void;
 }
 
 export default function FloatingLabelDropdown({ id, label, icon, options, selectedValue, onSelect }: FloatingLabelDropdownProps) {
@@ -64,7 +64,7 @@ export default function FloatingLabelDropdown({ id, label, icon, options, select
             exit={{ opacity: 0, y: -10 }}
             className="absolute top-full mt-2 w-full bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-lg shadow-xl overflow-hidden z-20"
           >
-            {options.map((option) => (
+            {options?.map((option) => (
               <li
                 key={option.id}
                 onClick={() => {
@@ -73,7 +73,7 @@ export default function FloatingLabelDropdown({ id, label, icon, options, select
                 }}
                 className="px-4 py-3 text-white hover:bg-blue-600 cursor-pointer transition-colors"
               >
-                {option.name}
+                {option.name || option.displayName}
               </li>
             ))}
           </motion.ul>
