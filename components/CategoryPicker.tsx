@@ -3,11 +3,11 @@
 import { IProductCategory, IStoreCategory } from "@/types/typings";
 import React, { useState, useEffect, useRef } from "react";
 
-type Brand = string;
+type Brand = string | undefined | null ;
 
 interface Props {
   formData: {
-    category: IStoreCategory | null;
+    category: IStoreCategory | null | undefined;
     subCategory: IProductCategory | null;
     brand: Brand | null;
   };

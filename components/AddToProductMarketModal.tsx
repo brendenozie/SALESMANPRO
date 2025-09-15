@@ -58,166 +58,171 @@ function productToListingForm(
   categories?: IStoreCategory[],
   companyId?: string | undefined
 ): MarketListingForm {
-  const cat = (categories && categories.find(c => c.categoryId === p?.category?.id)) ?? null;
+  const cat = (categories && categories.find(c => c.categoryId === p?.productCategoryId)) ?? null;
 
   return {
-  // identifiers & metadata
-  id: '',
-  productId: p?.id ?? '',
-  sellerType: 'ADMIN',
-  companyId: p?.companyId ?? companyId,
-  productTypeId: p?.propertyTypeId || '',
-  commissionRateId: '',
+    // identifiers & metadata
+    id: '',
+    productId: p?.id ?? '',
+    sellerType: 'ADMIN',
+    companyId: p?.companyId ?? companyId,
+    propertyTypeId: p?.propertyTypeId || '',
+    commissionRateId: '',
 
-  // titles & descriptions
-  name: p?.name ?? '',
-  description: p?.description || undefined,
-  longDescription: p?.longDescription || undefined,
+    // titles & descriptions
+    name: p?.name ?? '',
+    description: p?.description || undefined,
+    longDescription: p?.longDescription || undefined,
 
-  // categorization
-  productCategoryId: p?.category?.id || '',
-  category: p?.category ?? null,
-  subCategory: p?.subCategory || cat?.subcategories || {},
-  subCategoryName: p?.subCategoryName ?? '',
-  tags: p?.tags ?? [],
+    // categorization
+    productCategoryId: p?.productCategoryId || '',
+    category: p?.category ?? null,
+    subCategory: p?.subCategory || cat?.subcategories || {},
+    subCategoryName: p?.subCategoryName ?? '',
+    tags: p?.tags ?? [],
 
-  // visual media (filled later)
-  // images/videos are handled in payload builder
-  // pricing & inventory
-  quantity: p?.quantity ?? 0,
+    // visual media (filled later)
+    // images/videos are handled in payload builder
+    // pricing & inventory
+    quantity: p?.quantity ?? 0,
 
-  // buyingPrice: p?.costPrice,
-  // sellingPrice: p?.sellingPrice,
+    // buyingPrice: p?.costPrice,
+    // sellingPrice: p?.sellingPrice,
+    buyingPrice: p?.sellingPrice ?? 0,
+    sellingPrice: p?.sellingPrice ?? 0,
 
-  buyingPrice: p?.sellingPrice ?? 0,
-  sellingPrice: p?.sellingPrice ?? 0, 
+    discount: p?.discount ?? 0,
+    finalPrice: p?.finalPrice ?? 0,
+    profitMargin: p?.profitMargin ?? 0,
+    pricingTiers: p?.pricingTiers ?? [],
 
-  discount: p?.discount ?? 0,
-  finalPrice: p?.finalPrice ?? 0,
-  profitMargin: p?.profitMargin ?? 0,
-  pricingTiers: p?.pricingTiers ?? [],
+    // deal dates
+    startDealDate: p?.startDealDate?.toString() || null,
+    endDealDate: p?.endDealDate?.toString() || null,
+    // startDealDate: p?.startDealDate ? (isNaN(new Date(p.startDealDate).getTime()) ? null : new Date(p.startDealDate))  : null,
+    // endDealDate: p?.endDealDate ? (isNaN(new Date(p.endDealDate).getTime()) ? null : new Date(p.endDealDate))  : null,
+    // availability flags
+    isAvailable: p?.isAvailable ?? false,
+    isOnOffer: p?.isOnOffer ?? false,
+    isFlashDeal: p?.isFlashDeal ?? false,
+    isNewArrival: p?.isNewArrival ?? false,
+    isDiscounted: p?.isDiscounted ?? false,
+    isFeatured: p?.isFeatured ?? false,
 
-  // deal dates
-  startDealDate: p?.startDealDate?.toString() || null,
-  endDealDate: p?.endDealDate?.toString() || null,
+    // delivery & payment
+    delivery: p?.deliveryMethod === 'DELIVERY',
+    paymentOption: p?.paymentOption || 'AT SHOP',
+    showOnGhuba: true,
 
-  // availability flags
-  isAvailable: p?.isAvailable ?? false,
-  isOnOffer: p?.isOnOffer ?? false,
-  isFlashDeal: p?.isFlashDeal ?? false,
-  isNewArrival: p?.isNewArrival ?? false,
-  isDiscounted: p?.isDiscounted ?? false,
-  isFeatured: p?.isFeatured ?? false,
+    // contact & location
+    contactName: p?.contactName ?? '',
+    contact: p?.contact ?? '',
+    email: p?.email,
+    locationName: p?.locationName ?? '',
 
-  // delivery & payment
-  delivery: p?.deliveryMethod === 'DELIVERY',
-  paymentOption: p?.paymentOption || 'AT SHOP',
-  showOnGhuba: true,
+    location: p?.location ? JSON.parse(JSON.stringify(p.location)) : null,
 
-  // contact & location
-  contactName: p?.contactName ?? '',
-  contact: p?.contact ?? '',
-  email: p?.email,
-  locationName: p?.locationName ?? '',
-  location: p?.location ?? null,
-  locationId: p?.locationId,
-  latitude: p?.latitude ?? 0.0,
-  longitude: p?.longitude ?? 0.0,
+    locationId: p?.locationId,
+    latitude: p?.latitude ?? 0.0,
+    longitude: p?.longitude ?? 0.0,
 
-  // core product fields
-  model: p?.model ?? '',
-  color: p?.color ?? [],
-  size: p?.size  ?? [],
-  weight: p?.weight ?? [],
-  condition: p?.condition ?? '',
-  dimensions: p?.dimensions ?? '',
-  material: p?.material ?? [],
+    // core product fields
+    model: p?.model ?? '',
+    color: p?.color ?? [],
+    size: p?.size ?? [],
+    weight: p?.weight ?? [],
+    condition: p?.condition ?? '',
+    dimensions: p?.dimensions ?? '',
+    material: p?.material ?? [],
 
-  // vehicle-specific
-  make: p?.make ?? '',
-  trim: p?.trim ?? '',
-  type: p?.type ?? '',
-  mileage: p?.mileage ?? '',
-  engineType: p?.engineType ?? '',
-  engineSize: p?.engineSize ?? 0,
-  horsepower: p?.horsepower ?? 0,
-  torque: p?.torque ?? 0,
-  fuelType: p?.fuelType  ?? '',
-  fuelEconomy: p?.fuelEconomy ?? '',
-  transmission: p?.transmission ?? '',
-  drivetrain: p?.drivetrain ?? '',
-  vin: p?.vin ?? '',
-  logbookStatus: p?.logbookStatus ?? '',
-  serviceHistory: p?.serviceHistory ?? '',
-  negotiable: p?.negotiable ?? false,
-  financingAvailable: p?.financingAvailable ?? false,
-  tradeIn: p?.tradeIn ?? false,
-  features: p?.features ?? [],
+    // vehicle-specific
+    make: p?.make ?? '',
+    trim: p?.trim ?? '',
+    type: p?.type ?? '',
+    mileage: p?.mileage ?? '',
+    engineType: p?.engineType ?? '',
+    engineSize: p?.engineSize ?? 0,
+    horsepower: p?.horsepower ?? 0,
+    torque: p?.torque ?? 0,
+    fuelType: p?.fuelType ?? '',
+    fuelEconomy: p?.fuelEconomy ?? '',
+    transmission: p?.transmission ?? '',
+    drivetrain: p?.drivetrain ?? '',
+    vin: p?.vin ?? '',
+    logbookStatus: p?.logbookStatus ?? '',
+    serviceHistory: p?.serviceHistory ?? '',
+    negotiable: p?.negotiable ?? false,
+    financingAvailable: p?.financingAvailable ?? false,
+    tradeIn: p?.tradeIn ?? false,
+    features: p?.features ?? [],
 
-  // bookable/service-specific
-  hourlyRate: p?.hourlyRate,
-  minimumHours: p?.minimumHours,
-  minNoticePeriod: p?.minNoticePeriod,
-  maxBookingAhead: p?.maxBookingAhead,
-  totalCapacity: p?.totalCapacity,
-  currentBookedCount: p?.currentBookedCount,
-  providerRating: p?.providerRating,
-  bookingSlots: p?.bookingSlots,
-  requiredClientInfo: p?.requiredClientInfo,
-  fulfillmentStatus: p?.fulfillmentStatus,
-  deliveryMethod: p?.deliveryMethod,
+    // bookable/service-specific
+    hourlyRate: p?.hourlyRate,
+    minimumHours: p?.minimumHours,
+    minNoticePeriod: p?.minNoticePeriod,
+    maxBookingAhead: p?.maxBookingAhead,
+    totalCapacity: p?.totalCapacity,
+    currentBookedCount: p?.currentBookedCount,
+    providerRating: p?.providerRating,
+    bookingSlots: p?.bookingSlots,
+    requiredClientInfo: p?.requiredClientInfo,
+    fulfillmentStatus: p?.fulfillmentStatus,
+    deliveryMethod: p?.deliveryMethod,
 
-  // property-specific
-  bedrooms: p?.bedrooms ?? [],
-  studios: p?.studios ?? [],
-  bathrooms: p?.bathrooms ?? 0,
-  area: p?.area ?? '',
-  serviceSchedule: p?.serviceSchedule ?? '',
-  availabilityStart: p?.availabilityStart?.toString() || null,
-  availabilityEnd: p?.availabilityEnd?.toString() || null,
-  amenities: p?.amenities ?? [],
+    // property-specific
+    bedrooms: p?.bedrooms ?? [],
+    studios: p?.studios ?? [],
+    bathrooms: p?.bathrooms ?? 0,
+    area: p?.area ?? '',
+    serviceSchedule: p?.serviceSchedule ?? '',
+    availabilityStart: p?.availabilityStart || null,
+    availabilityEnd: p?.availabilityEnd || null,
+    amenities: p?.amenities ?? [],
 
-  // bookable consumables
-  ingredients: p?.ingredients ?? '',
-  usageInstructions: p?.usageInstructions ?? '',
-  expirationDate: p?.expirationDate?.toString() || null,
+    // bookable consumables
+    ingredients: p?.ingredients ?? '',
+    usageInstructions: p?.usageInstructions ?? '',
+    expirationDate: p?.expirationDate?.toString() || null,
 
-  // textiles & appliances
-  fabricComposition: p?.fabricComposition ?? '',
-  careInstructions: p?.careInstructions ?? '',
-  energyRating: p?.energyRating ?? '',
-  warrantyPeriod: p?.warrantyPeriod ?? '',
-  applianceDimensions: p?.applianceDimensions,
+    // textiles & appliances
+    fabricComposition: p?.fabricComposition ?? '',
+    careInstructions: p?.careInstructions ?? '',
+    energyRating: p?.energyRating ?? '',
+    warrantyPeriod: p?.warrantyPeriod ?? '',
+    applianceDimensions: p?.applianceDimensions,
 
-  // commission
-  commissionType: '',
-  commissionRate: 0,
-  commissionStartDate: null,
-  commissionEndDate: null,
+    // commission
+    // commissionType: '',
+    // commissionRate: 0,
+    commissionStartDate: null,
+    commissionEndDate: null,
 
-  // misc
-  author: p?.author ?? '',
-  publisher: p?.publisher ?? '',
-  isbn: p?.isbn ?? '',
-  tax: p?.tax,
-  shippingCost: p?.shippingCost,
+    // misc
+    author: p?.author ?? '',
+    publisher: p?.publisher ?? '',
+    isbn: p?.isbn ?? '',
+    tax: p?.tax,
+    shippingCost: p?.shippingCost,
 
-  // status & grouping
-  status: 'ACTIVE',
-  collectionId: p?.collectionId,
-  year: p?.year,
-  
-  brand: null,
-  option: [],
-  
-  previousOwners: null,
-  tireCondition: '',
-  accidentalHistory: false,
-  
-  digitalUrl: '',
-  autoDeliver: false,
-  
-};
+    // status & grouping
+    status: 'ACTIVE',
+    collectionId: p?.collectionId,
+    year: p?.year,
+
+    brand: null,
+    option: [],
+
+    previousOwners: null,
+    tireCondition: '',
+    accidentalHistory: false,
+
+    digitalUrl: '',
+    autoDeliver: false,
+    duration: undefined,
+    
+    images: [],
+    
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -239,8 +244,8 @@ function buildListingPayload(
     description: f.description || null,
     longDescription: f.longDescription || null,
     quantity: f.quantity,
-    productCategoryId: f.category?.categoryId,
-    category: f.category?.displayName || null,
+    productCategoryId: f.productCategoryId,
+    category: f.category || null,
     subCategory: f.subCategory || null,
     subCategoryName: f.subCategoryName || null,
     tags: f.tags,
@@ -336,11 +341,11 @@ function buildListingPayload(
     status: f.status,
     collectionId: f.collectionId || null,
     year: f.year,
-    productTypeId: f.productTypeId || null,
-    commissionType: f.commissionType,
-    commissionRate: f.commissionRate,
-    commissionStartDate: f.commissionStartDate,
-    commissionEndDate: f.commissionEndDate,
+    //   productTypeId: f.productTypeId || null,
+    //   commissionType: f.commissionType,
+    //   commissionRate: f.commissionRate,
+    //   commissionStartDate: f.commissionStartDate,
+    //   commissionEndDate: f.commissionEndDate,
   };
 }
 
@@ -358,10 +363,10 @@ function useMarketListingForm(
     const p: ProductForm | null = product ?? null;
 
     let initialCategory: IStoreCategory | null = null;
-    const initialProductCategoryId = raw.productCategoryId || p?.category?.id || '';
+    const initialProductCategoryId = raw.productCategoryId || '';
 
     if (initialProductCategoryId) {
-      initialCategory =categories &&
+      initialCategory = categories &&
         categories.find(
           (cat) => cat.categoryId === initialProductCategoryId
         ) || null;
@@ -373,7 +378,7 @@ function useMarketListingForm(
       // but first taking raw.* then falling back to p.* then to literal defaults)
       // ...for brevity, assume same structure & order as above converter...
       ...(
-        marketListItem ? { ...productToListingForm(p  ?? undefined, categories), ...marketListItem, companyId : companyId } : productToListingForm(p ?? undefined, categories)
+        marketListItem ? { ...productToListingForm(p ?? undefined, categories), ...marketListItem, companyId: companyId } : productToListingForm(p ?? undefined, categories)
       ),
     } as MarketListingForm;
   }, [product, marketListItem, companyId, categories]);
@@ -383,7 +388,8 @@ function useMarketListingForm(
   // recalc prices
   useEffect(() => {
     const { buyingPrice, sellingPrice, discount } = formData;
-    const finalPrice = sellingPrice - (sellingPrice * discount) / 100;
+    const finalPrice = sellingPrice - (sellingPrice * (discount ?? 0)) / 100;
+
     const profitMargin =
       buyingPrice > 0 ? ((finalPrice - buyingPrice) / buyingPrice) * 100 : 0;
     setFormData((f) => ({ ...f, finalPrice, profitMargin }));
@@ -498,9 +504,9 @@ export default function AddToProductMarketModal({
 
   const handleCategoryChange = useCallback(
     (cat: IStoreCategory | null) => {
-      updateField('category', cat);
+      updateField('category', cat?.displayName);
       updateField('productCategoryId', cat?.categoryId || '');
-      updateField('subCategory', cat?.items || {});
+      updateField('subCategory', cat?.subcategories || {});
       updateField('subCategoryName', '');
     },
     [updateField]
@@ -517,16 +523,20 @@ export default function AddToProductMarketModal({
     [updateField]
   );
 
-  const handleLocationSelect = useCallback((locationId: string | null, locationDetails?: Location | null) => {
-  updateField('locationId', locationId);
-  updateField('location', locationDetails || null);
-  updateField('locationName', locationDetails?.name || '');
-  updateField('latitude', locationDetails?.latitude ?? null);
-  updateField('longitude', locationDetails?.longitude ?? null);
-  // You might also want to store city, country etc. directly if needed for quick access
-  // updateField('city', locationDetails?.city);
-  // updateField('country', locationDetails?.country);
-}, []);
+  const handleLocationSelect = useCallback((locationId: string | null, locationDetails?: ILocation | null) => {
+    updateField('locationId', locationId);
+
+    // updateField('location', locationDetails || null);
+    updateField('location', locationDetails ? JSON.stringify(locationDetails) : null);
+
+
+    // updateField('locationName', locationDetails?.name || '');
+    // updateField('latitude', locationDetails?.latitude ?? null);
+    // updateField('longitude', locationDetails?.longitude ?? null);
+    // You might also want to store city, country etc. directly if needed for quick access
+    // updateField('city', locationDetails?.city);
+    // updateField('country', locationDetails?.country);
+  }, []);
 
   // final submit
   const handleCreateListing = async () => {
@@ -542,27 +552,7 @@ export default function AddToProductMarketModal({
         {
           ...formData,
           companyId: companyId,
-          startDealDate: formData.startDealDate
-            ? new Date(formData.startDealDate).toISOString()
-            : null,
-          endDealDate: formData.endDealDate
-            ? new Date(formData.endDealDate).toISOString()
-            : null,
-          expirationDate: formData.expirationDate
-            ? new Date(formData.expirationDate).toISOString()
-            : null,
-          availabilityStart: formData.availabilityStart
-            ? new Date(formData.availabilityStart).toISOString()
-            : null,
-          availabilityEnd: formData.availabilityEnd
-            ? new Date(formData.availabilityEnd).toISOString()
-            : null,
-          commissionStartDate: formData.commissionStartDate
-            ? new Date(formData.commissionStartDate).toISOString()
-            : null,
-          commissionEndDate: formData.commissionEndDate
-            ? new Date(formData.commissionEndDate).toISOString()
-            : null,
+
         },
         imageUrls,
         videoUrls
@@ -640,35 +630,35 @@ export default function AddToProductMarketModal({
                 onSubCategoryChange={handleSubCategoryChange}
                 onBrandChange={(b) => updateField('brand', b)}
               />
-            ) :  currentDynamicStep === 7 ? (
-                    // PricingDetails is mapped to step 7
-                    <PricingDetails<MarketListingForm>
-                      formData={formData}
-                      setFormData={updateField}
-                      costField="buyingPrice"
-                      revenueField="sellingPrice"
-                      discountField="discount"
-                      finalField="finalPrice"
-                      marginField="profitMargin"
-                    />
-                  ) :
-                  currentDynamicStep === 18 ? (
-                    <section className="bg-white p-6 rounded-lg shadow-md">
-                      <h2 className="text-xl font-semibold mb-4">Location Details</h2>
-                      <LocationPicker
-                        selectedLocationId={formData.locationId || null}
-                        availableLocations={locations} // Replace with your actual fetched locations
-                        onLocationSelect={handleLocationSelect}
-                      />
-                    </section>
-                  ) :
-                  (
-                    <FormComponent
-                      formData={formData}
-                      handleInputChange={handleInputChange}
-                      setFormData={updateField as any}
-                    />
-                  )}
+            ) : currentDynamicStep === 7 ? (
+              // PricingDetails is mapped to step 7
+              <PricingDetails<MarketListingForm>
+                formData={formData}
+                setFormData={updateField}
+                costField="buyingPrice"
+                revenueField="sellingPrice"
+                discountField="discount"
+                finalField="finalPrice"
+                marginField="profitMargin"
+              />
+            ) :
+              currentDynamicStep === 18 ? (
+                <section className="bg-white p-6 rounded-lg shadow-md">
+                  <h2 className="text-xl font-semibold mb-4">Location Details</h2>
+                  <LocationPicker
+                    selectedLocationId={formData.locationId || null}
+                    availableLocations={locations} // Replace with your actual fetched locations
+                    onLocationSelect={handleLocationSelect}
+                  />
+                </section>
+              ) :
+                (
+                  <FormComponent
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    setFormData={updateField as any}
+                  />
+                )}
           </div>
         </motion.div>
 
@@ -716,6 +706,8 @@ interface AddToProductMarketModalProps {
   product?: ProductForm | undefined | null;
   marketListItem?: MarketListingForm | undefined | null;
   companyId: string;
-  categories: IStoreCategory[] ;
-  locations: Location[] ;
+  categories: IStoreCategory[];
+  locations: ILocation[];
 }
+
+

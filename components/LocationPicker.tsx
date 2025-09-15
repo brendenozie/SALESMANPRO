@@ -12,36 +12,37 @@ import {
   XMarkIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
+import { ILocation } from '@/types/typings';
 
 // --- Types (matching your Prisma Location model) ---
-export interface Location {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-  seoTitle?: string;
-  seoDescription?: string;
-  metaKeywords: string[];
-  sortOrder: number;
-  visible: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-  createdBy?: string;
-  updatedBy?: string;
-  status: 'active' | 'inactive' | 'draft';
-  parentId: string | null;
-  children?: Location[]; // For client-side tree building
-  localization?: any;
-  attributes?: any;
-}
+// export interface Location {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   description?: string;
+//   addressLine1?: string;
+//   addressLine2?: string;
+//   city?: string;
+//   state?: string;
+//   postalCode?: string;
+//   country?: string;
+//   latitude?: number;
+//   longitude?: number;
+//   seoTitle?: string;
+//   seoDescription?: string;
+//   metaKeywords: string[];
+//   sortOrder: number;
+//   visible: boolean;
+//   createdAt?: Date;
+//   updatedAt?: Date;
+//   createdBy?: string;
+//   updatedBy?: string;
+//   status: 'active' | 'inactive' | 'draft';
+//   parentId: string | null;
+//   children?: Location[]; // For client-side tree building
+//   localization?: any;
+//   attributes?: any;
+// }
 
 // Type for the selected location in the form data
 export interface SelectedLocationPath {
@@ -54,17 +55,17 @@ interface LocationPickerProps {
   // The currently selected location ID (from form data)
   selectedLocationId: string | null;
   // All available locations (flat list from API)
-  availableLocations: Location[];
+  availableLocations: ILocation[];
   // Callback when a location is selected/deselected
-  onLocationSelect: (locationId: string | null, locationDetails?: Location | null) => void;
+  onLocationSelect: (locationId: string | null, locationDetails?: ILocation | null) => void;
 }
 
 // --- Helper Functions ---
 
 // Builds a hierarchical tree from a flat list of locations
-const buildLocationTree = (locations: Location[]): Location[] => {
-  const locationMap: { [key: string]: Location } = {};
-  const tree: Location[] = [];
+const buildLocationTree = (locations: ILocation[]): ILocation[] => {
+  const locationMap: { [key: string]: ILocation } = {};
+  const tree: ILocation[] = [];
 
   locations.forEach(location => {
     locationMap[location.id] = { ...location, children: [] };
@@ -83,14 +84,14 @@ const buildLocationTree = (locations: Location[]): Location[] => {
 };
 
 // Finds a location by ID in a flat list
-const findLocationById = (id: string, locations: Location[]): Location | undefined => {
+const findLocationById = (id: string, locations: ILocation[]): ILocation | undefined => {
   return locations.find(loc => loc.id === id);
 };
 
 // Builds the path from root to a specific location
 const buildPathToLocation = (
   locationId: string,
-  allLocations: Location[]
+  allLocations: ILocation[]
 ): { id: string; name: string; type: 'country' | 'city' | 'venue' | 'other' }[] => {
   const path: { id: string; name: string; type: 'country' | 'city' | 'venue' | 'other' }[] = [];
   let currentLoc = findLocationById(locationId, allLocations);
@@ -153,10 +154,10 @@ const PathPill: React.FC<{
 
 // --- LocationNode Component (for recursive tree rendering) ---
 interface LocationNodeProps {
-  node: Location;
+  node: ILocation;
   level: number;
   selectedLocationId: string | null;
-  onLocationSelect: (locationId: string, locationDetails: Location) => void;
+  onLocationSelect: (locationId: string, locationDetails: ILocation) => void;
   isInitiallyExpanded: boolean;
   filterTerm: string;
 }
@@ -280,8 +281,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     const q = searchTerm.trim().toLowerCase();
     if (!q) return locationTree;
 
-    const filterNodes = (nodes: Location[]): Location[] => {
-      return nodes.reduce((acc: Location[], node) => {
+    const filterNodes = (nodes: ILocation[]): ILocation[] => {
+      return nodes.reduce((acc: ILocation[], node) => {
         const matches =
           node.name.toLowerCase().includes(q) ||
           node.city?.toLowerCase().includes(q) ||

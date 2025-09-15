@@ -327,7 +327,7 @@ export interface ProductForm {
   name: string;
   description?: string | null;
   longDescription?: string | null;
-  category?: string | null;
+  category?: any | null; //string | null;
   subCategory?: any;
   subCategoryName?: string | null;
   images: any[];
@@ -364,6 +364,8 @@ export interface ProductForm {
   mileage?: string | null;
   engineType?: string | null;
   engineSize?: number | null;
+  
+  requiredClientInfo: string[];
   horsepower?: number | null;
   torque?: number | null;
   fuelType?: string | null;
@@ -400,9 +402,9 @@ export interface ProductForm {
   bathrooms?: string | null;
   serviceSchedule?: string | null;
   year?: number | null;
-  availabilityStart?: Date | null;
-  availabilityEnd?: Date | null;
-  location?: GeoLocation | null; // Correct client-side type
+  availabilityStart?: string | null;
+  availabilityEnd?: string | null;
+  location?: Prisma.JsonValue; //GeoLocation | null; // Correct client-side type
   locationName?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -422,7 +424,7 @@ export interface ProductForm {
   deliveryMethod?: string | null;
   fulfillmentStatus?: string | null;
   providerRating?: number | null;
-  bookingSlots: any[];
+  bookingSlots: any[] | undefined;
   status: ListingStatus;
   collectionId?: string | null;
   createdAt: Date;
@@ -430,6 +432,8 @@ export interface ProductForm {
   tax?: number | null;
   shippingCost?: number | null;
   locationId?: string | null;
+  
+  currentBookedCount?: number | null;
 }
 
 export interface MarketListingForm {
@@ -441,7 +445,7 @@ export interface MarketListingForm {
   sellerType?: "CLIENT" | "CONSUMER" | "ADMIN" | "COMPANY" | "INDIVIDUAL" | null;
   productId?: string | null;
   productCategoryId: string;
-  category?: string | null;
+  category?: any | null | undefined; //string | null;
   subCategory: any;
   subCategoryName?: string | null;
   tags: string[];
@@ -454,6 +458,8 @@ export interface MarketListingForm {
   color: string[];
   size: string[];
   weight: string[];
+  
+  
   condition?: string | null;
   dimensions?: string | null;
   material: string[];
@@ -474,8 +480,8 @@ export interface MarketListingForm {
   isNewArrival: boolean;
   isDiscounted: boolean;
   isFeatured: boolean;
-  startDealDate?: Date | null;
-  endDealDate?: Date | null;
+  // startDealDate?: Date | null;
+  // endDealDate?: Date | null;
   author?: string | null;
   publisher?: string | null;
   isbn?: string | null;
@@ -486,13 +492,17 @@ export interface MarketListingForm {
   applianceDimensions?: string | null;
   ingredients?: string | null;
   usageInstructions?: string | null;
-  expirationDate?: Date | null;
+  // expirationDate?: Date | null;
   area?: string | null;
   propertyTypeId?: string | null;
   serviceSchedule?: string | null;
+
+  // availabilityStart?: Date | null;
+  // availabilityEnd?: Date | null;
+
   bedrooms: any[];
   studios: any[];
-  bathrooms?: string | null;
+  bathrooms?: string | null | number;
   digitalUrl?: string | null;
   autoDeliver?: boolean | null;
   make?: string | null;
@@ -518,12 +528,12 @@ export interface MarketListingForm {
   tireCondition?: string | null;
   accidentalHistory?: boolean | null;
   year?: number | null;
-  availabilityStart?: Date | null;
-  availabilityEnd?: Date | null;
-  bookingSlots: any[];
+  
+  bookingSlots: any[] | undefined;
   minNoticePeriod?: string | null;
   maxBookingAhead?: string | null;
-  requiredClientInfo: string[];
+  requiredClientInfo: string[] | undefined;
+  
   fulfillmentStatus?: string | null;
   totalCapacity?: number | null;
   currentBookedCount?: number | null;
@@ -549,6 +559,17 @@ export interface MarketListingForm {
   locationId?: string | null;
   collectionId?: string | null;
   commissionRateId?: string | null;
+
+  // commissionStartDate: Date | null;
+  // commissionEndDate: Date | null;
+    startDealDate?: string | null;
+  endDealDate?: string | null;
+  expirationDate?: string | null;
+  availabilityStart?: string | null;
+  availabilityEnd?: string | null;
+  commissionStartDate?: string | null;
+  commissionEndDate?: string | null;
+
 }
 
 //################################################################################

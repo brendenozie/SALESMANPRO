@@ -47,7 +47,7 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
   const [error, setError] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<IStoreCategory[] | undefined>();
-  const [locations, setLocations] = useState<Location[] | undefined>();
+  const [locations, setLocations] = useState<ILocation[] | undefined>();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<MarketListingForm | null>(null);
@@ -223,7 +223,7 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
       const matchesSearch = prop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (prop.locationName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
         (prop.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (prop.category?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+        (prop.category?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
       const matchesStatus = filterStatus === 'All' || prop.status === filterStatus;
       const matchesType = filterType === 'All' || prop.type === filterType;
@@ -243,14 +243,14 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
   const getStatusBadgeClass = (status: MarketListingForm['status']) => {
     switch (status) {
       case 'Available': return 'bg-green-100 text-green-800 ring-green-600/20';
-      case 'Under Offer': return 'bg-yellow-100 text-yellow-800 ring-yellow-600/20';
+      case 'Under_Offer': return 'bg-yellow-100 text-yellow-800 ring-yellow-600/20';
       case 'Sold': return 'bg-red-100 text-red-800 ring-red-600/20';
       case 'Draft': return 'bg-gray-100 text-gray-800 ring-gray-600/20';
       default: return 'bg-gray-100 text-gray-800 ring-gray-600/20';
     }
   };
 
-  const getProductTypeIcon = (productTypeId: MarketListingForm['productTypeId']) => {
+  const getProductTypeIcon = (productTypeId: MarketListingForm['category']) => {
     switch (productTypeId) {
       case 'vehicle': return <HomeModernIcon className="h-4 w-4 mr-1 text-indigo-500" />;
       case 'vehicle': return <TruckIcon className="h-4 w-4 mr-1 text-emerald-500" />;
@@ -413,7 +413,8 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
                           <div>
                             <div className="text-lg font-semibold text-gray-800 leading-snug">{vehicle.name}</div>
                             <div className="text-xs text-gray-500 flex items-center mt-1">
-                              <MapPinIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" /> {vehicle.locationName}, {vehicle.selectedLocationDetails?.city || 'N/A'}
+                              <MapPinIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" /> {vehicle.locationName}, 
+                              {/* {vehicle.selectedLocationDetails?.city || 'N/A'} */}
                             </div>
                           </div>
                         </div>
@@ -421,9 +422,9 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         <div className="space-y-1">
                           <div className="flex items-center text-gray-700 font-medium">
-                            {getProductTypeIcon(vehicle.productTypeId)} {vehicle.type}
+                            {getProductTypeIcon(vehicle.category)} {vehicle.type}
                           </div>
-                          {vehicle.productTypeId === 'vehicle' && (
+                          {vehicle.category === 'vehicle' && (
                             <>
                               <div className="flex items-center text-gray-500">
                                 <HomeModernIcon className="h-4 w-4 mr-1 text-gray-400" /> {vehicle.bedrooms?.length ? `${vehicle.bedrooms.length} Beds` : 'N/A Beds'}
@@ -436,7 +437,7 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
                               </div>
                             </>
                           )}
-                          {vehicle.productTypeId === 'vehicle' && (
+                          {vehicle.category === 'vehicle' && (
                             <>
                               <div className="flex items-center text-gray-500">
                                 <TruckIcon className="h-4 w-4 mr-1 text-gray-400" /> Make: {vehicle.make ?? 'N/A'}
@@ -449,7 +450,7 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
                               </div>
                             </>
                           )}
-                          {vehicle.productTypeId === 'book' && (
+                          {vehicle.category === 'book' && (
                             <>
                               <div className="flex items-center text-gray-500">
                                 <BookOpenIcon className="h-4 w-4 mr-1 text-gray-400" /> Author: {vehicle.author ?? 'N/A'}
@@ -465,8 +466,9 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-xl font-extrabold text-teal-700">
-                        {formatPrice(vehicle.finalPrice)}
-                      </td>
+                          {formatPrice(vehicle.finalPrice ?? 0)}
+                        </td>
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3.5 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm ring-1 ring-inset ${getStatusBadgeClass(vehicle.status)}`}>
                           {vehicle.status}
