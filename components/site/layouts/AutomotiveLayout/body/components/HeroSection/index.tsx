@@ -125,7 +125,7 @@ export default function HeroSection({ store, trendingLocations, filters, setFilt
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
         >
-          {/* {heroSlides[current].type === "image" ? ( */}
+          {heroSlides[current].type === "image" ? (
             <motion.div
               className="absolute inset-0"
               initial={{ scale: 1.15, opacity: 0 }}
@@ -140,13 +140,13 @@ export default function HeroSection({ store, trendingLocations, filters, setFilt
                 loader={customLoader}
               />
             </motion.div>
-          {/* ) : (
+          ) : (
             <video
               src={heroSlides[current].url}
               autoPlay muted loop playsInline
               className="h-full w-full object-cover"
             />
-          )} */}
+          )}
           {/* Inverted gradient overlay for light mode */}
           <div className="absolute inset-0 bg-gradient-to-t from-white/50 via-white/40 to-transparent" />
         </motion.div>
