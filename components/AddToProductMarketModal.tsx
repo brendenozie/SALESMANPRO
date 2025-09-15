@@ -21,8 +21,8 @@ import CategoryPicker from './CategoryPicker';
 import {
   MarketListingForm,
   ProductForm,
-  StoreCategory,
-  Location
+  IStoreCategory,
+  ILocation
 } from '@/types/typings';
 import PricingDetails from './PricingDetails';
 import LocationPicker from './LocationPicker';
@@ -55,7 +55,7 @@ async function uploadFiles(
 // -----------------------------------------------------------------------------
 function productToListingForm(
   p?: ProductForm | null | undefined,
-  categories?: StoreCategory[],
+  categories?: IStoreCategory[],
   companyId?: string | undefined
 ): MarketListingForm {
   const cat = (categories && categories.find(c => c.categoryId === p?.category?.id)) ?? null;
@@ -77,7 +77,7 @@ function productToListingForm(
   // categorization
   productCategoryId: p?.category?.id || '',
   category: p?.category ?? null,
-  subCategory: p?.subCategory || cat?.items || {},
+  subCategory: p?.subCategory || cat?.subcategories || {},
   subCategoryName: p?.subCategoryName ?? '',
   tags: p?.tags ?? [],
 
@@ -119,7 +119,7 @@ function productToListingForm(
   contact: p?.contact ?? '',
   email: p?.email,
   locationName: p?.locationName ?? '',
-  location: p?.location,
+  location: p?.location ?? null,
   locationId: p?.locationId,
   latitude: p?.latitude ?? 0.0,
   longitude: p?.longitude ?? 0.0,
@@ -128,7 +128,7 @@ function productToListingForm(
   model: p?.model ?? '',
   color: p?.color ?? [],
   size: p?.size  ?? [],
-  weight: p?.weight ?? '',
+  weight: p?.weight ?? [],
   condition: p?.condition ?? '',
   dimensions: p?.dimensions ?? '',
   material: p?.material ?? [],
@@ -351,13 +351,13 @@ function useMarketListingForm(
   product?: ProductForm | undefined | null,
   marketListItem?: MarketListingForm | undefined | null,
   companyId?: string,
-  categories?: StoreCategory[]
+  categories?: IStoreCategory[]
 ) {
   const getInitial = useCallback((): MarketListingForm => {
     const raw: Partial<MarketListingForm> = marketListItem || {};
     const p: ProductForm | null = product ?? null;
 
-    let initialCategory: StoreCategory | null = null;
+    let initialCategory: IStoreCategory | null = null;
     const initialProductCategoryId = raw.productCategoryId || p?.category?.id || '';
 
     if (initialProductCategoryId) {
@@ -497,7 +497,7 @@ export default function AddToProductMarketModal({
   );
 
   const handleCategoryChange = useCallback(
-    (cat: StoreCategory | null) => {
+    (cat: IStoreCategory | null) => {
       updateField('category', cat);
       updateField('productCategoryId', cat?.categoryId || '');
       updateField('subCategory', cat?.items || {});
@@ -716,6 +716,6 @@ interface AddToProductMarketModalProps {
   product?: ProductForm | undefined | null;
   marketListItem?: MarketListingForm | undefined | null;
   companyId: string;
-  categories: StoreCategory[] ;
+  categories: IStoreCategory[] ;
   locations: Location[] ;
 }

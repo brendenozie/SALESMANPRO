@@ -1,20 +1,20 @@
 'use client';
 
-import { ProductCategory, StoreCategory } from "@/types/typings";
+import { IProductCategory, IStoreCategory } from "@/types/typings";
 import React, { useState, useEffect, useRef } from "react";
 
 type Brand = string;
 
 interface Props {
   formData: {
-    category: StoreCategory | null;
-    subCategory: ProductCategory | null;
+    category: IStoreCategory | null;
+    subCategory: IProductCategory | null;
     brand: Brand | null;
   };
-  categories: StoreCategory[];
+  categories: IStoreCategory[];
   filteredBrands: Brand[];
-  onCategoryChange: (category: StoreCategory | null) => void;
-  onSubCategoryChange: (subcategory: ProductCategory | null) => void;
+  onCategoryChange: (category: IStoreCategory | null) => void;
+  onSubCategoryChange: (subcategory: IProductCategory | null) => void;
   onBrandChange: (brand: Brand | null) => void;
 }
 
@@ -58,7 +58,7 @@ const CategoryPicker: React.FC<Props> = ({
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Pull subcategories from either `items` or nested `category.subcategories`
-  const rawItems = formData.category?.items?.length ? formData.category.items : formData.category?.category?.subcategories ?? [];
+  const rawItems = formData.category?.subcategories?.length ? formData.category.subcategories : formData.category?.category?.subcategories ?? [];
 
   const filteredSubCategories = rawItems.filter((sub) => sub.name.toLowerCase().includes(searchTerm.toLowerCase()) );
 
@@ -139,7 +139,7 @@ const CategoryPicker: React.FC<Props> = ({
           <div ref={categoryScrollRef} className="flex space-x-3 overflow-x-auto scrollbar-hide pb-2 snap-x">
             {categories && categories
               .filter((cat) =>
-                cat.displayName.toLowerCase().includes(searchTerm.toLowerCase())
+                cat.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
               )
               .map((cat) => (
                 <button

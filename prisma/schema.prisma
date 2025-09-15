@@ -545,6 +545,10 @@ enum ListingStatus {
   INACTIVE
   DRAFT
   REJECTED
+  Available
+  Under_Offer
+  Sold
+  Draft
   BUY
   RENT
   RENTED

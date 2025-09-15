@@ -26,7 +26,7 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 // If you have a dedicated delete modal component, uncomment and use it
 // import { VehicleDeleteConfirmModal } from './VehicleDeleteConfirmModal';
 
-import { StoreCategory, Location, MarketListingForm } from '@/types/typings';
+import { IStoreCategory, ILocation, MarketListingForm } from '@/types/typings';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -46,7 +46,7 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [categories, setCategories] = useState<StoreCategory[] | undefined>();
+  const [categories, setCategories] = useState<IStoreCategory[] | undefined>();
   const [locations, setLocations] = useState<Location[] | undefined>();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
