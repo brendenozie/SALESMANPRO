@@ -315,10 +315,11 @@ export default function CreateStoreForm({
   );
 
     // Memoize the selected locations in the hierarchical structure for display
+
   const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
       const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
       return buildSelectedLocationTree(form.CompanyLocation, allLocationsMap);
-    }, [form.CompanyLocation, availableLocations]);
+  }, [form.CompanyLocation, availableLocations]);
   
 
   // Track one File per hero slide. Initialize from existing heroSlides length
@@ -523,38 +524,38 @@ export default function CreateStoreForm({
 
   
   useEffect(() => {
-  setForm(prev => {
-    const normalizedPromotions = prev.promotions.map(promo => {
-      const nextPerks = Array.isArray(promo.perks)
-        ? promo.perks.map((perk: any) => {
-            // handles: string, {icon,label}, or already-correct {id,icon,label}
-            if (perk && typeof perk === 'object' && 'id' in perk) return perk;
-            return {
-              id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
-              icon: typeof perk === 'object' ? perk.icon ?? '' : '',
-              label: typeof perk === 'object' ? perk.label ?? '' : String(perk ?? ''),
-            };
-          })
-        : [];
+    setForm(prev => {
+      const normalizedPromotions = prev.promotions.map(promo => {
+        const nextPerks = Array.isArray(promo.perks)
+          ? promo.perks.map((perk: any) => {
+              // handles: string, {icon,label}, or already-correct {id,icon,label}
+              if (perk && typeof perk === 'object' && 'id' in perk) return perk;
+              return {
+                id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
+                icon: typeof perk === 'object' ? perk.icon ?? '' : '',
+                label: typeof perk === 'object' ? perk.label ?? '' : String(perk ?? ''),
+              };
+            })
+          : [];
 
-      const nextTrustLogos = Array.isArray(promo.trustLogos)
-        ? promo.trustLogos.map((logo: any) => {
-            // handles: string or already-correct {id,url}
-            if (logo && typeof logo === 'object' && 'id' in logo && 'url' in logo) return logo;
-            const url = typeof logo === 'string' ? logo : logo?.url ?? '';
-            return {
-              id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
-              url,
-            };
-          })
-        : [];
+        const nextTrustLogos = Array.isArray(promo.trustLogos)
+          ? promo.trustLogos.map((logo: any) => {
+              // handles: string or already-correct {id,url}
+              if (logo && typeof logo === 'object' && 'id' in logo && 'url' in logo) return logo;
+              const url = typeof logo === 'string' ? logo : logo?.url ?? '';
+              return {
+                id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
+                url,
+              };
+            })
+          : [];
 
-      return { ...promo, perks: nextPerks, trustLogos: nextTrustLogos };
+        return { ...promo, perks: nextPerks, trustLogos: nextTrustLogos };
+      });
+
+      return { ...prev, promotions: normalizedPromotions };
     });
-
-    return { ...prev, promotions: normalizedPromotions };
-  });
-}, []);
+  }, []);
 
 
   // Factory function: always consistent types
@@ -631,7 +632,6 @@ const onUpdatePromotion = <K extends keyof IPromotion>(
   });
 };
 
-
 // Upload + preview image for any field
 const onPromotionImageUpload = (
   index: number,
@@ -672,8 +672,6 @@ const onAddPerk = (promoIndex: number) => {
     return { ...prev, promotions: newPromotions };
   });
 };
-
-// In your Parent Form Component
 
 // New, more specific handler for updating a perk
 const onUpdatePerk = (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => {
@@ -733,7 +731,6 @@ const onAddTrustLogo = (promoIndex: number) => {
     return { ...prev, promotions: newPromotions };
   });
 };
-
 
 const onRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
   setForm((prev) => {
@@ -1001,18 +998,25 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
  
 
   // NEW: Handlers for LocationSelectionAccordion
-  const onToggleLocation = useCallback((location: ILocation, isSelected: boolean) => {
-    setForm(prevForm => {
-      const newCompanyLocations = [...prevForm.CompanyLocation];
-      const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+
+  const onToggleLocation = useCallback(
+  (location: ILocation, isSelected: boolean) => {
+    setForm((prevForm) => {
+      const newCompanyLocations = [...(prevForm.CompanyLocation || [])];
+      const allLocationsMap = new Map(
+        availableLocations.map((loc) => [loc.id, loc])
+      );
       const idsToToggle = getAllDescendantIds(location, allLocationsMap);
 
-      idsToToggle.forEach(locId => {
-        const existingIndex = newCompanyLocations.findIndex(cl => cl.locationId === locId);
+      idsToToggle.forEach((locId) => {
+        const existingIndex = newCompanyLocations.findIndex(
+          (cl) => cl.locationId === locId
+        );
         if (isSelected) {
           if (existingIndex === -1) {
             newCompanyLocations.push({
-              companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+              companyId:
+                prevForm.id || session?.user?.id || "temp-company-id",
               locationId: locId,
               visible: true,
               sortOrder: 0,
@@ -1027,7 +1031,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
               postalCodeOverride: null,
               countryOverride: null,
               latitudeOverride: null,
-              longitudeOverride: null
+              longitudeOverride: null,
             });
           }
         } else {
@@ -1037,22 +1041,23 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
         }
       });
 
-      return { ...prevForm, companyLocations: newCompanyLocations };
+      return { ...prevForm, CompanyLocation: newCompanyLocations };
     });
-  }, [availableLocations, session?.user?.id]);
+  },
+  [availableLocations, session?.user?.id]
+  );
 
-    const onBulkToggleLocations = useCallback((locationIds: string[]) => {
+  const onBulkToggleLocations = useCallback((locationIds: string[]) => {
     setForm((prevForm) => {
-      const newCompanyLocations: CompanyLocation[] = [];
       const existingCompanyLocationMap = new Map(
         (prevForm.CompanyLocation || []).map((cl) => [cl.locationId, cl])
       );
 
-      locationIds.forEach((locId) => {
-        if (!existingCompanyLocationMap.has(locId)) {
-          newCompanyLocations.push({
-            id: "", // Will be generated by DB
-            companyId: prevForm.id,
+      const newCompanyLocations = locationIds.map((locId) => {
+        return (
+          existingCompanyLocationMap.get(locId) || {
+            id: "",
+            companyId: prevForm.id || "temp-company-id",
             locationId: locId,
             displayName: null,
             addressLine1Override: null,
@@ -1067,23 +1072,97 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
             visible: true,
             createdAt: new Date(),
             updatedAt: new Date(),
-          });
-        }
+          }
+        );
       });
 
-      const finalCompanyLocations =
-        locationIds.length === 0
-          ? []
-          : [
-              ...(prevForm.CompanyLocation || []).filter((cl) =>
-                locationIds.includes(cl.locationId)
-              ),
-              ...newCompanyLocations,
-            ];
-
-      return { ...prevForm, CompanyLocation: finalCompanyLocations };
+      return { ...prevForm, CompanyLocation: newCompanyLocations };
     });
   }, []);
+
+  // const onToggleLocation = useCallback((location: ILocation, isSelected: boolean) => {
+  //   setForm(prevForm => {
+  //     const newCompanyLocations = [...prevForm.CompanyLocation];
+  //     const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+  //     const idsToToggle = getAllDescendantIds(location, allLocationsMap);
+
+  //     idsToToggle.forEach(locId => {
+  //       const existingIndex = newCompanyLocations.findIndex(cl => cl.locationId === locId);
+  //       if (isSelected) {
+  //         if (existingIndex === -1) {
+  //           newCompanyLocations.push({
+  //             companyId: prevForm.id || session?.user?.id || 'temp-company-id',
+  //             locationId: locId,
+  //             visible: true,
+  //             sortOrder: 0,
+  //             id: "",
+  //             createdAt: null,
+  //             updatedAt: null,
+  //             displayName: null,
+  //             addressLine1Override: null,
+  //             addressLine2Override: null,
+  //             cityOverride: null,
+  //             stateOverride: null,
+  //             postalCodeOverride: null,
+  //             countryOverride: null,
+  //             latitudeOverride: null,
+  //             longitudeOverride: null
+  //           });
+  //         }
+  //       } else {
+  //         if (existingIndex !== -1) {
+  //           newCompanyLocations.splice(existingIndex, 1);
+  //         }
+  //       }
+  //     });
+
+  //     return { ...prevForm, companyLocations: newCompanyLocations };
+  //   });
+  // }, [availableLocations, session?.user?.id]);
+
+  // const onBulkToggleLocations = useCallback((locationIds: string[]) => {
+  //   setForm((prevForm) => {
+  //     const newCompanyLocations: CompanyLocation[] = [];
+  //     const existingCompanyLocationMap = new Map(
+  //       (prevForm.CompanyLocation || []).map((cl) => [cl.locationId, cl])
+  //     );
+
+  //     locationIds.forEach((locId) => {
+  //       if (!existingCompanyLocationMap.has(locId)) {
+  //         newCompanyLocations.push({
+  //           id: "", // Will be generated by DB
+  //           companyId: prevForm.id,
+  //           locationId: locId,
+  //           displayName: null,
+  //           addressLine1Override: null,
+  //           addressLine2Override: null,
+  //           cityOverride: null,
+  //           stateOverride: null,
+  //           postalCodeOverride: null,
+  //           countryOverride: null,
+  //           latitudeOverride: null,
+  //           longitudeOverride: null,
+  //           sortOrder: 0,
+  //           visible: true,
+  //           createdAt: new Date(),
+  //           updatedAt: new Date(),
+  //         });
+  //       }
+  //     });
+
+  //     const finalCompanyLocations =
+  //       locationIds.length === 0
+  //         ? []
+  //         : [
+  //             ...(prevForm.CompanyLocation || []).filter((cl) =>
+  //               locationIds.includes(cl.locationId)
+  //             ),
+  //             ...newCompanyLocations,
+  //           ];
+
+  //     return { ...prevForm, CompanyLocation: finalCompanyLocations };
+  //   });
+  // }, []);
 
   const setAddress = (address: string, geoLocation: GeoLocation) => {
     setForm((f) => ({ ...f, address, geoLocation }));
@@ -1142,15 +1221,9 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 
   const handleSubmit = async (e: FormEvent) => {
 
-    console.log("sub 1");
-    console.log(session?.user);
-
     e.preventDefault();
     if (isSubmitting) return;
     if (!session?.user?.id) return;
-
-    
-    console.log("sub 2");
 
     setIsSubmitting(true);
 
@@ -1161,8 +1234,6 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     // 2) Build upload promises, but write each returned URL into `payload`
     const uploadPromises: Promise<void>[] = [];
 
-    
-    console.log("sub 3");
     // 2.a) Logo
     if (logoFile) {
       const p = (async () => {

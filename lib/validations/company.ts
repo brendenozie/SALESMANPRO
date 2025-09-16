@@ -77,17 +77,18 @@ const promotionSchema = z.object({
 
 const companyLocationSchema = z.object({
     locationId: z.string(), // The ID of the base Location model
-    displayName: z.string().optional(),
-    addressLine1Override: z.string().optional(),
-    addressLine2Override: z.string().optional(),
-    cityOverride: z.string().optional(),
-    stateOverride: z.string().optional(),
-    postalCodeOverride: z.string().optional(),
-    countryOverride: z.string().optional(),
-    latitudeOverride: z.number().optional(),
-    longitudeOverride: z.number().optional(),
-    sortOrder: z.number().optional(),
-    visible: z.boolean().optional(),
+    companyId: z.string().nullable().optional(), // The ID of the base Location model
+    displayName: z.string().nullable().optional(),
+    addressLine1Override: z.string().nullable().optional(),
+    addressLine2Override: z.string().nullable().optional(),
+    cityOverride: z.string().nullable().optional(),
+    stateOverride: z.string().nullable().optional(),
+    postalCodeOverride: z.string().nullable().optional(),
+    countryOverride: z.string().nullable().optional(),
+    latitudeOverride: z.number().nullable().optional(),
+    longitudeOverride: z.number().nullable().optional(),
+    sortOrder: z.number().nullable().optional(),
+    visible: z.boolean().nullable().optional(),
 });
 
 // const storeCategorySchema = z.object({
@@ -178,5 +179,5 @@ export const companySchema = z.object({
   
   // -- Many-to-Many through explicit join table --
   StoreCategory: z.array(storeCategorySchema).optional(),
-  companyLocations: z.array(companyLocationSchema).optional(),
+  CompanyLocation: z.array(companyLocationSchema).optional(),
 });

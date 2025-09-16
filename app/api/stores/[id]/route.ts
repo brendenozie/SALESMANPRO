@@ -89,6 +89,7 @@ export async function PUT(
     testimonials,
     heroSlides,
     promotions,
+    CompanyLocation,
     StoreCategory,
     ...companyData // The rest are direct fields of the company
   } = parseResult.data;
@@ -107,6 +108,24 @@ export async function PUT(
       data: {
         // 1. Update direct company fields
         ...companyData,
+
+        CompanyLocation: CompanyLocation ? {
+          deleteMany: {},
+          create: CompanyLocation.map((cl: any) => ({
+            locationId: cl.locationId,
+            visible: cl.visible ?? true,
+            sortOrder: cl.sortOrder ?? 0,
+            displayName: cl.displayName ?? null,
+            addressLine1Override: cl.addressLine1Override ?? null,
+            addressLine2Override: cl.addressLine2Override ?? null,
+            cityOverride: cl.cityOverride ?? null,
+            stateOverride: cl.stateOverride ?? null,
+            postalCodeOverride: cl.postalCodeOverride ?? null,
+            countryOverride: cl.countryOverride ?? null,
+            latitudeOverride: cl.latitudeOverride ?? null,
+            longitudeOverride: cl.longitudeOverride ?? null,
+          })),
+        } : undefined,
         
         CoreValues: body.CoreValues ? {
           deleteMany: {}, // remove all existing core values for this company
