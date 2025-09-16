@@ -5,18 +5,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { PlayCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
+import { IBlog } from "@/types/typings";
 
-interface Blog {
-  id: string;
-  title: string;
-  coverImage: string;
-  videoId?: string; // optional if some blogs have embedded videos
-  excerpt: string;
-  slug: string;
-}
+
+// Image loader
+const customLoader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
 interface VideoShowcaseProps {
-  blogs: Blog[];
+  blogs: IBlog[];
 }
 
 // --- Lightbox Component ---
@@ -103,8 +100,9 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
             >
               <div className="relative w-full aspect-video overflow-hidden">
                 <Image
-                  src={blog.coverImage}
+                  src={blog.coverImage || ''}
                   alt={blog.title}
+                  loader={customLoader}
                   fill
                   className="group-hover:scale-110 transition-transform duration-500 ease-in-out brightness-90 group-hover:brightness-70 object-cover"
                 />
@@ -121,12 +119,12 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   {blog.excerpt}
                 </p>
-                <Link
+                {/* <Link
                   href={`/blog/${blog.slug}`}
                   className="text-blue-600 dark:text-blue-400 font-medium hover:underline"
                 >
                   Read Full Blog →
-                </Link>
+                </Link> */}
               </div>
             </motion.div>
           ))}

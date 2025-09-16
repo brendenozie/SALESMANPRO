@@ -141,11 +141,11 @@ export default function AutomotiveSite() {
       <FeaturedVehicleSection  listings={listings} slug=""/>
 
       {/* If videos are stored under latestVideos */}
-      {tours && <VideoShowcaseSection  />}
+      {storeFormData?.blogs && <VideoShowcaseSection blogs={storeFormData?.blogs || []} />}
 
       <MarketInsightsSection />
 
-      <TestimonialsCarouselSection />
+      <TestimonialsCarouselSection  testimonials={storeFormData?.testimonials || []} />
 
       {/* <PromotionSection/> */}
 
