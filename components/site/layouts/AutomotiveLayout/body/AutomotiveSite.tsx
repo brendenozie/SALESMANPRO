@@ -89,7 +89,8 @@ export default function AutomotiveSite() {
     <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
       {/* Hero */}
-      <HeroSection store={storeFormData}
+      <HeroSection
+        store={storeFormData}
         trendingLocations={storeFormData?.CompanyLocation
           ? storeFormData?.CompanyLocation.map((loc: any) => ({
             // Map/transform to Location type as needed
@@ -116,7 +117,27 @@ export default function AutomotiveSite() {
 
       <BrowseByCategory store={ storeFormData }/>
 
-      <FilterBarSection />
+      <FilterBarSection  
+        store={storeFormData}
+        trendingLocations={storeFormData?.CompanyLocation
+          ? storeFormData?.CompanyLocation.map((loc: any) => ({
+            // Map/transform to Location type as needed
+            name: loc.name,
+            slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+            metaKeywords: loc.metaKeywords || "",
+            status: loc.status || "active",
+            parentId: loc.parentId || null,
+            // Spread any additional fields if needed
+            ...loc,
+          }))
+          : []} 
+          filters={undefined} setFilters={function (filters: any): void {
+
+          } } 
+          onSearch={function (e: React.FormEvent): void {
+            
+          } }    
+        />
 
       {/* Trending Locations Section */}
       <TrendingLocations
