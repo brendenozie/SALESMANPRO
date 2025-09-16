@@ -59,24 +59,27 @@ export default function AutomotiveSite() {
   const [vehicles, setVehicles] = useState<VehicleCardProps[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
+  
+  // marketplaceListings from storeFormData → map to VehicleCardProps
+  const listings = storeFormData?.marketplaceListings || [];
+
   useEffect(() => {
     // Pull promotions from storeFormData.promotions
     setPromos(storeFormData?.promotions || []);
 
-    // marketplaceListings from storeFormData → map to VehicleCardProps
-    const listings = storeFormData?.marketplaceListings || [];
-    const formattedVehicles: VehicleCardProps[] = listings.map((listing: any) => ({
-      id: listing.id,
-      make: listing.product.brand || "Unknown",
-      model: listing.product.name,
-      year: new Date().getFullYear(), // or derive from listing if available
-      price: listing.finalPrice,
-      image: listing.images[0] || "/assets/placeholder.png",
-      type: listing.product.color || "Vehicle",
-      mileage: listing.product.size ? Number(listing.product.size) : 0, // fallback if size used as mileage
-      badge: listing.isFeatured ? "Hot" : undefined,
-    }));
-    setVehicles(formattedVehicles);
+
+    // const formattedVehicles: VehicleCardProps[] = listings.map((listing: any) => ({
+    //   id: listing.id,
+    //   make: listing.product.brand || "Unknown",
+    //   model: listing.product.name,
+    //   year: new Date().getFullYear(), // or derive from listing if available
+    //   price: listing.finalPrice,
+    //   image: listing.images[0] || "/assets/placeholder.png",
+    //   type: listing.product.color || "Vehicle",
+    //   mileage: listing.product.size ? Number(listing.product.size) : 0, // fallback if size used as mileage
+    //   badge: listing.isFeatured ? "Hot" : undefined,
+    // }));
+    // setVehicles(formattedVehicles);
 
     // Testimonials from storeFormData.testimonials
     setTestimonials(storeFormData?.testimonials || []);
@@ -86,24 +89,28 @@ export default function AutomotiveSite() {
     <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
       {/* Hero */}
-      <HeroSection store={ storeFormData }
-                    trendingLocations={
-                    storeFormData?.CompanyLocation
-                      ? storeFormData?.CompanyLocation.map((loc: any) => ({
-                          // Map/transform to Location type as needed
-                          name: loc.name,
-                          slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-                          metaKeywords: loc.metaKeywords || "",
-                          status: loc.status || "active",
-                          parentId: loc.parentId || null,
-                          // Spread any additional fields if needed
-                          ...loc,
-                        }))
-                      : []
-                    }
-          />
+      <HeroSection store={storeFormData}
+        trendingLocations={storeFormData?.CompanyLocation
+          ? storeFormData?.CompanyLocation.map((loc: any) => ({
+            // Map/transform to Location type as needed
+            name: loc.name,
+            slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+            metaKeywords: loc.metaKeywords || "",
+            status: loc.status || "active",
+            parentId: loc.parentId || null,
+            // Spread any additional fields if needed
+            ...loc,
+          }))
+          : []} 
+          filters={undefined} setFilters={function (filters: any): void {
 
-      <FeaturedListings />
+          } } 
+          onSearch={function (e: React.FormEvent): void {
+            
+          } }    
+      />
+
+      <FeaturedListings listings={listings} slug=""/>
 
       <HowItWorks />
 
@@ -111,9 +118,7 @@ export default function AutomotiveSite() {
 
       <FilterBarSection />
 
-      {/* <TrendingLocations /> */}
-
-            {/* Trending Locations Section */}
+      {/* Trending Locations Section */}
       <TrendingLocations
         locations={
           storeFormData?.CompanyLocation
@@ -130,17 +135,17 @@ export default function AutomotiveSite() {
             : []
         }
         slug={"slug"}
-      />
+      />      
+
+      {/* Featured Vehicles */}
+      <FeaturedVehicleSection  listings={listings} slug=""/>
 
       {/* If videos are stored under latestVideos */}
-      {tours && <VideoShowcaseSection />}
+      {tours && <VideoShowcaseSection  />}
 
       <MarketInsightsSection />
 
       <TestimonialsCarouselSection />
-
-      {/* Featured Vehicles */}
-      <FeaturedVehicleSection />
 
       {/* <PromotionSection/> */}
 

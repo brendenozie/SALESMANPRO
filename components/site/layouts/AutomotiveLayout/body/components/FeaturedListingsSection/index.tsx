@@ -1,242 +1,304 @@
-// components/FeaturedListings.tsx
 "use client";
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { MarketListingForm } from "@/types/typings";
+import clsx from "clsx";
+import {
+  HomeModernIcon,
+  SparklesIcon,
+  FireIcon,
+  TagIcon,
+} from "@heroicons/react/24/solid";
 
-// Dummy Data (Replace with real data fetched from your API)
-const featuredCarsForSale = [
-  {
-    id: "sale-1",
-    name: "2023 Mercedes-Benz C-Class",
-    price: "$48,999",
-    imageUrl:
-      "https://images.unsplash.com/photo-1594392237937-2309f7a9d0ce?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Mercedes-Benz C-Class",
-    mileage: "12,500 miles",
-    location: "Nairobi",
-  },
-  {
-    id: "sale-2",
-    name: "2022 Tesla Model 3",
-    price: "$42,500",
-    imageUrl:
-      "https://images.unsplash.com/photo-1616712134548-d3c299c8f654?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Tesla Model 3",
-    mileage: "8,200 miles",
-    location: "Mombasa",
-  },
-  {
-    id: "sale-3",
-    name: "2021 Toyota RAV4",
-    price: "$28,750",
-    imageUrl:
-      "https://images.unsplash.com/photo-1549495146-ce745c117d98?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Toyota RAV4",
-    mileage: "25,000 miles",
-    location: "Kisumu",
-  },
-  {
-    id: "sale-4",
-    name: "2020 Ford F-150",
-    price: "$39,000",
-    imageUrl:
-      "https://images.unsplash.com/photo-1627918451996-51d02c817290?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Ford F-150",
-    mileage: "35,000 miles",
-    location: "Nakuru",
-  },
-];
 
-const featuredCarsForRent = [
-  {
-    id: "rent-1",
-    name: "Compact Car Rental",
-    price: "$50/day",
-    imageUrl:
-      "https://images.unsplash.com/photo-1502877338535-766e133d3c63?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Compact rental car",
-    type: "Toyota Yaris or similar",
-    available: "Immediately",
-  },
-  {
-    id: "rent-2",
-    name: "SUV Adventure Rental",
-    price: "$90/day",
-    imageUrl:
-      "https://images.unsplash.com/photo-1503376780353-75505cd9662f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "SUV rental car",
-    type: "Nissan X-Trail or similar",
-    available: "Immediately",
-  },
-  {
-    id: "rent-3",
-    name: "Luxury Sedan Rental",
-    price: "$150/day",
-    imageUrl:
-      "https://images.unsplash.com/photo-1558981359-219d63c639c3?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Luxury sedan rental car",
-    type: "BMW 5 Series or similar",
-    available: "Next week",
-  },
-];
+// --- VehicleCard Component (Design stays same) ---
+const VehicleCard = ({
+  id,
+  name,
+  finalPrice,
+  images,
+  description,
+  badge,
+  type,
+  mileage,
+  slug,
+}: {
+  id: string;
+  name: string;
+  finalPrice?: number | null;
+  images?: string[];
+  description?: string | null;
+  badge?: "New Arrival" | "Hot Deal" | "Featured";
+  type?: string;
+  mileage?: number;
+  slug: string;
+}) => {
+  return (
+    <Link href={`/site/${slug}/listing/${id}`} passHref>
+      <motion.div
+        whileHover={{ y: -8, boxShadow: "0 15px 30px rgba(0,0,0,0.15)" }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden cursor-pointer group border border-gray-100 dark:border-gray-700"
+      >
+        {/* Badge */}
+        {badge && (
+          <motion.span
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className={clsx(
+              "absolute top-4 left-4 px-4 py-1.5 rounded-full text-sm font-bold text-white z-10 flex items-center gap-1",
+              badge === "New Arrival"
+                ? "bg-gradient-to-r from-green-500 to-emerald-600"
+                : badge === "Hot Deal"
+                ? "bg-gradient-to-r from-red-500 to-orange-600"
+                : "bg-gradient-to-r from-blue-500 to-indigo-600"
+            )}
+          >
+            {badge === "New Arrival" && <SparklesIcon className="w-4 h-4" />}
+            {badge === "Hot Deal" && <FireIcon className="w-4 h-4" />}
+            {badge === "Featured" && <TagIcon className="w-4 h-4" />}
+            {badge}
+          </motion.span>
+        )}
 
-// Framer Motion variants for animations
-const cardVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-  hover: { scale: 1.03, transition: { duration: 0.2 } },
+        {/* Image */}
+        <div className="relative w-full aspect-video overflow-hidden">
+          <Image
+            src={
+              images?.[0] ||
+              "https://placehold.co/600x400/EEE/31343C?text=No+Image"
+            }
+            alt={name}
+            layout="fill"
+            objectFit="cover"
+            loader={customLoader}
+            className="transform transition duration-500 group-hover:scale-110 brightness-90 group-hover:brightness-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+        </div>
+
+        {/* Details */}
+        <div className="p-6 space-y-3">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+            {name}
+          </h3>
+          <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+            {finalPrice?.toLocaleString("en-KE", {
+              style: "currency",
+              currency: "KES",
+            }) || "N/A"}
+          </p>
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 gap-3">
+            <HomeModernIcon className="w-5 h-5 text-gray-400" />
+            <span>{type || "Listing"}</span>
+            {mileage && (
+              <>
+                <span className="dot-separator">•</span>
+                <span>{mileage.toLocaleString()} km</span>
+              </>
+            )}
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02, backgroundColor: "#2563EB" }}
+            whileTap={{ scale: 0.98 }}
+            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            View Details
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
+          </motion.button>
+        </div>
+      </motion.div>
+    </Link>
+  );
 };
 
-// Next.js Image loader function
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+
+// --- Icons (Vehicle-specific) ---
+const DoorsIcon = (props: any) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25a2.25 2.25 0 012.25 
+    2.25v3.75a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 
+    15.75h2.25a2.25 2.25 0 002.25-2.25v-3.75a2.25 2.25 0 00-2.25-2.25H6a2.25 
+    2.25 0 00-2.25 2.25v3.75z" />
+  </svg>
+);
+
+const MileageIcon = (props: any) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" 
+      d="M6 13.5V3.75m0 9.75a4.5 4.5 0 016 0m-6 
+      0h6m-6 0V.75m6 12.75V3.75m0 9.75a4.5 4.5 0 
+      006 0m-6 0h-6m6 0h6" />
+  </svg>
+);
+
+const LocationIcon = (props: any) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" 
+      d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" 
+      d="M12 18.75a7.5 7.5 0 005.558-1.264 
+      7.5 7.5 0 00-4.023-3.704c.02-.516.048-.93.074-1.356A1.5 
+      1.5 0 0013.082 10.5H10.918a1.5 1.5 0 
+      00-1.502 1.264 7.5 7.5 0 00-4.023 
+      3.704A7.5 7.5 0 0012 18.75z" />
+  </svg>
+);
+
+// --- Image Loader ---
+const customLoader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+// --- Animation Variants ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+  },
 };
 
-export default function FeaturedListings() {
-  const [activeTab, setActiveTab] = useState("sale"); // 'sale' or 'rent'
+const itemVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 10 },
+  },
+};
 
-  const currentListings =
-    activeTab === "sale" ? featuredCarsForSale : featuredCarsForRent;
+export default function FeaturedListings({
+  listings,
+  slug,
+}: {
+  listings: MarketListingForm[];
+  slug: string;
+}) {
+  const [activeTab, setActiveTab] = useState("sale");
+
+  // 🔹 Filter by active tab (adjust logic to match your schema)
+  const currentListings = listings;
+  // .filter((item) => {
+    // Assuming 'type' property indicates sale or rent. Adjust this logic
+    // based on how you distinguish between sale and rent in your MarketListingForm type.
+    // For example, if you have a 'forSale: boolean' field:
+    // if (activeTab === "sale") return item.forSale;
+    // if (activeTab === "rent") return !item.forSale;
+
+    // Placeholder logic: Assuming a 'category' field or similar.
+    // You'll need to define this in your MarketListingForm type.
+  //   if (activeTab === "sale") {
+  //     return item.category === "sale"; // Or item.type === 'house' for sale
+  //   } else if (activeTab === "rent") {
+  //     return item.category === "rent"; // Or item.type === 'apartment' for rent
+  //   }
+  //   return false; // Default to no listings if tab is unexpected
+  // });
+  
+  // If no listings are available for the current tab
+  if (!currentListings || currentListings.length === 0) {
+    return (
+      <section className="bg-gray-50 dark:bg-gray-950 py-16 text-center text-gray-700 dark:text-gray-300">
+        <p className="text-xl">
+          No featured {activeTab} listings available at the moment. Please check
+          back soon!
+        </p>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-gray-50 to-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <section className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Heading */}
         <motion.h2
-          initial={{ opacity: 0, y: 30 }}
+          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
+          initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8 }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 drop-shadow-sm"
+          transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          Your Next Journey Starts Here
+          Explore Our{" "}
+          <span className="text-amber-500 dark:text-amber-400">
+            {activeTab === "sale" ? "Featured" : "Rental"}
+          </span>{" "}
+          Vehicles
+          <span className="block w-32 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" />{" "}
+          {/* Accent line */}
         </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto"
-        >
-          Explore our handpicked selection of top-rated cars for sale and exceptional rental deals.
-        </motion.p>
 
-        {/* Tab / Toggle for Buy vs Rent */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="inline-flex bg-white p-2 rounded-full shadow-lg mb-12 border border-gray-100"
-        >
-          <button
-            onClick={() => setActiveTab("sale")}
-            className={`px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
-              activeTab === "sale"
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-gray-800 hover:bg-gray-100"
-            }`}
-          >
-            Cars for Sale
-          </button>
-          <button
-            onClick={() => setActiveTab("rent")}
-            className={`px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
-              activeTab === "rent"
-                ? "bg-blue-600 text-white shadow-md"
-                : "text-gray-800 hover:bg-gray-100"
-            }`}
-          >
-            Cars for Rent
-          </button>
-        </motion.div>
+        {/* Toggle */}
+        <div className="flex justify-center mb-12">
+          <div className="bg-white dark:bg-gray-800 rounded-full shadow-lg p-2 flex">
+            <button
+              onClick={() => setActiveTab("sale")}
+              className={`px-8 py-3 rounded-full font-semibold ${
+                activeTab === "sale"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+            >
+              For Sale
+            </button>
+            <button
+              onClick={() => setActiveTab("rent")}
+              className={`px-8 py-3 rounded-full font-semibold ${
+                activeTab === "rent"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+            >
+              For Rent
+            </button>
+          </div>
+        </div>
 
         {/* Listings Grid */}
+        
         <motion.div
-          key={activeTab} // Key changes to re-trigger AnimatePresence on tab switch
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+          key={activeTab}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
         >
-          {currentListings.map((car) => (
-            <motion.div
-              key={car.id}
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              whileHover="hover"
-              viewport={{ once: true, amount: 0.3 }}
-              className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 overflow-hidden group border border-gray-100"
-            >
-              <div className="relative w-full h-48 sm:h-56 overflow-hidden">
-                <Image
-                  src={car.imageUrl}
-                  alt={car.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                  className="object-cover object-center transform group-hover:scale-105 transition-transform duration-500 ease-out"
-                  loader={imageLoader}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                <span className="absolute bottom-3 left-4 text-white text-xl font-bold">
-                  {car.price}
-                </span>
-              </div>
-              <div className="p-5 text-left">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {car.name}
-                </h3>
-                {activeTab === "sale" && (
-                  <>
-                    <p className="text-gray-600 text-sm mb-1">
-                      <span className="font-semibold">Mileage:</span>{" "}
-                      {car.mileage}
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      <span className="font-semibold">Location:</span>{" "}
-                      {car.location}
-                    </p>
-                  </>
-                )}
-                {activeTab === "rent" && (
-                  <>
-                    <p className="text-gray-600 text-sm mb-1">
-                      <span className="font-semibold">Type:</span> {car.type}
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      <span className="font-semibold">Availability:</span>{" "}
-                      {car.available}
-                    </p>
-                  </>
-                )}
-                <Link
-                  href={`/${activeTab === "sale" ? "car" : "rental"}/${car.id}`}
-                  className="mt-6 inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  View Details
-                  <ArrowRightIcon className="ml-2 -mr-1 h-5 w-5" />
-                </Link>
-              </div>
-            </motion.div>
+          {currentListings.map((item) => (
+            <VehicleCard
+              key={item.id}
+              id={item.id}
+              name={item.name}
+              finalPrice={item.finalPrice}
+              images={item.images}
+              description={item.description}
+              badge={"Featured"} // 🔹 You can map actual status field here if available
+              type={item.category || "Vehicle"}
+              mileage={0}
+              //item.area || undefined}
+              slug={slug}
+            />
           ))}
-        </motion.div>
-
-        {/* View All Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-16"
-        >
-          <Link
-            href={activeTab === "sale" ? "/cars" : "/rentals"}
-            className="inline-flex items-center px-8 py-4 border border-transparent text-xl font-bold rounded-full shadow-lg text-blue-600 bg-white hover:bg-gray-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            View All {activeTab === "sale" ? "Cars" : "Rentals"}
-            <ArrowRightIcon className="ml-3 h-6 w-6" />
-          </Link>
         </motion.div>
       </div>
     </section>
