@@ -434,6 +434,7 @@ export interface ProductForm {
   locationId?: string | null;
   
   currentBookedCount?: number | null;
+  
 }
 
 export interface MarketListingForm {

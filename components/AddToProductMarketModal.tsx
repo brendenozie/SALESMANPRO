@@ -464,8 +464,12 @@ export default function AddToProductMarketModal({
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target;
-      let parsed: any = value;
-      if (
+      let updatedValue: any = value;
+
+      // Handle checkboxes first
+      if (type === 'checkbox') {
+        updatedValue = (e.target as HTMLInputElement).checked;
+      } else if (
         [
           'discount',
           'buyingPrice',
@@ -478,9 +482,7 @@ export default function AddToProductMarketModal({
           'torque',
           'previousOwners',
           'year',
-          'bathrooms',
-          'bedrooms',
-          'studios',
+          'bathrooms', // Note: bathrooms is String? in your schema, but you're trying to parse it as a number here. Ensure consistency.
           'hourlyRate',
           'minimumHours',
           'totalCapacity',
@@ -488,19 +490,70 @@ export default function AddToProductMarketModal({
           'providerRating',
           'tax',
           'shippingCost',
-          'commissionRate',
+          // 'commissionRate', // This field does not exist in your MarketListingForm or model.
         ].includes(name)
       ) {
-        parsed = parseFloat(value) || 0;
-      } else if (type === 'checkbox') {
-        parsed = (e.target as HTMLInputElement).checked;
+        // For numeric fields, parse and handle empty values
+        const parsedNumber = parseFloat(value);
+        if (isNaN(parsedNumber)) {
+          // If parsing fails and value is empty, set to undefined. Otherwise, keep the parsed number (which might be 0 if parseFloat("") returned NaN and then || 0)
+          updatedValue = value === '' ? undefined : 0; // Or handle NaN specifically if needed
+        } else {
+          updatedValue = parsedNumber;
+        }
       } else if (value === '') {
-        parsed = undefined;
+        // For other fields, if empty, set to undefined
+        updatedValue = undefined;
       }
-      updateField(name as any, parsed);
+
+      // Safely update the form data using updateField
+      // TypeScript might need a bit more help here if 'name' is truly 'any'
+      // A more robust approach would be to map input names to their expected types.
+      updateField(name as keyof MarketListingForm, updatedValue as MarketListingForm[keyof MarketListingForm]);
     },
     [updateField]
   );
+
+  // const handleInputChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  //     const { name, value, type } = e.target;
+  //     let parsed: any = value;
+  //     if (
+  //       [
+  //         'discount',
+  //         'buyingPrice',
+  //         'sellingPrice',
+  //         'finalPrice',
+  //         'profitMargin',
+  //         'quantity',
+  //         'engineSize',
+  //         'horsepower',
+  //         'torque',
+  //         'previousOwners',
+  //         'year',
+  //         'bathrooms',
+  //         'bedrooms',
+  //         'studios',
+  //         'hourlyRate',
+  //         'minimumHours',
+  //         'totalCapacity',
+  //         'currentBookedCount',
+  //         'providerRating',
+  //         'tax',
+  //         'shippingCost',
+  //         'commissionRate',
+  //       ].includes(name)
+  //     ) {
+  //       parsed = parseFloat(value) || 0;
+  //     } else if (type === 'checkbox') {
+  //       parsed = (e.target as HTMLInputElement).checked;
+  //     } else if (value === '') {
+  //       parsed = undefined;
+  //     }
+  //     updateField(name as any, parsed);
+  //   },
+  //   [updateField]
+  // );
 
   const handleCategoryChange = useCallback(
     (cat: IStoreCategory | null) => {
@@ -511,6 +564,7 @@ export default function AddToProductMarketModal({
     },
     [updateField]
   );
+
   const handleSubCategoryChange = useCallback(
     (sub: any) => {
       updateField('subCategory', sub);
@@ -551,6 +605,7 @@ export default function AddToProductMarketModal({
       const payload = buildListingPayload(
         {
           ...formData,
+          category:formData.category.displayName || formData.category.name,
           companyId: companyId,
 
         },

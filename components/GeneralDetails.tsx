@@ -63,26 +63,15 @@ const InputField: React.FC<InputFieldProps> = ({
 // Mock CommissionSection Component
 interface CommissionSectionProps {
   formData: ProductForm;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
-const CommissionSection: React.FC<CommissionSectionProps> = ({ formData, handleChange }) => {
+const CommissionSection: React.FC<CommissionSectionProps> = ({ formData, handleInputChange }) => {
   const inputClasses = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* <InputField
-        label="Listing Price (KSH)"
-        name="price"
-        type="number"
-        value={formData.price ?? ""}
-        handleInputChange={handleChange}
-        required
-        placeholder="e.g., 150000"
-        className={inputClasses}
-        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
-      /> */}
-      <InputField
         label="Commission Rate (%)"
         name="commissionRate"
         type="number"
@@ -92,14 +81,14 @@ const CommissionSection: React.FC<CommissionSectionProps> = ({ formData, handleC
         placeholder="e.g., 10 (for 10%)"
         className={inputClasses}
         icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>}
-      />
+      /> */}
       <div className="md:col-span-2 flex items-center mt-2">
         <input
           id="isFeatured"
           name="isFeatured"
           type="checkbox"
           checked={formData.isFeatured ?? false}
-          onChange={handleChange}
+          onChange={handleInputChange}
           className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
         />
         <label htmlFor="isFeatured" className="ml-2 block text-sm font-medium text-gray-700">
@@ -113,24 +102,26 @@ const CommissionSection: React.FC<CommissionSectionProps> = ({ formData, handleC
 
 interface GeneralDetailsProps {
   formData: ProductForm; // Use the comprehensive form type for better type safety
-  updateField: (field: string, value: any) => void; // Renamed from setFormData
+  // updateField: (field: string, value: any) => void; // Renamed from setFormData
+    handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+
 }
 
-const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, updateField }) => {
+const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, handleInputChange }) => {
 
   // Centralized change handler using updateField
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      const { name, value, type, checked } = e.target as HTMLInputElement; // Type assertion for checked property
+  // const handleChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  //     const { name, value, type, checked } = e.target as HTMLInputElement; // Type assertion for checked property
 
-      if (type === "checkbox") {
-        updateField(name, checked);
-      } else {
-        updateField(name, type === "number" ? parseFloat(value) || "" : value);
-      }
-    },
-    [updateField] // Dependency on updateField ensures memoization works correctly
-  );
+  //     if (type === "checkbox") {
+  //       updateField(name, checked);
+  //     } else {
+  //       updateField(name, type === "number" ? parseFloat(value) || "" : value);
+  //     }
+  //   },
+  //   [updateField] // Dependency on updateField ensures memoization works correctly
+  // );
 
   // Common Tailwind CSS classes for consistent styling
   const baseInputClasses = "mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-3 focus:ring-blue-300 shadow-sm transition-all duration-200 ease-in-out text-gray-800 placeholder-gray-400";
@@ -178,7 +169,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, updateField }
                   ? ""
                   : (formData[name as keyof ProductForm] as string | number) ?? ""
               }
-              handleInputChange={handleChange}
+              handleInputChange={handleInputChange}
               required={required}
               placeholder={placeholder}
               className={baseInputClasses} // Pass the common input styles
@@ -205,7 +196,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, updateField }
               id="condition"
               name="condition"
               value={formData.condition ?? ""}
-              onChange={handleChange}
+              onChange={handleInputChange}
               className={`${selectClasses} transition-all duration-300 ease-in-out hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
               required
             >
@@ -233,7 +224,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, updateField }
               name="longDescription"
               rows={5} // Increased rows for more space
               value={formData.longDescription ?? ""}
-              onChange={handleChange}
+              onChange={handleInputChange}
               placeholder="Provide a comprehensive description including features, benefits, usage, and any specific specifications (e.g., engine size, battery life, material details)."
               className={`${textareaClasses} h-48`} // Adjusted height for more text
             />
@@ -248,10 +239,11 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, updateField }
       <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 space-y-6 transform transition-transform duration-300 hover:scale-[1.005]">
         <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-          Commission & Pricing Settings
+          {/* Commission & Pricing Settings */}
+          Feature On Homepage
         </h3>
         {/* CommissionSection will handle its own inputs and update using the provided handleChange */}
-        <CommissionSection formData={formData} handleChange={handleChange} />
+        <CommissionSection formData={formData} handleInputChange={handleInputChange} />
       </div>
     </section>
   );
