@@ -126,7 +126,7 @@ export default function DestinationManagementPage() {
       const locationsData = await locationsResponse.json();
 
       setDestinations(destinationsData || []);
-      setLocations(locationsData || []);
+      setLocations(locationsData.data || []);
     } catch (err: any) {
       setError(`Failed to fetch data: ${err.message}`);
     } finally {
