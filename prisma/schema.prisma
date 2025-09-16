@@ -349,6 +349,7 @@ model Company {
 
   Subscription Subscription[]
   CoreValues   CoreValues[]
+  Destination  Destination[]
 }
 
 enum CategoryStatus {
@@ -4492,6 +4493,9 @@ model Destination {
   activities      String[] // List of key activities or attractions (e.g., "Hiking", "Surfing")
   bestTimeToVisit String? // A string to describe the ideal season
   averageRating   Float? // User rating (e.g., 4.5)
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   locationId String   @db.ObjectId
   location   Location @relation(fields: [locationId], references: [id])
