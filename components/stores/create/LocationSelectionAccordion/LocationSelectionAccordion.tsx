@@ -10,13 +10,13 @@ import {
     BuildingLibraryIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from 'framer-motion';
-import { SelectedLocation, Location } from "@/types/typings";
+import { SelectedLocation, ILocation } from "@/types/typings";
 
 type Props = {
-    availableLocations: Location[];
+    availableLocations: ILocation[];
     // FIX: Change selectedLocations type to SelectedLocation[]
     selectedLocations: SelectedLocation[];
-    onToggleLocation: (location: Location, isSelected: boolean) => void;
+    onToggleLocation: (location: ILocation, isSelected: boolean) => void;
     onBulkToggle: (locationIds: string[]) => void;
     onApply?: () => void; // Optional, if you have an "Apply" button outside
 };
@@ -60,9 +60,9 @@ function SearchBar({
 }
 
 // Helper to build the location tree (copied from your admin page)
-const buildLocationTree = (locations: Location[]): Location[] => {
-    const locationMap: { [key: string]: Location } = {};
-    const tree: Location[] = [];
+const buildLocationTree = (locations: ILocation[]): ILocation[] => {
+    const locationMap: { [key: string]: ILocation } = {};
+    const tree: ILocation[] = [];
 
     locations.forEach(location => {
         locationMap[location.id] = { ...location, children: [] };
@@ -102,8 +102,8 @@ export default function LocationSelectionAccordion({
 
         if (!q) return locationTree;
 
-        const filterNodes = (nodes: Location[]): Location[] => {
-            return nodes.reduce((acc: Location[], node) => {
+        const filterNodes = (nodes: ILocation[]): ILocation[] => {
+            return nodes.reduce((acc: ILocation[], node) => {
                 const matches = node.name.toLowerCase().includes(q) ||
                                 node.city?.toLowerCase().includes(q) ||
                                 node.country?.toLowerCase().includes(q) ||
@@ -139,7 +139,7 @@ export default function LocationSelectionAccordion({
     // Get all IDs from the filtered tree for "Select All" functionality
     const allFilteredLocationIds = useMemo(() => {
         const ids: string[] = [];
-        const collectIds = (nodes: Location[]) => {
+        const collectIds = (nodes: ILocation[]) => {
             nodes.forEach(node => {
                 ids.push(node.id);
                 if (node.children) {
@@ -163,7 +163,7 @@ export default function LocationSelectionAccordion({
     useEffect(() => {
         if (search.trim()) {
             const newExpanded = new Set<string>();
-            const expandMatchingParents = (nodes: Location[]) => {
+            const expandMatchingParents = (nodes: ILocation[]) => {
                 nodes.forEach(node => {
                     const matches = node.name.toLowerCase().includes(search.toLowerCase()) ||
                                     (node.city && node.city.toLowerCase().includes(search.toLowerCase())) ||
@@ -198,7 +198,7 @@ export default function LocationSelectionAccordion({
     }, [search, filteredTree, selectedMap, availableLocations]); // Depend on availableLocations to trace parent chain
 
 
-    const renderLocationNode = (node: Location, level: number = 0) => {
+    const renderLocationNode = (node: ILocation, level: number = 0) => {
         const isSelected = selectedMap.has(node.id);
         const isOpen = expanded.has(node.id) || search.trim() !== ''; // Always open if searching
         const hasChildren = node.children && node.children.length > 0;
@@ -296,7 +296,7 @@ export default function LocationSelectionAccordion({
                                         <span className="font-medium text-gray-800">{parent.name}</span>
                                         <button
                                             // Cast parent to Location for onToggleLocation, as it expects Location type
-                                            onClick={() => onToggleLocation(parent as Location, false)}
+                                            onClick={() => onToggleLocation(parent as ILocation, false)}
                                             className="ml-auto p-1 text-gray-500 hover:text-red-500 focus:outline-none rounded-full hover:bg-red-50"
                                             aria-label={`Remove ${parent.name}`}
                                         >
@@ -312,8 +312,8 @@ export default function LocationSelectionAccordion({
                                                 >
                                                     {child.name}
                                                     <button
-                                                        // Cast child to Location for onToggleLocation
-                                                        onClick={() => onToggleLocation(child as Location, false)}
+                                                        // Cast child to ILocation for onToggleLocation
+                                                        onClick={() => onToggleLocation(child as ILocation, false)}
                                                         className="ml-1 focus:outline-none text-indigo-500 hover:text-indigo-700"
                                                     >
                                                         <XMarkIcon className="h-3 w-3" />

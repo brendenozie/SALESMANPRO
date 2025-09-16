@@ -600,6 +600,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}`,
       icon: HomeIcon
     },
+    { 
+      label: "Locations", 
+      href: `/admin/${adminSlug}/locations`, 
+      icon: MapPinIcon 
+    }, // company-locations properties-locations Manage geographic locations for listings    
     {
       label: "Destinations",
       href: `/admin/${adminSlug}/travel-destinations`,

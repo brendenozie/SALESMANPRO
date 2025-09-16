@@ -88,7 +88,7 @@ export default function LocationManagementPage({ params }: PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/admin/locations'); // Correct API endpoint for global locations
+      const response = await fetch(`/api/admin/locationsv2?companyId=${params.slug}`); // Correct API endpoint for global locations
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);

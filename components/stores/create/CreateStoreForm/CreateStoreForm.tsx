@@ -176,7 +176,7 @@ export default function CreateStoreForm({
     testimonials: [],
     heroSlides: [],
     promotions: [],
-    projects:[],
+    projects: [],
     StoreCategory: [],
 
     // --- NEW: Added missing core fields ---
@@ -189,6 +189,7 @@ export default function CreateStoreForm({
 
     events: [], // For company/school events
     Announcement: [], // For site announcements
+
 
     // --- JSON fields ---
     awards: [],
@@ -261,7 +262,9 @@ export default function CreateStoreForm({
     sEOId: null,
     settings: null,
     Collection: [],
-    CoreValues: []
+    CoreValues: [],
+    Expert: [],
+    packages: []
   };
 
   const [form, setForm] = useState<StoreForm>(() => {
