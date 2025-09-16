@@ -14,10 +14,13 @@ import prisma from "@/server/db/prismadb";
 // =======================================================================
 // GET: Fetch all destinations with their associated location data
 // =======================================================================
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
     // Use Prisma to find all destinations and include the related 'location' model
     const destinations = await prisma.destination.findMany({
+      where: { companyId: companyId },
       include: {
         location: true, // This will fetch the full Location object for each destination
       },

@@ -110,7 +110,7 @@ export default function DestinationManagementPage() {
     try {
       const [destinationsResponse, locationsResponse] = await Promise.all([
         fetch(`/api/admin/destinations?companyId=${slug}`),
-        fetch(`/api/admin/locations?companyId=${slug}`)
+        fetch(`/api/admin/locationsv2?companyId=${slug}`)
       ]);
 
       if (!destinationsResponse.ok) {
