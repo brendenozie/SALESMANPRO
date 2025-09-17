@@ -158,7 +158,7 @@ export const companySchema = z.object({
       facebookTag: z.string().nullable().optional(),
       hotjarSiteId: z.string().nullable().optional(),
       isActive: z.boolean().default(false),
-  }),//z.array().optional(),
+  }).nullable().optional(),//z.array().optional(),
   
   paymentSettings: z.object({
       stripeKey: z.string().nullable().optional(),
@@ -167,7 +167,7 @@ export const companySchema = z.object({
       mpesaConsumerKey: z.string().nullable().optional(),
       mpesaConsumerSecret: z.string().nullable().optional(),
       mpesaCallbackUrl: z.string().nullable().optional(),
-  }),//z.array().optional(),
+  }).nullable().optional(),//z.array().optional(),
 
   shippingSettings: z.object({
       carrierName: z.string().nullable().optional(),
@@ -175,7 +175,7 @@ export const companySchema = z.object({
       regions: z.any().nullable().optional(),
       enablePickup: z.boolean().nullable().optional(),
       pickupInstructions: z.string().nullable().optional(),
-  }),//z.array().optional(),
+  }).nullable().optional(),//z.array().optional(),
   
   // -- Many-to-Many through explicit join table --
   StoreCategory: z.array(storeCategorySchema).optional(),
