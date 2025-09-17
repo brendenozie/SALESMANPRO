@@ -385,7 +385,11 @@ export default function TravelSite() {
         <MeetAgents agents={storeFormData?.Expert} />
 
         {/* Market Insights */}
-        <MarketInsights />
+        <MarketInsights
+          virtualTours={storeFormData?.virtualTours}
+          blogPosts={storeFormData?.blogs}
+          regionCosts={storeFormData?.RegionCosts}
+        />
 
         {/* Virtual Tours */}
         <VirtualTours />
