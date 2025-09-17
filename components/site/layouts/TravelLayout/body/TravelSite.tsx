@@ -376,13 +376,13 @@ export default function TravelSite() {
         <FilterBar />
 
         {/* Listings Section */}
-        <Listings />
+        <Listings listings={storeFormData?.marketplaceListings} slug={'slug'}/>
 
         {/* Trending Locations */}
         <TrendingLocations />
 
         {/* Meet Agents */}
-        <MeetAgents />
+        <MeetAgents agents={storeFormData?.Expert} />
 
         {/* Market Insights */}
         <MarketInsights />
