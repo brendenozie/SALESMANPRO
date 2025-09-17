@@ -18,7 +18,7 @@ import {
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import { IDestination, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 
 /**
  * Banner-focused HeroSection
@@ -54,7 +54,9 @@ interface SearchFilters {
 
 interface Props {
   storeFormData?: StoreForm | null;
-  onSearch: (filters: SearchFilters) => void;
+  onSearch: (filters: SearchFilters) => void;  
+  filters: SearchFilters;
+  setFilters: (filters: SearchFilters) => void;
   trendingLocations?: TrendingLocation[];
 }
 
@@ -116,11 +118,20 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 
 /* ---------------------------- Component ------------------------------- */
-export default function HeroSection({ storeFormData, onSearch, trendingLocations = [] }: Props) {
+export default function HeroSection({ storeFormData, onSearch, trendingLocations = [] ,
+  filters,
+  setFilters,}: Props) {
   // slides (store provides heroSlides in many of your models)
   const heroSlides = storeFormData?.heroSlides && storeFormData.heroSlides.length > 0
     ? storeFormData.heroSlides.map((h, idx) => ({ ...h, id: h.id ?? idx }))
     : defaultHeroSlides;
+
+  const { destinations = [], tourPackages = [] } = storeFormData;
+
+  // Filtered destinations
+  const filteredDestinations = destinations.filter((d) =>
+    d.name.toLowerCase().includes(filters.destination.toLowerCase())
+  );
 
   // categories: prefer store.StoreCategory if available, otherwise curated fallback
   const rawCategories = useMemo(() => {
@@ -137,6 +148,16 @@ export default function HeroSection({ storeFormData, onSearch, trendingLocations
     return curatedCategoriesFallback as IStoreCategory[];
   }, [storeFormData]);
 
+  
+  const handleDestinationSelect = useCallback(
+    (d: IDestination) => {
+      setFilters({ ...filters, destination: d.name });
+      setIsDestinationDropdownOpen(false);
+      setIsDestinationInputFocused(false);
+    },
+    [filters, setFilters]
+  );
+  
   // slideshow state
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);
@@ -150,6 +171,10 @@ export default function HeroSection({ storeFormData, onSearch, trendingLocations
   const [guests, setGuests] = useState<number>(2);
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
+
+  const [isDestinationDropdownOpen, setIsDestinationDropdownOpen] = useState(false);
+  const [isDestinationInputFocused, setIsDestinationInputFocused] = useState(false);
+  const destinationDropdownRef = useRef<HTMLDivElement | null>(null);
 
   // dropdown refs & open states
   const categoriesRef = useRef<HTMLDivElement | null>(null);
@@ -381,6 +406,47 @@ export default function HeroSection({ storeFormData, onSearch, trendingLocations
                 )}
               </AnimatePresence>
             </div>
+
+          {/* Destination input */}
+          <div className="relative col-span-2" ref={destinationDropdownRef}>
+            <MapPinIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-emerald-600" />
+            <input
+              type="text"
+              placeholder="Where to?"
+              value={filters.destination}
+              onChange={(e) => {
+                setFilters({ ...filters, destination: e.target.value });
+                setIsDestinationDropdownOpen(e.target.value.length > 0);
+                setIsDestinationInputFocused(true);
+              }}
+              onFocus={() => setIsDestinationInputFocused(true)}
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 text-gray-900 border border-gray-200 focus:ring-4 focus:ring-amber-400/50"
+            />
+            <AnimatePresence>
+              {isDestinationInputFocused && filteredDestinations.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full mt-2 w-full bg-white rounded-xl shadow-lg border overflow-hidden z-50"
+                >
+                  <ul className="py-2 max-h-48 overflow-y-auto">
+                    {filteredDestinations.map((d) => (
+                      <li key={d.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleDestinationSelect(d)}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                        >
+                          {d.name} {d.country && `(${d.country})`}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
             {/* Category (col-span 3) */}
             <div className="relative col-span-3 md:col-span-3" ref={categoriesRef}>
