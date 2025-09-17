@@ -620,6 +620,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/travel-users`,
       icon: UsersIcon
     },
+    { label: "Listings", 
+      href: `/admin/${adminSlug}/travel-experiences`, 
+      icon: BuildingOfficeIcon 
+    }, // vehicle-manage Manage all property listings (add, edit, delete, status)
     {
       label: "Travel Experts",
       href: `/admin/${adminSlug}/travel-experts`,

@@ -372,17 +372,11 @@ export default function TravelSite() {
             : []
           }
       />
-
-      <main className="space-y-16 px-4 lg:px-24">
         {/* Filter Bar */}
         <FilterBar />
 
         {/* Listings Section */}
-        <section className="py-12 bg-gray-50">
-          <div className="container mx-auto px-6">
-            <Listings />
-          </div>
-        </section>
+        <Listings />
 
         {/* Trending Locations */}
         <TrendingLocations />
@@ -411,7 +405,6 @@ export default function TravelSite() {
             💬
           </button>
         </motion.div>
-      </main>
     </div>
   );
 }

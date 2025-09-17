@@ -296,7 +296,7 @@ export default function HeroSection({
   );
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Dynamic Background Slider */}
       <AnimatePresence initial={false} custom={direction}>
         {heroSlides.map((slide, idx) =>
