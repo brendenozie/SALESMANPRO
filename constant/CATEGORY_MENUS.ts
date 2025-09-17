@@ -233,6 +233,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   
   "Nonprofit & Community": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
     { label: "Donations", href: `/admin/${adminSlug}/donations`, icon: HeartIcon },
     { label: "Campaigns", href: `/admin/${adminSlug}/campaigns`, icon: MegaphoneIcon }, // Added Campaigns link
@@ -255,6 +256,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
  "Event & Ticketing": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "POS", href: `/admin/${adminSlug}/company-pos`, icon: CreditCardIcon }, // Changed icon for POS for better representation
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },    
     {
       label:"Users",
@@ -357,6 +359,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Healthcare & Clinics": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "POS", href: `/admin/${adminSlug}/health-pos`, icon: ClipboardDocumentListIcon },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Patients", href: `/admin/${adminSlug}/health-patients`, icon: UsersIcon },
     { label: "Appointments", href: `/admin/${adminSlug}/health-appointments`, icon: CalendarIcon },
     { label: "Doctors", href: `/admin/${adminSlug}/health-doctors`, icon: BriefcaseIcon },
@@ -379,7 +382,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   ],
 
   "SaaS & Web Apps": [
-      {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },
+      {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },      
+      { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon }, 
       {
         label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
       {
@@ -437,11 +441,12 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
       }
-    ],
-    
+    ],   
 
   "Dashboards": [
       {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },
+      { label: "Categories", href: `/dashboards/cated`, icon: ClipboardDocumentListIcon },      
+      { label: "Locations", href: `/dashboards/locat`, icon: ClipboardDocumentListIcon },
       {
         label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
       {
@@ -507,6 +512,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}`, 
       icon: HomeIcon,
     },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { 
       label: "Content Library", // Renamed for clarity
       href: `/admin/${adminSlug}/media-content`, // Unified content management
@@ -552,15 +558,16 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/media-featured-picks`,
       icon: StarIcon,
     },
-    // {
-    //   label: "Blogs",
-    //   icon: DocumentTextIcon,
-    //   href: `/admin/${adminSlug}/blogs`
-    // },
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      href: `/admin/${adminSlug}/blogs`
+    },
   ],
 
   "Finance & Legal": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Clients", href: `/admin/${adminSlug}/finance-clients`, icon: UsersIcon },
     { label: "Experts/Team", href: `/admin/${adminSlug}/finance-team`, icon: ShieldCheckIcon }, // Manage experts/advisors
     { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
@@ -600,6 +607,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}`,
       icon: HomeIcon
     },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { 
       label: "Locations", 
       href: `/admin/${adminSlug}/locations`, 
@@ -665,10 +673,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: Cog6ToothIcon
     }
   ],
-
   "Fitness & Wellness": [
         { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overview of gym activity
         { label: "POS & Sales", href: `/admin/${adminSlug}/fitness-pos`, icon: CurrencyDollarIcon }, // Point of Sale and transaction management
+        { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
         { label: "Programs & Classes", href: `/admin/${adminSlug}/fitness-programs`, icon : ClipboardDocumentListIcon}, // Manage fitness programs, classes, schedules
         { label: "Trainers & Staff", href: `/admin/${adminSlug}/fitness-trainers`, icon : BriefcaseIcon}, // Manage trainer profiles, availability
         { label: "Clients & Members", href: `/admin/${adminSlug}/fitness-clients`, icon : UsersIcon}, // Manage client accounts, memberships, progress

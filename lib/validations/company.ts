@@ -171,7 +171,7 @@ export const companySchema = z.object({
 
   shippingSettings: z.object({
       carrierName: z.string().nullable().optional(),
-      trackingUrl: z.string().url().nullable().optional().or(z.literal('')),
+      trackingUrl: z.string().nullable().optional().or(z.literal('')),//.url()
       regions: z.any().nullable().optional(),
       enablePickup: z.boolean().nullable().optional(),
       pickupInstructions: z.string().nullable().optional(),
