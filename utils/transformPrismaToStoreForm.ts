@@ -277,5 +277,45 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   Announcement: Array.isArray(raw.Announcement) ? raw.Announcement : [],  
   Collection: Array.isArray(raw.Collection) ? raw.Collection : [],
   CoreValues: Array.isArray(raw.CoreValues) ? raw.CoreValues : typeof raw.CoreValues === 'string' ? JSON.parse(raw.CoreValues) : [],
+  destinations: Array.isArray(raw.Destination)
+      ? raw.Destination.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          slug: d.slug,
+          country: d.country,
+          continent: d.continent,
+          description: d.description,
+          longDescription: d.longDescription ?? '',
+          images: Array.isArray(d.images) ? d.images : [],
+          bannerImage: d.bannerImage,
+          activities: Array.isArray(d.activities) ? d.activities : [],
+          bestTimeToVisit: d.bestTimeToVisit ?? '',
+          averageRating: d.averageRating ?? null,
+          published: d.published ?? false,
+        }))
+      : [],
+
+    // ✅ Add TourPackages
+    tourPackages: Array.isArray(raw.TourPackage)
+      ? raw.TourPackage.map((tp: any) => ({
+          id: tp.id,
+          name: tp.name,
+          slug: tp.slug,
+          description: tp.description,
+          longDescription: tp.longDescription ?? '',
+          duration: tp.duration,
+          price: tp.price,
+          status: tp.status,
+          imageUrl: tp.imageUrl,
+          images: Array.isArray(tp.images) ? tp.images : [],
+          destinations: tp.destinations?.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            slug: d.slug,
+            country: d.country,
+          })) ?? [],
+        }))
+      : [],
+
 };
 }

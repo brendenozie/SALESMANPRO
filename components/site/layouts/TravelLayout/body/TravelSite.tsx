@@ -357,6 +357,20 @@ export default function TravelSite() {
         filters={filters}
         setFilters={setFilters}
         onSearch={handleSearch}
+        trendingLocations={
+          storeFormData?.CompanyLocation
+            ? storeFormData?.CompanyLocation.map((loc: any) => ({
+                // Map/transform to Location type as needed
+                name: loc.name,
+                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                metaKeywords: loc.metaKeywords || "",
+                status: loc.status || "active",
+                parentId: loc.parentId || null,
+                // Spread any additional fields if needed
+                ...loc,
+              }))
+            : []
+          }
       />
 
       <main className="space-y-16 px-4 lg:px-24">

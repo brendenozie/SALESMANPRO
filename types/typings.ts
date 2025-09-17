@@ -614,6 +614,36 @@ export interface SelectedLocation {
   children: SelectedLocation[];
 }
 
+export interface IDestination {
+  id: string;
+  name: string;
+  slug: string;
+  country: string;
+  continent: string;
+  description: string;
+  longDescription?: string;
+  images: string[];
+  bannerImage?: string | null;
+  activities: string[];
+  bestTimeToVisit?: string | null;
+  averageRating?: number | null;
+  published: boolean;
+}
+
+export interface ITourPackage {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  longDescription?: string;
+  duration: string;
+  price: number;
+  status: string;
+  imageUrl?: string | null;
+  images: string[];
+  destinations: Pick<IDestination, "id" | "name" | "slug" | "country">[]; // lightweight relation
+}
+
 //################################################################################
 //## MAIN STORE FORM INTERFACE (Represents the Company model for forms)
 //################################################################################
@@ -696,6 +726,8 @@ export interface StoreForm {
   packages: any[];
   Podcast: any[];
   services: any[];
+  destinations: IDestination[];
+  tourPackages: ITourPackage[];
 }
 
 //################################################################################

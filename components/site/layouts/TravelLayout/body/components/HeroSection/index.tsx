@@ -1,179 +1,604 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import {
   MapPinIcon,
   CalendarDaysIcon,
   UserGroupIcon,
-  MagnifyingGlassIcon,
+  CurrencyDollarIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
-import Link from "next/link";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 
-// --- Types (as defined before) ---
+/**
+ * Banner-focused HeroSection
+ * - immersive rotating background
+ * - left: headline + search
+ * - right: category cards (curated fallback)
+ * - supports nested subcategories if store provides them
+ */
+
+/* ----------------------------- Types ----------------------------------- */
 interface HeroSlide {
-  type: "image" | "video";
+  type?: "image" | "video";
   url: string;
-  headline: string;
-  subline: string;
+  headline?: string;
+  subline?: string;
+  // optional id for keying
+  id?: string | number;
 }
-interface Destination { name: string; }
-interface TripType { name: string; }
 
-interface StoreForm {
-  name?: string;
-  heroSlides?: HeroSlide[];
-  popularDestinations?: Destination[];
-  tripTypes?: TripType[];
+interface TrendingLocation {
+  name: string;
 }
 
 interface SearchFilters {
   destination: string;
-  tripType: string;
-  date: string;
-  guests: number;
+  category?: string;
+  subcategory?: string;
+  date?: string;
+  guests?: number;
+  minPrice?: string;
+  maxPrice?: string;
 }
 
-interface HeroProps {
-  storeFormData: StoreForm;
-  filters: SearchFilters;
-  setFilters: (filters: SearchFilters) => void;
-  onSearch: (e: React.FormEvent) => void;
+interface Props {
+  storeFormData?: StoreForm | null;
+  onSearch: (filters: SearchFilters) => void;
+  trendingLocations?: TrendingLocation[];
 }
 
-
-// --- Dummy Data (can be passed via props) ---
-const defaultHeroSlides: HeroSlide[] = [
-    { type: "video", url: "/assets/hero-travel.mp4", headline: "Explore the World, Create Unforgettable Memories", subline: "Your next adventure awaits. Discover breathtaking destinations and plan your perfect journey with ease." },
-    { type: "image", url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2940&auto=format=fit=crop", headline: "Serene Lakeside Escapes", subline: "Find tranquility and beauty in the world's most stunning lakeside locations." },
-    { type: "image", url: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2940&auto=format=fit=crop", headline: "Adventure is Calling", subline: "From majestic mountains to rushing rivers, your greatest adventure is just a click away." },
+/* ------------------------- curated fallback ---------------------------- */
+/*  shaped to be compatible with IStoreCategory-ish shape */
+const curatedCategoriesFallback: Partial<IStoreCategory>[] = [
+  { id: "adventure", displayName: "Adventure", visible: true },
+  { id: "family", displayName: "Family", visible: true },
+  { id: "luxury", displayName: "Luxury",  visible: true },
+  { id: "romantic", displayName: "Romantic",visible: true },
+  { id: "cultural", displayName: "Cultural",  visible: true },
+  { id: "beach", displayName: "Beach",  visible: true },
+  { id: "wildlife", displayName: "Wildlife", visible: true },
 ];
-const defaultPopularDestinations: Destination[] = [ { name: "Paris, France" }, { name: "Kyoto, Japan" }, { name: "Rome, Italy" }, { name: "Bali, Indonesia" } ];
-const defaultTripTypes: TripType[] = [ { name: "Adventure Travel" }, { name: "Relaxation Getaway" }, { name: "Cultural Exploration" } ];
-const autoAdvanceDelay = 8000;
 
-// Animation variants from your original component
-const containerVariants = { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.15, delayChildren: 0.3 } } };
-const itemVariants = { hidden: { opacity: 0, y: 50, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 120, damping: 18 } } };
+/* --------------------------- defaults ---------------------------------- */
+const defaultHeroSlides: HeroSlide[] = [
+  {
+    id: "1",
+    type: "image",
+    url:
+      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2940&auto=format&fit=crop",
+    headline: "Explore the World",
+    subline: "Curated experiences & packages tailored for you.",
+  },
+  {
+    id: "2",
+    type: "image",
+    url:
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2940&auto=format&fit=crop",
+    headline: "Adventure Awaits",
+    subline: "From mountains to coasts — find your perfect escape.",
+  },
+];
+
+const autoAdvanceDelay = 6000;
+const transitionDuration = 0.9;
+
+/* --------------------------- framer variants --------------------------- */
+const bgVariants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1, transition: { duration: transitionDuration } },
+  exit: { opacity: 0, transition: { duration: transitionDuration } },
+};
+
+const categoryCardVariants = {
+  hidden: { opacity: 0, y: 18, scale: 0.98 },
+  visible: (i = 1) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { delay: 0.12 * i, duration: 0.36, ease: "easeOut" },
+  }),
+};
+
+/* ------------------------------ loader -------------------------------- */
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
 
-export default function Hero({ storeFormData, filters, setFilters, onSearch }: HeroProps) {
-  const heroSlides = storeFormData?.heroSlides?.length ? storeFormData.heroSlides : defaultHeroSlides;
-  const popularDestinations = storeFormData?.popularDestinations?.length ? storeFormData.popularDestinations : defaultPopularDestinations;
-  const tripTypes = storeFormData?.tripTypes?.length ? storeFormData.tripTypes : defaultTripTypes;
+/* ---------------------------- Component ------------------------------- */
+export default function HeroSection({ storeFormData, onSearch, trendingLocations = [] }: Props) {
+  // slides (store provides heroSlides in many of your models)
+  const heroSlides = storeFormData?.heroSlides && storeFormData.heroSlides.length > 0
+    ? storeFormData.heroSlides.map((h, idx) => ({ ...h, id: h.id ?? idx }))
+    : defaultHeroSlides;
 
-  const [current, setCurrent] = useState<number>(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const advanceSlide = useCallback(() => setCurrent((prev) => (prev + 1) % heroSlides.length), [heroSlides.length]);
+  // categories: prefer store.StoreCategory if available, otherwise curated fallback
+  const rawCategories = useMemo(() => {
+    const storeCats = (storeFormData as any)?.StoreCategory;
+    if (Array.isArray(storeCats) && storeCats.length > 0) {
+      // normalize: ensure each cat has subcategories array in consistent key
+      return storeCats.map((c: any) => ({
+        ...c,
+        // support both `subcategories` and `Subcategory` shapes
+        subcategories: c.subcategories ?? c.Subcategory ?? [],
+      })) as IStoreCategory[];
+    }
+    // fallback: cast curated to IStoreCategory-ish (minimal fields)
+    return curatedCategoriesFallback as IStoreCategory[];
+  }, [storeFormData]);
+
+  // slideshow state
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
+  const [direction, setDirection] = useState<number>(0);
+  const slideTimerRef = useRef<number | null>(null);
+
+  // search states
+  const [destination, setDestination] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<IStoreCategory | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<ISubcategory | null>(null);
+  const [date, setDate] = useState<string>("");
+  const [guests, setGuests] = useState<number>(2);
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+
+  // dropdown refs & open states
+  const categoriesRef = useRef<HTMLDivElement | null>(null);
+  const subcatRef = useRef<HTMLDivElement | null>(null);
+  const destRef = useRef<HTMLDivElement | null>(null);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isSubcatOpen, setIsSubcatOpen] = useState(false);
+  const [isDestOpen, setIsDestOpen] = useState(false);
+
+  // filtered trending locations for suggestions
+  const filteredTrendingLocations = useMemo(
+    () =>
+      (trendingLocations || []).filter((t) =>
+        t.name.toLowerCase().includes(destination.toLowerCase())
+      ),
+    [trendingLocations, destination]
+  );
+
+  /* ---------------------- slideshow (auto advance) --------------------- */
+  const resetSlideTimer = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (slideTimerRef.current) {
+      window.clearTimeout(slideTimerRef.current);
+    }
+    if (heroSlides.length > 0) {
+      slideTimerRef.current = window.setTimeout(() => {
+        setDirection(1);
+        setCurrentSlide((s) => (s + 1) % heroSlides.length);
+      }, autoAdvanceDelay);
+    }
+  }, [heroSlides.length]);
+
   useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(advanceSlide, autoAdvanceDelay);
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [current, advanceSlide]);
+    resetSlideTimer();
+    return () => {
+      if (slideTimerRef.current) {
+        window.clearTimeout(slideTimerRef.current);
+      }
+    };
+  }, [currentSlide, resetSlideTimer]);
+
+  /* ----------------- outside click -> close dropdowns ------------------ */
+  useEffect(() => {
+    const onDocClick = (ev: MouseEvent) => {
+      const target = ev.target as Node;
+      if (destRef.current && !destRef.current.contains(target)) {
+        setIsDestOpen(false);
+      }
+      if (categoriesRef.current && !categoriesRef.current.contains(target)) {
+        setIsCategoryOpen(false);
+        setIsSubcatOpen(false);
+      }
+      if (subcatRef.current && !subcatRef.current.contains(target)) {
+        setIsSubcatOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  /* -------------------------- handlers ------------------------------- */
+  const prevSlide = useCallback(() => {
+    setDirection(-1);
+    setCurrentSlide((s) => (s - 1 + heroSlides.length) % heroSlides.length);
+    resetSlideTimer();
+  }, [heroSlides.length, resetSlideTimer]);
+
+  const nextSlide = useCallback(() => {
+    setDirection(1);
+    setCurrentSlide((s) => (s + 1) % heroSlides.length);
+    resetSlideTimer();
+  }, [heroSlides.length, resetSlideTimer]);
+
+  const handleSelectCategory = (cat: IStoreCategory) => {
+    setSelectedCategory(cat);
+    setSelectedSubcategory(null);
+    setIsCategoryOpen(false);
+    // open subcategory panel if there are subcategories (desktop)
+    if ((cat.subcategories ?? []).length > 0) {
+      setIsSubcatOpen(true);
+    }
+  };
+
+  const handleSelectSubcategory = (sub: ISubcategory) => {
+    setSelectedSubcategory(sub);
+    setIsSubcatOpen(false);
+  };
+
+  const handleDestinationPick = (name: string) => {
+    setDestination(name);
+    setIsDestOpen(false);
+  };
+
+  const submitSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    onSearch({
+      destination,
+      category: selectedCategory?.id ?? selectedCategory?.id,
+      subcategory: selectedSubcategory?.id ?? selectedSubcategory?.slug,
+      date,
+      guests,
+      minPrice,
+      maxPrice,
+    });
+  };
+
+  /* -------------------------- responsive --------------------------------
+     We'll render categories as cards on the right on desktop, horizontal
+     swipeable pills on mobile (CSS scroll snap).
+  ----------------------------------------------------------------------- */
 
   return (
-    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-      {/* Dynamic Backgrounds (Logic unchanged) */}
-      <AnimatePresence initial={false}>
-        <motion.div key={current} className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.5 }}>
-          {heroSlides[current].type === "image" ? ( <Image src={heroSlides[current].url} alt={heroSlides[current].headline} fill priority className="object-cover" /> ) : ( <video src={heroSlides[current].url} autoPlay muted loop playsInline className="h-full w-full object-cover" /> )}
-        </motion.div>
+    <section className="relative h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950">
+      {/* Background slideshow */}
+      <AnimatePresence initial={false} custom={direction}>
+        {heroSlides.map((slide, i) =>
+          i === currentSlide ? (
+            <motion.div
+              key={slide.id ?? i}
+              className="absolute inset-0 z-0"
+              custom={direction}
+              variants={bgVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+            >
+              {slide.type === "video" ? (
+                <video
+                  src={slide.url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                // next/image requires layout props in older next versions; using fill
+                <Image
+                  src={slide.url || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2940&auto=format&fit=crop'}
+                  alt={slide.headline ?? "hero background"}
+                  fill
+                  priority
+                  className="object-cover"
+                  loader={loader}
+                />
+              )}
+            </motion.div>
+          ) : null
+        )}
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/30" />
 
-      {/* Dynamic Content (Logic unchanged) */}
-      <motion.div key={current} className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white max-w-5xl mx-auto" variants={containerVariants} initial="hidden" animate="visible">
-        <motion.h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight drop-shadow-lg" variants={itemVariants}>
-          {heroSlides[current].headline}
-        </motion.h1>
-        <motion.p className="mt-4 text-lg sm:text-xl md:text-2xl text-gray-200 max-w-2xl drop-shadow" variants={itemVariants}>
-          {heroSlides[current].subline}
-        </motion.p>
+      {/* dark gradient overlay for contrast */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-black/10 to-white/60 mix-blend-normal" />
 
-        {/* --- FORM WITH ORIGINAL DESIGN AND NEW DATA BINDINGS --- */}
-        <motion.form
-          className="mt-12 bg-white rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-4xl"
-          variants={itemVariants}
-          onSubmit={onSearch}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            
-            {/* Destination Input (Original styles, new value/onChange) */}
-            <div className="relative">
-              <MapPinIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
+      {/* Content container */}
+      <div className="relative z-20 max-w-[1280px] mx-auto h-full px-6 md:px-10 lg:px-16 flex items-center">
+        {/* Left column: content & search */}
+        <div className="w-full lg:w-2/3 pr-0 lg:pr-12 text-white">
+          <motion.h1
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {heroSlides[currentSlide]?.headline ?? "Find Your Next Adventure"}
+          </motion.h1>
+
+          <motion.p
+            className="mt-4 max-w-2xl text-lg sm:text-xl text-gray-100/90"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12, duration: 0.8 }}
+          >
+            {heroSlides[currentSlide]?.subline ??
+              "Discover curated trips, packages and destinations crafted for unforgettable experiences."}
+          </motion.p>
+
+          {/* Search + CTA */}
+          <motion.form
+            onSubmit={(e) => {
+              submitSearch(e);
+            }}
+            className="mt-8 bg-white/95 dark:bg-gray-900/80 backdrop-blur-md rounded-3xl shadow-2xl p-4 md:p-5 grid grid-cols-1 md:grid-cols-12 gap-3 items-center"
+            initial={{ opacity: 0, y: 16, scale: 0.995 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.18 }}
+            aria-label="Find trips"
+          >
+            {/* Destination (col-span 5) */}
+            <div
+              className="relative col-span-5 md:col-span-5"
+              ref={destRef}
+            >
+              <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-600" />
               <input
                 type="text"
-                list="destinations" // Added for suggestions
-                value={filters.destination}
-                onChange={(e) => setFilters({ ...filters, destination: e.target.value })}
-                placeholder="Where do you want to go?"
-                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200"
+                aria-label="Destination"
+                placeholder="Where are you going?"
+                value={destination}
+                onChange={(e) => {
+                  setDestination(e.target.value);
+                  setIsDestOpen(e.target.value.length > 0);
+                }}
+                onFocus={() => setIsDestOpen(destination.length > 0)}
+                className="w-full pl-11 pr-3 py-2.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 transition"
               />
-              <datalist id="destinations">
-                {popularDestinations.map((dest) => <option key={dest.name} value={dest.name} />)}
-              </datalist>
+              {/* suggestions */}
+              <AnimatePresence>
+                {isDestOpen && filteredTrendingLocations.length > 0 && (
+                  <motion.ul
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.14 }}
+                    className="absolute mt-2 left-0 right-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden max-h-44 z-40"
+                  >
+                    {filteredTrendingLocations.map((t, idx) => (
+                      <li key={idx}>
+                        <button
+                          type="button"
+                          onClick={() => handleDestinationPick(t.name)}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {t.name}
+                        </button>
+                      </li>
+                    ))}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Travel Type Select (Original styles, new value/onChange, dynamic options) */}
-            <div className="relative">
-              <span className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6">✈️</span>
-              <select
-                value={filters.tripType}
-                onChange={(e) => setFilters({ ...filters, tripType: e.target.value })}
-                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer transition duration-200"
-              >
-                {tripTypes.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
-              </select>
-               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+            {/* Category (col-span 3) */}
+            <div className="relative col-span-3 md:col-span-3" ref={categoriesRef}>
+              <div className="relative">
+                <select
+                  aria-label="Trip category"
+                  className="w-full pl-3 pr-3 py-2.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white text-gray-800 focus:outline-none"
+                  value={selectedCategory?.id ?? ""}
+                  onChange={(e) => {
+                    const cat = rawCategories.find((c) => c.id === e.target.value);
+                    if (cat) handleSelectCategory(cat as IStoreCategory);
+                  }}
+                >
+                  <option value="">All categories</option>
+                  {rawCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.displayName}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {/* Subcategory popover (desktop) */}
+              <AnimatePresence>
+                {selectedCategory && (selectedCategory.subcategories ?? []).length > 0 && isSubcatOpen && (
+                  <motion.div
+                    ref={subcatRef}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute top-full mt-2 right-0 w-full md:w-[320px] bg-white dark:bg-gray-800 rounded-xl shadow-lg border z-40 overflow-hidden"
+                  >
+                    <ul className="py-2 max-h-48 overflow-y-auto">
+                      {(selectedCategory.subcategories ?? []).map((s: any) => (
+                        <li key={s.id}>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectSubcategory(s)}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          >
+                            {s.displayName ?? s.name ?? s.slug}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Date Picker (Original styles, new value/onChange) */}
-            <div className="relative">
-              <CalendarDaysIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
+            {/* Date (col-span 2) */}
+            <div className="relative col-span-2 md:col-span-2">
+              <CalendarDaysIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-600" />
               <input
                 type="date"
-                value={filters.date}
-                onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200"
+                aria-label="Date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full pl-11 pr-3 py-2.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white text-gray-800 focus:outline-none"
               />
             </div>
 
-            {/* Guests Input (Original styles, new value/onChange) */}
-            <div className="relative">
-              <UserGroupIcon className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-500 w-6 h-6" />
+            {/* Guests (col-span 1) */}
+            <div className="relative col-span-1 md:col-span-1">
+              <UserGroupIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-600" />
               <input
                 type="number"
+                aria-label="Guests"
                 min={1}
-                max={10}
-                value={filters.guests}
-                onChange={(e) => setFilters({ ...filters, guests: Number(e.target.value) })}
-                className="w-full rounded-full border border-gray-300 pl-12 pr-4 py-3 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-200"
-                placeholder="Guests"
+                max={20}
+                value={guests}
+                onChange={(e) => setGuests(Math.max(1, Number(e.target.value || 1)))}
+                className="w-full pl-11 pr-3 py-2.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white text-gray-800 focus:outline-none"
               />
             </div>
-          </div>
 
-          {/* Button and Links (Original styles, new onSubmit on form) */}
-          <button type="submit" className="mt-6 w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8 py-4 font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 flex items-center justify-center gap-2">
-            <MagnifyingGlassIcon className="h-6 w-6" /> Search Your Journey
-          </button>
-          <div className="mt-8 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-indigo-700 font-medium">
-            <Link href="/host" passHref>
-              <motion.a className="hover:underline hover:text-indigo-900 transition" variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                🌍 Become a Host
-              </motion.a>
-            </Link>
-            <Link href="/contact" passHref>
-              <motion.a className="hover:underline hover:text-indigo-900 transition" variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                📞 Contact Travel Expert
-              </motion.a>
-            </Link>
+            {/* CTA column (full width on small, small on large) */}
+            <div className="col-span-1 md:col-span-12 lg:col-span-12 flex items-center justify-between md:justify-end gap-3 mt-2 md:mt-0">
+              <div className="hidden md:flex items-center gap-3">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-500">Min</span>
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-20 pl-2 pr-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white text-gray-800 text-sm"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-500">Max</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="w-20 pl-2 pr-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white text-gray-800 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedSubcategory(null);
+                    setDestination("");
+                    setDate("");
+                    setGuests(2);
+                    setMinPrice("");
+                    setMaxPrice("");
+                  }}
+                  className="hidden md:inline-flex items-center px-4 py-2 rounded-full border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  Reset
+                </button>
+
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-5 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-lg"
+                >
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
+                  Explore Trips
+                </button>
+              </div>
+            </div>
+          </motion.form>
+
+          {/* small helpful CTA or badges */}
+          <motion.div
+            className="mt-6 flex items-center gap-4 flex-wrap"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28 }}
+          >
+            <div className="text-sm text-white/90">
+              <strong>Featured:</strong> Luxury Safaris · Beach Escapes · City Breaks
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right column: category cards (desktop) */}
+        <aside className="hidden lg:flex lg:w-1/3 items-start justify-end">
+          <div className="w-[360px]">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 gap-4"
+            >
+              {rawCategories.slice(0, 6).map((cat: any, i: number) => (
+                <motion.button
+                  key={cat.id}
+                  custom={i + 1}
+                  variants={categoryCardVariants}
+                  onClick={() => handleSelectCategory(cat as IStoreCategory)}
+                  whileHover={{ scale: 1.02 }}
+                  className="w-full flex items-center gap-4 bg-white/95 dark:bg-gray-900/80 rounded-2xl p-3 shadow-md border hover:shadow-xl transition"
+                >
+                  {/* placeholder icon */}
+                  <div className="h-12 w-12 flex-shrink-0 rounded-xl bg-emerald-100 text-emerald-700 grid place-items-center font-semibold">
+                    {String(cat.displayName ?? cat.name ?? "").slice(0, 1).toUpperCase()}
+                  </div>
+
+                  <div className="text-left">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {cat.displayName ?? cat.name ?? cat.slug}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-300 mt-0.5">
+                      {(cat.subcategories ?? []).length > 0
+                        ? `${(cat.subcategories ?? []).slice(0, 3).map((s:any)=> s.displayName ?? s.name).join(" · ")}`
+                        : "Popular experiences"}
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </motion.div>
+
+            {/* small pagination arrows for slides */}
+            <div className="mt-6 flex items-center justify-between">
+              <button
+                onClick={prevSlide}
+                className="bg-white/90 p-2 rounded-full shadow hover:shadow-md"
+                aria-label="Previous slide"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+              </button>
+              <div className="text-sm text-white/90">
+                {currentSlide + 1} / {heroSlides.length}
+              </div>
+              <button
+                onClick={nextSlide}
+                className="bg-white/90 p-2 rounded-full shadow hover:shadow-md"
+                aria-label="Next slide"
+              >
+                <ArrowRightIcon className="h-5 w-5" />
+              </button>
+            </div>
           </div>
-        </motion.form>
-      </motion.div>
+        </aside>
+      </div>
+
+      {/* Mobile category row (swipeable) */}
+      <div className="absolute left-0 right-0 bottom-6 z-30 lg:hidden px-4">
+        <div className="overflow-x-auto no-scrollbar">
+          <div className="flex gap-3">
+            {rawCategories.map((c:any) => (
+              <button
+                key={c.id}
+                onClick={() => handleSelectCategory(c as IStoreCategory)}
+                className="flex-shrink-0 bg-white/95 dark:bg-gray-900/80 px-4 py-2 rounded-full shadow text-sm font-medium"
+              >
+                {c.displayName ?? c.name ?? c.slug}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

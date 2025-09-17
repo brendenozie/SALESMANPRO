@@ -169,7 +169,9 @@ function baseInclude() {
       Project:true,
       services: true,
       CoreValues:true,
-      CompanyLocation: { include: { location: true } }
+      CompanyLocation: { include: { location: true } },
+      Destination: true,
+      TourPackage: true
     };    
 }
 

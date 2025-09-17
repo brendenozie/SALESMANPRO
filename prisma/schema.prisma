@@ -350,6 +350,7 @@ model Company {
   Subscription Subscription[]
   CoreValues   CoreValues[]
   Destination  Destination[]
+  TourPackage  TourPackage[]
 }
 
 enum CategoryStatus {
@@ -4521,6 +4522,9 @@ model TourPackage {
   status          PackageStatus @default(DRAFT)
   imageUrl        String
   images          String[]
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
 
   // Many-to-many relationship with Destination
   destinations Destination[]
