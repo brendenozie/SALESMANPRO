@@ -1,3 +1,4 @@
+// HeroSection.tsx
 "use client";
 
 import React, {
