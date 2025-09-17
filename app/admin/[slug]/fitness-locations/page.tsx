@@ -206,7 +206,10 @@ export default function LocationsPage({ params }: LocationsPageProps) {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: LocationData[] = await response.json();
+      const responser = await response.json();
+      
+      const data: LocationData[] = responser.data;
+
       setLocations(data);
     } catch (err: any) {
       setError(err.message);
