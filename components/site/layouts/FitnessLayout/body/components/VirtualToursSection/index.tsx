@@ -1,114 +1,121 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRightIcon } from '@heroicons/react/24/solid';
-import { ClockIcon, PlayCircleIcon, UserIcon, WifiIcon } from '@heroicons/react/24/outline';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRightIcon } from "@heroicons/react/24/solid";
+import { ClockIcon, PlayCircleIcon, UserIcon, WifiIcon } from "@heroicons/react/24/outline";
 
-// Framer Motion variants for a more dynamic entrance
+// --- Types ---
+export interface IVideoClass {
+  id: string;
+  title: string;
+  thumbnail: string;
+  src: string;
+  instructor: string;
+  durationMinutes: number;
+  level: "Beginner" | "Intermediate" | "Advanced";
+  isLive?: boolean;
+}
+
+// --- Variants ---
 const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.15,
-            delayChildren: 0.2,
-        },
-    },
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+  },
 };
-
 const cardVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.95 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: {
-            duration: 0.6,
-            ease: "easeOut",
-        },
-    },
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
 };
 
-// Placeholder for Video Item structure
+// --- Single Card ---
 const VideoItem = ({
-    id,
-    title,
-    thumbnail,
-    src,
-    instructor,
-    durationMinutes,
-    level,
-    isLive,
-    onClick,
-}) => (
-    <motion.div
-        key={id}
-        className="relative cursor-pointer rounded-3xl overflow-hidden shadow-2xl hover:shadow-primary-accent/40 transition-all duration-500 transform snap-center border border-gray-200"
-        variants={cardVariants}
-        whileHover={{
-            scale: 1.05,
-            rotate: 1,
-            y: -10,
-            boxShadow: '0 25px 50px -12px rgba(99, 102, 241, 0.5)',
-            transition: { type: "spring", stiffness: 300, damping: 20 },
-        }}
-        onClick={onClick}
-        aria-label={`Play video: ${title}`}
-    >
-        {/* Thumbnail Image with Gradient Overlay and Live Indicator */}
-        <div className="relative h-56 w-full overflow-hidden">
-            <img
-                src={thumbnail}
-                alt={title}
-                className="w-full h-full object-cover group-hover:scale-110 transform transition-transform duration-700 ease-in-out"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent transition-opacity duration-500" />
+  id,
+  title,
+  thumbnail,
+  src,
+  instructor,
+  durationMinutes,
+  level,
+  isLive,
+  onClick,
+}: IVideoClass & { onClick: () => void }) => (
+  <motion.div
+    key={id}
+    className="relative cursor-pointer rounded-3xl overflow-hidden shadow-2xl hover:shadow-primary-accent/40 transition-all duration-500 transform snap-center border border-gray-200 group"
+    variants={cardVariants}
+    whileHover={{
+      scale: 1.05,
+      rotate: 1,
+      y: -10,
+      boxShadow: "0 25px 50px -12px rgba(99, 102, 241, 0.5)",
+    }}
+    onClick={onClick}
+  >
+    {/* Thumbnail */}
+    <div className="relative h-56 w-full overflow-hidden">
+      <img
+        src={thumbnail}
+        alt={title}
+        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-            {/* Play Button Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <motion.div
-                    className="p-4 bg-white/90 backdrop-blur-sm rounded-full text-indigo-600 shadow-lg"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                >
-                    <PlayCircleIcon className="h-10 w-10" />
-                </motion.div>
-            </div>
+      {/* Play Overlay */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <motion.div
+          className="p-4 bg-white/90 backdrop-blur-sm rounded-full text-indigo-600 shadow-lg"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <PlayCircleIcon className="h-10 w-10" />
+        </motion.div>
+      </div>
 
-            {/* Live Indicator Badge */}
-            {isLive && (
-                <span className="absolute top-4 right-4 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-md animate-pulse">
-                    LIVE <WifiIcon className="inline-block h-3 w-3 ml-1" />
-                </span>
-            )}
-        </div>
+      {/* Live Badge */}
+      {isLive && (
+        <span className="absolute top-4 right-4 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-md animate-pulse">
+          LIVE <WifiIcon className="inline-block h-3 w-3 ml-1" />
+        </span>
+      )}
+    </div>
 
-        {/* Video Details */}
-        <div className="p-5 flex flex-col space-y-2">
-            <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-700 transition-colors duration-200">{title}</h3>
-            <div className="flex items-center text-gray-600 text-sm">
-                <UserIcon className="h-4 w-4 mr-1 text-indigo-400" />
-                <span>{instructor}</span>
-            </div>
-            <div className="flex items-center text-gray-600 text-sm">
-                <ClockIcon className="h-4 w-4 mr-1 text-indigo-400" />
-                <span>{durationMinutes} min</span>
-                <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-semibold
-                    ${level === 'Beginner' ? 'bg-green-100 text-green-800' :
-                        level === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'}`}>
-                    {level}
-                </span>
-            </div>
-        </div>
-    </motion.div>
+    {/* Details */}
+    <div className="p-5 flex flex-col space-y-2">
+      <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">
+        {title}
+      </h3>
+      <div className="flex items-center text-gray-600 text-sm">
+        <UserIcon className="h-4 w-4 mr-1 text-indigo-400" /> {instructor}
+      </div>
+      <div className="flex items-center text-gray-600 text-sm">
+        <ClockIcon className="h-4 w-4 mr-1 text-indigo-400" /> {durationMinutes} min
+        <span
+          className={`ml-auto px-2 py-0.5 rounded-full text-xs font-semibold
+            ${level === "Beginner"
+              ? "bg-green-100 text-green-800"
+              : level === "Intermediate"
+              ? "bg-yellow-100 text-yellow-800"
+              : "bg-red-100 text-red-800"}`}
+        >
+          {level}
+        </span>
+      </div>
+    </div>
+  </motion.div>
 );
 
-const dummyVideos = [
+// --- Component ---
+const fallbackVideos: IVideoClass[] =  [
     {
         id: 'vid1',
         title: 'Full Body HIIT Blast',
@@ -166,107 +173,84 @@ const dummyVideos = [
         level: 'Advanced',
     },
 ];
+export default function VirtualClassesSection({ videos }: { videos?: IVideoClass[] }) {
+  const [selectedVideo, setSelectedVideo] = useState<IVideoClass | null>(null);
+  const dataToShow = videos && videos.length > 0 ? videos : fallbackVideos;
 
-// ----------------------------------------------------------------------------
-// VirtualClassesSection: Transformed for intuitive, engaging, captivating, and beautiful design
-// ----------------------------------------------------------------------------
-export default function VirtualClassesSection({ videos = dummyVideos }) {
-    const [selectedVideo, setSelectedVideo] = useState(null);
+  return (
+    <section className="py-16 bg-gradient-to-br from-indigo-50 to-purple-50 relative">
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <motion.h2
+          className="mb-14 text-4xl md:text-5xl font-extrabold text-center text-gray-900 leading-tight"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+        >
+          Dive Into Our <span className="text-indigo-700">Virtual Classes & On-Demand Library</span>
+        </motion.h2>
 
-    return (
-        <section className="py-16 bg-gradient-to-br from-indigo-50 to-purple-50 relative">
-            <div className="max-w-7xl mx-auto px-4 md:px-8">
-                <motion.h2
-                    className="mb-14 text-4xl md:text-5xl font-extrabold text-center text-gray-900 leading-tight"
-                    initial={{ opacity: 0, y: -20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.1 }}
-                    viewport={{ once: true, amount: 0.5 }}
-                >
-                    Dive Into Our <span className="text-indigo-700">Virtual Classes & On-Demand Library</span> 
-                </motion.h2>
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {dataToShow.map((vid) => (
+            <VideoItem key={vid.id} {...vid} onClick={() => setSelectedVideo(vid)} />
+          ))}
+        </motion.div>
 
-                <motion.div
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                >
-                    {videos.map((vid) => (
-                        <VideoItem
-                            key={vid.id}
-                            {...vid}
-                            onClick={() => setSelectedVideo(vid)}
-                        />
-                    ))}
-                </motion.div>
+        {/* CTA */}
+        <div className="text-center mt-16">
+          <a
+            href="/virtual-library"
+            className="inline-flex items-center px-8 py-4 bg-gray-900 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-transform hover:-translate-y-1"
+          >
+            Browse Full Video Library
+            <ArrowRightIcon className="h-5 w-5 ml-3" />
+          </a>
+        </div>
+      </div>
 
-                {/* Call to action for more videos */}
-                <motion.div
-                    className="text-center mt-16"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                    viewport={{ once: true, amount: 0.5 }}
-                >
-                    <a
-                        href="/virtual-library"
-                        className="inline-flex items-center justify-center px-8 py-4 bg-gray-900 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-all duration-300 transform hover:-translate-y-1"
-                    >
-                        Browse Full Video Library
-                        <ArrowRightIcon className="h-5 w-5 ml-3" />
-                    </a>
-                </motion.div>
-            </div>
-
-            {/* Lightbox Modal with enhanced styling */}
-            <AnimatePresence>
-                {selectedVideo && (
-                    <motion.div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-85 p-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedVideo(null)}
-                    >
-                        <motion.div
-                            className="relative w-full max-w-5xl bg-gray-900 rounded-3xl overflow-hidden shadow-2xl"
-                            initial={{ scale: 0.7, y: 50 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0.7, y: 50 }}
-                            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* Close Button */}
-                            <button
-                                className="absolute top-4 right-4 z-10 text-white/80 hover:text-white transition-colors duration-200 p-2 rounded-full bg-white/10 hover:bg-white/20"
-                                onClick={() => setSelectedVideo(null)}
-                                aria-label="Close video player"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                            {/* Video Title (inside modal) */}
-                            <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/50 to-transparent text-white text-lg font-semibold z-10">
-                                {selectedVideo.title}
-                            </div>
-                            {/* Video Player */}
-                            <video
-                                key={selectedVideo.id}
-                                src={selectedVideo.src}
-                                controls
-                                autoPlay
-                                className="w-full h-auto aspect-video"
-                                onEnded={() => setSelectedVideo(null)}
-                            >
-                                Your browser does not support the video tag.
-                            </video>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </section>
-    );
+      {/* Lightbox */}
+      <AnimatePresence>
+        {selectedVideo && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-85 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedVideo(null)}
+          >
+            <motion.div
+              className="relative w-full max-w-5xl bg-gray-900 rounded-3xl overflow-hidden shadow-2xl"
+              initial={{ scale: 0.7, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.7, y: 50 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-4 right-4 z-10 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20"
+                onClick={() => setSelectedVideo(null)}
+              >
+                ✕
+              </button>
+              <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/50 to-transparent text-white font-semibold z-10">
+                {selectedVideo.title}
+              </div>
+              <video
+                key={selectedVideo.id}
+                src={selectedVideo.src}
+                controls
+                autoPlay
+                className="w-full h-auto aspect-video"
+                onEnded={() => setSelectedVideo(null)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
 }
