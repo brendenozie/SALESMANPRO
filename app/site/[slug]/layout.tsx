@@ -171,7 +171,8 @@ function baseInclude() {
       CoreValues:true,
       CompanyLocation: { include: { location: true } },
       Destination: true,
-      TourPackage: true
+      TourPackage: true,
+      Educator: { include: { user: { select: { id: true, name: true, image: true } } } },
     };    
 }
 

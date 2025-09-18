@@ -722,6 +722,7 @@ export interface StoreForm {
     specialties: string[];
     regions: string[];
   }[];
+  Educator:Educator[];
   Doctor: User[];
   packages: any[];
   Podcast: any[];
@@ -729,6 +730,51 @@ export interface StoreForm {
   destinations: IDestination[];
   tourPackages: ITourPackage[];
 }
+
+
+export type EducatorStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED"; // adjust if you have an enum
+
+export interface Educator {
+  id: string;
+  userId: string;
+  user?: User;
+
+  phone?: string | null;
+  bio?: string | null;
+  address?: string | null;
+  profilePicture?: string | null;
+
+  specialty?: string | null;            // e.g., "Fitness", "Yoga", "Nutrition"
+  certifications: string[];             // array of cert names
+  photoUrl?: string | null;             // profile photo URL
+  status: EducatorStatus;               // ACTIVE by default
+
+  loginCode: string;                    // unique login code
+
+
+  departmentId?: string | null;
+  // department?: Department | null;    // add if you want to expand this relation
+
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+
+  // Relations (optional if you need them in frontend types)
+  // classesScheduled?: ClassSchedule[];
+  // exams?: Exam[];
+  // courseMaterials?: CourseMaterial[];
+  // attendanceRecords?: AttendanceRecord[];
+  // createdDiscussionTopics?: DiscussionTopic[];
+  // uploadedMaterials?: CourseMaterial[];
+  // headedDepartments?: Department[];
+  // academicLevelAssignments?: EducatorAcademicLevelAssignment[];
+  // assignmentSubmissions?: AssignmentSubmission[];
+  // examSubmissions?: ExamSubmission[];
+  // grades?: Grade[];
+  // courseEducatorAssignments?: CourseEducatorAssignment[];
+  // courseAssignments?: CourseAssignment[];
+  // bookings?: Booking[];
+}
+
 
 //################################################################################
 //## EVENT INTERFACE

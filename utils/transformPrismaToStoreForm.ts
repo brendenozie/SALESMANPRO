@@ -222,6 +222,20 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       // Add other fields as necessary
     }))
     : [],
+  Educator: Array.isArray(raw.Educator)
+  ? raw.Educator.map((educator: any) => ({
+      id: educator.id,
+      name: educator.user?.name ?? "",         // comes from related User
+      subtitle: educator.specialty ?? "",      // Prisma has single specialty
+      imageUrl: educator.photoUrl ?? educator.profilePicture ?? null, 
+      certifications: educator.certifications ?? [], // array of strings
+      status: educator.status ?? "ACTIVE",     // enum value
+      companyId: educator.companyId ?? null,   // keep reference if needed
+      phone: educator.phone ?? null,           // optional
+      bio: educator.bio ?? null,               // optional
+      address: educator.address ?? null,       // optional
+    }))
+  : [],
   Podcast: Array.isArray(raw.Podcast)
     ? raw.Podcast
     : [],
