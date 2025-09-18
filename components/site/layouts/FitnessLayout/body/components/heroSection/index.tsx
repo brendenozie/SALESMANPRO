@@ -1,141 +1,166 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-    MagnifyingGlassIcon,
-    XMarkIcon,
-    MapPinIcon,
-    TrophyIcon,
-    SparklesIcon,
-    FireIcon,
-} from '@heroicons/react/24/outline';
+  MagnifyingGlassIcon,
+  XMarkIcon,
+  FireIcon,
+} from "@heroicons/react/24/outline";
 
-// Placeholder data and types for a hypothetical fitness store
 interface FitnessFilters {
-    searchTerm?: string;
-    program?: string;
-    location?: string;
-    goal?: string;
+  searchTerm?: string;
+  program?: string;
+  location?: string;
+  goal?: string;
 }
 
 interface IStoreCategory {
-    id: string;
-    displayName: string;
+  id: string;
+  displayName: string;
 }
 
 interface ILocation {
-    name: string;
-    id: string;
+  name: string;
+  id: string;
 }
 
 interface IGoal {
-    name: string;
-    id: string;
+  name: string;
+  id: string;
 }
 
 interface HeroSlide {
-    url: string;
-    headline?: string;
-    subline?: string;
-    id?: string | number;
+  url: string;
+  headline?: string;
+  subline?: string;
+  id?: string | number;
 }
 
 interface StoreForm {
-    heroSlides?: HeroSlide[];
-    programTypes?: IStoreCategory[];
-    locations?: ILocation[];
-    goals?: IGoal[];
+  heroSlides?: HeroSlide[];
+  programTypes?: IStoreCategory[];
+  locations?: ILocation[];
+  goals?: IGoal[];
 }
 
 interface Props {
-    storeFormData?: StoreForm;
-    onSearch: (filters: FitnessFilters) => void;
+  storeFormData?: StoreForm;
+  onSearch: (filters: FitnessFilters) => void;
 }
 
-// Default data for demonstration if no props are provided
+// Default fallback data
 const defaultStoreFormData: StoreForm = {
-    heroSlides: [
-        {
-            id: "1",
-            url: "https://images.unsplash.com/photo-1574680096145-af41443589b2?q=80&w=2940&auto=format&fit=crop",
-            headline: "Forge Your Strength",
-            subline: "Discover personalized training and nutrition programs.",
-        },
-        {
-            id: "2",
-            url: "https://images.unsplash.com/photo-1549060156-f033066a3d90?q=80&w=2940&auto=format&fit=crop",
-            headline: "Move with Purpose",
-            subline: "Find the perfect class to challenge your body and uplift your spirit.",
-        },
-    ],
-    programTypes: [
-        { id: "yoga", displayName: "Yoga" },
-        { id: "pilates", displayName: "Pilates" },
-        { id: "crossfit", displayName: "CrossFit" },
-        { id: "weightlifting", displayName: "Weightlifting" },
-        { id: "cardio", displayName: "Cardio" },
-        { id: "nutrition", displayName: "Nutrition Coaching" },
-    ],
-    locations: [
-        { id: "nyc", name: "New York" },
-        { id: "la", name: "Los Angeles" },
-        { id: "chicago", name: "Chicago" },
-        { id: "online", name: "Online" },
-    ],
-    goals: [
-        { id: "weight-loss", name: "Weight Loss" },
-        { id: "muscle-gain", name: "Muscle Gain" },
-        { id: "flexibility", name: "Flexibility" },
-        { id: "stress-reduction", name: "Stress Reduction" },
-        { id: "wellness", name: "Overall Wellness" },
-    ],
+  heroSlides: [
+    {
+      id: "1",
+      url: "https://images.unsplash.com/photo-1574680096145-af41443589b2?q=80&w=2940&auto=format&fit=crop",
+      headline: "Forge Your Strength",
+      subline: "Discover personalized training and nutrition programs.",
+    },
+    {
+      id: "2",
+      url: "https://images.unsplash.com/photo-1549060156-f033066a3d90?q=80&w=2940&auto=format&fit=crop",
+      headline: "Move with Purpose",
+      subline: "Find the perfect class to challenge your body and uplift your spirit.",
+    },
+  ],
+  programTypes: [
+    { id: "yoga", displayName: "Yoga" },
+    { id: "pilates", displayName: "Pilates" },
+    { id: "crossfit", displayName: "CrossFit" },
+    { id: "weightlifting", displayName: "Weightlifting" },
+    { id: "cardio", displayName: "Cardio" },
+    { id: "nutrition", displayName: "Nutrition Coaching" },
+  ],
+  locations: [
+    { id: "nyc", name: "New York" },
+    { id: "la", name: "Los Angeles" },
+    { id: "chicago", name: "Chicago" },
+    { id: "online", name: "Online" },
+  ],
+  goals: [
+    { id: "weight-loss", name: "Weight Loss" },
+    { id: "muscle-gain", name: "Muscle Gain" },
+    { id: "flexibility", name: "Flexibility" },
+    { id: "stress-reduction", name: "Stress Reduction" },
+    { id: "wellness", name: "Overall Wellness" },
+  ],
 };
 
-// Framer Motion variants
+// Motion variants
 const modalVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
-    exit: { opacity: 0, y: 50, scale: 0.95, transition: { duration: 0.3, ease: "easeIn" } },
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    y: 50,
+    scale: 0.95,
+    transition: { duration: 0.3, ease: "easeIn" },
+  },
 };
 
 const overlayVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3 } },
-    exit: { opacity: 0, transition: { duration: 0.3 } },
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+  exit: { opacity: 0, transition: { duration: 0.3 } },
 };
 
 const tabContentVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
 };
 
-export default function HeroSection({ storeFormData = defaultStoreFormData, onSearch }: Props) {
-    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-    const [filters, setFilters] = useState<FitnessFilters>({});
-    const [activeTab, setActiveTab] = useState<'programs' | 'locations' | 'goals'>('programs');
+export default function HeroSection({
+  storeFormData,
+  onSearch,
+}: Props) {
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [filters, setFilters] = useState<FitnessFilters>({});
+  const [activeTab, setActiveTab] =
+    useState<"programs" | "locations" | "goals">("programs");
 
-    const heroSlides = storeFormData.heroSlides || defaultStoreFormData.heroSlides;
-    const programTypes = storeFormData.programTypes || defaultStoreFormData.programTypes;
-    const locations = storeFormData.locations || defaultStoreFormData.locations;
-    const goals = storeFormData.goals || defaultStoreFormData.goals;
+  // ✅ Always merge with fallback data
+  const data = storeFormData || {};
+  const heroSlides = data.heroSlides?.length
+    ? data.heroSlides
+    : defaultStoreFormData.heroSlides!;
+  const programTypes = data.programTypes?.length
+    ? data.programTypes
+    : defaultStoreFormData.programTypes!;
+  const locations = data.locations?.length
+    ? data.locations
+    : defaultStoreFormData.locations!;
+  const goals = data.goals?.length
+    ? data.goals
+    : defaultStoreFormData.goals!;
 
-    const handleClearFilters = () => {
-        setFilters({});
-    };
+  const handleClearFilters = () => setFilters({});
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSearch(filters);
-        setIsSearchModalOpen(false);
-    };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch(filters);
+    setIsSearchModalOpen(false);
+  };
 
-    const handleSelect = (key: keyof FitnessFilters, value: string) => {
-        setFilters(prev => ({ ...prev, [key]: prev[key] === value ? undefined : value }));
-    };
+  const handleSelect = (key: keyof FitnessFilters, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: prev[key] === value ? undefined : value,
+    }));
+  };
 
-    return (
-        <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-white font-sans">
+  return (
+    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-white font-sans">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <img
@@ -178,13 +203,32 @@ export default function HeroSection({ storeFormData = defaultStoreFormData, onSe
                 </motion.button>
 
                 {/* Trending Section */}
-                <div className="absolute bottom-16 sm:bottom-20 z-40 w-full px-6 sm:px-0">
+                <div className="absolute bottom-16 sm:bottom-18 z-40 w-full px-6 sm:px-0">
                     <div className="bg-gray-50/70 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-xl max-w-md mx-auto">
                         <h3 className="text-sm sm:text-lg font-semibold text-gray-800 flex items-center mb-4 uppercase tracking-wider">
                             <FireIcon className="w-5 h-5 mr-2 text-rose-500" />
                             Trending Now
                         </h3>
-                        <div className="flex flex-wrap gap-2 sm:gap-4">
+                        {/* Trending Now (Dynamic) */}
+                       <div className="flex gap-2  sm:gap-4 flex-wrap justify-center">
+                                {programTypes.slice(0, 3).map((p) => (
+                                <button
+                                    key={p.id}
+                                    onClick={() => handleSelect("program", p.id)}
+                                    className={`transition-all  flex items-center justify-center text-xs sm:text-sm font-medium 
+                                        px-4 sm:px-6 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 transition-colors"
+                                    ${
+                                        filters.program === p.id
+                                        ? "bg-blue-600 text-white border-blue-600"
+                                        : "bg-white/80 text-gray-800 border-gray-300 hover:bg-gray-100"
+                                    }`}
+                                >
+                                    {p.displayName}
+                                </button>
+                                ))}
+                            </div>
+
+                        {/* <div className="flex flex-wrap gap-2 sm:gap-4">
                             {['Yoga', 'CrossFit', 'Online'].map((item, index) => (
                                 <button
                                     key={index}
@@ -194,7 +238,7 @@ export default function HeroSection({ storeFormData = defaultStoreFormData, onSe
                                     {item}
                                 </button>
                             ))}
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </motion.div>
@@ -351,5 +395,5 @@ export default function HeroSection({ storeFormData = defaultStoreFormData, onSe
                 )}
             </AnimatePresence>
         </section>
-    );
+  );
 }
