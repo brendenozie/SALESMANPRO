@@ -59,7 +59,7 @@ const dummyCourses: Course[] = [
         id: '68930d82f3c63cdfd45db3b3',
         title: 'Beginner Yoga & Mindfulness',
         description: 'A gentle introduction to yoga postures, breathing techniques, and meditation to reduce stress.',
-        imageUrl: "https://placehold.co/600x400/1e293b/d1d5db?text=Yoga+Class",
+        imageUrl: "https://placehold.co/600x400/7c3aed/faf5ff?text=Yoga+Class",
         credits: 0,
         code: 'YOGA-101',
         rating: 4.8,
@@ -91,7 +91,7 @@ const dummyCourses: Course[] = [
         id: 'c3b2f8a1e9d6c7b5a4d3f2e1',
         title: 'Strength & Conditioning',
         description: 'Build functional strength and endurance with a mix of weightlifting and bodyweight exercises.',
-        imageUrl: "https://placehold.co/600x400/0f172a/f8fafc?text=Weight+Training",
+        imageUrl: "https://placehold.co/600x400/334155/f8fafc?text=Weight+Training",
         credits: 0,
         code: 'STR-301',
         rating: null,
@@ -123,15 +123,15 @@ const dummyCourses: Course[] = [
 
 export default function ListingsGrid({ courses = dummyCourses }: { courses?: Course[] }) {
     return (
-        <section className="py-16 px-4 md:px-8 bg-gray-950 relative">
+        <section className="py-16 px-4 md:px-8 bg-gray-50 relative">
             <div className="max-w-7xl mx-auto">
                 <motion.h2
-                    className="mb-12 text-4xl md:text-5xl font-extrabold text-center text-white leading-tight"
+                    className="mb-12 text-4xl md:text-5xl font-extrabold text-center text-gray-900 leading-tight"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.1 }}
                 >
-                    Explore Our <span className="text-purple-500">Curated Courses</span> ✨
+                    Explore Our <span className="text-purple-600">Curated Courses</span> ✨
                 </motion.h2>
 
                 <motion.div
@@ -144,34 +144,34 @@ export default function ListingsGrid({ courses = dummyCourses }: { courses?: Cou
                     {courses.map((course) => (
                         <motion.div
                             key={course.id}
-                            className="group relative bg-gray-900 rounded-3xl overflow-hidden shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border border-gray-800"
+                            className="group relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-purple-200/50 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border border-gray-200"
                             variants={itemVariants}
                             whileHover={{ scale: 1.02 }}
                         >
                             {/* Image with overlay and badge */}
                             <div className="relative h-60 w-full overflow-hidden">
                                 <img
-                                    src={course.imageUrl || `https://placehold.co/600x400/111827/9ca3af?text=No+Image`}
+                                    src={course.imageUrl || `https://placehold.co/600x400/e5e7eb/4b5563?text=No+Image`}
                                     alt={course.title}
                                     className="object-cover w-full h-full group-hover:scale-110 transform transition-transform duration-500 ease-in-out"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent" />
 
                                 {/* Price Badge */}
                                 <div className="absolute top-4 left-4 z-10">
-                                  <motion.span
-                                      className="px-4 py-2 text-sm font-bold rounded-full bg-purple-600 text-white shadow-lg"
-                                      initial={{ opacity: 0, scale: 0.5 }}
-                                      animate={{ opacity: 1, scale: 1 }}
-                                      transition={{ duration: 0.3, delay: 0.3 }}
-                                  >
-                                      ${course.price.toLocaleString()}
-                                  </motion.span>
+                                    <motion.span
+                                        className="px-4 py-2 text-sm font-bold rounded-full bg-purple-600 text-white shadow-lg"
+                                        initial={{ opacity: 0, scale: 0.5 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.3, delay: 0.3 }}
+                                    >
+                                        ${course.price.toLocaleString()}
+                                    </motion.span>
                                 </div>
                                 
                                 {/* Favorite button */}
                                 <motion.button
-                                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-800/70 backdrop-blur-sm text-gray-300 hover:text-white hover:bg-purple-600 transition-all duration-200"
+                                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm text-gray-500 hover:text-white hover:bg-purple-600 transition-all duration-200"
                                     whileHover={{ scale: 1.1, rotate: 5 }}
                                     whileTap={{ scale: 0.9 }}
                                     aria-label="Add to favorites"
@@ -182,34 +182,34 @@ export default function ListingsGrid({ courses = dummyCourses }: { courses?: Cou
 
                             {/* Content Area */}
                             <div className="p-6 flex flex-col space-y-3">
-                                <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors duration-200">{course.title}</h3>
-                                <p className="text-sm text-gray-400 leading-snug">{course.description}</p>
+                                <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors duration-200">{course.title}</h3>
+                                <p className="text-sm text-gray-600 leading-snug">{course.description}</p>
 
                                 {/* Metadata Icons */}
                                 <div className="flex items-center text-gray-500 text-sm gap-4">
                                     {course.duration && (
                                         <div className="flex items-center">
-                                            <ClockIcon className="h-4 w-4 mr-1 text-purple-400" />
+                                            <ClockIcon className="h-4 w-4 mr-1 text-purple-600" />
                                             <span>{course.duration}</span>
                                         </div>
                                     )}
                                     <div className="flex items-center">
-                                        <UserCircleIcon className="h-4 w-4 mr-1 text-purple-400" />
+                                        <UserCircleIcon className="h-4 w-4 mr-1 text-purple-600" />
                                         <span>{course.companyId}</span>
                                     </div>
                                 </div>
 
                                 {/* Rating (if available) */}
                                 {course.rating && (
-                                    <div className="flex items-center text-sm font-bold text-yellow-400">
+                                    <div className="flex items-center text-sm font-bold text-yellow-500">
                                         <span className="mr-1">⭐</span>
                                         <span>{course.rating.toFixed(1)}</span>
                                     </div>
                                 )}
 
-                                <div className="mt-4 pt-4 border-t border-gray-800 flex items-center justify-between">
+                                <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
                                     <motion.button
-                                        className="px-6 py-3 bg-purple-600 text-white rounded-full text-base font-semibold hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
+                                        className="px-6 py-3 bg-purple-600 text-white rounded-full text-base font-semibold hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-md"
                                         whileTap={{ scale: 0.95 }}
                                     >
                                         <span>Book Now</span>
@@ -231,7 +231,7 @@ export default function ListingsGrid({ courses = dummyCourses }: { courses?: Cou
                 >
                     <a
                         href="/all-programs"
-                        className="inline-flex items-center justify-center px-8 py-4 bg-gray-800 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-all duration-300 transform hover:-translate-y-1"
+                        className="inline-flex items-center justify-center px-8 py-4 bg-gray-200 text-gray-800 text-lg font-semibold rounded-full shadow-lg hover:bg-gray-300 transition-all duration-300 transform hover:-translate-y-1"
                     >
                         View All Programs
                         <ArrowRightIcon className="h-5 w-5 ml-3" />

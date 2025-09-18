@@ -3,449 +3,353 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MagnifyingGlassIcon,
-  XMarkIcon,
-  MapPinIcon,
-  TrophyIcon,
-  SparklesIcon,
-  ArrowRightIcon,
-  ArrowLeftIcon,
+    MagnifyingGlassIcon,
+    XMarkIcon,
+    MapPinIcon,
+    TrophyIcon,
+    SparklesIcon,
+    FireIcon,
 } from '@heroicons/react/24/outline';
 
 // Placeholder data and types for a hypothetical fitness store
 interface FitnessFilters {
-  searchTerm?: string;
-  program?: string;
-  location?: string;
-  goal?: string;
+    searchTerm?: string;
+    program?: string;
+    location?: string;
+    goal?: string;
 }
 
 interface IStoreCategory {
-  id: string;
-  displayName: string;
+    id: string;
+    displayName: string;
 }
 
 interface ILocation {
-  name: string;
-  id: string;
+    name: string;
+    id: string;
 }
 
 interface IGoal {
-  name: string;
-  id: string;
+    name: string;
+    id: string;
 }
 
 interface HeroSlide {
-  url: string;
-  headline?: string;
-  subline?: string;
-  id?: string | number;
+    url: string;
+    headline?: string;
+    subline?: string;
+    id?: string | number;
 }
 
 interface StoreForm {
-  heroSlides?: HeroSlide[];
-  programTypes?: IStoreCategory[];
-  locations?: ILocation[];
-  goals?: IGoal[];
+    heroSlides?: HeroSlide[];
+    programTypes?: IStoreCategory[];
+    locations?: ILocation[];
+    goals?: IGoal[];
 }
 
 interface Props {
-  storeFormData?: StoreForm;
-  onSearch: (filters: FitnessFilters) => void;
+    storeFormData?: StoreForm;
+    onSearch: (filters: FitnessFilters) => void;
 }
 
 // Default data for demonstration if no props are provided
 const defaultStoreFormData: StoreForm = {
-  heroSlides: [
-    {
-      id: "1",
-      url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b231b?q=80&w=2940&auto=format&fit=crop",
-      headline: "Forge Your Strength",
-      subline: "Discover personalized training and nutrition programs tailored for your goals.",
-    },
-    {
-      id: "2",
-      url: "https://images.unsplash.com/photo-1549060156-f033066a3d90?q=80&w=2940&auto=format&fit=crop",
-      headline: "Move with Purpose",
-      subline: "Find the perfect class to challenge your body and uplift your spirit.",
-    },
-  ],
-  programTypes: [
-    { id: "yoga", displayName: "Yoga" },
-    { id: "pilates", displayName: "Pilates" },
-    { id: "crossfit", displayName: "CrossFit" },
-    { id: "weightlifting", displayName: "Weightlifting" },
-    { id: "cardio", displayName: "Cardio" },
-    { id: "nutrition", displayName: "Nutrition Coaching" },
-  ],
-  locations: [
-    { id: "nyc", name: "New York" },
-    { id: "la", name: "Los Angeles" },
-    { id: "chicago", name: "Chicago" },
-    { id: "online", name: "Online Classes" },
-  ],
-  goals: [
-    { id: "weight-loss", name: "Weight Loss" },
-    { id: "muscle-gain", name: "Muscle Gain" },
-    { id: "flexibility", name: "Flexibility" },
-    { id: "stress-reduction", name: "Stress Reduction" },
-    { id: "wellness", name: "Overall Wellness" },
-  ],
+    heroSlides: [
+        {
+            id: "1",
+            url: "https://images.unsplash.com/photo-1574680096145-af41443589b2?q=80&w=2940&auto=format&fit=crop",
+            headline: "Forge Your Strength",
+            subline: "Discover personalized training and nutrition programs.",
+        },
+        {
+            id: "2",
+            url: "https://images.unsplash.com/photo-1549060156-f033066a3d90?q=80&w=2940&auto=format&fit=crop",
+            headline: "Move with Purpose",
+            subline: "Find the perfect class to challenge your body and uplift your spirit.",
+        },
+    ],
+    programTypes: [
+        { id: "yoga", displayName: "Yoga" },
+        { id: "pilates", displayName: "Pilates" },
+        { id: "crossfit", displayName: "CrossFit" },
+        { id: "weightlifting", displayName: "Weightlifting" },
+        { id: "cardio", displayName: "Cardio" },
+        { id: "nutrition", displayName: "Nutrition Coaching" },
+    ],
+    locations: [
+        { id: "nyc", name: "New York" },
+        { id: "la", name: "Los Angeles" },
+        { id: "chicago", name: "Chicago" },
+        { id: "online", name: "Online" },
+    ],
+    goals: [
+        { id: "weight-loss", name: "Weight Loss" },
+        { id: "muscle-gain", name: "Muscle Gain" },
+        { id: "flexibility", name: "Flexibility" },
+        { id: "stress-reduction", name: "Stress Reduction" },
+        { id: "wellness", name: "Overall Wellness" },
+    ],
 };
 
-// Framer Motion variants for a more dynamic feel
-const bgVariants = {
-  enter: (direction: number) => ({
-    opacity: 0,
-    x: direction > 0 ? '100%' : '-100%',
-    scale: 1.1,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      x: { type: "spring", stiffness: 300, damping: 30 },
-      opacity: { duration: 0.5 },
-      scale: { duration: 0.5 },
-    },
-  },
-  exit: (direction: number) => ({
-    x: direction < 0 ? '100%' : '-100%',
-    opacity: 0,
-    scale: 0.9,
-    transition: {
-      x: { type: "spring", stiffness: 300, damping: 30 },
-      opacity: { duration: 0.5 },
-      scale: { duration: 0.5 },
-    },
-  }),
-};
-
+// Framer Motion variants
 const modalVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
-  exit: { opacity: 0, y: 50, scale: 0.95, transition: { duration: 0.3, ease: "easeIn" } },
+    hidden: { opacity: 0, y: 50, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+    exit: { opacity: 0, y: 50, scale: 0.95, transition: { duration: 0.3, ease: "easeIn" } },
 };
 
 const overlayVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.3 } },
-  exit: { opacity: 0, transition: { duration: 0.3 } },
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, transition: { duration: 0.3 } },
+};
+
+const tabContentVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 export default function HeroSection({ storeFormData = defaultStoreFormData, onSearch }: Props) {
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [filters, setFilters] = useState<FitnessFilters>({});
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [direction, setDirection] = useState(0);
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+    const [filters, setFilters] = useState<FitnessFilters>({});
+    const [activeTab, setActiveTab] = useState<'programs' | 'locations' | 'goals'>('programs');
 
-  const heroSlides = storeFormData.heroSlides || defaultStoreFormData.heroSlides;
-  const programTypes = storeFormData.programTypes || defaultStoreFormData.programTypes;
-  const locations = storeFormData.locations || defaultStoreFormData.locations;
-  const goals = storeFormData.goals || defaultStoreFormData.goals;
+    const heroSlides = storeFormData.heroSlides || defaultStoreFormData.heroSlides;
+    const programTypes = storeFormData.programTypes || defaultStoreFormData.programTypes;
+    const locations = storeFormData.locations || defaultStoreFormData.locations;
+    const goals = storeFormData.goals || defaultStoreFormData.goals;
 
-  const handleClearFilters = () => {
-    setFilters({});
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(filters);
-    setIsSearchModalOpen(false);
-  };
-
-  const handleSelect = (key: keyof FitnessFilters, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: prev[key] === value ? undefined : value }));
-  };
-
-  const nextSlide = () => {
-    setDirection(1);
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-  };
-
-  const prevSlide = () => {
-    setDirection(-1);
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-  };
-
-  // Particle effect
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let particles: { x: number, y: number, vx: number, vy: number, size: number, opacity: number }[] = [];
-    const particleCount = 20;
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    const handleClearFilters = () => {
+        setFilters({});
     };
 
-    const createParticles = () => {
-      particles = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          size: Math.random() * 2 + 1,
-          opacity: Math.random() * 0.5 + 0.5,
-        });
-      }
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSearch(filters);
+        setIsSearchModalOpen(false);
     };
 
-    const animateParticles = () => {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-
-      particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
-        ctx.fill();
-      });
-
-      requestAnimationFrame(animateParticles);
+    const handleSelect = (key: keyof FitnessFilters, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: prev[key] === value ? undefined : value }));
     };
 
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    createParticles();
-    animateParticles();
+    return (
+        <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-white font-sans">
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+                <img
+                    src={heroSlides[0].url}
+                    alt={heroSlides[0].headline ?? "hero background"}
+                    className="object-cover w-full h-full"
+                />
+            </div>
 
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
+            {/* Subtle Gradient Overlay */}
+            <div className="absolute inset-0 z-10 bg-gradient-to-t from-white/80 via-transparent to-white/80" />
 
-  return (
-    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-black">
-      {/* Background Slideshow */}
-      <AnimatePresence initial={false} custom={direction}>
-        {heroSlides.map((slide, i) =>
-          i === currentSlide ? (
+            {/* Main Content */}
             <motion.div
-              key={slide.id ?? i}
-              className="absolute inset-0 z-0"
-              custom={direction}
-              variants={bgVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
+                className="relative z-30 flex flex-col items-center justify-center h-full px-6 text-center text-gray-900 max-w-7xl mx-auto"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: "easeOut" }}
             >
-              <img
-                src={"https://images.unsplash.com/photo-1549060156-f033066a3d90?q=80&w=2940&auto=format&fit=crop"}
-                alt={slide.headline ?? "hero background"}
-                className="object-cover w-full h-full"
-              />
+                <motion.h1
+                    className="mb-4 text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight"
+                >
+                    {heroSlides[0]?.headline ?? "Your Fitness Journey Starts Here"}
+                </motion.h1>
+                <motion.p
+                    className="mb-12 text-lg md:text-2xl max-w-4xl leading-relaxed font-light text-gray-600"
+                >
+                    {heroSlides[0]?.subline ?? "Find programs, trainers, and gyms to reach your health goals."}
+                </motion.p>
+                
+                {/* Main Search Button */}
+                <motion.button
+                    onClick={() => setIsSearchModalOpen(true)}
+                    whileHover={{ scale: 1.05, boxShadow: '0px 8px 30px rgba(0, 0, 0, 0.1)' }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative w-full sm:w-auto px-12 py-5 text-lg font-bold rounded-full bg-gradient-to-r from-teal-400 to-cyan-500 text-gray-900 shadow-xl transition-all duration-300 overflow-hidden group hover:from-teal-500 hover:to-cyan-600"
+                >
+                    <MagnifyingGlassIcon className="w-6 h-6 mr-3 inline-block relative z-10 animate-pulse-fast" />
+                    <span className="relative z-10">Find Your Path</span>
+                </motion.button>
+
+                {/* Trending Section */}
+                <div className="absolute bottom-16 sm:bottom-20 z-40 w-full px-6 sm:px-0">
+                    <div className="bg-gray-50/70 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-xl max-w-md mx-auto">
+                        <h3 className="text-sm sm:text-lg font-semibold text-gray-800 flex items-center mb-4 uppercase tracking-wider">
+                            <FireIcon className="w-5 h-5 mr-2 text-rose-500" />
+                            Trending Now
+                        </h3>
+                        <div className="flex flex-wrap gap-2 sm:gap-4">
+                            {['Yoga', 'CrossFit', 'Online'].map((item, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleSelect('program', item.toLowerCase())}
+                                    className="flex items-center justify-center text-xs sm:text-sm font-medium px-4 sm:px-6 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-200 transition-colors"
+                                >
+                                    {item}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </motion.div>
-          ) : null
-        )}
-      </AnimatePresence>
 
-      <div className="absolute inset-0 bg-black/70 z-10" />
+            {/* Search Modal */}
+            <AnimatePresence>
+                {isSearchModalOpen && (
+                    <motion.div
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-gray-200/50 backdrop-blur-lg"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={overlayVariants}
+                        onClick={() => setIsSearchModalOpen(false)}
+                    >
+                        <motion.div
+                            className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 m-4 relative border border-gray-200"
+                            variants={modalVariants}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setIsSearchModalOpen(false)}
+                                className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-100 transition"
+                                aria-label="Close search"
+                            >
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
 
-      {/* Particle Canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-20 pointer-events-none opacity-50" />
+                            <form onSubmit={handleSubmit} className="space-y-8">
+                                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                                    What are you looking for?
+                                </h2>
+                                <p className="text-gray-500">Filter by program type, location, and your personal goals.</p>
+                                
+                                {/* Tabbed Interface */}
+                                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-6 border-b border-gray-200">
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTab('programs')}
+                                        className={`pb-3 border-b-2 font-semibold transition-colors duration-300 ${activeTab === 'programs' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Programs
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTab('locations')}
+                                        className={`pb-3 border-b-2 font-semibold transition-colors duration-300 ${activeTab === 'locations' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Locations
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTab('goals')}
+                                        className={`pb-3 border-b-2 font-semibold transition-colors duration-300 ${activeTab === 'goals' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Goals
+                                    </button>
+                                </div>
 
-      {/* Main Content */}
-      <motion.div
-        className="relative z-30 flex flex-col items-center justify-center h-full px-4 text-center text-white max-w-5xl mx-auto"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-      >
-        <motion.h1
-          className="mb-6 text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight drop-shadow-lg"
-        >
-          {heroSlides[currentSlide]?.headline ?? "Your Fitness Journey Starts Here"}
-        </motion.h1>
-        <motion.p
-          className="mb-10 text-lg md:text-2xl max-w-3xl leading-relaxed text-gray-300 drop-shadow-md"
-        >
-          {heroSlides[currentSlide]?.subline ?? "Find programs, trainers, and gyms to reach your health goals."}
-        </motion.p>
-        
-        <motion.button
-          onClick={() => setIsSearchModalOpen(true)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative px-12 py-5 text-lg font-semibold rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl transition-all duration-300 overflow-hidden group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 transition-transform duration-500 transform group-hover:scale-110 -z-1" />
-          <MagnifyingGlassIcon className="w-6 h-6 mr-2 inline-block relative z-10" />
-          <span className="relative z-10">Find My Program</span>
-        </motion.button>
-      </motion.div>
-      
-      {/* Slide Navigation */}
-      <div className="absolute bottom-8 right-8 flex items-center gap-4 z-40">
-        <button
-          onClick={prevSlide}
-          className="bg-white/10 text-white p-3 rounded-full shadow-lg hover:bg-white/20 transition-transform transform hover:-translate-x-1 backdrop-blur-sm"
-          aria-label="Previous slide"
-        >
-          <ArrowLeftIcon className="h-5 w-5" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="bg-white/10 text-white p-3 rounded-full shadow-lg hover:bg-white/20 transition-transform transform hover:translate-x-1 backdrop-blur-sm"
-          aria-label="Next slide"
-        >
-          <ArrowRightIcon className="h-5 w-5" />
-        </button>
-      </div>
-
-      {/* Search Modal */}
-      <AnimatePresence>
-        {isSearchModalOpen && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={overlayVariants}
-            onClick={() => setIsSearchModalOpen(false)}
-          >
-            <motion.div
-              className="w-full max-w-4xl bg-gray-900 rounded-3xl shadow-2xl p-8 m-4 relative border border-gray-700"
-              variants={modalVariants}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setIsSearchModalOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:bg-gray-800 transition"
-                aria-label="Close search"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  What are you looking for?
-                </h2>
-                <p className="text-gray-400 mb-6">Filter by program type, location, and your personal goals.</p>
-                
-                {/* General Search Input */}
-                <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-500" />
-                  <input
-                    type="text"
-                    aria-label="Search for programs, locations, or goals"
-                    placeholder="Search for a program, location, or goal..."
-                    value={filters.searchTerm || ""}
-                    onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-700 bg-gray-800 text-white placeholder-gray-500 text-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition"
-                  />
-                </div>
-                
-                {/* Program Pills */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center">
-                    <SparklesIcon className="w-5 h-5 mr-2 text-purple-400" />
-                    Program Type
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-3">
-                    {programTypes.map((type) => (
-                      <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => handleSelect('program', type.id)}
-                        className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border border-gray-700 ${
-                          filters.program === type.id
-                            ? "bg-purple-600 text-white shadow-lg"
-                            : "bg-gray-800 text-gray-300 hover:bg-purple-800/20"
-                        }`}
-                      >
-                        {type.displayName}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Location Pills */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center">
-                    <MapPinIcon className="w-5 h-5 mr-2 text-indigo-400" />
-                    Location
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-3">
-                    {locations.map((loc) => (
-                      <button
-                        key={loc.id}
-                        type="button"
-                        onClick={() => handleSelect('location', loc.id)}
-                        className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border border-gray-700 ${
-                          filters.location === loc.id
-                            ? "bg-indigo-600 text-white shadow-lg"
-                            : "bg-gray-800 text-gray-300 hover:bg-indigo-800/20"
-                        }`}
-                      >
-                        {loc.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Goal Pills */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center">
-                    <TrophyIcon className="w-5 h-5 mr-2 text-pink-400" />
-                    Your Goal
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-3">
-                    {goals.map((g) => (
-                      <button
-                        key={g.id}
-                        type="button"
-                        onClick={() => handleSelect('goal', g.id)}
-                        className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border border-gray-700 ${
-                          filters.goal === g.id
-                            ? "bg-pink-600 text-white shadow-lg"
-                            : "bg-gray-800 text-gray-300 hover:bg-pink-800/20"
-                        }`}
-                      >
-                        {g.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Search & Clear Buttons */}
-                <div className="flex items-center justify-between pt-6">
-                  <button
-                    type="button"
-                    onClick={handleClearFilters}
-                    className="text-gray-400 hover:text-white font-medium text-sm transition-colors"
-                  >
-                    Clear filters
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-8 py-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold shadow-lg transition-transform transform hover:scale-105"
-                  >
-                    <MagnifyingGlassIcon className="w-5 h-5 mr-2 inline-block" />
-                    Search Now
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </section>
-  );
+                                {/* Tab Content */}
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={activeTab}
+                                        variants={tabContentVariants}
+                                        initial="hidden"
+                                        animate="visible"
+                                    >
+                                        {activeTab === 'programs' && (
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {programTypes.map((type) => (
+                                                    <motion.button
+                                                        key={type.id}
+                                                        type="button"
+                                                        onClick={() => handleSelect('program', type.id)}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className={`
+                                                            px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border
+                                                            ${filters.program === type.id
+                                                                ? "bg-teal-600 text-white shadow-lg border-teal-600"
+                                                                : "bg-gray-100 text-gray-700 hover:bg-teal-100 hover:text-teal-800 border-gray-300"
+                                                            }`}
+                                                    >
+                                                        {type.displayName}
+                                                    </motion.button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {activeTab === 'locations' && (
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {locations.map((loc) => (
+                                                    <motion.button
+                                                        key={loc.id}
+                                                        type="button"
+                                                        onClick={() => handleSelect('location', loc.id)}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className={`
+                                                            px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border
+                                                            ${filters.location === loc.id
+                                                                ? "bg-indigo-600 text-white shadow-lg border-indigo-600"
+                                                                : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800 border-gray-300"
+                                                            }`}
+                                                    >
+                                                        {loc.name}
+                                                    </motion.button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {activeTab === 'goals' && (
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {goals.map((g) => (
+                                                    <motion.button
+                                                        key={g.id}
+                                                        type="button"
+                                                        onClick={() => handleSelect('goal', g.id)}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className={`
+                                                            px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border
+                                                            ${filters.goal === g.id
+                                                                ? "bg-purple-600 text-white shadow-lg border-purple-600"
+                                                                : "bg-gray-100 text-gray-700 hover:bg-purple-100 hover:text-purple-800 border-gray-300"
+                                                            }`}
+                                                    >
+                                                        {g.name}
+                                                    </motion.button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                </AnimatePresence>
+                                
+                                {/* Search & Clear Buttons */}
+                                <div className="flex flex-col sm:flex-row items-center justify-between pt-6 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleClearFilters}
+                                        className="text-gray-500 hover:text-gray-700 font-medium text-sm transition-colors"
+                                    >
+                                        Clear filters
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-gray-900 font-semibold shadow-lg transition-transform transform hover:scale-105"
+                                    >
+                                        <MagnifyingGlassIcon className="w-5 h-5 mr-2 inline-block" />
+                                        Search Now
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </section>
+    );
 }

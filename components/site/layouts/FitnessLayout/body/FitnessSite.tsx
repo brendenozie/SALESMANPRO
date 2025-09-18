@@ -461,28 +461,28 @@ export default function FitnessSite() {
             <ListingsGrid listings={pageData.listings} />
 
             {/* Trending Locations */}
-            {/* <LocationsSection locations={pageData.locations} /> */}
+            <LocationsSection locations={pageData.locations} />
 
             {/* Virtual Tours */}
-            {/* <VirtualTours videos={pageData.videos} /> */}
+            <VirtualTours videos={pageData.videos} />
 
             {/* Experts Section */}
-            {/* <ExpertsSection experts={pageData.experts} /> */}
+            <ExpertsSection experts={pageData.experts} />
 
             {/* Insights Section */}
-            {/* <MarketInsights insights={pageData.insights} /> */}
+            <MarketInsights insights={pageData.insights} />
 
             {/* Testimonials */}
-            {/* <TestimonialsSection testimonials={pageData.testimonials} /> */}
+            <TestimonialsSection testimonials={pageData.testimonials} />
 
             {/* App Promotion (no props needed as it uses internal dummy data or generic content) */}
-            {/* <AppPromotionSection /> */}
+            <AppPromotionSection />
 
             {/* Newsletter (no props needed as it manages its own state) */}
-            {/* <NewsletterSection /> */}
+            <NewsletterSection />
 
             {/* FAQs */}
-            {/* <FaqsSection faqs={pageData.faqs} /> */}
+            <FaqsSection faqs={pageData.faqs} />
         </div>
     );
 }
