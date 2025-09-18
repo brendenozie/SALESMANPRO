@@ -10,6 +10,7 @@ import {
     QuestionMarkCircleIcon, // General FAQ icon
     SparklesIcon // For a touch of magic
 } from '@heroicons/react/24/solid';
+import { FAQ } from '@/types/typings';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
     `${src}?w=${width}&q=${quality || 75}`;
@@ -63,50 +64,50 @@ const answerVariants = {
 };
 
 // Dummy data for demonstration
-interface FAQItem {
-    id: string;
-    question: string;
-    answer: string;
-    category?: string; // New: for filtering or categorization
-}
+// interface FAQItem {
+//     id: string;
+//     question: string;
+//     answer: string;
+//     category?: string; // New: for filtering or categorization
+// }
 
-const dummyFaqs: FAQItem[] = [
+const dummyFaqs: FAQ[] = [
     {
         id: 'faq1',
         question: "How do I sign up for a new program?",
         answer: "Signing up is easy! Just navigate to our 'Programs' page, choose your desired plan, and follow the simple steps to create an account and enroll. You'll be ready to start your journey in minutes!",
-        category: "Getting Started",
+        // category: "Getting Started",
     },
     {
         id: 'faq2',
         question: "What types of workouts are available?",
         answer: "We offer a diverse range of workouts including HIIT, yoga, strength training, dance fitness, and specialized recovery sessions. Our library is constantly updated with new content to keep things fresh and engaging.",
-        category: "Programs & Workouts",
+        // category: "Programs & Workouts",
     },
     {
         id: 'faq3',
         question: "Can I get personalized coaching?",
         answer: "Absolutely! We offer one-on-one coaching sessions with our certified experts. You can schedule a consultation directly from the 'Coaches & Experts' section to discuss your specific goals.",
-        category: "Coaching & Support",
+        // category: "Coaching & Support",
     },
     {
         id: 'faq4',
         question: "Is there a mobile app to track my progress?",
         answer: "Yes, we have a fantastic mobile app available on both iOS and Android! You can download it from the App Store or Google Play to track workouts, monitor nutrition, and connect with the community on the go.",
-        category: "Technical & App",
+        // category: "Technical & App",
     },
     {
         id: 'faq5',
         question: "What is your refund policy?",
         answer: "We offer a 30-day money-back guarantee on all our premium programs. If you're not completely satisfied, simply contact our support team within 30 days of purchase for a full refund. Your satisfaction is our priority!",
-        category: "Billing & Subscriptions",
+        // category: "Billing & Subscriptions",
     },
 ];
 
 // ----------------------------------------------------------------------------
 // FaqsSection: Transformed for an engaging, intuitive, captivating, and beautiful design
 // ----------------------------------------------------------------------------
-export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQItem[] }) {
+export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQ[] }) {
     const [openId, setOpenId] = useState<string | null>(null); // State to manage which FAQ is open
 
     const toggleFaq = (id: string) => {
@@ -134,7 +135,7 @@ export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQItem[] }) 
                 </motion.h2>
 
                 <div className="space-y-6">
-                    {faqs.map((faq) => (
+                    {faqs.map((faq,i) => (
                         <motion.div
                             key={faq.id}
                             className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 cursor-pointer transition-all duration-300 hover:shadow-2xl" // Enhanced card styling

@@ -10,15 +10,16 @@ import {
   SparklesIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/solid";
+import { IBlog } from "@/types/typings";
 
-interface IBlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  slug: string;
-  category?: string;   // e.g. article, guide, tool
-  coverImage?: string;
-}
+// interface IBlogPost {
+//   id: string;
+//   title: string;
+//   excerpt: string;
+//   slug: string;
+//   category?: string;   // e.g. article, guide, tool
+//   coverImage?: string;
+// }
 
 // Motion variants
 const containerVariants = {
@@ -55,7 +56,7 @@ const getIconForCategory = (category?: string) => {
   }
 };
 
-export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlogPost[] }) {
+export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlog[] }) {
   return (
     <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
       {/* background blobs */}
@@ -103,7 +104,7 @@ export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlogPost[]
 
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center mb-4">
-                  {getIconForCategory(blog.category)}
+                  {getIconForCategory(blog.category || 'report')}
                   <span className="ml-3 text-sm font-semibold text-gray-700 uppercase tracking-wider">
                     {blog.category ?? "Article"}
                   </span>

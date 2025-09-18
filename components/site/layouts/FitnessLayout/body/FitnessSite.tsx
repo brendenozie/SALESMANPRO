@@ -410,70 +410,43 @@ export default function FitnessSite() {
     const router = useRouter();
     // In a real application, useStoreContext would likely fetch this data from an API
     // For this example, we'll directly use DUMMY_DATA
-    // const { storeFormData } = useStoreContext();
+    const { storeFormData } = useStoreContext();
 
     // Use local state, initialized with DUMMY_DATA
     const [pageData, setPageData] = useState(DUMMY_DATA);
 
-    // If you were using useStoreContext for dynamic data, it would look more like this:
-    /*
-    const { storeFormData } = useStoreContext();
-    useEffect(() => {
-        if (storeFormData) {
-            setPageData({
-                gymName: storeFormData.name,
-                bannerUrl: storeFormData.bannerUrl,
-                // Map other storeFormData fields to your DUMMY_DATA structure as needed
-                // Ensure the structure matches what child components expect
-                listings: storeFormData.listings || DUMMY_DATA.listings,
-                testimonials: storeFormData.testimonials || DUMMY_DATA.testimonials,
-                // ... and so on for all data types
-            });
-        }
-    }, [storeFormData]);
-
-    // Show loading state if storeFormData is not yet available
-    if (!storeFormData) {
-        return <div className="min-h-screen flex items-center justify-center text-xl text-gray-700">Loading your fitness experience...</div>;
-    }
-    */
 
 
     return (
         <div className="space-y-28 font-sans bg-gray-50"> {/* Increased spacing and subtle global background */}
             {/* Hero Section */}
             <HeroSection
-                gymName={pageData.gymName}
-                bannerUrl={pageData.bannerUrl}
+                storeFormData={storeFormData}
             />
 
             {/* Filter Bar */}
             <FilterBar
-                programTypes={pageData.programTypes}
-                locations={pageData.bannerLocations} // Use bannerLocations for consistency
-                goals={pageData.goals}
-                formats={pageData.formats}
-                intensities={pageData.intensities}
-                durations={pageData.durations}
+                storeFormData={storeFormData || {}}
+                onSearch={()=>{}}
             />
 
             {/* Listings Grid */}
-            <ListingsGrid listings={pageData.listings} />
+            <ListingsGrid courses={storeFormData?.courses}/>
 
             {/* Trending Locations */}
-            <LocationsSection locations={pageData.locations} />
+            <LocationsSection  />
 
             {/* Virtual Tours */}
-            <VirtualTours videos={pageData.videos} />
+            <VirtualTours videos={storeFormData.videos} />
 
             {/* Experts Section */}
-            <ExpertsSection experts={pageData.experts} />
+            <ExpertsSection educators={storeFormData?.Educator} />
 
             {/* Insights Section */}
-            <MarketInsights insights={pageData.insights} />
+            <MarketInsights blogs={storeFormData?.blogs} />
 
             {/* Testimonials */}
-            <TestimonialsSection testimonials={pageData.testimonials} />
+            <TestimonialsSection testimonials={storeFormData?.testimonials} />
 
             {/* App Promotion (no props needed as it uses internal dummy data or generic content) */}
             <AppPromotionSection />
@@ -482,7 +455,7 @@ export default function FitnessSite() {
             <NewsletterSection />
 
             {/* FAQs */}
-            <FaqsSection faqs={pageData.faqs} />
+            <FaqsSection faqs={storeFormData?.faqs} />
         </div>
     );
 }

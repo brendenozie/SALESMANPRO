@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
   StarIcon,
 } from "@heroicons/react/24/solid";
+import { Testimonial } from "@/types/typings";
 
 // Loader function
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -42,16 +43,7 @@ const slideVariants = {
   }),
 };
 
-// Unified Testimonial type
-export interface Testimonial {
-  id: string;
-  quote: string;
-  authorName: string;
-  avatarUrl: string;
-  authorTitle?: string;
-  program?: string;
-  rating: number;
-}
+
 
 // Dummy fallback data
 const dummyTestimonials: Testimonial[] = [
@@ -62,7 +54,7 @@ const dummyTestimonials: Testimonial[] = [
     authorName: "Sarah Chen",
     avatarUrl: "/images/avatar-sarah.jpg",
     authorTitle: "Marketing Specialist",
-    program: "Elite Fitness Program",
+    // program: "Elite Fitness Program",
     rating: 5,
   },
   {
@@ -72,7 +64,7 @@ const dummyTestimonials: Testimonial[] = [
     authorName: "David Kim",
     avatarUrl: "/images/avatar-david.jpg",
     authorTitle: "Software Engineer",
-    program: "Virtual Yoga & Mindfulness",
+    // program: "Virtual Yoga & Mindfulness",
     rating: 4,
   },
   {
@@ -82,7 +74,7 @@ const dummyTestimonials: Testimonial[] = [
     authorName: "Maria Rodriguez",
     avatarUrl: "/images/avatar-maria.jpg",
     authorTitle: "Small Business Owner",
-    program: "Nutrition Coaching",
+    // program: "Nutrition Coaching",
     rating: 5,
   },
   {
@@ -92,7 +84,7 @@ const dummyTestimonials: Testimonial[] = [
     authorName: "Omar Hassan",
     avatarUrl: "/images/avatar-omar.jpg",
     authorTitle: "Graphic Designer",
-    program: "Group Strength Classes",
+    // program: "Group Strength Classes",
     rating: 5,
   },
 ];
@@ -149,8 +141,8 @@ export default function TestimonialsSection({
               >
                 {/* Avatar */}
                 <Image
-                  src={t.avatarUrl}
-                  alt={t.authorName}
+                  src={t.avatarUrl || 'AuthorName'}
+                  alt={t.authorName || 'AuthorName'}
                   width={96}
                   height={96}
                   className="rounded-full object-cover ring-4 ring-primary/20 shadow-sm"
@@ -169,9 +161,12 @@ export default function TestimonialsSection({
                 <div>
                   <h3 className="text-lg font-semibold text-primary-dark">{t.authorName}</h3>
                   {t.authorTitle && <p className="text-sm text-gray-500">{t.authorTitle}</p>}
-                  {t.program && (
-                    <p className="text-xs text-gray-400 mt-1">{t.program}</p>
-                  )}
+                  {/* {t.program && ( */}
+                    <p className="text-xs text-gray-400 mt-1">
+                      {"Elite Fitness Program"}
+                      {/* {t.program} */}
+                      </p>
+                  {/* )} */}
                   {/* Rating */}
                   <div className="flex justify-center mt-2">
                     {[...Array(t.rating)].map((_, i) => (

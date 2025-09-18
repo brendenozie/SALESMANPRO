@@ -10,6 +10,7 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { ICourse } from "@/types/typings";
 // import { useStoreContext } from "@/context/StoreContext";
 
 // Optimized image loader
@@ -62,14 +63,12 @@ interface Course {
 }
 
 // Dummy fallback data
-const dummyCourses: Course[] = [
+const dummyCourses: ICourse[] = [
   {
     id: "1",
     title: "Beginner Yoga & Mindfulness",
-    description:
-      "A gentle introduction to yoga postures, breathing techniques, and meditation to reduce stress.",
-    imageUrl:
-      "https://placehold.co/600x400/7c3aed/faf5ff?text=Yoga+Class",
+    description: "A gentle introduction to yoga postures, breathing techniques, and meditation to reduce stress.",
+    imageUrl: "https://placehold.co/600x400/7c3aed/faf5ff?text=Yoga+Class",
     credits: 0,
     code: "YOGA-101",
     rating: 4.8,
@@ -77,18 +76,15 @@ const dummyCourses: Course[] = [
     duration: "60 Minutes",
     status: "ACTIVE",
     companyId: "683581bba1bdf6ca3624b541",
-    companyName: "Zen Studio",
     departmentId: null,
-    createdAt: "2025-08-06T08:08:34.257Z",
-    updatedAt: "2025-08-06T08:08:34.257Z",
+    createdAt: null,
+    updatedAt: null
   },
   {
     id: "2",
     title: "High-Intensity Interval Training",
-    description:
-      "Maximize your calorie burn and improve cardiovascular health with this dynamic, full-body workout.",
-    imageUrl:
-      "https://placehold.co/600x400/22c55e/f0fdf4?text=HIIT+Class",
+    description: "Maximize your calorie burn and improve cardiovascular health with this dynamic, full-body workout.",
+    imageUrl: "https://placehold.co/600x400/22c55e/f0fdf4?text=HIIT+Class",
     credits: 0,
     code: "HIIT-201",
     rating: 4.9,
@@ -96,17 +92,16 @@ const dummyCourses: Course[] = [
     duration: "45 Minutes",
     status: "ACTIVE",
     companyId: "683581bba1bdf6ca3624b541",
-    companyName: "Pulse Fitness",
     departmentId: null,
-    createdAt: "2025-08-07T09:15:20.120Z",
-    updatedAt: "2025-08-07T09:15:20.120Z",
+    createdAt: null,
+    updatedAt: null
   },
 ];
 
 export default function ListingsGrid({
   courses = dummyCourses,
 }: {
-  courses?: Course[];
+  courses?: ICourse[];
 }) {
   const { storeFormData } = useStoreContext();
 
@@ -166,7 +161,7 @@ export default function ListingsGrid({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, delay: 0.3 }}
                   >
-                    ${course.price.toLocaleString()}
+                    ${course.price?.toLocaleString()}
                   </motion.span>
                 </div>
 
@@ -204,7 +199,8 @@ export default function ListingsGrid({
                   )}
                   <span className="flex items-center gap-1">
                     <UserCircleIcon className="h-4 w-4 text-gray-400" />
-                    {course.companyName || "Unknown Provider"}
+                    {"Unknown Provider"}
+                    {/* course.companyName ||  */}
                   </span>
                 </div>
 
