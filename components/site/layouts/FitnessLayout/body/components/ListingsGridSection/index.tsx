@@ -2,34 +2,28 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import {
-    HeartIcon, // For 'Add to Favorites' or 'Like'
-    ClockIcon, // For duration
-    UserIcon, // For instructor
-    MapPinIcon, // For location
-    TagIcon, // For price or type
-    ArrowRightIcon
-} from '@heroicons/react/24/outline'; // Using outline for a lighter look, consider solid if you prefer boldness
+    HeartIcon,
+    ClockIcon,
+    MapPinIcon,
+    ArrowRightIcon,
+    UserCircleIcon // Using a user icon for the company/instructor
+} from '@heroicons/react/24/outline';
 
-// Loader function (keep as is)
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-    `${src}?w=${width}&q=${quality || 75}`;
-
-// Framer Motion variants (keep as is, or slightly tweak for this section)
+// Framer Motion variants for a more dynamic feel
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1, // Slightly faster stagger for cards
+            staggerChildren: 0.1,
             delayChildren: 0.2,
         },
     },
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.8 }, // Fade in from slightly below, with a subtle scale up
+    hidden: { opacity: 0, y: 50, scale: 0.8 },
     visible: {
         opacity: 1,
         y: 0,
@@ -41,172 +35,143 @@ const itemVariants = {
     },
 };
 
-// Placeholder for Listing Item structure (you'll get this from your data)
-interface ListingItem {
+// Course data interface to match your provided structure
+interface Course {
     id: string;
-    name: string;
-    imageUrl: string;
-    instructor: string;
+    title: string;
+    description: string;
+    imageUrl: string | null;
+    credits: number;
+    code: string;
+    rating: number | null;
     price: number;
-    badge?: 'New' | 'Popular' | 'Limited'; // Added 'Limited' as a potential badge
-    duration?: number; // Added duration
-    location?: string; // Added location
-    description?: string; // Added a short description
+    duration: string;
+    status: string;
+    companyId: string;
+    departmentId: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
-// Dummy data for demonstration
-const dummyListings: ListingItem[] = [
+// Placeholder data using the new course structure
+const dummyCourses: Course[] = [
     {
-        id: '1',
-        name: 'Morning Yoga Flow',
-        imageUrl: '/images/yoga-flow.jpg', // Ensure you have these images in your public folder
-        instructor: 'Emily Davis',
-        price: 25,
-        badge: 'Popular',
-        duration: 60,
-        location: 'Studio A',
-        description: 'Start your day with invigorating stretches and mindful breathing.'
+        id: '68930d82f3c63cdfd45db3b3',
+        title: 'Beginner Yoga & Mindfulness',
+        description: 'A gentle introduction to yoga postures, breathing techniques, and meditation to reduce stress.',
+        imageUrl: "https://placehold.co/600x400/1e293b/d1d5db?text=Yoga+Class",
+        credits: 0,
+        code: 'YOGA-101',
+        rating: 4.8,
+        price: 50,
+        duration: '60 Minutes',
+        status: 'ACTIVE',
+        companyId: '683581bba1bdf6ca3624b541',
+        departmentId: null,
+        createdAt: '2025-08-06T08:08:34.257Z',
+        updatedAt: '2025-08-06T08:08:34.257Z'
     },
     {
-        id: '2',
-        name: 'High-Intensity Cardio Blast',
-        imageUrl: '/images/cardio-blast.jpg',
-        instructor: 'Marcus Thorne',
-        price: 35,
-        badge: 'New',
-        duration: 45,
-        location: 'Main Gym',
-        description: 'Maximize your burn with this dynamic, full-body cardio workout.'
+        id: '9f5a7c2e1b8a4f9d5e6b2c8a',
+        title: 'High-Intensity Interval Training',
+        description: 'Maximize your calorie burn and improve cardiovascular health with this dynamic, full-body workout.',
+        imageUrl: "https://placehold.co/600x400/22c55e/f0fdf4?text=HIIT+Class",
+        credits: 0,
+        code: 'HIIT-201',
+        rating: 4.9,
+        price: 75,
+        duration: '45 Minutes',
+        status: 'ACTIVE',
+        companyId: '683581bba1bdf6ca3624b541',
+        departmentId: null,
+        createdAt: '2025-08-07T09:15:20.120Z',
+        updatedAt: '2025-08-07T09:15:20.120Z'
     },
     {
-        id: '3',
-        name: 'Strength & Conditioning',
-        imageUrl: '/images/strength-conditioning.jpg',
-        instructor: 'Coach Ben',
-        price: 40,
-        badge: 'Limited',
-        duration: 75,
-        location: 'Weight Room',
-        description: 'Build muscle and endurance with expert-led weight training.'
+        id: 'c3b2f8a1e9d6c7b5a4d3f2e1',
+        title: 'Strength & Conditioning',
+        description: 'Build functional strength and endurance with a mix of weightlifting and bodyweight exercises.',
+        imageUrl: "https://placehold.co/600x400/0f172a/f8fafc?text=Weight+Training",
+        credits: 0,
+        code: 'STR-301',
+        rating: null,
+        price: 100,
+        duration: '90 Minutes',
+        status: 'ACTIVE',
+        companyId: '683581bba1bdf6ca3624b541',
+        departmentId: null,
+        createdAt: '2025-08-08T10:30:45.980Z',
+        updatedAt: '2025-08-08T10:30:45.980Z'
     },
     {
-        id: '4',
-        name: 'Mindful Meditation Session',
-        imageUrl: '/images/meditation.jpg',
-        instructor: 'Sarah Lee',
-        price: 20,
-        duration: 30,
-        location: 'Zen Room',
-        description: 'Find inner peace and reduce stress in this calming session.'
-    },
-    {
-        id: '5',
-        name: 'Pilates Core Sculpt',
-        imageUrl: '/images/pilates.jpg',
-        instructor: 'Olivia Chen',
-        price: 30,
-        duration: 50,
-        location: 'Studio B',
-        description: 'Strengthen your core and improve flexibility with precise movements.'
-    },
-    {
-        id: '6',
-        name: 'Virtual Dance Fitness',
-        imageUrl: '/images/dance-fitness.jpg',
-        instructor: 'Javier Garcia',
-        price: 18,
-        badge: 'Popular',
-        duration: 45,
-        location: 'Online',
-        description: 'Dance your way to fitness from the comfort of your home!'
-    },
-    {
-        id: '7',
-        name: 'Nutritional Coaching Workshop',
-        imageUrl: '/images/nutrition-coaching.jpg',
-        instructor: 'Dr. Anya Sharma',
-        price: 60,
-        duration: 90,
-        location: 'Online Webinar',
-        description: 'Learn sustainable eating habits for a healthier lifestyle.'
-    },
-    {
-        id: '8',
-        name: 'Outdoor Bootcamp Challenge',
-        imageUrl: '/images/bootcamp.jpg',
-        instructor: 'Captain Alex',
-        price: 45,
-        badge: 'New',
-        duration: 60,
-        location: 'Park Grounds',
-        description: 'Take your workout outdoors with this challenging bootcamp!'
+        id: 'd8e4f5a3b2c1d9e8f7a6b5c4',
+        title: 'Virtual Pilates for Core',
+        description: 'Strengthen your core and improve flexibility with precise, low-impact movements from home.',
+        imageUrl: "https://placehold.co/600x400/dc2626/fef2f2?text=Pilates+Online",
+        credits: 0,
+        code: 'PIL-101',
+        rating: 4.5,
+        price: 65,
+        duration: '50 Minutes',
+        status: 'ACTIVE',
+        companyId: '683581bba1bdf6ca3624b541',
+        departmentId: null,
+        createdAt: '2025-08-09T11:40:00.560Z',
+        updatedAt: '2025-08-09T11:40:00.560Z'
     },
 ];
 
-// ----------------------------------------------------------------------------
-// ListingsGrid: Transformed for intuitive, engaging, and visually stunning design
-// ----------------------------------------------------------------------------
-export default function ListingsGrid({ listings = dummyListings }: { listings?: ListingItem[] }) {
+export default function ListingsGrid({ courses = dummyCourses }: { courses?: Course[] }) {
     return (
-        <section className="py-16 px-4 md:px-8 bg-gradient-to-br from-gray-50 to-gray-100 relative"> {/* Enhanced background gradient */}
+        <section className="py-16 px-4 md:px-8 bg-gray-950 relative">
             <div className="max-w-7xl mx-auto">
                 <motion.h2
-                    className="mb-12 text-4xl md:text-5xl font-extrabold text-center text-gray-900 leading-tight"
+                    className="mb-12 text-4xl md:text-5xl font-extrabold text-center text-white leading-tight"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.1 }}
                 >
-                    Explore Our <span className="text-primary-dark">Featured Programs</span> ✨
+                    Explore Our <span className="text-purple-500">Curated Courses</span> ✨
                 </motion.h2>
 
                 <motion.div
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" // Increased gap
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
                     variants={containerVariants}
                     initial="hidden"
-                    whileInView="visible" // Animate when in view
-                    viewport={{ once: true, amount: 0.2 }} // Only animate once when 20% in view
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.2 }}
                 >
-                    {listings.map((item) => (
+                    {courses.map((course) => (
                         <motion.div
-                            key={item.id}
-                            className="group relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border border-gray-100" // More pronounced rounded corners, stronger shadow, subtle lift and border
-                            variants={itemVariants} // Apply item animation
-                            whileHover={{ scale: 1.02 }} // Subtle scale on hover for individual cards
+                            key={course.id}
+                            className="group relative bg-gray-900 rounded-3xl overflow-hidden shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border border-gray-800"
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.02 }}
                         >
                             {/* Image with overlay and badge */}
-                            <div className="relative h-60 w-full overflow-hidden"> {/* Increased height */}
-                                <Image
-                                    src={item.imageUrl}
-                                    alt={item.name}
-                                    fill
-                                    className="object-cover group-hover:scale-110 transform transition-transform duration-500 ease-in-out" // More dramatic hover scale on image
-                                    loader={loader}
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Optimize image loading
-                                    priority={item.badge === 'Popular' || item.badge === 'New'} // Prioritize loading for popular/new items
+                            <div className="relative h-60 w-full overflow-hidden">
+                                <img
+                                    src={course.imageUrl || `https://placehold.co/600x400/111827/9ca3af?text=No+Image`}
+                                    alt={course.title}
+                                    className="object-cover w-full h-full group-hover:scale-110 transform transition-transform duration-500 ease-in-out"
                                 />
-                                {/* Gradient overlay for better text readability and visual depth */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent" />
 
-                                {/* Badge */}
-                                {item.badge && (
-                                    <span
-                                        className={`absolute top-4 left-4 px-3 py-1 text-xs font-bold rounded-full shadow-md z-10 ${
-                                            item.badge === "New"
-                                                ? "bg-green-600 text-white" // Brighter green for 'New'
-                                                : item.badge === "Popular"
-                                                ? "bg-primary text-white" // Use primary color for 'Popular'
-                                                : item.badge === "Limited"
-                                                ? "bg-red-500 text-white" // Distinct color for 'Limited'
-                                                : "bg-gray-700 text-white"
-                                        }`}
-                                    >
-                                        {item.badge}
-                                    </span>
-                                )}
-
-                                {/* Favorite button (optional) */}
+                                {/* Price Badge */}
+                                <div className="absolute top-4 left-4 z-10">
+                                  <motion.span
+                                      className="px-4 py-2 text-sm font-bold rounded-full bg-purple-600 text-white shadow-lg"
+                                      initial={{ opacity: 0, scale: 0.5 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      transition={{ duration: 0.3, delay: 0.3 }}
+                                  >
+                                      ${course.price.toLocaleString()}
+                                  </motion.span>
+                                </div>
+                                
+                                {/* Favorite button */}
                                 <motion.button
-                                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm text-gray-700 hover:text-red-500 hover:bg-white transition-all duration-200"
+                                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-800/70 backdrop-blur-sm text-gray-300 hover:text-white hover:bg-purple-600 transition-all duration-200"
                                     whileHover={{ scale: 1.1, rotate: 5 }}
                                     whileTap={{ scale: 0.9 }}
                                     aria-label="Add to favorites"
@@ -216,31 +181,35 @@ export default function ListingsGrid({ listings = dummyListings }: { listings?: 
                             </div>
 
                             {/* Content Area */}
-                            <div className="p-6 flex flex-col space-y-3"> {/* Increased padding, slightly more space */}
-                                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary-dark transition-colors duration-200">{item.name}</h3>
-                                <p className="text-sm text-gray-600 leading-snug">{item.description}</p> {/* Added description */}
+                            <div className="p-6 flex flex-col space-y-3">
+                                <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors duration-200">{course.title}</h3>
+                                <p className="text-sm text-gray-400 leading-snug">{course.description}</p>
 
-                                <div className="flex items-center text-gray-500 text-sm">
-                                    <UserIcon className="h-4 w-4 mr-1 text-primary-light" />
-                                    <span>{item.instructor}</span>
+                                {/* Metadata Icons */}
+                                <div className="flex items-center text-gray-500 text-sm gap-4">
+                                    {course.duration && (
+                                        <div className="flex items-center">
+                                            <ClockIcon className="h-4 w-4 mr-1 text-purple-400" />
+                                            <span>{course.duration}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center">
+                                        <UserCircleIcon className="h-4 w-4 mr-1 text-purple-400" />
+                                        <span>{course.companyId}</span>
+                                    </div>
                                 </div>
-                                {item.duration && (
-                                    <div className="flex items-center text-gray-500 text-sm">
-                                        <ClockIcon className="h-4 w-4 mr-1 text-primary-light" />
-                                        <span>{item.duration} minutes</span>
-                                    </div>
-                                )}
-                                {item.location && (
-                                    <div className="flex items-center text-gray-500 text-sm">
-                                        <MapPinIcon className="h-4 w-4 mr-1 text-primary-light" />
-                                        <span>{item.location}</span>
+
+                                {/* Rating (if available) */}
+                                {course.rating && (
+                                    <div className="flex items-center text-sm font-bold text-yellow-400">
+                                        <span className="mr-1">⭐</span>
+                                        <span>{course.rating.toFixed(1)}</span>
                                     </div>
                                 )}
 
-                                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between"> {/* Separator line */}
-                                    <span className="text-2xl font-extrabold text-primary-dark">{`$${item.price.toLocaleString()}`}</span>
+                                <div className="mt-4 pt-4 border-t border-gray-800 flex items-center justify-between">
                                     <motion.button
-                                        className="px-6 py-3 bg-primary-dark text-white rounded-full text-base font-semibold hover:bg-primary-hover transition-all duration-300 transform hover:scale-105 flex items-center space-x-2" // More prominent button, rounded, larger
+                                        className="px-6 py-3 bg-purple-600 text-white rounded-full text-base font-semibold hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
                                         whileTap={{ scale: 0.95 }}
                                     >
                                         <span>Book Now</span>
@@ -261,8 +230,8 @@ export default function ListingsGrid({ listings = dummyListings }: { listings?: 
                     viewport={{ once: true, amount: 0.5 }}
                 >
                     <a
-                        href="/all-programs" // Link to your full programs page
-                        className="inline-flex items-center justify-center px-8 py-4 bg-gray-900 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-all duration-300 transform hover:-translate-y-1"
+                        href="/all-programs"
+                        className="inline-flex items-center justify-center px-8 py-4 bg-gray-800 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-all duration-300 transform hover:-translate-y-1"
                     >
                         View All Programs
                         <ArrowRightIcon className="h-5 w-5 ml-3" />

@@ -448,17 +448,17 @@ export default function FitnessSite() {
             />
 
             {/* Filter Bar */}
-            {/* <FilterBar
+            <FilterBar
                 programTypes={pageData.programTypes}
                 locations={pageData.bannerLocations} // Use bannerLocations for consistency
                 goals={pageData.goals}
                 formats={pageData.formats}
                 intensities={pageData.intensities}
                 durations={pageData.durations}
-            /> */}
+            />
 
             {/* Listings Grid */}
-            {/* <ListingsGrid listings={pageData.listings} /> */}
+            <ListingsGrid listings={pageData.listings} />
 
             {/* Trending Locations */}
             {/* <LocationsSection locations={pageData.locations} /> */}
