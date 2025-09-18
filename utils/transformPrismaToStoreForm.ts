@@ -222,8 +222,8 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       // Add other fields as necessary
     }))
     : [],
-  Educator: Array.isArray(raw.Educator)
-  ? raw.Educator.map((educator: any) => ({
+  Educator: Array.isArray(raw.educators)
+  ? raw.educators.map((educator: any) => ({
       id: educator.id,
       name: educator.user?.name ?? "",         // comes from related User
       subtitle: educator.specialty ?? "",      // Prisma has single specialty

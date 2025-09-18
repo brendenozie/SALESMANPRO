@@ -172,7 +172,7 @@ function baseInclude() {
       CompanyLocation: { include: { location: true } },
       Destination: true,
       TourPackage: true,
-      Educator: { include: { user: { select: { id: true, name: true, image: true } } } },
+      educators: { include: { user: { select: { id: true, name: true, image: true } } } },
     };    
 }
 
