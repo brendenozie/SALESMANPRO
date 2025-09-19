@@ -418,11 +418,9 @@ export default function FitnessSite() {
 
 
     return (
-        <div className="space-y-28 font-sans bg-gray-50"> {/* Increased spacing and subtle global background */}
+        <div className="">
             {/* Hero Section */}
-            <HeroSection
-                storeFormData={storeFormData}
-            />
+            <HeroSection storeFormData={storeFormData || {}} onSearch={()=>{}} />
 
             {/* Filter Bar */}
             <FilterBar
@@ -437,7 +435,7 @@ export default function FitnessSite() {
             <LocationsSection  />
 
             {/* Virtual Tours */}
-            <VirtualTours videos={storeFormData.videos} />
+            <VirtualTours videos={storeFormData?.blogs} />
 
             {/* Experts Section */}
             <ExpertsSection educators={storeFormData?.Educator} />

@@ -7,6 +7,7 @@ import {
   XMarkIcon,
   FireIcon,
 } from "@heroicons/react/24/outline";
+import { HeroSlide } from "@/types/typings";
 
 interface FitnessFilters {
   searchTerm?: string;
@@ -30,12 +31,12 @@ interface IGoal {
   id: string;
 }
 
-interface HeroSlide {
-  url: string;
-  headline?: string;
-  subline?: string;
-  id?: string | number;
-}
+// interface HeroSlide {
+//   url: string;
+//   headline?: string;
+//   subline?: string;
+//   id?: string | number;
+// }
 
 interface StoreForm {
   heroSlides?: HeroSlide[];
@@ -53,16 +54,40 @@ interface Props {
 const defaultStoreFormData: StoreForm = {
   heroSlides: [
     {
-      id: "1",
-      url: "https://images.unsplash.com/photo-1574680096145-af41443589b2?q=80&w=2940&auto=format&fit=crop",
-      headline: "Forge Your Strength",
-      subline: "Discover personalized training and nutrition programs.",
+        id: "1",
+        imageUrl: "https://images.unsplash.com/photo-1574680096145-af41443589b2?q=80&w=2940&auto=format&fit=crop",
+        headline: "Forge Your Strength",
+        subline: "Discover personalized training and nutrition programs.",
+        companyId: "",
+        productImageUrl: null,
+        ctaText: null,
+        ctaLink: null,
+        videoLink: null,
+        badgeText: null,
+        price: null,
+        endsAt: null,
+        order: 0,
+        iconKey: null,
+        backgroundColor: null,
+        textColor: null
     },
     {
-      id: "2",
-      url: "https://images.unsplash.com/photo-1549060156-f033066a3d90?q=80&w=2940&auto=format&fit=crop",
-      headline: "Move with Purpose",
-      subline: "Find the perfect class to challenge your body and uplift your spirit.",
+        id: "2",
+        imageUrl: "https://images.unsplash.com/photo-1549060156-f033066a3d90?q=80&w=2940&auto=format&fit=crop",
+        headline: "Move with Purpose",
+        subline: "Find the perfect class to challenge your body and uplift your spirit.",
+        companyId: "",
+        productImageUrl: null,
+        ctaText: null,
+        ctaLink: null,
+        videoLink: null,
+        badgeText: null,
+        price: null,
+        endsAt: null,
+        order: 0,
+        iconKey: null,
+        backgroundColor: null,
+        textColor: null
     },
   ],
   programTypes: [
@@ -164,7 +189,7 @@ export default function HeroSection({
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <img
-                    src={heroSlides[0].url}
+                    src={heroSlides[0].imageUrl || "https://images.unsplash.com/photo-1574680096145-af41443589b2?q=80&w=2940&auto=format&fit=crop"}
                     alt={heroSlides[0].headline ?? "hero background"}
                     className="object-cover w-full h-full"
                 />
@@ -203,7 +228,7 @@ export default function HeroSection({
                 </motion.button>
 
                 {/* Trending Section */}
-                <div className="absolute bottom-16 sm:bottom-18 z-40 w-full px-6 sm:px-0">
+                <div className="absolute bottom-0 sm:bottom-16 z-40 w-full px-6 sm:px-0">
                     <div className="bg-gray-50/70 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-xl max-w-md mx-auto">
                         <h3 className="text-sm sm:text-lg font-semibold text-gray-800 flex items-center mb-4 uppercase tracking-wider">
                             <FireIcon className="w-5 h-5 mr-2 text-rose-500" />
@@ -257,7 +282,7 @@ export default function HeroSection({
                         <motion.div
                             className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 m-4 relative border border-gray-200"
                             variants={modalVariants}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e:any) => e.stopPropagation()}
                         >
                             <button
                                 onClick={() => setIsSearchModalOpen(false)}
