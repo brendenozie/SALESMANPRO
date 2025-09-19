@@ -56,12 +56,12 @@ export function FilterSidebar({
 
       {/* Categories */}
       <div>
-        <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-gray-100">Categories</h3>
+        <h3 className="font-bold text-lg mb-4 text-gray-800 ">Categories</h3>
         <div className="flex flex-wrap gap-2">
           {storeFormData?.StoreCategory.map((cat) => (
             <button
               key={cat.id}
-              className={`py-2 px-4 rounded-full font-medium transition-all duration-20
+              className={`py-2 px-4 rounded-full font-medium transition-all duration-20 text-gray-800 
                 ${activeFilters.category === cat.displayName
                   ? buttonVariants.default
                   : buttonVariants.outline}

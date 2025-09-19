@@ -8,6 +8,7 @@ import HeroBanner from "./components/HeroSection";
 import CategoryCarousel from "./components/CategorySection";
 import StorePageSection from "./components/StorePageSection";
 import { StoreForm } from "@/types/typings";
+import ReviewsSection from "./components/ReviewsSection";
 
 // Sample store data
 const store = {
@@ -71,48 +72,7 @@ export default function MarketplaceSite({ storeData }: EcommerceSiteShoesProps) 
 
         <StorePageSection storeFormData={storeData}  />
           
-        {/* Reviews Breakdown */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-6 max-w-5xl">
-            <motion.h2
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-4xl font-bold text-center mb-12 text-gray-800"
-            >
-              Store Ratings & Reviews
-            </motion.h2>
-            <ReviewWidget
-              averageScore={4.5}
-              breakdown={{
-                "5 stars": 70,
-                "4 stars": 20,
-                "3 stars": 5,
-                "2 stars": 3,
-                "1 star": 2,
-              }}
-              reviews={[
-                {
-                  user: "John D.",
-                  date: "2023-10-01",
-                  rating: 5,
-                  comment: "Amazing products and fast delivery!",
-                },
-                {
-                  user: "Sarah K.",
-                  date: "2023-09-28",
-                  rating: 4,
-                  comment: "Great selection, will shop again.",
-                },
-                {
-                  user: "Mike L.",
-                  date: "2023-09-20",
-                  rating: 3,
-                  comment: "Decent quality, but shipping took a while.",
-                },
-              ]}
-            />
-          </div>
-        </section>
+        <ReviewsSection />
 
         {/* Promotions Section */}
         <AnimatePresence>

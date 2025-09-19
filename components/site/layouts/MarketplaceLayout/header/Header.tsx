@@ -52,9 +52,9 @@ export default function Header() {
             className="flex items-center cursor-pointer"
             onClick={()=>router.push("/")}
           >
-            <Image src={storeFormData.logoUrl || "/logo.svg"} loader={loader} width={40} height={40} alt="Logo" />
+            <Image src={storeFormData?.logoUrl || "/logo.svg"} loader={loader} width={40} height={40} alt="Logo" />
             <span style={{ color: primary }} className="ml-2 text-2xl font-extrabold">
-              {storeFormData.name}
+              {storeFormData?.name}
             </span>
           </motion.div>
         </div>
@@ -102,13 +102,6 @@ export default function Header() {
               {item.count>0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">{item.count}</span>}
             </motion.button>
           ))}
-
-          <motion.button whileHover={{ scale:1.1 }} className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none">
-            {darkMode?
-              <SunIcon className="h-6 w-6 text-gray-700 dark:text-gray-200"/>
-              :<MoonIcon className="h-6 w-6 text-gray-700 dark:text-gray-200"/>
-            }
-          </motion.button>
 
           <motion.button whileHover={{ scale:1.1 }} className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none">
             <UserCircleIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />

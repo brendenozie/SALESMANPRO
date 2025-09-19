@@ -3,7 +3,6 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-// import Link from "next/link"; // Removed to fix the compilation error
 import { IStoreCategory, StoreForm } from "@/types/typings";
 
 export interface CategoryCarouselProps {
@@ -22,7 +21,7 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 50 },
   visible: {
     opacity: 1,
     y: 0,
@@ -62,27 +61,20 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
         ];
 
   return (
-    <section className="relative py-16 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 overflow-hidden">
-      {/* Animated Background Blobs */}
-      <motion.div
-        className="absolute -top-20 -left-20 w-80 h-80 bg-blue-200 rounded-full opacity-20 blur-3xl"
-        animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute -bottom-20 -right-20 w-96 h-96 bg-purple-200 rounded-full opacity-20 blur-3xl"
-        animate={{ x: [0, -40, 0], y: [0, -30, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-      />
+    <section className="relative py-20 bg-gray-50 text-gray-900 overflow-hidden">
+      {/* Background Radial Gradient */}
+      <div className="absolute inset-0 z-0 radial-gradient-to-br from-gray-200 to-transparent opacity-50 blur-xl" />
 
-      <div className="container mx-auto relative px-4">
+      <div className="container mx-auto relative px-4 z-10">
         <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-center text-gray-900 dark:text-gray-50 mb-12"
+          className="text-4xl md:text-5xl font-extrabold text-center mb-16 relative"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Explore Top Categories
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-700">
+            Explore Top Categories
+          </span>
         </motion.h2>
 
         {/* Carousel Container */}
@@ -96,18 +88,18 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
           {/* Navigation Buttons */}
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 transform bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-3 rounded-full shadow-lg z-10 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 animate-pulse-once"
+            className="absolute left-0 top-1/2 -translate-y-1/2 transform bg-white/60 backdrop-blur-sm p-3 rounded-full shadow-lg z-20 transition-all duration-300 hover:scale-110 hover:bg-gray-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Previous category"
           >
-            <ChevronLeftIcon className="h-7 w-7 text-gray-600 dark:text-gray-300" />
+            <ChevronLeftIcon className="h-7 w-7 text-gray-600" />
           </button>
 
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 transform bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-3 rounded-full shadow-lg z-10 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500 animate-pulse-once"
+            className="absolute right-0 top-1/2 -translate-y-1/2 transform bg-white/60 backdrop-blur-sm p-3 rounded-full shadow-lg z-20 transition-all duration-300 hover:scale-110 hover:bg-gray-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Next category"
           >
-            <ChevronRightIcon className="h-7 w-7 text-gray-600 dark:text-gray-300" />
+            <ChevronRightIcon className="h-7 w-7 text-gray-600" />
           </button>
 
           {/* Carousel */}
@@ -118,23 +110,27 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
             {cats.map((c) => (
               <motion.div
                 key={c.id}
-                className="snap-center flex-shrink-0 w-44"
+                className="snap-center flex-shrink-0 w-48"
                 variants={itemVariants}
               >
                 <a href={`/shop?category=${c.displayName?.toLowerCase()}`}>
                   <motion.div
-                    className="flex flex-col items-center p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 cursor-pointer"
-                    whileHover={{ scale: 1.05, y: -5, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    className="flex flex-col items-center p-8 bg-white/50 rounded-3xl border border-gray-200 backdrop-blur-lg cursor-pointer"
+                    whileHover={{
+                      scale: 1.05,
+                      y: -8,
+                      boxShadow: "0px 15px 30px rgba(0,0,0,0.1)",
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
                   >
                     <motion.div
-                      className="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-4xl text-blue-600 dark:text-blue-300 shadow-md"
+                      className="w-24 h-24 rounded-full flex items-center justify-center text-5xl bg-gradient-to-tr from-blue-500 to-purple-600 shadow-xl"
                       whileHover={{ scale: 1.1, rotate: 10 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       {c.icon}
                     </motion.div>
-                    <span className="mt-6 text-lg font-bold text-gray-800 dark:text-gray-100 text-center">
+                    <span className="mt-8 text-lg font-bold text-gray-800 text-center">
                       {c.displayName}
                     </span>
                   </motion.div>
@@ -144,6 +140,15 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
           </div>
         </motion.div>
       </div>
+      <style jsx>{`
+        .radial-gradient-to-br {
+          background-image: radial-gradient(
+            circle at top left,
+            var(--tw-gradient-from),
+            var(--tw-gradient-to)
+          );
+        }
+      `}</style>
     </section>
   );
 }
