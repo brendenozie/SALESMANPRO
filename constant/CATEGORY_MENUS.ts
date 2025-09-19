@@ -358,7 +358,6 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     // { label: "Categories", href: `/admin/${adminSlug}/properties-categories`, icon: TagIcon }, // Manage property categories (e.g., Residential, Commercial, Land)
   ],
 
-  
   // {
   //   category: "Content Management",
   //   items: [
