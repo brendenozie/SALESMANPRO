@@ -728,7 +728,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Settings", href: `/admin/${adminSlug}/fitness-settings`, icon : Cog6ToothIcon}, // General administrative settings, user roles
   ],
 
-    // You could also categorize into more specific sections if the admin grows
+  // You could also categorize into more specific sections if the admin grows
   "Marketing & Engagement": [
       { label: "Content Management", href: `/admin/${adminSlug}/content`, icon : PencilSquareIcon}, // Blog posts, articles, website content
       { label: "Promotions & Deals", href: `/admin/${adminSlug}/promotions`, icon : TagIcon}, // Create and manage discounts, special offers
