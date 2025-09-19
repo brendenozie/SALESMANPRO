@@ -35,7 +35,7 @@ const LocationItem = ({
   rating,
   description,
   isNew,
-}) => (
+}:any) => (
   <motion.a
     key={id}
     href={`/locations/${id}`}
@@ -141,18 +141,18 @@ export default function LocationsSection() {
   const normalizedLocations =
     CompanyLocation && CompanyLocation.length > 0
       ? CompanyLocation.map((cl: ICompanyLocation, i: number) => {
-          const loc = cl.location || {}; // related Location
+          const loc = cl.location; // related Location
           return {
             id: cl.id,
-            name: cl.displayName || loc.name || "Unnamed Location",
+            name: cl.displayName || loc?.name || "Unnamed Location",
             image:
-              loc.imageUrl ||
+              loc?.imageUrl ||
               "https://placehold.co/600x400/E0E7FF/4338CA?text=No+Image",
             programs: Math.floor(Math.random() * 50) + 10, // placeholder
-            rating: loc.averageRating || 4 + Math.random(),
+            rating: 4 + Math.random(),//loc.averageRating || 
             description:
-              cl.descriptionOverride ||
-              loc.description ||
+              cl.addressLine1Override ||
+              loc?.description ||
               dummyLocations[i % dummyLocations.length].description,
             isNew: i % 2 === 0,
           };

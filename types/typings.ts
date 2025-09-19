@@ -606,7 +606,9 @@ export interface ILocation extends Location {
   children?: ILocation[];
 }
 
-export interface ICompanyLocation extends CompanyLocation {}
+export interface ICompanyLocation extends CompanyLocation {
+  location?: ILocation;
+}
 
 export interface SelectedLocation {
   id: string;
